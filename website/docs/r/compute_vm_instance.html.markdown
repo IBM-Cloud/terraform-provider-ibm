@@ -193,6 +193,23 @@ resource "ibm_compute_vm_instance" "vm1" {
 
 ```
 
+### In the following example, you can create a VM instance using a Reserved Capacity:
+
+```terraform
+resource "ibm_compute_vm_instance" "reservedinstance" {
+  hostname          = "terraformreserved"
+  domain            = "ibm.com"
+  os_reference_code = "DEBIAN_9_64"
+  datacenter        = "lon02"
+  network_speed     = 10
+  hourly_billing    = false
+  notes             = "VM notes"
+  reserved_capacity_id = "110974"
+  local_disk        = false
+  reserved_instance_primary_disk = 100
+}
+```
+
 ## Timeouts
 
 The `ibm_is_instance` resource provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -249,7 +266,10 @@ Review the argument references that you can specify for your resource.
 - `public_subnet` - (Optional, Forces new resource, String) The public subnet for the public network interface of the instance. Accepted values are primary public networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
 - `private_subnet` - (Optional, Forces new resource, String) The private subnet for the private network interface of the instance. Accepted values are primary private networks. You can find accepted values in the [subnets doc](https://cloud.ibm.com/classic/network/subnets).
 - `public_bandwidth_limited` - (Optional, Forces new resource, Integer) Allowed public network traffic in GB per month. It can be greater than 0 when the server is a monthly based server. Defaults to the smallest available capacity for the public bandwidth are used.  **Note** Conflicts with `private_network_only` and `public_bandwidth_unlimited`.
-- `public_bandwidth_unlimited` - (Optional, Forces new resource, Bool)   Allowed unlimited public network traffic in GB per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value is **false**. **Note** Conflicts with `private_network_only` and `public_bandwidth_limited`.
+- `public_bandwidth_unlimited` - (Optional, Forces new resource, Bool) Allowed unlimited public network traffic in GB per month for a monthly based server. The `network_speed` should be 100 Mbps. Default value is **false**. **Note** Conflicts with `private_network_only` and `public_bandwidth_limited`.
+- `reserved_capacity_id` - (Optional, Forces new resource, Integer) The reserved capacity ID to provision the instance.
+- `reserved_capacity_name` - (Optional, Forces new resource, String) The reserved capacity name to provision the instance.
+- `reserved_instance_primary_disk` - (Optional, Forces new resource, Integer) Size of the main drive.    **Note** We can provision only monthly based servers in a reserved capacity.
 - `secondary_ip_count` - (Optional, Forces new resource, Integer) Specifies secondary public IPv4 addresses. Accepted values are `4` and `8`. 
 - `ssh_key_ids`- (Optional, Array of integers) The SSH key IDs to install on the computing instance when the instance provisions. **Note** If you don't know the ID(s) for your SSH keys, you can reference your SSH keys by their labels.
 - `tags` (Optional, Array of Strings) Tags associated with the VM instance. Permitted characters include: A-Z, 0-9, whitespace, `_` (underscore), `- ` (hyphen), `.` (period), and `:` (colon). All other characters are removed.

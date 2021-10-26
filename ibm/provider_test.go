@@ -35,6 +35,7 @@ var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId string
+var lbListerenerCertificateInstance string
 var ipsecDatacenter string
 var customersubnetid string
 var customerpeerip string
@@ -81,6 +82,8 @@ var hpcsAdmin1 string
 var hpcsToken1 string
 var hpcsAdmin2 string
 var hpcsToken2 string
+var realmName string
+var iksSa string
 
 // For Power Colo
 
@@ -292,6 +295,11 @@ func init() {
 	if lbaasSubnetId == "" {
 		lbaasSubnetId = "2144241"
 		fmt.Println("[WARN] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '2144241'")
+	}
+	lbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
+	if lbListerenerCertificateInstance == "" {
+		lbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+		fmt.Println("[WARN] Set the environment variable IBM_LB_LISTENER_CERTIFICATE_INSTANCE for testing ibm_is_lb_listener resource for https redirect else it is set to default value 'crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed'")
 	}
 
 	dedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")
@@ -593,6 +601,16 @@ func init() {
 	if hpcsAdmin2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN2 with a VALID HPCS Admin Key2 Path")
 	}
+	realmName = os.Getenv("IBM_IAM_REALM_NAME")
+	if realmName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_REALM_NAME with a VALID realm name for iam trusted profile claim rule")
+	}
+
+	iksSa = os.Getenv("IBM_IAM_IKS_SA")
+	if iksSa == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_IKS_SA with a VALID realm name for iam trusted profile link")
+	}
+
 	hpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
 	if hpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
@@ -708,6 +726,15 @@ func testAccPreCheckHPCS(t *testing.T) {
 	}
 	if hpcsToken2 == "" {
 		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
+	}
+}
+func testAccPreCheckIAMTrustedProfile(t *testing.T) {
+	testAccPreCheck(t)
+	if realmName == "" {
+		t.Fatal("IBM_IAM_REALM_NAME must be set for acceptance tests")
+	}
+	if iksSa == "" {
+		t.Fatal("IBM_IAM_IKS_SA must be set for acceptance tests")
 	}
 }
 

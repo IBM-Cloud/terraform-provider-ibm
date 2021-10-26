@@ -455,7 +455,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
 	d.Set(ResourceName, *lb.Name)
 	if lb.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *lb.ResourceGroup.ID)
+		d.Set(ResourceGroupName, lb.ResourceGroup.Name)
 	}
 	return nil
 }
