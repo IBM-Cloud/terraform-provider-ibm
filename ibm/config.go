@@ -1303,7 +1303,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.appidErr = fmt.Errorf("error occured while configuring AppID service: #{err}")
 	}
 	if appIDClient != nil {
-		appIDClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		appIDClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		appIDClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.appidAPI = appIDClient
 
@@ -1418,12 +1421,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
+	if err != nil {
+		session.schematicsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Schematics Service API service: %q", err)
+	}
 	// Enable retries for API calls
 	if schematicsClient != nil && schematicsClient.Service != nil {
 		schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		if err != nil {
-			session.schematicsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Schematics Service API service: %q", err)
-		}
+		schematicsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.schematicsClient = schematicsClient
 
@@ -1455,6 +1461,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if vpcclient != nil && vpcclient.Service != nil {
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		vpcclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.vpcAPI = vpcclient
 
@@ -1471,14 +1480,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
-	if pnclient != nil {
-		// Enable retries for API calls
-		pnclient.EnableRetries(c.RetryCount, c.RetryDelay)
-		session.pushServiceClient = pnclient
-	} else {
+	if err != nil {
 		session.pushServiceClientErr = fmt.Errorf("[ERROR] Error occured while configuring Push Notifications service: %q", err)
 	}
-
+	if pnclient != nil {
+		// Enable retries for API calls
+		pnclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		pnclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.pushServiceClient = pnclient
 	// event notifications
 	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
 	if c.Visibility == "private" {
@@ -1496,6 +1508,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err == nil {
 		// Enable retries for API calls
 		session.eventNotificationsApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.eventNotificationsApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	} else {
 		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications service: %q", err)
 	}
@@ -1601,6 +1616,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if globalTaggingAPIV1 != nil {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.globalTaggingServiceAPIV1.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	icdAPI, err := icdv4.New(sess.BluemixSession)
@@ -1701,6 +1719,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.pDNSClient != nil && session.pDNSClient.Service != nil {
 		session.pDNSClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.pDNSClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// DIRECT LINK Service
@@ -1723,6 +1744,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
 		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.directlinkAPI.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// DIRECT LINK PROVIDER Service
@@ -1744,6 +1768,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.dlProviderAPI != nil && session.dlProviderAPI.Service != nil {
 		session.dlProviderAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.dlProviderAPI.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// TRANSIT GATEWAY Service
@@ -1765,6 +1792,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.transitgatewayAPI != nil && session.transitgatewayAPI.Service != nil {
 		session.transitgatewayAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// session.transitgatewayAPI.SetDefaultHeaders(gohttp.Header{
+		// 	"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		// })
 	}
 
 	// CIS Service instances starts here.
@@ -1813,6 +1843,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisZonesV1Client != nil && session.cisZonesV1Client.Service != nil {
 		session.cisZonesV1Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisZonesV1Client.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS DNS Record service
@@ -1828,6 +1861,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisDNSRecordsClient != nil && session.cisDNSRecordsClient.Service != nil {
 		session.cisDNSRecordsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDNSRecordsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS DNS Record bulk service
@@ -1845,6 +1881,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisDNSRecordBulkClient != nil && session.cisDNSRecordBulkClient.Service != nil {
 		session.cisDNSRecordBulkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDNSRecordBulkClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer pool
@@ -1862,6 +1901,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBPoolClient != nil && session.cisGLBPoolClient.Service != nil {
 		session.cisGLBPoolClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBPoolClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer
@@ -1879,6 +1921,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBClient != nil && session.cisGLBClient.Service != nil {
 		session.cisGLBClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer health check/monitor
@@ -1896,6 +1941,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBHealthCheckClient != nil && session.cisGLBHealthCheckClient.Service != nil {
 		session.cisGLBHealthCheckClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBHealthCheckClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS IP
@@ -1910,6 +1958,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisIPClient != nil && session.cisIPClient.Service != nil {
 		session.cisIPClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisIPClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Zone Rate Limit
@@ -1927,6 +1978,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
 		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Page Rules
@@ -1944,6 +1998,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisPageRuleClient != nil && session.cisPageRuleClient.Service != nil {
 		session.cisPageRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisPageRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Edge Function
@@ -1962,6 +2019,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisEdgeFunctionClient != nil && session.cisEdgeFunctionClient.Service != nil {
 		session.cisEdgeFunctionClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisEdgeFunctionClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS SSL certificate
@@ -1980,6 +2040,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisSSLClient != nil && session.cisSSLClient.Service != nil {
 		session.cisSSLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisSSLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Package
@@ -1998,6 +2061,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFPackageClient != nil && session.cisWAFPackageClient.Service != nil {
 		session.cisWAFPackageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFPackageClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Domain settings
@@ -2016,6 +2082,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisDomainSettingsClient != nil && session.cisDomainSettingsClient.Service != nil {
 		session.cisDomainSettingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDomainSettingsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Routing
@@ -2034,6 +2103,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisRoutingClient != nil && session.cisRoutingClient.Service != nil {
 		session.cisRoutingClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRoutingClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Group
@@ -2052,6 +2124,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFGroupClient != nil && session.cisWAFGroupClient.Service != nil {
 		session.cisWAFGroupClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFGroupClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Cache service
@@ -2070,6 +2145,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisCacheClient != nil && session.cisCacheClient.Service != nil {
 		session.cisCacheClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisCacheClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Custom pages service
@@ -2089,6 +2167,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisCustomPageClient != nil && session.cisCustomPageClient.Service != nil {
 		session.cisCustomPageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisCustomPageClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall Access rule
@@ -2107,6 +2188,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisAccessRuleClient != nil && session.cisAccessRuleClient.Service != nil {
 		session.cisAccessRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisAccessRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall User Agent Blocking rule
@@ -2125,6 +2209,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisUARuleClient != nil && session.cisUARuleClient.Service != nil {
 		session.cisUARuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisUARuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall Lockdown rule
@@ -2143,6 +2230,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisLockdownClient != nil && session.cisLockdownClient.Service != nil {
 		session.cisLockdownClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisLockdownClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Range Application rule
@@ -2161,6 +2251,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisRangeAppClient != nil && session.cisRangeAppClient.Service != nil {
 		session.cisRangeAppClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRangeAppClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Rule Service
@@ -2179,6 +2272,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
 		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Filters
@@ -2194,6 +2290,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisFiltersClient != nil && session.cisFiltersClient.Service != nil {
 		session.cisFiltersClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisFiltersClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall rules
@@ -2209,6 +2308,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
 		session.cisFirewallRulesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisFirewallRulesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IAM IDENTITY Service
@@ -2234,6 +2336,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamIdentityClient != nil && iamIdentityClient.Service != nil {
 		iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamIdentityClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
@@ -2259,6 +2364,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
 		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamPolicyManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamPolicyManagementAPI = iamPolicyManagementClient
 
@@ -2284,6 +2392,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamAccessGroupsClient != nil && iamAccessGroupsClient.Service != nil {
 		iamAccessGroupsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamAccessGroupsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamAccessGroupsAPI = iamAccessGroupsClient
 
@@ -2316,7 +2427,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
 	}
 	if resourceManagerClient != nil {
-		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.resourceManagerAPI = resourceManagerClient
 
@@ -2366,7 +2480,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
 	if err == nil {
-		enterpriseManagementClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		enterpriseManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		enterpriseManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	} else {
 		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
 	}
@@ -2401,7 +2518,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
 	if resourceControllerClient != nil {
-		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceControllerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceControllerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.resourceControllerAPI = resourceControllerClient
 
@@ -2438,8 +2558,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.satelliteClientErr = fmt.Errorf("Error occured while configuring satellite client: %q", err)
 	}
+
 	// Enable retries for API calls
-	session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+	if session.satelliteClient != nil {
+		session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.satelliteClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
 
 	// SATELLITE LINK Service
 	// Construct an "options" struct for creating the service client.
