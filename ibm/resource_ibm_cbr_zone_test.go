@@ -83,7 +83,7 @@ func testAccCheckIBMCbrZoneConfigBasic() string {
 
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Resource Config Basic"
-			account_id = "7423cba651044c1abc3bffd6c692e3a5"
+			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 			description = "Test Zone Resource Config Basic"
 			addresses {
 				type = "ipRange"
@@ -98,7 +98,7 @@ func testAccCheckIBMCbrZoneConfig(name string, description string, transactionID
 
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "%s"
-			account_id = "7423cba651044c1abc3bffd6c692e3a5"
+			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 			description = "%s"
 			addresses {
 				type = "ipRange"
@@ -107,7 +107,7 @@ func testAccCheckIBMCbrZoneConfig(name string, description string, transactionID
 			addresses {
 				type = "serviceRef"
 				ref {
-					account_id = "7423cba651044c1abc3bffd6c692e3a5"
+					account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 					service_name = "user-management"
 				}
 			}

@@ -44,7 +44,7 @@ func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
 func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 	zoneName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	// zoneAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
-	zoneAccountID := fmt.Sprintf("7423cba651044c1abc3bffd6c692e3a5")
+	zoneAccountID := fmt.Sprintf("12ab34cd56ef78ab90cd12ef34ab56cd")
 	zoneDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -84,7 +84,7 @@ func testAccCheckIBMCbrZoneDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Data Source Config Basic"
-			account_id = "7423cba651044c1abc3bffd6c692e3a5"
+			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 			description = "Test Zone Data Source Config Basic"
 			addresses {
 				type = "ipRange"

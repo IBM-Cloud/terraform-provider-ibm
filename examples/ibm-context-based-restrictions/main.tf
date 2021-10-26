@@ -5,7 +5,7 @@ provider "ibm" {
 // Provision cbr_zone resource instance
 resource "ibm_cbr_zone" "cbr_zone_instance" {
   name = "terraform example test zone"
-  account_id = "82cbc8dcd1ab4112b7272b410ac9965c"
+  account_id = var.cbr_zone_account_id
   description = "terraform example test zone"
   addresses {
     type = "ipAddress"
@@ -33,7 +33,7 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
   resources {
     attributes {
       name = "accountId"
-      value = "82cbc8dcd1ab4112b7272b410ac9965c"
+      value = var.cbr_zone_account_id
     }
     attributes {
       name = "serviceName"
