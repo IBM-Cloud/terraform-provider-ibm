@@ -40,6 +40,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "crn"),
 					resource.TestCheckResourceAttrSet(snpName, "lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "captured_at"),
 				),
 			},
 		},

@@ -45,6 +45,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.captured_at"),
 				),
 			},
 		},
