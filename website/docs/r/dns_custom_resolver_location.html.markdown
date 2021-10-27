@@ -58,7 +58,6 @@ Provides a private DNS custom resolver locations resource. This allows DNS custo
 		cr_enabled	= true
 	}
 	resource "ibm_dns_custom_resolver_location" "test2" {
-		depends_on = [ibm_dns_custom_resolver_location.test1]
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		subnet_crn  = ibm_is_subnet.test-pdns-cr-subnet2.crn
