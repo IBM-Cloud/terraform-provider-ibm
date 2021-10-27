@@ -132,6 +132,10 @@ func dataSourceIBMContainerClusterConfigRead(d *schema.ResourceData, meta interf
 	configDir := d.Get("config_dir").(string)
 	network := d.Get("network").(bool)
 
+	clusterId := "Cluster_Config_" + name
+	ibmMutexKV.Lock(clusterId)
+	defer ibmMutexKV.Unlock(clusterId)
+
 	if len(configDir) == 0 {
 		configDir, err = homedir.Dir()
 		if err != nil {
