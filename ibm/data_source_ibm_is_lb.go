@@ -291,7 +291,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isLBType, "private")
 			}
 			d.Set(isLBStatus, *lb.ProvisioningStatus)
-			d.Set(isLBRouteMode, *lb.RouteMode)
+			if lb.RouteMode != nil {
+				d.Set(isLBRouteMode, *lb.RouteMode)
+			}
 			d.Set(isLBCrn, *lb.CRN)
 			d.Set(isLBOperatingStatus, *lb.OperatingStatus)
 			publicIpList := make([]string, 0)

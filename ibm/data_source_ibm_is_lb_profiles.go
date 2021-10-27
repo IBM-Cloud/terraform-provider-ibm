@@ -103,13 +103,19 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			case "*vpcv1.LoadBalancerProfileRouteModeSupportedDependent":
 				{
 					rms := routeMode.(*vpcv1.LoadBalancerProfileRouteModeSupportedDependent)
-					l["route_mode_type"] = *rms.Type
+					if rms.Type != nil {
+						l["route_mode_type"] = *rms.Type
+					}
 				}
 			case "*vpcv1.LoadBalancerProfileRouteModeSupported":
 				{
 					rms := routeMode.(*vpcv1.LoadBalancerProfileRouteModeSupported)
-					l["route_mode_type"] = *rms.Type
-					l["route_mode_supported"] = *rms.Value
+					if rms.Type != nil {
+						l["route_mode_type"] = *rms.Type
+					}
+					if rms.Value != nil {
+						l["route_mode_supported"] = *rms.Value
+					}
 				}
 			}
 		}

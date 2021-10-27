@@ -17,6 +17,8 @@ import (
 const (
 	isLBListenerLBID                    = "lb"
 	isLBListenerPort                    = "port"
+	isLBListenerPortMin                 = "port_min"
+	isLBListenerPortMax                 = "port_max"
 	isLBListenerProtocol                = "protocol"
 	isLBListenerCertificateInstance     = "certificate_instance"
 	isLBListenerConnectionLimit         = "connection_limit"
@@ -59,9 +61,21 @@ func resourceIBMISLBListener() *schema.Resource {
 
 			isLBListenerPort: {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validateLBListenerPort,
+				Computed:     true,
 				Description:  "Loadbalancer listener port",
+				Deprecated:   "This field will be deprecated in future and we will be using range of ports using port_min and port_max",
+			},
+			isLBListenerPortMin: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The inclusive lower bound of the range of ports used by this listener. Only load balancers in the `network` family support more than one port per listener.",
+			},
+			isLBListenerPortMax: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The inclusive upper bound of the range of ports used by this listener. Only load balancers in the `network` family support more than one port per listener",
 			},
 
 			isLBListenerProtocol: {
@@ -236,8 +250,26 @@ func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, 
 
 	options := &vpcv1.CreateLoadBalancerListenerOptions{
 		LoadBalancerID: &lbID,
-		Port:           &port,
 		Protocol:       &protocol,
+	}
+
+	getlboptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getlboptions)
+
+	if err != nil || lb == nil {
+		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+	}
+
+	if lb != nil && *lb.RouteMode && lb.Profile != nil && *lb.Profile.Name == "network-fixed" {
+		portMin := int64(1)
+		portMax := int64(65535)
+
+		options.PortMin = &portMin
+		options.PortMax = &portMax
+	} else {
+		options.Port = &port
 	}
 
 	if app, ok := d.GetOk(isLBListenerAcceptProxyProtocol); ok {
@@ -368,7 +400,15 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
 	}
 	d.Set(isLBListenerLBID, lbID)
-	d.Set(isLBListenerPort, *lbListener.Port)
+	if lbListener.Port != nil {
+		d.Set(isLBListenerPort, *lbListener.Port)
+	}
+	if lbListener.PortMin != nil {
+		d.Set(isLBListenerPortMin, *lbListener.PortMin)
+	}
+	if lbListener.PortMax != nil {
+		d.Set(isLBListenerPortMax, *lbListener.PortMax)
+	}
 	d.Set(isLBListenerProtocol, *lbListener.Protocol)
 	d.Set(isLBListenerAcceptProxyProtocol, *lbListener.AcceptProxyProtocol)
 	d.Set(isLBListenerID, lbListenerID)
