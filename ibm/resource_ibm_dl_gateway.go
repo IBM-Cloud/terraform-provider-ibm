@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -18,50 +19,54 @@ import (
 )
 
 const (
-	dlLoaRejectReason              = "loa_reject_reason"
-	dlCustomerName                 = "customer_name"
-	dlCarrierName                  = "carrier_name"
-	dlResourceGroup                = "resource_group"
+	dlActive                       = "active"
+	dlAuthenticationKey            = "authentication_key"
+	dlBfdInterval                  = "bfd_interval"
+	dlBfdMultiplier                = "bfd_multiplier"
+	dlBfdStatus                    = "bfd_status"
+	dlBfdStatusUpdatedAt           = "bfd_status_updated_at"
 	dlBgpAsn                       = "bgp_asn"
 	dlBgpBaseCidr                  = "bgp_base_cidr"
 	dlBgpCerCidr                   = "bgp_cer_cidr"
-	dlBgpIbmCidr                   = "bgp_ibm_cidr"
-	dlCrossConnectRouter           = "cross_connect_router"
-	dlGlobal                       = "global"
-	dlLocationName                 = "location_name"
-	dlName                         = "name"
-	dlSpeedMbps                    = "speed_mbps"
-	dlOperationalStatus            = "operational_status"
-	dlBgpStatus                    = "bgp_status"
-	dlLinkStatus                   = "link_status"
-	dlType                         = "type"
-	dlCrn                          = "crn"
-	dlCreatedAt                    = "created_at"
-	dlMetered                      = "metered"
-	dlLocationDisplayName          = "location_display_name"
 	dlBgpIbmAsn                    = "bgp_ibm_asn"
-	dlCompletionNoticeRejectReason = "completion_notice_reject_reason"
-	dlPort                         = "port"
-	dlProviderAPIManaged           = "provider_api_managed"
-	dlVlan                         = "vlan"
-	dlTags                         = "tags"
-	dlActive                       = "active"
-	dlFallbackCak                  = "fallback_cak"
-	dlPrimaryCak                   = "primary_cak"
-	dlSakExpiryTime                = "sak_expiry_time"
-	dlWindowSize                   = "window_size"
-	dlMacSecConfig                 = "macsec_config"
-	dlCipherSuite                  = "cipher_suite"
-	dlConfidentialityOffset        = "confidentiality_offset"
-	dlCryptographicAlgorithm       = "cryptographic_algorithm"
-	dlKeyServerPriority            = "key_server_priority"
-	dlMacSecConfigStatus           = "status"
+	dlBgpIbmCidr                   = "bgp_ibm_cidr"
+	dlBgpStatus                    = "bgp_status"
+	dlCarrierName                  = "carrier_name"
 	dlChangeRequest                = "change_request"
+	dlCipherSuite                  = "cipher_suite"
+	dlCompletionNoticeRejectReason = "completion_notice_reject_reason"
+	dlConfidentialityOffset        = "confidentiality_offset"
 	dlGatewayProvisioning          = "configuring"
-	dlGatewayProvisioningDone      = "provisioned"
-	dlGatewayProvisioningRejected  = "create_rejected"
-	dlAuthenticationKey            = "authentication_key"
 	dlConnectionMode               = "connection_mode"
+	dlCreatedAt                    = "created_at"
+	dlGatewayProvisioningRejected  = "create_rejected"
+	dlCrossConnectRouter           = "cross_connect_router"
+	dlCrn                          = "crn"
+	dlCryptographicAlgorithm       = "cryptographic_algorithm"
+	dlCustomerName                 = "customer_name"
+	dlFallbackCak                  = "fallback_cak"
+	dlGlobal                       = "global"
+	dlKeyServerPriority            = "key_server_priority"
+	dlLoaRejectReason              = "loa_reject_reason"
+	dlLocationDisplayName          = "location_display_name"
+	dlLocationName                 = "location_name"
+	dlLinkStatus                   = "link_status"
+	dlMacSecConfig                 = "macsec_config"
+	dlMetered                      = "metered"
+	dlName                         = "name"
+	dlOperationalStatus            = "operational_status"
+	dlPort                         = "port"
+	dlPrimaryCak                   = "primary_cak"
+	dlProviderAPIManaged           = "provider_api_managed"
+	dlGatewayProvisioningDone      = "provisioned"
+	dlResourceGroup                = "resource_group"
+	dlSakExpiryTime                = "sak_expiry_time"
+	dlSpeedMbps                    = "speed_mbps"
+	dlMacSecConfigStatus           = "status"
+	dlTags                         = "tags"
+	dlType                         = "type"
+	dlVlan                         = "vlan"
+	dlWindowSize                   = "window_size"
 )
 
 func resourceIBMDLGateway() *schema.Resource {
@@ -91,6 +96,32 @@ func resourceIBMDLGateway() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 				Description: "BGP MD5 authentication key",
+			},
+			dlBfdInterval: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     false,
+				Description:  "BFD Interval",
+				ValidateFunc: InvokeValidator("ibm_dl_gateway", dlBfdInterval),
+			},
+			dlBfdMultiplier: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     false,
+				Description:  "BFD Multiplier",
+				ValidateFunc: InvokeValidator("ibm_dl_gateway", dlBfdMultiplier),
+			},
+			dlBfdStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Gateway BFD status",
+			},
+			dlBfdStatusUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Date and time BFD status was updated",
 			},
 			dlBgpAsn: {
 				Type:        schema.TypeInt,
@@ -420,6 +451,22 @@ func resourceIBMDLGatewayValidator() *ResourceValidator {
 			Type:                       TypeString,
 			Required:                   true,
 			AllowedValues:              dlConnectionModeAllowedValues})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 dlBfdInterval,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			Required:                   true,
+			MinValue:                   "300",
+			MaxValue:                   "255000"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 dlBfdMultiplier,
+			ValidateFunctionIdentifier: IntBetween,
+			Type:                       TypeInt,
+			Required:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "255"})
 
 	ibmISDLGatewayResourceValidator := ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator
@@ -442,6 +489,24 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 	global := d.Get(dlGlobal).(bool)
 	bgpAsn := int64(d.Get(dlBgpAsn).(int))
 	metered := d.Get(dlMetered).(bool)
+
+	var bfdConfig directlinkv1.GatewayBfdConfigTemplate
+	isBfdInterval := false
+
+	if bfdInterval, ok := d.GetOk(dlBfdInterval); ok {
+		isBfdInterval = true
+		interval := int64(bfdInterval.(int))
+		bfdConfig.Interval = &interval
+	}
+
+	if bfdMultiplier, ok := d.GetOk(dlBfdMultiplier); ok {
+		multiplier := int64(bfdMultiplier.(int))
+		bfdConfig.Multiplier = &multiplier
+	} else if isBfdInterval {
+		// Set the default value for multiplier if interval is set
+		multiplier := int64(3)
+		bfdConfig.Multiplier = &multiplier
+	}
 
 	if dtype == "dedicated" {
 		var crossConnectRouter, carrierName, locationName, customerName string
@@ -534,6 +599,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			gatewayDedicatedTemplateModel.ConnectionMode = &connectionModeStr
 		}
 
+		if !reflect.DeepEqual(bfdConfig, directlinkv1.GatewayBfdConfigTemplate{}) {
+			gatewayDedicatedTemplateModel.BfdConfig = &bfdConfig
+		}
+
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
 	} else if dtype == "connect" {
@@ -573,6 +642,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			if connectionMode, ok := d.GetOk(dlConnectionMode); ok {
 				connectionModeStr := connectionMode.(string)
 				gatewayConnectTemplateModel.ConnectionMode = &connectionModeStr
+			}
+
+			if !reflect.DeepEqual(bfdConfig, directlinkv1.GatewayBfdConfigTemplate{}) {
+				gatewayConnectTemplateModel.BfdConfig = &bfdConfig
 			}
 
 			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
@@ -789,6 +862,25 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set(ResourceGroupName, *rg.ID)
 	}
 
+	//Show the BFD Config parameters if set
+	if instance.BfdConfig != nil {
+		if instance.BfdConfig.Interval != nil {
+			d.Set(dlBfdInterval, *instance.BfdConfig.Interval)
+		}
+
+		if instance.BfdConfig.Multiplier != nil {
+			d.Set(dlBfdMultiplier, *instance.BfdConfig.Multiplier)
+		}
+
+		if instance.BfdConfig.BfdStatus != nil {
+			d.Set(dlBfdStatus, *instance.BfdConfig.BfdStatus)
+		}
+
+		if instance.BfdConfig.BfdStatusUpdatedAt != nil {
+			d.Set(dlBfdStatusUpdatedAt, instance.BfdConfig.BfdStatusUpdatedAt.String())
+		}
+	}
+
 	return nil
 }
 func isWaitForDirectLinkAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
@@ -905,6 +997,21 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	if mode, ok := d.GetOk(dlConnectionMode); ok && d.HasChange(dlConnectionMode) {
 		updatedConnectionMode := mode.(string)
 		updateGatewayOptionsModel.ConnectionMode = &updatedConnectionMode
+	}
+
+	var updatedBfdConfig directlinkv1.GatewayBfdPatchTemplate
+	if bfdInterval, ok := d.GetOk(dlBfdInterval); ok && d.HasChange(dlBfdInterval) {
+		updatedBfdInterval := bfdInterval.(int64)
+		updatedBfdConfig.Interval = &updatedBfdInterval
+	}
+
+	if bfdMultiplier, ok := d.GetOk(dlBfdMultiplier); ok && d.HasChange(dlBfdMultiplier) {
+		updatedbfdMultiplier := bfdMultiplier.(int64)
+		updatedBfdConfig.Multiplier = &updatedbfdMultiplier
+	}
+
+	if !reflect.DeepEqual(updatedBfdConfig, directlinkv1.GatewayBfdPatchTemplate{}) {
+		updateGatewayOptionsModel.BfdConfig = &updatedBfdConfig
 	}
 
 	if dtype == "dedicated" {
