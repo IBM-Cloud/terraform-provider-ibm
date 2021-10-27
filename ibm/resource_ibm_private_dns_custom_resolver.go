@@ -391,7 +391,7 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 			return res, *res.Health, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      5 * time.Second,
+		Delay:      10 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}
 

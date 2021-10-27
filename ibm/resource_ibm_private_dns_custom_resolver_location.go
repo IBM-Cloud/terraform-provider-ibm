@@ -88,6 +88,10 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	instanceID := d.Get(pdnsInstanceID).(string)
 	resolverID := d.Get(pdnsResolverID).(string)
 
+	mk := "private_dns_resource_custom_resolver_location_" + instanceID + resolverID
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
+
 	opt := sess.NewAddCustomResolverLocationOptions(instanceID, resolverID)
 
 	if subnetcrn, ok := d.GetOk(pdnsCRLocationSubnetCRN); ok {
@@ -96,7 +100,6 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	if enable, ok := d.GetOkExists(pdnsCRLocationEnable); ok {
 		opt.SetEnabled(enable.(bool))
 	}
-
 	if _, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
 		optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
 		optCr.SetEnabled(false)
@@ -124,6 +127,7 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 				return diag.FromErr(fmt.Errorf("Error updating the custom resolver %s:%s", errCr, respCr))
 			}
 		}
+
 	}
 	return resourceIBMPrivateDNSLocationRead(context, d, meta)
 }
@@ -136,7 +140,13 @@ func resourceIBMPrivateDNSLocationUpdate(context context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
+
+	mk := "private_dns_resource_custom_resolver_location_" + instanceID + resolverID
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
+
 	updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
 
 	if d.HasChange(pdnsCRLocationSubnetCRN) ||
@@ -161,13 +171,15 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 	}
 
 	locationID, resolverID, instanceID, err := convertTfToCisThreeVar(d.Id())
+	mk := "private_dns_resource_custom_resolver_location_" + instanceID + resolverID
+	ibmMutexKV.Lock(mk)
+	defer ibmMutexKV.Unlock(mk)
 	delete_loc := true
 	if cr_enable, ok := d.GetOkExists(pdnsCustomReolverEnabled); ok {
 		if cr_enable.(bool) {
 			// Disable the Cutsom Resolver
 			optEnabled := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
 			optEnabled.SetEnabled(false)
-
 			result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
 			if err != nil || result == nil {
 				return diag.FromErr(fmt.Errorf("Error Disable and Update the custom resolver %s:%s", errEnabled, resp))
@@ -183,7 +195,7 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 			return nil
 		}
 	}
-	// Disable Cutsom Resolver Location before deleting
+	// Disable Cutsom Resolver Location
 	updatelocation := sess.NewUpdateCustomResolverLocationOptions(instanceID, resolverID, locationID)
 	updatelocation.SetEnabled(false)
 	result, resp, err := sess.UpdateCustomResolverLocationWithContext(context, updatelocation)
@@ -195,6 +207,7 @@ func resourceIBMPrivateDNSLocationDelete(context context.Context, d *schema.Reso
 		opt := sess.NewGetCustomResolverOptions(instanceID, resolverID)
 		result, _, _ := sess.GetCustomResolverWithContext(context, opt)
 		if len(result.Locations) > 1 {
+			// Deleting the Cutsom Resolver Location
 			deleteCRlocation := sess.NewDeleteCustomResolverLocationOptions(instanceID, resolverID, locationID)
 			resp, errDel := sess.DeleteCustomResolverLocationWithContext(context, deleteCRlocation)
 			if errDel != nil {
