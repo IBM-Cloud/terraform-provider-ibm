@@ -779,7 +779,7 @@ func Provider() *schema.Provider {
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": resourceIBMCbrZone(),
 			"ibm_cbr_rule": resourceIBMCbrRule(),
-      
+
 			// Added for Event Notifications
 			"ibm_en_destination":  resourceIBMEnDestination(),
 			"ibm_en_topic":        resourceIBMEnTopic(),
