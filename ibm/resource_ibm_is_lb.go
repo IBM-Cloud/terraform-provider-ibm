@@ -402,7 +402,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isLBType, "private")
 	}
-	d.Set(isLBRouteMode, *lb.RouteMode)
+	if lb.RouteMode != nil {
+		d.Set(isLBRouteMode, *lb.RouteMode)
+	}
 	d.Set(isLBStatus, *lb.ProvisioningStatus)
 	d.Set(isLBCrn, *lb.CRN)
 	d.Set(isLBOperatingStatus, *lb.OperatingStatus)
