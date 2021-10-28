@@ -40,11 +40,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testDSCheckIBMISSnapshotsConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.delatable"),
+					// resource.TestCheckResourceAttrSet(snpName, "snapshots.0.delatable"), // Commented as it is deprecated.
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.href"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.captured_at"),
 				),
 			},
 		},
