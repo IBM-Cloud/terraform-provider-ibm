@@ -36,14 +36,18 @@ data "ibm_satellite_attach_host_script" "script" {
 Review the argument references that you can specify for your data source.
 
 - `location` - (Required, String) The name or ID of the Satellite location.
+- `host_provider` - (Required, String) The name of host provider, such as `ibm`, `aws`, `azure`, `google` or `alibaba`.
+- `labels` - (Optional, Set) The key-value pairs to label the host, such as `cpu=4` to describe the host capabilities.
+- `script_dir` - (Optional, String) The directory path to store the generated script.
+- `redhat_username` - (Optional, Sensitive, String) Red Hat username.
+- `redhat_password` - (Optional, Sensitive, String) Red Hat password.
+
+~> **Note:** Alibaba Cloud does not support the YUM package manager or subscription manager by default, which means that to install the required packages and updates for Satellite on your hosts, you must provide your Red Hat account credentials in the host attach script.`redhat_username` and `redhat_password` are required arguments to register your `alibaba` host.
 
 ## Attributes reference
 In addition to the argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - The unique identifier of the location.
-- `labels` - (Strings) The key-value pairs to label the host, such as `cpu=4` to describe the host capabilities.
-- `script_dir` - (String) The directory path to store the generated script.
-- `host_provider` - (String) The name of host provider, such as `ibm`, `aws` or `azure`.
 - `script_path` -  (String) Directory path to store the generated script.
 - `host_script` -  (String) The raw content of the script file that was read.
 

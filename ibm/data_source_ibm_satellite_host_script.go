@@ -58,7 +58,20 @@ func dataSourceIBMSatelliteAttachHostScript() *schema.Resource {
 			"host_script": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "Attach host script content",
+			},
+			"redhat_username": {
+				Description: "Red Hat username",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"redhat_password": {
+				Description: "Red Hat password",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -72,7 +85,16 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	if _, ok := d.GetOk("script_dir"); ok {
 		scriptDir = d.Get("script_dir").(string)
 	}
-
+	var redhatUsername, redhatPassword string
+	if username, ok := d.GetOk("redhat_username"); ok {
+		redhatUsername = username.(string)
+	}
+	if password, ok := d.GetOk("redhat_password"); ok {
+		redhatPassword = password.(string)
+	}
+	if hostProvider == "alibaba" && (redhatUsername == "" || redhatPassword == "") {
+		return fmt.Errorf("[ERROR] redhat_username and redhat_password are required to register your alibaba host")
+	}
 	satClient, err := meta.(ClientSession).SatelliteClientSession()
 	if err != nil {
 		return err
@@ -149,6 +171,21 @@ yum repolist all
 yum install container-selinux -y
 yum install subscription-manager -y
 `)
+			} else if strings.ToLower(hostProvider) == "alibaba" {
+				lines[i] = fmt.Sprintf(`sudo bash
+subscription-manager register --username=%s --password=%s
+subscription-manager refresh
+subscription-manager attach --auto
+subscription-manager status
+subscription-manager repos --enable rhel-7-server-optional-rpms --enable rhel-server-rhscl-7-rpms
+subscription-manager repos --enable rhel-server-rhscl-7-rpms
+subscription-manager repos --enable rhel-7-server-optional-rpms
+subscription-manager repos --enable rhel-7-server-rh-common-rpms
+subscription-manager repos --enable rhel-7-server-supplementary-rpms
+subscription-manager repos --enable rhel-7-server-extras-rpms
+yum install rh-python36 -y
+yum install container-selinux -y
+`, redhatUsername, redhatPassword)
 			} else {
 				lines[i] = "subscription-manager refresh\nyum update -y\n"
 			}
