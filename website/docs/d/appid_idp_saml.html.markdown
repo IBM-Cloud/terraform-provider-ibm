@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_idp_saml
-Retrieve information about an IBM Cloud AppID SAML IDP.
+Retrieve information about an IBM Cloud AppID SAML IDP. For more information, see [SAML](https://cloud.ibm.com/docs/appid?topic=appid-enterprise)
 
 ## Example usage
 

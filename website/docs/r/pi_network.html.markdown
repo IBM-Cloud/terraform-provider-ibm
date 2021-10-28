@@ -54,6 +54,7 @@ Review the argument references that you can specify for your resource.
 - `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
 - `pi_dns`-List of strings-Optional-List of DNS entries for the network. Required for `vlan` network type.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
+- `pi_network_jumbo` - (Optional, Bool) MTU Jumbo option of the network.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

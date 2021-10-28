@@ -15,7 +15,7 @@ func TestAccIBMISLBDatasource_basic(t *testing.T) {
 	name := fmt.Sprintf("tflb-name-%d", acctest.RandIntRange(10, 100))
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
-
+	routeMode := "false"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -25,6 +25,8 @@ func TestAccIBMISLBDatasource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_lb.ds_lb", "name", name),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_lb.ds_lb", "route_mode", routeMode),
 				),
 			},
 		},

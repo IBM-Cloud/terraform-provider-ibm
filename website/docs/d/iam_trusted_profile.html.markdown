@@ -14,7 +14,7 @@ Create, update and delete an IAM trusted profile resource. For more information,
 
 ```terraform
 data "ibm_iam_trusted_profile" "iam_trusted_profile" {
-	profile_id = "profile_id"
+	profile_id = ibm_iam_trusted_profile_link.iam_trusted_profile_link.profile_id
 }
 ```
 

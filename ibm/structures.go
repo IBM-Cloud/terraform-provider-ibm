@@ -1288,10 +1288,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func flattenMembersData(list *iamaccessgroupsv2.GroupMembersList, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func flattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
-	for _, m := range list.Members {
+	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
 				if user.IamID == *m.IamID {
@@ -2004,6 +2004,43 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
+	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
+	policyAction := policyActionIntf.(string)
+
+	if policyAction == "forward" {
+		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
+
+		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
+			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
+		}
+	} else if policyAction == "redirect" {
+		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
+
+		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
+		}
+
+		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
+		}
+	} else if policyAction == "https_redirect" {
+		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
+		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+
+		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
+			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
+		}
+
+		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
+		}
+	}
+
+	return nil
+}
+
 func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
 	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
@@ -2172,6 +2209,29 @@ func resourceVolumeValidate(diff *schema.ResourceDiff) error {
 			}
 		}
 	}
+	return nil
+}
+
+func resourceRouteModeValidate(diff *schema.ResourceDiff) error {
+
+	var lbtype, lbprofile string
+	if typeOk, ok := diff.GetOk(isLBType); ok {
+		lbtype = typeOk.(string)
+	}
+	if profileOk, ok := diff.GetOk(isLBProfile); ok {
+		lbprofile = profileOk.(string)
+	}
+	if rmOk, ok := diff.GetOk(isLBRouteMode); ok {
+		routeMode := rmOk.(bool)
+
+		if routeMode && lbtype != "private" {
+			return fmt.Errorf("'type' must be 'private', at present public load balancers are not supported with route mode enabled.")
+		}
+		if routeMode && lbprofile != "network-fixed" {
+			return fmt.Errorf("'profile' must be 'network-fixed', route mode is supported by private network load balancer.")
+		}
+	}
+
 	return nil
 }
 
@@ -2349,7 +2409,8 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	for k, v := range labels {
 		if strings.HasPrefix(k, SystemIBMLabelPrefix) ||
 			strings.HasPrefix(k, KubernetesLabelPrefix) ||
-			strings.HasPrefix(k, K8sLabelPrefix) {
+			strings.HasPrefix(k, K8sLabelPrefix) &&
+				!strings.Contains(k, "node-local-dns-enabled") {
 			continue
 		}
 

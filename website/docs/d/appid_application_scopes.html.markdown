@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_application_scopes
-Retrieve IBM Cloud AppID Management Services application scopes.
+Retrieve IBM Cloud AppID Management Services application scopes. For more information, see [controlling access](https://cloud.ibm.com/docs/appid?topic=appid-access-control&interface=api)
 
 ## Example usage
 

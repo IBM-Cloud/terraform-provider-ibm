@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM/networking-go-sdk/dnssvcsv1"
@@ -36,6 +37,7 @@ const (
 	pdnsCustomResolverCritical  = "CRITICAL"
 	pdnsCustomResolverDegraded  = "DEGRADED"
 	pdnsCustomResolverHealthy   = "HEALTHY"
+	pdnsCRHighAvailability      = "high_availability"
 )
 
 func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
@@ -81,6 +83,13 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Default:     true,
 				Description: "Whether the custom resolver is enabled",
 			},
+			pdnsCRHighAvailability: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Whether High Availability is enabled in custom resolver",
+			},
 			pdnsCRHealth: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -89,7 +98,7 @@ func resouceIBMPrivateDNSCustomResolver() *schema.Resource {
 			pdnsCustomResolverLocations: {
 				Type:             schema.TypeSet,
 				Description:      "Locations on which the custom resolver will be running",
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: applyOnce,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -155,27 +164,42 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 		crDescription = des.(string)
 	}
 
-	crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
 	customResolverOption := sess.NewCreateCustomResolverOptions(crn)
 	customResolverOption.SetName(crName)
 	customResolverOption.SetDescription(crDescription)
-	customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
+
+	cr_highaval := d.Get(pdnsCRHighAvailability).(bool)
+
+	crLocationCreate := false
+	if _, ok := d.GetOk(pdnsCustomResolverLocations); ok {
+		crLocationCreate = true
+		crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
+		if cr_highaval && crLocations.Len() <= 1 {
+			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
+		}
+		customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
+	} else {
+		if cr_highaval {
+			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
+		}
+	}
 
 	result, resp, err := sess.CreateCustomResolverWithContext(context, customResolverOption)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, resp))
+		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, resp))
 	}
 
 	d.SetId(convertCisToTfTwoVar(*result.ID, crn))
 	d.Set(pdnsCRId, *result.ID)
 
-	_, err = waitForPDNSCustomResolverHealthy(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
+	if crLocationCreate {
+		_, err = waitForPDNSCustomResolverHealthy(d, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return resouceIBMPrivateDNSCustomResolverUpdate(context, d, meta)
 	}
-
-	// Enable Custrom Resolver
-	return resouceIBMPrivateDNSCustomResolverUpdate(context, d, meta)
+	return resouceIBMPrivateDNSCustomResolverRead(context, d, meta)
 }
 
 func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -198,7 +222,7 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("Error reading the  custom resolver %s:%s", err, response))
+		return diag.FromErr(fmt.Errorf("Error reading the custom resolver %s:%s", err, response))
 	}
 	d.Set(pdnsInstanceID, crn)
 	d.Set(pdnsCRId, *result.ID)
@@ -242,7 +266,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 
 		result, resp, err := sess.UpdateCustomResolverWithContext(context, opt)
 		if err != nil || result == nil {
-			return diag.FromErr(fmt.Errorf("Error updating the  custom resolver %s:%s", err, resp))
+			return diag.FromErr(fmt.Errorf("Error updating the custom resolver %s:%s", err, resp))
 		}
 
 	}
@@ -251,6 +275,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 }
 
 func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	sess, err := meta.(ClientSession).PrivateDNSClientSession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -260,13 +285,12 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	// Disable Cutsom Resolver before deleting
 	optEnabled := sess.NewUpdateCustomResolverOptions(crn, customResolverID)
 	optEnabled.SetEnabled(false)
 	result, resp, errEnabled := sess.UpdateCustomResolverWithContext(context, optEnabled)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("Error updating the  custom resolver to disable before deleting %s:%s", errEnabled, resp))
+		return diag.FromErr(fmt.Errorf("Error updating the custom resolver to disable before deleting %s:%s", errEnabled, resp))
 	}
 
 	opt := sess.NewDeleteCustomResolverOptions(crn, customResolverID)
@@ -276,7 +300,7 @@ func resouceIBMPrivateDNSCustomResolverDelete(context context.Context, d *schema
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("Error deleting the  custom resolver %s:%s", err, response))
+		return diag.FromErr(fmt.Errorf("Error deleting the custom resolver %s:%s", err, response))
 	}
 
 	d.SetId("")
@@ -341,12 +365,21 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return nil, err
 	}
-	customResolverID, crn, _ := convertTftoCisTwoVar(d.Id())
+
+	var customResolverID, crn string
+
+	g := strings.SplitN(d.Id(), ":", -1)
+	if len(g) > 2 {
+		_, customResolverID, crn, _ = convertTfToCisThreeVar(d.Id())
+	} else {
+		customResolverID, crn, _ = convertTftoCisTwoVar(d.Id())
+	}
+
 	opt := sess.NewGetCustomResolverOptions(crn, customResolverID)
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{pdnsCustomResolverCritical},
-		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy},
+		Pending: []string{pdnsCustomResolverCritical, "false"},
+		Target:  []string{pdnsCustomResolverDegraded, pdnsCustomResolverHealthy, "true"},
 		Refresh: func() (interface{}, string, error) {
 			res, detail, err := sess.GetCustomResolver(opt)
 			if err != nil {
@@ -358,7 +391,7 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 			return res, *res.Health, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      5 * time.Second,
+		Delay:      10 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}
 

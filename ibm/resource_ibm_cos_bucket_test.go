@@ -54,6 +54,31 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Direct(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "eu"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCosBucket_direct(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 
 	cosServiceName := fmt.Sprintf("cos_instance_%d", acctest.RandIntRange(10, 100))
@@ -488,7 +513,7 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 			rt = "crl"
 		}
 
-		apiEndpoint, _ := selectCosApi(rt, region)
+		apiEndpoint, _, _ := selectCosApi(rt, region)
 
 		rsContClient, err := testAccProvider.Meta().(ClientSession).BluemixSession()
 		if err != nil {
@@ -556,7 +581,32 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 		  
 	`, serviceName, bucketName, storageClass, region)
 }
+func testAccCheckIBMCosBucket_direct(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+	  
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		cross_region_location = "%s"
+		endpoint_type= "direct"
+	}
+	  
+		  
+	`, serviceName, bucketName, storageClass, region)
+}
 func testAccCheckIBMCosBucket_updateWithSameName(serviceName string, bucketName string, regiontype string, region, storageClass string) string {
 
 	return fmt.Sprintf(`	

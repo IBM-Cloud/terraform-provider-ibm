@@ -66,6 +66,13 @@ func resourceIBMPINetwork() *schema.Resource {
 				Description: "PI network gateway",
 			},
 
+			helpers.PINetworkJumbo: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI network enable MTU Jumbo option",
+			},
+
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -98,15 +105,19 @@ func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error 
 	networktype := d.Get(helpers.PINetworkType).(string)
 	networkcidr := d.Get(helpers.PINetworkCidr).(string)
 	networkdns := expandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List())
+	jumbo := d.Get(helpers.PINetworkJumbo).(bool)
 
 	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
 	var networkgateway, firstip, lastip string
 	if networktype == "vlan" {
-		networkgateway, firstip, lastip = generateIPData(networkcidr)
+		networkgateway, firstip, lastip, err = generateIPData(networkcidr)
+		if err != nil {
+			return err
+		}
 	}
-	networkResponse, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, false, powerinstanceid, postTimeOut)
+	networkResponse, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, jumbo, powerinstanceid, postTimeOut)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create the network %v", err)
 	}
 
 	IBMPINetworkID := *networkResponse.NetworkID
@@ -146,6 +157,7 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("vlan_id", networkdata.VlanID)
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
+	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
@@ -231,11 +243,11 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstancei
 	}
 }
 
-func generateIPData(cdir string) (gway, firstip, lastip string) {
+func generateIPData(cdir string) (gway, firstip, lastip string, err error) {
 	_, ipv4Net, err := net.ParseCIDR(cdir)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", "", "", err
 	}
 
 	var subnetToSize = map[string]int{
@@ -256,8 +268,8 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 
 	gateway, err := cidr.Host(ipv4Net, 1)
 	if err != nil {
-		log.Printf("Failed to get the gateway for this cdir passed in %s", cdir)
-		log.Fatal(err)
+		log.Printf("Failed to get the gateway for this cidr passed in %s", cdir)
+		return "", "", "", err
 	}
 	ad := cidr.AddressCount(ipv4Net)
 
@@ -265,12 +277,14 @@ func generateIPData(cdir string) (gway, firstip, lastip string) {
 	// Powervc in wdc04 has to reserve 3 ip address hence we start from the 4th. This will be the default behaviour
 	firstusable, err := cidr.Host(ipv4Net, 4)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return "", "", "", err
 	}
 	lastusable, err := cidr.Host(ipv4Net, subnetToSize[convertedad]-2)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return "", "", "", err
 	}
-	return gateway.String(), firstusable.String(), lastusable.String()
+	return gateway.String(), firstusable.String(), lastusable.String(), nil
 
 }

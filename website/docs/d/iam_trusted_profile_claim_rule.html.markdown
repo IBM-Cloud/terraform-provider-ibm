@@ -14,8 +14,8 @@ Retrieve information about IAM trusted profile claim rule as a read-only data so
 
 ```terraform
 data "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
-	profile_id = "profile_id"
-	rule_id = "rule_id"
+  profile_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
+  rule_id    = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.rule_id
 }
 ```
 

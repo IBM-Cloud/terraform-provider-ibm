@@ -18,11 +18,11 @@ resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 }
 resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link" {
   profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
-  cr_type = "IKS_SA"
+  cr_type    = "IKS_SA"
   link {
-    crn = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/acc_id:cluster_id::"
+    crn       = "crn:v1:bluemix:public:containers-kubernetes:us-south:a/acc_id:cluster_id::"
     namespace = "namespace"
-    name = "name"
+    name      = "name"
   }
   name = "name"
 }
@@ -36,7 +36,7 @@ Review the argument reference that you can specify for your resource.
 * `link` - (Required, Forces new resource, List) Link details.
   Nested scheme for **link**:
 	* `crn` - (Required, String) The CRN of the compute resource.
-	* `namespace` - (Required, String) The compute resource namespace, only required if `cr_type` is IKS_SA or ROKS_SA.
+	* `namespace` - (Optional, String) The compute resource namespace, only required if `cr_type` is IKS_SA or ROKS_SA.
 	* `name` - (Optional, String) Name of the compute resource, only required if `cr_type` is IKS_SA or ROKS_SA.
 * `name` - (Optional, Forces new resource, String) Optional name of the Link.
 * `profile_id` - (Required, Forces new resource, String) ID of the trusted profile.

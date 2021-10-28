@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_application
 
-Create, update, or delete an IBM Cloud AppID Management Services application resource.
+Create, update, or delete an IBM Cloud AppID Management Services application resource. For more information, see [application identity and authorization](https://cloud.ibm.com/docs/appid?topic=appid-app)
 
 ## Example usage
 
