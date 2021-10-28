@@ -65,7 +65,6 @@ func resourceIBMISLBListener() *schema.Resource {
 				ValidateFunc: validateLBListenerPort,
 				Computed:     true,
 				Description:  "Loadbalancer listener port",
-				Deprecated:   "This field will be deprecated in future and we will be using range of ports using port_min and port_max",
 			},
 			isLBListenerPortMin: {
 				Type:        schema.TypeInt,
