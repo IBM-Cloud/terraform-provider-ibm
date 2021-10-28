@@ -57,6 +57,16 @@ func resourceIBMPIInstance() *schema.Resource {
 				Required:    true,
 				Description: "This is the Power Instance id that is assigned to the account",
 			},
+			helpers.PIInstanceLicenseRepositoryCapacity: {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The VTL license repository capacity TB value",
+			},
+			"license_repository_capacity": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The VTL license repository capacity TB value",
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -516,6 +526,27 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		body.StorageConnection = sc.(string)
 	}
 
+	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
+
+		// check if using vtl image
+		imageClient := st.NewIBMPIImageClient(sess, powerinstanceid)
+
+		// check if vtl image is stock image
+		imageData, err := imageClient.GetStockImage(imageid, powerinstanceid)
+		if err != nil {
+			// check if vtl image is cloud instance image
+			imageData, err = imageClient.Get(imageid, powerinstanceid)
+			if err != nil {
+				return fmt.Errorf("Image doesn't exist. %e", err)
+			}
+		}
+
+		if imageData.Specifications.ImageType == "stock-vtl" {
+			body.LicenseRepositoryCapacity = int64(lrc.(int))
+		} else {
+			return fmt.Errorf("license_repository_capacity should only be used when creating VTL instances. %e", err)
+		}
+	}
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
 	pvm, err := client.Create(&p_cloud_p_vm_instances.PcloudPvminstancesPostParams{
 		Body: body,
@@ -587,7 +618,6 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
 	d.Set(helpers.PIInstanceImageId, powervmdata.ImageID)
-
 	if _, ok := d.GetOk(helpers.PIInstanceNetworkIds); ok {
 		var networks []string
 		networks = make([]string, 0)
@@ -660,6 +690,9 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if &powervmdata.VirtualCores.Min != nil {
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
+	}
+	if &powervmdata.LicenseRepositoryCapacity != nil {
+		d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
 	}
 
 	return nil
@@ -815,6 +848,23 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
+	// License repository capacity will be updated only if service instance is a vtl instance
+	// might need to check if lrc was ser
+	if d.HasChange(helpers.PIInstanceLicenseRepositoryCapacity) {
+
+		lrc := d.Get(helpers.PIInstanceLicenseRepositoryCapacity).(int64)
+		body := &models.PVMInstanceUpdate{
+			LicenseRepositoryCapacity: lrc,
+		}
+		_, err = client.Update(parts[1], powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesPutParams{Body: body}, updateTimeOut)
+		if err != nil {
+			return fmt.Errorf("failed to update the lpar with the change for license repository capacity %s", err)
+		}
+		_, err = isWaitForPIInstanceAvailable(client, parts[1], d.Timeout(schema.TimeoutUpdate), powerinstanceid, "OK")
+		if err != nil {
+			return err
+		}
+	}
 	return resourceIBMPIInstanceRead(d, meta)
 
 }
@@ -1024,7 +1074,7 @@ func performChangeAndReboot(client *st.IBMPIInstanceClient, id, powerinstanceid 
 	*/
 	//Execute the stop
 
-	log.Printf("Callin the stop lpar for Resource Change code ..")
+	log.Printf("Calling the stop lpar for Resource Change code ..")
 	err := stopLparForResourceChange(client, id, powerinstanceid, 30)
 	if err != nil {
 		return err

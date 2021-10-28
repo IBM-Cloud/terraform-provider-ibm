@@ -54,6 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum cores assigned to an instance.
 - `addresses` - List of objects - The address associated with this instance.
+- `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
 
   Nested scheme for `addresses`:
   - `ip` - (String) The IP address of the instance.
