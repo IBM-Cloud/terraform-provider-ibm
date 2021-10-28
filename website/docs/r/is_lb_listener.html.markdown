@@ -116,7 +116,7 @@ Review the argument references that you can specify for your resource.
 
 - `accept_proxy_protocol`- (Optional, Bool)  If set to **true**, listener forwards proxy protocol information that are supported by load balancers in the application family. Default value is **false**.
 - `lb` - (Required, Forces new resource, String) The load balancer unique identifier.
-- `port`- (Optional, Deprecated Integer) The listener port number. Valid range `1` to `65535`.
+- `port`- (Optional, Integer) The listener port number. Valid range `1` to `65535`.
 
   **NOTE**:
     - Private network load balancers with `route_mode` enabled don't support `port`, they support `port` range from `port_min`(1) - `port_max`(65535).
