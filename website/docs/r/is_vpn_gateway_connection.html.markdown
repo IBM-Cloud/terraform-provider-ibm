@@ -15,13 +15,37 @@ Create, update, or delete a VPN gateway connection. For more information, about 
 The following example creates a VPN gateway:
 
 ```terraform
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
-  name          = "test2"
-  vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id
-  peer_address  = ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.0.0/24"
+}
+
+resource "ibm_is_subnet" "example2" {
+  name            = "example-subnet2"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-2"
+  ipv4_cidr_block = "10.240.68.0/24"
+}
+
+resource "ibm_is_vpn_gateway" "example" {
+  name   = "example-vpn-gateway"
+  subnet = ibm_is_subnet.example.id
+  mode   = "route"
+}
+
+resource "ibm_is_vpn_gateway_connection" "example" {
+  name          = "example-vpn-gateway-connection"
+  vpn_gateway   = ibm_is_vpn_gateway.example.id
+  peer_address  = ibm_is_vpn_gateway.example.public_ip_address
   preshared_key = "VPNDemoPassword"
-  local_cidrs = [ibm_is_subnet.testacc_subnet2.ipv4_cidr_block]
-  peer_cidrs = [ibm_is_subnet.testacc_subnet1.ipv4_cidr_block]
+  local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
+  peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]
 }
 
 ```
@@ -35,17 +59,17 @@ The `ibm_is_vpn_gateway_connection` resource provides the following [Timeouts](h
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `none`.
+- `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `restart`.
 - `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
 - `ike_policy` - (Optional, String) The ID of the IKE policy.
-- `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 30.
+- `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 2.
 - `ipsec_policy` - (Optional, String) The ID of the IPSec policy.
 - `local_cidrs` - (Optional, Forces new resource, List) List of local CIDRs for this resource.
 - `name` - (Required, String) The name of the VPN gateway connection.
 - `peer_cidrs` - (Optional, Forces new resource, List) List of peer CIDRs for this resource.
 - `peer_address` - (Required, String) The IP address of the peer VPN gateway.
 - `preshared_key` - (Required, Forces new resource, String) The preshared key.
-- `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 120.
+- `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 10.
 - `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.
 
 ## Attribute reference
