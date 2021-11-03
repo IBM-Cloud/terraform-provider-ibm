@@ -31,9 +31,10 @@ In addition to the argument reference list, you can access the following attribu
 - `catalog_icon_url` - (String) The URL for an icon associated with the catalog.
 - `crn` - (String) The CRN associated with the catalog.
 - `id` - (String) The unique identifier of the `ibm_cm_catalog`.
-- `label` - (String) Display the name in the requested language.
 - `kind` - (String) Kind of catalog, offering or vpe.
+- `label` - (String) Display the name in the requested language.
 - `offerings_url` - (String) URL path to the offerings.
+- `resource_group_id` - (String) The ID of the resource group this catalog is in
 - `short_description` - (String) The description in the requested language.
 - `tags` - (String) The list of tags associated with this catalog.
 - `url` - (String) The URL for the specific catalog.
