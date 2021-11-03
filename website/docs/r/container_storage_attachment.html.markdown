@@ -7,7 +7,7 @@ description: |-
   Manages IBM Cloud Container VPC worker storage attachment
 ---
 
-# ibm_container_vpc_worker_storage
+# ibm_container_storage_attachment
 
 Create, update, or delete a VPC storage attachment of a VPC worker node. For more information, about VPC storage attachment, see [Attaching a block storage volume](https://cloud.ibm.com/docs/vpc?topic=vpc-attaching-block-storage&interface=ui).
 
