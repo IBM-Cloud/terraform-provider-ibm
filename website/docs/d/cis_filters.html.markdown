@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_filters
 
-Imports a read only copy of an existing Internet Services filters resource.
+Retrieve information about an IBM Cloud Internet Services filters data sources. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
 ## Example usage
 
@@ -20,19 +20,18 @@ data "ibm_cis_filters" "test" {
 ```
 
 ## Argument reference
-
-The following arguments are supported:
+Review the argument references that you can specify for your data source.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Required, String) The ID of the domain.
 
-## Attributes Reference
+## Attributes reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-In addition to all arguments above, the following attributes are exported:
 - `id` - (String) The Filter ID. It is a combination of <`filter_id`>,<`domain_id`>,<`cis_id`> attributes concatenated with ":"
-- `cis_filters_list` - (List of Filters)
-  - `expression` - (String) The expression of filter.
-  - `paused` - (Boolean). Whether this filter is currently disabled.
-  - `description` - (String) The information about this filter to help identify the purpose of it.
-  - `filter_id` - (String) The filter ID.
+- `cis_filters_list` - (List)
+   - `expression` - (String) The expression of filter.
+   - `paused` - (Boolean). Whether this filter is currently disabled.
+   - `description` - (String) The information about this filter to help identify the purpose of it.
+   - `filter_id` - (String) The filter ID.
 

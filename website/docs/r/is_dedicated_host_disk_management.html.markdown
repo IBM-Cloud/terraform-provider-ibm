@@ -50,7 +50,7 @@ resource "ibm_is_dedicated_host_disk_management" "disks"{
 Review the argument reference that you can specify for your resource.
 
 - `dedicated_host` - (Required, Force New Resource, String) The unique-identifier of the dedicated host.
-- `disks` - (Required, String) Disks that needs to be updated. Nested `disks` blocks have the following structure:
+- `disks` - (Required, List) Disks that needs to be updated. Nested `disks` blocks have the following structure:
   
   Nested scheme for `disks`:
   - `id` - (Required, String) The unique-identifier of the dedicated host disk.

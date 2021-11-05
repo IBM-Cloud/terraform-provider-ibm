@@ -3,14 +3,14 @@ subcategory: "Internet services"
 layout: "ibm"
 page_title: "IBM: ibm_cis_filter"
 description: |-
-  Provides a IBM CIS Filter.
+  Provides a IBM Cloud CIS Filter.
 ---
 
 # ibm_cis_filter
 
-Provides a IBM CIS Filter. This resource is associated with an IBM Cloud Internet Services (CIS) instance and a CIS Domain resource. It allows to create, update, delete filter of a domain of a CIS instance.
+Provides a IBM CIS Filter. This resource is associated with an IBM Cloud Internet Services (CIS) instance and a CIS Domain resource. It allows to create, update, delete filter of a domain of a CIS instance. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
-## Example Usage
+## Example usage
 
 ```terraform
 # Add a filter to the domain
@@ -25,9 +25,8 @@ resource "ibm_cis_filter" "test" {
 
 ```
 
-## Argument Reference
-
-The following arguments are supported:
+## Argument reference
+Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Required, String) The ID of the domain to add the Filter.
@@ -36,8 +35,7 @@ The following arguments are supported:
 - `description` - (Optional, String) The information about this filter to help identify the purpose of it.
 
 ## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The ID of filter resource. It is a combination of <`filter-id`>:<`domain-id`>:<`crn`> attributes concatenated with ":".
 - `filter_id` - (String) Unique identifier for the Filter.
