@@ -9,7 +9,7 @@ description: |-
 
 # ibm_iam_api_key
 
-Retrieve information about an `iam_api_key` data sources. For more information, about IAM API key, see [managing user API keys](/docs/account?topic=account-userapikey).
+Retrieve information about an IAM API key data sources. For more information, about IAM API key, see [managing user API keys](https://cloud.ibm.com/docs/account?topic=account-userapikey&interface=ui).
 
 
 ## Example usage
