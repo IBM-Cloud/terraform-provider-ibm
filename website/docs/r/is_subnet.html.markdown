@@ -48,7 +48,7 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_vpc_address_prefix" "example" {
   cidr = "10.0.1.0/24"
   name = "example-add-prefix"
-  vpc  = ibm_is_vpc.testacc_vpc2.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
 }
 

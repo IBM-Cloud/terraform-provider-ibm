@@ -22,13 +22,13 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
 	resName := "data.ibm_is_instances.ds_instances"
-
+	userData := "a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, instanceName),
+				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, instanceName, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -68,13 +68,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
 	resName := "data.ibm_is_instances.ds_instances1"
+	userData := "a"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, instanceName),
+				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, instanceName, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
