@@ -1302,7 +1302,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.appidErr = fmt.Errorf("error occured while configuring AppID service: #{err}")
 	}
-	if appIDClient != nil {
+	if appIDClient != nil && appIDClient.Service != nil {
 		appIDClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		appIDClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
@@ -1324,15 +1324,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
-	if err == nil {
+	if err != nil {
+		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
+	}
+	if session.catalogManagementClient != nil && session.catalogManagementClient.Service != nil {
 		// Enable retries for API calls
 		session.catalogManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
 
 	// ATRACKER Service
@@ -1359,15 +1360,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
-	if err == nil {
+	if err != nil {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
+	}
+	if session.atrackerClient != nil && session.atrackerClient.Service != nil {
 		// Enable retries for API calls
 		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
 	}
 
 	// SCC FINDINGS Service
@@ -1390,15 +1392,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
-	if err == nil {
+	if err != nil {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
+	}
+	if session.findingsClient != nil && session.findingsClient.Service != nil {
 		// Enable retries for API calls
 		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.findingsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
 	}
 
 	// SCHEMATICS Service
@@ -1483,7 +1486,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.pushServiceClientErr = fmt.Errorf("[ERROR] Error occured while configuring Push Notifications service: %q", err)
 	}
-	if pnclient != nil {
+	if pnclient != nil && pnclient.Service != nil {
 		// Enable retries for API calls
 		pnclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		pnclient.SetDefaultHeaders(gohttp.Header{
@@ -1505,14 +1508,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	session.eventNotificationsApiClient, err = eventnotificationsv1.NewEventNotificationsV1(enClientOptions)
-	if err == nil {
+	if err != nil {
+		// Enable {
+		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications service: %q", err)
+	}
+	if session.eventNotificationsApiClient != nil && session.eventNotificationsApiClient.Service != nil {
 		// Enable retries for API calls
 		session.eventNotificationsApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.eventNotificationsApiClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications service: %q", err)
 	}
 
 	// APP CONFIGURATION Service
@@ -1553,15 +1558,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Construct the service client.
 	session.containerRegistryClient, err = containerregistryv1.NewContainerRegistryV1(containerRegistryClientOptions)
-	if err == nil {
+	if err != nil {
+		session.containerRegistryClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Container Registry API service: %q", err)
+	}
+	if session.containerRegistryClient != nil && session.containerRegistryClient.Service != nil {
 		// Enable retries for API calls
 		session.containerRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.containerRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.containerRegistryClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Container Registry API service: %q", err)
 	}
 
 	// OBJECT STORAGE Service
@@ -1613,7 +1619,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.globalTaggingConfigErrV1 = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
-	if globalTaggingAPIV1 != nil {
+	if globalTaggingAPIV1 != nil && globalTaggingAPIV1.Service != nil {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.globalTaggingServiceAPIV1.SetDefaultHeaders(gohttp.Header{
@@ -2426,7 +2432,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
 	}
-	if resourceManagerClient != nil {
+	if resourceManagerClient != nil && resourceManagerClient.Service != nil {
 		resourceManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		resourceManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
@@ -2444,13 +2450,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, cloudShellUrl),
 	}
 	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
-	if err == nil {
+	if err != nil {
+		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
+	}
+	if session.ibmCloudShellClient != nil && session.ibmCloudShellClient.Service != nil {
 		session.ibmCloudShellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.ibmCloudShellClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
 	}
 
 	// ENTERPRISE Service
@@ -2479,13 +2486,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           envFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
 	}
 	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
-	if err == nil {
+	if err != nil {
+		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
+	}
+	if enterpriseManagementClient != nil && enterpriseManagementClient.Service != nil {
 		enterpriseManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		enterpriseManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
 	}
 	session.enterpriseManagementClient = enterpriseManagementClient
 
@@ -2517,7 +2525,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
-	if resourceControllerClient != nil {
+	if resourceControllerClient != nil && resourceControllerClient.Service != nil {
 		resourceControllerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		resourceControllerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
@@ -2531,15 +2539,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	/// Construct the service client.
 	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
-	if err == nil {
+	if err != nil {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
+	}
+	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
 		// Enable retries for API calls
 		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
 
 	// SATELLITE Service
@@ -2560,7 +2569,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Enable retries for API calls
-	if session.satelliteClient != nil {
+	if session.satelliteClient != nil && session.satelliteClient.Service != nil {
 		session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.satelliteClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
@@ -2581,28 +2590,30 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 	}
 	session.satelliteLinkClient, err = satellitelinkv1.NewSatelliteLinkV1(satelliteLinkClientOptions)
-	if err == nil {
+	if err != nil {
+		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+	}
+	if session.satelliteLinkClient != nil && session.satelliteLinkClient.Service != nil {
 		// Enable retries for API calls
 		session.satelliteLinkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.satelliteLinkClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
 	}
 
 	esSchemaRegistryV1Options := &schemaregistryv1.SchemaregistryV1Options{
 		Authenticator: authenticator,
 	}
 	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
-	if err == nil {
+	if err != nil {
+		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
+	}
+	if session.esSchemaRegistryClient != nil && session.esSchemaRegistryClient.Service != nil {
 		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
 	//COMPLIANCE Service
@@ -2627,15 +2638,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service client.
 	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
-	if err == nil {
+	if err != nil {
+		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
+	}
+	if session.postureManagementClient != nil && session.postureManagementClient.Service != nil {
 		// Enable retries for API calls
 		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
 	}
 	return session, nil
 }
