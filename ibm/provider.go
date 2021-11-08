@@ -473,13 +473,14 @@ func Provider() *schema.Provider {
 			"ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
 
 			//Added for Satellite
-			"ibm_satellite_location":            dataSourceIBMSatelliteLocation(),
-			"ibm_satellite_location_nlb_dns":    dataSourceIBMSatelliteLocationNLBDNS(),
-			"ibm_satellite_attach_host_script":  dataSourceIBMSatelliteAttachHostScript(),
-			"ibm_satellite_cluster":             dataSourceIBMSatelliteCluster(),
-			"ibm_satellite_cluster_worker_pool": dataSourceIBMSatelliteClusterWorkerPool(),
-			"ibm_satellite_link":                dataSourceIbmSatelliteLink(),
-			"ibm_satellite_endpoint":            dataSourceIbmSatelliteEndpoint(),
+			"ibm_satellite_location":                            dataSourceIBMSatelliteLocation(),
+			"ibm_satellite_location_nlb_dns":                    dataSourceIBMSatelliteLocationNLBDNS(),
+			"ibm_satellite_attach_host_script":                  dataSourceIBMSatelliteAttachHostScript(),
+			"ibm_satellite_cluster":                             dataSourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool":                 dataSourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                                dataSourceIbmSatelliteLink(),
+			"ibm_satellite_endpoint":                            dataSourceIbmSatelliteEndpoint(),
+			"ibm_satellite_cluster_worker_pool_zone_attachment": dataSourceIBMSatelliteClusterWorkerPoolAttachment(),
 
 			// Catalog related resources
 			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
@@ -813,13 +814,14 @@ func Provider() *schema.Provider {
 			"ibm_schematics_resource_query": resourceIBMSchematicsResourceQuery(),
 
 			//satellite  resources
-			"ibm_satellite_location":            resourceIBMSatelliteLocation(),
-			"ibm_satellite_host":                resourceIBMSatelliteHost(),
-			"ibm_satellite_cluster":             resourceIBMSatelliteCluster(),
-			"ibm_satellite_cluster_worker_pool": resourceIBMSatelliteClusterWorkerPool(),
-			"ibm_satellite_link":                resourceIbmSatelliteLink(),
-			"ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
-			"ibm_satellite_location_nlb_dns":    resourceIbmSatelliteLocationNlbDns(),
+			"ibm_satellite_location":                            resourceIBMSatelliteLocation(),
+			"ibm_satellite_host":                                resourceIBMSatelliteHost(),
+			"ibm_satellite_cluster":                             resourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool":                 resourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                                resourceIbmSatelliteLink(),
+			"ibm_satellite_endpoint":                            resourceIbmSatelliteEndpoint(),
+			"ibm_satellite_location_nlb_dns":                    resourceIbmSatelliteLocationNlbDns(),
+			"ibm_satellite_cluster_worker_pool_zone_attachment": resourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": resourceIBMResourceTag(),

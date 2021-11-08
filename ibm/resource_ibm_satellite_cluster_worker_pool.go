@@ -20,11 +20,44 @@ const workerPoolDesired = "deployed"
 
 func resourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMSatelliteClusterWorkerPoolCreate,
-		Read:     resourceIBMSatelliteClusterWorkerPoolRead,
-		Update:   resourceIBMSatelliteClusterWorkerPoolUpdate,
-		Delete:   resourceIBMSatelliteClusterWorkerPoolDelete,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMSatelliteClusterWorkerPoolCreate,
+		Read:   resourceIBMSatelliteClusterWorkerPoolRead,
+		Update: resourceIBMSatelliteClusterWorkerPoolUpdate,
+		Delete: resourceIBMSatelliteClusterWorkerPoolDelete,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				parts, err := idParts(d.Id())
+				if err != nil {
+					return nil, err
+				}
+				clusterID := parts[0]
+				workerPoolID := parts[1]
+
+				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				if err != nil {
+					return nil, err
+				}
+				getWorkerPoolOptions := &kubernetesserviceapiv1.GetWorkerPoolOptions{
+					Cluster:    &clusterID,
+					Workerpool: &workerPoolID,
+				}
+				workerPool, response, err := satClient.GetWorkerPool(getWorkerPoolOptions)
+				if err != nil {
+					return nil, fmt.Errorf("Error reading satellite worker pool: %s\n%s", response, err)
+				}
+
+				var zones = make([]map[string]interface{}, 0)
+				for _, zone := range workerPool.Zones {
+					zoneInfo := map[string]interface{}{
+						"id": *zone.ID,
+					}
+					zones = append(zones, zoneInfo)
+				}
+
+				d.Set("zones", zones)
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(120 * time.Minute),
 			Delete: schema.DefaultTimeout(90 * time.Minute),
@@ -229,15 +262,6 @@ func resourceIBMSatelliteClusterWorkerPoolRead(d *schema.ResourceData, meta inte
 	d.Set("worker_pool_labels", IgnoreSystemLabels(workerPool.Labels))
 	d.Set("host_labels", flattenWorkerPoolHostLabels(workerPool.HostLabels))
 
-	var zones = make([]map[string]interface{}, 0)
-	for _, zone := range workerPool.Zones {
-		zoneInfo := map[string]interface{}{
-			"id": *zone.ID,
-		}
-		zones = append(zones, zoneInfo)
-	}
-
-	d.Set("zones", zones)
 	return nil
 }
 
