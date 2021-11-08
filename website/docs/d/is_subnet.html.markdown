@@ -14,38 +14,38 @@ Retrieve information of an existing VPC Generation 2 compute subnet as a read on
 Example to retrieve the subnet information by using subnet name.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test_subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
-data "ibm_is_subnet" "ds_subnet" {
-  name = ibm_is_subnet.testacc_subnet.name
+data "ibm_is_subnet" "example" {
+  name = ibm_is_subnet.example.name
 }
 
 ```
 // Example to retrieve the subnet information by using subnet ID.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test-subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
-data "ibm_is_subnet" "ds_subnet" {
-  identifier = ibm_is_subnet.testacc_subnet.id
+data "ibm_is_subnet" "example" {
+  identifier = ibm_is_subnet.example.id
 }
 
 ```
