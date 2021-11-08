@@ -28,7 +28,7 @@ func TestAccIBMContainerALB_Create(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "enable_by_default", "true"),
 					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "type", "true"),
 					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "vlan_id", privateVlanID),
-					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "region", "us-south"),
+					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "zone", zone),
 				),
 			},
 			{
@@ -69,8 +69,7 @@ func testAccCheckIBMContainerALBDCreateDestroy(s *terraform.State) error {
 }
 
 func testAccCheckIBMContainerALBCreate(clusterName string, enable bool) string {
-	return fmt.Sprintf(`
-resource "ibm_container_cluster" "testacc_cluster" {
+	config := fmt.Sprintf(`resource "ibm_container_cluster" "testacc_cluster" {
   name       = "%s"
   datacenter = "%s"
   default_pool_size = 1
@@ -88,6 +87,9 @@ resource "ibm_container_alb_create" "alb" {
   enable_by_default = "%t"
   type = "private"
   vlan_id = "%[5]s"
-  region = "us-south"
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, enable)
+  zone = "%[7]s"
+  cluster=ibm_container_cluster.testacc_cluster.id
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, enable, zone)
+	fmt.Println(config)
+	return config
 }

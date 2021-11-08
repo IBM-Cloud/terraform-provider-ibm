@@ -26,7 +26,6 @@ func resourceIBMContainerAlbCreate() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
 			//post req
 			"enable_by_default": {
 				Type:        schema.TypeBool,
@@ -79,8 +78,8 @@ func resourceIBMContainerAlbCreate() *schema.Resource {
 
 			//response
 			"alb_id": {
-				Type:        schema.TypeString,
-				Required:    false,
+				Type: schema.TypeString,
+				//Required:    false,
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the application load balancer (ALB).",
