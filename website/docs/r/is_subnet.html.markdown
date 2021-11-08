@@ -14,22 +14,22 @@ Create, update, or delete a subnet. For more information, about subnet, see [con
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
-  name   = "test-cr-route-table1"
-  vpc    = data.ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_vpc_routing_table" "example" {
+  name   = "example-routing-table"
+  vpc    = ibm_is_vpc.example.id
 }
 
 
-resource "ibm_is_subnet" "testacc_subnet1" {
-  name            = "test-subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
-  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table  
+  ipv4_cidr_block = "10.240.0.0/24"
+  routing_table   = ibm_is_vpc_routing_table.example.routing_table  
 
   //User can configure timeouts
   timeouts {
@@ -41,24 +41,24 @@ resource "ibm_is_subnet" "testacc_subnet1" {
 
 ## Example usage with address prefix
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc2" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_address_prefix" "testacc_add_prefix" {
+resource "ibm_is_vpc_address_prefix" "example" {
   cidr = "10.0.1.0/24"
-  name = "test-add-prefix"
+  name = "example-add-prefix"
   vpc  = ibm_is_vpc.testacc_vpc2.id
   zone = "us-south-1"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
+resource "ibm_is_subnet" "example" {
   depends_on      = [
-    ibm_is_vpc_address_prefix.testacc_add_prefix
+    ibm_is_vpc_address_prefix.example
   ]
   ipv4_cidr_block = "10.0.1.0/24"
-  name            = "test-subnet"
-  vpc             = ibm_is_vpc.testacc_vpc2.id
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
 }
 ```
