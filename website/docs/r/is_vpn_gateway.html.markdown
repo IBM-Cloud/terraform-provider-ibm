@@ -14,10 +14,22 @@ Create, update, or delete a VPN gateway. For more information, about VPN gateway
 The following example creates a VPN gateway:
 
 ```terraform
-resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
-  name   = "test"
-  subnet = "a4ce411d-e118-4802-95ad-525e6ea0cfc9"
-  mode="route"
+
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.0.0/24"
+}
+
+resource "ibm_is_vpn_gateway" "example" {
+  name   = "example-vpn-gateway"
+  subnet = ibm_is_subnet.example.id
+  mode   = "route"
 }
 
 ```

@@ -98,6 +98,144 @@ func dataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"gpu_count": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance profile's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The default value for this profile field.",
+						},
+						"max": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value for this profile field.",
+						},
+						"min": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value for this profile field.",
+						},
+						"step": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The increment step value for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
+			"gpu_manufacturer": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance profile's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The possible GPU manufacturer(s) for an instance with this profile",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+			"gpu_memory": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance profile's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The default value for this profile field.",
+						},
+						"max": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The maximum value for this profile field.",
+						},
+						"min": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum value for this profile field.",
+						},
+						"step": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The increment step value for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
+			"gpu_model": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Collection of the instance profile's disks.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The possible GPU model(s) for an instance with this profile",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"disks": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -411,6 +549,30 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 			return err
 		}
 	}
+	if profile.GpuCount != nil {
+		err = d.Set("gpu_count", dataSourceInstanceProfileFlattenGPUCount(*profile.GpuCount.(*vpcv1.InstanceProfileGpu)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.GpuMemory != nil {
+		err = d.Set("gpu_memory", dataSourceInstanceProfileFlattenGPUMemory(*profile.GpuMemory.(*vpcv1.InstanceProfileGpuMemory)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.GpuManufacturer != nil {
+		err = d.Set("gpu_manufacturer", dataSourceInstanceProfileFlattenGPUManufacturer(*profile.GpuManufacturer))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.GpuModel != nil {
+		err = d.Set("gpu_model", dataSourceInstanceProfileFlattenGPUModel(*profile.GpuModel))
+		if err != nil {
+			return err
+		}
+	}
 	if profile.Disks != nil {
 		err = d.Set("disks", dataSourceInstanceProfileFlattenDisks(profile.Disks))
 		if err != nil {
@@ -484,6 +646,120 @@ func dataSourceInstanceProfileBandwidthToMap(bandwidthItem vpcv1.InstanceProfile
 	}
 
 	return bandwidthMap
+}
+
+func dataSourceInstanceProfileFlattenGPUCount(result vpcv1.InstanceProfileGpu) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileGPUCountToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileGPUCountToMap(bandwidthItem vpcv1.InstanceProfileGpu) (gpuCountMap map[string]interface{}) {
+	gpuCountMap = map[string]interface{}{}
+
+	if bandwidthItem.Type != nil {
+		gpuCountMap["type"] = bandwidthItem.Type
+	}
+	if bandwidthItem.Value != nil {
+		gpuCountMap["value"] = bandwidthItem.Value
+	}
+	if bandwidthItem.Default != nil {
+		gpuCountMap["default"] = bandwidthItem.Default
+	}
+	if bandwidthItem.Max != nil {
+		gpuCountMap["max"] = bandwidthItem.Max
+	}
+	if bandwidthItem.Min != nil {
+		gpuCountMap["min"] = bandwidthItem.Min
+	}
+	if bandwidthItem.Step != nil {
+		gpuCountMap["step"] = bandwidthItem.Step
+	}
+	if bandwidthItem.Values != nil {
+		gpuCountMap["values"] = bandwidthItem.Values
+	}
+
+	return gpuCountMap
+}
+
+func dataSourceInstanceProfileFlattenGPUManufacturer(result vpcv1.InstanceProfileGpuManufacturer) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileGPUManufacturerToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileGPUManufacturerToMap(bandwidthItem vpcv1.InstanceProfileGpuManufacturer) (gpuManufactrerMap map[string]interface{}) {
+	gpuManufactrerMap = map[string]interface{}{}
+
+	if bandwidthItem.Type != nil {
+		gpuManufactrerMap["type"] = bandwidthItem.Type
+	}
+	if bandwidthItem.Values != nil {
+		gpuManufactrerMap["values"] = bandwidthItem.Values
+	}
+
+	return gpuManufactrerMap
+}
+
+func dataSourceInstanceProfileFlattenGPUModel(result vpcv1.InstanceProfileGpuModel) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileGPUModelToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileGPUModelToMap(bandwidthItem vpcv1.InstanceProfileGpuModel) (gpuModel map[string]interface{}) {
+	gpuModelMap := map[string]interface{}{}
+
+	if bandwidthItem.Type != nil {
+		gpuModelMap["type"] = bandwidthItem.Type
+	}
+	if bandwidthItem.Values != nil {
+		gpuModelMap["values"] = bandwidthItem.Values
+	}
+
+	return gpuModelMap
+}
+
+func dataSourceInstanceProfileFlattenGPUMemory(result vpcv1.InstanceProfileGpuMemory) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileGPUMemoryToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileGPUMemoryToMap(bandwidthItem vpcv1.InstanceProfileGpuMemory) (gpuMemoryMap map[string]interface{}) {
+	gpuMemoryMap = map[string]interface{}{}
+
+	if bandwidthItem.Type != nil {
+		gpuMemoryMap["type"] = bandwidthItem.Type
+	}
+	if bandwidthItem.Value != nil {
+		gpuMemoryMap["value"] = bandwidthItem.Value
+	}
+	if bandwidthItem.Default != nil {
+		gpuMemoryMap["default"] = bandwidthItem.Default
+	}
+	if bandwidthItem.Max != nil {
+		gpuMemoryMap["max"] = bandwidthItem.Max
+	}
+	if bandwidthItem.Min != nil {
+		gpuMemoryMap["min"] = bandwidthItem.Min
+	}
+	if bandwidthItem.Step != nil {
+		gpuMemoryMap["step"] = bandwidthItem.Step
+	}
+	if bandwidthItem.Values != nil {
+		gpuMemoryMap["values"] = bandwidthItem.Values
+	}
+
+	return gpuMemoryMap
 }
 
 func dataSourceInstanceProfileFlattenMemory(result vpcv1.InstanceProfileMemory) (finalList []map[string]interface{}) {

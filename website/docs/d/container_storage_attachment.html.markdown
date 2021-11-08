@@ -6,7 +6,7 @@ description: |-
   Fetch the information about IBM container vpc worker storage attachment.
 ---
 
-# ibm_container_vpc_worker_storage
+# ibm_container_storage_attachment
 
 Import the details of a VPC storage volume attachment of a VPC worker node as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about VPC storage volume attachment, see [Attaching a block storage volume](https://cloud.ibm.com/docs/vpc?topic=vpc-attaching-block-storage&interface=ui).
 
@@ -16,7 +16,8 @@ Import the details of a VPC storage volume attachment of a VPC worker node as a 
 In the following example, you can import a storage attachment of a VPC cluster worker node:
 
 ```terraform
-data "ibm_container_vpc_worker_volume" "volume_attach"{
+
+data "ibm_container_storage_attachment" "volume_attach"{
 	volume_attachment_id = "3567365d-7b9a-cc44-97ac-ef201653ea21"
 	cluster = "tf-cluster"
 	worker = "kube-c08evsgd0anad0v8c76g-gen2newvpc-default-00000116"

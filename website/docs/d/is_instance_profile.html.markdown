@@ -72,6 +72,32 @@ In addition to the argument reference list, you can access the following attribu
     - `type` - (String) The type for this profile field.
     - `values` - (String) The supported disk interfaces used for attaching the disk.
 - `family` - (String) The family of the virtual server instance profile.
+- `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
+  Nested scheme for `gpu_count`:
+  - `default` - (String) The default value for this profile field.
+  - `max` - (String) The maximum value for this profile field.
+  - `min` - (String) The minimum value for this profile field.
+  - `step` - (String) The increment step value for this profile field.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The value for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_manufacturer` - (List) Nested `gpu_manufacturer` blocks have the following structure:
+  Nested scheme for `gpu_manufacturer`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_memory` - (List) Nested `gpu_memory` blocks have the following structure:
+  Nested scheme for `gpu_memory`:
+  - `default` - (String) The default value for this profile field.
+  - `max` - (String) The maximum value for this profile field.
+  - `min` - (String) The minimum value for this profile field.
+  - `step` - (String) The increment step value for this profile field.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The value for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_model` - (List) Nested `gpu_model` blocks have the following structure:
+  Nested scheme for `gpu_model`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The permitted values for this profile field.
 - `href` - (String) The URL for this virtual server instance profile.
 - `memory` - (List) Nested `memory` blocks have the following structure:
 

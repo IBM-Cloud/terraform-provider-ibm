@@ -52,6 +52,7 @@ func resourceIBMISLB() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
@@ -502,9 +503,9 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		hasChangedLog = true
 	}
 	if d.HasChange(isLBSecurityGroups) {
-		o, n := d.GetChange(isLBSecurityGroups)
-		oSecurityGroups := o.(*schema.Set)
-		nSecurityGroups := n.(*schema.Set)
+		oldSecurityGroups, newSecurityGroups := d.GetChange(isLBSecurityGroups)
+		oSecurityGroups := oldSecurityGroups.(*schema.Set)
+		nSecurityGroups := newSecurityGroups.(*schema.Set)
 		remove = expandStringList(oSecurityGroups.Difference(nSecurityGroups).List())
 		add = expandStringList(nSecurityGroups.Difference(oSecurityGroups).List())
 		hasChangedSecurityGroups = true
@@ -582,21 +583,27 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	}
 
 	if hasChangedSecurityGroups {
+
 		if len(add) > 0 {
-			for _, d := range add {
+			for _, securityGroupID := range add {
 				createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
-				createSecurityGroupTargetBindingOptions.SecurityGroupID = &d
+				createSecurityGroupTargetBindingOptions.SecurityGroupID = &securityGroupID
 				createSecurityGroupTargetBindingOptions.ID = &id
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 				if err != nil {
 					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
 				}
+				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
+				}
 			}
 		}
+
 		if len(remove) > 0 {
-			for _, d := range remove {
+			for _, securityGroupID := range remove {
 				getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
-					SecurityGroupID: &d,
+					SecurityGroupID: &securityGroupID,
 					ID:              &id,
 				}
 				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
@@ -604,12 +611,16 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 					if response != nil && response.StatusCode == 404 {
 						continue
 					}
-					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", d, err, response)
+					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", securityGroupID, err, response)
 				}
-				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(d, id)
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, id)
 				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 				if err != nil {
 					return fmt.Errorf("Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
+				}
+				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
 				}
 			}
 		}

@@ -51,10 +51,11 @@ In addition to the argument reference list, you can access the following attribu
 	- `endianness` - (String) The `Endianness` order.
 	- `hypervisor_type` - (String) Hypervisor type.
 	- `href` - (String) The `href` of an image.
-  - `image_id` - (String) The unique identifier of an image.
+	- `image_id` - (String) The unique identifier of an image.
 	- `image_type` - (String) The type of the format.
 	- `last_update_date` - (String) The last updated date of an image.
 	- `name` - (String) The name of the image.
 	- `operating_system` - (String)  Operating System.
-  - `storage_type` - (String) The storage type of an image.
+	- `storage_pool` - (String) Storage pool where image resides.
+	- `storage_type` - (String) The storage type of an image.
 	- `state` - (String) The state of an Operating System.

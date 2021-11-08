@@ -101,6 +101,144 @@ func dataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"gpu_count": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Collection of the instance profile's disks.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"gpu_manufacturer": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Collection of the instance profile's disks.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The possible GPU manufacturer(s) for an instance with this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"gpu_memory": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Collection of the instance profile's disks.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"max": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum value for this profile field.",
+									},
+									"min": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The minimum value for this profile field.",
+									},
+									"step": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"gpu_model": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Collection of the instance profile's disks.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The possible GPU model(s) for an instance with this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"disks": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -415,6 +553,23 @@ func instanceProfilesList(d *schema.ResourceData, meta interface{}) error {
 			bandwidthList = append(bandwidthList, bandwidthMap)
 			l["bandwidth"] = bandwidthList
 		}
+
+		if profile.GpuCount != nil {
+			l["gpu_count"] = dataSourceInstanceProfileFlattenGPUCount(*profile.GpuCount.(*vpcv1.InstanceProfileGpu))
+		}
+
+		if profile.GpuMemory != nil {
+			l["gpu_memory"] = dataSourceInstanceProfileFlattenGPUMemory(*profile.GpuMemory.(*vpcv1.InstanceProfileGpuMemory))
+		}
+
+		if profile.GpuManufacturer != nil {
+			l["gpu_manufacturer"] = dataSourceInstanceProfileFlattenGPUManufacturer(*profile.GpuManufacturer)
+		}
+
+		if profile.GpuModel != nil {
+			l["gpu_model"] = dataSourceInstanceProfileFlattenGPUModel(*profile.GpuModel)
+		}
+
 		if profile.Disks != nil {
 			disksList := []map[string]interface{}{}
 			for _, disksItem := range profile.Disks {

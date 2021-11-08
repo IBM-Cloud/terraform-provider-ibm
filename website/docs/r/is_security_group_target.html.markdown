@@ -8,6 +8,7 @@ description: |-
 ---
 
 # ibm_is_security_group_target
+
 This request adds a resource to an existing security group. The supplied target identifier can be:
   - A network interface identifier.
   - An application load balancer identifier.
@@ -45,5 +46,4 @@ The `ibm_is_security_group_target` resource can be imported by using security gr
 
 ```
 $ terraform import ibm_is_security_group_target.example r006-6c6528a7-26de-4438-9685-bf2f6bbcb1ad/r006-5b77aa07-7dfb-4c74-a1bd-904123123cbe198
-
 ```
