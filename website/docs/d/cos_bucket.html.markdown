@@ -41,7 +41,7 @@ Review the argument references that you can specify for your data source.
 - `bucket_name` - (Required, String) The name of the bucket.
 - `bucket_region` - (Required, String) The region of the bucket.
 - `bucket_type` - (Required, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
-- `endpoint_type` - (Optional, String) The type of the endpoint either public or private to be used for the buckets. Default value is `public`.
+- `endpoint_type` - (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for the buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
 - `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, `smart`.
 

@@ -1288,10 +1288,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func flattenMembersData(list *iamaccessgroupsv2.GroupMembersList, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func flattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
-	for _, m := range list.Members {
+	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
 				if user.IamID == *m.IamID {
@@ -2209,6 +2209,29 @@ func resourceVolumeValidate(diff *schema.ResourceDiff) error {
 			}
 		}
 	}
+	return nil
+}
+
+func resourceRouteModeValidate(diff *schema.ResourceDiff) error {
+
+	var lbtype, lbprofile string
+	if typeOk, ok := diff.GetOk(isLBType); ok {
+		lbtype = typeOk.(string)
+	}
+	if profileOk, ok := diff.GetOk(isLBProfile); ok {
+		lbprofile = profileOk.(string)
+	}
+	if rmOk, ok := diff.GetOk(isLBRouteMode); ok {
+		routeMode := rmOk.(bool)
+
+		if routeMode && lbtype != "private" {
+			return fmt.Errorf("'type' must be 'private', at present public load balancers are not supported with route mode enabled.")
+		}
+		if routeMode && lbprofile != "network-fixed" {
+			return fmt.Errorf("'profile' must be 'network-fixed', route mode is supported by private network load balancer.")
+		}
+	}
+
 	return nil
 }
 

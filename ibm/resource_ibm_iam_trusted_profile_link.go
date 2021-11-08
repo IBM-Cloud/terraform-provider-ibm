@@ -51,7 +51,7 @@ func resourceIBMIamTrustedProfileLink() *schema.Resource {
 						},
 						"namespace": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "The compute resource namespace, only required if cr_type is IKS_SA or ROKS_SA.",
 						},
 						"name": &schema.Schema{

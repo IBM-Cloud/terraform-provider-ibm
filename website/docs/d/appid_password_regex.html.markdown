@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_password_regex
-Retrieve an IBM Cloud AppID Password Regex configuration.
+Retrieve an IBM Cloud AppID Password Regex configuration. For more information, see [defining password policies](https://cloud.ibm.com/docs/appid?topic=appid-cd-strength)
 
 ## Example usage
 

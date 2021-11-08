@@ -272,7 +272,7 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 	resource "ibm_is_volume" "storage"{
 		name = "%s"
 		profile = "10iops-tier"
-		zone = "us-south-3"
+		zone = "us-south-1"
 		# capacity= 200
 	}
 `, name)

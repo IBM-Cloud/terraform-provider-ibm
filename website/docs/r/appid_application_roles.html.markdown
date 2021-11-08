@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_application_roles
 
-Create, update, or delete an IBM Cloud AppID Management Services application roles resource.
+Create, update, or delete an IBM Cloud AppID Management Services application roles resource. For more information, see [controlling access](https://cloud.ibm.com/docs/appid?topic=appid-access-control&interface=api)
 
 ## Example usage
 

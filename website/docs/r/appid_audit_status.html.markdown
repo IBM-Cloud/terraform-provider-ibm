@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_audit_status
 
-Create, update, or reset an IBM Cloud AppID Management Services audit status (available for graduated tier only).
+Create, update, or reset an IBM Cloud AppID Management Services audit status (available for graduated tier only). For more information, see [auditing events for App ID](https://cloud.ibm.com/docs/appid?topic=appid-at-events&interface=api)
 
 ## Example usage
 

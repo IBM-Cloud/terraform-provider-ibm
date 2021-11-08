@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -41,6 +42,16 @@ func dataSourceIBMISLbProfiles() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The product family this load balancer profile belongs to",
+						},
+						"route_mode_supported": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The route mode support for a load balancer with this profile depends on its configuration",
+						},
+						"route_mode_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The route mode type for this load balancer profile, one of [fixed, dependent]",
 						},
 					},
 				},
@@ -79,6 +90,34 @@ func dataSourceIBMISLbProfilesRead(d *schema.ResourceData, meta interface{}) err
 			"name":   *profileCollector.Name,
 			"href":   *profileCollector.Href,
 			"family": *profileCollector.Family,
+		}
+		if profileCollector.RouteModeSupported != nil {
+			routeMode := profileCollector.RouteModeSupported
+			switch reflect.TypeOf(routeMode).String() {
+			case "*vpcv1.LoadBalancerProfileRouteModeSupportedFixed":
+				{
+					rms := routeMode.(*vpcv1.LoadBalancerProfileRouteModeSupportedFixed)
+					l["route_mode_supported"] = rms.Value
+					l["route_mode_type"] = rms.Type
+				}
+			case "*vpcv1.LoadBalancerProfileRouteModeSupportedDependent":
+				{
+					rms := routeMode.(*vpcv1.LoadBalancerProfileRouteModeSupportedDependent)
+					if rms.Type != nil {
+						l["route_mode_type"] = *rms.Type
+					}
+				}
+			case "*vpcv1.LoadBalancerProfileRouteModeSupported":
+				{
+					rms := routeMode.(*vpcv1.LoadBalancerProfileRouteModeSupported)
+					if rms.Type != nil {
+						l["route_mode_type"] = *rms.Type
+					}
+					if rms.Value != nil {
+						l["route_mode_supported"] = *rms.Value
+					}
+				}
+			}
 		}
 		lbprofilesInfo = append(lbprofilesInfo, l)
 	}

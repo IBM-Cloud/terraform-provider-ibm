@@ -11,6 +11,7 @@ Container Registry
 Direct Link Gateway
 DNS Services
 Enterprise Management
+Event Notifications
 Event Streams
 Functions
 Global Tagging
