@@ -2291,15 +2291,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s", cloudEndpoint))
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			rmURL = resourcemanager.DefaultServiceURL
 		}
