@@ -36,7 +36,9 @@ data "ibm_pi_catalog_images" "ds_images" {
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account. 
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `sap` - (Required, Bool) Include SAP images with available stock images.
+- `vtl` - (Required, Bool) Include VTL images with available stock images.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
