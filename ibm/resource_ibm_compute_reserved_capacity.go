@@ -33,6 +33,7 @@ func resourceIBMComputeReservedCapacity() *schema.Resource {
 		DeleteContext: resourceIBMComputeReservedCapacityDelete,
 		Exists:        resourceIBMComputeReservedCapacityExists,
 		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: resourceReservedCapacityValidate,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -80,6 +81,12 @@ func resourceIBMComputeReservedCapacity() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "List of tags",
+			},
+			"force_create": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Force the creation of reserved capacity with same name",
 			},
 		},
 	}
@@ -290,4 +297,23 @@ func resourceIBMComputeReservedCapacityDelete(context context.Context, d *schema
 	log.Println("[WARN]: `terraform destroy` does not remove the reserved capacity but only clears the state file. We cannot cancel reserved capacity")
 	d.SetId("")
 	return nil
+}
+
+func resourceReservedCapacityValidate(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	forceCreate := diff.Get("force_create").(bool)
+	if diff.Id() == "" && !forceCreate {
+		name := diff.Get("name").(string)
+		service := services.GetAccountService(meta.(ClientSession).SoftLayerSession())
+		reservedCapacities, _ := service.Filter(
+			filter.Build(
+				filter.Path("reservedCapacityGroups.name").Eq(name),
+			),
+		).Mask("id,createDate").GetReservedCapacityGroups()
+		if len(reservedCapacities) > 0 {
+			return fmt.Errorf("reserved capacity exists with same name [%s] if you still want to provision with same name set force_create argument to true", name)
+		}
+	}
+
+	return nil
+
 }
