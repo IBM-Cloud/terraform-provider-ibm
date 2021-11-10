@@ -111,8 +111,3 @@ resource "ibm_container_alb_create" "alb" {
 	fmt.Println(config)
 	return config
 }
-
-// export IBM_PRIVATE_SUBNET_ID=2597322
-// export IBM_PRIVATE_VLAN_ID=1900403
-// export IBM_PUBLIC_SUBNET_ID=1576763
-// export IBM_PUBLIC_VLAN_ID=1900401

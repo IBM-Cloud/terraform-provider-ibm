@@ -27,7 +27,7 @@ func TestAccIBMContainerVPCClusterALBCreate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "enable_by_default", "true"),
 					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "cluster", name),
-					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "zone", "eu-de-1"),
+					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "zone", "dal10"),
 					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "type", "private"),
 				),
 			},
@@ -63,7 +63,7 @@ func testAccCheckIBMVpcContainerALBCreateDestroy(s *terraform.State) error {
 func testAccCheckIBMVpcContainerALBCreate(enable bool, name string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		region="eu-de"
+		region="us-south"
 	}
 	data "ibm_resource_group" "resource_group" {
 		is_default=true
@@ -75,7 +75,7 @@ func testAccCheckIBMVpcContainerALBCreate(enable bool, name string) string {
 	resource "ibm_is_subnet" "subnet1" {
 	  name                     = "%[1]s-1"
 	  vpc                      = ibm_is_vpc.vpc.id
-	  zone                     = "eu-de-1"
+	  zone                     = "dal10"
 	  total_ipv4_address_count = 256
 	}
 	resource "ibm_container_vpc_cluster" "cluster" {
@@ -86,13 +86,13 @@ func testAccCheckIBMVpcContainerALBCreate(enable bool, name string) string {
 		resource_group_id = data.ibm_resource_group.resource_group.id
 		zones {
 			subnet_id = ibm_is_subnet.subnet1.id
-			name      = "eu-de-1"
+			name      = "dal10"
 		}
 	}
 	resource ibm_container_vpc_alb_create alb {
 		cluster = "%[1]s"
 		type = "private"
-		zone = "eu-de-1"
+		zone = "dal10"
 		enable_by_default = "%t"
 	}
 	`, name, enable)

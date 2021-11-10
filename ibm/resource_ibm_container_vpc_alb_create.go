@@ -24,14 +24,6 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 
-			// //v2
-			//   {
-			// 	"cluster": "string",  //mandatory
-			// 	"enableByDefault": true,
-			// 	"type": "string", //mandatory
-			// 	"zone": "string" //mandatory
-			//   }
-
 			//post req
 			"enable_by_default": {
 				Type:        schema.TypeBool,
@@ -105,7 +97,7 @@ func resourceIBMContainerVpcAlbCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Provide `zone`")
 	}
 
-	enableByDefault := d.Get("enableByDefault").(bool)
+	enableByDefault := d.Get("enable_by_default").(bool)
 
 	params := v2.AlbCreateReq{
 		ZoneAlb:         zone,
@@ -118,6 +110,9 @@ func resourceIBMContainerVpcAlbCreate(d *schema.ResourceData, meta interface{}) 
 
 	//v2.AlbCreateResp
 	albResp, err := albAPI.CreateAlb(params, targetEnv)
+	if err != nil {
+		return err
+	}
 
 	d.SetId(albResp.Alb)
 	return nil
