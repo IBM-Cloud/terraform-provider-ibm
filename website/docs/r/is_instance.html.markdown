@@ -306,6 +306,7 @@ Review the argument references that you can specify for your resource.
     
   - `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
+- `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
 - `vpc` - (Optional, Forces new resource, String) The ID of the VPC where you want to create the instance.
@@ -315,6 +316,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `bandwidth` - The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
 
   Nested scheme for `boot_volume`:
@@ -375,6 +377,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
+- `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 
   Nested scheme for `volume_attachements`:
