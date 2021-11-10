@@ -388,10 +388,20 @@ func dataSourceIBMSccSiNotesRead(context context.Context, d *schema.ResourceData
 	}
 	listNoteOptions.SetProviderID(d.Get("provider_id").(string))
 
-	apiNotes, err := CollectAllNotes(findingsClient, context, listNoteOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
-		return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
+	apiNotes := []findingsv1.APINote{}
+
+	if listNoteOptions.PageToken != nil {
+		apiNotes, err = CollectSpecificNotes(findingsClient, context, listNoteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
+			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
+		}
+	} else {
+		apiNotes, err = CollectAllNotes(findingsClient, context, listNoteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
+			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
+		}
 	}
 
 	d.SetId(dataSourceIBMSccSiNotesID(d))
@@ -411,6 +421,15 @@ func dataSourceIBMSccSiNotesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
+func CollectSpecificNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
+	apiListNotesResponse, response, err := findingsClient.ListNotesWithContext(ctx, options)
+	if err != nil {
+		return nil, fmt.Errorf("%s\n%s", err, response)
+	}
+
+	return apiListNotesResponse.Notes, nil
+}
+
 func CollectAllNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
 	finalList := []findingsv1.APINote{}
 
@@ -420,11 +439,9 @@ func CollectAllNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context,
 			return nil, fmt.Errorf("%s\n%s", err, response)
 		}
 
-		log.Printf("\n\n\n\n got %v results and page token is %v \n\n\n\n", len(apiListNotesResponse.Notes), *apiListNotesResponse.NextPageToken)
-
 		finalList = append(finalList, apiListNotesResponse.Notes...)
 
-		if options.PageToken != nil || options.PageSize != nil && int64(len(finalList)) == *options.PageSize {
+		if options.PageSize != nil && int64(len(finalList)) == *options.PageSize {
 			break
 		}
 
