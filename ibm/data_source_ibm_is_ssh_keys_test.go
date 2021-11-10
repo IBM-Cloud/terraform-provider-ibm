@@ -19,7 +19,7 @@ func TestAccIBMIsSshKeysDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMIsSshKeysDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "first.#"),
+					// resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "first.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "keys.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_ssh_keys.is_ssh_keys", "total_count"),

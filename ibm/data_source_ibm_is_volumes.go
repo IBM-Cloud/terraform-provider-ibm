@@ -515,38 +515,56 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	listVolumesOptions := &vpcv1.ListVolumesOptions{}
+	start := ""
+	allrecs := []vpcv1.Volume{}
 
-	volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
+	for {
+		listVolumesOptions := &vpcv1.ListVolumesOptions{}
+		if start != "" {
+			listVolumesOptions.Start = &start
+		}
+
+		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
+		}
+
+		start = GetNext(volumeCollection.Next)
+		allrecs = append(allrecs, volumeCollection.Volumes...)
+
+		if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting limit %s", err))
+		}
+
+		if start == "" {
+			break
+		}
+
 	}
 
 	d.SetId(dataSourceIBMIsVolumesID(d))
 
-	if volumeCollection.First != nil {
-		err = d.Set("first", dataSourceVolumeCollectionFlattenFirst(*volumeCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-		}
-	}
-	if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
+	// if volumeCollection.First != nil {
+	// 	err = d.Set("first", dataSourceVolumeCollectionFlattenFirst(*volumeCollection.First))
+	// 	if err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+	// 	}
+	// }
+	// if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+	// }
 
-	if volumeCollection.Next != nil {
-		err = d.Set("next", dataSourceVolumeCollectionFlattenNext(*volumeCollection.Next))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-		}
-	}
+	// if volumeCollection.Next != nil {
+	// 	err = d.Set("next", dataSourceVolumeCollectionFlattenNext(*volumeCollection.Next))
+	// 	if err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+	// 	}
+	// }
 
-	if volumeCollection.Volumes != nil {
-		err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(volumeCollection.Volumes))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
-		}
+	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
 	}
 
 	return nil
@@ -557,41 +575,41 @@ func dataSourceIBMIsVolumesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceVolumeCollectionFlattenFirst(result vpcv1.VolumeCollectionFirst) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceVolumeCollectionFirstToMap(result)
-	finalList = append(finalList, finalMap)
+// func dataSourceVolumeCollectionFlattenFirst(result vpcv1.VolumeCollectionFirst) (finalList []map[string]interface{}) {
+// 	finalList = []map[string]interface{}{}
+// 	finalMap := dataSourceVolumeCollectionFirstToMap(result)
+// 	finalList = append(finalList, finalMap)
 
-	return finalList
-}
+// 	return finalList
+// }
 
-func dataSourceVolumeCollectionFirstToMap(firstItem vpcv1.VolumeCollectionFirst) (firstMap map[string]interface{}) {
-	firstMap = map[string]interface{}{}
+// func dataSourceVolumeCollectionFirstToMap(firstItem vpcv1.VolumeCollectionFirst) (firstMap map[string]interface{}) {
+// 	firstMap = map[string]interface{}{}
 
-	if firstItem.Href != nil {
-		firstMap["href"] = firstItem.Href
-	}
+// 	if firstItem.Href != nil {
+// 		firstMap["href"] = firstItem.Href
+// 	}
 
-	return firstMap
-}
+// 	return firstMap
+// }
 
-func dataSourceVolumeCollectionFlattenNext(result vpcv1.VolumeCollectionNext) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceVolumeCollectionNextToMap(result)
-	finalList = append(finalList, finalMap)
+// func dataSourceVolumeCollectionFlattenNext(result vpcv1.VolumeCollectionNext) (finalList []map[string]interface{}) {
+// 	finalList = []map[string]interface{}{}
+// 	finalMap := dataSourceVolumeCollectionNextToMap(result)
+// 	finalList = append(finalList, finalMap)
 
-	return finalList
-}
+// 	return finalList
+// }
 
-func dataSourceVolumeCollectionNextToMap(nextItem vpcv1.VolumeCollectionNext) (nextMap map[string]interface{}) {
-	nextMap = map[string]interface{}{}
+// func dataSourceVolumeCollectionNextToMap(nextItem vpcv1.VolumeCollectionNext) (nextMap map[string]interface{}) {
+// 	nextMap = map[string]interface{}{}
 
-	if nextItem.Href != nil {
-		nextMap["href"] = nextItem.Href
-	}
+// 	if nextItem.Href != nil {
+// 		nextMap["href"] = nextItem.Href
+// 	}
 
-	return nextMap
-}
+// 	return nextMap
+// }
 
 func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume) (volumes []map[string]interface{}) {
 	for _, volumesItem := range result {

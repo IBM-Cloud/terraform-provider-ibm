@@ -160,41 +160,43 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	listKeysOptions := &vpcv1.ListKeysOptions{}
+	start := ""
+	allrecs := []vpcv1.Key{}
 
-	keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListKeysWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListKeysWithContext failed %s\n%s", err, response))
+	for {
+		listKeysOptions := &vpcv1.ListKeysOptions{}
+
+		if start != "" {
+			listKeysOptions.Start = &start
+		}
+		keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
+		if err != nil || keyCollection == nil {
+			log.Printf("[DEBUG] ListKeysWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ListKeysWithContext failed %s\n%s", err, response))
+		}
+
+		start = GetNext(keyCollection.Next)
+		allrecs = append(allrecs, keyCollection.Keys...)
+
+		if err = d.Set("limit", intValue(keyCollection.Limit)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		}
+
+		if err = d.Set("total_count", intValue(keyCollection.TotalCount)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		}
+
+		if start == "" {
+			break
+		}
+
 	}
 
 	d.SetId(dataSourceIBMIsSshKeysID(d))
 
-	if keyCollection.First != nil {
-		err = d.Set("first", dataSourceKeyCollectionFlattenFirst(*keyCollection.First))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-		}
-	}
-
-	if keyCollection.Keys != nil {
-		err = d.Set(isKeys, dataSourceKeyCollectionFlattenKeys(keyCollection.Keys))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting keys %s", err))
-		}
-	}
-	if err = d.Set(isKeysLimit, intValue(keyCollection.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if keyCollection.Next != nil {
-		err = d.Set("next", dataSourceKeyCollectionFlattenNext(*keyCollection.Next))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-		}
-	}
-	if err = d.Set(isKeysTotalCount, intValue(keyCollection.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+	err = d.Set(isKeys, dataSourceKeyCollectionFlattenKeys(allrecs))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting keys %s", err))
 	}
 
 	return nil
@@ -205,23 +207,23 @@ func dataSourceIBMIsSshKeysID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceKeyCollectionFlattenFirst(result vpcv1.KeyCollectionFirst) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceKeyCollectionFirstToMap(result)
-	finalList = append(finalList, finalMap)
+// func dataSourceKeyCollectionFlattenFirst(result vpcv1.KeyCollectionFirst) (finalList []map[string]interface{}) {
+// 	finalList = []map[string]interface{}{}
+// 	finalMap := dataSourceKeyCollectionFirstToMap(result)
+// 	finalList = append(finalList, finalMap)
 
-	return finalList
-}
+// 	return finalList
+// }
 
-func dataSourceKeyCollectionFirstToMap(firstItem vpcv1.KeyCollectionFirst) (firstMap map[string]interface{}) {
-	firstMap = map[string]interface{}{}
+// func dataSourceKeyCollectionFirstToMap(firstItem vpcv1.KeyCollectionFirst) (firstMap map[string]interface{}) {
+// 	firstMap = map[string]interface{}{}
 
-	if firstItem.Href != nil {
-		firstMap["href"] = firstItem.Href
-	}
+// 	if firstItem.Href != nil {
+// 		firstMap["href"] = firstItem.Href
+// 	}
 
-	return firstMap
-}
+// 	return firstMap
+// }
 
 func dataSourceKeyCollectionFlattenKeys(result []vpcv1.Key) (keys []map[string]interface{}) {
 	for _, keysItem := range result {
@@ -287,20 +289,20 @@ func dataSourceKeyCollectionKeysResourceGroupToMap(resourceGroupItem vpcv1.Resou
 	return resourceGroupMap
 }
 
-func dataSourceKeyCollectionFlattenNext(result vpcv1.KeyCollectionNext) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceKeyCollectionNextToMap(result)
-	finalList = append(finalList, finalMap)
+// func dataSourceKeyCollectionFlattenNext(result vpcv1.KeyCollectionNext) (finalList []map[string]interface{}) {
+// 	finalList = []map[string]interface{}{}
+// 	finalMap := dataSourceKeyCollectionNextToMap(result)
+// 	finalList = append(finalList, finalMap)
 
-	return finalList
-}
+// 	return finalList
+// }
 
-func dataSourceKeyCollectionNextToMap(nextItem vpcv1.KeyCollectionNext) (nextMap map[string]interface{}) {
-	nextMap = map[string]interface{}{}
+// func dataSourceKeyCollectionNextToMap(nextItem vpcv1.KeyCollectionNext) (nextMap map[string]interface{}) {
+// 	nextMap = map[string]interface{}{}
 
-	if nextItem.Href != nil {
-		nextMap["href"] = nextItem.Href
-	}
+// 	if nextItem.Href != nil {
+// 		nextMap["href"] = nextItem.Href
+// 	}
 
-	return nextMap
-}
+// 	return nextMap
+// }
