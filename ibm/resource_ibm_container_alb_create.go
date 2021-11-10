@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -89,7 +90,8 @@ func resourceIBMContainerAlbCreate() *schema.Resource {
 }
 
 func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface{}) error {
-
+	log.Println("CREATE")
+	fmt.Println("CREATE")
 	albClient, err := meta.(ClientSession).ContainerAPI()
 	if err != nil {
 		return err
@@ -152,14 +154,20 @@ func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+
 	//v1.AlbCreateResp
 	albResp, err := albAPI.CreateALB(params, cluster, targetEnv)
+	if err != nil {
+		return fmt.Errorf("Error creating ALb to the cluster %s", err)
+	}
 
 	d.SetId(albResp.Alb)
 	return nil
 }
 
 func resourceIBMContainerClassicAlbRead(d *schema.ResourceData, meta interface{}) error {
+	log.Println("READ")
+	fmt.Println("READ")
 	return nil
 }
 
