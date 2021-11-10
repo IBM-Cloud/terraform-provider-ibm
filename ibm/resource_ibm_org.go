@@ -48,24 +48,28 @@ func resourceIBMOrg() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have billing manager role in this org, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"managers": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have manager role in this org, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"auditors": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have auditor role in this org, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"users": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have user role in this org, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 
 			"tags": {
