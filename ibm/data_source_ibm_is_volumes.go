@@ -16,6 +16,73 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
+const (
+	isVolumes                                              = "volumes"
+	isVolumesActive                                        = "active"
+	isVolumesBandwidth                                     = "bandwidth"
+	isVolumesBusy                                          = "busy"
+	isVolumesCapacity                                      = "capacity"
+	isVolumesCreatedAt                                     = "created_at"
+	isVolumesCRN                                           = "crn"
+	isVolumesEncryption                                    = "encryption"
+	isVolumesEncryptionKey                                 = "encryption_key"
+	isVolumesEncryptionKeyCRN                              = "crn"
+	isVolumesHref                                          = "href"
+	isVolumesId                                            = "id"
+	isVolumesIops                                          = "iops"
+	isVolumesName                                          = "name"
+	isVolumesOperatingSystem                               = "operating_system"
+	isVolumesOperatingSystemHref                           = "href"
+	isVolumesOperatingSystemName                           = "name"
+	isVolumesProfile                                       = "profile"
+	isVolumesProfileHref                                   = "href"
+	isVolumesProfileName                                   = "name"
+	isVolumesResourceGroup                                 = "resource_group"
+	isVolumesResourceGroupHref                             = "href"
+	isVolumesResourceGroupId                               = "id"
+	isVolumesResourceGroupName                             = "name"
+	isVolumesSourceImage                                   = "source_image"
+	isVolumesSourceImageCRN                                = "crn"
+	isVolumesSourceImageDeleted                            = "deleted"
+	isVolumesSourceImageDeletedMoreInfo                    = "more_info"
+	isVolumesSourceImageHref                               = "href"
+	isVolumesSourceImageId                                 = "id"
+	isVolumesSourceImageName                               = "name"
+	isVolumesSourceSnapshot                                = "source_snapshot"
+	isVolumesSourceSnapshotCRN                             = "crn"
+	isVolumesSourceSnapshotDeleted                         = "deleted"
+	isVolumesSourceSnapshotDeletedMoreInfo                 = "more_info"
+	isVolumesSourceSnapshotHref                            = "href"
+	isVolumesSourceSnapshotId                              = "id"
+	isVolumesSourceSnapshotName                            = "name"
+	isVolumesSourceSnapshotResourceType                    = "resource_type"
+	isVolumesStatus                                        = "status"
+	isVolumesStatusReasons                                 = "status_reasons"
+	isVolumesStatusReasonsCode                             = "code"
+	isVolumesStatusReasonsMessage                          = "message"
+	isVolumesStatusReasonsMoreInfo                         = "more_info"
+	isVolumesVolumeAttachments                             = "volume_attachments"
+	isVolumesVolumeAttachmentsDeleteVolumeOnInstanceDelete = "delete_volume_on_instance_delete"
+	isVolumesVolumeAttachmentsDeleted                      = "deleted"
+	isVolumesVolumeAttachmentsDeletedMoreInfo              = "more_info"
+	isVolumesVolumeAttachmentsDevice                       = "device"
+	isVolumesVolumeAttachmentsDeviceId                     = "id"
+	isVolumesVolumeAttachmentsHref                         = "href"
+	isVolumesVolumeAttachmentsId                           = "id"
+	isVolumesVolumeAttachmentsInstance                     = "instance"
+	isVolumesVolumeAttachmentsInstanceCRN                  = "crn"
+	isVolumesVolumeAttachmentsInstanceDeleted              = "deleted"
+	isVolumesVolumeAttachmentsInstanceDeletedMoreInfo      = "more_info"
+	isVolumesVolumeAttachmentsInstanceHref                 = "href"
+	isVolumesVolumeAttachmentsInstanceId                   = "id"
+	isVolumesVolumeAttachmentsInstanceName                 = "name"
+	isVolumesVolumeAttachmentsName                         = "name"
+	isVolumesVolumeAttachmentsType                         = "type"
+	isVolumesZone                                          = "zone"
+	isVolumesZoneHref                                      = "href"
+	isVolumesZoneName                                      = "name"
+)
+
 func dataSourceIBMIsVolumes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIsVolumesRead,
@@ -54,54 +121,54 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 					},
 				},
 			},
-			"volumes": &schema.Schema{
+			isVolumes: &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Collection of volumes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"active": &schema.Schema{
+						isVolumesActive: &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Indicates whether a running virtual server instance has an attachment to this volume.",
 						},
-						"bandwidth": &schema.Schema{
+						isVolumesBandwidth: &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The maximum bandwidth (in megabits per second) for the volume.",
 						},
-						"busy": &schema.Schema{
+						isVolumesBusy: &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Indicates whether this volume is performing an operation that must be serialized. If an operation specifies that it requires serialization, the operation will fail unless this property is `false`.",
 						},
-						"capacity": &schema.Schema{
+						isVolumesCapacity: &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.",
 						},
-						"created_at": &schema.Schema{
+						isVolumesCreatedAt: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time that the volume was created.",
 						},
-						"crn": &schema.Schema{
+						isVolumesCRN: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this volume.",
 						},
-						"encryption": &schema.Schema{
+						isVolumesEncryption: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of encryption used on the volume.",
 						},
-						"encryption_key": &schema.Schema{
+						isVolumesEncryptionKey: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The root key used to wrap the data encryption key for the volume.This property will be present for volumes with an `encryption` type of`user_managed`.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": &schema.Schema{
+									isVolumesEncryptionKeyCRN: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
@@ -109,38 +176,38 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"href": &schema.Schema{
+						isVolumesHref: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this volume.",
 						},
-						"id": &schema.Schema{
+						isVolumesId: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this volume.",
 						},
-						"iops": &schema.Schema{
+						isVolumesIops: &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile `family` of `custom`.",
 						},
-						"name": &schema.Schema{
+						isVolumesName: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique user-defined name for this volume.",
 						},
-						"operating_system": &schema.Schema{
+						isVolumesOperatingSystem: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The operating system associated with this volume. If absent, this volume was notcreated from an image, or the image did not include an operating system.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
+									isVolumesOperatingSystemHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this operating system.",
 									},
-									"name": &schema.Schema{
+									isVolumesOperatingSystemName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The globally unique name for this operating system.",
@@ -148,18 +215,18 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"profile": &schema.Schema{
+						isVolumesProfile: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The profile this volume uses.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
+									isVolumesProfileHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this volume profile.",
 									},
-									"name": &schema.Schema{
+									isVolumesProfileName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The globally unique name for this volume profile.",
@@ -167,23 +234,23 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"resource_group": &schema.Schema{
+						isVolumesResourceGroup: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The resource group for this volume.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
+									isVolumesResourceGroupHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this resource group.",
 									},
-									"id": &schema.Schema{
+									isVolumesResourceGroupId: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The unique identifier for this resource group.",
 									},
-									"name": &schema.Schema{
+									isVolumesResourceGroupName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-defined name for this resource group.",
@@ -191,24 +258,24 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"source_image": &schema.Schema{
+						isVolumesSourceImage: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The image from which this volume was created (this may be[deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).If absent, this volume was not created from an image.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": &schema.Schema{
+									isVolumesSourceImageCRN: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN for this image.",
 									},
-									"deleted": &schema.Schema{
+									isVolumesSourceImageDeleted: &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"more_info": &schema.Schema{
+												isVolumesSourceImageDeletedMoreInfo: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Link to documentation about deleted resources.",
@@ -216,17 +283,17 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 											},
 										},
 									},
-									"href": &schema.Schema{
+									isVolumesSourceImageHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this image.",
 									},
-									"id": &schema.Schema{
+									isVolumesSourceImageId: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The unique identifier for this image.",
 									},
-									"name": &schema.Schema{
+									isVolumesSourceImageName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-defined or system-provided name for this image.",
@@ -234,24 +301,24 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"source_snapshot": &schema.Schema{
+						isVolumesSourceSnapshot: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The snapshot from which this volume was cloned.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": &schema.Schema{
+									isVolumesSourceSnapshotCRN: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN for this snapshot.",
 									},
-									"deleted": &schema.Schema{
+									isVolumesSourceSnapshotDeleted: &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"more_info": &schema.Schema{
+												isVolumesSourceSnapshotDeletedMoreInfo: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Link to documentation about deleted resources.",
@@ -259,22 +326,22 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 											},
 										},
 									},
-									"href": &schema.Schema{
+									isVolumesSourceSnapshotHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this snapshot.",
 									},
-									"id": &schema.Schema{
+									isVolumesSourceSnapshotId: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The unique identifier for this snapshot.",
 									},
-									"name": &schema.Schema{
+									isVolumesSourceSnapshotName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-defined name for this snapshot.",
 									},
-									"resource_type": &schema.Schema{
+									isVolumesSourceSnapshotResourceType: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The resource type.",
@@ -282,28 +349,28 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"status": &schema.Schema{
+						isVolumesStatus: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The status of the volume.The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the volume on which the unexpected property value was encountered.",
 						},
-						"status_reasons": &schema.Schema{
+						isVolumesStatusReasons: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The reasons for the current status (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"code": &schema.Schema{
+									isVolumesStatusReasonsCode: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "A snake case string succinctly identifying the status reason.",
 									},
-									"message": &schema.Schema{
+									isVolumesStatusReasonsMessage: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "An explanation of the status reason.",
 									},
-									"more_info": &schema.Schema{
+									isVolumesStatusReasonsMoreInfo: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Link to documentation about this status reason.",
@@ -311,24 +378,24 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"volume_attachments": &schema.Schema{
+						isVolumesVolumeAttachments: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The volume attachments for this volume.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"delete_volume_on_instance_delete": &schema.Schema{
+									isVolumesVolumeAttachmentsDeleteVolumeOnInstanceDelete: &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "If set to true, when deleting the instance the volume will also be deleted.",
 									},
-									"deleted": &schema.Schema{
+									isVolumesVolumeAttachmentsDeleted: &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"more_info": &schema.Schema{
+												isVolumesVolumeAttachmentsDeletedMoreInfo: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "Link to documentation about deleted resources.",
@@ -336,13 +403,13 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 											},
 										},
 									},
-									"device": &schema.Schema{
+									isVolumesVolumeAttachmentsDevice: &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "Information about how the volume is exposed to the instance operating system.This property may be absent if the volume attachment's `status` is not `attached`.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
+												isVolumesVolumeAttachmentsDeviceId: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "A unique identifier for the device which is exposed to the instance operating system.",
@@ -350,34 +417,34 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 											},
 										},
 									},
-									"href": &schema.Schema{
+									isVolumesVolumeAttachmentsHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this volume attachment.",
 									},
-									"id": &schema.Schema{
+									isVolumesVolumeAttachmentsId: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The unique identifier for this volume attachment.",
 									},
-									"instance": &schema.Schema{
+									isVolumesVolumeAttachmentsInstance: &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The attached instance.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"crn": &schema.Schema{
+												isVolumesVolumeAttachmentsInstanceCRN: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The CRN for this virtual server instance.",
 												},
-												"deleted": &schema.Schema{
+												isVolumesVolumeAttachmentsInstanceDeleted: &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
 													Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"more_info": &schema.Schema{
+															isVolumesVolumeAttachmentsInstanceDeletedMoreInfo: &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
 																Description: "Link to documentation about deleted resources.",
@@ -385,17 +452,17 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 														},
 													},
 												},
-												"href": &schema.Schema{
+												isVolumesVolumeAttachmentsInstanceHref: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The URL for this virtual server instance.",
 												},
-												"id": &schema.Schema{
+												isVolumesVolumeAttachmentsInstanceId: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The unique identifier for this virtual server instance.",
 												},
-												"name": &schema.Schema{
+												isVolumesVolumeAttachmentsInstanceName: &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The user-defined name for this virtual server instance (and default system hostname).",
@@ -403,12 +470,12 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 											},
 										},
 									},
-									"name": &schema.Schema{
+									isVolumesVolumeAttachmentsName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-defined name for this volume attachment.",
 									},
-									"type": &schema.Schema{
+									isVolumesVolumeAttachmentsType: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of volume attachment.",
@@ -416,18 +483,18 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
-						"zone": &schema.Schema{
+						isVolumesZone: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The zone this volume resides in.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
+									isVolumesZoneHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this zone.",
 									},
-									"name": &schema.Schema{
+									isVolumesZoneName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The globally unique name for this zone.",
@@ -476,7 +543,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 	}
 
 	if volumeCollection.Volumes != nil {
-		err = d.Set("volumes", dataSourceVolumeCollectionFlattenVolumes(volumeCollection.Volumes))
+		err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(volumeCollection.Volumes))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
 		}
@@ -538,96 +605,96 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMa
 	volumesMap = map[string]interface{}{}
 
 	if volumesItem.Active != nil {
-		volumesMap["active"] = volumesItem.Active
+		volumesMap[isVolumesActive] = volumesItem.Active
 	}
 	if volumesItem.Bandwidth != nil {
-		volumesMap["bandwidth"] = volumesItem.Bandwidth
+		volumesMap[isVolumesBandwidth] = volumesItem.Bandwidth
 	}
 	if volumesItem.Busy != nil {
-		volumesMap["busy"] = volumesItem.Busy
+		volumesMap[isVolumesBusy] = volumesItem.Busy
 	}
 	if volumesItem.Capacity != nil {
-		volumesMap["capacity"] = volumesItem.Capacity
+		volumesMap[isVolumesCapacity] = volumesItem.Capacity
 	}
 	if volumesItem.CreatedAt != nil {
-		volumesMap["created_at"] = volumesItem.CreatedAt.String()
+		volumesMap[isVolumesCreatedAt] = volumesItem.CreatedAt.String()
 	}
 	if volumesItem.CRN != nil {
-		volumesMap["crn"] = volumesItem.CRN
+		volumesMap[isVolumesCRN] = volumesItem.CRN
 	}
 	if volumesItem.Encryption != nil {
-		volumesMap["encryption"] = volumesItem.Encryption
+		volumesMap[isVolumesEncryption] = volumesItem.Encryption
 	}
 	if volumesItem.EncryptionKey != nil {
 		encryptionKeyList := []map[string]interface{}{}
 		encryptionKeyMap := dataSourceVolumeCollectionVolumesEncryptionKeyToMap(*volumesItem.EncryptionKey)
 		encryptionKeyList = append(encryptionKeyList, encryptionKeyMap)
-		volumesMap["encryption_key"] = encryptionKeyList
+		volumesMap[isVolumesEncryptionKey] = encryptionKeyList
 	}
 	if volumesItem.Href != nil {
-		volumesMap["href"] = volumesItem.Href
+		volumesMap[isVolumesHref] = volumesItem.Href
 	}
 	if volumesItem.ID != nil {
-		volumesMap["id"] = volumesItem.ID
+		volumesMap[isVolumesId] = volumesItem.ID
 	}
 	if volumesItem.Iops != nil {
-		volumesMap["iops"] = volumesItem.Iops
+		volumesMap[isVolumesIops] = volumesItem.Iops
 	}
 	if volumesItem.Name != nil {
-		volumesMap["name"] = volumesItem.Name
+		volumesMap[isVolumesName] = volumesItem.Name
 	}
 	if volumesItem.OperatingSystem != nil {
 		operatingSystemList := []map[string]interface{}{}
 		operatingSystemMap := dataSourceVolumeCollectionVolumesOperatingSystemToMap(*volumesItem.OperatingSystem)
 		operatingSystemList = append(operatingSystemList, operatingSystemMap)
-		volumesMap["operating_system"] = operatingSystemList
+		volumesMap[isVolumesOperatingSystem] = operatingSystemList
 	}
 	if volumesItem.Profile != nil {
 		profileList := []map[string]interface{}{}
 		profileMap := dataSourceVolumeCollectionVolumesProfileToMap(*volumesItem.Profile)
 		profileList = append(profileList, profileMap)
-		volumesMap["profile"] = profileList
+		volumesMap[isVolumesProfile] = profileList
 	}
 	if volumesItem.ResourceGroup != nil {
 		resourceGroupList := []map[string]interface{}{}
 		resourceGroupMap := dataSourceVolumeCollectionVolumesResourceGroupToMap(*volumesItem.ResourceGroup)
 		resourceGroupList = append(resourceGroupList, resourceGroupMap)
-		volumesMap["resource_group"] = resourceGroupList
+		volumesMap[isVolumesResourceGroup] = resourceGroupList
 	}
 	if volumesItem.SourceImage != nil {
 		sourceImageList := []map[string]interface{}{}
 		sourceImageMap := dataSourceVolumeCollectionVolumesSourceImageToMap(*volumesItem.SourceImage)
 		sourceImageList = append(sourceImageList, sourceImageMap)
-		volumesMap["source_image"] = sourceImageList
+		volumesMap[isVolumesSourceImage] = sourceImageList
 	}
 	if volumesItem.SourceSnapshot != nil {
 		sourceSnapshotList := []map[string]interface{}{}
 		sourceSnapshotMap := dataSourceVolumeCollectionVolumesSourceSnapshotToMap(*volumesItem.SourceSnapshot)
 		sourceSnapshotList = append(sourceSnapshotList, sourceSnapshotMap)
-		volumesMap["source_snapshot"] = sourceSnapshotList
+		volumesMap[isVolumesSourceSnapshot] = sourceSnapshotList
 	}
 	if volumesItem.Status != nil {
-		volumesMap["status"] = volumesItem.Status
+		volumesMap[isVolumesStatus] = volumesItem.Status
 	}
 	if volumesItem.StatusReasons != nil {
 		statusReasonsList := []map[string]interface{}{}
 		for _, statusReasonsItem := range volumesItem.StatusReasons {
 			statusReasonsList = append(statusReasonsList, dataSourceVolumeCollectionVolumesStatusReasonsToMap(statusReasonsItem))
 		}
-		volumesMap["status_reasons"] = statusReasonsList
+		volumesMap[isVolumesStatusReasons] = statusReasonsList
 	}
 	if volumesItem.VolumeAttachments != nil {
 		volumeAttachmentsList := []map[string]interface{}{}
 		for _, volumeAttachmentsItem := range volumesItem.VolumeAttachments {
 			volumeAttachmentsList = append(volumeAttachmentsList, dataSourceVolumeCollectionVolumesVolumeAttachmentsToMap(volumeAttachmentsItem))
 		}
-		volumesMap["volume_attachments"] = volumeAttachmentsList
+		volumesMap[isVolumesVolumeAttachments] = volumeAttachmentsList
 	}
 	if volumesItem.Zone != nil {
 		zoneList := []map[string]interface{}{}
 		zoneMap := dataSourceVolumeCollectionVolumesZoneToMap(*volumesItem.Zone)
 		zoneList = append(zoneList, zoneMap)
-		volumesMap["zone"] = zoneList
+		volumesMap[isVolumesZone] = zoneList
 	}
 
 	return volumesMap
@@ -637,7 +704,7 @@ func dataSourceVolumeCollectionVolumesEncryptionKeyToMap(encryptionKeyItem vpcv1
 	encryptionKeyMap = map[string]interface{}{}
 
 	if encryptionKeyItem.CRN != nil {
-		encryptionKeyMap["crn"] = encryptionKeyItem.CRN
+		encryptionKeyMap[isVolumesEncryptionKeyCRN] = encryptionKeyItem.CRN
 	}
 
 	return encryptionKeyMap
@@ -647,10 +714,10 @@ func dataSourceVolumeCollectionVolumesOperatingSystemToMap(operatingSystemItem v
 	operatingSystemMap = map[string]interface{}{}
 
 	if operatingSystemItem.Href != nil {
-		operatingSystemMap["href"] = operatingSystemItem.Href
+		operatingSystemMap[isVolumesOperatingSystemHref] = operatingSystemItem.Href
 	}
 	if operatingSystemItem.Name != nil {
-		operatingSystemMap["name"] = operatingSystemItem.Name
+		operatingSystemMap[isVolumesOperatingSystemName] = operatingSystemItem.Name
 	}
 
 	return operatingSystemMap
@@ -660,10 +727,10 @@ func dataSourceVolumeCollectionVolumesProfileToMap(profileItem vpcv1.VolumeProfi
 	profileMap = map[string]interface{}{}
 
 	if profileItem.Href != nil {
-		profileMap["href"] = profileItem.Href
+		profileMap[isVolumesProfileHref] = profileItem.Href
 	}
 	if profileItem.Name != nil {
-		profileMap["name"] = profileItem.Name
+		profileMap[isVolumesProfileName] = profileItem.Name
 	}
 
 	return profileMap
@@ -673,13 +740,13 @@ func dataSourceVolumeCollectionVolumesResourceGroupToMap(resourceGroupItem vpcv1
 	resourceGroupMap = map[string]interface{}{}
 
 	if resourceGroupItem.Href != nil {
-		resourceGroupMap["href"] = resourceGroupItem.Href
+		resourceGroupMap[isVolumesResourceGroupHref] = resourceGroupItem.Href
 	}
 	if resourceGroupItem.ID != nil {
-		resourceGroupMap["id"] = resourceGroupItem.ID
+		resourceGroupMap[isVolumesResourceGroupId] = resourceGroupItem.ID
 	}
 	if resourceGroupItem.Name != nil {
-		resourceGroupMap["name"] = resourceGroupItem.Name
+		resourceGroupMap[isVolumesResourceGroupName] = resourceGroupItem.Name
 	}
 
 	return resourceGroupMap
@@ -689,22 +756,22 @@ func dataSourceVolumeCollectionVolumesSourceImageToMap(sourceImageItem vpcv1.Ima
 	sourceImageMap = map[string]interface{}{}
 
 	if sourceImageItem.CRN != nil {
-		sourceImageMap["crn"] = sourceImageItem.CRN
+		sourceImageMap[isVolumesSourceImageCRN] = sourceImageItem.CRN
 	}
 	if sourceImageItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
 		deletedMap := dataSourceVolumeCollectionSourceImageDeletedToMap(*sourceImageItem.Deleted)
 		deletedList = append(deletedList, deletedMap)
-		sourceImageMap["deleted"] = deletedList
+		sourceImageMap[isVolumesSourceImageDeleted] = deletedList
 	}
 	if sourceImageItem.Href != nil {
-		sourceImageMap["href"] = sourceImageItem.Href
+		sourceImageMap[isVolumesSourceImageHref] = sourceImageItem.Href
 	}
 	if sourceImageItem.ID != nil {
-		sourceImageMap["id"] = sourceImageItem.ID
+		sourceImageMap[isVolumesSourceImageId] = sourceImageItem.ID
 	}
 	if sourceImageItem.Name != nil {
-		sourceImageMap["name"] = sourceImageItem.Name
+		sourceImageMap[isVolumesSourceImageName] = sourceImageItem.Name
 	}
 
 	return sourceImageMap
@@ -714,7 +781,7 @@ func dataSourceVolumeCollectionSourceImageDeletedToMap(deletedItem vpcv1.ImageRe
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
+		deletedMap[isVolumesSourceImageDeletedMoreInfo] = deletedItem.MoreInfo
 	}
 
 	return deletedMap
@@ -724,25 +791,25 @@ func dataSourceVolumeCollectionVolumesSourceSnapshotToMap(sourceSnapshotItem vpc
 	sourceSnapshotMap = map[string]interface{}{}
 
 	if sourceSnapshotItem.CRN != nil {
-		sourceSnapshotMap["crn"] = sourceSnapshotItem.CRN
+		sourceSnapshotMap[isVolumesSourceSnapshotCRN] = sourceSnapshotItem.CRN
 	}
 	if sourceSnapshotItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
 		deletedMap := dataSourceVolumeCollectionSourceSnapshotDeletedToMap(*sourceSnapshotItem.Deleted)
 		deletedList = append(deletedList, deletedMap)
-		sourceSnapshotMap["deleted"] = deletedList
+		sourceSnapshotMap[isVolumesSourceSnapshotDeleted] = deletedList
 	}
 	if sourceSnapshotItem.Href != nil {
-		sourceSnapshotMap["href"] = sourceSnapshotItem.Href
+		sourceSnapshotMap[isVolumesSourceSnapshotHref] = sourceSnapshotItem.Href
 	}
 	if sourceSnapshotItem.ID != nil {
-		sourceSnapshotMap["id"] = sourceSnapshotItem.ID
+		sourceSnapshotMap[isVolumesSourceSnapshotId] = sourceSnapshotItem.ID
 	}
 	if sourceSnapshotItem.Name != nil {
-		sourceSnapshotMap["name"] = sourceSnapshotItem.Name
+		sourceSnapshotMap[isVolumesSourceSnapshotName] = sourceSnapshotItem.Name
 	}
 	if sourceSnapshotItem.ResourceType != nil {
-		sourceSnapshotMap["resource_type"] = sourceSnapshotItem.ResourceType
+		sourceSnapshotMap[isVolumesSourceSnapshotResourceType] = sourceSnapshotItem.ResourceType
 	}
 
 	return sourceSnapshotMap
@@ -752,7 +819,7 @@ func dataSourceVolumeCollectionSourceSnapshotDeletedToMap(deletedItem vpcv1.Snap
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
+		deletedMap[isVolumesSourceSnapshotDeletedMoreInfo] = deletedItem.MoreInfo
 	}
 
 	return deletedMap
@@ -762,13 +829,13 @@ func dataSourceVolumeCollectionVolumesStatusReasonsToMap(statusReasonsItem vpcv1
 	statusReasonsMap = map[string]interface{}{}
 
 	if statusReasonsItem.Code != nil {
-		statusReasonsMap["code"] = statusReasonsItem.Code
+		statusReasonsMap[isVolumesStatusReasonsCode] = statusReasonsItem.Code
 	}
 	if statusReasonsItem.Message != nil {
-		statusReasonsMap["message"] = statusReasonsItem.Message
+		statusReasonsMap[isVolumesStatusReasonsMessage] = statusReasonsItem.Message
 	}
 	if statusReasonsItem.MoreInfo != nil {
-		statusReasonsMap["more_info"] = statusReasonsItem.MoreInfo
+		statusReasonsMap[isVolumesStatusReasonsMoreInfo] = statusReasonsItem.MoreInfo
 	}
 
 	return statusReasonsMap
@@ -778,37 +845,37 @@ func dataSourceVolumeCollectionVolumesVolumeAttachmentsToMap(volumeAttachmentsIt
 	volumeAttachmentsMap = map[string]interface{}{}
 
 	if volumeAttachmentsItem.DeleteVolumeOnInstanceDelete != nil {
-		volumeAttachmentsMap["delete_volume_on_instance_delete"] = volumeAttachmentsItem.DeleteVolumeOnInstanceDelete
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsDeleteVolumeOnInstanceDelete] = volumeAttachmentsItem.DeleteVolumeOnInstanceDelete
 	}
 	if volumeAttachmentsItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
 		deletedMap := dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(*volumeAttachmentsItem.Deleted)
 		deletedList = append(deletedList, deletedMap)
-		volumeAttachmentsMap["deleted"] = deletedList
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsDeleted] = deletedList
 	}
 	if volumeAttachmentsItem.Device != nil {
 		deviceList := []map[string]interface{}{}
 		deviceMap := dataSourceVolumeCollectionVolumeAttachmentsDeviceToMap(*volumeAttachmentsItem.Device)
 		deviceList = append(deviceList, deviceMap)
-		volumeAttachmentsMap["device"] = deviceList
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsDevice] = deviceList
 	}
 	if volumeAttachmentsItem.Href != nil {
-		volumeAttachmentsMap["href"] = volumeAttachmentsItem.Href
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsHref] = volumeAttachmentsItem.Href
 	}
 	if volumeAttachmentsItem.ID != nil {
-		volumeAttachmentsMap["id"] = volumeAttachmentsItem.ID
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsId] = volumeAttachmentsItem.ID
 	}
 	if volumeAttachmentsItem.Instance != nil {
 		instanceList := []map[string]interface{}{}
 		instanceMap := dataSourceVolumeCollectionVolumeAttachmentsInstanceToMap(*volumeAttachmentsItem.Instance)
 		instanceList = append(instanceList, instanceMap)
-		volumeAttachmentsMap["instance"] = instanceList
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsInstance] = instanceList
 	}
 	if volumeAttachmentsItem.Name != nil {
-		volumeAttachmentsMap["name"] = volumeAttachmentsItem.Name
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsName] = volumeAttachmentsItem.Name
 	}
 	if volumeAttachmentsItem.Type != nil {
-		volumeAttachmentsMap["type"] = volumeAttachmentsItem.Type
+		volumeAttachmentsMap[isVolumesVolumeAttachmentsType] = volumeAttachmentsItem.Type
 	}
 
 	return volumeAttachmentsMap
@@ -818,7 +885,7 @@ func dataSourceVolumeCollectionVolumeAttachmentsDeletedToMap(deletedItem vpcv1.V
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
+		deletedMap[isVolumesVolumeAttachmentsDeletedMoreInfo] = deletedItem.MoreInfo
 	}
 
 	return deletedMap
@@ -828,7 +895,7 @@ func dataSourceVolumeCollectionVolumeAttachmentsDeviceToMap(deviceItem vpcv1.Vol
 	deviceMap = map[string]interface{}{}
 
 	if deviceItem.ID != nil {
-		deviceMap["id"] = deviceItem.ID
+		deviceMap[isVolumesVolumeAttachmentsDeviceId] = deviceItem.ID
 	}
 
 	return deviceMap
@@ -838,22 +905,22 @@ func dataSourceVolumeCollectionVolumeAttachmentsInstanceToMap(instanceItem vpcv1
 	instanceMap = map[string]interface{}{}
 
 	if instanceItem.CRN != nil {
-		instanceMap["crn"] = instanceItem.CRN
+		instanceMap[isVolumesVolumeAttachmentsInstanceCRN] = instanceItem.CRN
 	}
 	if instanceItem.Deleted != nil {
 		deletedList := []map[string]interface{}{}
 		deletedMap := dataSourceVolumeCollectionInstanceDeletedToMap(*instanceItem.Deleted)
 		deletedList = append(deletedList, deletedMap)
-		instanceMap["deleted"] = deletedList
+		instanceMap[isVolumesVolumeAttachmentsInstanceDeleted] = deletedList
 	}
 	if instanceItem.Href != nil {
-		instanceMap["href"] = instanceItem.Href
+		instanceMap[isVolumesVolumeAttachmentsInstanceHref] = instanceItem.Href
 	}
 	if instanceItem.ID != nil {
-		instanceMap["id"] = instanceItem.ID
+		instanceMap[isVolumesVolumeAttachmentsInstanceId] = instanceItem.ID
 	}
 	if instanceItem.Name != nil {
-		instanceMap["name"] = instanceItem.Name
+		instanceMap[isVolumesVolumeAttachmentsInstanceName] = instanceItem.Name
 	}
 
 	return instanceMap
@@ -863,7 +930,7 @@ func dataSourceVolumeCollectionInstanceDeletedToMap(deletedItem vpcv1.InstanceRe
 	deletedMap = map[string]interface{}{}
 
 	if deletedItem.MoreInfo != nil {
-		deletedMap["more_info"] = deletedItem.MoreInfo
+		deletedMap[isVolumesVolumeAttachmentsInstanceDeletedMoreInfo] = deletedItem.MoreInfo
 	}
 
 	return deletedMap
@@ -873,10 +940,10 @@ func dataSourceVolumeCollectionVolumesZoneToMap(zoneItem vpcv1.ZoneReference) (z
 	zoneMap = map[string]interface{}{}
 
 	if zoneItem.Href != nil {
-		zoneMap["href"] = zoneItem.Href
+		zoneMap[isVolumesZoneHref] = zoneItem.Href
 	}
 	if zoneItem.Name != nil {
-		zoneMap["name"] = zoneItem.Name
+		zoneMap[isVolumesZoneName] = zoneItem.Name
 	}
 
 	return zoneMap

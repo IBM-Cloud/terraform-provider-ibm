@@ -13,7 +13,7 @@ Provides a read-only data source for KeyCollection. You can then reference the f
 ## Example Usage
 
 ```hcl
-data "ibm_is_ssh_keys" "is_ssh_keys" {
+data "ibm_is_ssh_keys" "example" {
 }
 ```
 

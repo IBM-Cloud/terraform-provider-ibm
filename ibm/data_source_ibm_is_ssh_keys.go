@@ -16,6 +16,19 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
+const (
+	isKeys                 = "keys"
+	isKeyCreatedAt         = "created_at"
+	isKeyCRN               = "crn"
+	isKeysHref             = "href"
+	isKeyId                = "id"
+	isKeyResourceGroupHref = "href"
+	isKeyResourceGroupId   = "id"
+	isKeyResourceGroupName = "name"
+	isKeysLimit            = "limit"
+	isKeysTotalCount       = "total_count"
+)
+
 func dataSourceIBMIsSshKeys() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIsSshKeysRead,
@@ -35,69 +48,69 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 					},
 				},
 			},
-			"keys": &schema.Schema{
+			isKeys: &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Collection of keys.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"created_at": &schema.Schema{
+						isKeyCreatedAt: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time that the key was created.",
 						},
-						"crn": &schema.Schema{
+						isKeyCRN: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The CRN for this key.",
 						},
-						"fingerprint": &schema.Schema{
+						isKeyFingerprint: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The fingerprint for this key.  The value is returned base64-encoded and prefixed with the hash algorithm (always `SHA256`).",
 						},
-						"href": &schema.Schema{
+						isKeysHref: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this key.",
 						},
-						"id": &schema.Schema{
+						isKeyId: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this key.",
 						},
-						"length": &schema.Schema{
+						isKeyLength: &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The length of this key (in bits).",
 						},
-						"name": &schema.Schema{
+						isKeyName: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique user-defined name for this key. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 						},
-						"public_key": &schema.Schema{
+						isKeyPublicKey: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The public SSH key, consisting of two space-separated fields: the algorithm name, and the base64-encoded key.",
 						},
-						"resource_group": &schema.Schema{
+						isKeyResourceGroup: &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The resource group for this key.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"href": &schema.Schema{
+									isKeyResourceGroupHref: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The URL for this resource group.",
 									},
-									"id": &schema.Schema{
+									isKeyResourceGroupId: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The unique identifier for this resource group.",
 									},
-									"name": &schema.Schema{
+									isKeyResourceGroupName: &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-defined name for this resource group.",
@@ -105,7 +118,7 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 								},
 							},
 						},
-						"type": &schema.Schema{
+						isKeyType: &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The crypto-system used by this key.",
@@ -113,7 +126,7 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 					},
 				},
 			},
-			"limit": &schema.Schema{
+			isKeysLimit: &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The maximum number of resources that can be returned by the request.",
@@ -132,7 +145,7 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 					},
 				},
 			},
-			"total_count": &schema.Schema{
+			isKeysTotalCount: &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total number of resources across all pages.",
@@ -157,30 +170,30 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 
 	d.SetId(dataSourceIBMIsSshKeysID(d))
 
-	// if keyCollection.First != nil {
-	// 	err = d.Set("first", dataSourceKeyCollectionFlattenFirst(*keyCollection.First))
-	// 	if err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-	// 	}
-	// }
+	if keyCollection.First != nil {
+		err = d.Set("first", dataSourceKeyCollectionFlattenFirst(*keyCollection.First))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+		}
+	}
 
 	if keyCollection.Keys != nil {
-		err = d.Set("keys", dataSourceKeyCollectionFlattenKeys(keyCollection.Keys))
+		err = d.Set(isKeys, dataSourceKeyCollectionFlattenKeys(keyCollection.Keys))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting keys %s", err))
 		}
 	}
-	if err = d.Set("limit", intValue(keyCollection.Limit)); err != nil {
+	if err = d.Set(isKeysLimit, intValue(keyCollection.Limit)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
 	}
 
-	// if keyCollection.Next != nil {
-	// 	err = d.Set("next", dataSourceKeyCollectionFlattenNext(*keyCollection.Next))
-	// 	if err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-	// 	}
-	// }
-	if err = d.Set("total_count", intValue(keyCollection.TotalCount)); err != nil {
+	if keyCollection.Next != nil {
+		err = d.Set("next", dataSourceKeyCollectionFlattenNext(*keyCollection.Next))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+		}
+	}
+	if err = d.Set(isKeysTotalCount, intValue(keyCollection.TotalCount)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
@@ -222,37 +235,37 @@ func dataSourceKeyCollectionKeysToMap(keysItem vpcv1.Key) (keysMap map[string]in
 	keysMap = map[string]interface{}{}
 
 	if keysItem.CreatedAt != nil {
-		keysMap["created_at"] = keysItem.CreatedAt.String()
+		keysMap[isKeyCreatedAt] = keysItem.CreatedAt.String()
 	}
 	if keysItem.CRN != nil {
-		keysMap["crn"] = keysItem.CRN
+		keysMap[isKeyCRN] = keysItem.CRN
 	}
 	if keysItem.Fingerprint != nil {
-		keysMap["fingerprint"] = keysItem.Fingerprint
+		keysMap[isKeyFingerprint] = keysItem.Fingerprint
 	}
 	if keysItem.Href != nil {
-		keysMap["href"] = keysItem.Href
+		keysMap[isKeysHref] = keysItem.Href
 	}
 	if keysItem.ID != nil {
-		keysMap["id"] = keysItem.ID
+		keysMap[isKeyId] = keysItem.ID
 	}
 	if keysItem.Length != nil {
-		keysMap["length"] = keysItem.Length
+		keysMap[isKeyLength] = keysItem.Length
 	}
 	if keysItem.Name != nil {
-		keysMap["name"] = keysItem.Name
+		keysMap[isKeyName] = keysItem.Name
 	}
 	if keysItem.PublicKey != nil {
-		keysMap["public_key"] = keysItem.PublicKey
+		keysMap[isKeyPublicKey] = keysItem.PublicKey
 	}
 	if keysItem.ResourceGroup != nil {
 		resourceGroupList := []map[string]interface{}{}
 		resourceGroupMap := dataSourceKeyCollectionKeysResourceGroupToMap(*keysItem.ResourceGroup)
 		resourceGroupList = append(resourceGroupList, resourceGroupMap)
-		keysMap["resource_group"] = resourceGroupList
+		keysMap[isKeyResourceGroup] = resourceGroupList
 	}
 	if keysItem.Type != nil {
-		keysMap["type"] = keysItem.Type
+		keysMap[isKeyType] = keysItem.Type
 	}
 
 	return keysMap
@@ -262,13 +275,13 @@ func dataSourceKeyCollectionKeysResourceGroupToMap(resourceGroupItem vpcv1.Resou
 	resourceGroupMap = map[string]interface{}{}
 
 	if resourceGroupItem.Href != nil {
-		resourceGroupMap["href"] = resourceGroupItem.Href
+		resourceGroupMap[isKeyResourceGroupHref] = resourceGroupItem.Href
 	}
 	if resourceGroupItem.ID != nil {
-		resourceGroupMap["id"] = resourceGroupItem.ID
+		resourceGroupMap[isKeyResourceGroupId] = resourceGroupItem.ID
 	}
 	if resourceGroupItem.Name != nil {
-		resourceGroupMap["name"] = resourceGroupItem.Name
+		resourceGroupMap[isKeyResourceGroupName] = resourceGroupItem.Name
 	}
 
 	return resourceGroupMap

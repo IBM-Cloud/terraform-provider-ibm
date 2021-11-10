@@ -13,7 +13,7 @@ Provides a read-only data source for VolumeCollection. You can then reference th
 ## Example Usage
 
 ```hcl
-data "ibm_is_volumes" "is_volumes" {
+data "ibm_is_volumes" "example" {
 }
 ```
 
