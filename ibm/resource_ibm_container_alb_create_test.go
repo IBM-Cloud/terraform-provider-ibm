@@ -112,5 +112,7 @@ resource "ibm_container_alb_create" "alb" {
 	return config
 }
 
-//IBM_PRIVATE_SUBNET_ID=2263901
-//IBM_PUBLIC_SUBNET_ID=2263903
+// export IBM_PRIVATE_SUBNET_ID=2597322
+// export IBM_PRIVATE_VLAN_ID=1900403
+// export IBM_PUBLIC_SUBNET_ID=1576763
+// export IBM_PUBLIC_VLAN_ID=1900401

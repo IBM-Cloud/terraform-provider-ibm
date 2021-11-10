@@ -66,8 +66,8 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 
 			//response
 			"alb_id": {
-				Type:        schema.TypeString,
-				Required:    false,
+				Type: schema.TypeString,
+				//Required:    false,
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the application load balancer (ALB).",

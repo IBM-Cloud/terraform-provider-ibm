@@ -31,12 +31,6 @@ func TestAccIBMContainerVPCClusterALBCreate(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "type", "private"),
 				),
 			},
-			{
-				Config: testAccCheckIBMVpcContainerALBCreate(false, name),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_container_vpc_alb_create.alb", "enable_by_default", "false"),
-				),
-			},
 		},
 	})
 }
@@ -95,7 +89,7 @@ func testAccCheckIBMVpcContainerALBCreate(enable bool, name string) string {
 			name      = "eu-de-1"
 		}
 	}
-	resource ibm_container_vpc_alb alb {
+	resource ibm_container_vpc_alb_create alb {
 		cluster = "%[1]s"
 		type = "private"
 		zone = "eu-de-1"

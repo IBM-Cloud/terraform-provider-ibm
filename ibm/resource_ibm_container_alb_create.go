@@ -166,8 +166,40 @@ func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceIBMContainerClassicAlbRead(d *schema.ResourceData, meta interface{}) error {
-	log.Println("READ")
-	fmt.Println("READ")
+	// log.Println("READ")
+	// fmt.Println("READ")
+
+	// albClient, err := meta.(ClientSession).ContainerAPI()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// albID := d.Id()
+
+	// albAPI := albClient.Albs()
+	// targetEnv, err := getAlbTargetHeader(d, meta)
+	// if err != nil {
+	// 	return err
+	// }
+	// albConfig, err := albAPI.GetALB(albID, targetEnv)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// // "cluster":"string" //mandatory
+	// // "enableByDefault": true,
+	// // "ingressImage": "string",
+	// // "ip": "string",
+	// // "nlbVersion": "string",
+	// // "type": "string", //mandatory
+	// // "vlanID": "string", //mandatory
+	// // "zone": "string" //mandatory
+
+	// d.Set("type", albConfig.ALBType)
+	// d.Set("cluster", albConfig.ClusterID)
+	// d.Set("ip", albConfig.ALBIP)
+	// d.Set("zone", albConfig.Zone)
+
 	return nil
 }
 
