@@ -1010,3 +1010,11 @@ data "ibm_is_ike_policy" "example2" {
 data "ibm_is_ipsec_policy" "example3" {
   name = "my-ipsec-policy"
 }
+
+# List ssh keys 
+data "ibm_is_ssh_keys" "example-keys" {
+}
+
+# List volumes
+data "ibm_is_volumes" "example-volumes" {
+}
