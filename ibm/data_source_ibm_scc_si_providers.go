@@ -92,7 +92,7 @@ func dataSourceIBMSccSiProvidersRead(context context.Context, d *schema.Resource
 		listProvidersOptions.SetLimit(int64(limit.(int)))
 	}
 
-	apiProviders, totalCount, err := CollectAllProviders(findingsClient, context, listProvidersOptions)
+	apiProviders, totalCount, err := collectAllProviders(findingsClient, context, listProvidersOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListProvidersWithContext failed %s", err)
 		return diag.FromErr(fmt.Errorf("ListProvidersWithContext failed %s", err))
@@ -118,7 +118,7 @@ func dataSourceIBMSccSiProvidersID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func CollectAllProviders(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListProvidersOptions) ([]findingsv1.APIProvider, *int64, error) {
+func collectAllProviders(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListProvidersOptions) ([]findingsv1.APIProvider, *int64, error) {
 	finalList := []findingsv1.APIProvider{}
 	totalCount := core.Int64Ptr(0)
 
