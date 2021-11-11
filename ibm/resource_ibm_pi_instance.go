@@ -582,7 +582,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if powervmdata.StorageType != nil {
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
-	d.Set(helpers.PIInstanceStoragePool, powervmdata.StoragePool)
+	d.Set(PIInstanceStoragePool, powervmdata.StoragePool)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
