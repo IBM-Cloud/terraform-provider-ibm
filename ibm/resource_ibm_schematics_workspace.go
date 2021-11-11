@@ -1516,7 +1516,7 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	templateRepoRequestMap := map[string]interface{}{}
 	hasTemplateRepo := false
 	if d.HasChange("template_git_branch") {
-		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(bool)
+		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(string)
 		hasTemplateRepo = true
 	}
 	if d.HasChange("template_git_release") {
