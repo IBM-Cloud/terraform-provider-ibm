@@ -2703,6 +2703,7 @@ func newSession(c *Config) (*Session, error) {
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
 			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -2725,6 +2726,7 @@ func newSession(c *Config) (*Session, error) {
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
 			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
@@ -2742,7 +2744,8 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {
@@ -2755,7 +2758,8 @@ func authenticateCF(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewUAARepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{http.UserAgent()},
 		},
 	})
 	if err != nil {
@@ -2812,7 +2816,8 @@ func refreshToken(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {
