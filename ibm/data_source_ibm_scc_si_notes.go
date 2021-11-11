@@ -391,13 +391,13 @@ func dataSourceIBMSccSiNotesRead(context context.Context, d *schema.ResourceData
 	apiNotes := []findingsv1.APINote{}
 
 	if listNoteOptions.PageToken != nil {
-		apiNotes, err = CollectSpecificNotes(findingsClient, context, listNoteOptions)
+		apiNotes, err = collectSpecificNotes(findingsClient, context, listNoteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
 			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
 		}
 	} else {
-		apiNotes, err = CollectAllNotes(findingsClient, context, listNoteOptions)
+		apiNotes, err = collectAllNotes(findingsClient, context, listNoteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
 			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
@@ -421,7 +421,7 @@ func dataSourceIBMSccSiNotesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func CollectSpecificNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
+func collectSpecificNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
 	apiListNotesResponse, response, err := findingsClient.ListNotesWithContext(ctx, options)
 	if err != nil {
 		return nil, fmt.Errorf("%s\n%s", err, response)
@@ -430,7 +430,7 @@ func CollectSpecificNotes(findingsClient *findingsv1.FindingsV1, ctx context.Con
 	return apiListNotesResponse.Notes, nil
 }
 
-func CollectAllNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
+func collectAllNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
 	finalList := []findingsv1.APINote{}
 
 	for {
