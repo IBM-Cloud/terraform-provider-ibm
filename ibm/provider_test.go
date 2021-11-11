@@ -127,6 +127,11 @@ var scc_posture_scan_id string
 var scc_posture_profile_id string
 
 func init() {
+	testlogger := os.Getenv("TF_LOG")
+	if testlogger != "" {
+		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
@@ -165,7 +170,6 @@ func init() {
 		datacenter = "par01"
 		fmt.Println("[WARN] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
-
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
