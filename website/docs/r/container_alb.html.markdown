@@ -44,3 +44,5 @@ In addition to all argument reference list, you can access the following attribu
 - `cluster` - (String) The name of the cluster where the ALB is provisioned.
 - `id` - (String) The unique identifier of the ALB. 
 - `name` -  (String) The name of the ALB.
+- `replicas` - (String) Desired number of ALB replicas. 
+- `resize` -  (Bool) Indicate whether resizing should be done
