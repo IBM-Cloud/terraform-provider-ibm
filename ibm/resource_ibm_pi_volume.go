@@ -68,49 +68,56 @@ func resourceIBMPIVolume() *schema.Resource {
 				Description: "Size of the volume in GB",
 			},
 			helpers.PIVolumeType: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"ssd", "standard", "tier1", "tier3"}),
-				Description:  "Type of Disk, required if pi_affinity_policy and pi_volume_pool not provided, otherwise ignored",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validateAllowedStringValue([]string{"ssd", "standard", "tier1", "tier3"}),
+				DiffSuppressFunc: applyOnce,
+				Description:      "Type of Disk, required if pi_affinity_policy and pi_volume_pool not provided, otherwise ignored",
 			},
 			helpers.PIVolumePool: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Volume pool where the volume will be created; if provided then pi_volume_type and pi_affinity_policy values will be ignored",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Volume pool where the volume will be created; if provided then pi_volume_type and pi_affinity_policy values will be ignored",
 			},
 			PIAffinityPolicy: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Affinity policy for data volume being created; ignored if pi_volume_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
-				ValidateFunc: InvokeValidator("ibm_pi_volume", "pi_affinity"),
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Affinity policy for data volume being created; ignored if pi_volume_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
+				ValidateFunc:     InvokeValidator("ibm_pi_volume", "pi_affinity"),
 			},
 			PIAffinityVolume: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Volume (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
-				ConflictsWith: []string{PIAffinityInstance},
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "Volume (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
+				ConflictsWith:    []string{PIAffinityInstance},
 			},
 			PIAffinityInstance: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "PVM Instance (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_volume is not provided",
-				ConflictsWith: []string{PIAffinityVolume},
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "PVM Instance (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_volume is not provided",
+				ConflictsWith:    []string{PIAffinityVolume},
 			},
 			PIAntiAffinityVolumes: {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				Description:   "List of volumes to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
-				ConflictsWith: []string{PIAntiAffinityInstances},
+				Type:             schema.TypeList,
+				Optional:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: applyOnce,
+				Description:      "List of volumes to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
+				ConflictsWith:    []string{PIAntiAffinityInstances},
 			},
 			PIAntiAffinityInstances: {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Elem:          &schema.Schema{Type: schema.TypeString},
-				Description:   "List of pvmInstances to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
-				ConflictsWith: []string{PIAntiAffinityVolumes},
+				Type:             schema.TypeList,
+				Optional:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: applyOnce,
+				Description:      "List of pvmInstances to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
+				ConflictsWith:    []string{PIAntiAffinityVolumes},
 			},
 
 			// Computed Attributes
@@ -161,7 +168,6 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	name := d.Get(helpers.PIVolumeName).(string)
-	volType := d.Get(helpers.PIVolumeType).(string)
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	var shared bool
 	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
@@ -170,9 +176,12 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	body := models.CreateDataVolume{
 		Name:      &name,
-		DiskType:  volType,
 		Shareable: &shared,
 		Size:      &size,
+	}
+	if v, ok := d.GetOk(helpers.PIVolumeType); ok {
+		volType := v.(string)
+		body.DiskType = volType
 	}
 	if v, ok := d.GetOk(helpers.PIVolumePool); ok {
 		volumePool := v.(string)
@@ -371,7 +380,7 @@ func isIBMPIVolumeRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid 
 			return nil, "", err
 		}
 
-		if vol.State == "available" {
+		if vol.State == "available" || vol.State == "in-use" {
 			return vol, helpers.PIVolumeProvisioningDone, nil
 		}
 
