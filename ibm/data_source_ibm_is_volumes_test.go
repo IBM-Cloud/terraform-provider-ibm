@@ -20,7 +20,7 @@ func TestAccIBMIsVolumesDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "id"),
 					// resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "first.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "limit"),
+					// resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "limit"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volumes.is_volumes", "volumes.#"),
 				),
 			},

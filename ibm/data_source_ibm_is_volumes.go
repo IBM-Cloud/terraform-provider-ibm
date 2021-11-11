@@ -88,38 +88,48 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 		ReadContext: dataSourceIBMIsVolumesRead,
 
 		Schema: map[string]*schema.Schema{
-			"first": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the first page of resources.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
+			// "first": &schema.Schema{
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "A link to the first page of resources.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"href": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Computed:    true,
+			// 				Description: "The URL for a page of resources.",
+			// 			},
+			// 		},
+			// 	},
+			// },
+			// "limit": &schema.Schema{
+			// 	Type:        schema.TypeInt,
+			// 	Computed:    true,
+			// 	Description: "The maximum number of resources that can be returned by the request.",
+			// },
+			// "next": &schema.Schema{
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"href": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Computed:    true,
+			// 				Description: "The URL for a page of resources.",
+			// 			},
+			// 		},
+			// 	},
+			// },
+			"volume_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Volume name identifier.",
 			},
-			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"next": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
+			"zone_name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Zone name identifier.",
 			},
 			isVolumes: &schema.Schema{
 				Type:        schema.TypeList,
@@ -515,15 +525,25 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	// filters - volume-name and zone-name
+	volumeName := d.Get("volume_name").(string)
+	zoneName := d.Get("zone_name").(string)
+
 	start := ""
 	allrecs := []vpcv1.Volume{}
 
+	// list
 	for {
 		listVolumesOptions := &vpcv1.ListVolumesOptions{}
 		if start != "" {
 			listVolumesOptions.Start = &start
 		}
-
+		if listVolumesOptions.Name != nil {
+			listVolumesOptions.Name = &volumeName
+		}
+		if listVolumesOptions.ZoneName != nil {
+			listVolumesOptions.ZoneName = &zoneName
+		}
 		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ListVolumesWithContext failed %s\n%s", err, response)
@@ -533,9 +553,9 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		start = GetNext(volumeCollection.Next)
 		allrecs = append(allrecs, volumeCollection.Volumes...)
 
-		if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting limit %s", err))
-		}
+		// if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
+		// 	return diag.FromErr(fmt.Errorf("Error setting limit %s", err))
+		// }
 
 		if start == "" {
 			break

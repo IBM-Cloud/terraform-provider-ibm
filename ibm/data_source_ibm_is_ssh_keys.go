@@ -34,19 +34,24 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 		ReadContext: dataSourceIBMIsSshKeysRead,
 
 		Schema: map[string]*schema.Schema{
-			"first": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the first page of resources.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
+			// "first": &schema.Schema{
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "A link to the first page of resources.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"href": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Computed:    true,
+			// 				Description: "The URL for a page of resources.",
+			// 			},
+			// 		},
+			// 	},
+			// },
+			"resource_group": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Resource group identifier.",
 			},
 			isKeys: &schema.Schema{
 				Type:        schema.TypeList,
@@ -126,25 +131,25 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 					},
 				},
 			},
-			isKeysLimit: &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"next": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for a page of resources.",
-						},
-					},
-				},
-			},
+			// isKeysLimit: &schema.Schema{
+			// 	Type:        schema.TypeInt,
+			// 	Computed:    true,
+			// 	Description: "The maximum number of resources that can be returned by the request.",
+			// },
+			// "next": &schema.Schema{
+			// 	Type:        schema.TypeList,
+			// 	Computed:    true,
+			// 	Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"href": &schema.Schema{
+			// 				Type:        schema.TypeString,
+			// 				Computed:    true,
+			// 				Description: "The URL for a page of resources.",
+			// 			},
+			// 		},
+			// 	},
+			// },
 			isKeysTotalCount: &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -162,13 +167,19 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 
 	start := ""
 	allrecs := []vpcv1.Key{}
+	// filter for resource group Id
+	resourceGroupId := d.Get("resource_group").(string)
 
 	for {
 		listKeysOptions := &vpcv1.ListKeysOptions{}
-
 		if start != "" {
 			listKeysOptions.Start = &start
 		}
+		//filter
+		if listKeysOptions.ResourceGroupID != nil {
+			listKeysOptions.ResourceGroupID = &resourceGroupId
+		}
+
 		keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
 		if err != nil || keyCollection == nil {
 			log.Printf("[DEBUG] ListKeysWithContext failed %s\n%s", err, response)
@@ -178,9 +189,9 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 		start = GetNext(keyCollection.Next)
 		allrecs = append(allrecs, keyCollection.Keys...)
 
-		if err = d.Set("limit", intValue(keyCollection.Limit)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-		}
+		// if err = d.Set("limit", intValue(keyCollection.Limit)); err != nil {
+		// 	return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		// }
 
 		if err = d.Set("total_count", intValue(keyCollection.TotalCount)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
