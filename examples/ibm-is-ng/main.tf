@@ -1012,9 +1012,24 @@ data "ibm_is_ipsec_policy" "example3" {
 }
 
 # List ssh keys 
-data "ibm_is_ssh_keys" "example-keys" {
+data "ibm_is_ssh_keys" "example" {
+}
+
+# List ssh keys by Resource group id
+data "ibm_is_ssh_keys" "example" {
+  resource_group = "8302a7a06e7440d6927383cd7c06e7d2"
 }
 
 # List volumes
 data "ibm_is_volumes" "example-volumes" {
+}
+
+# List Volumes by Name 
+data "ibm_is_volumes" "example" {
+  volume_name = "worrier-mailable-timpani-scowling"
+}
+
+# List Volumes by Zone name
+data "ibm_is_volumes" "example" {
+  zone_name = "us-south-1"
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	// "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -88,39 +87,6 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 		ReadContext: dataSourceIBMIsVolumesRead,
 
 		Schema: map[string]*schema.Schema{
-			// "first": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	Computed:    true,
-			// 	Description: "A link to the first page of resources.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"href": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Computed:    true,
-			// 				Description: "The URL for a page of resources.",
-			// 			},
-			// 		},
-			// 	},
-			// },
-			// "limit": &schema.Schema{
-			// 	Type:        schema.TypeInt,
-			// 	Computed:    true,
-			// 	Description: "The maximum number of resources that can be returned by the request.",
-			// },
-			// "next": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	Computed:    true,
-			// 	Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"href": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Computed:    true,
-			// 				Description: "The URL for a page of resources.",
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"volume_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -538,10 +504,10 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		if start != "" {
 			listVolumesOptions.Start = &start
 		}
-		if listVolumesOptions.Name != nil {
+		if volumeName != "" {
 			listVolumesOptions.Name = &volumeName
 		}
-		if listVolumesOptions.ZoneName != nil {
+		if zoneName != "" {
 			listVolumesOptions.ZoneName = &zoneName
 		}
 		volumeCollection, response, err := vpcClient.ListVolumesWithContext(context, listVolumesOptions)
@@ -553,10 +519,6 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 		start = GetNext(volumeCollection.Next)
 		allrecs = append(allrecs, volumeCollection.Volumes...)
 
-		// if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
-		// 	return diag.FromErr(fmt.Errorf("Error setting limit %s", err))
-		// }
-
 		if start == "" {
 			break
 		}
@@ -564,23 +526,6 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(dataSourceIBMIsVolumesID(d))
-
-	// if volumeCollection.First != nil {
-	// 	err = d.Set("first", dataSourceVolumeCollectionFlattenFirst(*volumeCollection.First))
-	// 	if err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting first %s", err))
-	// 	}
-	// }
-	// if err = d.Set("limit", intValue(volumeCollection.Limit)); err != nil {
-	// 	return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	// }
-
-	// if volumeCollection.Next != nil {
-	// 	err = d.Set("next", dataSourceVolumeCollectionFlattenNext(*volumeCollection.Next))
-	// 	if err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting next %s", err))
-	// 	}
-	// }
 
 	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs))
 	if err != nil {
@@ -594,42 +539,6 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 func dataSourceIBMIsVolumesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
-
-// func dataSourceVolumeCollectionFlattenFirst(result vpcv1.VolumeCollectionFirst) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
-// 	finalMap := dataSourceVolumeCollectionFirstToMap(result)
-// 	finalList = append(finalList, finalMap)
-
-// 	return finalList
-// }
-
-// func dataSourceVolumeCollectionFirstToMap(firstItem vpcv1.VolumeCollectionFirst) (firstMap map[string]interface{}) {
-// 	firstMap = map[string]interface{}{}
-
-// 	if firstItem.Href != nil {
-// 		firstMap["href"] = firstItem.Href
-// 	}
-
-// 	return firstMap
-// }
-
-// func dataSourceVolumeCollectionFlattenNext(result vpcv1.VolumeCollectionNext) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
-// 	finalMap := dataSourceVolumeCollectionNextToMap(result)
-// 	finalList = append(finalList, finalMap)
-
-// 	return finalList
-// }
-
-// func dataSourceVolumeCollectionNextToMap(nextItem vpcv1.VolumeCollectionNext) (nextMap map[string]interface{}) {
-// 	nextMap = map[string]interface{}{}
-
-// 	if nextItem.Href != nil {
-// 		nextMap["href"] = nextItem.Href
-// 	}
-
-// 	return nextMap
-// }
 
 func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume) (volumes []map[string]interface{}) {
 	for _, volumesItem := range result {

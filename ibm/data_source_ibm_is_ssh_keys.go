@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	// "github.ibm.com/ibmcloud/vpc-go-sdk/vpcv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -26,7 +25,6 @@ const (
 	isKeyResourceGroupId   = "id"
 	isKeyResourceGroupName = "name"
 	isKeysLimit            = "limit"
-	isKeysTotalCount       = "total_count"
 )
 
 func dataSourceIBMIsSshKeys() *schema.Resource {
@@ -34,20 +32,6 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 		ReadContext: dataSourceIBMIsSshKeysRead,
 
 		Schema: map[string]*schema.Schema{
-			// "first": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	Computed:    true,
-			// 	Description: "A link to the first page of resources.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"href": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Computed:    true,
-			// 				Description: "The URL for a page of resources.",
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -131,30 +115,6 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 					},
 				},
 			},
-			// isKeysLimit: &schema.Schema{
-			// 	Type:        schema.TypeInt,
-			// 	Computed:    true,
-			// 	Description: "The maximum number of resources that can be returned by the request.",
-			// },
-			// "next": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	Computed:    true,
-			// 	Description: "A link to the next page of resources. This property is present for all pagesexcept the last page.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"href": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Computed:    true,
-			// 				Description: "The URL for a page of resources.",
-			// 			},
-			// 		},
-			// 	},
-			// },
-			isKeysTotalCount: &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The total number of resources across all pages.",
-			},
 		},
 	}
 }
@@ -168,16 +128,18 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 	start := ""
 	allrecs := []vpcv1.Key{}
 	// filter for resource group Id
-	resourceGroupId := d.Get("resource_group").(string)
+	var resourceGroupId string
+	resourceGroupId = d.Get("resource_group").(string)
+	listKeysOptions := &vpcv1.ListKeysOptions{}
+
+	//filter
+	if resourceGroupId != "" {
+		listKeysOptions.ResourceGroupID = &resourceGroupId
+	}
 
 	for {
-		listKeysOptions := &vpcv1.ListKeysOptions{}
 		if start != "" {
 			listKeysOptions.Start = &start
-		}
-		//filter
-		if listKeysOptions.ResourceGroupID != nil {
-			listKeysOptions.ResourceGroupID = &resourceGroupId
 		}
 
 		keyCollection, response, err := vpcClient.ListKeysWithContext(context, listKeysOptions)
@@ -188,14 +150,6 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 
 		start = GetNext(keyCollection.Next)
 		allrecs = append(allrecs, keyCollection.Keys...)
-
-		// if err = d.Set("limit", intValue(keyCollection.Limit)); err != nil {
-		// 	return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-		// }
-
-		if err = d.Set("total_count", intValue(keyCollection.TotalCount)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
-		}
 
 		if start == "" {
 			break
@@ -217,24 +171,6 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 func dataSourceIBMIsSshKeysID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
-
-// func dataSourceKeyCollectionFlattenFirst(result vpcv1.KeyCollectionFirst) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
-// 	finalMap := dataSourceKeyCollectionFirstToMap(result)
-// 	finalList = append(finalList, finalMap)
-
-// 	return finalList
-// }
-
-// func dataSourceKeyCollectionFirstToMap(firstItem vpcv1.KeyCollectionFirst) (firstMap map[string]interface{}) {
-// 	firstMap = map[string]interface{}{}
-
-// 	if firstItem.Href != nil {
-// 		firstMap["href"] = firstItem.Href
-// 	}
-
-// 	return firstMap
-// }
 
 func dataSourceKeyCollectionFlattenKeys(result []vpcv1.Key) (keys []map[string]interface{}) {
 	for _, keysItem := range result {
@@ -299,21 +235,3 @@ func dataSourceKeyCollectionKeysResourceGroupToMap(resourceGroupItem vpcv1.Resou
 
 	return resourceGroupMap
 }
-
-// func dataSourceKeyCollectionFlattenNext(result vpcv1.KeyCollectionNext) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
-// 	finalMap := dataSourceKeyCollectionNextToMap(result)
-// 	finalList = append(finalList, finalMap)
-
-// 	return finalList
-// }
-
-// func dataSourceKeyCollectionNextToMap(nextItem vpcv1.KeyCollectionNext) (nextMap map[string]interface{}) {
-// 	nextMap = map[string]interface{}{}
-
-// 	if nextItem.Href != nil {
-// 		nextMap["href"] = nextItem.Href
-// 	}
-
-// 	return nextMap
-// }
