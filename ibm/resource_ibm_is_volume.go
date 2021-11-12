@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -165,13 +164,21 @@ func resourceIBMISVolume() *schema.Resource {
 				Description: "Deletes all snapshots created from this volume",
 			},
 			isVolumeTags: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
+				Type:     schema.TypeSet,
+				Optional: true,
+				// Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_volume", "tag")},
-				Set:         resourceIBMVPCHash,
-				Description: "Tags for the volume instance",
+				Set:         schema.HashString,
+				Description: "User Tags for the volume instance",
 			},
+			// isVolumeTags: {
+			// 	Type:        schema.TypeSet,
+			// 	Optional:    true,
+			// 	Computed:    true,
+			// 	Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_volume", "tag")},
+			// 	Set:         resourceIBMVPCHash,
+			// 	Description: "Tags for the volume instance",
+			// },
 
 			ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -303,7 +310,7 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 
 	if rgrp, ok := d.GetOk(isVolumeResourceGroup); ok {
 		rg := rgrp.(string)
-		volTemplate.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+		volTemplate.ResourceGroup = &vpcv1.VolumePrototypeResourceGroup{
 			ID: &rg,
 		}
 	}
@@ -311,6 +318,19 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if i, ok := d.GetOk(isVolumeIops); ok {
 		iops := int64(i.(int))
 		volTemplate.Iops = &iops
+	}
+
+	var userTags *schema.Set
+	if v, ok := d.GetOk(isVolumeTags); ok {
+		userTags = v.(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			volTemplate.UserTags = userTagsArray
+		}
 	}
 
 	vol, response, err := sess.CreateVolume(options)
@@ -322,15 +342,6 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
-	}
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
-		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on create of resource Volume (%s) tags: %s", d.Id(), err)
-		}
 	}
 	return nil
 }
@@ -391,12 +402,7 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isVolumeStatusReasons, statusReasonsList)
 	}
-	tags, err := GetTagsUsingCRN(meta, *vol.CRN)
-	if err != nil {
-		log.Printf(
-			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
-	}
-	d.Set(isVolumeTags, tags)
+	d.Set(isVolumeTags, vol.UserTags)
 	controller, err := getBaseController(meta)
 	if err != nil {
 		return err
@@ -445,22 +451,22 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		deleteAllSnapshots(sess, id)
 	}
 
-	// tags update
-	if d.HasChange(isVolumeTags) {
-		options := &vpcv1.GetVolumeOptions{
-			ID: &id,
-		}
-		vol, response, err := sess.GetVolume(options)
-		if err != nil {
-			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
-		}
-		oldList, newList := d.GetChange(isVolumeTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on update of resource vpc volume (%s) tags: %s", id, err)
-		}
-	}
+	// // tags update
+	// if d.HasChange(isVolumeTags) {
+	// 	options := &vpcv1.GetVolumeOptions{
+	// 		ID: &id,
+	// 	}
+	// 	vol, response, err := sess.GetVolume(options)
+	// 	if err != nil {
+	// 		return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+	// 	}
+	// 	oldList, newList := d.GetChange(isVolumeTags)
+	// 	err = UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
+	// 	if err != nil {
+	// 		log.Printf(
+	// 			"Error on update of resource vpc volume (%s) tags: %s", id, err)
+	// 	}
+	// }
 
 	options := &vpcv1.UpdateVolumeOptions{
 		ID: &id,
@@ -605,6 +611,49 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		}
 	}
 
+	// user tags update
+	if d.HasChange(isVolumeTags) {
+		log.Println("Hi I am inside isVolumeUserTags")
+		var userTags *schema.Set
+		if v, ok := d.GetOk(isVolumeTags); ok {
+			optionsget := &vpcv1.GetVolumeOptions{
+				ID: &id,
+			}
+			_, response, err := sess.GetVolume(optionsget)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				return fmt.Errorf("Error getting Volume (%s): %s\n%s", id, err, response)
+			}
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				eTag := response.Headers.Get("ETag")
+				volumeNamePatchModel := &vpcv1.VolumePatch{}
+				volumeNamePatchModel.UserTags = userTagsArray
+				volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("Error calling asPatch for volumeNamePatch: %s", err)
+				}
+				options.VolumePatch = volumeNamePatch
+				options.IfMatch = &eTag
+				_, response, err := sess.UpdateVolume(options)
+				if err != nil {
+					return fmt.Errorf("Error updating volume : %s\n%s", err, response)
+				}
+				_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 

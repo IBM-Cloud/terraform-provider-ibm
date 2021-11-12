@@ -16,29 +16,30 @@ import (
 )
 
 const (
-	isSnapshotName            = "name"
-	isSnapshotResourceGroup   = "resource_group"
-	isSnapshotSourceVolume    = "source_volume"
-	isSnapshotSourceImage     = "source_image"
-	isSnapshotUserTags        = "user_tags"
-	isSnapshotCRN             = "crn"
-	isSnapshotHref            = "href"
-	isSnapshotEncryption      = "encryption"
-	isSnapshotEncryptionKey   = "encryption_key"
-	isSnapshotOperatingSystem = "operating_system"
-	isSnapshotLCState         = "lifecycle_state"
-	isSnapshotMinCapacity     = "minimum_capacity"
-	isSnapshotResourceType    = "resource_type"
-	isSnapshotSize            = "size"
-	isSnapshotBootable        = "bootable"
-	isSnapshotDeleting        = "deleting"
-	isSnapshotDeleted         = "deleted"
-	isSnapshotAvailable       = "stable"
-	isSnapshotFailed          = "failed"
-	isSnapshotPending         = "pending"
-	isSnapshotSuspended       = "suspended"
-	isSnapshotUpdating        = "updating"
-	isSnapshotWaiting         = "waiting"
+	isSnapshotName             = "name"
+	isSnapshotResourceGroup    = "resource_group"
+	isSnapshotSourceVolume     = "source_volume"
+	isSnapshotSourceImage      = "source_image"
+	isSnapshotUserTags         = "tags"
+	isSnapshotCRN              = "crn"
+	isSnapshotHref             = "href"
+	isSnapshotEncryption       = "encryption"
+	isSnapshotEncryptionKey    = "encryption_key"
+	isSnapshotOperatingSystem  = "operating_system"
+	isSnapshotLCState          = "lifecycle_state"
+	isSnapshotMinCapacity      = "minimum_capacity"
+	isSnapshotResourceType     = "resource_type"
+	isSnapshotSize             = "size"
+	isSnapshotBootable         = "bootable"
+	isSnapshotDeleting         = "deleting"
+	isSnapshotDeleted          = "deleted"
+	isSnapshotAvailable        = "stable"
+	isSnapshotFailed           = "failed"
+	isSnapshotPending          = "pending"
+	isSnapshotSuspended        = "suspended"
+	isSnapshotUpdating         = "updating"
+	isSnapshotWaiting          = "waiting"
+	idSnapshotBackupPolicyPlan = "backup_policy_plan"
 )
 
 func resourceIBMSnapshot() *schema.Resource {
@@ -147,6 +148,59 @@ func resourceIBMSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the snapshot",
 			},
+
+			isSnapshotUserTags: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				// Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_is_snapshot", isSnapshotUserTags)},
+				Set:         schema.HashString,
+				Description: "User Tags for the snapshot",
+			},
+
+			idSnapshotBackupPolicyPlan: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, the backup policy plan which created this snapshot.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this backup policy plan.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this backup policy plan.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this backup policy plan.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of resource referenced",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -163,6 +217,15 @@ func resourceIBMISSnapshotValidator() *ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isSnapshotUserTags,
+			ValidateFunctionIdentifier: ValidateRegexpLen,
+			Type:                       TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISSnapshotResourceValidator := ResourceValidator{ResourceName: "ibm_is_snapshot", Schema: validateSchema}
 	return &ibmISSnapshotResourceValidator
 }
@@ -187,6 +250,18 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		rg := grp.(string)
 		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
+		}
+	}
+	var userTags *schema.Set
+	if v, ok := d.GetOk(isSnapshotUserTags); ok {
+		userTags = v.(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			options.UserTags = userTagsArray
 		}
 	}
 
@@ -280,6 +355,7 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 	d.Set(isSnapshotResourceType, *snapshot.ResourceType)
 	d.Set(isSnapshotBootable, *snapshot.Bootable)
+	d.Set(isSnapshotUserTags, snapshot.UserTags)
 	if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 		d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
 	}
@@ -294,6 +370,22 @@ func snapshotGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 		d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
 	}
+
+	backupPolicyPlanList := []map[string]interface{}{}
+	if snapshot.BackupPolicyPlan != nil {
+		backupPolicyPlan := map[string]interface{}{}
+		if snapshot.BackupPolicyPlan.Deleted != nil {
+			snapshotBackupPolicyPlanDeletedMap := map[string]interface{}{}
+			snapshotBackupPolicyPlanDeletedMap["more_info"] = snapshot.BackupPolicyPlan.Deleted.MoreInfo
+			backupPolicyPlan["deleted"] = []map[string]interface{}{snapshotBackupPolicyPlanDeletedMap}
+		}
+		backupPolicyPlan["href"] = snapshot.BackupPolicyPlan.Href
+		backupPolicyPlan["id"] = snapshot.BackupPolicyPlan.ID
+		backupPolicyPlan["name"] = snapshot.BackupPolicyPlan.Name
+		backupPolicyPlan["resource_type"] = snapshot.BackupPolicyPlan.ResourceType
+		backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
+	}
+	d.Set(idSnapshotBackupPolicyPlan, backupPolicyPlanList)
 	return nil
 }
 
@@ -340,6 +432,53 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 			return err
 		}
 	}
+
+	// user tags update
+	if d.HasChange(isSnapshotUserTags) {
+		var userTags *schema.Set
+		if v, ok := d.GetOk(isSnapshotUserTags); ok {
+			getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+				ID: &id,
+			}
+			_, response, err := sess.GetSnapshot(getSnapshotOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				return fmt.Errorf("Error getting Snapshot : %s\n%s", err, response)
+			}
+			eTag := response.Headers.Get("ETag")
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				updateSnapshotOptions := &vpcv1.UpdateSnapshotOptions{
+					ID: &id,
+				}
+				snapshotPatchModel := &vpcv1.SnapshotPatch{}
+				snapshotPatchModel.UserTags = userTagsArray
+				snapshotPatch, err := snapshotPatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("Error calling asPatch for SnapshotPatch: %s", err)
+				}
+				updateSnapshotOptions.SnapshotPatch = snapshotPatch
+				updateSnapshotOptions.IfMatch = &eTag
+				_, response, err := sess.UpdateSnapshot(updateSnapshotOptions)
+				if err != nil {
+					return fmt.Errorf("Error updating Snapshot : %s\n%s", err, response)
+				}
+				_, err = isWaitForSnapshotUpdate(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

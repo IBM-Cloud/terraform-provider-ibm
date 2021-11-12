@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -104,8 +103,16 @@ func dataSourceIBMISVolume() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         resourceIBMVPCHash,
-				Description: "Tags for the volume instance",
+				Description: "User Tags for the volume instance",
 			},
+
+			// isVolumeTags: {
+			// 	Type:        schema.TypeSet,
+			// 	Computed:    true,
+			// 	Elem:        &schema.Schema{Type: schema.TypeString},
+			// 	Set:         resourceIBMVPCHash,
+			// 	Description: "Tags for the volume instance",
+			// },
 
 			isVolumeSourceSnapshot: {
 				Type:        schema.TypeString,
@@ -229,12 +236,13 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
-		tags, err := GetTagsUsingCRN(meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
-		}
-		d.Set(isVolumeTags, tags)
+		// tags, err := GetTagsUsingCRN(meta, *vol.CRN)
+		// if err != nil {
+		// 	log.Printf(
+		// 		"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
+		// }
+		d.Set(isVolumeTags, vol.UserTags)
+		// d.Set(isVolumeTags, tags)
 		controller, err := getBaseController(meta)
 		if err != nil {
 			return err

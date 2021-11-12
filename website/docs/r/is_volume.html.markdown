@@ -81,6 +81,7 @@ Review the argument references that you can specify for your resource.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your volume. Tags can help you find your volume more easily later.No.
 - `zone` - (Required, Forces new resource, String) The location of the volume.
+- `user_tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. Tags can help you find your volume more easily later.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

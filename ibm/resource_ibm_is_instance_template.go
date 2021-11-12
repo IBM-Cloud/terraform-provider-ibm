@@ -514,53 +514,53 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	}
 
 	// Handle volume attachments
-	if volsintf, ok := d.GetOk(isInstanceTemplateVolumeAttachments); ok {
-		vols := volsintf.([]interface{})
-		var intfs []vpcv1.VolumeAttachmentPrototypeInstanceContext
-		for _, resource := range vols {
-			vol := resource.(map[string]interface{})
-			volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
-			deleteVolBool := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete].(bool)
-			volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
-			attachmentnamestr := vol[isInstanceTemplateVolAttachmentName].(string)
-			volInterface.Name = &attachmentnamestr
-			volIdStr := vol[isInstanceTemplateVolAttVol].(string)
+	// if volsintf, ok := d.GetOk(isInstanceTemplateVolumeAttachments); ok {
+	// 	vols := volsintf.([]interface{})
+	// 	// var intfs []vpcv1.VolumeAttachmentPrototypeInstanceContext
+	// 	for _, resource := range vols {
+	// 		vol := resource.(map[string]interface{})
+	// 		// volInterface := &vpcv1.VolumeAttachmentPrototypeInstanceContext{}
+	// 		deleteVolBool := vol[isInstanceTemplateVolumeDeleteOnInstanceDelete].(bool)
+	// 		volInterface.DeleteVolumeOnInstanceDelete = &deleteVolBool
+	// 		attachmentnamestr := vol[isInstanceTemplateVolAttachmentName].(string)
+	// 		volInterface.Name = &attachmentnamestr
+	// 		volIdStr := vol[isInstanceTemplateVolAttVol].(string)
 
-			if volIdStr != "" {
-				volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity{
-					ID: &volIdStr,
-				}
-			} else {
-				newvolintf := vol[isInstanceTemplateVolAttVolPrototype].([]interface{})[0]
-				newvol := newvolintf.(map[string]interface{})
-				profileName := newvol[isInstanceTemplateVolAttVolProfile].(string)
-				capacity := int64(newvol[isInstanceTemplateVolAttVolCapacity].(int))
+	// 		if volIdStr != "" {
+	// 			volInterface.Volume = &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity{
+	// 				ID: &volIdStr,
+	// 			}
+	// 		} else {
+	// 			newvolintf := vol[isInstanceTemplateVolAttVolPrototype].([]interface{})[0]
+	// 			newvol := newvolintf.(map[string]interface{})
+	// 			profileName := newvol[isInstanceTemplateVolAttVolProfile].(string)
+	// 			capacity := int64(newvol[isInstanceTemplateVolAttVolCapacity].(int))
 
-				volPrototype := &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext{
-					Profile: &vpcv1.VolumeProfileIdentity{
-						Name: &profileName,
-					},
-					Capacity: &capacity,
-				}
-				iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
-				encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
+	// 			volPrototype := &vpcv1.VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext{
+	// 				Profile: &vpcv1.VolumeProfileIdentity{
+	// 					Name: &profileName,
+	// 				},
+	// 				Capacity: &capacity,
+	// 			}
+	// 			iops := int64(newvol[isInstanceTemplateVolAttVolIops].(int))
+	// 			encryptionKey := newvol[isInstanceTemplateVolAttVolEncryptionKey].(string)
 
-				if iops != 0 {
-					volPrototype.Iops = &iops
-				}
+	// 			if iops != 0 {
+	// 				volPrototype.Iops = &iops
+	// 			}
 
-				if encryptionKey != "" {
-					volPrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
-						CRN: &encryptionKey,
-					}
-				}
-				volInterface.Volume = volPrototype
-			}
+	// 			if encryptionKey != "" {
+	// 				volPrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+	// 					CRN: &encryptionKey,
+	// 				}
+	// 			}
+	// 			volInterface.Volume = volPrototype
+	// 		}
 
-			intfs = append(intfs, *volInterface)
-		}
-		instanceproto.VolumeAttachments = intfs
-	}
+	// 		intfs = append(intfs, *volInterface)
+	// 	}
+	// 	instanceproto.VolumeAttachments = intfs
+	// }
 
 	// Handle primary network interface
 	if primnicintf, ok := d.GetOk(isInstanceTemplatePrimaryNetworkInterface); ok {
@@ -602,7 +602,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 
 		if IPAddress, ok := primnic[isInstanceTemplateNicPrimaryIpv4Address]; ok {
 			if PrimaryIpv4Address := IPAddress.(string); PrimaryIpv4Address != "" {
-				primnicobj.PrimaryIpv4Address = &PrimaryIpv4Address
+				// primnicobj.PrimaryIpv4Address = &PrimaryIpv4Address
 			}
 		}
 	}
@@ -646,7 +646,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			}
 			if IPAddress, ok := nic[isInstanceTemplateNicPrimaryIpv4Address]; ok {
 				if PrimaryIpv4Address := IPAddress.(string); PrimaryIpv4Address != "" {
-					nwInterface.PrimaryIpv4Address = &PrimaryIpv4Address
+					// nwInterface.PrimaryIpv4Address = &PrimaryIpv4Address
 				}
 			}
 			intfs = append(intfs, *nwInterface)
@@ -728,9 +728,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		primaryNicList := make([]map[string]interface{}, 0)
 		currentPrimNic := map[string]interface{}{}
 		currentPrimNic[isInstanceTemplateNicName] = *instance.PrimaryNetworkInterface.Name
-		if instance.PrimaryNetworkInterface.PrimaryIpv4Address != nil {
-			currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
-		}
+		// if instance.PrimaryNetworkInterface.PrimaryIpv4Address != nil {
+		// 	currentPrimNic[isInstanceTemplateNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
+		// }
 		subInf := instance.PrimaryNetworkInterface.Subnet
 		subnetIdentity := subInf.(*vpcv1.SubnetIdentity)
 		currentPrimNic[isInstanceTemplateNicSubnet] = *subnetIdentity.ID
@@ -755,9 +755,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 		for _, intfc := range instance.NetworkInterfaces {
 			currentNic := map[string]interface{}{}
 			currentNic[isInstanceTemplateNicName] = *intfc.Name
-			if intfc.PrimaryIpv4Address != nil {
-				currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
-			}
+			// if intfc.PrimaryIpv4Address != nil {
+			// 	currentNic[isInstanceTemplateNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+			// }
 			if intfc.AllowIPSpoofing != nil {
 				currentNic[isInstanceTemplateNicAllowIPSpoofing] = *intfc.AllowIPSpoofing
 			}
@@ -798,27 +798,27 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 			volumeAttach[isInstanceTemplateDeleteVolume] = *volume.DeleteVolumeOnInstanceDelete
 			newVolumeArr := []map[string]interface{}{}
 			newVolume := map[string]interface{}{}
-			volumeIntf := volume.Volume
-			volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
-			if volumeInst.ID != nil {
-				volumeAttach[isInstanceTemplateVolAttVol] = *volumeInst.ID
-			}
+			// volumeIntf := volume.Volume
+			// volumeInst := volumeIntf.(*vpcv1.VolumeAttachmentVolumePrototypeInstanceContext)
+			// if volumeInst.ID != nil {
+			// 	volumeAttach[isInstanceTemplateVolAttVol] = *volumeInst.ID
+			// }
 
-			if volumeInst.Capacity != nil {
-				newVolume[isInstanceTemplateVolAttVolCapacity] = *volumeInst.Capacity
-			}
-			if volumeInst.Profile != nil {
-				profile := volumeInst.Profile.(*vpcv1.VolumeProfileIdentity)
-				newVolume[isInstanceTemplateVolAttVolProfile] = profile.Name
-			}
+			// if volumeInst.Capacity != nil {
+			// 	newVolume[isInstanceTemplateVolAttVolCapacity] = *volumeInst.Capacity
+			// }
+			// if volumeInst.Profile != nil {
+			// 	profile := volumeInst.Profile.(*vpcv1.VolumeProfileIdentity)
+			// 	newVolume[isInstanceTemplateVolAttVolProfile] = profile.Name
+			// }
 
-			if volumeInst.Iops != nil {
-				newVolume[isInstanceTemplateVolAttVolIops] = *volumeInst.Iops
-			}
-			if volumeInst.EncryptionKey != nil {
-				encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
-				newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
-			}
+			// if volumeInst.Iops != nil {
+			// 	newVolume[isInstanceTemplateVolAttVolIops] = *volumeInst.Iops
+			// }
+			// if volumeInst.EncryptionKey != nil {
+			// 	encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
+			// 	newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
+			// }
 			if len(newVolume) > 0 {
 				newVolumeArr = append(newVolumeArr, newVolume)
 			}

@@ -19,6 +19,7 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
 	name1 := fmt.Sprintf("tf-vol-upd-%d", acctest.RandIntRange(10, 100))
+	tagname := fmt.Sprintf("tfusertag%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -26,16 +27,22 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISVolumeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMISVolumeConfig(name),
+				Config: testAccCheckIBMISVolumeConfig(name, tagname),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
 					resource.TestCheckResourceAttr(
 						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "tags.0", tagname),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccCheckIBMISVolumeConfig(name1),
+				Config: testAccCheckIBMISVolumeConfig(name1, tagname),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
 					resource.TestCheckResourceAttr(
@@ -266,7 +273,7 @@ func testAccCheckIBMISVolumeExists(n, volID string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMISVolumeConfig(name string) string {
+func testAccCheckIBMISVolumeConfig(name, usertag string) string {
 	return fmt.Sprintf(
 		`
 	resource "ibm_is_volume" "storage"{
@@ -274,8 +281,9 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 		profile = "10iops-tier"
 		zone = "us-south-1"
 		# capacity= 200
+		tags = ["%s"]
 	}
-`, name)
+`, name, usertag)
 
 }
 
