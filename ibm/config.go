@@ -66,6 +66,7 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
+	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
@@ -265,6 +266,7 @@ type ClientSession interface {
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
+	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 }
 
@@ -527,6 +529,10 @@ type clientSession struct {
 	// Security and Compliance Center (SCC)
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
+
+	// Security and Compliance Center (SCC) Admin
+	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
+	adminServiceApiClientErr error
 
 	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr error
@@ -973,6 +979,11 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 	return session.findingsClient.Clone(), nil
 }
 
+//Security and Compliance center Admin API
+func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
+	return session.adminServiceApiClient, session.adminServiceApiClientErr
+}
+
 // Security and Compliance center Posture Management
 func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
 	if session.postureManagementClientErr != nil {
@@ -1391,6 +1402,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.findingsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// SCC ADMIN Service
+	var adminServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		adminServiceApiClientURL = adminserviceapiv1.DefaultServiceURL
+	}
+	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
+	}
+
+	// Construct the service client.
+	session.adminServiceApiClient, err = adminserviceapiv1.NewAdminServiceApiV1(adminServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.adminServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.adminServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.adminServiceApiClientErr = fmt.Errorf("Error occurred while configuring Admin Service API service: %q", err)
 	}
 
 	// SCHEMATICS Service
