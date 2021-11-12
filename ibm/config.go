@@ -85,7 +85,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/bluemix-go/api/globaltagging/globaltaggingv3"
 	"github.com/IBM-Cloud/bluemix-go/api/hpcs"
-	"github.com/IBM-Cloud/bluemix-go/api/iam/iamv1"
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog"
@@ -204,7 +203,6 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
-	IAMAPI() (iamv1.IAMServiceAPI, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -323,9 +321,6 @@ type clientSession struct {
 
 	userManagementErr error
 	userManagementAPI usermanagementv2.UserManagementAPI
-
-	iamConfigErr  error
-	iamServiceAPI iamv1.IAMServiceAPI
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
@@ -615,11 +610,6 @@ func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 // UserManagementAPI provides User management APIs ...
 func (sess clientSession) UserManagementAPI() (usermanagementv2.UserManagementAPI, error) {
 	return sess.userManagementAPI, sess.userManagementErr
-}
-
-// IAMAPI provides IAM PAP APIs ...
-func (sess clientSession) IAMAPI() (iamv1.IAMServiceAPI, error) {
-	return sess.iamServiceAPI, sess.iamConfigErr
 }
 
 // IAM Policy Management
@@ -1034,7 +1024,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
-		session.iamConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
 		session.vpcErr = errEmptyBluemixCredentials
@@ -1656,12 +1645,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerConfigErrv2 = fmt.Errorf("Error occured while configuring Resource Controller v2 service: %q", err)
 	}
 	session.resourceControllerServiceAPIv2 = ResourceControllerAPIv2
-
-	iam, err := iamv1.New(sess.BluemixSession)
-	if err != nil {
-		session.iamConfigErr = fmt.Errorf("Error occured while configuring Bluemix IAM Service: %q", err)
-	}
-	session.iamServiceAPI = iam
 
 	userManagementAPI, err := usermanagementv2.New(sess.BluemixSession)
 	if err != nil {
@@ -2703,6 +2686,7 @@ func newSession(c *Config) (*Session, error) {
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
 			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -2725,6 +2709,7 @@ func newSession(c *Config) (*Session, error) {
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
 			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
@@ -2742,7 +2727,8 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {
@@ -2755,7 +2741,8 @@ func authenticateCF(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewUAARepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{http.UserAgent()},
 		},
 	})
 	if err != nil {
@@ -2812,7 +2799,8 @@ func refreshToken(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {

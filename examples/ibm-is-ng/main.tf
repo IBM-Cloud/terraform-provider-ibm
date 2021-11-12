@@ -370,6 +370,7 @@ resource "ibm_is_volume" "vol2" {
 
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
+  vpc = ibm_is_vpc.vpc1.id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -418,6 +419,18 @@ data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
 
 data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
   network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl" {
+	network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl1" {
+	name = ibm_is_network_acl.isExampleACL.name
+	vpc_name = ibm_is_vpc.vpc1.name
+}
+
+data "ibm_is_network_acls" "is_network_acls" {
 }
 
 resource "ibm_is_public_gateway" "publicgateway1" {

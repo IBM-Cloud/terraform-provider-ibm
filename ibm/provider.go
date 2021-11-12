@@ -354,6 +354,8 @@ func Provider() *schema.Provider {
 			"ibm_is_zones":                           dataSourceIBMISZones(),
 			"ibm_is_operating_system":                dataSourceIBMISOperatingSystem(),
 			"ibm_is_operating_systems":               dataSourceIBMISOperatingSystems(),
+			"ibm_is_network_acls":                    dataSourceIBMIsNetworkAcls(),
+			"ibm_is_network_acl":                     dataSourceIBMIsNetworkACL(),
 			"ibm_is_network_acl_rule":                dataSourceIBMISNetworkACLRule(),
 			"ibm_is_network_acl_rules":               dataSourceIBMISNetworkACLRules(),
 			"ibm_lbaas":                              dataSourceIBMLbaas(),
@@ -404,6 +406,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port":       dataSourceIBMPINetworkPort(),
 			"ibm_pi_cloud_instance":     dataSourceIBMPICloudInstance(),
 			"ibm_pi_catalog_images":     dataSourceIBMPICatalogImages(),
+			"ibm_pi_dhcp":               dataSourceIBMPIDhcp(),
+			"ibm_pi_dhcps":              dataSourceIBMPIDhcps(),
 
 			// Added for private dns zones
 
@@ -720,6 +724,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port":        resourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
+			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),

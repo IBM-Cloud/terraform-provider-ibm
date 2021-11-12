@@ -71,6 +71,16 @@ func resourceIBMContainerALB() *schema.Resource {
 				Computed:    true,
 				Description: "ALB name",
 			},
+			"replicas": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Desired number of ALB replicas.",
+			},
+			"resize": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicate whether resizing should be done",
+			},
 			"zone": {
 				Type:        schema.TypeString,
 				Computed:    true,

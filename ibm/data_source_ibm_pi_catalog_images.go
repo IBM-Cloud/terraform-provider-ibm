@@ -32,6 +32,10 @@ func dataSourceIBMPICatalogImages() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"vtl": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"images": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -116,13 +120,17 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	sap := false
+	vtl := false
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	if v, ok := d.GetOk("sap"); ok {
 		sap = v.(bool)
 	}
+	if v, ok := d.GetOk("vtl"); ok {
+		vtl = v.(bool)
+	}
 
 	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	result, err := imageC.GetSAPImages(powerinstanceid, sap)
+	result, err := imageC.GetAllStockImages(powerinstanceid, sap, vtl)
 	if err != nil {
 		return err
 	}
