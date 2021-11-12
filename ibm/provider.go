@@ -408,6 +408,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_catalog_images":     dataSourceIBMPICatalogImages(),
 			"ibm_pi_dhcp":               dataSourceIBMPIDhcp(),
 			"ibm_pi_dhcps":              dataSourceIBMPIDhcps(),
+			"ibm_pi_cloud_connection":   dataSourceIBMPICloudConnection(),
 
 			// Added for private dns zones
 
@@ -471,10 +472,12 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers":              dataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":                   dataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":                  dataSourceIBMSccSiNotes(),
-			"ibm_scc_account_location":          dataSourceIbmSccAccountLocation(),
+			"ibm_scc_si_providers":   dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":        dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":       dataSourceIBMSccSiNotes(),
+			"ibm_scc_si_occurrence":  dataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences": dataSourceIBMSccSiOccurrences(),
+      "ibm_scc_account_location":          dataSourceIbmSccAccountLocation(),
 			"ibm_scc_account_locations":         dataSourceIbmSccAccountLocations(),
 			"ibm_scc_account_location_settings": dataSourceIbmSccAccountLocationSettings(),
 
@@ -629,6 +632,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
+			"ibm_is_instance_action":                             resourceIBMISInstanceAction(),
 			"ibm_is_instance_disk_management":                    resourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_membership":                   resourceIBMISInstanceGroupMembership(),
@@ -726,6 +730,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
+			"ibm_pi_cloud_connection":    resourceIBMPICloudConnection(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
@@ -781,6 +786,7 @@ func Provider() *schema.Provider {
 
 			//Security and Compliance Center
 			"ibm_scc_si_note":          resourceIBMSccSiNote(),
+      "ibm_scc_si_occurrence": resourceIBMSccSiOccurrence(),
 			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
 
 			// Added for Event Notifications
@@ -853,6 +859,7 @@ func Validator() ValidatorDict {
 				"ibm_is_image":                            resourceIBMISImageValidator(),
 				"ibm_is_instance_template":                resourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                         resourceIBMISInstanceValidator(),
+				"ibm_is_instance_action":                  resourceIBMISInstanceActionValidator(),
 				"ibm_is_instance_disk_management":         resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_instance_volume_attachment":       resourceIBMISInstanceVolumeAttachmentValidator(),
 				"ibm_is_ipsec_policy":                     resourceIBMISIPSECValidator(),
@@ -899,6 +906,7 @@ func Validator() ValidatorDict {
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
+				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
 
 				// Added for Event Notifications
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
@@ -911,6 +919,7 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_si_occurrences":      dataSourceIBMSccSiOccurrencesValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},

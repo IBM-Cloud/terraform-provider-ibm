@@ -96,6 +96,7 @@ var pi_network_name string
 var pi_cloud_instance_id string
 var pi_instance_name string
 var pi_dhcp_id string
+var piCloudConnectionName string
 
 // For Image
 
@@ -510,6 +511,12 @@ func init() {
 	if pi_dhcp_id == "" {
 		pi_dhcp_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_DHCP_ID for testing ibm_pi_dhcp resource else it is set to default value 'terraform-test-power'")
+	}
+
+	piCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
+	if piCloudConnectionName == "" {
+		piCloudConnectionName = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
 	}
 
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
