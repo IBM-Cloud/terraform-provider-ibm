@@ -32,11 +32,6 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 		ReadContext: dataSourceIBMIsSshKeysRead,
 
 		Schema: map[string]*schema.Schema{
-			"resource_group": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Resource group identifier.",
-			},
 			isKeys: &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -127,15 +122,7 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 
 	start := ""
 	allrecs := []vpcv1.Key{}
-	// filter for resource group Id
-	var resourceGroupId string
-	resourceGroupId = d.Get("resource_group").(string)
 	listKeysOptions := &vpcv1.ListKeysOptions{}
-
-	//filter
-	if resourceGroupId != "" {
-		listKeysOptions.ResourceGroupID = &resourceGroupId
-	}
 
 	for {
 		if start != "" {

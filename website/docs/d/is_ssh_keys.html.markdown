@@ -23,11 +23,6 @@ data "ibm_is_ssh_keys" "example" {
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `id` - The unique identifier of the KeyCollection.
-- `first` - (List) A link to the first page of resources.
-Nested scheme for **first**:
-	- `href` - (String) The URL for a page of resources.
-	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
 - `keys` - (List) Collection of keys.
 Nested scheme for **keys**:
 	- `created_at` - (String) The date and time that the key was created.
@@ -52,15 +47,3 @@ Nested scheme for **keys**:
 		  - Constraints: The maximum length is `40` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-_ ]+$/`.
 	- `type` - (String) The crypto-system used by this key.
 	  - Constraints: The default value is `rsa`. Allowable values are: `rsa`.
-
-- `limit` - (Integer) The maximum number of resources that can be returned by the request.
-  - Constraints: The maximum value is `100`. The minimum value is `1`.
-
-- `next` - (Optional, List) A link to the next page of resources. This property is present for all pagesexcept the last page.
-Nested scheme for **next**:
-	- `href` - (String) The URL for a page of resources.
-	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
-- `total_count` - (Integer) The total number of resources across all pages.
-  - Constraints: The minimum value is `0`.
-

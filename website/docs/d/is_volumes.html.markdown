@@ -23,19 +23,6 @@ data "ibm_is_volumes" "example" {
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `id` - The unique identifier of the VolumeCollection.
-- `first` - (List) A link to the first page of resources.
-Nested scheme for **first**:
-	- `href` - (String) The URL for a page of resources.
-	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
-- `limit` - (Integer) The maximum number of resources that can be returned by the request.
-  - Constraints: The maximum value is `100`. The minimum value is `1`.
-
-- `next` - (Optional, List) A link to the next page of resources. This property is present for all pagesexcept the last page.
-Nested scheme for **next**:
-	- `href` - (String) The URL for a page of resources.
-	  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-
 - `volumes` - (List) Collection of volumes.
 Nested scheme for **volumes**:
 	- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
@@ -147,8 +134,6 @@ Nested scheme for **volumes**:
 		  - Constraints: Allowable values are: `boot`, `data`.
 	- `zone` - (List) The zone this volume resides in.
 	Nested scheme for **zone**:
-		- `href` - (String) The URL for this zone.
-		  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		- `name` - (String) The globally unique name for this zone.
 		  - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
 
