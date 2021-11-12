@@ -429,12 +429,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"status_code": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.",
 			},
 			"status_msg": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.",
 			},
 		},
@@ -1434,38 +1434,54 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	}
 
 	updateWorkspaceOptions := &schematicsv1.UpdateWorkspaceOptions{}
+	replaceWorkspaceOptions := &schematicsv1.ReplaceWorkspaceOptions{}
 
 	updateWorkspaceOptions.SetWID(d.Id())
+	replaceWorkspaceOptions.SetWID(d.Id())
 
 	hasChange := false
+
+	metadataChange := false
+	repoChange := false
+	templateInputsChange := false
 
 	if d.HasChange("catalog_ref") {
 		catalogRefAttr := d.Get("catalog_ref").([]interface{})
 		if len(catalogRefAttr) > 0 {
 			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
 			updateWorkspaceOptions.SetCatalogRef(&catalogRef)
+			replaceWorkspaceOptions.SetCatalogRef(&catalogRef)
 			hasChange = true
+			repoChange = true
 		}
 	}
+
 	if d.HasChange("description") {
 		updateWorkspaceOptions.SetDescription(d.Get("description").(string))
+		replaceWorkspaceOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
+		metadataChange = true
 	}
 	if d.HasChange("name") {
 		updateWorkspaceOptions.SetName(d.Get("name").(string))
+		replaceWorkspaceOptions.SetName(d.Get("name").(string))
 		hasChange = true
+		metadataChange = true
 	}
 	if d.HasChange("shared_data") {
 		sharedDataAttr := d.Get("shared_data").([]interface{})
 		if len(sharedDataAttr) > 0 {
 			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
 			updateWorkspaceOptions.SetSharedData(&sharedData)
+			replaceWorkspaceOptions.SetSharedData(&sharedData)
 			hasChange = true
 		}
 	}
 	if d.HasChange("tags") {
 		updateWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
+		replaceWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
+		metadataChange = true
 	}
 
 	var templateData []schematicsv1.TemplateSourceDataRequest
@@ -1485,11 +1501,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		templateSourceDataRequestMap["init_state_file"] = d.Get("template_init_state_file").(string)
 		hasTemplateData = true
 	}
-	if d.HasChange("template_type") {
-		templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
-		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
-		hasTemplateData = true
-	}
+	//if d.HasChange("template_type") {
+	templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
+	updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	replaceWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	//hasTemplateData = true
+	//}
 	if d.HasChange("template_uninstall_script_name") {
 		templateSourceDataRequestMap["uninstall_script_name"] = d.Get("template_uninstall_script_name").(string)
 		hasTemplateData = true
@@ -1510,17 +1527,21 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSourceDataRequestMap)
 		templateData = append(templateData, templateDataItem)
 		updateWorkspaceOptions.SetTemplateData(templateData)
+		replaceWorkspaceOptions.SetTemplateData(templateData)
 		hasChange = true
+		templateInputsChange = true
 	}
 
 	templateRepoRequestMap := map[string]interface{}{}
 	hasTemplateRepo := false
 	if d.HasChange("template_git_branch") {
 		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(string)
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
 		hasTemplateRepo = true
 	}
 	if d.HasChange("template_git_release") {
 		templateRepoRequestMap["release"] = d.Get("template_git_release").(string)
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
 		hasTemplateRepo = true
 	}
 	if d.HasChange("template_git_repo_sha_value") {
@@ -1542,13 +1563,16 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	if hasTemplateRepo {
 		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(templateRepoRequestMap)
 		updateWorkspaceOptions.SetTemplateRepo(&templateRepo)
+		replaceWorkspaceOptions.SetTemplateRepo(&templateRepo)
 		hasChange = true
+		repoChange = true
 	}
 
-	if d.HasChange("template_type") {
-		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
-		hasChange = true
-	}
+	//if d.HasChange("template_type") {
+	updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	replaceWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	//hasChange = true
+	//}
 
 	workspaceStatusRequestMap := map[string]interface{}{}
 	workspaceStatus := false
@@ -1579,15 +1603,59 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	if workspaceStatus {
 		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(workspaceStatusRequestMap)
 		updateWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
+		replaceWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 		hasChange = true
+		metadataChange = true
 	}
 
 	if hasChange {
-		_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateWorkspaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateWorkspaceWithContext failed %s\n%s", err, response))
+		changed := false
+
+		if !changed && repoChange {
+			changed = true
+			_, response, err := schematicsClient.ReplaceWorkspaceWithContext(context, replaceWorkspaceOptions)
+			if err != nil {
+				log.Printf("[DEBUG] ReplaceWorkspaceWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("ReplaceWorkspaceWithContext failed %s\n%s", err, response))
+			}
 		}
+
+		if !changed && metadataChange {
+			_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
+			if err != nil {
+				log.Printf("[DEBUG] UpdateWorkspaceWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("UpdateWorkspaceWithContext failed %s\n%s", err, response))
+			}
+		}
+
+		if !changed && templateInputsChange {
+
+			for i := range replaceWorkspaceOptions.TemplateData {
+
+				workspaceId := d.Id()
+				runtimeData := d.Get("runtime_data").([]interface{})
+				templateId := runtimeData[i].(map[string]interface{})["id"].(string)
+
+				workspaceVariableRequestModel := replaceWorkspaceOptions.TemplateData[i].Variablestore
+				envVariables := replaceWorkspaceOptions.TemplateData[i].EnvValues
+				values := replaceWorkspaceOptions.TemplateData[i].Values
+
+				replaceWorkspaceInputsOptions := &schematicsv1.ReplaceWorkspaceInputsOptions{
+					WID:           &workspaceId,
+					TID:           &templateId,
+					EnvValues:     envVariables,
+					Values:        values,
+					Variablestore: workspaceVariableRequestModel,
+				}
+
+				_, response, err := schematicsClient.ReplaceWorkspaceInputs(replaceWorkspaceInputsOptions)
+				if err != nil {
+					log.Printf("[DEBUG] ReplaceWorkspaceInputs failed %s\n%s", err, response)
+					return diag.FromErr(fmt.Errorf("ReplaceWorkspaceInputs failed %s\n%s", err, response))
+				}
+			}
+		}
+
 	}
 
 	return resourceIBMSchematicsWorkspaceRead(context, d, meta)

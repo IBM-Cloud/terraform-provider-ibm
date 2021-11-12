@@ -60,8 +60,34 @@ func TestAccIBMSchematicsWorkspaceAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSchematicsWorkspaceConfig(descriptionUpdate, nameUpdate),
+				Config: testAccCheckIBMSchematicsWorkspaceConfigUpdate(descriptionUpdate, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "template_type", templateType),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "created_by"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "runtime_data.#"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoURL(descriptionUpdate, nameUpdate, repoURL),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMSchematicsWorkspaceExists("ibm_schematics_workspace.schematics_workspace", conf),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "template_type", templateType),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "created_at"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "created_by"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "crn"),
+					resource.TestCheckResourceAttrSet("ibm_schematics_workspace.schematics_workspace", "runtime_data.#"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoBranch(descriptionUpdate, nameUpdate, repoURL, repoBranch),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMSchematicsWorkspaceExists("ibm_schematics_workspace.schematics_workspace", conf),
 					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_workspace.schematics_workspace", "template_type", templateType),
@@ -104,6 +130,63 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, name string) s
 			template_type = "terraform_v0.13.5"
 		}
 	`, description, name)
+}
+
+func testAccCheckIBMSchematicsWorkspaceConfigUpdate(description string, name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "%s"
+			location = "us-east"
+			name = "%s"
+			resource_group = "default"
+			template_type = "terraform_v0.13.5"
+			template_inputs {
+				name = "testinput"
+				value = "test"
+				type = "string"
+			  }
+		}
+	`, description, name)
+}
+
+func testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoURL(description string, name string, repoURL string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "%s"
+			location = "us-east"
+			name = "%s"
+			resource_group = "default"
+			template_type = "terraform_v0.13.5"
+			template_git_url = "%s"
+			template_inputs {
+				name = "testinput"
+				value = "test"
+				type = "string"
+			  }
+		}
+	`, description, name, repoURL)
+}
+
+func testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoBranch(description string, name string, repoURL string, repoBranch string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_schematics_workspace" "schematics_workspace" {
+			description = "%s"
+			location = "us-east"
+			name = "%s"
+			resource_group = "default"
+			template_type = "terraform_v0.13.5"
+			template_git_url = "%s"
+			template_inputs {
+				name = "testinput"
+				value = "test"
+				type = "string"
+			  }
+			template_git_branch = "%s"
+		}
+	`, description, name, repoURL, repoBranch)
 }
 
 func testAccCheckIBMSchematicsWorkspaceExists(n string, obj schematicsv1.WorkspaceResponse) resource.TestCheckFunc {
