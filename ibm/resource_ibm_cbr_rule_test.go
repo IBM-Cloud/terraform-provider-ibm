@@ -84,10 +84,6 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
   			}
  			 resources {
     			attributes {
-      				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
-    			}
-    			attributes {
       				name = "serviceName"
       				value = "user-management"
     			}
@@ -113,10 +109,6 @@ func testAccCheckIBMCbrRuleConfig(description string, transactionID string) stri
     			}
 			}
 			resources {
-    			attributes {
-      				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
-    			}
     			attributes {
       				name = "serviceName"
       				value = "user-management"

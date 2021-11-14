@@ -79,7 +79,7 @@ func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
   			resources {
     			attributes {
       				name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
     			}
     			attributes {
       				name = "serviceName"
@@ -106,7 +106,7 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleTransact
 			resources {
 				attributes {
 					name = "accountId"
-      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+      				value = "7423cba651044c1abc3bffd6c692e3a5"
 				}
     			attributes {
       				name = "serviceName"

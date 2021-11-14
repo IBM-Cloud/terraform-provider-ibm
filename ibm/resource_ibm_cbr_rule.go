@@ -194,6 +194,11 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 	createRuleOptions := &contextbasedrestrictionsv1.CreateRuleOptions{}
 
+	accountID, err := getIBMCbrAccountId(meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if _, ok := d.GetOk("description"); ok {
 		createRuleOptions.SetDescription(d.Get("description").(string))
 	}
@@ -210,9 +215,10 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, e := range d.Get("resources").([]interface{}) {
 			value := e.(map[string]interface{})
-			resourcesItem := resourceIBMCbrRuleMapToResource(value)
+			resourcesItem := resourceIBMCbrRuleMapToResource(value, accountID)
 			resources = append(resources, resourcesItem)
 		}
+
 		createRuleOptions.SetResources(resources)
 	}
 	if _, ok := d.GetOk("transaction_id"); ok {
@@ -251,15 +257,34 @@ func resourceIBMCbrRuleMapToRuleContextAttribute(ruleContextAttributeMap map[str
 	return ruleContextAttribute
 }
 
-func resourceIBMCbrRuleMapToResource(resourceMap map[string]interface{}) contextbasedrestrictionsv1.Resource {
+func resourceIBMCbrRuleAccountIdAttribute(accountID string) contextbasedrestrictionsv1.ResourceAttribute {
+	accountIdAttribute := contextbasedrestrictionsv1.ResourceAttribute{}
+
+	accountIdAttribute.Name = core.StringPtr("accountId")
+	accountIdAttribute.Value = core.StringPtr(accountID)
+	//accountIdAttribute.Operator = core.StringPtr("")
+
+	return accountIdAttribute
+
+}
+
+func resourceIBMCbrRuleMapToResource(resourceMap map[string]interface{}, accountID string) contextbasedrestrictionsv1.Resource {
 	resource := contextbasedrestrictionsv1.Resource{}
 
 	attributes := []contextbasedrestrictionsv1.ResourceAttribute{}
+
+	attributes = append(attributes, resourceIBMCbrRuleAccountIdAttribute(accountID))
+
 	for _, attributesItem := range resourceMap["attributes"].([]interface{}) {
 		attributesItemModel := resourceIBMCbrRuleMapToResourceAttribute(attributesItem.(map[string]interface{}))
-		attributes = append(attributes, attributesItemModel)
+
+		if *attributesItemModel.Name != "accountId" {
+			attributes = append(attributes, attributesItemModel)
+		}
 	}
+
 	resource.Attributes = attributes
+
 	if resourceMap["tags"] != nil {
 		tags := []contextbasedrestrictionsv1.ResourceTagAttribute{}
 		for _, tagsItem := range resourceMap["tags"].([]interface{}) {
@@ -321,10 +346,6 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 		log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
 	}
-
-	//if err = d.Set("transaction_id", getRuleOptions.TransactionID); err != nil {
-	//	return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
-	//}
 
 	transactionIDFromResponse := response.GetHeaders()["Transaction-Id"][0]
 	if transactionIDFromInput != "" {
@@ -409,8 +430,11 @@ func resourceIBMCbrRuleResourceToMap(resource contextbasedrestrictionsv1.Resourc
 
 	attributes := []map[string]interface{}{}
 	for _, attributesItem := range resource.Attributes {
-		attributesItemMap := resourceIBMCbrRuleResourceAttributeToMap(attributesItem)
-		attributes = append(attributes, attributesItemMap)
+
+		if *attributesItem.Name != "accountId" {
+			attributesItemMap := resourceIBMCbrRuleResourceAttributeToMap(attributesItem)
+			attributes = append(attributes, attributesItemMap)
+		}
 		// TODO: handle Attributes of type TypeList -- list of non-primitive, not model items
 	}
 	resourceMap["attributes"] = attributes
@@ -459,6 +483,11 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 
 	replaceRuleOptions := &contextbasedrestrictionsv1.ReplaceRuleOptions{}
 
+	accountID, err := getIBMCbrAccountId(meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	replaceRuleOptions.SetRuleID(d.Id())
 	if _, ok := d.GetOk("description"); ok {
 		replaceRuleOptions.SetDescription(d.Get("description").(string))
@@ -476,7 +505,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		var resources []contextbasedrestrictionsv1.Resource
 		for _, e := range d.Get("resources").([]interface{}) {
 			value := e.(map[string]interface{})
-			resourcesItem := resourceIBMCbrRuleMapToResource(value)
+			resourcesItem := resourceIBMCbrRuleMapToResource(value, accountID)
 			resources = append(resources, resourcesItem)
 		}
 		replaceRuleOptions.SetResources(resources)

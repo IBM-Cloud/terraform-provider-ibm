@@ -35,11 +35,9 @@ func TestAccIBMCbrZoneBasic(t *testing.T) {
 func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Zone
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	//accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	transactionID := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	//accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	transactionIDUpdate := fmt.Sprintf("tf_transaction_id_%d", acctest.RandIntRange(10, 100))
 
@@ -53,7 +51,6 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrZoneExists("ibm_cbr_zone.cbr_zone", conf),
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "name", name),
-					//resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "description", description),
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "transaction_id", transactionID),
 				),
@@ -62,7 +59,6 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 				Config: testAccCheckIBMCbrZoneConfig(nameUpdate, descriptionUpdate, transactionIDUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "name", nameUpdate),
-					//resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "account_id", accountIDUpdate),
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_cbr_zone.cbr_zone", "transaction_id", transactionIDUpdate),
 				),
@@ -80,10 +76,8 @@ func TestAccIBMCbrZoneAllArgs(t *testing.T) {
 
 func testAccCheckIBMCbrZoneConfigBasic() string {
 	return fmt.Sprintf(`
-
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Resource Config Basic"
-			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 			description = "Test Zone Resource Config Basic"
 			addresses {
 				type = "ipRange"
@@ -98,7 +92,6 @@ func testAccCheckIBMCbrZoneConfig(name string, description string, transactionID
 
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "%s"
-			account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 			description = "%s"
 			addresses {
 				type = "ipRange"
@@ -107,7 +100,6 @@ func testAccCheckIBMCbrZoneConfig(name string, description string, transactionID
 			addresses {
 				type = "serviceRef"
 				ref {
-					account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
 					service_name = "user-management"
 				}
 			}

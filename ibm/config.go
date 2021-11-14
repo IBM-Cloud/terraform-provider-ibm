@@ -1087,6 +1087,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
+		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1320,6 +1321,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating Context Based Restrictions  service client.
 	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
+	}
 	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
