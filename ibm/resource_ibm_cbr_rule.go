@@ -221,9 +221,6 @@ func resourceIBMCbrRuleCreate(context context.Context, d *schema.ResourceData, m
 
 		createRuleOptions.SetResources(resources)
 	}
-	if _, ok := d.GetOk("transaction_id"); ok {
-		createRuleOptions.SetTransactionID(d.Get("transaction_id").(string))
-	}
 
 	rule, response, err := contextBasedRestrictionsClient.CreateRuleWithContext(context, createRuleOptions)
 	if err != nil {
@@ -329,12 +326,6 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 
 	getRuleOptions := &contextbasedrestrictionsv1.GetRuleOptions{}
 
-	var transactionIDFromInput string
-	if _, ok := d.GetOk("transaction_id"); ok {
-		transactionIDFromInput = d.Get("transaction_id").(string)
-		getRuleOptions.SetTransactionID(transactionIDFromInput)
-	}
-
 	getRuleOptions.SetRuleID(d.Id())
 
 	rule, response, err := contextBasedRestrictionsClient.GetRuleWithContext(context, getRuleOptions)
@@ -345,13 +336,6 @@ func resourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, met
 		}
 		log.Printf("[DEBUG] GetRuleWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetRuleWithContext failed %s\n%s", err, response))
-	}
-
-	transactionIDFromResponse := response.GetHeaders()["Transaction-Id"][0]
-	if transactionIDFromInput != "" {
-		if err = d.Set("transaction_id", transactionIDFromResponse); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
-		}
 	}
 
 	if err = d.Set("description", rule.Description); err != nil {
@@ -510,9 +494,7 @@ func resourceIBMCbrRuleUpdate(context context.Context, d *schema.ResourceData, m
 		}
 		replaceRuleOptions.SetResources(resources)
 	}
-	if _, ok := d.GetOk("transaction_id"); ok {
-		replaceRuleOptions.SetTransactionID(d.Get("transaction_id").(string))
-	}
+
 	replaceRuleOptions.SetIfMatch(d.Get("version").(string))
 
 	_, response, err := contextBasedRestrictionsClient.ReplaceRuleWithContext(context, replaceRuleOptions)

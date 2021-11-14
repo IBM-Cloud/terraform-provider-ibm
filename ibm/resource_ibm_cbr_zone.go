@@ -288,9 +288,6 @@ func resourceIBMCbrZoneCreate(context context.Context, d *schema.ResourceData, m
 		}
 		createZoneOptions.SetExcluded(excluded)
 	}
-	if _, ok := d.GetOk("transaction_id"); ok {
-		createZoneOptions.SetTransactionID(d.Get("transaction_id").(string))
-	}
 
 	zone, response, err := contextBasedRestrictionsClient.CreateZoneWithContext(context, createZoneOptions)
 	if err != nil {
@@ -418,12 +415,6 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	var transactionIDFromInput string
-	if _, ok := d.GetOk("transaction_id"); ok {
-		transactionIDFromInput = d.Get("transaction_id").(string)
-		getZoneOptions.SetTransactionID(transactionIDFromInput)
-	}
-
 	getZoneOptions.SetZoneID(d.Id())
 
 	zone, response, err := contextBasedRestrictionsClient.GetZoneWithContext(context, getZoneOptions)
@@ -434,13 +425,6 @@ func resourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, met
 		}
 		log.Printf("[DEBUG] GetZoneWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetZoneWithContext failed %s\n%s", err, response))
-	}
-
-	transactionIDFromResponse := response.GetHeaders()["Transaction-Id"][0]
-	if transactionIDFromInput != "" {
-		if err = d.Set("transaction_id", transactionIDFromResponse); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting transaction_id: %s", err))
-		}
 	}
 
 	if err = d.Set("name", zone.Name); err != nil {
