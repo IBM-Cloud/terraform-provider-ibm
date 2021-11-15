@@ -111,6 +111,7 @@ func resourceIBMIAMAuthorizationPolicy() *schema.Resource {
 func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	sourceServiceName := d.Get("source_service_name").(string)
 	targetServiceName := d.Get("target_service_name").(string)
+	policyType := "authorization"
 
 	userDetails, err := meta.(ClientSession).BluemixUserDetails()
 	if err != nil {
@@ -205,7 +206,20 @@ func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interf
 		policyResource.Attributes = append(policyResource.Attributes, resourceGroupResourceAttribute)
 	}
 
-	roles, err := getAuthorizationRolesByName(expandStringList(d.Get("roles").([]interface{})), sourceServiceName, targetServiceName, meta)
+	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
+		ServiceName:       &targetServiceName,
+		SourceServiceName: &sourceServiceName,
+		PolicyType:        &policyType,
+	}
+	roleList, resp, err := iampapClient.ListRoles(listRoleOptions)
+
+	if err != nil || roleList == nil {
+		return fmt.Errorf("[ERROR] Error in listing roles %s, %s", err, resp)
+	}
+
+	policyRoles := mapRoleListToPolicyRoles(*roleList)
+	roles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), policyRoles)
+
 	if err != nil {
 		return err
 	}
@@ -318,43 +332,4 @@ func resourceIBMIAMAuthorizationPolicyExists(d *schema.ResourceData, meta interf
 	}
 
 	return *authorizationPolicy.ID == d.Id(), nil
-}
-
-func getAuthorizationRolesByName(roleNames []string, sourceServiceName string, targetServiceName string, meta interface{}) ([]iampolicymanagementv1.PolicyRole, error) {
-
-	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
-	if err != nil {
-		return []iampolicymanagementv1.PolicyRole{}, err
-	}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
-	if err != nil {
-		return []iampolicymanagementv1.PolicyRole{}, err
-	}
-	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.userAccount,
-		ServiceName: &targetServiceName,
-	}
-	roleList, resp, err := iamPolicyManagementClient.ListRoles(listRoleOptions)
-	if err != nil || roleList == nil {
-		return []iampolicymanagementv1.PolicyRole{}, fmt.Errorf("[ERROR] Error in listing roles %s, %s", err, resp)
-	}
-	serviceRoles := roleList.ServiceRoles
-	convertedRoles := convertRoleModels(serviceRoles)
-	filteredRoles, err := getRolesFromRoleNames(roleNames, convertedRoles)
-	if err != nil {
-		return []iampolicymanagementv1.PolicyRole{}, err
-	}
-	return filteredRoles, nil
-}
-
-// ConvertRoleModels will transform role models returned from "/v1/roles" to the model used by policy
-func convertRoleModels(serviceRoles []iampolicymanagementv1.Role) []iampolicymanagementv1.PolicyRole {
-	results := make([]iampolicymanagementv1.PolicyRole, len(serviceRoles))
-	for i, r := range serviceRoles {
-		results[i] = iampolicymanagementv1.PolicyRole{
-			RoleID:      r.CRN,
-			DisplayName: r.DisplayName,
-		}
-	}
-	return results
 }

@@ -53,7 +53,6 @@ func resourceIbmIamAccountSettings() *schema.Resource {
 			"allowed_ip_addresses": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "Defines the IP addresses and subnets from which IAM tokens can be created for the account.",
 			},
 			"entity_tag": &schema.Schema{

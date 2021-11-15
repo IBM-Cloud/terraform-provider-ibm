@@ -88,6 +88,12 @@ func resourceIBMContainerVpcALB() *schema.Resource {
 				Computed:    true,
 				Description: "Zone info.",
 			},
+			"resource_group_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "ID of the resource group.",
+			},
 		},
 	}
 }
@@ -119,7 +125,7 @@ func resourceIBMContainerVpcALBCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	albAPI := albClient.Albs()
-	targetEnv := v2.ClusterTargetHeader{}
+	targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
@@ -155,7 +161,7 @@ func resourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) er
 	albID := d.Id()
 
 	albAPI := albClient.Albs()
-	targetEnv := v2.ClusterTargetHeader{}
+	targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 
 	albConfig, err := albAPI.GetAlb(albID, targetEnv)
 	if err != nil {
@@ -200,7 +206,7 @@ func resourceIBMContainerVpcALBUpdate(d *schema.ResourceData, meta interface{}) 
 			Enable: enable,
 		}
 
-		targetEnv := v2.ClusterTargetHeader{}
+		targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 
 		if enable {
 			err = albAPI.EnableAlb(params, targetEnv)
@@ -233,7 +239,7 @@ func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, tim
 		Pending: []string{"pending"},
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
-			targetEnv := v2.ClusterTargetHeader{}
+			targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 			alb, err := albClient.Albs().GetAlb(albID, targetEnv)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
@@ -275,7 +281,7 @@ func waitForVpcClusterAvailable(d *schema.ResourceData, meta interface{}, albID,
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {
-			targetEnv := v2.ClusterTargetHeader{}
+			targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 			albInfo, err := albClient.Albs().GetAlb(albID, targetEnv)
 			if err == nil {
 				cluster := albInfo.Cluster

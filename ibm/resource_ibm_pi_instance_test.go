@@ -127,3 +127,52 @@ func testAccCheckIBMPIInstanceConfig(name string) string {
 	  }
 	`, pi_cloud_instance_id, name)
 }
+
+func TestAccIBMPIInstanceNetwork(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	privateNetIP := "192.112.111.220"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceNetworkConfig(name, privateNetIP),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.network_id"),
+					resource.TestCheckResourceAttrSet(instanceRes, "pi_network.0.mac_address"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_network.0.ip_address", privateNetIP),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_key" "key" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_key_name          = "%[2]s"
+		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEArb2aK0mekAdbYdY9rwcmeNSxqVCwez3WZTYEq+1Nwju0x5/vQFPSD2Kp9LpKBbxx3OVLN4VffgGUJznz9DAr7veLkWaf3iwEil6U4rdrhBo32TuDtoBwiczkZ9gn1uJzfIaCJAJdnO80Kv9k0smbQFq5CSb9H+F5VGyFue/iVd5/b30MLYFAz6Jg1GGWgw8yzA4Gq+nO7HtyuA2FnvXdNA3yK/NmrTiPCdJAtEPZkGu9LcelkQ8y90ArlKfjtfzGzYDE4WhOufFxyWxciUePh425J2eZvElnXSdGha+FCfYjQcvqpCVoBAG70U4fJBGjB+HL/GpCXLyiYXPrSnzC9w=="
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_memory             = "2"
+		pi_processors         = "0.25"
+		pi_instance_name      = "%[2]s"
+		pi_proc_type          = "shared"
+		pi_image_id           = "f4501cad-d0f4-4517-9eea-85402309d90d"
+		pi_key_pair_name      = ibm_pi_key.key.key_id
+		pi_sys_type           = "e980"
+		pi_storage_type 	  = "tier3"
+		pi_cloud_instance_id  = "%[1]s"
+		pi_network {
+			network_id = "tf-cloudconnection-23"
+			ip_address = "%[3]s"
+		}
+	}
+	`, pi_cloud_instance_id, name, privateNetIP)
+}

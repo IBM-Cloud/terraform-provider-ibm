@@ -60,12 +60,12 @@ func dataSourceIBMAppIDIDPFacebookRead(ctx context.Context, d *schema.ResourceDa
 
 	tenantID := d.Get("tenant_id").(string)
 
-	fb, _, err := appIDClient.GetFacebookIDPWithContext(ctx, &appid.GetFacebookIDPOptions{
+	fb, resp, err := appIDClient.GetFacebookIDPWithContext(ctx, &appid.GetFacebookIDPOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID Facebook IDP: %s", err)
+		return diag.Errorf("Error loading AppID Facebook IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *fb.IsActive)

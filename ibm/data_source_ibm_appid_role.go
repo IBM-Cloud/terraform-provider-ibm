@@ -67,13 +67,13 @@ func dataSourceIBMAppIDRoleRead(ctx context.Context, d *schema.ResourceData, met
 	tenantID := d.Get("tenant_id").(string)
 	id := d.Get("role_id").(string)
 
-	role, _, err := appIDClient.GetRoleWithContext(ctx, &appid.GetRoleOptions{
+	role, resp, err := appIDClient.GetRoleWithContext(ctx, &appid.GetRoleOptions{
 		RoleID:   &id,
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID role: %s", err)
+		return diag.Errorf("Error loading AppID role: %s\n%s", err, resp)
 	}
 
 	d.Set("name", *role.Name)

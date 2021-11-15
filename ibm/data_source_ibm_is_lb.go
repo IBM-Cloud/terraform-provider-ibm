@@ -56,6 +56,12 @@ func dataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer status",
 			},
 
+			isLBRouteMode: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether route mode is enabled for this load balancer",
+			},
+
 			isLBCrn: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -285,6 +291,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(isLBType, "private")
 			}
 			d.Set(isLBStatus, *lb.ProvisioningStatus)
+			if lb.RouteMode != nil {
+				d.Set(isLBRouteMode, *lb.RouteMode)
+			}
 			d.Set(isLBCrn, *lb.CRN)
 			d.Set(isLBOperatingStatus, *lb.OperatingStatus)
 			publicIpList := make([]string, 0)

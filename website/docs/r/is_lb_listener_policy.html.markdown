@@ -41,6 +41,37 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 }
 ```
 
+### Sample to create a load balancer listener policy for a `https_redirect` action.
+
+```terraform
+resource "ibm_is_lb" "lb2"{
+  name    = "mylb"
+  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+}
+
+resource "ibm_is_lb_listener" "lb_listener2"{
+  lb       = ibm_is_lb.lb2.id
+  port     = "9086"
+  protocol = "https"
+  certificate_instance="crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+}
+resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+  lb = ibm_is_lb.lb2.id
+  action = "https_redirect"
+  priority = 2
+  name = "mylistener8"
+  taget_https_redirect_listener=ibm_is_lb_listener.lb_listener2.listener_id
+  target_https_redirect_status_code=301
+  target_https_redirect_uri="/example?doc=geta"
+  rules{
+      condition = "contains"
+      type = "header"
+      field = "1"
+      value = "2"
+  }
+}
+```
+
 ###  Creating a load balancer listener policy for a `forward` action by using `lb` and `lb listener`.
 
 
@@ -81,7 +112,7 @@ The `ibm_is_lb_listener_policy` resource provides the following [Timeouts](https
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `action` - (Required, Forces new resource, String) The action that you want to specify for your policy. Supported values are `forward`, `redirect`, and `reject`.
+- `action` - (Required, Forces new resource, String) The action that you want to specify for your policy. Supported values are `forward`, `redirect`, `reject`, and `https_redirect`.
 - `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a load balancer listener policy. 
 - `listener` - (Required, Forces new resource, String) The ID of the load balancer listener.
 - `name` - (Optional, String) The name for the load balancer policy. Names must be unique within a load balancer listener.
@@ -96,11 +127,15 @@ Review the argument references that you can specify for your resource.
 - `target_id` - (Optional, Integer) When `action` is set to **forward**, specify the ID of the load balancer pool that the load balancer forwards network traffic to.
 - `target_http_status_code` - (Optional, Integer) When `action` is set to **redirect**, specify the HTTP response code that must be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, and `308`. 
 - `target_url` - (Optional, Integer) When `action` is set to **redirect**, specify the URL that is used in the redirect response.
+- `target_https_redirect_listener` - (Optional, String) When `action` is set to **https_redirect**, specify the ID of the listener that will be set as http redirect target.
+- `target_https_redirect_status_code` - (Optional, Integer) When `action` is set to **https_redirect**, specify the HTTP status code to be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, `308`.
+- `target_https_redirect_uri` - (Optional, String) When `action` is set to **https_redirect**, specify the target URI where traffic will be redirected.
 
 **Note**
 
 When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
 When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.
+When action is `https_redirect`, `target_https_redirect_listener` should specify the ID of the listener, `target_https_redirect_status_code` to specify the code used in the redirect response and `target_https_redirect_uri` to specify the target URI where traffic will be redirected.
 Network load balancer does not support `ibm_is_lb_listener_policy`.
 
 ## Attribute reference

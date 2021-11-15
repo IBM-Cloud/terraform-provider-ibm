@@ -41,7 +41,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 				return resourceTagsCustomizeDiff(diff)
 			},
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return immutableResourceCustomizeDiff([]string{satLocation, sateLocZone, "resource_group_id"}, diff)
+				return immutableResourceCustomizeDiff([]string{satLocation, sateLocZone, "resource_group_id", "zones"}, diff)
 			},
 		),
 

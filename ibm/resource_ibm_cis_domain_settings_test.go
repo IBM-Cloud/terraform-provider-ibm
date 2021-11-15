@@ -129,6 +129,7 @@ func testAccCheckCisSettingsConfigBasic4(id string, cisDomainStatic string) stri
 		image_size_optimization     = "lossless"
 		ip_geolocation              = "on"
 		origin_error_page_pass_thru = "on"
+		brotli                      = "off"
 		pseudo_ipv4              = "off"
 		prefetch_preload         = "on"
 		response_buffering       = "on"

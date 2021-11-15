@@ -38,12 +38,12 @@ func dataSourceIBMAppIDThemeTextRead(ctx context.Context, d *schema.ResourceData
 
 	tenantID := d.Get("tenant_id").(string)
 
-	text, _, err := appIDClient.GetThemeTextWithContext(ctx, &appid.GetThemeTextOptions{
+	text, resp, err := appIDClient.GetThemeTextWithContext(ctx, &appid.GetThemeTextOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID theme text: %s", err)
+		return diag.Errorf("Error getting AppID theme text: %s\n%s", err, resp)
 	}
 
 	if text.TabTitle != nil {

@@ -83,12 +83,13 @@ func resourceIBMISVPC() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isVPCAddressPrefixManagement: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "auto",
-				ForceNew:     true,
-				ValidateFunc: InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
-				Description:  "Address Prefix management value",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "auto",
+				DiffSuppressFunc: suppressNullAddPrefix,
+				ForceNew:         true,
+				ValidateFunc:     InvokeValidator("ibm_is_vpc", isVPCAddressPrefixManagement),
+				Description:      "Address Prefix management value",
 			},
 
 			isVPCDefaultNetworkACL: {
@@ -1014,4 +1015,12 @@ func rtNameUpdate(sess *vpcv1.VpcV1, vpcID, id, name string) error {
 		return fmt.Errorf("Error Updating Routing table name %s\n%s", err, response)
 	}
 	return nil
+}
+
+func suppressNullAddPrefix(k, old, new string, d *schema.ResourceData) bool {
+	// During import
+	if old == "" && d.Id() != "" {
+		return true
+	}
+	return false
 }

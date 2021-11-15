@@ -68,6 +68,10 @@ func dataSourceIBMPINetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"jumbo": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -112,6 +116,7 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	if networkdata.Name != nil {
 		d.Set("name", networkdata.Name)
 	}
+	d.Set("jumbo", networkdata.Jumbo)
 
 	return nil
 

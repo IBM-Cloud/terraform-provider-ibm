@@ -138,6 +138,9 @@ func getModifiedVirtualGuestResource() *schema.Resource {
 	r := resourceIBMComputeVmInstance()
 	// wait_time_minutes is only used in virtual_guest resource.
 	delete(r.Schema, "wait_time_minutes")
+	delete(r.Schema, "reserved_capacity_id")
+	delete(r.Schema, "reserved_capacity_name")
+	delete(r.Schema, "reserved_instance_primary_disk")
 
 	for _, elem := range r.Schema {
 		elem.ForceNew = false

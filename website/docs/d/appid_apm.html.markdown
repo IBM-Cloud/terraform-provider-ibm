@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_apm
-Retrieve information about an IBM Cloud AppID Management Services APM.
+Retrieve information about an IBM Cloud AppID Management Services APM. For more information, see [defining password policies](https://cloud.ibm.com/docs/appid?topic=appid-cd-strength).
 
 ~> **WARNING:** This feature is only available for AppID graduated tier plans.
 

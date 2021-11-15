@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_idp_saml_metadata
-Retrieve an IBM Cloud AppID Management Services SAML metadata.
+Retrieve an IBM Cloud AppID Management Services SAML metadata. For more information, see [SAML](https://cloud.ibm.com/docs/appid?topic=appid-enterprise)
 
 ## Example usage
 

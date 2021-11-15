@@ -13,11 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIBMPrivateDNSCustomResolver_Basic(t *testing.T) {
+func TestAccIBMPrivateDNSCustomResolver_basic(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -25,12 +24,11 @@ func TestAccIBMPrivateDNSCustomResolver_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPrivateDNSCustomResolverDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "locations.0.subnet_crn", subnet_crn),
 				),
 			},
 		},
@@ -41,19 +39,17 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	var resultprivatedns string
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR - TF"
-	subnet_crn := "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPrivateDNSCustomResolverDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn),
+				Config: testAccCheckIBMPrivateDNSCustomResolverBasic(name, description),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPrivateDNSCustomResolverExists("ibm_dns_custom_resolver.test", resultprivatedns),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "name", name),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "description", description),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "locations.0.subnet_crn", subnet_crn),
 				),
 			},
 			{
@@ -67,20 +63,24 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description, subnet_crn string) string {
+func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description string) string {
 	return fmt.Sprintf(`
-
 	resource "ibm_dns_custom_resolver" "test" {
-		name        = "%s"
-		instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-		description = "%s"
-		enabled = true
+		name			= "%s"
+		instance_id		= "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
+		description		= "%s"
+		high_availability =  false
+		enabled		= true
+		locations	{
+			subnet_crn	= "crn:v1:bluemix:public:is:us-south-3:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0737-0d198509-3221-4162-b2d8-4a9326d3d7ad"
+			enabled		= false
+		}
 		locations {
-			subnet_crn = "%s"
-			enabled    = true
+			subnet_crn  = "crn:v1:bluemix:public:is:us-south-2:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0727-f17967f2-2bbe-427c-bcf6-22f8c2395285"
+			enabled     = true
 		}
 	}
-	  `, name, description, subnet_crn)
+	  `, name, description)
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverDestroy(s *terraform.State) error {

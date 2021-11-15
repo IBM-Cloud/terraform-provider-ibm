@@ -66,6 +66,11 @@ func dataSourceIBMCmCatalog() *schema.Resource {
 				Computed:    true,
 				Description: "URL path to offerings.",
 			},
+			"resource_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource Group ID",
+			},
 		},
 	}
 }
@@ -111,5 +116,9 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("kind", catalog.Kind); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting kind: %s", err))
 	}
+	if err = d.Set("resource_group_id", catalog.ResourceGroupID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	}
+
 	return nil
 }

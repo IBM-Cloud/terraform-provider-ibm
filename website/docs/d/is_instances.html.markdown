@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `instances`- (List of Object) A list of Virtual Servers for VPC instances that exist in your account.
    
    Nested scheme for `instances`:
+    - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
 
 	  Nested scheme for `boot_volume`:
@@ -55,6 +56,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `name` - (String) The name of the boot volume.
 		- `volume_id` - (String) The ID of the volume that is associated with the boot volume attachment.
 		- `volume_crn` - (String) The CRN of the volume that is associated with the boot volume attachment.
+	- `crn` - (String) The CRN of the instance.
 	- `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:
 
 	  Nested scheme for `disks`:
@@ -65,6 +67,12 @@ In addition to all argument reference list, you can access the following attribu
 	  	- `name` - (String) The user-defined name for this disk.
 	  	- `resource_type` - (String) The resource type.
 	  	- `size` - (String) The size of the disk in GB (gigabytes).
+	- `gpu` - A nested block describing the gpu of this instance.
+      Nested `gpu` blocks have the following structure:
+        - `count` - Count of the gpu.
+        - `manufacture` - Manufacture of the gpu.
+        - `memory` - Memory of the gpu.
+        - `model` - Model of the gpu.
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
@@ -100,6 +108,8 @@ In addition to all argument reference list, you can access the following attribu
 		Nested scheme for `status_reasons`:
 		- `code` - (String)  A snake case string identifying the status reason.
 		- `message` - (String)  An explanation of the status reason
+	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
+    - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

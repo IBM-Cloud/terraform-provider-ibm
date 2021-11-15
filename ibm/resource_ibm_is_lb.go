@@ -35,6 +35,7 @@ const (
 	isLBProvisioningDone        = "done"
 	isLBResourceGroup           = "resource_group"
 	isLBProfile                 = "profile"
+	isLBRouteMode               = "route_mode"
 	isLBLogging                 = "logging"
 	isLBSecurityGroups          = "security_groups"
 	isLBSecurityGroupsSupported = "security_group_supported"
@@ -51,13 +52,20 @@ func resourceIBMISLB() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
-			},
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return resourceRouteModeValidate(diff)
+				}),
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -154,6 +162,14 @@ func resourceIBMISLB() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 				Computed: true,
+			},
+
+			isLBRouteMode: {
+				Type:        schema.TypeBool,
+				ForceNew:    true,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates whether route mode is enabled for this load balancer",
 			},
 
 			isLBHostName: {
@@ -271,7 +287,7 @@ func resourceIBMISLBCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceIBMISLBRead(d, meta)
 }
 
-func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic bool, isLogging bool, securityGroups *schema.Set) error {
+func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string, subnets *schema.Set, isPublic, isLogging bool, securityGroups *schema.Set) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
@@ -280,6 +296,11 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
+	}
+
+	if routeModeBool, ok := d.GetOk(isLBRouteMode); ok {
+		routeMode := routeModeBool.(bool)
+		options.RouteMode = &routeMode
 	}
 
 	if subnets.Len() != 0 {
@@ -382,6 +403,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isLBType, "private")
 	}
+	if lb.RouteMode != nil {
+		d.Set(isLBRouteMode, *lb.RouteMode)
+	}
 	d.Set(isLBStatus, *lb.ProvisioningStatus)
 	d.Set(isLBCrn, *lb.CRN)
 	d.Set(isLBOperatingStatus, *lb.OperatingStatus)
@@ -455,7 +479,7 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
 	d.Set(ResourceName, *lb.Name)
 	if lb.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *lb.ResourceGroup.ID)
+		d.Set(ResourceGroupName, lb.ResourceGroup.Name)
 	}
 	return nil
 }
@@ -479,9 +503,9 @@ func resourceIBMISLBUpdate(d *schema.ResourceData, meta interface{}) error {
 		hasChangedLog = true
 	}
 	if d.HasChange(isLBSecurityGroups) {
-		o, n := d.GetChange(isLBSecurityGroups)
-		oSecurityGroups := o.(*schema.Set)
-		nSecurityGroups := n.(*schema.Set)
+		oldSecurityGroups, newSecurityGroups := d.GetChange(isLBSecurityGroups)
+		oSecurityGroups := oldSecurityGroups.(*schema.Set)
+		nSecurityGroups := newSecurityGroups.(*schema.Set)
 		remove = expandStringList(oSecurityGroups.Difference(nSecurityGroups).List())
 		add = expandStringList(nSecurityGroups.Difference(oSecurityGroups).List())
 		hasChangedSecurityGroups = true
@@ -559,21 +583,27 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 	}
 
 	if hasChangedSecurityGroups {
+
 		if len(add) > 0 {
-			for _, d := range add {
+			for _, securityGroupID := range add {
 				createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
-				createSecurityGroupTargetBindingOptions.SecurityGroupID = &d
+				createSecurityGroupTargetBindingOptions.SecurityGroupID = &securityGroupID
 				createSecurityGroupTargetBindingOptions.ID = &id
 				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
 				if err != nil {
 					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
 				}
+				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
+				}
 			}
 		}
+
 		if len(remove) > 0 {
-			for _, d := range remove {
+			for _, securityGroupID := range remove {
 				getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
-					SecurityGroupID: &d,
+					SecurityGroupID: &securityGroupID,
 					ID:              &id,
 				}
 				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
@@ -581,12 +611,16 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 					if response != nil && response.StatusCode == 404 {
 						continue
 					}
-					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", d, err, response)
+					return fmt.Errorf("Error Getting Security Group Target for this load balancer (%s): %s\n%s", securityGroupID, err, response)
 				}
-				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(d, id)
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, id)
 				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
 				if err != nil {
 					return fmt.Errorf("Error Deleting Security Group Target for this load balancer : %s\n%s", err, response)
+				}
+				_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
 				}
 			}
 		}

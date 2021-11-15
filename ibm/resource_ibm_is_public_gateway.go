@@ -29,8 +29,8 @@ const (
 	isPublicGatewayProvisioningDone = "available"
 	isPublicGatewayDeleting         = "deleting"
 	isPublicGatewayDeleted          = "done"
-
-	isPublicGatewayResourceGroup = "resource_group"
+	isPublicGatewayCRN              = "crn"
+	isPublicGatewayResourceGroup    = "resource_group"
 )
 
 func resourceIBMISPublicGateway() *schema.Resource {
@@ -119,6 +119,11 @@ func resourceIBMISPublicGateway() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+			isPublicGatewayCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -306,6 +311,7 @@ func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) er
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
 	d.Set(ResourceName, *publicgw.Name)
 	d.Set(ResourceCRN, *publicgw.CRN)
+	d.Set(isPublicGatewayCRN, *publicgw.CRN)
 	d.Set(ResourceStatus, *publicgw.Status)
 	if publicgw.ResourceGroup != nil {
 		d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)

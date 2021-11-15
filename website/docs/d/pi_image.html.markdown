@@ -49,3 +49,4 @@ In addition to all argument reference list, you can access the following attribu
 - `size` - (String) The size of the image in megabytes.
 - `state` - (String) The state for this image. 
 - `storage_type` - (String) The storage type for this image.
+- `storage_pool` - (String) Storage pool where image resides.

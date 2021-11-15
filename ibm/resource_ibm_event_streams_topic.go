@@ -235,12 +235,10 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		log.Printf("[DEBUG] createSaramaAdminClient BluemixAPIKey is empty")
 		return nil, "", fmt.Errorf("failed to get IBM cloud API key")
 	}
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPI()
 	if err != nil {
 		log.Printf("[DEBUG] createSaramaAdminClient ResourceControllerAPI err %s", err)
 		return nil, "", err
 	}
-	rcAPI := rsConClient.ResourceServiceInstance()
 	instanceCRN := d.Get("resource_instance_id").(string)
 	if len(instanceCRN) == 0 {
 		topicID := d.Id()
@@ -250,14 +248,9 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 		}
 		instanceCRN = getInstanceCRN(topicID)
 	}
-	instance, err := rcAPI.GetInstance(instanceCRN)
+	instance, err := getInstanceDetails(instanceCRN, meta)
 	if err != nil {
-		log.Printf("[DEBUG] createSaramaAdminClient GetInstance err %s", err)
 		return nil, "", err
-	}
-	if instance.Extensions == nil {
-		log.Printf("[DEBUG] createSaramaAdminClient instance %s extension is nil", instance.ID)
-		return nil, "", fmt.Errorf("instance %s extension is nil", instance.ID)
 	}
 	adminURL := instance.Extensions["kafka_http_url"].(string)
 	d.Set("kafka_http_url", adminURL)

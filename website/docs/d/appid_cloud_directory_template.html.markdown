@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_cloud_directory_template
-Retrieve information about an IBM Cloud AppID Management Services Cloud Directory Email Template.
+Retrieve information about an IBM Cloud AppID Management Services Cloud Directory Email Template. For more information, see [customizing emails](https://cloud.ibm.com/docs/appid?topic=appid-cd-types)
 
 ## Example usage
 

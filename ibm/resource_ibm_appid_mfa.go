@@ -54,7 +54,7 @@ func resourceIBMAppIDMFARead(ctx context.Context, d *schema.ResourceData, meta i
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID MFA configuration: %s", err)
+		return diag.Errorf("Error getting AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	if mfa.IsActive != nil {
@@ -81,10 +81,10 @@ func resourceIBMAppIDMFACreate(ctx context.Context, d *schema.ResourceData, meta
 		IsActive: &isActive,
 	}
 
-	_, _, err = appIDClient.UpdateMFAConfigWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateMFAConfigWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID MFA configuration: %s", err)
+		return diag.Errorf("Error updating AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -106,10 +106,10 @@ func resourceIBMAppIDMFADelete(ctx context.Context, d *schema.ResourceData, meta
 		IsActive: helpers.Bool(false),
 	}
 
-	_, _, err = appIDClient.UpdateMFAConfigWithContext(ctx, input)
+	_, resp, err := appIDClient.UpdateMFAConfigWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID MFA configuration: %s", err)
+		return diag.Errorf("Error resetting AppID MFA configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

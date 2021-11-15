@@ -89,6 +89,12 @@ func dataSourceIBMISPublicGateways() *schema.Resource {
 							Description: "The name of the resource",
 						},
 
+						isPublicGatewayCRN: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn of the resource",
+						},
+
 						ResourceCRN: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -160,9 +166,10 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 			isPublicGatewayZone:   *publicgw.Zone.Name,
 			isPublicGatewayVPC:    *publicgw.VPC.ID,
 
-			ResourceName:   *publicgw.Name,
-			ResourceCRN:    *publicgw.CRN,
-			ResourceStatus: *publicgw.Status,
+			ResourceName:       *publicgw.Name,
+			isPublicGatewayCRN: *publicgw.CRN,
+			ResourceCRN:        *publicgw.CRN,
+			ResourceStatus:     *publicgw.Status,
 		}
 		if publicgw.FloatingIP != nil {
 			floatIP := map[string]interface{}{

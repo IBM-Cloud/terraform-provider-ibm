@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_idp_facebook
-Retrieve information about an IBM Cloud AppID Facebook IDP.
+Retrieve information about an IBM Cloud AppID Facebook IDP. For more information, see [App ID social identity providers](https://cloud.ibm.com/docs/appid?topic=appid-social)
 
 ## Example usage
 

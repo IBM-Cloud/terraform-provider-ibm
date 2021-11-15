@@ -12,10 +12,10 @@ Provides a read-only data source for forwarding rules. You can then reference th
 
 ## Example Usage
 
-```terraform
-data "ibm_dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
-  instance_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.instance_id
-  resolver_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.resolver_id
+
+data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {
+	instance_id	= ibm_dns_custom_resolver.test.instance_id
+	resolver_id	= ibm_dns_custom_resolver.test.custom_resolver_id
 }
 ```
 

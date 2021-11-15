@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_mfa
 
-Create, update, or delete an IBM Cloud AppID Management Services MFA resource.
+Create, update, or delete an IBM Cloud AppID Management Services MFA resource. For more information, see [multifactor authentication](https://cloud.ibm.com/docs/appid?topic=appid-cd-mfa)
 
 ## Example usage
 

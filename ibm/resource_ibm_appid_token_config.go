@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
 )
 
 func resourceIBMAppIDTokenConfig() *schema.Resource {
@@ -78,7 +77,7 @@ func resourceIBMAppIDTokenConfig() *schema.Resource {
 						"destination_claim": {
 							Description: "Optional: Defines the custom attribute that can override the current claim in token.",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 					},
 				},
@@ -120,10 +119,10 @@ func resourceIBMAppIDTokenConfigCreate(ctx context.Context, d *schema.ResourceDa
 
 	input := expandTokenConfig(d)
 
-	_, _, err = appidClient.PutTokensConfigWithContext(ctx, input)
+	_, resp, err := appidClient.PutTokensConfigWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error updating AppID token configuration: %s", err)
+		return diag.Errorf("Error updating AppID token configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -152,10 +151,8 @@ func resourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceData
 			return nil
 		}
 
-		return diag.Errorf("Error reading AppID token configuration: %s", err)
+		return diag.Errorf("Error reading AppID token configuration: %s\n%s", err, response)
 	}
-
-	log.Printf("[DEBUG] Received AppID token config: %v", tokenConfig)
 
 	if tokenConfig.Access != nil {
 		d.Set("access_token_expires_in", *tokenConfig.Access.ExpiresIn)
@@ -313,10 +310,10 @@ func resourceIBMAppIDTokenConfigDelete(ctx context.Context, d *schema.ResourceDa
 	tenantID := d.Get("tenant_id").(string)
 
 	config := tokenConfigDefaults(tenantID)
-	_, _, err = appidClient.PutTokensConfigWithContext(ctx, config)
+	_, resp, err := appidClient.PutTokensConfigWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID token configuration: %s", err)
+		return diag.Errorf("Error resetting AppID token configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

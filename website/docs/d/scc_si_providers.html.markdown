@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
 subcategory: "Security and Compliance Center"
-page_title: "IBM : ibm_scc_si_provider"
+page_title: "IBM : ibm_scc_si_providers"
 description: |-
-  Get information about scc_si_provider
+  Get information about scc_si_providers
 ---
 
-# ibm_scc_si_provider
+# ibm_scc_si_providers
 
-Provides a read-only data source for scc_si_provider. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for scc_si_providers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -22,7 +22,6 @@ data "ibm_scc_si_providers" "providers" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Optional, String) The ID of the provider.
 * `limit` - (Optional, String) Limit the number of the returned documents to the specified number.
 * `skip` - (Optional, String) The offset is the index of the item from which you want to start returning data from. Default is 0.
 
@@ -30,7 +29,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the scc_si_provider.
+* `id` - The unique identifier of the scc_si_providers.
 * `limit` - (Optional, Integer) The number of elements returned in the current instance. The default is 200.
 
 * `providers` - (Optional, List) The providers requested.

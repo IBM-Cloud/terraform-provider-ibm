@@ -14,8 +14,8 @@ Provides a read-only data source for custom resolvers. You can then reference th
 ## Example usage
 
 ```terraform
-data "ibm_dns_custom_resolvers" "test-custom-resolver" {
-  instance_id = ibm_dns_custom_resolver.test.instance_id
+data "ibm_dns_custom_resolvers" "test-cr" {
+		instance_id = ibm_dns_custom_resolver.test.instance_id
 }
 ```
 
@@ -32,14 +32,14 @@ In addition to the argument references list, you can access the following attrib
    Nested scheme for `custom_resolvers`:
    - `custom_resolver_id` - (String) Identifier of the custom resolver.
    - `description` - (String) Descriptive text of the custom resolver.
-   - `enabled` - (String) Whether custom resolver is enabled.
+   - `enabled` - (String) Whether custom resolver is enabled/disabled.
    - `health`- (String) The status of DNS custom resolver's health. Supported values are `CRITICAL`, `DEGRADED`, `HEALTHY`.
    - `name` - (String) Name of the custom resolver.
    - `locations` (List) The list of locations within the custom resolver. 
     
       Nested scheme for `locations`:
        - `dns_server_ip`- (String) The DNS server IP.
-       - `enabled`- (String) Whether the location is enabled.
+       - `enabled`- (String) Whether the location is enabled/disabled.
        - `healthy`- (String) The health status.
        - `location_id`- (String) The location ID.
        - `subnet_crn` - (String) The subnet CRN.

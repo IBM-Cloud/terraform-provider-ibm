@@ -81,7 +81,7 @@ func resourceIBMAppIDIDPFacebookRead(ctx context.Context, d *schema.ResourceData
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID Facebook IDP: %s", err)
+		return diag.Errorf("Error loading AppID Facebook IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *fb.IsActive)
@@ -122,10 +122,10 @@ func resourceIBMAppIDIDPFacebookCreate(ctx context.Context, d *schema.ResourceDa
 		config.IDP.Config = expandAppIDFBIDPConfig(d.Get("config").([]interface{}))
 	}
 
-	_, _, err = appIDClient.SetFacebookIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetFacebookIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error applying AppID Facebook IDP configuration: %s", err)
+		return diag.Errorf("Error applying AppID Facebook IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -143,10 +143,10 @@ func resourceIBMAppIDIDPFacebookDelete(ctx context.Context, d *schema.ResourceDa
 	tenantID := d.Get("tenant_id").(string)
 	config := appIDFacebookIDPConfigDefaults(tenantID)
 
-	_, _, err = appIDClient.SetFacebookIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetFacebookIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID Facebook IDP configuration: %s", err)
+		return diag.Errorf("Error resetting AppID Facebook IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

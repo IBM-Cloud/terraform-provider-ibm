@@ -32,6 +32,7 @@ const (
 	isImageEncryptionKey    = "encryption_key"
 	isImageEncryption       = "encryption"
 	isImageCheckSum         = "checksum"
+	IsImageCRN              = "crn"
 
 	isImageProvisioning     = "provisioning"
 	isImageProvisioningDone = "done"
@@ -167,6 +168,12 @@ func resourceIBMISImage() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			IsImageCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -548,6 +555,7 @@ func imgGet(d *schema.ResourceData, meta interface{}, id string) error {
 	d.Set(ResourceName, *image.Name)
 	d.Set(ResourceStatus, *image.Status)
 	d.Set(ResourceCRN, *image.CRN)
+	d.Set(IsImageCRN, *image.CRN)
 	if image.ResourceGroup != nil {
 		d.Set(isImageResourceGroup, *image.ResourceGroup.ID)
 	}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -182,54 +182,6 @@ func TestAccIBMCisDNSRecord_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func TestAccIBMCisDNSRecord_CreateAfterManualCisRIDestroy(t *testing.T) {
-	t.Skip()
-	testName := "test_acc"
-	var afterCreate, afterRecreate string
-	name := "ibm_cis_dns_record.test_acc"
-
-	afterCreate = "hello"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckCis(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIBMCisDNSRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCisDNSRecordConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCisDNSRecordExists(name, &afterCreate),
-					testAccIBMCisManuallyDeleteDNSRecord(&afterCreate),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								_ = testAccCisInstanceManuallyDelete(cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckIBMCisDNSRecordConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMCisDNSRecordExists(name, &afterRecreate),
-					testAccCheckIBMCisDNSRecordRecreated(&afterCreate, &afterRecreate),
-				),
-			},
-		},
-	})
-}
-
 func testAccIBMCisManuallyDeleteDNSRecord(tfRecordID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		cisClient, err := testAccProvider.Meta().(ClientSession).CisDNSRecordClientSession()
@@ -324,18 +276,6 @@ func testAccCheckIBMCisDNSRecordConfigCisDSBasic(resourceID string, cisDomain st
 		type    = "A"
 	  }
 	  `, resourceID)
-}
-
-func testAccCheckIBMCisDNSRecordConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	resource "ibm_cis_dns_record" "%[1]s" {
-		cis_id    = ibm_cis.cis.id
-		domain_id = ibm_cis_domain.cis_domain.domain_id
-		name    = "%[1]s"
-		content = "192.168.0.10"
-		type    = "A"
-	  }
-`, resourceID)
 }
 
 func testAccCheckIBMCisDNSRecordConfigPTR(resourceID string, cisDomainStatic string) string {

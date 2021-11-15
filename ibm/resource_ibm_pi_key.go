@@ -159,7 +159,7 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 	client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
 	key, err := client.Get(parts[1], powerinstanceid)
-	if err != nil {
+	if err != nil || key == nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
 			if apiErr.StatusCode() == 404 {
 				return false, nil
@@ -167,5 +167,8 @@ func resourceIBMPIKeyExists(d *schema.ResourceData, meta interface{}) (bool, err
 		}
 		return false, fmt.Errorf("Error communicating with the API: %s", err)
 	}
-	return *key.Name == name, nil
+	if key.Name != nil {
+		return *key.Name == name, nil
+	}
+	return false, nil
 }

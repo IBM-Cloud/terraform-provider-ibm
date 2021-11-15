@@ -35,12 +35,12 @@ func dataSourceIBMAppIDAuditStatusRead(ctx context.Context, d *schema.ResourceDa
 
 	tenantID := d.Get("tenant_id").(string)
 
-	auditStatus, _, err := appIDClient.GetAuditStatusWithContext(ctx, &appid.GetAuditStatusOptions{
+	auditStatus, resp, err := appIDClient.GetAuditStatusWithContext(ctx, &appid.GetAuditStatusOptions{
 		TenantID: &tenantID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error getting AppID audit status: %s", err)
+		return diag.Errorf("Error getting AppID audit status: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *auditStatus.IsActive)

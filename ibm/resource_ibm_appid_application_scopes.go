@@ -61,10 +61,10 @@ func resourceIBMAppIDApplicationScopesCreate(ctx context.Context, d *schema.Reso
 		Scopes:   scopes,
 	}
 
-	_, _, err = appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
+	_, resp, err := appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
 
 	if err != nil {
-		return diag.Errorf("Error setting application scopes: %s", err)
+		return diag.Errorf("Error setting application scopes: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, clientID))
@@ -101,7 +101,7 @@ func resourceIBMAppIDApplicationScopesRead(ctx context.Context, d *schema.Resour
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID application scopes: %s", err)
+		return diag.Errorf("Error getting AppID application scopes: %s\n%s", err, resp)
 	}
 
 	if err := d.Set("scopes", scopes.Scopes); err != nil {
@@ -131,10 +131,10 @@ func resourceIBMAppIDApplicationScopesUpdate(ctx context.Context, d *schema.Reso
 		Scopes:   scopes,
 	}
 
-	_, _, err = appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
+	_, resp, err := appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
 
 	if err != nil {
-		return diag.Errorf("Error updating application scopes: %s", err)
+		return diag.Errorf("Error updating application scopes: %s\n%s", err, resp)
 	}
 
 	return resourceIBMAppIDApplicationScopesRead(ctx, d, meta)
@@ -156,10 +156,10 @@ func resourceIBMAppIDApplicationScopesDelete(ctx context.Context, d *schema.Reso
 		Scopes:   []string{},
 	}
 
-	_, _, err = appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
+	_, resp, err := appIDClient.PutApplicationsScopesWithContext(ctx, scopeOpts)
 
 	if err != nil {
-		return diag.Errorf("Error clearing application scopes: %s", err)
+		return diag.Errorf("Error clearing application scopes: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

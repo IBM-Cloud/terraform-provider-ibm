@@ -8,7 +8,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -74,69 +74,6 @@ func TestAccIBMCisGlb_CreateAfterManualDestroy(t *testing.T) {
 			},
 			{
 				Config: testAccCheckCisGlbConfigCisDSBasic("test", cisDomainStatic),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisGlbExists(name, &glbTwo),
-					func(state *terraform.State) error {
-						if glbOne == glbTwo {
-							return fmt.Errorf("load balancer id is unchanged even after we thought we deleted it ( %s )",
-								glbTwo)
-						}
-						return nil
-					},
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMCisGlb_CreateAfterManualCisRIDestroy(t *testing.T) {
-	//t.Parallel()
-	t.Skip()
-	var glbOne, glbTwo string
-	name := "ibm_cis_global_load_balancer." + "test"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCisGlbDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisGlbConfigCisRIBasic("test", cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisGlbExists(name, &glbOne),
-					testAccCisGlbManuallyDelete(&glbOne),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_pool" {
-								log.Printf("[WARN]  Manually removing pool")
-								poolID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Pools().DeletePool(cisID, poolID)
-
-							}
-
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								log.Printf("[WARN] Manually removing domain")
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								log.Printf("[WARN]  Manually removing Cis Instance")
-								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckCisGlbConfigCisRIBasic("test", cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisGlbExists(name, &glbTwo),
 					func(state *terraform.State) error {
@@ -309,19 +246,6 @@ func testAccCheckCisGlbConfigCisDSUpdate(id string, cisDomain string) string {
 		}
 	  }
 	`, id, cisDomainStatic)
-}
-
-func testAccCheckCisGlbConfigCisRIBasic(id string, cisDomain string) string {
-	return testAccCheckCisPoolConfigCisRIBasic(id, cisDomain) + fmt.Sprintf(`
-	resource "ibm_cis_global_load_balancer" "%[1]s" {
-		cis_id           = ibm_cis.cis.id
-		domain_id        = ibm_cis_domain.cis_domain.id
-		name             = "%[2]s"
-		fallback_pool_id = ibm_cis_origin_pool.origin_pool.id
-		default_pool_ids = [ibm_cis_origin_pool.origin_pool.id]
-		steering_policy = "dynamic_latency" 
-	  }
-	`, id, cisDomain, "testacc_ds_cis")
 }
 
 func testAccCheckCisGlbConfigSessionAffinity(id string, cisDomainStatic string) string {

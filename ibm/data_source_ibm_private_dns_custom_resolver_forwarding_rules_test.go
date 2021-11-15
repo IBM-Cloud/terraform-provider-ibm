@@ -10,11 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
-	forwardingRuleDescription := "test forward rule"
+func TestAccIBMPrivateDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
+	forwardingRuleDescription := "test-forward-rule"
 	forwardingRuleType := "zone"
 	forwardingRuleMatch := "test.example.com"
-	node := "data.ibm_dns_custom_resolver_forwarding_rules.dns_custom_resolver_forwarding_rules"
+	node := "data.ibm_dns_custom_resolver_forwarding_rules.test-fr"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -22,9 +22,9 @@ func TestAccIBMDNSCustomResolverForwardingRulesDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescription, forwardingRuleType, forwardingRuleMatch),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(node, "ibm_dns_custom_resolver_forwarding_rule.0.description"),
-					resource.TestCheckResourceAttrSet(node, "ibm_dns_custom_resolver_forwarding_rule.0.type"),
-					resource.TestCheckResourceAttrSet(node, "ibm_dns_custom_resolver_forwarding_rule.0.match"),
+					resource.TestCheckResourceAttrSet(node, "rules.0.description"),
+					resource.TestCheckResourceAttrSet(node, "rules.0.type"),
+					resource.TestCheckResourceAttrSet(node, "rules.0.match"),
 				),
 			},
 		},
@@ -35,25 +35,28 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 	return fmt.Sprintf(`
 		resource "ibm_dns_custom_resolver" "test" {
 			name        = "CustomResolverFW"
-			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			instance_id = "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
 			description = "FW rules"
+			high_availability = false
 			enabled = true
 			locations {
-				subnet_crn = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-03d54d71-b438-4d20-b943-76d3d2a1a590"
+				subnet_crn = "crn:v1:bluemix:public:is:us-south-1:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0717-4f53a236-cd7a-4688-9347-066bb5058a5c"
 				enabled    = true
 			}
 		}
 		resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-			instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
+			instance_id =  "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
 			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 			description = "%s"
 			type = "%s"
 			match = "%s"
 			forward_to = ["168.20.22.122"]
 		}
-		data "ibm_dns_custom_resolver_forwarding_rules" "dns_custom_resolver_forwarding_rules" {
-			instance_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.instance_id
-			resolver_id = ibm_dns_custom_resolver_forwarding_rule.dns_custom_resolver_forwarding_rule.resolver_id
-		  }
+	
+		data "ibm_dns_custom_resolver_forwarding_rules" "test-fr" {
+			depends_on  = [ibm_dns_custom_resolver.test]
+			instance_id	= ibm_dns_custom_resolver.test.instance_id
+			resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
+		}
 	`, forwardingRuleDescription, forwardingRuleType, forwardingRuleMatch)
 }

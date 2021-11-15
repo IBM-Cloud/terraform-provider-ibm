@@ -54,7 +54,7 @@ func resourceIBMAppIDAuditStatusRead(ctx context.Context, d *schema.ResourceData
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID audit status: %s", err)
+		return diag.Errorf("Error getting AppID audit status: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *auditStatus.IsActive)
@@ -85,7 +85,7 @@ func resourceIBMAppIDAuditStatusCreate(ctx context.Context, d *schema.ResourceDa
 			return nil
 		}
 
-		return diag.Errorf("Error setting AppID audit status: %s", err)
+		return diag.Errorf("Error setting AppID audit status: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -101,13 +101,13 @@ func resourceIBMAppIDAuditStatusDelete(ctx context.Context, d *schema.ResourceDa
 
 	tenantID := d.Get("tenant_id").(string)
 
-	_, err = appIDClient.SetAuditStatusWithContext(ctx, &appid.SetAuditStatusOptions{
+	resp, err := appIDClient.SetAuditStatusWithContext(ctx, &appid.SetAuditStatusOptions{
 		TenantID: &tenantID,
 		IsActive: helpers.Bool(false),
 	})
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID audit status: %s", err)
+		return diag.Errorf("Error resetting AppID audit status: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

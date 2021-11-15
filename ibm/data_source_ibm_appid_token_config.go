@@ -123,10 +123,10 @@ func dataSourceIBMAppIDTokenConfigRead(ctx context.Context, d *schema.ResourceDa
 
 	tenantID := d.Get("tenant_id").(string)
 
-	tokenConfig, _, err := appidClient.GetTokensConfigWithContext(ctx, &appid.GetTokensConfigOptions{TenantID: &tenantID})
+	tokenConfig, resp, err := appidClient.GetTokensConfigWithContext(ctx, &appid.GetTokensConfigOptions{TenantID: &tenantID})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID token config: %s", err)
+		return diag.Errorf("Error loading AppID token config: %s\n%s", err, resp)
 	}
 
 	if tokenConfig.AccessTokenClaims != nil {
