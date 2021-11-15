@@ -65,5 +65,7 @@ In addition to all argument reference list, you can access the following attribu
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
 - `status` - (String) The status of the instance.
+- `storage_pool`- (String) Storage Pool where server is deployed.
+- `storage_type` - (String) Storage type where server is deployed.
 - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
 - `volumes`- (List of strings) The list of volume IDs that are attached to the instance.

@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_audit_status
-Retrieve IBM Cloud AppID Management Services audit status.
+Retrieve IBM Cloud AppID Management Services audit status. For more information, see [auditing events for App ID](https://cloud.ibm.com/docs/appid?topic=appid-at-events&interface=api)
 
 ## Example usage
 

@@ -171,11 +171,25 @@ Review the argument references that you can specify for your resource.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
+- `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
+
+  **NOTE:**
+    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+
 - `dedicated_host_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host group where the instance is placed.
+
+  **NOTE:**
+    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+
 - `image` - (Required, String) The ID of the image to create the template.
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
 - `name` - (Required, String) The name of the instance template.
+- `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
+
+  **NOTE:**
+    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+
 - `profile` - (Required, String) The number of instances created in the instance group.
 - `primary_network_interfaces` (Required, List) A nested block describes the primary network interface for the template.
 
@@ -220,6 +234,11 @@ In addition to all arguments listed, you can access the following attribute refe
 
 - `crn` - (String) The CRN for this instance template.
 - `id` - (String) The ID of an instance template.
+- `placement_target` - (List) The placement restrictions to use for the virtual server instance.
+  Nested scheme for `placement_target`:
+    - `crn` - (String) The unique identifier for this placement target.
+    - `href` - (String) The CRN for this placement target.
+    - `id` - (String) The URL for this placement target.
 
 ## Import
 The `ibm_is_instance_template` resource can be imported by using instance template ID.

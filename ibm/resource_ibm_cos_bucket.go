@@ -114,7 +114,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc:     validateAllowedStringValue([]string{"public", "private", "direct"}),
 				Description:      "public or private",
 				DiffSuppressFunc: applyOnce,
 				Default:          "public",
@@ -434,9 +434,12 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -694,9 +697,12 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
@@ -902,9 +908,12 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, privateApiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, privateApiEndpoint, directApiEndpoint := selectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = privateApiEndpoint
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -980,9 +989,12 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		apiType = "ssl"
 	}
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(apiType, bLocation)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -1060,9 +1072,12 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -1107,17 +1122,17 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	return false, nil
 }
 
-func selectCosApi(apiType string, bLocation string) (string, string) {
+func selectCosApi(apiType string, bLocation string) (string, string, string) {
 	if apiType == "crl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "rl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "ssl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
-	return "", ""
+	return "", "", ""
 }
 
 func parseBucketId(id string, info string) string {

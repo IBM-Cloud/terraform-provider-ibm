@@ -31,6 +31,16 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 						"ibm_pi_volume.power_volume", "pi_volume_name", name),
 				),
 			},
+			{
+				Config: testAccCheckIBMPIVolumeSizeConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_size", "30"),
+				),
+			},
 		},
 	})
 }
@@ -96,6 +106,51 @@ func testAccCheckIBMPIVolumeConfig(name string) string {
 		pi_volume_size       = 20
 		pi_volume_name       = "%s"
 		pi_volume_type       = "tier1"
+		pi_volume_shareable  = true
+		pi_cloud_instance_id = "%s"
+	  }
+	`, name, pi_cloud_instance_id)
+}
+
+func testAccCheckIBMPIVolumeSizeConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size       = 30
+		pi_volume_name       = "%s"
+		pi_volume_type       = "tier1"
+		pi_volume_shareable  = true
+		pi_cloud_instance_id = "%s"
+	  }
+	`, name, pi_cloud_instance_id)
+}
+
+func TestAccIBMPIVolumePool(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumePoolConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_pool", "Tier3-Flash-1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumePoolConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size       = 20
+		pi_volume_name       = "%s"
+		pi_volume_pool       = "Tier3-Flash-1"
 		pi_volume_shareable  = true
 		pi_cloud_instance_id = "%s"
 	  }

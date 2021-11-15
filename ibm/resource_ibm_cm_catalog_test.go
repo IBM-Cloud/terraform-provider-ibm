@@ -25,6 +25,7 @@ func TestAccIBMCmCatalog(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCmCatalogExists("ibm_cm_catalog.cm_catalog"),
 					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "label"),
+					resource.TestCheckResourceAttrSet("ibm_cm_catalog.cm_catalog", "resource_group_id"),
 				),
 			},
 			resource.TestStep{

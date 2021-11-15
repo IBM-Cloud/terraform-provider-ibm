@@ -33,6 +33,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `bandwidth` - The maximum bandwidth (in megabits per second) for the volume
 - `capacity` - (String) The capacity of the volume in gigabytes.
 - `crn` - (String) The crn of this volume.
 - `encryption_key` - (String) The key to use for encrypting this volume.

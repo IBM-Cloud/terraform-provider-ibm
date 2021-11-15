@@ -63,7 +63,7 @@ Sample to create a reserved IP:
     }
     resource "ibm_is_subnet_reserved_ip" "example" {
         subnet = ibm_is_subnet.example.id
-        name = "%s"
+        name = "example-subnet-reserved-ip"
         target = ibm_is_virtual_endpoint_gateway.example.id
     }
 ```

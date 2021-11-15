@@ -7,6 +7,7 @@ description: |-
 ---
 
 # ibm_cos_bucket_object
+
 Retrieves information of an object in IBM Cloud Object Storage bucket. For more information, about an IBM Cloud Object Storage bucket, see [Create some buckets to store your data](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-getting-started-cloud-object-storage#gs-create-buckets). 
 
 ## Example usage
@@ -46,10 +47,10 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the object.
+- `id` - (String) The ID of an object.
 - `body` - (String) Literal string value of an object content. Only supported for `text/*` and `application/json` content types.
 - `content_length` - (String) A standard MIME type describing the format of an object data.
 - `content_type` - (String) A standard MIME type describing the format of an object data.
 - `etag` - (String) Computed MD5 hexdigest of an object content.
-- `last_modified` - (Timestamp) Last modified date of the object. A GMT formatted date.
-- `object_sql_url` - (String) Access the object using an SQL Query instance. The SQL URL is a reference url used inside of an SQL statement. The reference url is used to perform queries against objects storing structured data.
+- `last_modified` - (Timestamp) Last modified date of an object in a GMT formatted date.
+- `object_sql_url` - (String) Access the object using an SQL Query instance. The SQL URL is a reference URL used inside an SQL statement. The reference URL is used to perform queries against objects storing structured data.

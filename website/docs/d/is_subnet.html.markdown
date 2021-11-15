@@ -22,7 +22,7 @@ resource "ibm_is_subnet" "example" {
   name            = "example-subnet"
   vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
 data "ibm_is_subnet" "example" {
@@ -41,7 +41,7 @@ resource "ibm_is_subnet" "example" {
   name            = "example-subnet"
   vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
 data "ibm_is_subnet" "example" {

@@ -135,6 +135,55 @@ func TestAccIBMISLB_basic_network(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLB_basic_network_vnf(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
+	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
+	routeModeTrue := true
+	routeModeFalse := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBNetworkRouteModeConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName, routeModeTrue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "route_mode", fmt.Sprintf("%t", routeModeTrue)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "profile", "network-fixed"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "type", "private"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_NLB", "hostname"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBNetworkRouteModeConfig(vpcname, subnetname, ISZoneName, ISCIDR, nlbName1, routeModeFalse),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_NLB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "route_mode", fmt.Sprintf("%t", routeModeFalse)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "profile", "network-fixed"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "type", "private"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_NLB", "name", nlbName1),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISLB_basic_private(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflbt-vpc-%d", acctest.RandIntRange(10, 100))
@@ -269,6 +318,27 @@ func testAccCheckIBMISLBNetworkConfig(vpcname, subnetname, zone, cidr, nlbName s
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 		profile = "network-fixed"
     }`, vpcname, subnetname, zone, cidr, nlbName)
+
+}
+
+func testAccCheckIBMISLBNetworkRouteModeConfig(vpcname, subnetname, zone, cidr, nlbName string, routeMode bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name 						= "%s"
+		vpc 						= ibm_is_vpc.testacc_vpc.id
+		zone 						= "%s"
+		total_ipv4_address_count 	= 16
+	}
+	resource "ibm_is_lb" "testacc_NLB" {
+		name 			= "%s"
+		subnets 		= [ibm_is_subnet.testacc_subnet.id]
+		profile 		= "network-fixed"
+		route_mode 		= %t
+		type 			= "private"
+    }`, vpcname, subnetname, zone, nlbName, routeMode)
 
 }
 

@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `instances`- (List of Object) A list of Virtual Servers for VPC instances that exist in your account.
    
    Nested scheme for `instances`:
+    - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
 
 	  Nested scheme for `boot_volume`:
@@ -107,6 +108,8 @@ In addition to all argument reference list, you can access the following attribu
 		Nested scheme for `status_reasons`:
 		- `code` - (String)  A snake case string identifying the status reason.
 		- `message` - (String)  An explanation of the status reason
+	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
+    - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

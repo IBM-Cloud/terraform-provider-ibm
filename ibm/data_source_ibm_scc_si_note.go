@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -348,7 +347,7 @@ func dataSourceIBMSccSiNoteRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getNoteOptions.ProviderID, *getNoteOptions.NoteID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *findingsClient.AccountID, *getNoteOptions.ProviderID, *getNoteOptions.NoteID))
 	if err = d.Set("short_description", apiNote.ShortDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting short_description: %s", err))
 	}
@@ -563,15 +562,13 @@ func dataSourceAPINoteCardToMap(cardItem findingsv1.Card) (cardMap map[string]in
 func dataSourceAPINoteCardElementsToMap(elementsItem findingsv1.CardElementIntf) (elementsMap map[string]interface{}) {
 	cardElementMap := map[string]interface{}{}
 
-	cardElementByte, _ := json.Marshal(elementsItem)
-	_ = json.Unmarshal(cardElementByte, &cardElementMap)
-
-	if cardElementMap["value_type"] != nil && cardElementMap["value_type"].(map[string]interface{}) != nil {
-		cardElementValueTypeMapSlice := make([]map[string]interface{}, 1)
-		cardElementValueTypeMapSlice[0] = cardElementMap["value_type"].(map[string]interface{})
-
-		cardElementMap["value_type"] = cardElementValueTypeMapSlice
-
+	switch v := elementsItem.(type) {
+	case *findingsv1.CardElementNumericCardElement:
+		cardElementMap["value_type"] = dataSourceAPINoteElementsValueTypeToMap(*v.ValueType)
+	case *findingsv1.CardElementBreakdownCardElement:
+		cardElementMap["value_types"] = dataSourceAPINoteElementsValueTypesToMap(v.ValueTypes)
+	case *findingsv1.CardElementTimeSeriesCardElement:
+		cardElementMap["value_types"] = dataSourceAPINoteElementsValueTypesToMap(v.ValueTypes)
 	}
 
 	return cardElementMap
@@ -596,10 +593,56 @@ func dataSourceAPINoteElementsValueTypeToMap(valueTypeItem findingsv1.NumericCar
 	return valueTypeMap
 }
 
-func dataSourceAPINoteElementsValueTypesToMap(valueTypesItem findingsv1.ValueTypeIntf) (valueTypesMap map[string]interface{}) {
-	valueTypesMap = map[string]interface{}{}
+func dataSourceAPINoteElementsFindingCountValueTypeToMap(valueTypeItem findingsv1.ValueTypeFindingCountValueType) (valueTypeMap map[string]interface{}) {
+	valueTypeMap = map[string]interface{}{}
 
-	// TODO: Add code here to convert a findingsv1.ValueTypeIntf to map[string]interface{}
+	if valueTypeItem.Kind != nil {
+		valueTypeMap["kind"] = valueTypeItem.Kind
+	}
+	if valueTypeItem.Text != nil {
+		valueTypeMap["text"] = valueTypeItem.Text
+	}
+	if valueTypeItem.FindingNoteNames != nil {
+		valueTypeMap["finding_note_names"] = valueTypeItem.FindingNoteNames
+	}
+
+	return valueTypeMap
+}
+
+func dataSourceAPINoteElementsKpiValueTypeToMap(valueTypeItem findingsv1.ValueTypeKpiValueType) (valueTypeMap map[string]interface{}) {
+	valueTypeMap = map[string]interface{}{}
+
+	if valueTypeItem.Kind != nil {
+		valueTypeMap["kind"] = valueTypeItem.Kind
+	}
+	if valueTypeItem.Text != nil {
+		valueTypeMap["text"] = valueTypeItem.Text
+	}
+	if valueTypeItem.KpiNoteName != nil {
+		valueTypeMap["kpi_note_name"] = valueTypeItem.KpiNoteName
+	}
+
+	return valueTypeMap
+}
+
+func dataSourceAPINoteElementsValueTypesToMap(valueTypesItem []findingsv1.ValueTypeIntf) (valueTypesMap []map[string]interface{}) {
+	valueTypesMap = []map[string]interface{}{}
+
+	valueTypeMap := map[string]interface{}{}
+
+	for _, valueType := range valueTypesItem {
+
+		switch v := valueType.(type) {
+		case *findingsv1.NumericCardElementValueType:
+			valueTypeMap = dataSourceAPINoteElementsValueTypeToMap(*v)
+		case *findingsv1.ValueTypeFindingCountValueType:
+			valueTypeMap = dataSourceAPINoteElementsFindingCountValueTypeToMap(*v)
+		case *findingsv1.ValueTypeKpiValueType:
+			valueTypeMap = dataSourceAPINoteElementsKpiValueTypeToMap(*v)
+		}
+
+		valueTypesMap = append(valueTypesMap, valueTypeMap)
+	}
 
 	return valueTypesMap
 }

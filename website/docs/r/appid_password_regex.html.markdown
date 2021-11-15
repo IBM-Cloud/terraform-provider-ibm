@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_password_regex
 
-Update or reset an IBM Cloud AppID Management Services Password Regex configuration.
+Update or reset an IBM Cloud AppID Management Services Password Regex configuration. For more information, see [defining password policies](https://cloud.ibm.com/docs/appid?topic=appid-cd-strength)
 
 ## Example usage
 

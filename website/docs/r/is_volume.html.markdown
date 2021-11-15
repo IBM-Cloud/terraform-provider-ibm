@@ -15,7 +15,7 @@ The following example creates a volume with 10 IOPs tier.
 
 ```terraform
 resource "ibm_is_volume" "example" {
-  name     = "example_volume"
+  name     = "example-volume"
   profile  = "10iops-tier"
   zone     = "us-south-1"
 }
@@ -25,7 +25,7 @@ The following example creates a custom volume.
 
 ```terraform
 resource "ibm_is_volume" "example" {
-  name     = "example_volume"
+  name     = "example-volume"
   profile  = "custom"
   zone     = "us-south-1"
   iops     = 1000
@@ -50,6 +50,7 @@ Review the argument references that you can specify for your resource.
     - Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity)
     - Can be updated only if volume is attached to an running virtual server instance.
     - Stopped instance will be started on update of capacity of the volume.
+- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
 - `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
 - `iops` - (Optional, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.

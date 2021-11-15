@@ -7,6 +7,7 @@ description: |-
 ---
 
 # ibm_is_dedicated_host_disks
+
 Retrieve the dedicated host disk collection. For more information, about dedicated host disk collection, see [managing dedicated hosts and groups](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-dedicated-hosts-groups).
 
 ## Example usage
@@ -47,7 +48,7 @@ In addition to the argument reference list, you can access the following attribu
   - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
   - `name` - (String) The user-defined or system-provided name for this disk.
   - `provisionable` - (String) Indicates whether this dedicated host disk is available for instance disk creation.
-  - `resource_type` -(String) The type of resource referenced.
-  - `size` -(String)  The size of the disk in GB (gigabytes).
+  - `resource_type` - (String) The type of resource referenced.
+  - `size` - (String) The size of the disk in GB (gigabytes).
   - `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
 - `id` - (String) The unique identifier of the dedicated host disk collection.

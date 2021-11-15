@@ -67,6 +67,13 @@ func resourceIBMCmCatalog() *schema.Resource {
 				Computed:    true,
 				Description: "URL path to offerings.",
 			},
+			"resource_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Resource Group ID",
+			},
 		},
 	}
 }
@@ -93,6 +100,9 @@ func resourceIBMCmCatalogCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	if _, ok := d.GetOk("kind"); ok {
 		createCatalogOptions.SetKind(d.Get("kind").(string))
+	}
+	if _, ok := d.GetOk("resource_group_id"); ok {
+		createCatalogOptions.SetResourceGroupID(d.Get("resource_group_id").(string))
 	}
 
 	catalog, response, err := catalogManagementClient.CreateCatalog(createCatalogOptions)
@@ -151,6 +161,9 @@ func resourceIBMCmCatalogRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if err = d.Set("kind", catalog.Kind); err != nil {
 		return fmt.Errorf("Error setting kind: %s", err)
+	}
+	if err = d.Set("resource_group_id", catalog.ResourceGroupID); err != nil {
+		return fmt.Errorf("Error setting resource_group_id: %s", err)
 	}
 
 	return nil

@@ -170,6 +170,7 @@ provider "ibm" {
 }	
 data "ibm_resource_group" "resource_group" {
 	is_default = "true"
+	//name = "Default"
 }
 resource "ibm_is_vpc" "vpc" {
 	name = "%[1]s"

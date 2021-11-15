@@ -8,7 +8,7 @@ description: |-
 
 # ibm_resource_tag
 
-Create, update, or delete [IBM Cloud resource tags](https://cloud.ibm.com/apidocs/tagging).
+Create, update, or delete IBM Cloud resource tags. For more information, about tagging, see [IBM Cloud resource tags](https://cloud.ibm.com/apidocs/tagging).
 
 
 ## Example usage
@@ -34,11 +34,11 @@ Review the argument references that you can specify for your resource.
 - `tag_type` - (Optional, String) Type of the tag. Supported values are: `user`, `service`, or `access`. The default value is user.
 - `tags` - (Required, Array of strings) List of tags associated with resource instance.
 
-## Attributes Reference
+## Attributes reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the resource tag.
-- `acccount_id` - (String) The ID of an account that owns the resources to be tagged (required if tag-type is set to service).
+- `acccount_id` - (String) The ID of an account that owns the resources to be tagged. This is required if tag-type is set to service.
 
 
 ## Import
@@ -58,7 +58,7 @@ $ terraform import ibm_resource_tag.tag  crn:v1:bluemix:public:satellite:us-east
 
 ```
 
-Example for importing classic infrastructure tags:
+Example for importing classic infrastructure tags.
 
 **Syntax**
 
@@ -69,6 +69,5 @@ $ terraform import ibm_resource_tag.tag resource_id/resource_type
 **Example**
 
 ```
-$ terraform import ibm_resource_tag.tag  118398132/SoftLayer_Virtual_Guest
-
+$ terraform import ibm_resource_tag.tag 118398132/SoftLayer_Virtual_Guest
 ```

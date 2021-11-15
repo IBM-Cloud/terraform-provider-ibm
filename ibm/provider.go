@@ -259,6 +259,7 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_cluster_worker_pool":  dataSourceIBMContainerVpcClusterWorkerPool(),
 			"ibm_container_vpc_worker_pool":          dataSourceIBMContainerVpcClusterWorkerPool(),
 			"ibm_container_worker_pool":              dataSourceIBMContainerWorkerPool(),
+			"ibm_container_storage_attachment":       dataSourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_cr_namespaces":                      dataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":       dataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                         dataSourceIBMCosBucket(),
@@ -295,6 +296,8 @@ func Provider() *schema.Provider {
 			"ibm_is_placement_group":                 dataSourceIbmIsPlacementGroup(),
 			"ibm_is_placement_groups":                dataSourceIbmIsPlacementGroups(),
 			"ibm_is_floating_ip":                     dataSourceIBMISFloatingIP(),
+			"ibm_is_floating_ips":                    dataSourceIBMIsFloatingIps(),
+			"ibm_is_flow_log":                        dataSourceIBMIsFlowLog(),
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           dataSourceIBMISImage(),
 			"ibm_is_images":                          dataSourceIBMISImages(),
@@ -353,6 +356,8 @@ func Provider() *schema.Provider {
 			"ibm_is_zones":                           dataSourceIBMISZones(),
 			"ibm_is_operating_system":                dataSourceIBMISOperatingSystem(),
 			"ibm_is_operating_systems":               dataSourceIBMISOperatingSystems(),
+			"ibm_is_network_acls":                    dataSourceIBMIsNetworkAcls(),
+			"ibm_is_network_acl":                     dataSourceIBMIsNetworkACL(),
 			"ibm_is_network_acl_rule":                dataSourceIBMISNetworkACLRule(),
 			"ibm_is_network_acl_rules":               dataSourceIBMISNetworkACLRules(),
 			"ibm_lbaas":                              dataSourceIBMLbaas(),
@@ -403,6 +408,9 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port":       dataSourceIBMPINetworkPort(),
 			"ibm_pi_cloud_instance":     dataSourceIBMPICloudInstance(),
 			"ibm_pi_catalog_images":     dataSourceIBMPICatalogImages(),
+			"ibm_pi_dhcp":               dataSourceIBMPIDhcp(),
+			"ibm_pi_dhcps":              dataSourceIBMPIDhcps(),
+			"ibm_pi_cloud_connection":   dataSourceIBMPICloudConnection(),
 
 			// Added for private dns zones
 
@@ -466,9 +474,11 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers": dataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":      dataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":     dataSourceIBMSccSiNotes(),
+			"ibm_scc_si_providers":   dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":        dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":       dataSourceIBMSccSiNotes(),
+			"ibm_scc_si_occurrence":  dataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences": dataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
@@ -476,6 +486,14 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
 			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
 			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+
+			// Added for Event Notifications
+			"ibm_en_destination":   dataSourceIBMEnDestination(),
+			"ibm_en_destinations":  dataSourceIBMEnDestinations(),
+			"ibm_en_topic":         dataSourceIBMEnTopic(),
+			"ibm_en_topics":        dataSourceIBMEnTopics(),
+			"ibm_en_subscription":  dataSourceIBMEnSubscription(),
+			"ibm_en_subscriptions": dataSourceIBMEnSubscriptions(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -570,6 +588,7 @@ func Provider() *schema.Provider {
 			"ibm_container_bind_service":                         resourceIBMContainerBindService(),
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
+			"ibm_container_storage_attachment":                   resourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_cr_namespace":                                   resourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                            resourceIBMCrRetentionPolicy(),
 			"ibm_ob_logging":                                     resourceIBMObLogging(),
@@ -612,6 +631,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 resourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
+			"ibm_is_instance_action":                             resourceIBMISInstanceAction(),
 			"ibm_is_instance_disk_management":                    resourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_membership":                   resourceIBMISInstanceGroupMembership(),
@@ -708,6 +728,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port":        resourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
+			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
+			"ibm_pi_cloud_connection":    resourceIBMPICloudConnection(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
@@ -762,7 +784,13 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_note": resourceIBMSccSiNote(),
+			"ibm_scc_si_note":       resourceIBMSccSiNote(),
+			"ibm_scc_si_occurrence": resourceIBMSccSiOccurrence(),
+
+			// Added for Event Notifications
+			"ibm_en_destination":  resourceIBMEnDestination(),
+			"ibm_en_topic":        resourceIBMEnTopic(),
+			"ibm_en_subscription": resourceIBMEnSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -829,6 +857,7 @@ func Validator() ValidatorDict {
 				"ibm_is_image":                            resourceIBMISImageValidator(),
 				"ibm_is_instance_template":                resourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                         resourceIBMISInstanceValidator(),
+				"ibm_is_instance_action":                  resourceIBMISInstanceActionValidator(),
 				"ibm_is_instance_disk_management":         resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_instance_volume_attachment":       resourceIBMISInstanceVolumeAttachmentValidator(),
 				"ibm_is_ipsec_policy":                     resourceIBMISIPSECValidator(),
@@ -874,6 +903,10 @@ func Validator() ValidatorDict {
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
+				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
+
+				// Added for Event Notifications
+				"ibm_en_destination": resourceIBMEnDestinationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
 				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
@@ -883,6 +916,7 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_si_occurrences":      dataSourceIBMSccSiOccurrencesValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},

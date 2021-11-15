@@ -7,6 +7,7 @@ description: |-
 ---
 
 # ibm_is_dedicated_host_disk
+
 Retrieve the dedicated host disk. For more information, about dedicated host disk, see [migrating a dedicated host instance to another host](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-migrating-dedicated-host).
 
 ## Example usage
@@ -28,9 +29,9 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `available` - (String) The remaining space left for instance placement in GB (gigabytes).
-- `id` - (String) The unique identifier of the dedicated host disk.
 - `created_at` - (Timestamp) The date and time that the disk was created.
 - `href` - The URL for this disk.
+- `id` - (String) The unique identifier of the dedicated host disk.
 - `instance_disks` - (List) Instance disks that are on the dedicated host disk. 
 
   Nested scheme for `instance_disks`:

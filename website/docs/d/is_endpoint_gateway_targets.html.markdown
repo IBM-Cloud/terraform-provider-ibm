@@ -21,10 +21,10 @@ Retrieve an information of an endpoint gateway targets on IBM Cloud as a read-on
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 
-- `crn` - (String) The CRN for this specific object.	
-- `endpoint_type` - (String) The data endpoint type of this offering.
+- `crn` - (String) The CRN for the specific object.	
+- `endpoint_type` - (String) The data endpoint type of the offering.
 - `full_qualified_domain_names` - (String) The fully qualified domain names.
 - `name` - (String) The display name in the requested language.
-- `parent` - (String) The parent for this specific object. 
-- `resource_type` - (String) The resource type of this offering. 
-- `service_location` - (String) The service location of this offering.
+- `parent` - (String) The parent for the specific object. 
+- `resource_type` - (String) The resource type of the offering. 
+- `service_location` - (String) The service location of the offering.

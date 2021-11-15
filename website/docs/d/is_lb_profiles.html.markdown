@@ -28,3 +28,5 @@ You can access the following attribute references after your data source is crea
 	- `family` - (String) The product family this load balancer profile belongs to.
 	- `href` - (String) The URL for this load balancer profile.
 	- `name` - (String) The name for this load balancer profile.
+	- `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
+	- `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]
