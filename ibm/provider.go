@@ -297,6 +297,7 @@ func Provider() *schema.Provider {
 			"ibm_is_placement_groups":                dataSourceIbmIsPlacementGroups(),
 			"ibm_is_floating_ip":                     dataSourceIBMISFloatingIP(),
 			"ibm_is_floating_ips":                    dataSourceIBMIsFloatingIps(),
+			"ibm_is_flow_log":                        dataSourceIBMIsFlowLog(),
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           dataSourceIBMISImage(),
 			"ibm_is_images":                          dataSourceIBMISImages(),
