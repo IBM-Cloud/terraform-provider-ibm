@@ -176,10 +176,8 @@ func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	d.Set("storage_type", powervmdata.StorageType)
 	d.Set("storage_pool", powervmdata.StoragePool)
+	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
 
-	if &powervmdata.LicenseRepositoryCapacity != nil {
-		d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
-	}
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
 		for i, pvmip := range powervmdata.Addresses {

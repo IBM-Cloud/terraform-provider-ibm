@@ -691,9 +691,10 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if &powervmdata.VirtualCores.Min != nil {
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
-	if &powervmdata.LicenseRepositoryCapacity != nil {
-		d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
-	}
+	// if &powervmdata.LicenseRepositoryCapacity != nil {
+	// 	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
+	// }
+	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
 
 	return nil
 
@@ -849,7 +850,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	// License repository capacity will be updated only if service instance is a vtl instance
-	// might need to check if lrc was ser
+	// might need to check if lrc was set
 	if d.HasChange(helpers.PIInstanceLicenseRepositoryCapacity) {
 
 		lrc := d.Get(helpers.PIInstanceLicenseRepositoryCapacity).(int64)
