@@ -41,10 +41,10 @@ Nested scheme for **queries**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the schematics_resource_query.
-* `created_at` - (Optional, String) Resource query creation time.
-* `created_by` - (Optional, String) Email address of user who created the Resource query.
-* `updated_at` - (Optional, String) Resource query updation time.
-* `updated_by` - (Optional, String) Email address of user who updated the Resource query.
+* `created_at` - (String) Resource query creation time.
+* `created_by` - (String) Email address of user who created the Resource query.
+* `updated_at` - (String) Resource query updation time.
+* `updated_by` - (String) Email address of user who updated the Resource query.
 
 ## Import
 

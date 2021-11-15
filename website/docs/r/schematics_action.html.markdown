@@ -210,16 +210,16 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the schematics_action.
 * `account` - (Optional, String) Action account ID.
-* `created_at` - (Optional, String) Action creation time.
-* `created_by` - (Optional, String) E-mail address of the user who created an action.
+* `created_at` - (String) Action creation time.
+* `created_by` - (String) E-mail address of the user who created an action.
 * `crn` - (Optional, String) Action Cloud Resource Name.
 * `playbook_names` - (Optional, List) Playbook names retrieved from the respository.
-* `source_created_at` - (Optional, String) Action Playbook Source creation time.
-* `source_created_by` - (Optional, String) E-mail address of user who created the Action Playbook Source.
-* `source_updated_at` - (Optional, String) The action playbook updation time.
-* `source_updated_by` - (Optional, String) E-mail address of user who updated the action playbook source.
-* `updated_at` - (Optional, String) Action updation time.
-* `updated_by` - (Optional, String) E-mail address of the user who updated an action.
+* `source_created_at` - (String) Action Playbook Source creation time.
+* `source_created_by` - (String) E-mail address of user who created the Action Playbook Source.
+* `source_updated_at` - (String) The action playbook updation time.
+* `source_updated_by` - (String) E-mail address of user who updated the action playbook source.
+* `updated_at` - (String) Action updation time.
+* `updated_by` - (String) E-mail address of the user who updated an action.
 
 ## Import
 

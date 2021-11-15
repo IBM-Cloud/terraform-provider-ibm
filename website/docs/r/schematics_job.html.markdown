@@ -607,16 +607,16 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the schematics_job.
 * `description` - (Optional, String) The description of your job is derived from the related action or workspace.  The description can be up to 2048 characters long in size.
 * `duration` - (Optional, String) Duration of job execution; example 40 sec.
-* `end_at` - (Optional, String) Job end time.
+* `end_at` - (String) Job end time.
 * `log_store_url` - (Optional, String) Job log store URL.
 * `name` - (Optional, String) Job name, uniquely derived from the related Workspace or Action.
 * `resource_group` - (Optional, String) Resource-group name derived from the related Workspace or Action.
 * `results_url` - (Optional, String) Job results store URL.
 * `start_at` - (Optional, String) Job start time.
 * `state_store_url` - (Optional, String) Job state store URL.
-* `submitted_at` - (Optional, String) Job submission time.
-* `submitted_by` - (Optional, String) Email address of user who submitted the job.
-* `updated_at` - (Optional, String) Job status updation timestamp.
+* `submitted_at` - (String) Job submission time.
+* `submitted_by` - (String) Email address of user who submitted the job.
+* `updated_at` - (String) Job status updation timestamp.
 
 ## Import
 

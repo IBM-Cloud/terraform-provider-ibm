@@ -91,10 +91,10 @@ Nested scheme for **variablestore**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the schematics_workspace.
-* `created_at` - (Optional, String) The timestamp when the workspace was created.
-* `created_by` - (Optional, String) The user ID that created the workspace.
+* `created_at` - (String) The timestamp when the workspace was created.
+* `created_by` - (String) The user ID that created the workspace.
 * `crn` - (Optional, String) The workspace CRN.
-* `last_health_check_at` - (Optional, String) The timestamp when the last health check was performed by Schematics.
+* `last_health_check_at` - (String) The timestamp when the last health check was performed by Schematics.
 * `runtime_data` - (Optional, List) Information about the provisioning engine, state file, and runtime logs.
 Nested scheme for **runtime_data**:
 	* `engine_cmd` - (Optional, String) The command that was used to apply the Terraform template or IBM Cloud catalog software template.
@@ -105,11 +105,11 @@ Nested scheme for **runtime_data**:
 	* `output_values` - (Optional, List) List of Output values.
 	* `resources` - (Optional, List) List of resources.
 	* `state_store_url` - (Optional, String) The URL where the Terraform statefile (`terraform.tfstate`) is stored. You can use the statefile to find an overview of IBM Cloud resources that were created by Schematics. Schematics uses the statefile as an inventory list to determine future create, update, or deletion jobs.
-* `status` - (Optional, String) The status of the workspace.   **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.   **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.   **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.   **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.   **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply jobs to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.   **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.   **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.   **Stopped**: The Schematics plan, apply, or destroy job was cancelled manually.   **Template Error**: The Schematics template contains errors and cannot be processed.
-* `updated_at` - (Optional, String) The timestamp when the workspace was last updated.
-* `updated_by` - (Optional, String) The user ID that updated the workspace.
-* `status_code` - (Optional, String) The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.
-* `status_msg` - (Optional, String) The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.
+* `status` - (String) The status of the workspace.   **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.   **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.   **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.   **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.   **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply jobs to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.   **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.   **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.   **Stopped**: The Schematics plan, apply, or destroy job was cancelled manually.   **Template Error**: The Schematics template contains errors and cannot be processed.
+* `updated_at` - (String) The timestamp when the workspace was last updated.
+* `updated_by` - (String) The user ID that updated the workspace.
+* `status_code` - (String) The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.
+* `status_msg` - (String) The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.
 
 ## Import
 

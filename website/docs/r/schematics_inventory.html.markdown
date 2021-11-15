@@ -36,10 +36,10 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the schematics_inventory.
-* `created_at` - (Optional, String) Inventory creation time.
-* `created_by` - (Optional, String) Email address of user who created the Inventory.
-* `updated_at` - (Optional, String) Inventory updation time.
-* `updated_by` - (Optional, String) Email address of user who updated the Inventory.
+* `created_at` - (String) Inventory creation time.
+* `created_by` - (String) Email address of user who created the Inventory.
+* `updated_at` - (String) Inventory updation time.
+* `updated_by` - (String) Email address of user who updated the Inventory.
 
 ## Import
 
