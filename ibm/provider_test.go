@@ -84,6 +84,9 @@ var hpcsAdmin2 string
 var hpcsToken2 string
 var realmName string
 var iksSa string
+var iksClusterVpcID string
+var iksClusterSubnetID string
+var iksClusterResourceGroupID string
 
 // For Power Colo
 
@@ -652,6 +655,20 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	iksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
+	if iksClusterVpcID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_create tests will fail if this is not set")
+	}
+
+	iksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+
+	iksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
 }
 
 var testAccProviders map[string]*schema.Provider

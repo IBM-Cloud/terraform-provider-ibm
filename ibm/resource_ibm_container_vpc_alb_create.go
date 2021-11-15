@@ -25,12 +25,12 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			//post req
-			"enable_by_default": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "If set to true, the ALB is enabled by default.",
-			},
+			// "enable_by_default": {
+			// 	Type:        schema.TypeBool,
+			// 	Optional:    true,
+			// 	Default:     true,
+			// 	Description: "If set to true, the ALB is enabled by default.",
+			// },
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -55,6 +55,11 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of the cluster that the ALB belongs to.",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+			},
 
 			//response
 			"alb_id": {
@@ -63,6 +68,52 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the application load balancer (ALB).",
+			},
+
+			//get
+			"alb_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of the ALB",
+			},
+			"enable": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ConflictsWith: []string{"disable_deployment"},
+				Description:   "Enable the ALB instance in the cluster",
+			},
+			"disable_deployment": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"enable"},
+				Description:   "Disable the ALB instance in the cluster",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB name",
+			},
+			"load_balancer_hostname": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Load balancer host name",
+			},
+			"resize": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "boolean value to resize the albs",
+			},
+			"state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ALB state",
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the ALB",
 			},
 		},
 	}
@@ -97,7 +148,7 @@ func resourceIBMContainerVpcAlbCreate(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Provide `zone`")
 	}
 
-	enableByDefault := d.Get("enable_by_default").(bool)
+	enableByDefault := d.Get("enable").(bool)
 
 	params := v2.AlbCreateReq{
 		ZoneAlb:         zone,
@@ -106,7 +157,7 @@ func resourceIBMContainerVpcAlbCreate(d *schema.ResourceData, meta interface{}) 
 		Cluster:         cluster,
 	}
 
-	targetEnv := v2.ClusterTargetHeader{}
+	targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 
 	//v2.AlbCreateResp
 	albResp, err := albAPI.CreateAlb(params, targetEnv)
