@@ -143,6 +143,12 @@ func Provider() *schema.Provider {
 				//DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
 				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
+			"iam_profile_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM Trusted Profile Authentication token",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+			},
 			"iam_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -965,7 +971,7 @@ func Validator() ValidatorDict {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
-	var iamToken, iamRefreshToken string
+	var iamToken, iamRefreshToken, iamTrustedProfileId string
 	if key, ok := d.GetOk("bluemix_api_key"); ok {
 		bluemixAPIKey = key.(string)
 	}
@@ -977,6 +983,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
 		iamRefreshToken = rtoken.(string)
+	}
+	if ttoken, ok := d.GetOk("iam_profile_id"); ok {
+		iamTrustedProfileId = ttoken.(string)
 	}
 	var softlayerUsername, softlayerAPIKey, softlayerEndpointUrl string
 	var softlayerTimeout int
@@ -1054,6 +1063,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Zone:                 zone,
 		Visibility:           visibility,
 		EndpointsFile:        file,
+		IAMTrustedProfileID:  iamTrustedProfileId,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 
