@@ -14,9 +14,9 @@ Retrieve information of an existing IBM Cloud address prefix collection. For mor
 ## Example usage
 
 ```terraform
-data "ibm_is_vpc_address_prefixes" "is_vpc_address_prefix_name" {
-  vpc  = "r134-b5938d43-cb2f-4666-bc99-9410863ed305"
-  name = "outsider-sense-motor-chomp"
+data "ibm_is_vpc_address_prefixes" "example" {
+  vpc  = ibm_is_vpc.example.id
+  name = "example-address-prefix"
 }
 ```
 

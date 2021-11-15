@@ -14,40 +14,40 @@ Create, update, or delete a snapshot. For more information, about subnet, see [c
 ## Example Usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            			    = "testsubnet"
-  vpc             			    = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            			    = "example-subnet"
+  vpc             			    = ibm_is_vpc.example.id
   zone            			    = "us-south-2"
   total_ipv4_address_count 	= 16
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testvsi"
-  image   = "xxxxx-xxxxx-xxxxx-xxxxxx"
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi"
+  image   = ibm_is_image.example.id
   profile = "bx2-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet     = ibm_is_subnet.example.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
   network_interfaces {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     name   = "eth1"
   }
 }
-resource "ibm_is_snapshot" "testacc_snapshot" {
-  name            = "testsnapshot"
-  source_volume   = ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+resource "ibm_is_snapshot" "example" {
+  name            = "example-snapshot"
+  source_volume   = ibm_is_instance.example.volume_attachments[0].volume_id
 
   //User can configure timeouts
   timeouts {

@@ -14,22 +14,22 @@ Create, update, or delete a load balancer listener policy. For more information,
 ### Sample to create a load balancer listener policy for a `redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example"{
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example"{
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
+resource "ibm_is_lb_listener_policy" "example" {
+  lb = ibm_is_lb.example.id
+  listener = ibm_is_lb_listener.example.listener_id
   action = "redirect"
   priority = 2
-  name = "mylistener8"
+  name = "example-listener"
   target_http_status_code = 302
   target_url = "https://www.redirect.com"
   rules{
@@ -44,23 +44,23 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 ### Sample to create a load balancer listener policy for a `https_redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example"{
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example"{
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "https"
   certificate_instance="crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener_policy" "example" {
+  lb = ibm_is_lb.example.id
   action = "https_redirect"
   priority = 2
-  name = "mylistener8"
-  taget_https_redirect_listener=ibm_is_lb_listener.lb_listener2.listener_id
+  name = "example-listener"
+  taget_https_redirect_listener=ibm_is_lb_listener.example.listener_id
   target_https_redirect_status_code=301
   target_https_redirect_uri="/example?doc=geta"
   rules{
@@ -76,23 +76,35 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
+resource "ibm_is_lb" "example"{
   name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example"{
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
+
+resource "ibm_is_lb_pool" "example" {
+		name           = "example-lb-pool"
+		lb             = ibm_is_lb.example.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 60
+		health_retries = 5
+		health_timeout = 30
+		health_type    = "http"
+}
+
+resource "ibm_is_lb_listener_policy" "example" {
+  lb = ibm_is_lb.example.id
+  listener = ibm_is_lb_listener.example.listener_id
   action = "forward"
   priority = 2
-  name = "mylistener8"
-  target_id = "r006-beafdff0-4fe0-4db4-8f0c-b0b4ad828712"
+  name = "example-listener"
+  target_id = ibm_is_lb_pool.example.pool_id
   rules{
       condition = "contains"
       type = "header"

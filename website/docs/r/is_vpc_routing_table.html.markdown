@@ -14,12 +14,12 @@ Create, update, or delete an VPC routing tables. For more information, about VPC
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
-resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
-  vpc = ibm_is_vpc.testacc_vpc.id
-  name = "routTabletest"
+resource "ibm_is_vpc_routing_table" "example" {
+  vpc = ibm_is_vpc.example.id
+  name = "example-routTabletest"
   route_direct_link_ingress = true
   route_transit_gateway_ingress = false
   route_vpc_zone_ingress = false

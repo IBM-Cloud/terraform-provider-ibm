@@ -14,71 +14,71 @@ Create, update, or delete an instance template on VPC.
 The following example creates an instance template in a VPC generation-2 infrastructure.
 
 ```terraform
-resource "ibm_is_vpc" "vpc2" {
-  name = "vpc2test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "subnet2" {
-  name            = "subnet2"
-  vpc             = ibm_is_vpc.vpc2.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-2"
   ipv4_cidr_block = "10.240.64.0/28"
 }
 
-resource "ibm_is_ssh_key" "sshkey" {
-  name       = "ssh1"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "SSH KEY"
 }
 
-data "ibm_resource_group" "default" {
+data "ibm_resource_group" "example" {
   name = "Default" ///give your resource grp
 }
 
-resource "ibm_is_dedicated_host_group" "dh_group01" {
+resource "ibm_is_dedicated_host_group" "example" {
   family = "compute"
   class = "cx2"
   zone = "us-south-1"
   name = "my-dh-group-01"
-  resource_group = data.ibm_resource_group.default.id
+  resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_dedicated_host" "is_dedicated_host" {
+resource "ibm_is_dedicated_host" "example" {
   profile = "bx2d-host-152x608"
-  name = "my-dedicated-host-01"
-	host_group = ibm_is_dedicated_host_group.dh_group01.id
-  resource_group = data.ibm_resource_group.default.id
+  name = "example-dedicated-host"
+	host_group = ibm_is_dedicated_host_group.example.id
+  resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_volume" "datavol" {
-  name           = "datavol1"
-  resource_group = data.ibm_resource_group.default.id
+resource "ibm_is_volume" "example" {
+  name           = "example-datavol1"
+  resource_group = data.ibm_resource_group.example.id
   zone           = "us-south-2"
 
   profile  = "general-purpose"
   capacity = 50
 }
 
-data "ibm_resource_group" "default" {
+data "ibm_resource_group" "example" {
   is_default = true
 }
 
 // Create a new volume with the volume attachment. This template format can be used with instance groups
-resource "ibm_is_instance_template" "instancetemplate1" {
-  name    = "testtemplate"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
-  vpc  = ibm_is_vpc.vpc2.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "testbootvol"
+    name                             = "example-bootvol"
     delete_volume_on_instance_delete = true
   }
    volume_attachments {
@@ -93,69 +93,69 @@ resource "ibm_is_instance_template" "instancetemplate1" {
 }
 
 // Template with volume attachment that attaches exisiting storage volume. This template cannot be used with instance groups
-resource "ibm_is_instance_template" "instancetemplate2" {
-  name    = "testtemplate1"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
-  vpc  = ibm_is_vpc.vpc2.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "testbootvol"
+    name                             = "example-bootvol"
     delete_volume_on_instance_delete = true
   }
    volume_attachments {
         delete_volume_on_instance_delete = true
-        name                             = "volatt-01"
-        volume                           = ibm_is_volume.datavol.id
+        name                             = "example-volatt"
+        volume                           = ibm_is_volume.example.id
     }
 }
 
-resource "ibm_is_instance_template" "instancetemplate1" {
-  name    = "testtemplate1"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
-  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
-  vpc  = ibm_is_vpc.vpc2.id
+  dedicated_host_group = ibm_is_dedicated_host_group.example.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "testbootvol"
+    name                             = "example-bootvol"
     delete_volume_on_instance_delete = true
   }
 }
 
-resource "ibm_is_instance_template" "instancetemplate2" {
-  name    = "testtemplat2"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-templat"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
-  dedicated_host = "7eb4e35b-4257-56f8-d7da-326d85452592"
+  dedicated_host = ibm_is_dedicated_host.example.id
   vpc  = ibm_is_vpc.vpc2.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "testbootvol"
+    name                             = "example-bootvol"
     delete_volume_on_instance_delete = true
   }
 }

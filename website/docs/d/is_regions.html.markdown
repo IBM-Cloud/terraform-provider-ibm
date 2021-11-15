@@ -13,7 +13,7 @@ Retrieve information about VPC Generation 2 list of regions. For more informatio
 
 ```terraform
 
-data "ibm_is_regions" "ds_regions" {
+data "ibm_is_regions" "example" {
 }
 
 ```

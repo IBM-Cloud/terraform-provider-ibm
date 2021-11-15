@@ -13,8 +13,8 @@ Retrieve information of an existing IBM Cloud VPC SSH key as a read only data so
 
 ```terraform
 
-data "ibm_is_ssh_key" "ds_key" {
-  name = "test"
+data "ibm_is_ssh_key" "example" {
+  name = "example-ssh-key"
 }
 
 ```

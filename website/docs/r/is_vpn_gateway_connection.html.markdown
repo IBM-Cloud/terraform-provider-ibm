@@ -15,13 +15,13 @@ Create, update, or delete a VPN gateway connection. For more information, about 
 The following example creates a VPN gateway:
 
 ```terraform
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection" {
-  name          = "test2"
-  vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id
-  peer_address  = ibm_is_vpn_gateway.testacc_VPNGateway2.public_ip_address
+resource "ibm_is_vpn_gateway_connection" "example" {
+  name          = "example-vpn-endpoint-gateway-connt"
+  vpn_gateway   = ibm_is_vpn_gateway.example.id
+  peer_address  = ibm_is_vpn_gateway.example.public_ip_address
   preshared_key = "VPNDemoPassword"
-  local_cidrs = [ibm_is_subnet.testacc_subnet2.ipv4_cidr_block]
-  peer_cidrs = [ibm_is_subnet.testacc_subnet1.ipv4_cidr_block]
+  local_cidrs = [ibm_is_subnet.example.ipv4_cidr_block]
+  peer_cidrs = [ibm_is_subnet.example.ipv4_cidr_block]
 }
 
 ```

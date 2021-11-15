@@ -13,7 +13,7 @@ Retrieve an information of an endpoint gateway targets on IBM Cloud as a read-on
 
 ```terraform
 
-    data "ibm_is_endpoint_gateway_targets" "endpointGatewayTargets" {
+    data "ibm_is_endpoint_gateway_targets" "example" {
     }
 
 ```

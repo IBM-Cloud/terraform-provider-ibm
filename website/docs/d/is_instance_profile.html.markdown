@@ -15,7 +15,7 @@ The following example retrieves information about the `b-2x8` instance profile.
 
 ```terraform
 
-data "ibm_is_instance_profile" "profile" {
+data "ibm_is_instance_profile" "example" {
   name = "b-2x8"
 }
 

@@ -14,7 +14,7 @@ Retrieve information of an existing IBM Cloud Infrastructure load balancer profi
 
 ```terraform
 
-data "ibm_is_lb_profiles" "ds_lb_profiles" {
+data "ibm_is_lb_profiles" "example" {
 }
 
 ```

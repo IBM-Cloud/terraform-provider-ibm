@@ -14,8 +14,8 @@ Create, update, or delete a VPC endpoint gateway IP by using virtual endpoint ga
 The following example creates a Virtual Private Endpoint gateway IP.
 
 ```terraform
-resource "ibm_is_virtual_endpoint_gateway_ip" "virtual_endpoint_gateway_ip" {
-	gateway     = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+resource "ibm_is_virtual_endpoint_gateway_ip" "example" {
+	gateway     = ibm_is_virtual_endpoint_gateway.example.id
 	reserved_ip = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
 }
 

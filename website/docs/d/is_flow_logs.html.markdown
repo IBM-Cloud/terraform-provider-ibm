@@ -14,7 +14,7 @@ Retrieve an information of an existing IBM Cloud Infrastructure flow logs as a r
 
 ```terraform
 
-data "ibm_is_flow_logs" "ds_flow_logs" {
+data "ibm_is_flow_logs" "example" {
 }
 
 ```

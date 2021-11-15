@@ -13,9 +13,9 @@ Provides a resource for PlacementGroup. This allows PlacementGroup to be created
 ## Example Usage
 
 ```hcl
-resource "ibm_is_placement_group" "is_placement_group" {
+resource "ibm_is_placement_group" "example" {
   strategy = "host_spread"
-  name = "my-placement-group"
+  name = "example-placement-group"
 }
 ```
 

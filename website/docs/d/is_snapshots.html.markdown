@@ -14,7 +14,7 @@ Import the details of an existing IBM Cloud infrastructure snapshot collection a
 
 ```terraform
 
-data "ibm_is_snapshots" "ds_snapshots" {
+data "ibm_is_snapshots" "example" {
 }
 
 ```

@@ -12,8 +12,8 @@ Retrieve all the instance group membership information of an instance group. For
 ## Example usage
 
 ```terraform
-data "is_instance_group_memberships" "is_instance_group_memberships" {
-  instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
+data "is_instance_group_memberships" "example" {
+  instance_group = ibm_is_instance_group.example.id
 }
 ```
 

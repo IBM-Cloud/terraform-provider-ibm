@@ -13,7 +13,7 @@ Retrieve information of an existing IBM Cloud zone in a particular region as a r
 
 ```terraform
 
-data "ibm_is_zone" "ds_zone" {
+data "ibm_is_zone" "example" {
   name   = "us-south-1"
   region = "us-south"
 }

@@ -12,7 +12,7 @@ Retrieve an information about the dedicated host profiles. For more information,
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
+data "ibm_is_dedicated_host_profiles" "example" {
 }
 ```
 

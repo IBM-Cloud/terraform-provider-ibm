@@ -14,22 +14,22 @@ Create, update, or delete a subnet. For more information, about subnet, see [con
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
-  name   = "test-cr-route-table1"
-  vpc    = data.ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_vpc_routing_table" "example" {
+  name   = "example-cr-route-table1"
+  vpc    = data.ibm_is_vpc.example.id
 }
 
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test_subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example_subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "192.168.0.0/1"
-  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table  
+  routing_table   = ibm_is_vpc_routing_table.example.routing_table  
 
   //User can configure timeouts
   timeouts {

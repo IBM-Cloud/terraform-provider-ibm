@@ -12,7 +12,7 @@ Retrieve information of an existing Operating System as a read only data source.
 ## Example usage
 
 ```terraform
-data "ibm_is_operating_system" "testacc_dsos"{
+data "ibm_is_operating_system" "example"{
   name = "red-8-amd64"
 }
 

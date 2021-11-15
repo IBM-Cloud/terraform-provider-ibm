@@ -15,41 +15,41 @@ Create, update or delete a instance group on VPC. For more information, about in
 In the following example, you can create a instance group on VPC Generation-2 infrastructure.
 
 ```terraform
-resource "ibm_is_vpc" "vpc2" {
-  name = "vpc2test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "subnet2" {
-  name            = "subnet2"
-  vpc             = ibm_is_vpc.vpc2.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-2"
   ipv4_cidr_block = "10.240.64.0/28"
 }
 
-resource "ibm_is_ssh_key" "sshkey" {
-  name       = "ssh1"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "SSH KEY"
 }
 
-resource "ibm_is_instance_template" "instancetemplate1" {
-  name    = "testtemplate"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
   }
 
-  vpc  = ibm_is_vpc.vpc2.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 }
 
-resource "ibm_is_instance_group" "instance_group" {
-  name              = "testgroup"
-  instance_template = ibm_is_instance_template.instancetemplate1.id
+resource "ibm_is_instance_group" "example" {
+  name              = "example-group"
+  instance_template = ibm_is_instance_template.example.id
   instance_count    = 2
-  subnets           = [ibm_is_subnet.subnet2.id]
+  subnets           = [ibm_is_subnet.example.id]
 
   //User can configure timeouts
   timeouts {

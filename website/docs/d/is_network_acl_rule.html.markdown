@@ -14,27 +14,27 @@ Provides a network ACL rule read-only datasource. This allows to fetch an existi
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "vpctest"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_network_acl" "example" {
+  name = "example-network-acl"
+  vpc  = ibm_is_vpc.example.id
 }  
 
-resource "ibm_is_network_acl_rule" "isExampleACLRule1" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "test-nacl-rule"
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl    = ibm_is_network_acl.example.id
+  name           = "example-nacl-rule"
   action         = "allow"
   source         = "0.0.0.0/0"
   destination    = "0.0.0.0/0"
   direction      = "outbound"
 }
 
-data "ibm_is_network_acl_rule" "testacc_dsrule"{
-  network_acl = ibm_is_network_acl.isExampleACL.id
-  name = "test-nacl-rule"
+data "ibm_is_network_acl_rule" "example"{
+  network_acl = ibm_is_network_acl.example.id
+  name = "example-nacl-rule"
 }
 
 ```

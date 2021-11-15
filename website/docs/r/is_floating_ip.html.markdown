@@ -15,24 +15,24 @@ The following example shows how to create a Virtual Servers for VPC instance and
 
 ```terraform
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "b-2x8"
 
   primary_network_interface {
     port_speed = "1000"
-    subnet     = "70be8eae-134c-436e-a86e-04849f84cb34"
+    subnet     = ibm_is_subnet.example.id
   }
 
-  vpc  = "01eda778-b822-43a2-816d-d30713df5e13"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = ["eac87f33-0c00-4da7-aa66-dc2d972148bd"]
+  keys = [ibm_is_ssh_key.example.id]
 }
 
-resource "ibm_is_floating_ip" "testacc_floatingip" {
-  name   = "testfip1"
-  target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
+resource "ibm_is_floating_ip" "example" {
+  name   = "example-fip"
+  target = ibm_is_instance.example.primary_network_interface[0].id
 }
 
 ```

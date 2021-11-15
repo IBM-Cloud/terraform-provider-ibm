@@ -14,24 +14,24 @@ Provides a network ACL rule resource with `icmp`, `tcp`, `udp` or `all` protocol
 ## Example usage (all)
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "vpctest"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_network_acl" "example" {
+  name = "example-acl"
+  vpc  = ibm_is_vpc.example.id
 }  
-resource "ibm_is_network_acl_rule" "isExampleACLRule1" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl    = ibm_is_network_acl.example.id
   name           = "outbound"
   action         = "allow"
   source         = "0.0.0.0/0"
   destination    = "0.0.0.0/0"
   direction      = "outbound"
 }
-resource "ibm_is_network_acl_rule" "isExampleACLRule2" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl    = ibm_is_network_acl.example.id
   name           = "inbound"
   action         = "allow"
   source         = "0.0.0.0/0"
@@ -44,8 +44,8 @@ resource "ibm_is_network_acl_rule" "isExampleACLRule2" {
 ## Example usage (icmp)
 
 ```terraform
-resource "ibm_is_network_acl_rule" "isExampleACLRule" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl    = ibm_is_network_acl.example.id
   name           = "outbound"
   action         = "allow"
   source         = "0.0.0.0/0"
@@ -56,8 +56,8 @@ resource "ibm_is_network_acl_rule" "isExampleACLRule" {
     type = 1
   }
 }
-resource "ibm_is_network_acl_rule" "isExampleACLRule" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl    = ibm_is_network_acl.example.id
   name           = "inbound"
   action         = "allow"
   source         = "0.0.0.0/0"

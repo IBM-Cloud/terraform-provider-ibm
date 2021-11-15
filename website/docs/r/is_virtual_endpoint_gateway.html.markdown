@@ -14,52 +14,53 @@ Create, update, or delete a VPC endpoint gateway by using virtual endpoint gatew
 The following example, creates a Virtual Private Endpoint gateway.
 
 ```terraform
-resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway1" {
+resource "ibm_is_virtual_endpoint_gateway" "example" {
 
-  name = "my-endpoint-gateway-1"
+  name = "endpoint-gateway"
   target {
 	name          = "ibm-ntp-server"
     resource_type = "provider_infrastructure_service"
   }
-  vpc = ibm_is_vpc.testacc_vpc.id
-  resource_group = data.ibm_resource_group.test_acc.id
+  vpc = ibm_is_vpc.example.id
+  resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway2" {
-	name = "my-endpoint-gateway-1"
+resource "ibm_is_virtual_endpoint_gateway" "example-1" {
+	name = "endpoint-gateway-1"
 	target {
 	  name          = "ibm-ntp-server"
 	  resource_type = "provider_infrastructure_service"
 	}
-	vpc = ibm_is_vpc.testacc_vpc.id
+	vpc = ibm_is_vpc.example.id
 	ips {
-		subnet   = ibm_is_subnet.testacc_subnet.id
-		name        = "test-reserved-ip1"
+		subnet   = ibm_is_subnet.example.id
+		name        = "example-reserved-ip"
 	}
-	resource_group = data.ibm_resource_group.test_acc.id
+	resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
-	name = "my-endpoint-gateway-1"
+resource "ibm_is_virtual_endpoint_gateway" "example-3" {
+	name = "endpoint-gateway-2"
 	target {
 	  name          = "ibm-ntp-server"
 	  resource_type = "provider_infrastructure_service"
 	}
-	vpc = ibm_is_vpc.testacc_vpc.id
+	vpc = ibm_is_vpc.example.id
 	ips {
-		id   = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
+			subnet   = ibm_is_subnet.example.id
+		  name        = "example-reserved-ip"
 	}
-	resource_group = data.ibm_resource_group.test_acc.id
+	resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway3" {
-  name = "my-endpoint-gateway-1"
+resource "ibm_is_virtual_endpoint_gateway" "example-4" {
+  name = "endpoint-gateway-3"
   target {
     crn           = "crn:v1:bluemix:public:cloud-object-storage:global:::endpoint:s3.direct.mil01.cloud-object-storage.appdomain.cloud"
     resource_type = "provider_cloud_service"
   }
-  vpc            = ibm_is_vpc.testacc_vpc.id
-  resource_group = data.ibm_resource_group.test_acc.id
+  vpc            = ibm_is_vpc.example.id
+  resource_group = data.ibm_resource_group.example.id
 }
 ```
 

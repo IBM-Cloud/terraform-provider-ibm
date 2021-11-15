@@ -14,14 +14,14 @@ Sample to create a reserved IP:
 
 ```terraform
     // Create a VPC
-    resource "ibm_is_vpc" "vpc1" {
-        name = "my-vpc"
+    resource "ibm_is_vpc" "example" {
+        name = "example-vpc"
     }
 
     // Create a subnet
-    resource "ibm_is_subnet" "subnet1" {
-        name                     = "my-subnet"
-        vpc                      = ibm_is_vpc.vpc1.id
+    resource "ibm_is_subnet" "example" {
+        name                     = "example-subnet"
+        vpc                      = ibm_is_vpc.example.id
         zone                     = "us-south-1"
         total_ipv4_address_count = 256
     }
@@ -29,42 +29,42 @@ Sample to create a reserved IP:
     // Create the resrved IP in the following ways
 
     // Only with Subnet ID
-    resource "ibm_is_subnet_reserved_ip" "res_ip" {
-        subnet = ibm_is_subnet.subnet1.id
+    resource "ibm_is_subnet_reserved_ip" "example" {
+        subnet = ibm_is_subnet.example.id
     }
 
     // Subnet ID with a given name
-    resource "ibm_is_subnet_reserved_ip" "res_ip_name" {
-        subnet = ibm_is_subnet.subnet1.id
+    resource "ibm_is_subnet_reserved_ip" "example" {
+        subnet = ibm_is_subnet.example.id
         name = "my-subnet-reserved-ip"
     }
 
     // Subnet ID with auto_delete
-    resource "ibm_is_subnet_reserved_ip" "res_ip_auto_delete" {
-        subnet = ibm_is_subnet.subnet1.id
+    resource "ibm_is_subnet_reserved_ip" "example" {
+        subnet = ibm_is_subnet.example.id
         auto_delete = true
     }
 
     // Subnet ID with both name and auto_delete
-    resource "ibm_is_subnet_reserved_ip" "res_ip_auto_delete_name" {
-        subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet-reserved-ip"
+    resource "ibm_is_subnet_reserved_ip" "example" {
+        subnet = ibm_is_subnet.example.id
+        name = "example-subnet-reserved-ip"
         auto_delete = true
     }
 
         // Create a virtual endpoint gateway and set as a target for reserved IP
-    resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
-        name = "my-endpoint-gateway-1"
+    resource "ibm_is_virtual_endpoint_gateway" "example" {
+        name = "example-endpoint-gateway"
         target {
             name          = "ibm-ntp-server"
             resource_type = "provider_infrastructure_service"
         }
-        vpc = ibm_is_vpc.vpc1.id
+        vpc = ibm_is_vpc.example.id
     }
-    resource "ibm_is_subnet_reserved_ip" "reserved_ip_1" {
-        subnet = ibm_is_subnet.subnet1.id
+    resource "ibm_is_subnet_reserved_ip" "example" {
+        subnet = ibm_is_subnet.example.id
         name = "%s"
-        target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+        target = ibm_is_virtual_endpoint_gateway.example.id
     }
 ```
 

@@ -13,7 +13,7 @@ Retrieve information of an existing IBM VPC instance templates. For more informa
 In the following example, you can get information of list of instance templates of VPC Generation-2 infrastructure.
 
 ```terraform	
-data "ibm_is_instance_templates" "instancetemplates" {	   
+data "ibm_is_instance_templates" "example" {	   
 }
 
 ```

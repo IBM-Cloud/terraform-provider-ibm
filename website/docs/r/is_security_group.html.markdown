@@ -14,13 +14,13 @@ Create, delete, and update a security group. Provides a networking security grou
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_security_group" "testacc_security_group" {
-  name = "test"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_security_group" "example" {
+  name = "example-sg"
+  vpc  = ibm_is_vpc.example.id
 }
 ```
 

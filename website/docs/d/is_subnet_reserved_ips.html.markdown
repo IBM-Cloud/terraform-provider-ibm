@@ -12,8 +12,8 @@ Retrieve information about a reserved IP in a subnet. For more information, abou
 ## Example usage
 
 ```terraform
-data "ibm_is_subnet_reserved_ips" "data_reserved_ips" {
-  subnet = ibm_is_subnet.test_subnet.id
+data "ibm_is_subnet_reserved_ips" "example" {
+  subnet = ibm_is_subnet.example.id
 }
 ```
 

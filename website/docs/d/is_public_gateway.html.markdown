@@ -13,18 +13,18 @@ Retrieve information of an existing public gateway data source. For more informa
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_public_gateway" "testacc_gateway" {
-  name = "test-gateway"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_public_gateway" "example" {
+  name = "example-gateway"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
 }
 
-data "ibm_is_public_gateway" "testacc_dspgw"{
-  name = ibm_is_public_gateway.testacc_public_gateway.name
+data "ibm_is_public_gateway" "example"{
+  name = ibm_is_public_gateway.example.name
 }
 
 ```

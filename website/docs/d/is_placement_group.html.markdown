@@ -13,8 +13,8 @@ Provides a read-only data source for PlacementGroup. You can then reference the 
 ## Example Usage
 
 ```hcl
-data "is_placement_group" "is_placement_group" {
-	id = "id"
+data "ibm_is_placement_group" "example" {
+	id = ibm_is_placement_group.example.id
 }
 ```
 

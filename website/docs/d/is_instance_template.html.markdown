@@ -13,14 +13,14 @@ Retrieve information of an existing IBM VPC instance template. For more informat
 In the following example, you can get information of an instance template of VPC Generation-2 infrastructure by either name or identifier.
 
 ```terraform	
-data "ibm_is_instance_template" "instancetemplate" {
-	name = "test-instance-template"	   
+data "ibm_is_instance_template" "example" {
+	name = "example-instance-template"	   
 }
 
 ```
 ```terraform	
-data "ibm_is_instance_template" "instancetemplate" {
-	identifier = "xxxxx-xxxxx-xxxxxx-xxxxx"	   
+data "ibm_is_instance_template" "example" {
+	identifier = ibm_is_instance_template.example.id	   
 }
 
 ```

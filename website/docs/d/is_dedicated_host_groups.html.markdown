@@ -12,7 +12,7 @@ Retrieve an information the dedicated host group collection. For more informatio
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_groups" "is_dedicated_host_groups" {
+data "ibm_is_dedicated_host_groups" "example" {
 }
 ```
 

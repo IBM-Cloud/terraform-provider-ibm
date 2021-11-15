@@ -13,12 +13,12 @@ Retrieve information of an existing IBM Virtual Private cloud as a read-only dat
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc" "ds_vpc" {
-  name = "test"
+data "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
 ```

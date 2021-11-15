@@ -14,8 +14,8 @@ Create, update, or delete a Virtual Private Cloud (VPC). VPCs allow you to creat
 The following example to create a VPC:
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
 ```

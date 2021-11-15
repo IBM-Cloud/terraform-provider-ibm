@@ -17,18 +17,19 @@ When provisioning the load balancer listener along with load balancer pool or po
 An example, to create a load balancer listener along with the pool and pool member.
 
 ```terraform
-resource "ibm_is_lb_listener" "testacc_lb_listener" {
-  lb       = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
+
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
   port     = "9080"
   protocol = "http"
-  https_redirect_listener="r134-8c58bfe1-db02-4790-95ce-fe5bb892d78f"
+  https_redirect_listener=ibm_is_lb_listener.example.listener_id
   https_redirect_status_code=301
   https_redirect_uri="/example?doc=get"
 }
 
-resource "ibm_is_lb_pool" "webapptier-lb-pool" {
-  lb                 = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
-  name               = "a-webapptier-lb-pool"
+resource "ibm_is_lb_pool" "example" {
+  lb                 = ibm_is_lb.example.id
+  name               = "example-lb-pool"
   protocol           = "http"
   algorithm          = "round_robin"
   health_delay       = "5"
@@ -36,39 +37,39 @@ resource "ibm_is_lb_pool" "webapptier-lb-pool" {
   health_timeout     = "2"
   health_type        = "http"
   health_monitor_url = "/"
-  depends_on         = [ibm_is_lb_listener.testacc_lb_listener]
+  depends_on         = [ibm_is_lb_listener.example]
 }
 
-resource "ibm_is_lb_pool_member" "webapptier-lb-pool-member-zone1" {
+resource "ibm_is_lb_pool_member" "example" {
   count          = "2"
-  lb             = "8898e627-f61f-4ac8-be85-9db9d8bfd345"
-  pool           = element(split("/", ibm_is_lb_pool.webapptier-lb-pool.id), 1)
+  lb             = ibm_is_lb.example.id
+  pool           = element(split("/", ibm_is_lb_pool.example.id), 1)
   port           = "80"
   target_address = "192.168.0.1"
-  depends_on     = [ibm_is_lb_listener.testacc_lb_listener]
+  depends_on     = [ibm_is_lb_listener.example]
 }
 ```
 
 ### Sample to create a load balancer listener policy for a `https_redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example2"{
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener1"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example1"{
+  lb       = ibm_is_lb.example2.id
   port     = "9086"
   protocol = "https"
   certificate_instance="crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example2"{
+  lb       = ibm_is_lb.example2.id
   port     = "9087"
   protocol = "http"
-  https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+  https_redirect_listener = ibm_is_lb_listener.example1.listener_id
   https_redirect_status_code = 301
   https_redirect_uri = "/example?doc=geta" 
 }

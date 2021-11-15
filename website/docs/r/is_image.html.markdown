@@ -25,8 +25,8 @@ The `ibm_is_image` provides the following [Timeouts](https://www.terraform.io/do
 ## Example usage
 
 ```terraform
-resource "ibm_is_image" "test_is_image1" {
- name                   = "test_image"
+resource "ibm_is_image" "example" {
+ name                   = "example-image"
  href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
  operating_system       = "ubuntu-16-04-amd64"
  encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
@@ -35,8 +35,8 @@ resource "ibm_is_image" "test_is_image1" {
 }
 ```
 ```terraform
-resource "ibm_is_image" "test_is_image2" {
- name                   = "test_image2"
+resource "ibm_is_image" "example" {
+ name                   = "example-image"
 
  //optional field, either of (href, operating_system) or source_volume is required
  

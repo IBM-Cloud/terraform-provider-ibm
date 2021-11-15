@@ -16,25 +16,25 @@ Create, update, or delete a Virtual Servers for VPC instance. For more informati
 ### Sample for creating an instance in a VPC.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "testsubnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
 
   boot_volume {
@@ -42,20 +42,20 @@ resource "ibm_is_instance" "testacc_instance" {
   }
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     primary_ipv4_address = "10.240.0.6"
     allow_ip_spoofing = true
   }
 
   network_interfaces {
     name   = "eth1"
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = false
   }
 
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   //User can configure timeouts
   timeouts {
@@ -73,70 +73,70 @@ The following example shows how you can create a virtual server instance with cu
 
 ```terraform
 
-resource "ibm_is_vpc" "testacc_vpc" {
-    name = "test"
+resource "ibm_is_vpc" "example" {
+    name = "example-vpc"
 }
 
-resource "ibm_is_security_group" "testacc_security_group" {
-    name = "test"
-    vpc = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_security_group" "example" {
+    name = "example-security-group"
+    vpc = ibm_is_vpc.example.id
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
-    group = ibm_is_security_group.testacc_security_group.id
+resource "ibm_is_security_group_rule" "example1" {
+    group = ibm_is_security_group.example.id
     direction = "inbound"
     remote = "127.0.0.1"
-    depends_on = [ibm_is_security_group.testacc_security_group]
+    depends_on = [ibm_is_security_group.example]
  }
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
-    group = ibm_is_security_group.testacc_security_group.id
+ resource "ibm_is_security_group_rule" "example2" {
+    group = ibm_is_security_group.example.id
     direction = "inbound"
     remote = "127.0.0.1"
     icmp {
         code = 20
         type = 30
     }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_all]
+    depends_on = [ibm_is_security_group_rule.example1]
 
  }
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
-    group = ibm_is_security_group.testacc_security_group.id
+ resource "ibm_is_security_group_rule" "example_security_group_rule_udp" {
+    group = ibm_is_security_group.example.id
     direction = "inbound"
     remote = "127.0.0.1"
     udp {
         port_min = 805
         port_max = 807
     }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_icmp]
+    depends_on = [ibm_is_security_group_rule.example2]
  }
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
-    group = ibm_is_security_group.testacc_security_group.id
+ resource "ibm_is_security_group_rule" "example3" {
+    group = ibm_is_security_group.example_security_group.id
     direction = "outbound"
     remote = "127.0.0.1"
     tcp {
         port_min = 8080
         port_max = 8080
     }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_udp]
+    depends_on = [ibm_is_security_group_rule.example2]
  }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
 
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  keys = [ibm_is_ssh_key.example.id]
+  depends_on = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -150,7 +150,7 @@ data "ibm_resource_group" "default" {
   name = "Default" ///give your resource grp
 }
 
-resource "ibm_is_dedicated_host_group" "dh_group01" {
+resource "ibm_is_dedicated_host_group" "example" {
   family = "compute"
   class = "cx2"
   zone = "us-south-1"
@@ -158,28 +158,28 @@ resource "ibm_is_dedicated_host_group" "dh_group01" {
   resource_group = data.ibm_resource_group.default.id
 }
 
-resource "ibm_is_dedicated_host" "is_dedicated_host" {
+resource "ibm_is_dedicated_host" "example" {
   profile = "bx2d-host-152x608"
-  name = "my-dedicated-host-01"
-	host_group = ibm_is_dedicated_host_group.dh_group01.id
+  name = "example-dedicated-host-01"
+	host_group = ibm_is_dedicated_host_group.example.id
   resource_group = data.ibm_resource_group.default.id
 }
 
 // Example to provision instance in a dedicated host
-resource "ibm_is_instance" "testacc_instance1" {
-  name    = "testinstance1"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example1" {
+  name    = "example-instance-1"
+  image   = ibm_is_image.example.id
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
-  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  dedicated_host = ibm_is_dedicated_host.example.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  keys = [ibm_is_ssh_key.example.id]
+  depends_on = [ibm_is_security_group_rule.example_security_group_rule_tcp]
 
   //User can configure timeouts
   timeouts {
@@ -190,20 +190,20 @@ resource "ibm_is_instance" "testacc_instance1" {
 }
 
 // Example to provision instance in a dedicated host that belongs to the provided dedicated host group
-resource "ibm_is_instance" "testacc_instance2" {
-  name    = "testinstance2"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example2" {
+  name    = "example-instance-2"
+  image   = ibm_is_image.example.id
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
   dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  keys = [ibm_is_ssh_key.example.id]
+  depends_on = [ibm_is_security_group_rule.example_security_group_rule_tcp]
 
   //User can configure timeouts
   timeouts {
@@ -215,26 +215,26 @@ resource "ibm_is_instance" "testacc_instance2" {
 
 // Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
 
-resource "ibm_is_snapshot" "testacc_snapshot" {
-  name 		      	= "testsnapshot"
-  source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+resource "ibm_is_snapshot" "example" {
+  name 		      	= "example-snapshot"
+  source_volume 	= ibm_is_instance.example.volume_attachments[0].volume_id
 }
 
-resource "ibm_is_instance" "testacc_instance_restore" {
-  name    = "vsirestore"
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi-restore"
   profile = "cx2-2x4"
   boot_volume {
     name     = "boot-restore"
-    snapshot = ibm_is_snapshot.testacc_snapshot.id
+    snapshot = ibm_is_snapshot.example.id
   }
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet     = ibm_is_subnet.example.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
   network_interfaces {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     name   = "eth1"
   }
 }

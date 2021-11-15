@@ -12,11 +12,11 @@ Create, update, delete and suspend the dedicated host resource. For more informa
 ## Example usage
 
 ```terraform
-resource "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
+resource "ibm_is_dedicated_host_group" "example" {
   class = "mx2"
   family = "balanced"
   zone = "us-south-1"
-  name = "dh-group-name"
+  name = "example-dh-group"
 }
 ```
 

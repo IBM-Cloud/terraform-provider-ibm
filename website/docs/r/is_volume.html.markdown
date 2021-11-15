@@ -14,8 +14,8 @@ Create, update, or delete a VPC block storage volume. For more information, abou
 The following example creates a volume with 10 IOPs tier.
 
 ```terraform
-resource "ibm_is_volume" "testacc_volume" {
-  name     = "test_volume"
+resource "ibm_is_volume" "example" {
+  name     = "example_volume"
   profile  = "10iops-tier"
   zone     = "us-south-1"
 }
@@ -24,8 +24,8 @@ resource "ibm_is_volume" "testacc_volume" {
 The following example creates a custom volume.
 
 ```terraform
-resource "ibm_is_volume" "testacc_volume" {
-  name     = "test_volume"
+resource "ibm_is_volume" "example" {
+  name     = "example_volume"
   profile  = "custom"
   zone     = "us-south-1"
   iops     = 1000

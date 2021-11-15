@@ -15,9 +15,9 @@ Create, update, or delete a VPC Load Balancer. For more information, about VPC l
 An example to create an application load balancer.
 
 ```terraform
-resource "ibm_is_lb" "lb" {
-  name    = "loadbalancer1"
-  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+resource "ibm_is_lb" "example" {
+  name    = "example-loadbalancer"
+  subnets = [ibm_is_subnet.example.id]
 }
 
 ```
@@ -25,9 +25,9 @@ resource "ibm_is_lb" "lb" {
 An example to create a network load balancer.
 
 ```terraform
-resource "ibm_is_lb" "lb" {
-  name    = "loadbalancer1"
-  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+resource "ibm_is_lb" "example" {
+  name    = "example-loadbalancer"
+  subnets = [ibm_is_subnet.example.id]
   profile = "network-fixed"
 }
 

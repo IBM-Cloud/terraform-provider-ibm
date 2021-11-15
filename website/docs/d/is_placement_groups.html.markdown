@@ -13,7 +13,7 @@ Provides a read-only data source for PlacementGroupCollection. You can then refe
 ## Example Usage
 
 ```hcl
-data "is_placement_groups" "is_placement_groups" {
+data "is_placement_groups" "example" {
 }
 ```
 

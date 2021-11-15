@@ -15,8 +15,8 @@ Import the details of an existing IBM Cloud Infrastructure Network ACL Rules as 
 ## Example Usage
 
 ```terraform
-data "ibm_is_network_acl_rules" "testacc_dsrulelist"{
-  network_acl = xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+data "ibm_is_network_acl_rules" "example"{
+  network_acl = ibm_is_network_acl.example.id
 }
 ```
 

@@ -14,12 +14,12 @@ Retrieve information of an existing IBM Cloud infrastructure VPC default routing
 
 ```terraform
 
-resource "ibm_is_vpc" "test_vpc" {
-  name = "test-vpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc_routing_tables" "ds_routing_tables" {
-	vpc = ibm_is_vpc.test_vpc.id
+data "ibm_is_vpc_routing_tables" "example" {
+	vpc = ibm_is_vpc.example.id
 }
 
 ```

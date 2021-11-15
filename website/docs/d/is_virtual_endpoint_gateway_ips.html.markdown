@@ -12,8 +12,8 @@ Retrieve information of an existing IBM Cloud infrastructure virtual endpoint ga
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateway_ips" "data_test1" {
-  gateway = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+data "ibm_is_virtual_endpoint_gateway_ips" "example" {
+  gateway = ibm_is_virtual_endpoint_gateway.example.id
 }
 ```
 

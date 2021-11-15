@@ -12,7 +12,7 @@ Retrieve information of an existing IBM Cloud Infrastructure Operating Systems a
 ## Example usage
 
 ```terraform
-data "ibm_is_operating_systems" "testacc_dsoslist"{
+data "ibm_is_operating_systems" "example"{
 }
 ```
 
