@@ -729,6 +729,9 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
 			"ibm_pi_cloud_connection":    resourceIBMPICloudConnection(),
+			"ibm_pi_ike_policy":          resourceIBMPIIKEPolicy(),
+			"ibm_pi_ipsec_policy":        resourceIBMPIIPSecPolicy(),
+			"ibm_pi_vpn_connection":      resourceIBMPIVPNConnection(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
