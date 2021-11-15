@@ -116,7 +116,7 @@ func resourceIBMCbrZone() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"account_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "The id of the account owning the service.",
 									},
 									"service_type": &schema.Schema{
