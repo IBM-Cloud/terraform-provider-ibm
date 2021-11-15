@@ -31,6 +31,16 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 						"ibm_pi_volume.power_volume", "pi_volume_name", name),
 				),
 			},
+			{
+				Config: testAccCheckIBMPIVolumeSizeConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_size", "30"),
+				),
+			},
 		},
 	})
 }
@@ -122,6 +132,7 @@ func TestAccIBMPIVolumePool(t *testing.T) {
 		},
 	})
 }
+
 func testAccCheckIBMPIVolumePoolConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_volume" "power_volume"{

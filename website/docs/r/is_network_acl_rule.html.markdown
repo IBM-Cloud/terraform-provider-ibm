@@ -9,7 +9,7 @@ description: |-
 
 # ibm_is_network_acl_rule
 
-Provides a network ACL rule resource with `icmp`, `tcp`, `udp` or `all` protocol. This allows Network ACL rule to be created, updated, and cancelled on an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
+Provides a network ACL rule resource with `icmp`, `tcp`, `udp` or `all` protocol. This allows Network ACL rule to create, update, and delete an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
 ## Example usage (all)
 
@@ -40,7 +40,6 @@ resource "ibm_is_network_acl_rule" "isExampleACLRule2" {
 }
 ```
 
-
 ## Example usage (icmp)
 
 ```terraform
@@ -70,8 +69,6 @@ resource "ibm_is_network_acl_rule" "isExampleACLRule" {
 }
 
 ```
-
-
 
 ## Example usage (tcp/udp)
 
@@ -106,42 +103,39 @@ resource "ibm_is_network_acl_rule" "isExampleACL" {
 }
 ```
 
-
 ## Argument reference
-
 Review the argument references that you can specify for your resource.
 
-- `action` - (Required, String) Whether to allow or deny matching traffic.
-- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If absent, this is the last rule. If omitted, this rule will be inserted after all existing rules.
+- `action` - (Required, String) Whether to **allow** or **deny** matching traffic.
+- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If **absent**, this is the last rule. If **omitted**, this rule will be inserted after all existing rules.
 - `destination` - (Required, String) The destination IP address or CIDR block.
-- `direction` - (Required, String) Whether the traffic to be matched is inbound or outbound.
-- `icmp` - (Optional, List) The protocol ICMP
+- `direction` - (Required, String) Whether the traffic to be matched is **inbound** or **outbound**.
+- `icmp` - (Optional, List) The protocol ICMP.
 
-  Nested scheme for `icmp`:
-  - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
-  - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
+   Nested scheme for `icmp`:
+   - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
+   - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
 - `network_acl` - (Required, String) The ID of the network ACL.
 - `name` - (Required, String) The user-defined name for this rule.
 - `source` - (Required, String) The source IP address or CIDR block.
 - `tcp` - (Optional, List) TCP protocol.
 
-  Nested scheme for `tcp`:
-  - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
-  - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+   Nested scheme for `tcp`:
+   - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+   - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+   - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+   - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 - `udp` - (Optional, List) UDP protocol
 
-  Nested scheme for `udp`:
-  - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
-  - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+   Nested scheme for `udp`:
+   - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+   - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+   - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+   - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 
 **NOTE**: Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
 
-## Attribute Reference
-
+## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The ID of the network ACL rule. The ID is composed of `\<network_acl\>/\<rule_id\>.`
@@ -151,7 +145,6 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-
 The `ibm_is_network_acl_rule` can be imported using ID `\<network_acl\>/\<rule_id\>`
 
 **Example**

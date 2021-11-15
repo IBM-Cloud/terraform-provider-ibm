@@ -41,6 +41,7 @@ Review the argument references that you can specify for your resource.
 
 - `datacenter` - (Required, Forces new resource, String) The datacenter in which you want to provision the reserved capacity.
 - `flavor`- (Required, String) Capacity keyname. For example, C1_2X2_1_YEAR_TERM.
+- `force_create` - (Optional, Boolean) Force the creation of reserved capacity with same name.
 - `instances`- (Required, Forces new resource, Integer) Number of VSI instances this capacity reservation can support.
 - `name` - (Required, String) The descriptive that is used to identify a reserved capacity.
 - `pod` - (Required, Forces new resource, String) The data center pod where you want to create the reserved capacity.

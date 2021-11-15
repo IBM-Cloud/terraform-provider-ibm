@@ -88,11 +88,15 @@ var iksSa string
 // For Power Colo
 
 var pi_image string
+var pi_image_bucket_name string
+var pi_image_bucket_file_name string
 var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
 var pi_cloud_instance_id string
 var pi_instance_name string
+var pi_dhcp_id string
+var piCloudConnectionName string
 
 // For Image
 
@@ -462,6 +466,16 @@ func init() {
 		pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
 	}
+	pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
+	if pi_image_bucket_name == "" {
+		pi_image_bucket_name = "images-public-bucket"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_NAME for testing ibm_pi_image resource else it is set to default value 'images-public-bucket'")
+	}
+	pi_image_bucket_file_name = os.Getenv("PI_IMAGE_BUCKET_FILE_NAME")
+	if pi_image_bucket_file_name == "" {
+		pi_image_bucket_file_name = "rhel.ova.gz"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
+	}
 
 	pi_key_name = os.Getenv("PI_KEY_NAME")
 	if pi_key_name == "" {
@@ -492,6 +506,19 @@ func init() {
 		pi_instance_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing pi_instance_name resource else it is set to default value 'terraform-test-power'")
 	}
+
+	pi_dhcp_id = os.Getenv("PI_DHCP_ID")
+	if pi_dhcp_id == "" {
+		pi_dhcp_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_DHCP_ID for testing ibm_pi_dhcp resource else it is set to default value 'terraform-test-power'")
+	}
+
+	piCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
+	if piCloudConnectionName == "" {
+		piCloudConnectionName = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
+	}
+
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
 		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"

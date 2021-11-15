@@ -161,7 +161,6 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	name := d.Get(helpers.PIVolumeName).(string)
-	volType := d.Get(helpers.PIVolumeType).(string)
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	var shared bool
 	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
@@ -170,7 +169,6 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	body := models.CreateDataVolume{
 		Name:      &name,
-		DiskType:  volType,
 		Shareable: &shared,
 		Size:      &size,
 	}
@@ -203,7 +201,6 @@ func resourceIBMPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 	}
-
 	resquestParams := p_cloud_volumes.PcloudCloudinstancesVolumesPostParams{
 		Body:            &body,
 		CloudInstanceID: powerinstanceid,
@@ -371,7 +368,7 @@ func isIBMPIVolumeRefreshFunc(client *st.IBMPIVolumeClient, id, powerinstanceid 
 			return nil, "", err
 		}
 
-		if vol.State == "available" {
+		if vol.State == "available" || vol.State == "in-use" {
 			return vol, helpers.PIVolumeProvisioningDone, nil
 		}
 
