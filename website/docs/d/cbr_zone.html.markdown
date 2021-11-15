@@ -30,18 +30,14 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cbr_zone.
-* `account_id` - (Required, String) The id of the account owning this zone.
-  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-]+$/`.
 
-* `address_count` - (Required, Integer) The number of addresses in the zone.
+* `address_count` - (Integer) The number of addresses in the zone.
 
-* `addresses` - (Required, List) The list of addresses in the zone.
+* `addresses` - (List) The list of addresses in the zone.
   * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
 Nested scheme for **addresses**:
 	* `ref` - (Optional, List) A service reference value.
 	Nested scheme for **ref**:
-		* `account_id` - (Required, String) The id of the account owning the service.
-		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-]+$/`.
 		* `service_instance` - (Optional, String) The service instance.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-z\\-\/]+$/`.
 		* `service_name` - (Optional, String) The service name.
@@ -53,22 +49,20 @@ Nested scheme for **addresses**:
 	* `value` - (Optional, String) The IP address.
 	  * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `/^[a-zA-Z0-9:.]+$/`.
 
-* `created_at` - (Required, String) The time the resource was created.
+* `created_at` - (String) The time the resource was created.
 
-* `created_by_id` - (Required, String) IAM ID of the user or service which created the resource.
+* `created_by_id` - (String) IAM ID of the user or service which created the resource.
 
-* `crn` - (Required, String) The zone CRN.
+* `crn` - (String) The zone CRN.
 
-* `description` - (Required, String) The description of the zone.
+* `description` - (String) The description of the zone.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `/^[\\x20-\\xFE]*$/`.
 
-* `excluded` - (Required, List) The list of excluded addresses in the zone.
+* `excluded` - (List) The list of excluded addresses in the zone.
   * Constraints: The maximum length is `1000` items.
 Nested scheme for **excluded**:
 	* `ref` - (Optional, List) A service reference value.
 	Nested scheme for **ref**:
-		* `account_id` - (Required, String) The id of the account owning the service.
-		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-]+$/`.
 		* `service_instance` - (Optional, String) The service instance.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9a-z\\-\/]+$/`.
 		* `service_name` - (Optional, String) The service name.
@@ -80,16 +74,16 @@ Nested scheme for **excluded**:
 	* `value` - (Optional, String) The IP address.
 	  * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `/^[a-zA-Z0-9:.]+$/`.
 
-* `excluded_count` - (Required, Integer) The number of excluded addresses in the zone.
+* `excluded_count` - (Integer) The number of excluded addresses in the zone.
 
-* `href` - (Required, String) The href link to the resource.
+* `href` - (String) The href link to the resource.
 
-* `id` - (Required, String) The globally unique ID of the zone.
+* `id` - (String) The globally unique ID of the zone.
 
-* `last_modified_at` - (Required, String) The last time the resource was modified.
+* `last_modified_at` - (String) The last time the resource was modified.
 
-* `last_modified_by_id` - (Required, String) IAM ID of the user or service which modified the resource.
+* `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
-* `name` - (Required, String) The name of the zone.
+* `name` - (String) The name of the zone.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
 

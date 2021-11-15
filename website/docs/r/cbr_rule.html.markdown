@@ -55,20 +55,18 @@ Nested scheme for **resources**:
 		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9]+$/`.
 		* `value` - (Required, String) The tag attribute value.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 _*?.-]+$/`.
-* `transaction_id` - (Optional, String) The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.
-  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_]+$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cbr_rule.
-* `created_at` - (Required, String) The time the resource was created.
-* `created_by_id` - (Required, String) IAM ID of the user or service which created the resource.
-* `crn` - (Required, String) The rule CRN.
-* `href` - (Required, String) The href link to the resource.
-* `last_modified_at` - (Required, String) The last time the resource was modified.
-* `last_modified_by_id` - (Required, String) IAM ID of the user or service which modified the resource.
+* `created_at` - (String) The time the resource was created.
+* `created_by_id` - (String) IAM ID of the user or service which created the resource.
+* `crn` - (String) The rule CRN.
+* `href` - (String) The href link to the resource.
+* `last_modified_at` - (String) The last time the resource was modified.
+* `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
 * `version` - Version of the cbr_rule.
 

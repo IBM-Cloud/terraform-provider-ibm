@@ -30,53 +30,53 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cbr_rule.
-* `contexts` - (Required, List) The contexts this rule applies to.
+* `contexts` - (List) The contexts this rule applies to.
   * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
 Nested scheme for **contexts**:
-	* `attributes` - (Required, List) The attributes.
+	* `attributes` - (List) The attributes.
 	  * Constraints: The minimum length is `1` item.
 	Nested scheme for **attributes**:
-		* `name` - (Required, String) The attribute name.
+		* `name` - (String) The attribute name.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9]+$/`.
-		* `value` - (Required, String) The attribute value.
+		* `value` - (String) The attribute value.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S\\s]+$/`.
 
-* `created_at` - (Required, String) The time the resource was created.
+* `created_at` - (String) The time the resource was created.
 
-* `created_by_id` - (Required, String) IAM ID of the user or service which created the resource.
+* `created_by_id` - (String) IAM ID of the user or service which created the resource.
 
-* `crn` - (Required, String) The rule CRN.
+* `crn` - (String) The rule CRN.
 
-* `description` - (Required, String) The description of the rule.
+* `description` - (String) The description of the rule.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `/^[\\x20-\\xFE]*$/`.
 
-* `href` - (Required, String) The href link to the resource.
+* `href` - (String) The href link to the resource.
 
-* `id` - (Required, String) The globally unique ID of the rule.
+* `id` - (String) The globally unique ID of the rule.
 
-* `last_modified_at` - (Required, String) The last time the resource was modified.
+* `last_modified_at` - (String) The last time the resource was modified.
 
-* `last_modified_by_id` - (Required, String) IAM ID of the user or service which modified the resource.
+* `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
-* `resources` - (Required, List) The resources this rule apply to.
+* `resources` - (List) The resources this rule apply to.
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **resources**:
-	* `attributes` - (Required, List) The resource attributes.
+	* `attributes` - (List) The resource attributes.
 	  * Constraints: The minimum length is `1` item.
 	Nested scheme for **attributes**:
-		* `name` - (Required, String) The attribute name.
+		* `name` - (String) The attribute name.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9]+$/`.
 		* `operator` - (Optional, String) The attribute operator.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9]+$/`.
-		* `value` - (Required, String) The attribute value.
+		* `value` - (String) The attribute value.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S\\s]+$/`.
 	* `tags` - (Optional, List) The optional resource tags.
 	  * Constraints: The maximum length is `10` items. The minimum length is `1` item.
 	Nested scheme for **tags**:
-		* `name` - (Required, String) The tag attribute name.
+		* `name` - (String) The tag attribute name.
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 _.-]+$/`.
 		* `operator` - (Optional, String) The attribute operator.
 		  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9]+$/`.
-		* `value` - (Required, String) The tag attribute value.
+		* `value` - (String) The tag attribute value.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 _*?.-]+$/`.
 
