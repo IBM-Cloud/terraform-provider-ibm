@@ -4,9 +4,8 @@ provider "ibm" {
 
 // Provision cbr_zone resource instance
 resource "ibm_cbr_zone" "cbr_zone_instance" {
-  name = "terraform example test zone"
-  account_id = var.cbr_zone_account_id
-  description = "terraform example test zone"
+  name = "A terraform example of network zone"
+  description = "A terraform example of network zone"
   addresses {
     type = "ipAddress"
     value = "169.23.56.234"
@@ -31,10 +30,6 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
     }
   }
   resources {
-    attributes {
-      name = "accountId"
-      value = var.cbr_zone_account_id
-    }
     attributes {
       name = "serviceName"
       value = "network-policy-enabled"
