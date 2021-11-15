@@ -72,6 +72,8 @@ var workspaceID string
 var templateID string
 var actionID string
 var jobID string
+var repoURL string
+var repoBranch string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
@@ -538,6 +540,14 @@ func init() {
 	if actionID == "" {
 		actionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
+	repoURL = os.Getenv("SCHEMATICS_REPO_URL")
+	if repoURL == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_URL for testing schematics resources else tests will fail if this is not set correctly")
+	}
+	repoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
+	if repoBranch == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")

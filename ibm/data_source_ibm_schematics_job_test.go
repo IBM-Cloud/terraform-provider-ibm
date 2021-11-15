@@ -16,7 +16,7 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 	//jobCommandObjectID := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
 	jobCommandName := "ansible_playbook_run"
 	jobCommandParameter := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	jobLocation := "us-east"
+	jobLocation := "us"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -31,7 +31,6 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_object_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "command_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "location"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "resource_group"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "submitted_at"),
@@ -39,7 +38,7 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "start_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "end_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "status.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "job_log_summary.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "log_summary.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_job.schematics_job", "updated_at"),
 				),
 			},
