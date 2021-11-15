@@ -122,12 +122,12 @@ func dataSourceIBMCloudShellAccountSettingsRead(context context.Context, d *sche
 	getAccountSettingsOptions.SetAccountID(d.Get("account_id").(string))
 
 	accountSettings, response, err := ibmCloudShellClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
-	if err != nil {
+	if err != nil || accountSettings == nil {
 		log.Printf("[DEBUG] GetAccountSettingsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetAccountSettingsWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*accountSettings.ID)
+	d.SetId(*accountSettings.AccountID)
 	if err = d.Set("rev", accountSettings.Rev); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
 	}

@@ -5,8 +5,6 @@ package ibm
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 )
 
 func dataSourceIBMContainerVPCClusterALB() *schema.Resource {
@@ -58,6 +56,11 @@ func dataSourceIBMContainerVPCClusterALB() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the resource group.",
+			},
 		},
 	}
 }
@@ -70,8 +73,7 @@ func dataSourceIBMContainerVpcALBRead(d *schema.ResourceData, meta interface{}) 
 
 	albID := d.Get("alb_id").(string)
 	albAPI := albClient.Albs()
-	targetEnv := v2.ClusterTargetHeader{}
-
+	targetEnv, _ := getVpcClusterTargetHeader(d, meta)
 	albConfig, err := albAPI.GetAlb(albID, targetEnv)
 	if err != nil {
 		return err

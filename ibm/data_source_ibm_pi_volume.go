@@ -45,21 +45,15 @@ func dataSourceIBMPIVolume() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"bootable": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"creation_date": {
+			"disk_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"disk_type": {
+			"volume_pool": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -86,21 +80,13 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*volumedata.VolumeID)
-	if volumedata.Size != nil {
-		d.Set("size", volumedata.Size)
-	}
-	if &volumedata.DiskType != nil {
-		d.Set("disk_type", volumedata.DiskType)
-	}
-	if &volumedata.Bootable != nil {
-		d.Set("bootable", volumedata.Bootable)
-	}
-	if &volumedata.State != nil {
-		d.Set("state", volumedata.State)
-	}
-	if &volumedata.Wwn != nil {
-		d.Set("wwn", volumedata.Wwn)
-	}
+	d.Set("size", volumedata.Size)
+	d.Set("state", volumedata.State)
+	d.Set("shareable", volumedata.Shareable)
+	d.Set("bootable", volumedata.Bootable)
+	d.Set("disk_type", volumedata.DiskType)
+	d.Set("volume_pool", volumedata.VolumePool)
+	d.Set("wwn", volumedata.Wwn)
 	return nil
 
 }

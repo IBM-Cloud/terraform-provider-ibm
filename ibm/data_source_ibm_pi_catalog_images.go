@@ -57,6 +57,10 @@ func dataSourceIBMPICatalogImages() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"storage_pool": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"creation_date": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -136,6 +140,9 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 		}
 		if i.StorageType != nil {
 			image["storage_type"] = *i.StorageType
+		}
+		if i.StoragePool != nil {
+			image["storage_pool"] = *i.StoragePool
 		}
 		if i.CreationDate != nil {
 			image["creation_date"] = i.CreationDate.String()

@@ -30,8 +30,9 @@ const (
 	warningTimeOut = 30 * time.Second
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
-	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
-	PIInstanceNetwork    = "pi_network"
+	CUSTOM_VIRTUAL_CORES  = "custom-virtualcores"
+	PIInstanceNetwork     = "pi_network"
+	PIInstanceStoragePool = "pi_storage_pool"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -124,6 +125,44 @@ func resourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Storage type for server deployment",
+			},
+			PIInstanceStoragePool: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Storage Pool for server deployment; if provided then pi_affinity_policy and pi_storage_type will be ignored",
+			},
+			PIAffinityPolicy: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Affinity policy for pvm instance being created; ignored if pi_storage_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
+				ValidateFunc: validateAllowedStringValue([]string{"affinity", "anti-affinity"}),
+			},
+			PIAffinityVolume: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Volume (ID or Name) to base storage affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
+				ConflictsWith: []string{PIAffinityInstance},
+			},
+			PIAffinityInstance: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "PVM Instance (ID or Name) to base storage affinity policy against; required if requesting storage affinity and pi_affinity_volume is not provided",
+				ConflictsWith: []string{PIAffinityVolume},
+			},
+			PIAntiAffinityVolumes: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of volumes to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
+				ConflictsWith: []string{PIAntiAffinityInstances},
+			},
+			PIAntiAffinityInstances: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
+				ConflictsWith: []string{PIAntiAffinityVolumes},
 			},
 
 			helpers.PIInstanceStorageConnection: {
@@ -441,6 +480,37 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if st, ok := d.GetOk(helpers.PIInstanceStorageType); ok {
 		body.StorageType = st.(string)
 	}
+	if sp, ok := d.GetOk(PIInstanceStoragePool); ok {
+		body.StoragePool = sp.(string)
+	}
+
+	if ap, ok := d.GetOk(PIAffinityPolicy); ok {
+		policy := ap.(string)
+		affinity := &models.StorageAffinity{
+			AffinityPolicy: &policy,
+		}
+
+		if policy == "affinity" {
+			if av, ok := d.GetOk(PIAffinityVolume); ok {
+				afvol := av.(string)
+				affinity.AffinityVolume = &afvol
+			}
+			if ai, ok := d.GetOk(PIAffinityInstance); ok {
+				afins := ai.(string)
+				affinity.AffinityPVMInstance = &afins
+			}
+		} else {
+			if avs, ok := d.GetOk(PIAntiAffinityVolumes); ok {
+				afvols := expandStringList(avs.([]interface{}))
+				affinity.AntiAffinityVolumes = afvols
+			}
+			if ais, ok := d.GetOk(PIAntiAffinityInstances); ok {
+				afinss := expandStringList(ais.([]interface{}))
+				affinity.AntiAffinityPVMInstances = afinss
+			}
+		}
+		body.StorageAffinity = affinity
+	}
 
 	if sc, ok := d.GetOk(helpers.PIInstanceStorageConnection); ok {
 		body.StorageConnection = sc.(string)
@@ -512,6 +582,7 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if powervmdata.StorageType != nil {
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
+	d.Set(helpers.PIInstanceStoragePool, powervmdata.StoragePool)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)

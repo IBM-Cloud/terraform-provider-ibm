@@ -52,6 +52,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `href` - (String) The hyper link of the volume.
 	- `id` - (String) The unique identifier of the volume.
 	- `name` - (String) The name of the volume.
+	- `pool` - (String) Volume pool, name of storage pool where the volume is located.
 	- `shareable` -  (Bool) If set to **true**, the volume can be shared across multiple Power Systems Virtual Server instances. If set to **false**, the volume can be mounted to one instance only.
 	- `size` - (Integer) The size of this volume in gigabytes.
 	- `state` - (String) The state of the volume.

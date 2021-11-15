@@ -24,44 +24,45 @@ func resourceIBMCloudShellAccountSettings() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "The account ID in which the account settings belong to.",
 			},
-			"rev": &schema.Schema{
+			"rev": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Unique revision number for the settings object.",
 			},
-			"default_enable_new_features": &schema.Schema{
+			"default_enable_new_features": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "You can choose which Cloud Shell features are available in the account and whether any new features are enabled as they become available. The feature settings apply only to the enabled Cloud Shell locations.",
 			},
-			"default_enable_new_regions": &schema.Schema{
+			"default_enable_new_regions": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Set whether Cloud Shell is enabled in a specific location for the account. The location determines where user and session data are stored. By default, users are routed to the nearest available location.",
 			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "When enabled, Cloud Shell is available to all users in the account.",
 			},
-			"features": &schema.Schema{
+			"features": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "List of Cloud Shell features.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"enabled": &schema.Schema{
+						"enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "State of the feature.",
 						},
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Name of the feature.",
@@ -69,18 +70,18 @@ func resourceIBMCloudShellAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"regions": &schema.Schema{
+			"regions": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "List of Cloud Shell region settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"enabled": &schema.Schema{
+						"enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "State of the region.",
 						},
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Name of the region.",
@@ -88,27 +89,27 @@ func resourceIBMCloudShellAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Creation timestamp in Unix epoch time.",
 			},
-			"created_by": &schema.Schema{
+			"created_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IAM ID of creator.",
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Type of api response object.",
 			},
-			"updated_at": &schema.Schema{
+			"updated_at": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Timestamp of last update in Unix epoch time.",
 			},
-			"updated_by": &schema.Schema{
+			"updated_by": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IAM ID of last updater.",
@@ -202,7 +203,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 
 	getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
 
-	getAccountSettingsOptions.SetAccountID(d.Get("account_id").(string))
+	getAccountSettingsOptions.SetAccountID(d.Id())
 
 	accountSettings, response, err := ibmCloudShellClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
 	if err != nil {
@@ -215,19 +216,19 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 	}
 
 	if err = d.Set("account_id", accountSettings.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
 	}
 	if err = d.Set("rev", accountSettings.Rev); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting rev: %s", err))
 	}
 	if err = d.Set("default_enable_new_features", accountSettings.DefaultEnableNewFeatures); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default_enable_new_features: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting default_enable_new_features: %s", err))
 	}
 	if err = d.Set("default_enable_new_regions", accountSettings.DefaultEnableNewRegions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default_enable_new_regions: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting default_enable_new_regions: %s", err))
 	}
 	if err = d.Set("enabled", accountSettings.Enabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enabled: %s", err))
 	}
 	if accountSettings.Features != nil {
 		features := []map[string]interface{}{}
@@ -236,7 +237,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 			features = append(features, featuresItemMap)
 		}
 		if err = d.Set("features", features); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting features: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting features: %s", err))
 		}
 	}
 	if accountSettings.Regions != nil {
@@ -246,24 +247,23 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 			regions = append(regions, regionsItemMap)
 		}
 		if err = d.Set("regions", regions); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting regions: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting regions: %s", err))
 		}
 	}
-	d.SetId(*accountSettings.ID)
 	if err = d.Set("created_at", intValue(accountSettings.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", accountSettings.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_by: %s", err))
 	}
 	if err = d.Set("type", accountSettings.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 	if err = d.Set("updated_at", intValue(accountSettings.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", accountSettings.UpdatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_by: %s", err))
 	}
 
 	return nil
@@ -303,20 +303,9 @@ func resourceIBMCloudShellAccountSettingsUpdate(context context.Context, d *sche
 
 	updateAccountSettingsOptions := &ibmcloudshellv1.UpdateAccountSettingsOptions{}
 
-	parts, err := sepIdParts(d.Id(), "/")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	updateAccountSettingsOptions.SetAccountID(parts[0])
-	updateAccountSettingsOptions.SetAccountID(parts[1])
-
+	updateAccountSettingsOptions.SetAccountID(d.Id())
 	hasChange := false
-
-	if d.HasChange("rev") {
-		updateAccountSettingsOptions.SetRev(d.Get("rev").(string))
-		hasChange = true
-	}
+	updateAccountSettingsOptions.SetRev(d.Get("rev").(string))
 	if d.HasChange("default_enable_new_features") {
 		updateAccountSettingsOptions.SetDefaultEnableNewFeatures(d.Get("default_enable_new_features").(bool))
 		hasChange = true

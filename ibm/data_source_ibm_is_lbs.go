@@ -255,7 +255,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		//	log.Printf("******* lb ******** : (%+v)", lb)
 		lbInfo[ID] = *lb.ID
 		lbInfo[isLBName] = *lb.Name
-		lbInfo[isLBRouteMode] = *lb.RouteMode
+		if lb.RouteMode != nil {
+			lbInfo[isLBRouteMode] = *lb.RouteMode
+		}
 		lbInfo[CRN] = *lb.CRN
 		lbInfo[ProvisioningStatus] = *lb.ProvisioningStatus
 

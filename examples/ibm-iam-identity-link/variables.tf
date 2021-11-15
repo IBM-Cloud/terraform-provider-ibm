@@ -31,3 +31,10 @@ variable "iam_trusted_profiles_link_link_id" {
   type        = string
   default     = "link_id"
 }
+
+// Data source arguments for iam_trusted_profile_link_list
+variable "iam_trusted_profile_link_list_profile_id" {
+  description = "ID of the trusted profile."
+  type        = string
+  default     = "profile_id"
+}

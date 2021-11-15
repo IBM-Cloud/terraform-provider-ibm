@@ -26,3 +26,10 @@ variable "iam_trusted_profiles_profile_id" {
   type        = string
   default     = "profile_id"
 }
+
+// Data source arguments for iam_trusted_profiles
+variable "iam_trusted_profiles_account_id" {
+  description = "Account ID to query for trusted profiles."
+  type        = string
+  default     = "account_id"
+}

@@ -14,27 +14,49 @@ Provides a private DNS custom resolver resource. This allows DNS custom resolver
 ## Example usage
 
 ```terraform
-data "ibm_resource_group" "rg" {
-  name = "default"
-}
 
-resource "ibm_resource_instance" "test-pdns-instance" {
-  name              = "test-pdns"
-  resource_group_id = data.ibm_resource_group.rg.id
-  location          = "global"
-  service           = "dns-svcs"
-  plan              = "standard-dns"
-}
-
-resource "ibm_dns_custom_resolver" "test" {
-  name        = "testCR-TF"
-  instance_id = ibm_resource_instance.test-pdns-instance.guid
-  description = "testdescription-CR"
-  locations {
-    subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
-    enabled     = true
-  }
-}
+  	data "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name			= "test-pdns-custom-resolver-vpc"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name			= "test-pdns-cr-subnet1"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.0.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name			= "test-pdns-cr-subnet2"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.64.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		location			= "global"
+		service				= "dns-svcs"
+		plan				= "standard-dns"
+	}
+	resource "ibm_dns_custom_resolver" "test" {
+		name		= "test-customresolver"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "new test CR - TF"
+		enabled 	= true
+		locations {
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled		= true
+		}
+		locations {
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
+			enabled     = true
+		}
+	}
 ```
 
 ## Argument reference
@@ -42,12 +64,10 @@ Review the argument reference that you can specify for your resource.
 
 - `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
+- `enabled`- (Optional, Bool) To make custom resolver enabled/disable.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
-- `locations`- (Required, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
-
-  Nested scheme for `locations`:
-  - `subnet_crn` - (Required, String) subnet CRN.
-  - `enabled`- (Optional, Bool) Whether the location is enabled.
+- `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
+- `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
@@ -61,7 +81,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
   - `dns_server_ip`- (String) The DNS server IP.
-  - `enabled`- (String) Whether the location is enabled.
+  - `enabled`- (Bool) Whether the location is enabled.
   - `location_id`- (String) The location ID.
 
 ## Import

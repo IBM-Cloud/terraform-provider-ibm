@@ -16,7 +16,7 @@ Create, update, or delete a VPC load balancer pool.  For more information, about
 
 ```terraform
 resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test_pool"
+  name           = "test-pool"
   lb             = "addfd-gg4r4-12345"
   algorithm      = "round_robin"
   protocol       = "http"
@@ -33,7 +33,7 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 ```terraform
 resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test_pool"
+  name           = "test-pool"
   lb             = "addfd-gg4r4-12345"
   algorithm      = "round_robin"
   protocol       = "https"
@@ -50,7 +50,7 @@ In the following example, you can create a load balancer pool with `app_cookie` 
 
 ```hcl
 resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test_pool"
+  name           = "test-pool"
   lb             = "addfd-gg4r4-12345"
   algorithm      = "round_robin"
   protocol       = "https"
@@ -69,7 +69,7 @@ In the following example, you can create a load balancer pool with `http_cookie`
 
 ```hcl
 resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test_pool"
+  name           = "test-pool"
   lb             = "addfd-gg4r4-12345"
   algorithm      = "round_robin"
   protocol       = "https"
@@ -87,7 +87,7 @@ In the following example, you can create a load balancer pool with `source_ip` s
 
 ```hcl
 resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test_pool"
+  name           = "test-pool"
   lb             = "addfd-gg4r4-12345"
   algorithm      = "round_robin"
   protocol       = "https"

@@ -51,3 +51,10 @@ variable "iam_trusted_profiles_claim_rule_rule_id" {
   type        = string
   default     = "rule_id"
 }
+
+// Data source arguments for iam_trusted_profile_claim_rule_list
+variable "iam_trusted_profile_claim_rule_list_profile_id" {
+  description = "ID of the trusted profile."
+  type        = string
+  default     = "profile_id"
+}
