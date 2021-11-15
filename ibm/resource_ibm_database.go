@@ -147,6 +147,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
+				ForceNew:     true,
 			},
 
 			"status": {
