@@ -117,7 +117,7 @@ func resourceIBMCbrRule() *schema.Resource {
 			},
 			"transaction_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_rule", "transaction_id"),
 				Description:  "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
 			},
@@ -170,15 +170,6 @@ func resourceIBMCbrRuleValidator() *ResourceValidator {
 			Regexp:                     `^[\x20-\xFE]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             300,
-		},
-		ValidateSchema{
-			Identifier:                 "transaction_id",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             128,
 		},
 	)
 

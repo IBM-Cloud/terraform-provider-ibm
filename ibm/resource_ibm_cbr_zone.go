@@ -32,7 +32,7 @@ func resourceIBMCbrZone() *schema.Resource {
 			},
 			"account_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "account_id"),
 				Description:  "The id of the account owning this zone.",
 			},
@@ -67,7 +67,7 @@ func resourceIBMCbrZone() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"account_id": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "The id of the account owning the service.",
 									},
 									"service_type": &schema.Schema{
@@ -142,7 +142,7 @@ func resourceIBMCbrZone() *schema.Resource {
 			},
 			"transaction_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "transaction_id"),
 				Description:  "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
 			},
@@ -207,15 +207,6 @@ func resourceIBMCbrZoneValidator() *ResourceValidator {
 			MaxValueLength:             128,
 		},
 		ValidateSchema{
-			Identifier:                 "account_id",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9\\-]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             128,
-		},
-		ValidateSchema{
 			Identifier:                 "description",
 			ValidateFunctionIdentifier: ValidateRegexpLen,
 			Type:                       TypeString,
@@ -223,15 +214,6 @@ func resourceIBMCbrZoneValidator() *ResourceValidator {
 			Regexp:                     `^[\x20-\xFE]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             300,
-		},
-		ValidateSchema{
-			Identifier:                 "transaction_id",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9\-_]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             128,
 		},
 	)
 
