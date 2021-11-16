@@ -23,33 +23,32 @@ data "ibm_schematics_inventory" "schematics_inventory" {
 
 Review the argument reference that you can specify for your data source.
 
-* `inventory_id` - (Required, Forces new resource, String) Resource Inventory Id.  Use `GET /v2/inventories` API to look up the Resource Inventory definition Ids  in your IBM Cloud account.
+* `inventory_id` - (Required, String) Resource Inventory Id.  Use `GET /v2/inventories` API to look up the Resource Inventory definition Ids  in your IBM Cloud account.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the schematics_inventory.
-* `created_at` - (Optional, String) Inventory creation time.
+* `created_at` - (String) Inventory creation time.
 
-* `created_by` - (Optional, String) Email address of user who created the Inventory.
+* `created_by` - (String) Email address of user who created the Inventory.
 
-* `description` - (Optional, String) The description of your Inventory.  The description can be up to 2048 characters long in size.
+* `description` - (String) The description of your Inventory.  The description can be up to 2048 characters long in size.
 
-* `id` - (Optional, String) Inventory id.
+* `id` - (String) Inventory id.
 
-* `inventories_ini` - (Optional, String) Input inventory of host and host group for the playbook,  in the .ini file format.
+* `inventories_ini` - (String) Input inventory of host and host group for the playbook,  in the .ini file format.
 
-* `location` - (Optional, String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+* `location` - (String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
   * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
-* `name` - (Optional, String) The unique name of your Inventory.  The name can be up to 128 characters long and can include alphanumeric  characters, spaces, dashes, and underscores.
+* `name` - (String) The unique name of your Inventory.  The name can be up to 128 characters long and can include alphanumeric  characters, spaces, dashes, and underscores.
 
-* `resource_group` - (Optional, String) Resource-group name for the Inventory definition.  By default, Inventory will be created in Default Resource Group.
+* `resource_group` - (String) Resource-group name for the Inventory definition.  By default, Inventory will be created in Default Resource Group.
 
-* `resource_queries` - (Optional, List) Input resource queries that is used to dynamically generate  the inventory of host and host group for the playbook.
+* `resource_queries` - (List) Input resource queries that is used to dynamically generate  the inventory of host and host group for the playbook.
 
-* `updated_at` - (Optional, String) Inventory updation time.
+* `updated_at` - (String) Inventory updation time.
 
-* `updated_by` - (Optional, String) Email address of user who updated the Inventory.
+* `updated_by` - (String) Email address of user who updated the Inventory.
 

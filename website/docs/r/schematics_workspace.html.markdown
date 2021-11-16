@@ -29,7 +29,7 @@ resource "ibm_schematics_workspace" "schematics_workspace" {
 Review the argument reference that you can specify for your resource.
 
 * `applied_shareddata_ids` - (Optional, List) List of applied shared dataset ID.
-* `catalog_ref` - (Optional, List) Information about the software template that you chose from the IBM Cloud catalog. This information is returned for IBM Cloud catalog offerings only.
+* `catalog_ref` - (Optional, List) Information about the software template that you chose from the IBM Cloud catalog. This information is returned for IBM Cloud catalog offerings only. MaxItems:1.
 Nested scheme for **catalog_ref**:
 	* `dry_run` - (Optional, Boolean) Dry run.
 	* `owning_account` - (Optional, String) Owning account ID of the catalog.
@@ -42,9 +42,9 @@ Nested scheme for **catalog_ref**:
 	* `offering_version` - (Optional, String) The version of the software template that you chose to install from the IBM Cloud catalog.
 * `description` - (Optional, String) The description of the workspace.
 * `location` - (Optional, String) The location where you want to create your Schematics workspace and run the Schematics jobs. The location that you enter must match the API endpoint that you use. For example, if you use the Frankfurt API endpoint, you must specify `eu-de` as your location. If you use an API endpoint for a geography and you do not specify a location, Schematics determines the location based on availability.
-* `name` - (Optional, String) The name of your workspace. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. When you create a workspace for your own Terraform template, consider including the microservice component that you set up with your Terraform template and the IBM Cloud environment where you want to deploy your resources in your name.
+* `name` - (Required, String) The name of your workspace. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. When you create a workspace for your own Terraform template, consider including the microservice component that you set up with your Terraform template and the IBM Cloud environment where you want to deploy your resources in your name.
 * `resource_group` - (Optional, String) The ID of the resource group where you want to provision the workspace.
-* `shared_data` - (Optional, List) Information about the Target used by the templates originating from the  IBM Cloud catalog offerings. This information is not relevant for workspace created using your own Terraform template.
+* `shared_data` - (Optional, List) Information about the Target used by the templates originating from the  IBM Cloud catalog offerings. This information is not relevant for workspace created using your own Terraform template. MaxItems:1.
 Nested scheme for **shared_data**:
 	* `cluster_created_on` - (Optional, String) Cluster created on.
 	* `cluster_id` - (Optional, String) The ID of the cluster where you want to provision the resources of all IBM Cloud catalog templates that are included in the catalog offering.
@@ -60,18 +60,18 @@ Nested scheme for **shared_data**:
 * `template_env_settings` - (Optional, List) A list of environment variables that you want to apply during the execution of a bash script or Terraform job. This field must be provided as a list of key-value pairs, for example, **TF_LOG=debug**. Each entry will be a map with one entry where `key is the environment variable name and value is value`. You can define environment variables for IBM Cloud catalog offerings that are provisioned by using a bash script. See [example to use special environment variable](https://cloud.ibm.com/docs/schematics?topic=schematics-set-parallelism#parallelism-example)  that are supported by Schematics.
 * `template_git_folder` - (Optional, String) The subfolder in your GitHub or GitLab repository where your Terraform template is stored.
 * `template_init_state_file` - (Optional, String) The content of an existing Terraform statefile that you want to import in to your workspace. To get the content of a Terraform statefile for a specific Terraform template in an existing workspace, run `ibmcloud terraform state pull --id <workspace_id> --template <template_id>`.
-* `template_type` - (Optional, String) The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. The Terraform config files are run with Terraform version 0.11. This is a required variable. Make sure that your Terraform config files are compatible with the Terraform version that you select.
+* `template_type` - (Required, String) The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. The Terraform config files are run with Terraform version 0.11. This is a required variable. Make sure that your Terraform config files are compatible with the Terraform version that you select.
 * `template_uninstall_script_name` - (Optional, String) Uninstall script name.
 * `template_values` - (Optional, String) A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `"autoscaling: enabled: true minReplicas: 2"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.
 * `template_values_metadata` - (Optional, List) List of values metadata.
 * `template_inputs` - (Optional, List) VariablesRequest -.
 Nested scheme for **variablestore**:
 	* `description` - (Optional, String) The description of your input variable.
-	* `name` - (Optional, String) The name of the variable.
+	* `name` - (Required, String) The name of the variable.
 	* `secure` - (Optional, Boolean) If set to `true`, the value of your input variable is protected and not returned in your API response.
-	* `type` - (Optional, String) `Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html).<br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`,`object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).
+	* `type` - (Required, String) `Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html).<br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`,`object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).
 	* `use_default` - (Optional, Boolean) Variable uses default value; and is not over-ridden.
-	* `value` - (Optional, String) Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](https://cloud.ibm.com/docs/schematics?topic=schematics-create-tf-config#declare-variable).
+	* `value` - (Required, String) Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](https://cloud.ibm.com/docs/schematics?topic=schematics-create-tf-config#declare-variable).
 * `template_ref` - (Optional, String) Workspace template ref.
 * `template_git_branch` - (Optional, String) The repository branch.
 * `template_git_release` - (Optional, String) The repository release.
