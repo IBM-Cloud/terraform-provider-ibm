@@ -60,10 +60,6 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceLicenseRepositoryCapacity: {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The VTL license repository capacity TB value",
-			},
-			"license_repository_capacity": {
-				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The VTL license repository capacity TB value",
 			},
