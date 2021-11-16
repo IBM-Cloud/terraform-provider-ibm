@@ -26,22 +26,22 @@ resource "ibm_schematics_job" "schematics_job" {
 
 Review the argument reference that you can specify for your resource.
 
-* `bastion` - (Optional, List) Describes a bastion resource.
+* `bastion` - (Optional, List) Describes a bastion resource. MaxItems: 1.
 Nested scheme for **bastion**:
 	* `name` - (Optional, String) Bastion Name(Unique).
 	* `host` - (Optional, String) Reference to the Inventory resource definition.
-* `command_name` - (Optional, String) Schematics job command name.
+* `command_name` - (Required, String) Schematics job command name.
   * Constraints: Allowable values are: workspace_plan, workspace_apply, workspace_destroy, workspace_refresh, ansible_playbook_run, ansible_playbook_check, create_action, put_action, patch_action, delete_action, system_key_enable, system_key_delete, system_key_disable, system_key_rotate, system_key_restore, create_workspace, put_workspace, patch_workspace, delete_workspace, create_cart, create_environment, put_environment, delete_environment, environment_init, environment_install, environment_uninstall, repository_process
-* `command_object` - (Optional, String) Name of the Schematics automation resource.
+* `command_object` - (Required, String) Name of the Schematics automation resource.
   * Constraints: Allowable values are: workspace, action, system, environment
-* `command_object_id` - (Optional, String) Job command object id (workspace-id, action-id).
+* `command_object_id` - (Required, String) Job command object id (workspace-id, action-id).
 * `command_options` - (Optional, List) Command line options for the command.
 * `command_parameter` - (Optional, String) Schematics job command parameter (playbook-name).
 * `data` - (Optional, List) Job data.
 Nested scheme for **data**:
 	* `job_type` - (Required, String) Type of Job.
 	  * Constraints: Allowable values are: repo_download_job, workspace_job, action_job, system_job, flow-job
-	* `workspace_job_data` - (Optional, List) Workspace Job data.
+	* `workspace_job_data` - (Optional, List) Workspace Job data. MaxItems: 1.
 	Nested scheme for **workspace_job_data**:
 		* `workspace_name` - (Optional, String) Workspace name.
 		* `flow_id` - (Optional, String) Flow Id.
@@ -50,7 +50,7 @@ Nested scheme for **data**:
 		Nested scheme for **inputs**:
 			* `name` - (Optional, String) Name of the variable.
 			* `value` - (Optional, String) Value for the variable or reference to the value.
-			* `metadata` - (Optional, List) User editable metadata for the variables.
+			* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 			Nested scheme for **metadata**:
 				* `type` - (Optional, String) Type of the variable.
 				  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -74,7 +74,7 @@ Nested scheme for **data**:
 		Nested scheme for **outputs**:
 			* `name` - (Optional, String) Name of the variable.
 			* `value` - (Optional, String) Value for the variable or reference to the value.
-			* `metadata` - (Optional, List) User editable metadata for the variables.
+			* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 			Nested scheme for **metadata**:
 				* `type` - (Optional, String) Type of the variable.
 				  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -94,7 +94,7 @@ Nested scheme for **data**:
 				* `group_by` - (Optional, String) Display name of the group this variable belongs to.
 				* `source` - (Optional, String) Source of this meta-data.
 			* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
-		* `settings` - (Optional, List) Environment variables used by all the templates in the Workspace.
+		* `settings` - (Optional, List) Environment variables used by all the templates in the Workspace. MaxItems: 1.
 		Nested scheme for **settings**:
 			* `name` - (Optional, String) Name of the variable.
 			* `value` - (Optional, String) Value for the variable or reference to the value.
@@ -127,7 +127,7 @@ Nested scheme for **data**:
 			Nested scheme for **inputs**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -151,7 +151,7 @@ Nested scheme for **data**:
 			Nested scheme for **outputs**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -175,7 +175,7 @@ Nested scheme for **data**:
 			Nested scheme for **settings**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -273,8 +273,8 @@ Nested scheme for **data**:
 				* `source` - (Optional, String) Source of this meta-data.
 			* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
 		* `updated_at` - (Optional, String) Job status updation timestamp.
-		* `inventory_record` - (Optional, List) Complete inventory resource details with user inputs and system generated data.
-		Nested scheme for **inventory_record**:
+		* `inventory_record` - (Optional, List) Complete inventory resource details with user inputs and system generated data. MaxItems: 1.
+		Nested scheme for **inventory_record**: 
 			* `name` - (Optional, String) The unique name of your Inventory.  The name can be up to 128 characters long and can include alphanumeric  characters, spaces, dashes, and underscores.
 			* `id` - (Optional, String) Inventory id.
 			* `description` - (Optional, String) The description of your Inventory.  The description can be up to 2048 characters long in size.
@@ -288,7 +288,7 @@ Nested scheme for **data**:
 			* `inventories_ini` - (Optional, String) Input inventory of host and host group for the playbook,  in the .ini file format.
 			* `resource_queries` - (Optional, List) Input resource queries that is used to dynamically generate  the inventory of host and host group for the playbook.
 		* `materialized_inventory` - (Optional, String) Materialized inventory details used by the Action Job, in .ini format.
-	* `system_job_data` - (Optional, List) Controls Job data.
+	* `system_job_data` - (Optional, List) Controls Job data. MaxItems: 1.
 	Nested scheme for **system_job_data**:
 		* `key_id` - (Optional, String) Key ID for which key event is generated.
 		* `schematics_resource_id` - (Optional, List) List of the schematics resource id.
@@ -304,11 +304,11 @@ Nested scheme for **data**:
 			* `layers` - (Optional, String) layer name.
 			* `source_type` - (Optional, String) Type of source for the Template.
 			  * Constraints: Allowable values are: local, git_hub, git_hub_enterprise, git_lab, ibm_git_lab, ibm_cloud_catalog, external_scm, cos_bucket
-			* `source` - (Optional, List) Source of templates, playbooks, or controls.
+			* `source` - (Optional, List) Source of templates, playbooks, or controls. MaxItems: 1.
 			Nested scheme for **source**:
 				* `source_type` - (Required, String) Type of source for the Template.
 				  * Constraints: Allowable values are: local, git_hub, git_hub_enterprise, git_lab, ibm_git_lab, ibm_cloud_catalog, external_scm, cos_bucket
-				* `git` - (Optional, List) Connection details to Git source.
+				* `git` - (Optional, List) Connection details to Git source. MaxItems: 1.
 				Nested scheme for **git**:
 					* `computed_git_repo_url` - (Optional, String) The Complete URL which is computed by git_repo_url, git_repo_folder and branch.
 					* `git_repo_url` - (Optional, String) URL to the GIT Repo that can be used to clone the template.
@@ -316,7 +316,7 @@ Nested scheme for **data**:
 					* `git_repo_folder` - (Optional, String) Name of the folder in the Git Repo, that contains the template.
 					* `git_release` - (Optional, String) Name of the release tag, used to fetch the Git Repo.
 					* `git_branch` - (Optional, String) Name of the branch, used to fetch the Git Repo.
-				* `catalog` - (Optional, List) Connection details to IBM Cloud Catalog source.
+				* `catalog` - (Optional, List) Connection details to IBM Cloud Catalog source. MaxItems: 1.
 				Nested scheme for **catalog**:
 					* `catalog_name` - (Optional, String) name of the private catalog.
 					* `offering_name` - (Optional, String) Name of the offering in the IBM Catalog.
@@ -325,14 +325,14 @@ Nested scheme for **data**:
 					* `offering_id` - (Optional, String) Id of the offering the IBM Catalog.
 					* `offering_version_id` - (Optional, String) Id of the offering version the IBM Catalog.
 					* `offering_repo_url` - (Optional, String) Repo Url of the offering, in the IBM Catalog.
-				* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket.
+				* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket. MaxItems: 1.
 				Nested scheme for **cos_bucket**:
 					* `cos_bucket_url` - (Optional, String) COS Bucket Url.
 			* `inputs` - (Optional, List) Input variables data for the workItem used in FlowJob.
 			Nested scheme for **inputs**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -356,7 +356,7 @@ Nested scheme for **data**:
 			Nested scheme for **outputs**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -380,7 +380,7 @@ Nested scheme for **data**:
 			Nested scheme for **settings**:
 				* `name` - (Optional, String) Name of the variable.
 				* `value` - (Optional, String) Value for the variable or reference to the value.
-				* `metadata` - (Optional, List) User editable metadata for the variables.
+				* `metadata` - (Optional, List) User editable metadata for the variables. MaxItems: 1.
 				Nested scheme for **metadata**:
 					* `type` - (Optional, String) Type of the variable.
 					  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
@@ -400,7 +400,7 @@ Nested scheme for **data**:
 					* `group_by` - (Optional, String) Display name of the group this variable belongs to.
 					* `source` - (Optional, String) Source of this meta-data.
 				* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
-			* `last_job` - (Optional, List) Status of the last job executed by the workitem.
+			* `last_job` - (Optional, List) Status of the last job executed by the workitem. MaxItems: 1.
 			Nested scheme for **last_job**:
 				* `command_object` - (Optional, String) Name of the Schematics automation resource.
 				  * Constraints: Allowable values are: workspace, action, system, environment
@@ -415,11 +415,11 @@ Nested scheme for **data**:
 		* `updated_at` - (Optional, String) Job status updation timestamp.
 * `job_env_settings` - (Optional, List) Environment variables used by the Job while performing Action or Workspace.
 Nested scheme for **job_env_settings**:
-	* `name` - (Optional, String) Name of the variable.
-	* `value` - (Optional, String) Value for the variable or reference to the value.
+	* `name` - (Required, String) Name of the variable.
+	* `value` - (Required, String) Value for the variable or reference to the value.
 	* `metadata` - (Optional, List) User editable metadata for the variables.
 	Nested scheme for **metadata**:
-		* `type` - (Optional, String) Type of the variable.
+		* `type` - (Required, String) Type of the variable.
 		  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
 		* `aliases` - (Optional, List) List of aliases for the variable name.
 		* `description` - (Optional, String) Description of the meta data.
@@ -439,11 +439,11 @@ Nested scheme for **job_env_settings**:
 	* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
 * `job_inputs` - (Optional, List) Job inputs used by Action or Workspace.
 Nested scheme for **job_inputs**:
-	* `name` - (Optional, String) Name of the variable.
-	* `value` - (Optional, String) Value for the variable or reference to the value.
+	* `name` - (Required, String) Name of the variable.
+	* `value` - (Required, String) Value for the variable or reference to the value.
 	* `metadata` - (Optional, List) User editable metadata for the variables.
 	Nested scheme for **metadata**:
-		* `type` - (Optional, String) Type of the variable.
+		* `type` - (Required, String) Type of the variable.
 		  * Constraints: Allowable values are: boolean, string, integer, date, array, list, map, complex
 		* `aliases` - (Optional, List) List of aliases for the variable name.
 		* `description` - (Optional, String) Description of the meta data.
@@ -483,12 +483,12 @@ Nested scheme for **log_summary**:
 		* `detected_filetype` - (Optional, String) Detected template or data file type.
 		* `inputs_count` - (Optional, String) Number of inputs detected.
 		* `outputs_count` - (Optional, String) Number of outputs detected.
-	* `workspace_job` - (Optional, List) Workspace Job log summary.
+	* `workspace_job` - (Optional, List) Workspace Job log summary. MaxItems: 1.
 	Nested scheme for **workspace_job**:
 		* `resources_add` - (Optional, Float) Number of resources add.
 		* `resources_modify` - (Optional, Float) Number of resources modify.
 		* `resources_destroy` - (Optional, Float) Number of resources destroy.
-	* `flow_job` - (Optional, List) Flow Job log summary.
+	* `flow_job` - (Optional, List) Flow Job log summary. MaxItems: 1.
 	Nested scheme for **flow_job**:
 		* `workitems_completed` - (Optional, Float) Number of workitems completed successfully.
 		* `workitems_pending` - (Optional, Float) Number of workitems pending in the flow.
@@ -514,13 +514,12 @@ Nested scheme for **log_summary**:
 			* `failed` - (Optional, Float) Number of failed.
 			* `skipped` - (Optional, Float) Number of skipped.
 			* `unreachable` - (Optional, Float) Number of unreachable.
-	* `system_job` - (Optional, List) System Job log summary.
+	* `system_job` - (Optional, List) System Job log summary. MaxItems: 1.
 	Nested scheme for **system_job**:
 		* `target_count` - (Optional, Float) number of targets or hosts.
 		* `success` - (Optional, Float) Number of passed.
 		* `failed` - (Optional, Float) Number of failed.
-* `refresh_token` - (Required, String) The IAM refresh token for the user or service identity.  **Retrieving refresh token**:   * Use `export IBMCLOUD_API_KEY=<ibmcloud_api_key>`, and execute `curl -X POST "https://iam.cloud.ibm.com/identity/token" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=$IBMCLOUD_API_KEY" -u bx:bx`.   * For more information, about creating IAM access token and API Docs, refer, [IAM access token](/apidocs/iam-identity-token-api#gettoken-password) and [Create API key](/apidocs/iam-identity-token-api#create-api-key).    **Limitation**:   * If the token is expired, you can use `refresh token` to get a new IAM access token.   * The `refresh_token` parameter cannot be used to retrieve a new IAM access token.   * When the IAM access token is about to expire, use the API key to create a new access token.
-* `status` - (Optional, List) Job Status.
+* `status` - (Optional, List) Job Status. MaxItems: 1.
 Nested scheme for **status**:
 	* `workspace_job_status` - (Optional, List) Workspace Job Status.
 	Nested scheme for **workspace_job_status**:
@@ -528,7 +527,7 @@ Nested scheme for **status**:
 		* `status_code` - (Optional, String) Status of Jobs.
 		  * Constraints: Allowable values are: job_pending, job_in_progress, job_finished, job_failed, job_cancelled
 		* `status_message` - (Optional, String) Workspace job status message (eg. App1_Setup_Pending, for a 'Setup' flow in the 'App1' Workspace).
-		* `flow_status` - (Optional, List) Environment Flow JOB Status.
+		* `flow_status` - (Optional, List) Environment Flow JOB Status.MaxItems: 1.
 		Nested scheme for **flow_status**:
 			* `flow_id` - (Optional, String) flow id.
 			* `flow_name` - (Optional, String) flow name.
@@ -568,7 +567,7 @@ Nested scheme for **status**:
 		  * Constraints: Allowable values are: none, ready, processing, error
 		* `targets_status_message` - (Optional, String) Aggregated status message for all target resources,  to be displayed along with the targets_status_code;.
 		* `updated_at` - (Optional, String) Job status updation timestamp.
-	* `system_job_status` - (Optional, List) System Job Status.
+	* `system_job_status` - (Optional, List) System Job Status. MaxItems: 1.
 	Nested scheme for **system_job_status**:
 		* `system_status_message` - (Optional, String) System job message.
 		* `system_status_code` - (Optional, String) Status of Jobs.
@@ -581,7 +580,7 @@ Nested scheme for **status**:
 			* `schematics_resource_id` - (Optional, String) id for each resource which is targeted as a part of system job.
 			* `updated_at` - (Optional, String) Job status updation timestamp.
 		* `updated_at` - (Optional, String) Job status updation timestamp.
-	* `flow_job_status` - (Optional, List) Environment Flow JOB Status.
+	* `flow_job_status` - (Optional, List) Environment Flow JOB Status. MaxItems: 1.
 	Nested scheme for **flow_job_status**:
 		* `flow_id` - (Optional, String) flow id.
 		* `flow_name` - (Optional, String) flow name.
