@@ -115,11 +115,17 @@ func resourceIBMCbrRule() *schema.Resource {
 					},
 				},
 			},
+			"x_correlation_id": &schema.Schema{
+				Type:         schema.TypeString,
+				Computed:     true,
+				ValidateFunc: InvokeValidator("ibm_cbr_rule", "x_correlation_id"),
+				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
+			},
 			"transaction_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Computed:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_rule", "transaction_id"),
-				Description:  "The UUID that is used to correlate and track transactions. If you omit this field, the service generates and sends a transaction ID in the response.**Note:** To help with debugging, we strongly recommend that you generate and supply a `Transaction-Id` with each request.",
+				Description:  "The `Transaction-Id` header behaves as the `X-Correlation-Id` header. It is supported for backward compatibility with other IBM platform services that support the `Transaction-Id` header only. If both `X-Correlation-Id` and `Transaction-Id` are provided, `X-Correlation-Id` has the precedence over `Transaction-Id`.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
