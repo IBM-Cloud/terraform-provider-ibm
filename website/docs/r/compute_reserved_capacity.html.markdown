@@ -9,7 +9,11 @@ description: |-
 
 
 # ibm_compute_reserved_capacity
+<<<<<<< HEAD
 Create, or update reserved capacity for your Virtual Server Instance. With reserved capacity, you can control the physical host your Virtual Server Instance is deployed to. For more information, about the reserved capacity, see [reserved groups](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-reserved-virtual-servers).
+=======
+Create, or update reserved capacity for your Virtual Server Instance. With reserved capacity, you can control the physical host your Virtual Server Instance is deployed to. For more information, about the reserved capacity, see [reserved groups](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-reserved-virtual-servers).
+>>>>>>> 8036316b79cc787367e4d2407a109880dbc4f070
 
 **Note**
 
