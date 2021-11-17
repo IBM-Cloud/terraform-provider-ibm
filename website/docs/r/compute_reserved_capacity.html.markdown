@@ -9,11 +9,7 @@ description: |-
 
 
 # ibm_compute_reserved_capacity
-<<<<<<< HEAD
-Create, or update reserved capacity for your Virtual Server Instance. With reserved capacity, you can control the physical host your Virtual Server Instance is deployed to. For more information, about the reserved capacity, see [reserved groups](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-reserved-virtual-servers).
-=======
-Create, or update reserved capacity for your Virtual Server Instance. With reserved capacity, you can control the physical host your Virtual Server Instance is deployed to. For more information, about the reserved capacity, see [reserved groups](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-reserved-virtual-servers).
->>>>>>> 8036316b79cc787367e4d2407a109880dbc4f070
+Create, or update reserved capacity for your Virtual Server Instance. With reserved capacity, you can control the physical host your Virtual Server Instance is deployed to. For more information, about the reserved capacity, see [reserved groups](https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-reserved-virtual-servers). 
 
 **Note**
 
@@ -36,15 +32,16 @@ resource "ibm_compute_reserved_capacity" "reserved" {
 ```
 
 ## Timeouts
-The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) for certain actions:
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) for certain actions:  
 
 - `create`- (Defaults to 10 mins) Used when you create the reserved capacity.
 
 ## Argument reference
-Review the argument references that you can specify for your resource.
+Review the argument references that you can specify for your resource. 
 
 - `datacenter` - (Required, Forces new resource, String) The datacenter in which you want to provision the reserved capacity.
 - `flavor`- (Required, String) Capacity keyname. For example, C1_2X2_1_YEAR_TERM.
+- `force_create` - (Optional, Boolean) Force the creation of reserved capacity with same name.
 - `instances`- (Required, Forces new resource, Integer) Number of VSI instances this capacity reservation can support.
 - `name` - (Required, String) The descriptive that is used to identify a reserved capacity.
 - `pod` - (Required, Forces new resource, String) The data center pod where you want to create the reserved capacity.
