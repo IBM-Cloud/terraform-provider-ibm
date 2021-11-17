@@ -78,10 +78,6 @@ func testAccCheckIBMCbrRuleDataSourceConfigBasic() string {
   			}
   			resources {
     			attributes {
-      				name = "accountId"
-      				value = "7423cba651044c1abc3bffd6c692e3a5"
-    			}
-    			attributes {
       				name = "serviceName"
       				value = "iam-groups"
     			}
@@ -104,10 +100,6 @@ func testAccCheckIBMCbrRuleDataSourceConfig(ruleDescription string, ruleTransact
 				}
 			}
 			resources {
-				attributes {
-					name = "accountId"
-      				value = "7423cba651044c1abc3bffd6c692e3a5"
-				}
     			attributes {
       				name = "serviceName"
       				value = "iam-groups"

@@ -265,20 +265,6 @@ func dataSourceZoneFlattenAddresses(result []contextbasedrestrictionsv1.AddressI
 }
 
 func dataSourceZoneAddressesToMap(addressesItem contextbasedrestrictionsv1.AddressIntf) (addressesMap map[string]interface{}) {
-	//addressesMap = map[string]interface{}{}
-	//
-	//if addressesItem.Type != nil {
-	//	addressesMap["type"] = addressesItem.Type
-	//}
-	//if addressesItem.Value != nil {
-	//	addressesMap["value"] = addressesItem.Value
-	//}
-	//if addressesItem.Ref != nil {
-	//	refList := []map[string]interface{}{}
-	//	refMap := dataSourceZoneAddressesRefToMap(*addressesItem.Ref)
-	//	refList = append(refList, refMap)
-	//	addressesMap["ref"] = refList
-	//}
 
 	buf, err := json.Marshal(addressesItem)
 
@@ -321,20 +307,6 @@ func dataSourceZoneFlattenExcluded(result []contextbasedrestrictionsv1.AddressIn
 }
 
 func dataSourceZoneExcludedToMap(excludedItem contextbasedrestrictionsv1.AddressIntf) (excludedMap map[string]interface{}) {
-	//excludedMap = map[string]interface{}{}
-	//
-	//if excludedItem.Type != nil {
-	//	excludedMap["type"] = excludedItem.Type
-	//}
-	//if excludedItem.Value != nil {
-	//	excludedMap["value"] = excludedItem.Value
-	//}
-	//if excludedItem.Ref != nil {
-	//	refList := []map[string]interface{}{}
-	//	refMap := dataSourceZoneExcludedRefToMap(*excludedItem.Ref)
-	//	refList = append(refList, refMap)
-	//	excludedMap["ref"] = refList
-	//}
 
 	buf, err := json.Marshal(excludedItem)
 

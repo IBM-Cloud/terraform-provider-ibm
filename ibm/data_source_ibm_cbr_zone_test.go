@@ -26,7 +26,6 @@ func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "address_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded.#"),
@@ -43,8 +42,6 @@ func TestAccIBMCbrZoneDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 	zoneName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	// zoneAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
-	zoneAccountID := fmt.Sprintf("7423cba651044c1abc3bffd6c692e3a5")
 	zoneDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -52,7 +49,7 @@ func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCbrZoneDataSourceConfig(zoneName, zoneAccountID, zoneDescription),
+				Config: testAccCheckIBMCbrZoneDataSourceConfig(zoneName, zoneDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "zone_id"),
@@ -61,7 +58,6 @@ func TestAccIBMCbrZoneDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "address_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "excluded_count"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cbr_zone.cbr_zone", "addresses.0.type"),
@@ -84,7 +80,6 @@ func testAccCheckIBMCbrZoneDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "Test Zone Data Source Config Basic"
-			account_id = "7423cba651044c1abc3bffd6c692e3a5"
 			description = "Test Zone Data Source Config Basic"
 			addresses {
 				type = "ipRange"
@@ -98,11 +93,10 @@ func testAccCheckIBMCbrZoneDataSourceConfigBasic() string {
 	`)
 }
 
-func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID string, zoneDescription string) string {
+func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneDescription string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cbr_zone" "cbr_zone" {
 			name = "%s"
-			account_id = "%s"
 			description = "%s"
 			addresses {
 				type = "ipRange"
@@ -117,5 +111,5 @@ func testAccCheckIBMCbrZoneDataSourceConfig(zoneName string, zoneAccountID strin
 		data "ibm_cbr_zone" "cbr_zone" {
 			zone_id = ibm_cbr_zone.cbr_zone.id
 		}
-	`, zoneName, zoneAccountID, zoneDescription)
+	`, zoneName, zoneDescription)
 }
