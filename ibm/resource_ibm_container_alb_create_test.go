@@ -25,17 +25,10 @@ func TestAccIBMContainerALB_Create(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerALBCreate(clusterName, true),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "enable_by_default", "true"),
-					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "type", "private"),
+					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "enable", "true"),
+					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "alb_type", "private"),
 					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "vlan_id", privateVlanID),
 					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "zone", zone),
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckIBMContainerALBCreate(clusterName, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_container_alb_create.alb", "enableByDefault", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -73,17 +66,13 @@ func testAccCheckIBMContainerALBCreateDestroy(s *terraform.State) error {
 	return nil
 }
 
-// func testAccCheckIBMContainerALBCreate(clusterName string, enable bool) string {
-// 	config := fmt.Sprintf(`resource "ibm_container_alb_create" "alb" {
-//   enable_by_default = "false"
-//   type = "private"
-//   vlan_id = "1900403"
-//   zone = "dal10"
-//   cluster="terraform-manual-test"
-// }`)
-// 	fmt.Println(config)
-// 	return config
-// }
+// you need to set up the followings
+// IBM_PUBLIC_VLAN_ID
+// IBM_PRIVATE_VLAN_ID
+// IBM_PUBLIC_SUBNET_ID
+// IBM_PRIVATE_SUBNET_ID
+// IBM_DATACENTER
+// IBM_WORKER_POOL_ZONE
 
 func testAccCheckIBMContainerALBCreate(clusterName string, enable bool) string {
 	config := fmt.Sprintf(`resource "ibm_container_cluster" "testacc_cluster" {
@@ -95,19 +84,18 @@ func testAccCheckIBMContainerALBCreate(clusterName string, enable bool) string {
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
   timeouts {
-    create = "720m"
-	update = "720m"
+    create = "120m"
+	update = "120m"
   }
-  subnet_id       = ["%s", "%s"]
 }
 
 resource "ibm_container_alb_create" "alb" {
-  enable_by_default = "%t"
-  type = "private"
-  vlan_id = "%[5]s"
-  zone = "%[7]s"
-  cluster=ibm_container_cluster.testacc_cluster.id
-}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, privateSubnetID, publicSubnetID, enable, zone)
+  cluster=ibm_container_cluster.testacc_cluster.name
+  enable = "%t"
+  alb_type = "private"
+  vlan_id = ibm_container_cluster.testacc_cluster.private_vlan_id
+  zone = "%s"
+}`, clusterName, datacenter, machineType, publicVlanID, privateVlanID, enable, zone)
 	fmt.Println(config)
 	return config
 }

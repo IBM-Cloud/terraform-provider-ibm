@@ -168,7 +168,7 @@ func init() {
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
-		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u2c.2x4'")
+		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'b3c.4x16'")
 	}
 
 	certCRN = os.Getenv("IBM_CERT_CRN")
