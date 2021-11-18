@@ -69,8 +69,6 @@ func testAccCheckIBMContainerALBCreateDestroy(s *terraform.State) error {
 // you need to set up the followings
 // IBM_PUBLIC_VLAN_ID
 // IBM_PRIVATE_VLAN_ID
-// IBM_PUBLIC_SUBNET_ID
-// IBM_PRIVATE_SUBNET_ID
 // IBM_DATACENTER
 // IBM_WORKER_POOL_ZONE
 
