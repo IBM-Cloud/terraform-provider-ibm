@@ -35,7 +35,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"applied_shareddata_ids": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "List of applied shared dataset id.",
+				Description: "List of applied shared dataset ID.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"catalog_ref": &schema.Schema{
@@ -49,6 +49,11 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: "Dry run.",
+						},
+						"owning_account": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Owning account ID of the catalog.",
 						},
 						"item_icon_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -97,7 +102,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The location where you want to create your Schematics workspace and run Schematics actions. The location that you enter must match the API endpoint that you use. For example, if you use the Frankfurt API endpoint, you must specify `eu-de` as your location. If you use an API endpoint for a geography and you do not specify a location, Schematics determines the location based on availability.",
+				Description: "The location where you want to create your Schematics workspace and run the Schematics jobs. The location that you enter must match the API endpoint that you use. For example, if you use the Frankfurt API endpoint, you must specify `eu-de` as your location. If you use an API endpoint for a geography and you do not specify a location, Schematics determines the location based on availability.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -114,7 +119,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Information that is shared across templates in IBM Cloud catalog offerings. This information is not provided when you create a workspace from your own Terraform template.",
+				Description: "Information about the Target used by the templates originating from the  IBM Cloud catalog offerings. This information is not relevant for workspace created using your own Terraform template.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cluster_created_on": &schema.Schema{
@@ -130,12 +135,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"cluster_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster name.",
+							Description: "The cluster name.",
 						},
 						"cluster_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster type.",
+							Description: "The cluster type.",
 						},
 						"entitlement_keys": &schema.Schema{
 							Type:        schema.TypeList,
@@ -161,12 +166,12 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"worker_count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Cluster worker count.",
+							Description: "The cluster worker count.",
 						},
 						"worker_machine_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Cluster worker type.",
+							Description: "The cluster worker type.",
 						},
 					},
 				},
@@ -180,7 +185,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "A list of environment variables that you want to apply during the execution of a bash script or Terraform action. This field must be provided as a list of key-value pairs, for example, **TF_LOG=debug**. Each entry will be a map with one entry where `key is the environment variable name and value is value`. You can define environment variables for IBM Cloud catalog offerings that are provisioned by using a bash script.",
+				Description: "A list of environment variables that you want to apply during the execution of a bash script or Terraform job. This field must be provided as a list of key-value pairs, for example, **TF_LOG=debug**. Each entry will be a map with one entry where `key is the environment variable name and value is value`. You can define environment variables for IBM Cloud catalog offerings that are provisioned by using a bash script. See [example to use special environment variable](https://cloud.ibm.com/docs/schematics?topic=schematics-set-parallelism#parallelism-example)  that are supported by Schematics.",
 				Elem:        &schema.Schema{Type: schema.TypeMap},
 			},
 			"template_git_folder": &schema.Schema{
@@ -196,7 +201,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
+				Description:  "The Terraform version that you want to use to run your Terraform code. Enter `terraform_v0.12` to use Terraform version 0.12, and `terraform_v0.11` to use Terraform version 0.11. The Terraform config files are run with Terraform version 0.11. This is a required variable. Make sure that your Terraform config files are compatible with the Terraform version that you select.",
 				ValidateFunc: InvokeValidator("ibm_schematics_workspace", schematicsWorkspaceTemplateType),
 			},
 			"template_uninstall_script_name": &schema.Schema{
@@ -207,7 +212,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_values": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `\"autoscaling:  enabled: true  minReplicas: 2\"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.",
+				Description: "A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `\"autoscaling: enabled: true minReplicas: 2\"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.",
 			},
 			"template_values_metadata": &schema.Schema{
 				Type:        schema.TypeList,
@@ -240,7 +245,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "`Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html). <br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`, `object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).",
+							Description: "`Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html).<br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`,`object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).",
 						},
 						"use_default": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -263,27 +268,27 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"template_git_branch": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The branch in GitHub where your Terraform template is stored.",
+				Description: "The repository branch.",
 			},
 			"template_git_release": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The release tag in GitHub of your Terraform template.",
+				Description: "The repository release.",
 			},
 			"template_git_repo_sha_value": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Repo SHA value.",
+				Description: "The repository SHA value.",
 			},
 			"template_git_repo_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The URL to the repository where the IBM Cloud catalog software template is stored.",
+				Description: "The repository URL.",
 			},
 			"template_git_url": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "The URL to the GitHub or GitLab repository where your Terraform and public bit bucket template is stored. For more information of the environment variable syntax, see [Create workspace new](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-workspace-new).",
+				Description:  "The source URL.",
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 			"template_git_has_uploadedgitrepotar": &schema.Schema{
@@ -349,7 +354,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Workspace CRN.",
+				Description: "The workspace CRN.",
 			},
 			"last_health_check_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -402,7 +407,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 						"state_store_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The URL where the Terraform statefile (`terraform.tfstate`) is stored. You can use the statefile to find an overview of IBM Cloud resources that were created by Schematics. Schematics uses the statefile as an inventory list to determine future create, update, or deletion actions.",
+							Description: "The URL where the Terraform statefile (`terraform.tfstate`) is stored. You can use the statefile to find an overview of IBM Cloud resources that were created by Schematics. Schematics uses the statefile as an inventory list to determine future create, update, or deletion jobs.",
 						},
 					},
 				},
@@ -410,7 +415,7 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the workspace.  **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.  **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.  **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.  **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.  **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply actions to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.  **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.  **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.  **Stopped**: The Schematics plan, apply, or destroy action was cancelled manually.  **Template Error**: The Schematics template contains errors and cannot be processed.",
+				Description: "The status of the workspace.   **Active**: After you successfully ran your infrastructure code by applying your Terraform execution plan, the state of your workspace changes to `Active`.   **Connecting**: Schematics tries to connect to the template in your source repo. If successfully connected, the template is downloaded and metadata, such as input parameters, is extracted. After the template is downloaded, the state of the workspace changes to `Scanning`.   **Draft**: The workspace is created without a reference to a GitHub or GitLab repository.   **Failed**: If errors occur during the execution of your infrastructure code in IBM Cloud Schematics, your workspace status is set to `Failed`.   **Inactive**: The Terraform template was scanned successfully and the workspace creation is complete. You can now start running Schematics plan and apply jobs to provision the IBM Cloud resources that you specified in your template. If you have an `Active` workspace and decide to remove all your resources, your workspace is set to `Inactive` after all your resources are removed.   **In progress**: When you instruct IBM Cloud Schematics to run your infrastructure code by applying your Terraform execution plan, the status of our workspace changes to `In progress`.   **Scanning**: The download of the Terraform template is complete and vulnerability scanning started. If the scan is successful, the workspace state changes to `Inactive`. If errors in your template are found, the state changes to `Template Error`.   **Stopped**: The Schematics plan, apply, or destroy job was cancelled manually.   **Template Error**: The Schematics template contains errors and cannot be processed.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -424,13 +429,13 @@ func resourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"status_code": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The success or error code that was returned for the last plan, apply, or destroy action that ran against your workspace.",
+				Computed:    true,
+				Description: "The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.",
 			},
 			"status_msg": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The success or error message that was returned for the last plan, apply, or destroy action that ran against your workspace.",
+				Computed:    true,
+				Description: "The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.",
 			},
 		},
 	}
@@ -462,7 +467,7 @@ func resourceIBMSchematicsWorkspaceValidator() *ResourceValidator {
 			Identifier:                 schematicsWorkspaceTemplateType,
 			ValidateFunctionIdentifier: ValidateRegexp,
 			Type:                       TypeString,
-			Regexp:                     `^terraform_v0\.(?:11|12|13)(?:\.\d+)?$`,
+			Regexp:                     `^terraform_v(?:0\.11|0\.12|0\.13|0\.14|0\.15|1\.0)(?:\.\d+)?$`,
 			Default:                    "[]",
 			Optional:                   true})
 
@@ -622,7 +627,6 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusRequest(workspaceStatusRequestMap)
 		createWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 	}
-
 	if _, ok := d.GetOk("x_github_token"); ok {
 		createWorkspaceOptions.SetXGithubToken(d.Get("x_github_token").(string))
 	}
@@ -630,7 +634,7 @@ func resourceIBMSchematicsWorkspaceCreate(context context.Context, d *schema.Res
 	workspaceResponse, response, err := schematicsClient.CreateWorkspaceWithContext(context, createWorkspaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("CreateWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*workspaceResponse.ID)
@@ -643,6 +647,9 @@ func resourceIBMSchematicsWorkspaceMapToCatalogRef(catalogRefMap map[string]inte
 
 	if catalogRefMap["dry_run"] != nil {
 		catalogRef.DryRun = core.BoolPtr(catalogRefMap["dry_run"].(bool))
+	}
+	if catalogRefMap["owning_account"] != nil {
+		catalogRef.OwningAccount = core.StringPtr(catalogRefMap["owning_account"].(string))
 	}
 	if catalogRefMap["item_icon_url"] != nil {
 		catalogRef.ItemIconURL = core.StringPtr(catalogRefMap["item_icon_url"].(string))
@@ -722,6 +729,9 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 	}
 	if templateSourceDataRequestMap["folder"] != nil {
 		templateSourceDataRequest.Folder = core.StringPtr(templateSourceDataRequestMap["folder"].(string))
+	}
+	if templateSourceDataRequestMap["compact"] != nil {
+		templateSourceDataRequest.Compact = core.BoolPtr(templateSourceDataRequestMap["compact"].(bool))
 	}
 	if templateSourceDataRequestMap["init_state_file"] != nil {
 		templateSourceDataRequest.InitStateFile = core.StringPtr(templateSourceDataRequestMap["init_state_file"].(string))
@@ -898,7 +908,7 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 			return nil
 		}
 		log.Printf("[DEBUG] GetWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	if workspaceResponse.AppliedShareddataIds != nil {
@@ -1072,14 +1082,33 @@ func resourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Resou
 func resourceIBMSchematicsWorkspaceCatalogRefToMap(catalogRef schematicsv1.CatalogRef) map[string]interface{} {
 	catalogRefMap := map[string]interface{}{}
 
-	catalogRefMap["dry_run"] = catalogRef.DryRun
-	catalogRefMap["item_icon_url"] = catalogRef.ItemIconURL
-	catalogRefMap["item_id"] = catalogRef.ItemID
-	catalogRefMap["item_name"] = catalogRef.ItemName
-	catalogRefMap["item_readme_url"] = catalogRef.ItemReadmeURL
-	catalogRefMap["item_url"] = catalogRef.ItemURL
-	catalogRefMap["launch_url"] = catalogRef.LaunchURL
-	catalogRefMap["offering_version"] = catalogRef.OfferingVersion
+	if catalogRef.DryRun != nil {
+		catalogRefMap["dry_run"] = catalogRef.DryRun
+	}
+	if catalogRef.OwningAccount != nil {
+		catalogRefMap["owning_account"] = catalogRef.OwningAccount
+	}
+	if catalogRef.ItemIconURL != nil {
+		catalogRefMap["item_icon_url"] = catalogRef.ItemIconURL
+	}
+	if catalogRef.ItemID != nil {
+		catalogRefMap["item_id"] = catalogRef.ItemID
+	}
+	if catalogRef.ItemName != nil {
+		catalogRefMap["item_name"] = catalogRef.ItemName
+	}
+	if catalogRef.ItemReadmeURL != nil {
+		catalogRefMap["item_readme_url"] = catalogRef.ItemReadmeURL
+	}
+	if catalogRef.ItemURL != nil {
+		catalogRefMap["item_url"] = catalogRef.ItemURL
+	}
+	if catalogRef.LaunchURL != nil {
+		catalogRefMap["launch_url"] = catalogRef.LaunchURL
+	}
+	if catalogRef.OfferingVersion != nil {
+		catalogRefMap["offering_version"] = catalogRef.OfferingVersion
+	}
 
 	return catalogRefMap
 }
@@ -1087,10 +1116,18 @@ func resourceIBMSchematicsWorkspaceCatalogRefToMap(catalogRef schematicsv1.Catal
 func resourceIBMSchematicsWorkspaceSharedTargetDataToMap(sharedTargetData schematicsv1.SharedTargetData) map[string]interface{} {
 	sharedTargetDataMap := map[string]interface{}{}
 
-	sharedTargetDataMap["cluster_created_on"] = sharedTargetData.ClusterCreatedOn
-	sharedTargetDataMap["cluster_id"] = sharedTargetData.ClusterID
-	sharedTargetDataMap["cluster_name"] = sharedTargetData.ClusterName
-	sharedTargetDataMap["cluster_type"] = sharedTargetData.ClusterType
+	if sharedTargetData.ClusterCreatedOn != nil {
+		sharedTargetDataMap["cluster_created_on"] = sharedTargetData.ClusterCreatedOn
+	}
+	if sharedTargetData.ClusterID != nil {
+		sharedTargetDataMap["cluster_id"] = sharedTargetData.ClusterID
+	}
+	if sharedTargetData.ClusterName != nil {
+		sharedTargetDataMap["cluster_name"] = sharedTargetData.ClusterName
+	}
+	if sharedTargetData.ClusterType != nil {
+		sharedTargetDataMap["cluster_type"] = sharedTargetData.ClusterType
+	}
 	if sharedTargetData.EntitlementKeys != nil {
 		entitlementKeys := []interface{}{}
 		for _, entitlementKeysItem := range sharedTargetData.EntitlementKeys {
@@ -1098,11 +1135,21 @@ func resourceIBMSchematicsWorkspaceSharedTargetDataToMap(sharedTargetData schema
 		}
 		sharedTargetDataMap["entitlement_keys"] = entitlementKeys
 	}
-	sharedTargetDataMap["namespace"] = sharedTargetData.Namespace
-	sharedTargetDataMap["region"] = sharedTargetData.Region
-	sharedTargetDataMap["resource_group_id"] = sharedTargetData.ResourceGroupID
-	sharedTargetDataMap["worker_count"] = intValue(sharedTargetData.WorkerCount)
-	sharedTargetDataMap["worker_machine_type"] = sharedTargetData.WorkerMachineType
+	if sharedTargetData.Namespace != nil {
+		sharedTargetDataMap["namespace"] = sharedTargetData.Namespace
+	}
+	if sharedTargetData.Region != nil {
+		sharedTargetDataMap["region"] = sharedTargetData.Region
+	}
+	if sharedTargetData.ResourceGroupID != nil {
+		sharedTargetDataMap["resource_group_id"] = sharedTargetData.ResourceGroupID
+	}
+	if sharedTargetData.WorkerCount != nil {
+		sharedTargetDataMap["worker_count"] = intValue(sharedTargetData.WorkerCount)
+	}
+	if sharedTargetData.WorkerMachineType != nil {
+		sharedTargetDataMap["worker_machine_type"] = sharedTargetData.WorkerMachineType
+	}
 
 	return sharedTargetDataMap
 }
@@ -1136,11 +1183,24 @@ func resourceIBMSchematicsWorkspaceTemplateSourceDataRequestToMap(templateSource
 		}
 		templateSourceDataRequestMap["env_values"] = envValues
 	}
-	templateSourceDataRequestMap["folder"] = templateSourceDataRequest.Folder
-	templateSourceDataRequestMap["init_state_file"] = templateSourceDataRequest.InitStateFile
-	templateSourceDataRequestMap["type"] = templateSourceDataRequest.Type
-	templateSourceDataRequestMap["uninstall_script_name"] = templateSourceDataRequest.UninstallScriptName
-	templateSourceDataRequestMap["values"] = templateSourceDataRequest.Values
+	if templateSourceDataRequest.Folder != nil {
+		templateSourceDataRequestMap["folder"] = templateSourceDataRequest.Folder
+	}
+	if templateSourceDataRequest.Compact != nil {
+		templateSourceDataRequestMap["compact"] = templateSourceDataRequest.Compact
+	}
+	if templateSourceDataRequest.InitStateFile != nil {
+		templateSourceDataRequestMap["init_state_file"] = templateSourceDataRequest.InitStateFile
+	}
+	if templateSourceDataRequest.Type != nil {
+		templateSourceDataRequestMap["type"] = templateSourceDataRequest.Type
+	}
+	if templateSourceDataRequest.UninstallScriptName != nil {
+		templateSourceDataRequestMap["uninstall_script_name"] = templateSourceDataRequest.UninstallScriptName
+	}
+	if templateSourceDataRequest.Values != nil {
+		templateSourceDataRequestMap["values"] = templateSourceDataRequest.Values
+	}
 	if templateSourceDataRequest.ValuesMetadata != nil {
 		valuesMetadata := []interface{}{}
 		for _, valuesMetadataItem := range templateSourceDataRequest.ValuesMetadata {
@@ -1204,12 +1264,24 @@ func resourceIBMSchematicsWorkspaceTemplateSourceDataResponseToMap(templateSourc
 func resourceIBMSchematicsWorkspaceWorkspaceVariableRequestToMap(workspaceVariableRequest schematicsv1.WorkspaceVariableRequest) map[string]interface{} {
 	workspaceVariableRequestMap := map[string]interface{}{}
 
-	workspaceVariableRequestMap["description"] = workspaceVariableRequest.Description
-	workspaceVariableRequestMap["name"] = workspaceVariableRequest.Name
-	workspaceVariableRequestMap["secure"] = workspaceVariableRequest.Secure
-	workspaceVariableRequestMap["type"] = workspaceVariableRequest.Type
-	workspaceVariableRequestMap["use_default"] = workspaceVariableRequest.UseDefault
-	workspaceVariableRequestMap["value"] = workspaceVariableRequest.Value
+	if workspaceVariableRequest.Description != nil {
+		workspaceVariableRequestMap["description"] = workspaceVariableRequest.Description
+	}
+	if workspaceVariableRequest.Name != nil {
+		workspaceVariableRequestMap["name"] = workspaceVariableRequest.Name
+	}
+	if workspaceVariableRequest.Secure != nil {
+		workspaceVariableRequestMap["secure"] = workspaceVariableRequest.Secure
+	}
+	if workspaceVariableRequest.Type != nil {
+		workspaceVariableRequestMap["type"] = workspaceVariableRequest.Type
+	}
+	if workspaceVariableRequest.UseDefault != nil {
+		workspaceVariableRequestMap["use_default"] = workspaceVariableRequest.UseDefault
+	}
+	if workspaceVariableRequest.Value != nil {
+		workspaceVariableRequestMap["value"] = workspaceVariableRequest.Value
+	}
 
 	return workspaceVariableRequestMap
 }
@@ -1229,11 +1301,21 @@ func resourceIBMSchematicsWorkspaceWorkspaceVariableResponseToMap(workspaceVaria
 func resourceIBMSchematicsWorkspaceTemplateRepoRequestToMap(templateRepoRequest schematicsv1.TemplateRepoRequest) map[string]interface{} {
 	templateRepoRequestMap := map[string]interface{}{}
 
-	templateRepoRequestMap["branch"] = templateRepoRequest.Branch
-	templateRepoRequestMap["release"] = templateRepoRequest.Release
-	templateRepoRequestMap["repo_sha_value"] = templateRepoRequest.RepoShaValue
-	templateRepoRequestMap["repo_url"] = templateRepoRequest.RepoURL
-	templateRepoRequestMap["url"] = templateRepoRequest.URL
+	if templateRepoRequest.Branch != nil {
+		templateRepoRequestMap["branch"] = templateRepoRequest.Branch
+	}
+	if templateRepoRequest.Release != nil {
+		templateRepoRequestMap["release"] = templateRepoRequest.Release
+	}
+	if templateRepoRequest.RepoShaValue != nil {
+		templateRepoRequestMap["repo_sha_value"] = templateRepoRequest.RepoShaValue
+	}
+	if templateRepoRequest.RepoURL != nil {
+		templateRepoRequestMap["repo_url"] = templateRepoRequest.RepoURL
+	}
+	if templateRepoRequest.URL != nil {
+		templateRepoRequestMap["url"] = templateRepoRequest.URL
+	}
 
 	return templateRepoRequestMap
 }
@@ -1254,12 +1336,24 @@ func resourceIBMSchematicsWorkspaceTemplateRepoResponseToMap(templateRepoRespons
 func resourceIBMSchematicsWorkspaceWorkspaceStatusRequestToMap(workspaceStatusRequest schematicsv1.WorkspaceStatusRequest) map[string]interface{} {
 	workspaceStatusRequestMap := map[string]interface{}{}
 
-	workspaceStatusRequestMap["frozen"] = workspaceStatusRequest.Frozen
-	workspaceStatusRequestMap["frozen_at"] = workspaceStatusRequest.FrozenAt.String()
-	workspaceStatusRequestMap["frozen_by"] = workspaceStatusRequest.FrozenBy
-	workspaceStatusRequestMap["locked"] = workspaceStatusRequest.Locked
-	workspaceStatusRequestMap["locked_by"] = workspaceStatusRequest.LockedBy
-	workspaceStatusRequestMap["locked_time"] = workspaceStatusRequest.LockedTime.String()
+	if workspaceStatusRequest.Frozen != nil {
+		workspaceStatusRequestMap["frozen"] = workspaceStatusRequest.Frozen
+	}
+	if workspaceStatusRequest.FrozenAt != nil {
+		workspaceStatusRequestMap["frozen_at"] = workspaceStatusRequest.FrozenAt.String()
+	}
+	if workspaceStatusRequest.FrozenBy != nil {
+		workspaceStatusRequestMap["frozen_by"] = workspaceStatusRequest.FrozenBy
+	}
+	if workspaceStatusRequest.Locked != nil {
+		workspaceStatusRequestMap["locked"] = workspaceStatusRequest.Locked
+	}
+	if workspaceStatusRequest.LockedBy != nil {
+		workspaceStatusRequestMap["locked_by"] = workspaceStatusRequest.LockedBy
+	}
+	if workspaceStatusRequest.LockedTime != nil {
+		workspaceStatusRequestMap["locked_time"] = workspaceStatusRequest.LockedTime.String()
+	}
 
 	return workspaceStatusRequestMap
 }
@@ -1284,11 +1378,21 @@ func resourceIBMSchematicsWorkspaceWorkspaceStatusResponseToMap(workspaceStatusR
 func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunTimeDataResponse schematicsv1.TemplateRunTimeDataResponse) map[string]interface{} {
 	templateRunTimeDataResponseMap := map[string]interface{}{}
 
-	templateRunTimeDataResponseMap["engine_cmd"] = templateRunTimeDataResponse.EngineCmd
-	templateRunTimeDataResponseMap["engine_name"] = templateRunTimeDataResponse.EngineName
-	templateRunTimeDataResponseMap["engine_version"] = templateRunTimeDataResponse.EngineVersion
-	templateRunTimeDataResponseMap["id"] = templateRunTimeDataResponse.ID
-	templateRunTimeDataResponseMap["log_store_url"] = templateRunTimeDataResponse.LogStoreURL
+	if templateRunTimeDataResponse.EngineCmd != nil {
+		templateRunTimeDataResponseMap["engine_cmd"] = templateRunTimeDataResponse.EngineCmd
+	}
+	if templateRunTimeDataResponse.EngineName != nil {
+		templateRunTimeDataResponseMap["engine_name"] = templateRunTimeDataResponse.EngineName
+	}
+	if templateRunTimeDataResponse.EngineVersion != nil {
+		templateRunTimeDataResponseMap["engine_version"] = templateRunTimeDataResponse.EngineVersion
+	}
+	if templateRunTimeDataResponse.ID != nil {
+		templateRunTimeDataResponseMap["id"] = templateRunTimeDataResponse.ID
+	}
+	if templateRunTimeDataResponse.LogStoreURL != nil {
+		templateRunTimeDataResponseMap["log_store_url"] = templateRunTimeDataResponse.LogStoreURL
+	}
 	if templateRunTimeDataResponse.OutputValues != nil {
 		outputValues := []interface{}{}
 		for _, outputValuesItem := range templateRunTimeDataResponse.OutputValues {
@@ -1303,7 +1407,9 @@ func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunT
 		}
 		templateRunTimeDataResponseMap["resources"] = resources
 	}
-	templateRunTimeDataResponseMap["state_store_url"] = templateRunTimeDataResponse.StateStoreURL
+	if templateRunTimeDataResponse.StateStoreURL != nil {
+		templateRunTimeDataResponseMap["state_store_url"] = templateRunTimeDataResponse.StateStoreURL
+	}
 
 	return templateRunTimeDataResponseMap
 }
@@ -1311,8 +1417,12 @@ func resourceIBMSchematicsWorkspaceTemplateRunTimeDataResponseToMap(templateRunT
 func resourceIBMSchematicsWorkspaceWorkspaceStatusMessageToMap(workspaceStatusMessage schematicsv1.WorkspaceStatusMessage) map[string]interface{} {
 	workspaceStatusMessageMap := map[string]interface{}{}
 
-	workspaceStatusMessageMap["status_code"] = workspaceStatusMessage.StatusCode
-	workspaceStatusMessageMap["status_msg"] = workspaceStatusMessage.StatusMsg
+	if workspaceStatusMessage.StatusCode != nil {
+		workspaceStatusMessageMap["status_code"] = workspaceStatusMessage.StatusCode
+	}
+	if workspaceStatusMessage.StatusMsg != nil {
+		workspaceStatusMessageMap["status_msg"] = workspaceStatusMessage.StatusMsg
+	}
 
 	return workspaceStatusMessageMap
 }
@@ -1324,38 +1434,54 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	}
 
 	updateWorkspaceOptions := &schematicsv1.UpdateWorkspaceOptions{}
+	replaceWorkspaceOptions := &schematicsv1.ReplaceWorkspaceOptions{}
 
 	updateWorkspaceOptions.SetWID(d.Id())
+	replaceWorkspaceOptions.SetWID(d.Id())
 
 	hasChange := false
+
+	metadataChange := false
+	repoChange := false
+	templateInputsChange := false
 
 	if d.HasChange("catalog_ref") {
 		catalogRefAttr := d.Get("catalog_ref").([]interface{})
 		if len(catalogRefAttr) > 0 {
 			catalogRef := resourceIBMSchematicsWorkspaceMapToCatalogRef(d.Get("catalog_ref.0").(map[string]interface{}))
 			updateWorkspaceOptions.SetCatalogRef(&catalogRef)
+			replaceWorkspaceOptions.SetCatalogRef(&catalogRef)
 			hasChange = true
+			repoChange = true
 		}
 	}
+
 	if d.HasChange("description") {
 		updateWorkspaceOptions.SetDescription(d.Get("description").(string))
+		replaceWorkspaceOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
+		metadataChange = true
 	}
 	if d.HasChange("name") {
 		updateWorkspaceOptions.SetName(d.Get("name").(string))
+		replaceWorkspaceOptions.SetName(d.Get("name").(string))
 		hasChange = true
+		metadataChange = true
 	}
 	if d.HasChange("shared_data") {
 		sharedDataAttr := d.Get("shared_data").([]interface{})
 		if len(sharedDataAttr) > 0 {
 			sharedData := resourceIBMSchematicsWorkspaceMapToSharedTargetData(d.Get("shared_data.0").(map[string]interface{}))
 			updateWorkspaceOptions.SetSharedData(&sharedData)
+			replaceWorkspaceOptions.SetSharedData(&sharedData)
 			hasChange = true
 		}
 	}
 	if d.HasChange("tags") {
 		updateWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
+		replaceWorkspaceOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 		hasChange = true
+		metadataChange = true
 	}
 
 	var templateData []schematicsv1.TemplateSourceDataRequest
@@ -1375,11 +1501,12 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		templateSourceDataRequestMap["init_state_file"] = d.Get("template_init_state_file").(string)
 		hasTemplateData = true
 	}
-	if d.HasChange("template_type") {
-		templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
-		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
-		hasTemplateData = true
-	}
+	//if d.HasChange("template_type") {
+	templateSourceDataRequestMap["type"] = d.Get("template_type").(string)
+	updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	replaceWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	//hasTemplateData = true
+	//}
 	if d.HasChange("template_uninstall_script_name") {
 		templateSourceDataRequestMap["uninstall_script_name"] = d.Get("template_uninstall_script_name").(string)
 		hasTemplateData = true
@@ -1400,17 +1527,21 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		templateDataItem := resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSourceDataRequestMap)
 		templateData = append(templateData, templateDataItem)
 		updateWorkspaceOptions.SetTemplateData(templateData)
+		replaceWorkspaceOptions.SetTemplateData(templateData)
 		hasChange = true
+		templateInputsChange = true
 	}
 
 	templateRepoRequestMap := map[string]interface{}{}
 	hasTemplateRepo := false
 	if d.HasChange("template_git_branch") {
-		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(bool)
+		templateRepoRequestMap["branch"] = d.Get("template_git_branch").(string)
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
 		hasTemplateRepo = true
 	}
 	if d.HasChange("template_git_release") {
 		templateRepoRequestMap["release"] = d.Get("template_git_release").(string)
+		templateRepoRequestMap["url"] = d.Get("template_git_url").(string)
 		hasTemplateRepo = true
 	}
 	if d.HasChange("template_git_repo_sha_value") {
@@ -1432,13 +1563,16 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	if hasTemplateRepo {
 		templateRepo := resourceIBMSchematicsWorkspaceMapToTemplateRepoUpdateRequest(templateRepoRequestMap)
 		updateWorkspaceOptions.SetTemplateRepo(&templateRepo)
+		replaceWorkspaceOptions.SetTemplateRepo(&templateRepo)
 		hasChange = true
+		repoChange = true
 	}
 
-	if d.HasChange("template_type") {
-		updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
-		hasChange = true
-	}
+	//if d.HasChange("template_type") {
+	updateWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	replaceWorkspaceOptions.SetType([]string{d.Get("template_type").(string)})
+	//hasChange = true
+	//}
 
 	workspaceStatusRequestMap := map[string]interface{}{}
 	workspaceStatus := false
@@ -1469,15 +1603,59 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	if workspaceStatus {
 		workspaceStatus := resourceIBMSchematicsWorkspaceMapToWorkspaceStatusUpdateRequest(workspaceStatusRequestMap)
 		updateWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
+		replaceWorkspaceOptions.SetWorkspaceStatus(&workspaceStatus)
 		hasChange = true
+		metadataChange = true
 	}
 
 	if hasChange {
-		_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateWorkspaceWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+		changed := false
+
+		if !changed && repoChange {
+			changed = true
+			_, response, err := schematicsClient.ReplaceWorkspaceWithContext(context, replaceWorkspaceOptions)
+			if err != nil {
+				log.Printf("[DEBUG] ReplaceWorkspaceWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("ReplaceWorkspaceWithContext failed %s\n%s", err, response))
+			}
 		}
+
+		if !changed && metadataChange {
+			_, response, err := schematicsClient.UpdateWorkspaceWithContext(context, updateWorkspaceOptions)
+			if err != nil {
+				log.Printf("[DEBUG] UpdateWorkspaceWithContext failed %s\n%s", err, response)
+				return diag.FromErr(fmt.Errorf("UpdateWorkspaceWithContext failed %s\n%s", err, response))
+			}
+		}
+
+		if !changed && templateInputsChange {
+
+			for i := range replaceWorkspaceOptions.TemplateData {
+
+				workspaceId := d.Id()
+				runtimeData := d.Get("runtime_data").([]interface{})
+				templateId := runtimeData[i].(map[string]interface{})["id"].(string)
+
+				workspaceVariableRequestModel := replaceWorkspaceOptions.TemplateData[i].Variablestore
+				envVariables := replaceWorkspaceOptions.TemplateData[i].EnvValues
+				values := replaceWorkspaceOptions.TemplateData[i].Values
+
+				replaceWorkspaceInputsOptions := &schematicsv1.ReplaceWorkspaceInputsOptions{
+					WID:           &workspaceId,
+					TID:           &templateId,
+					EnvValues:     envVariables,
+					Values:        values,
+					Variablestore: workspaceVariableRequestModel,
+				}
+
+				_, response, err := schematicsClient.ReplaceWorkspaceInputs(replaceWorkspaceInputsOptions)
+				if err != nil {
+					log.Printf("[DEBUG] ReplaceWorkspaceInputs failed %s\n%s", err, response)
+					return diag.FromErr(fmt.Errorf("ReplaceWorkspaceInputs failed %s\n%s", err, response))
+				}
+			}
+		}
+
 	}
 
 	return resourceIBMSchematicsWorkspaceRead(context, d, meta)
@@ -1504,7 +1682,7 @@ func resourceIBMSchematicsWorkspaceDelete(context context.Context, d *schema.Res
 	_, response, err := schematicsClient.DeleteWorkspaceWithContext(context, deleteWorkspaceOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteWorkspaceWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("DeleteWorkspaceWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

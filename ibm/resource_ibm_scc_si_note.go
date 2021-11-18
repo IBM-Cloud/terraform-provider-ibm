@@ -424,7 +424,7 @@ func resourceIBMSccSiNoteCreate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("CreateNoteWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", accountID, *createNoteOptions.ProviderID, *apiNote.ID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", *findingsClient.AccountID, *createNoteOptions.ProviderID, *apiNote.ID))
 
 	return resourceIBMSccSiNoteRead(context, d, meta)
 }

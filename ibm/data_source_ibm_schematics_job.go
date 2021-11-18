@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
@@ -22,7 +22,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Use GET jobs API to look up the Job IDs in your IBM Cloud account.",
+				Description: "Job Id. Use `GET /v2/jobs` API to look up the Job Ids in your IBM Cloud account.",
 			},
 			"command_object": &schema.Schema{
 				Type:        schema.TypeString,
@@ -32,12 +32,17 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"command_object_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job command object ID (`workspace-id, action-id or control-id`).",
+				Description: "Job command object id (workspace-id, action-id).",
 			},
 			"command_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Schematics job command name.",
+			},
+			"command_parameter": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Schematics job command parameter (playbook-name).",
 			},
 			"command_options": &schema.Schema{
 				Type:        schema.TypeList,
@@ -50,7 +55,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Job inputs used by an action.",
+				Description: "Job inputs used by Action or Workspace.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -169,7 +174,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"job_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Environment variables used by the job while performing an action.",
+				Description: "Environment variables used by the Job while performing Action or Workspace.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -301,22 +306,22 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job name, uniquely derived from the related action.",
+				Description: "Job name, uniquely derived from the related Workspace or Action.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Job description derived from the related action.",
+				Description: "The description of your job is derived from the related action or workspace.  The description can be up to 2048 characters long in size.",
 			},
 			"location": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "List of action locations supported by IBM Cloud Schematics service.  **Note** this does not limit the location of the resources provisioned using Schematics.",
+				Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group name derived from the related action.",
+				Description: "Resource-group name derived from the related Workspace or Action.",
 			},
 			"submitted_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -326,7 +331,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"submitted_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "E-mail address of the user who submitted the job.",
+				Description: "Email address of user who submitted the job.",
 			},
 			"start_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -341,7 +346,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 			"duration": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Duration of job execution, for example, `40 sec`.",
+				Description: "Duration of job execution; example 40 sec.",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeList,
@@ -349,6 +354,147 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"workspace_job_status": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Workspace Job Status.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"workspace_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Workspace name.",
+									},
+									"status_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Status of Jobs.",
+									},
+									"status_message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Workspace job status message (eg. App1_Setup_Pending, for a 'Setup' flow in the 'App1' Workspace).",
+									},
+									"flow_status": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Environment Flow JOB Status.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"flow_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "flow id.",
+												},
+												"flow_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "flow name.",
+												},
+												"status_code": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Status of Jobs.",
+												},
+												"status_message": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Flow Job status message - to be displayed along with the status_code;.",
+												},
+												"workitems": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Environment's individual workItem status details;.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"workspace_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Workspace id.",
+															},
+															"workspace_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "workspace name.",
+															},
+															"job_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "workspace job id.",
+															},
+															"status_code": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Status of Jobs.",
+															},
+															"status_message": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "workitem job status message;.",
+															},
+															"updated_at": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "workitem job status updation timestamp.",
+															},
+														},
+													},
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Job status updation timestamp.",
+												},
+											},
+										},
+									},
+									"template_status": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Workspace Flow Template job status.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"template_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Template Id.",
+												},
+												"template_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Template name.",
+												},
+												"flow_index": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Index of the template in the Flow.",
+												},
+												"status_code": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Status of Jobs.",
+												},
+												"status_message": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Template job status message (eg. VPCt1_Apply_Pending, for a 'VPCt1' Template).",
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Job status updation timestamp.",
+												},
+											},
+										},
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
+								},
+							},
+						},
 						"action_job_status": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -363,32 +509,158 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of the jobs.",
+										Description: "Status of Jobs.",
 									},
 									"status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Action job status message to be displayed along with the `action_status_code`.",
+										Description: "Action Job status message - to be displayed along with the action_status_code.",
 									},
 									"bastion_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of the resources.",
+										Description: "Status of Resources.",
 									},
 									"bastion_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Bastion status message to be displayed along with the `bastion_status_code`.",
+										Description: "Bastion status message - to be displayed along with the bastion_status_code;.",
 									},
 									"targets_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Status of the resources.",
+										Description: "Status of Resources.",
 									},
 									"targets_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Aggregated status message for all target resources, to be displayed along with the `targets_status_code`.",
+										Description: "Aggregated status message for all target resources,  to be displayed along with the targets_status_code;.",
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
+								},
+							},
+						},
+						"system_job_status": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "System Job Status.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"system_status_message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "System job message.",
+									},
+									"system_status_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Status of Jobs.",
+									},
+									"schematics_resource_status": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "job staus for each schematics resource.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"status_code": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Status of Jobs.",
+												},
+												"status_message": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "system job status message.",
+												},
+												"schematics_resource_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "id for each resource which is targeted as a part of system job.",
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Job status updation timestamp.",
+												},
+											},
+										},
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
+								},
+							},
+						},
+						"flow_job_status": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Environment Flow JOB Status.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"flow_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "flow id.",
+									},
+									"flow_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "flow name.",
+									},
+									"status_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Status of Jobs.",
+									},
+									"status_message": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Flow Job status message - to be displayed along with the status_code;.",
+									},
+									"workitems": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Environment's individual workItem status details;.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"workspace_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Workspace id.",
+												},
+												"workspace_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workspace name.",
+												},
+												"job_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workspace job id.",
+												},
+												"status_code": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Status of Jobs.",
+												},
+												"status_message": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workitem job status message;.",
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workitem job status updation timestamp.",
+												},
+											},
+										},
 									},
 									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
@@ -410,15 +682,25 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type of the job.",
+							Description: "Type of Job.",
 						},
-						"action_job_data": &schema.Schema{
+						"workspace_job_data": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Action Job data.",
+							Description: "Workspace Job data.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"action_name": &schema.Schema{
+									"workspace_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Workspace name.",
+									},
+									"flow_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Flow Id.",
+									},
+									"flow_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Flow name.",
@@ -426,7 +708,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"inputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Input variables data used by an action job.",
+										Description: "Input variables data used by the Workspace Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -545,7 +827,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"outputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Output variables data from an action job.",
+										Description: "Output variables data from the Workspace Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -664,7 +946,769 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 									"settings": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Environment variables used by all the templates in an action.",
+										Description: "Environment variables used by all the templates in the Workspace.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the variable.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Value for the variable or reference to the value.",
+												},
+												"metadata": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "User editable metadata for the variables.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Type of the variable.",
+															},
+															"aliases": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of aliases for the variable name.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"description": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Description of the meta data.",
+															},
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Default value for the variable, if the override value is not specified.",
+															},
+															"secure": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable secure or sensitive ?.",
+															},
+															"immutable": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable readonly ?.",
+															},
+															"hidden": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "If true, the variable will not be displayed on UI or CLI.",
+															},
+															"options": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"min_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum value of the variable. Applicable for integer type.",
+															},
+															"max_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum value of the variable. Applicable for integer type.",
+															},
+															"min_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum length of the variable value. Applicable for string type.",
+															},
+															"max_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum length of the variable value. Applicable for string type.",
+															},
+															"matches": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Regex for the variable value.",
+															},
+															"position": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Relative position of this variable in a list.",
+															},
+															"group_by": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Display name of the group this variable belongs to.",
+															},
+															"source": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Source of this meta-data.",
+															},
+														},
+													},
+												},
+												"link": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Reference link to the variable value By default the expression will point to self.value.",
+												},
+											},
+										},
+									},
+									"template_data": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Input / output data of the Template in the Workspace Job.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"template_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Template Id.",
+												},
+												"template_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Template name.",
+												},
+												"flow_index": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Index of the template in the Flow.",
+												},
+												"inputs": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Job inputs used by the Templates.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"outputs": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Job output from the Templates.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"settings": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Environment variables used by the template.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Job status updation timestamp.",
+												},
+											},
+										},
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
+								},
+							},
+						},
+						"action_job_data": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Action Job data.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"action_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Flow name.",
+									},
+									"inputs": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Input variables data used by the Action Job.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the variable.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Value for the variable or reference to the value.",
+												},
+												"metadata": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "User editable metadata for the variables.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Type of the variable.",
+															},
+															"aliases": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of aliases for the variable name.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"description": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Description of the meta data.",
+															},
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Default value for the variable, if the override value is not specified.",
+															},
+															"secure": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable secure or sensitive ?.",
+															},
+															"immutable": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable readonly ?.",
+															},
+															"hidden": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "If true, the variable will not be displayed on UI or CLI.",
+															},
+															"options": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"min_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum value of the variable. Applicable for integer type.",
+															},
+															"max_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum value of the variable. Applicable for integer type.",
+															},
+															"min_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum length of the variable value. Applicable for string type.",
+															},
+															"max_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum length of the variable value. Applicable for string type.",
+															},
+															"matches": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Regex for the variable value.",
+															},
+															"position": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Relative position of this variable in a list.",
+															},
+															"group_by": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Display name of the group this variable belongs to.",
+															},
+															"source": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Source of this meta-data.",
+															},
+														},
+													},
+												},
+												"link": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Reference link to the variable value By default the expression will point to self.value.",
+												},
+											},
+										},
+									},
+									"outputs": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Output variables data from the Action Job.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the variable.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Value for the variable or reference to the value.",
+												},
+												"metadata": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "User editable metadata for the variables.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Type of the variable.",
+															},
+															"aliases": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of aliases for the variable name.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"description": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Description of the meta data.",
+															},
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Default value for the variable, if the override value is not specified.",
+															},
+															"secure": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable secure or sensitive ?.",
+															},
+															"immutable": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Is the variable readonly ?.",
+															},
+															"hidden": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "If true, the variable will not be displayed on UI or CLI.",
+															},
+															"options": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"min_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum value of the variable. Applicable for integer type.",
+															},
+															"max_value": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum value of the variable. Applicable for integer type.",
+															},
+															"min_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Minimum length of the variable value. Applicable for string type.",
+															},
+															"max_length": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Maximum length of the variable value. Applicable for string type.",
+															},
+															"matches": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Regex for the variable value.",
+															},
+															"position": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Relative position of this variable in a list.",
+															},
+															"group_by": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Display name of the group this variable belongs to.",
+															},
+															"source": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Source of this meta-data.",
+															},
+														},
+													},
+												},
+												"link": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Reference link to the variable value By default the expression will point to self.value.",
+												},
+											},
+										},
+									},
+									"settings": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Environment variables used by all the templates in the Action.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"name": &schema.Schema{
@@ -785,109 +1829,696 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 										Computed:    true,
 										Description: "Job status updation timestamp.",
 									},
+									"inventory_record": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Complete inventory resource details with user inputs and system generated data.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique name of your Inventory.  The name can be up to 128 characters long and can include alphanumeric  characters, spaces, dashes, and underscores.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Inventory id.",
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The description of your Inventory.  The description can be up to 2048 characters long in size.",
+												},
+												"location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
+												},
+												"resource_group": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Resource-group name for the Inventory definition.  By default, Inventory will be created in Default Resource Group.",
+												},
+												"created_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Inventory creation time.",
+												},
+												"created_by": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Email address of user who created the Inventory.",
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Inventory updation time.",
+												},
+												"updated_by": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Email address of user who updated the Inventory.",
+												},
+												"inventories_ini": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Input inventory of host and host group for the playbook,  in the .ini file format.",
+												},
+												"resource_queries": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Input resource queries that is used to dynamically generate  the inventory of host and host group for the playbook.",
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+											},
+										},
+									},
+									"materialized_inventory": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Materialized inventory details used by the Action Job, in .ini format.",
+									},
+								},
+							},
+						},
+						"system_job_data": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Controls Job data.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Key ID for which key event is generated.",
+									},
+									"schematics_resource_id": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "List of the schematics resource id.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
+								},
+							},
+						},
+						"flow_job_data": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Flow Job data.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"flow_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Flow ID.",
+									},
+									"flow_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Flow Name.",
+									},
+									"workitems": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Job data used by each workitem Job.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"command_object_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "command object id.",
+												},
+												"command_object_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "command object name.",
+												},
+												"layers": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "layer name.",
+												},
+												"source_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Type of source for the Template.",
+												},
+												"source": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Source of templates, playbooks, or controls.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"source_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Type of source for the Template.",
+															},
+															"git": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Connection details to Git source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"computed_git_repo_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The Complete URL which is computed by git_repo_url, git_repo_folder and branch.",
+																		},
+																		"git_repo_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "URL to the GIT Repo that can be used to clone the template.",
+																		},
+																		"git_token": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Personal Access Token to connect to Git URLs.",
+																		},
+																		"git_repo_folder": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the folder in the Git Repo, that contains the template.",
+																		},
+																		"git_release": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the release tag, used to fetch the Git Repo.",
+																		},
+																		"git_branch": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the branch, used to fetch the Git Repo.",
+																		},
+																	},
+																},
+															},
+															"catalog": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Connection details to IBM Cloud Catalog source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"catalog_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "name of the private catalog.",
+																		},
+																		"offering_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the offering in the IBM Catalog.",
+																		},
+																		"offering_version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Version string of the offering in the IBM Catalog.",
+																		},
+																		"offering_kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the offering, in the IBM Catalog.",
+																		},
+																		"offering_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Id of the offering the IBM Catalog.",
+																		},
+																		"offering_version_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Id of the offering version the IBM Catalog.",
+																		},
+																		"offering_repo_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Repo Url of the offering, in the IBM Catalog.",
+																		},
+																	},
+																},
+															},
+															"cos_bucket": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Connection details to a IBM Cloud Object Storage bucket.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cos_bucket_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "COS Bucket Url.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"inputs": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Input variables data for the workItem used in FlowJob.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"outputs": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Output variables for the workItem.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"settings": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Environment variables for the workItem.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the variable.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for the variable or reference to the value.",
+															},
+															"metadata": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "User editable metadata for the variables.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Type of the variable.",
+																		},
+																		"aliases": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of aliases for the variable name.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the meta data.",
+																		},
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Default value for the variable, if the override value is not specified.",
+																		},
+																		"secure": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable secure or sensitive ?.",
+																		},
+																		"immutable": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Is the variable readonly ?.",
+																		},
+																		"hidden": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																		},
+																		"options": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"min_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum value of the variable. Applicable for integer type.",
+																		},
+																		"max_value": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum value of the variable. Applicable for integer type.",
+																		},
+																		"min_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Minimum length of the variable value. Applicable for string type.",
+																		},
+																		"max_length": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Maximum length of the variable value. Applicable for string type.",
+																		},
+																		"matches": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Regex for the variable value.",
+																		},
+																		"position": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Relative position of this variable in a list.",
+																		},
+																		"group_by": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Display name of the group this variable belongs to.",
+																		},
+																		"source": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Source of this meta-data.",
+																		},
+																	},
+																},
+															},
+															"link": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Reference link to the variable value By default the expression will point to self.value.",
+															},
+														},
+													},
+												},
+												"last_job": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Status of the last job executed by the workitem.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"command_object": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Name of the Schematics automation resource.",
+															},
+															"command_object_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "command object name (workspace_name/action_name).",
+															},
+															"command_object_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Workitem command object id, maps to workspace_id or action_id.",
+															},
+															"command_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Schematics job command name.",
+															},
+															"job_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Workspace job id.",
+															},
+															"job_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Status of Jobs.",
+															},
+														},
+													},
+												},
+												"updated_at": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Job status updation timestamp.",
+												},
+											},
+										},
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Job status updation timestamp.",
+									},
 								},
 							},
 						},
 					},
 				},
 			},
-			"targets_ini": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
-			},
 			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Complete target details with the user inputs and the system generated data.",
+				Description: "Describes a bastion resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target name.",
+							Description: "Bastion Name(Unique).",
 						},
-						"type": &schema.Schema{
+						"host": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Target type (`cluster`, `vsi`, `icd`, `vpc`).",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Target description.",
-						},
-						"resource_query": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Resource selection query string.",
-						},
-						"credential_ref": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Override credential for each resource.  Reference to credentials values, used by all the resources.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Target ID.",
-						},
-						"created_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Targets creation time.",
-						},
-						"created_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "E-mail address of the user who created the targets.",
-						},
-						"updated_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Targets updation time.",
-						},
-						"updated_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "E-mail address of user who updated the targets.",
-						},
-						"sys_lock": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "System lock status.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"sys_locked": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Is the Workspace locked by the Schematic action ?.",
-									},
-									"sys_locked_by": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Name of the user who performed the action, that lead to lock the Workspace.",
-									},
-									"sys_locked_at": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "When the user performed the action that lead to lock the Workspace ?.",
-									},
-								},
-							},
-						},
-						"resource_ids": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Array of the resource IDs.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
+							Description: "Reference to the Inventory resource definition.",
 						},
 					},
 				},
 			},
-			"job_log_summary": &schema.Schema{
+			"log_summary": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Job log summary record.",
@@ -896,7 +2527,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"job_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Workspace ID.",
+							Description: "Workspace Id.",
 						},
 						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -916,7 +2547,7 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 						"elapsed_time": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Computed:    true,
-							Description: "Job log elapsed time (`log_analyzed_till - log_start_at`).",
+							Description: "Job log elapsed time (log_analyzed_till - log_start_at).",
 						},
 						"log_errors": &schema.Schema{
 							Type:        schema.TypeList,
@@ -972,6 +2603,92 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Number of outputs detected.",
+									},
+								},
+							},
+						},
+						"workspace_job": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Workspace Job log summary.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"resources_add": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of resources add.",
+									},
+									"resources_modify": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of resources modify.",
+									},
+									"resources_destroy": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of resources destroy.",
+									},
+								},
+							},
+						},
+						"flow_job": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Flow Job log summary.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"workitems_completed": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of workitems completed successfully.",
+									},
+									"workitems_pending": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of workitems pending in the flow.",
+									},
+									"workitems_failed": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of workitems failed.",
+									},
+									"workitems": &schema.Schema{
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"workspace_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workspace ID.",
+												},
+												"job_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "workspace JOB ID.",
+												},
+												"resources_add": &schema.Schema{
+													Type:        schema.TypeFloat,
+													Computed:    true,
+													Description: "Number of resources add.",
+												},
+												"resources_modify": &schema.Schema{
+													Type:        schema.TypeFloat,
+													Computed:    true,
+													Description: "Number of resources modify.",
+												},
+												"resources_destroy": &schema.Schema{
+													Type:        schema.TypeFloat,
+													Computed:    true,
+													Description: "Number of resources destroy.",
+												},
+												"log_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Log url for job.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -1042,6 +2759,30 @@ func dataSourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
+						"system_job": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "System Job log summary.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"target_count": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "number of targets or hosts.",
+									},
+									"success": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of passed.",
+									},
+									"failed": &schema.Schema{
+										Type:        schema.TypeFloat,
+										Computed:    true,
+										Description: "Number of failed.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1082,10 +2823,10 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	job, response, err := schematicsClient.GetJobWithContext(context, getJobOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetJobWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetJobWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*job.ID)
+	d.SetId(fmt.Sprintf("%s", *getJobOptions.JobID))
 	if err = d.Set("command_object", job.CommandObject); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_object: %s", err))
 	}
@@ -1095,8 +2836,8 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("command_name", job.CommandName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_name: %s", err))
 	}
-	if err = d.Set("command_options", job.CommandOptions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting command_options: %s", err))
+	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
 	}
 
 	if job.Inputs != nil {
@@ -1111,9 +2852,6 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting job_env_settings %s", err))
 		}
-	}
-	if err = d.Set("tags", job.Tags); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 	if err = d.Set("id", job.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
@@ -1130,23 +2868,17 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
-	if job.SubmittedAt != nil {
-		if err = d.Set("submitted_at", job.SubmittedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting submitted_at: %s", err))
-		}
+	if err = d.Set("submitted_at", dateTimeToString(job.SubmittedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting submitted_at: %s", err))
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting submitted_by: %s", err))
 	}
-	if job.StartAt != nil {
-		if err = d.Set("start_at", job.StartAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting start_at: %s", err))
-		}
+	if err = d.Set("start_at", dateTimeToString(job.StartAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting start_at: %s", err))
 	}
-	if job.EndAt != nil {
-		if err = d.Set("end_at", job.EndAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting end_at: %s", err))
-		}
+	if err = d.Set("end_at", dateTimeToString(job.EndAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting end_at: %s", err))
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting duration: %s", err))
@@ -1165,9 +2897,6 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("Error setting data %s", err))
 		}
 	}
-	if err = d.Set("targets_ini", job.TargetsIni); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting targets_ini: %s", err))
-	}
 
 	if job.Bastion != nil {
 		err = d.Set("bastion", dataSourceJobFlattenBastion(*job.Bastion))
@@ -1177,9 +2906,9 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	}
 
 	if job.LogSummary != nil {
-		err = d.Set("job_log_summary", dataSourceJobFlattenLogSummary(*job.LogSummary))
+		err = d.Set("log_summary", dataSourceJobFlattenLogSummary(*job.LogSummary))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting job_log_summary %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting log_summary %s", err))
 		}
 	}
 	if err = d.Set("log_store_url", job.LogStoreURL); err != nil {
@@ -1191,21 +2920,19 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting results_url: %s", err))
 	}
-	if job.UpdatedAt != nil {
-		if err = d.Set("updated_at", job.UpdatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
+	if err = d.Set("updated_at", dateTimeToString(job.UpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	return nil
 }
 
-func dataSourceJobFlattenInputs(result []schematicsv1.VariableData) (inputs []map[string]interface{}) {
-	for _, inputsItem := range result {
-		inputs = append(inputs, dataSourceJobInputsToMap(inputsItem))
+func dataSourceJobFlattenInputs(result []schematicsv1.VariableData) (jobInputs []map[string]interface{}) {
+	for _, jobInputsItem := range result {
+		jobInputs = append(jobInputs, dataSourceJobInputsToMap(jobInputsItem))
 	}
 
-	return inputs
+	return jobInputs
 }
 
 func dataSourceJobInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
@@ -1285,67 +3012,12 @@ func dataSourceJobInputsMetadataToMap(metadataItem schematicsv1.VariableMetadata
 	return metadataMap
 }
 
-func dataSourceJobOutputsMetadataToMap(metadataItem schematicsv1.VariableMetadata) (metadataMap map[string]interface{}) {
-	metadataMap = map[string]interface{}{}
-
-	if metadataItem.Type != nil {
-		metadataMap["type"] = metadataItem.Type
-	}
-	if metadataItem.Aliases != nil {
-		metadataMap["aliases"] = metadataItem.Aliases
-	}
-	if metadataItem.Description != nil {
-		metadataMap["description"] = metadataItem.Description
-	}
-	if metadataItem.DefaultValue != nil {
-		metadataMap["default_value"] = metadataItem.DefaultValue
-	}
-	if metadataItem.Secure != nil {
-		metadataMap["secure"] = metadataItem.Secure
-	}
-	if metadataItem.Immutable != nil {
-		metadataMap["immutable"] = metadataItem.Immutable
-	}
-	if metadataItem.Hidden != nil {
-		metadataMap["hidden"] = metadataItem.Hidden
-	}
-	if metadataItem.Options != nil {
-		metadataMap["options"] = metadataItem.Options
-	}
-	if metadataItem.MinValue != nil {
-		metadataMap["min_value"] = metadataItem.MinValue
-	}
-	if metadataItem.MaxValue != nil {
-		metadataMap["max_value"] = metadataItem.MaxValue
-	}
-	if metadataItem.MinLength != nil {
-		metadataMap["min_length"] = metadataItem.MinLength
-	}
-	if metadataItem.MaxLength != nil {
-		metadataMap["max_length"] = metadataItem.MaxLength
-	}
-	if metadataItem.Matches != nil {
-		metadataMap["matches"] = metadataItem.Matches
-	}
-	if metadataItem.Position != nil {
-		metadataMap["position"] = metadataItem.Position
-	}
-	if metadataItem.GroupBy != nil {
-		metadataMap["group_by"] = metadataItem.GroupBy
-	}
-	if metadataItem.Source != nil {
-		metadataMap["source"] = metadataItem.Source
+func dataSourceJobFlattenSettings(result []schematicsv1.VariableData) (jobEnvSettings []map[string]interface{}) {
+	for _, jobEnvSettingsItem := range result {
+		jobEnvSettings = append(jobEnvSettings, dataSourceJobSettingsToMap(jobEnvSettingsItem))
 	}
 
-	return metadataMap
-}
-
-func dataSourceJobFlattenSettings(result []schematicsv1.VariableData) (settings []map[string]interface{}) {
-	for _, settingsItem := range result {
-		settings = append(settings, dataSourceJobSettingsToMap(settingsItem))
-	}
-
-	return settings
+	return jobEnvSettings
 }
 
 func dataSourceJobSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
@@ -1436,14 +3108,143 @@ func dataSourceJobFlattenStatus(result schematicsv1.JobStatus) (finalList []map[
 func dataSourceJobStatusToMap(statusItem schematicsv1.JobStatus) (statusMap map[string]interface{}) {
 	statusMap = map[string]interface{}{}
 
+	if statusItem.WorkspaceJobStatus != nil {
+		workspaceJobStatusList := []map[string]interface{}{}
+		workspaceJobStatusMap := dataSourceJobStatusWorkspaceJobStatusToMap(*statusItem.WorkspaceJobStatus)
+		workspaceJobStatusList = append(workspaceJobStatusList, workspaceJobStatusMap)
+		statusMap["workspace_job_status"] = workspaceJobStatusList
+	}
 	if statusItem.ActionJobStatus != nil {
 		actionJobStatusList := []map[string]interface{}{}
 		actionJobStatusMap := dataSourceJobStatusActionJobStatusToMap(*statusItem.ActionJobStatus)
 		actionJobStatusList = append(actionJobStatusList, actionJobStatusMap)
 		statusMap["action_job_status"] = actionJobStatusList
 	}
+	if statusItem.SystemJobStatus != nil {
+		systemJobStatusList := []map[string]interface{}{}
+		systemJobStatusMap := dataSourceJobStatusSystemJobStatusToMap(*statusItem.SystemJobStatus)
+		systemJobStatusList = append(systemJobStatusList, systemJobStatusMap)
+		statusMap["system_job_status"] = systemJobStatusList
+	}
+	if statusItem.FlowJobStatus != nil {
+		flowJobStatusList := []map[string]interface{}{}
+		flowJobStatusMap := dataSourceJobStatusFlowJobStatusToMap(*statusItem.FlowJobStatus)
+		flowJobStatusList = append(flowJobStatusList, flowJobStatusMap)
+		statusMap["flow_job_status"] = flowJobStatusList
+	}
 
 	return statusMap
+}
+
+func dataSourceJobStatusWorkspaceJobStatusToMap(workspaceJobStatusItem schematicsv1.JobStatusWorkspace) (workspaceJobStatusMap map[string]interface{}) {
+	workspaceJobStatusMap = map[string]interface{}{}
+
+	if workspaceJobStatusItem.WorkspaceName != nil {
+		workspaceJobStatusMap["workspace_name"] = workspaceJobStatusItem.WorkspaceName
+	}
+	if workspaceJobStatusItem.StatusCode != nil {
+		workspaceJobStatusMap["status_code"] = workspaceJobStatusItem.StatusCode
+	}
+	if workspaceJobStatusItem.StatusMessage != nil {
+		workspaceJobStatusMap["status_message"] = workspaceJobStatusItem.StatusMessage
+	}
+	if workspaceJobStatusItem.FlowStatus != nil {
+		flowStatusList := []map[string]interface{}{}
+		flowStatusMap := dataSourceJobWorkspaceJobStatusFlowStatusToMap(*workspaceJobStatusItem.FlowStatus)
+		flowStatusList = append(flowStatusList, flowStatusMap)
+		workspaceJobStatusMap["flow_status"] = flowStatusList
+	}
+	if workspaceJobStatusItem.TemplateStatus != nil {
+		templateStatusList := []map[string]interface{}{}
+		for _, templateStatusItem := range workspaceJobStatusItem.TemplateStatus {
+			templateStatusList = append(templateStatusList, dataSourceJobWorkspaceJobStatusTemplateStatusToMap(templateStatusItem))
+		}
+		workspaceJobStatusMap["template_status"] = templateStatusList
+	}
+	if workspaceJobStatusItem.UpdatedAt != nil {
+		workspaceJobStatusMap["updated_at"] = workspaceJobStatusItem.UpdatedAt.String()
+	}
+
+	return workspaceJobStatusMap
+}
+
+func dataSourceJobWorkspaceJobStatusFlowStatusToMap(flowStatusItem schematicsv1.JobStatusFlow) (flowStatusMap map[string]interface{}) {
+	flowStatusMap = map[string]interface{}{}
+
+	if flowStatusItem.FlowID != nil {
+		flowStatusMap["flow_id"] = flowStatusItem.FlowID
+	}
+	if flowStatusItem.FlowName != nil {
+		flowStatusMap["flow_name"] = flowStatusItem.FlowName
+	}
+	if flowStatusItem.StatusCode != nil {
+		flowStatusMap["status_code"] = flowStatusItem.StatusCode
+	}
+	if flowStatusItem.StatusMessage != nil {
+		flowStatusMap["status_message"] = flowStatusItem.StatusMessage
+	}
+	if flowStatusItem.Workitems != nil {
+		workitemsList := []map[string]interface{}{}
+		for _, workitemsItem := range flowStatusItem.Workitems {
+			workitemsList = append(workitemsList, dataSourceJobFlowStatusWorkitemsToMap(workitemsItem))
+		}
+		flowStatusMap["workitems"] = workitemsList
+	}
+	if flowStatusItem.UpdatedAt != nil {
+		flowStatusMap["updated_at"] = flowStatusItem.UpdatedAt.String()
+	}
+
+	return flowStatusMap
+}
+
+func dataSourceJobFlowStatusWorkitemsToMap(workitemsItem schematicsv1.JobStatusWorkitem) (workitemsMap map[string]interface{}) {
+	workitemsMap = map[string]interface{}{}
+
+	if workitemsItem.WorkspaceID != nil {
+		workitemsMap["workspace_id"] = workitemsItem.WorkspaceID
+	}
+	if workitemsItem.WorkspaceName != nil {
+		workitemsMap["workspace_name"] = workitemsItem.WorkspaceName
+	}
+	if workitemsItem.JobID != nil {
+		workitemsMap["job_id"] = workitemsItem.JobID
+	}
+	if workitemsItem.StatusCode != nil {
+		workitemsMap["status_code"] = workitemsItem.StatusCode
+	}
+	if workitemsItem.StatusMessage != nil {
+		workitemsMap["status_message"] = workitemsItem.StatusMessage
+	}
+	if workitemsItem.UpdatedAt != nil {
+		workitemsMap["updated_at"] = workitemsItem.UpdatedAt.String()
+	}
+
+	return workitemsMap
+}
+
+func dataSourceJobWorkspaceJobStatusTemplateStatusToMap(templateStatusItem schematicsv1.JobStatusTemplate) (templateStatusMap map[string]interface{}) {
+	templateStatusMap = map[string]interface{}{}
+
+	if templateStatusItem.TemplateID != nil {
+		templateStatusMap["template_id"] = templateStatusItem.TemplateID
+	}
+	if templateStatusItem.TemplateName != nil {
+		templateStatusMap["template_name"] = templateStatusItem.TemplateName
+	}
+	if templateStatusItem.FlowIndex != nil {
+		templateStatusMap["flow_index"] = templateStatusItem.FlowIndex
+	}
+	if templateStatusItem.StatusCode != nil {
+		templateStatusMap["status_code"] = templateStatusItem.StatusCode
+	}
+	if templateStatusItem.StatusMessage != nil {
+		templateStatusMap["status_message"] = templateStatusItem.StatusMessage
+	}
+	if templateStatusItem.UpdatedAt != nil {
+		templateStatusMap["updated_at"] = templateStatusItem.UpdatedAt.String()
+	}
+
+	return templateStatusMap
 }
 
 func dataSourceJobStatusActionJobStatusToMap(actionJobStatusItem schematicsv1.JobStatusAction) (actionJobStatusMap map[string]interface{}) {
@@ -1477,6 +3278,102 @@ func dataSourceJobStatusActionJobStatusToMap(actionJobStatusItem schematicsv1.Jo
 	return actionJobStatusMap
 }
 
+func dataSourceJobStatusSystemJobStatusToMap(systemJobStatusItem schematicsv1.JobStatusSystem) (systemJobStatusMap map[string]interface{}) {
+	systemJobStatusMap = map[string]interface{}{}
+
+	if systemJobStatusItem.SystemStatusMessage != nil {
+		systemJobStatusMap["system_status_message"] = systemJobStatusItem.SystemStatusMessage
+	}
+	if systemJobStatusItem.SystemStatusCode != nil {
+		systemJobStatusMap["system_status_code"] = systemJobStatusItem.SystemStatusCode
+	}
+	if systemJobStatusItem.SchematicsResourceStatus != nil {
+		schematicsResourceStatusList := []map[string]interface{}{}
+		for _, schematicsResourceStatusItem := range systemJobStatusItem.SchematicsResourceStatus {
+			schematicsResourceStatusList = append(schematicsResourceStatusList, dataSourceJobSystemJobStatusSchematicsResourceStatusToMap(schematicsResourceStatusItem))
+		}
+		systemJobStatusMap["schematics_resource_status"] = schematicsResourceStatusList
+	}
+	if systemJobStatusItem.UpdatedAt != nil {
+		systemJobStatusMap["updated_at"] = systemJobStatusItem.UpdatedAt.String()
+	}
+
+	return systemJobStatusMap
+}
+
+func dataSourceJobSystemJobStatusSchematicsResourceStatusToMap(schematicsResourceStatusItem schematicsv1.JobStatusSchematicsResources) (schematicsResourceStatusMap map[string]interface{}) {
+	schematicsResourceStatusMap = map[string]interface{}{}
+
+	if schematicsResourceStatusItem.StatusCode != nil {
+		schematicsResourceStatusMap["status_code"] = schematicsResourceStatusItem.StatusCode
+	}
+	if schematicsResourceStatusItem.StatusMessage != nil {
+		schematicsResourceStatusMap["status_message"] = schematicsResourceStatusItem.StatusMessage
+	}
+	if schematicsResourceStatusItem.SchematicsResourceID != nil {
+		schematicsResourceStatusMap["schematics_resource_id"] = schematicsResourceStatusItem.SchematicsResourceID
+	}
+	if schematicsResourceStatusItem.UpdatedAt != nil {
+		schematicsResourceStatusMap["updated_at"] = schematicsResourceStatusItem.UpdatedAt.String()
+	}
+
+	return schematicsResourceStatusMap
+}
+
+func dataSourceJobStatusFlowJobStatusToMap(flowJobStatusItem schematicsv1.JobStatusFlow) (flowJobStatusMap map[string]interface{}) {
+	flowJobStatusMap = map[string]interface{}{}
+
+	if flowJobStatusItem.FlowID != nil {
+		flowJobStatusMap["flow_id"] = flowJobStatusItem.FlowID
+	}
+	if flowJobStatusItem.FlowName != nil {
+		flowJobStatusMap["flow_name"] = flowJobStatusItem.FlowName
+	}
+	if flowJobStatusItem.StatusCode != nil {
+		flowJobStatusMap["status_code"] = flowJobStatusItem.StatusCode
+	}
+	if flowJobStatusItem.StatusMessage != nil {
+		flowJobStatusMap["status_message"] = flowJobStatusItem.StatusMessage
+	}
+	if flowJobStatusItem.Workitems != nil {
+		workitemsList := []map[string]interface{}{}
+		for _, workitemsItem := range flowJobStatusItem.Workitems {
+			workitemsList = append(workitemsList, dataSourceJobFlowJobStatusWorkitemsToMap(workitemsItem))
+		}
+		flowJobStatusMap["workitems"] = workitemsList
+	}
+	if flowJobStatusItem.UpdatedAt != nil {
+		flowJobStatusMap["updated_at"] = flowJobStatusItem.UpdatedAt.String()
+	}
+
+	return flowJobStatusMap
+}
+
+func dataSourceJobFlowJobStatusWorkitemsToMap(workitemsItem schematicsv1.JobStatusWorkitem) (workitemsMap map[string]interface{}) {
+	workitemsMap = map[string]interface{}{}
+
+	if workitemsItem.WorkspaceID != nil {
+		workitemsMap["workspace_id"] = workitemsItem.WorkspaceID
+	}
+	if workitemsItem.WorkspaceName != nil {
+		workitemsMap["workspace_name"] = workitemsItem.WorkspaceName
+	}
+	if workitemsItem.JobID != nil {
+		workitemsMap["job_id"] = workitemsItem.JobID
+	}
+	if workitemsItem.StatusCode != nil {
+		workitemsMap["status_code"] = workitemsItem.StatusCode
+	}
+	if workitemsItem.StatusMessage != nil {
+		workitemsMap["status_message"] = workitemsItem.StatusMessage
+	}
+	if workitemsItem.UpdatedAt != nil {
+		workitemsMap["updated_at"] = workitemsItem.UpdatedAt.String()
+	}
+
+	return workitemsMap
+}
+
 func dataSourceJobFlattenData(result schematicsv1.JobData) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobDataToMap(result)
@@ -1491,14 +3388,306 @@ func dataSourceJobDataToMap(dataItem schematicsv1.JobData) (dataMap map[string]i
 	if dataItem.JobType != nil {
 		dataMap["job_type"] = dataItem.JobType
 	}
+	if dataItem.WorkspaceJobData != nil {
+		workspaceJobDataList := []map[string]interface{}{}
+		workspaceJobDataMap := dataSourceJobDataWorkspaceJobDataToMap(*dataItem.WorkspaceJobData)
+		workspaceJobDataList = append(workspaceJobDataList, workspaceJobDataMap)
+		dataMap["workspace_job_data"] = workspaceJobDataList
+	}
 	if dataItem.ActionJobData != nil {
 		actionJobDataList := []map[string]interface{}{}
 		actionJobDataMap := dataSourceJobDataActionJobDataToMap(*dataItem.ActionJobData)
 		actionJobDataList = append(actionJobDataList, actionJobDataMap)
 		dataMap["action_job_data"] = actionJobDataList
 	}
+	if dataItem.SystemJobData != nil {
+		systemJobDataList := []map[string]interface{}{}
+		systemJobDataMap := dataSourceJobDataSystemJobDataToMap(*dataItem.SystemJobData)
+		systemJobDataList = append(systemJobDataList, systemJobDataMap)
+		dataMap["system_job_data"] = systemJobDataList
+	}
+	if dataItem.FlowJobData != nil {
+		flowJobDataList := []map[string]interface{}{}
+		flowJobDataMap := dataSourceJobDataFlowJobDataToMap(*dataItem.FlowJobData)
+		flowJobDataList = append(flowJobDataList, flowJobDataMap)
+		dataMap["flow_job_data"] = flowJobDataList
+	}
 
 	return dataMap
+}
+
+func dataSourceJobDataWorkspaceJobDataToMap(workspaceJobDataItem schematicsv1.JobDataWorkspace) (workspaceJobDataMap map[string]interface{}) {
+	workspaceJobDataMap = map[string]interface{}{}
+
+	if workspaceJobDataItem.WorkspaceName != nil {
+		workspaceJobDataMap["workspace_name"] = workspaceJobDataItem.WorkspaceName
+	}
+	if workspaceJobDataItem.FlowID != nil {
+		workspaceJobDataMap["flow_id"] = workspaceJobDataItem.FlowID
+	}
+	if workspaceJobDataItem.FlowName != nil {
+		workspaceJobDataMap["flow_name"] = workspaceJobDataItem.FlowName
+	}
+	if workspaceJobDataItem.Inputs != nil {
+		inputsList := []map[string]interface{}{}
+		for _, inputsItem := range workspaceJobDataItem.Inputs {
+			inputsList = append(inputsList, dataSourceJobWorkspaceJobDataInputsToMap(inputsItem))
+		}
+		workspaceJobDataMap["inputs"] = inputsList
+	}
+	if workspaceJobDataItem.Outputs != nil {
+		outputsList := []map[string]interface{}{}
+		for _, outputsItem := range workspaceJobDataItem.Outputs {
+			outputsList = append(outputsList, dataSourceJobWorkspaceJobDataOutputsToMap(outputsItem))
+		}
+		workspaceJobDataMap["outputs"] = outputsList
+	}
+	if workspaceJobDataItem.Settings != nil {
+		settingsList := []map[string]interface{}{}
+		for _, settingsItem := range workspaceJobDataItem.Settings {
+			settingsList = append(settingsList, dataSourceJobWorkspaceJobDataSettingsToMap(settingsItem))
+		}
+		workspaceJobDataMap["settings"] = settingsList
+	}
+	if workspaceJobDataItem.TemplateData != nil {
+		templateDataList := []map[string]interface{}{}
+		for _, templateDataItem := range workspaceJobDataItem.TemplateData {
+			templateDataList = append(templateDataList, dataSourceJobWorkspaceJobDataTemplateDataToMap(templateDataItem))
+		}
+		workspaceJobDataMap["template_data"] = templateDataList
+	}
+	if workspaceJobDataItem.UpdatedAt != nil {
+		workspaceJobDataMap["updated_at"] = workspaceJobDataItem.UpdatedAt.String()
+	}
+
+	return workspaceJobDataMap
+}
+
+func dataSourceJobWorkspaceJobDataInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
+	inputsMap = map[string]interface{}{}
+
+	if inputsItem.Name != nil {
+		inputsMap["name"] = inputsItem.Name
+	}
+	if inputsItem.Value != nil {
+		inputsMap["value"] = inputsItem.Value
+	}
+	if inputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobInputsMetadataToMap(*inputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		inputsMap["metadata"] = metadataList
+	}
+	if inputsItem.Link != nil {
+		inputsMap["link"] = inputsItem.Link
+	}
+
+	return inputsMap
+}
+
+func dataSourceJobWorkspaceJobDataOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
+	outputsMap = map[string]interface{}{}
+
+	if outputsItem.Name != nil {
+		outputsMap["name"] = outputsItem.Name
+	}
+	if outputsItem.Value != nil {
+		outputsMap["value"] = outputsItem.Value
+	}
+	if outputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobOutputsMetadataToMap(*outputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		outputsMap["metadata"] = metadataList
+	}
+	if outputsItem.Link != nil {
+		outputsMap["link"] = outputsItem.Link
+	}
+
+	return outputsMap
+}
+
+func dataSourceJobOutputsMetadataToMap(metadataItem schematicsv1.VariableMetadata) (metadataMap map[string]interface{}) {
+	metadataMap = map[string]interface{}{}
+
+	if metadataItem.Type != nil {
+		metadataMap["type"] = metadataItem.Type
+	}
+	if metadataItem.Aliases != nil {
+		metadataMap["aliases"] = metadataItem.Aliases
+	}
+	if metadataItem.Description != nil {
+		metadataMap["description"] = metadataItem.Description
+	}
+	if metadataItem.DefaultValue != nil {
+		metadataMap["default_value"] = metadataItem.DefaultValue
+	}
+	if metadataItem.Secure != nil {
+		metadataMap["secure"] = metadataItem.Secure
+	}
+	if metadataItem.Immutable != nil {
+		metadataMap["immutable"] = metadataItem.Immutable
+	}
+	if metadataItem.Hidden != nil {
+		metadataMap["hidden"] = metadataItem.Hidden
+	}
+	if metadataItem.Options != nil {
+		metadataMap["options"] = metadataItem.Options
+	}
+	if metadataItem.MinValue != nil {
+		metadataMap["min_value"] = metadataItem.MinValue
+	}
+	if metadataItem.MaxValue != nil {
+		metadataMap["max_value"] = metadataItem.MaxValue
+	}
+	if metadataItem.MinLength != nil {
+		metadataMap["min_length"] = metadataItem.MinLength
+	}
+	if metadataItem.MaxLength != nil {
+		metadataMap["max_length"] = metadataItem.MaxLength
+	}
+	if metadataItem.Matches != nil {
+		metadataMap["matches"] = metadataItem.Matches
+	}
+	if metadataItem.Position != nil {
+		metadataMap["position"] = metadataItem.Position
+	}
+	if metadataItem.GroupBy != nil {
+		metadataMap["group_by"] = metadataItem.GroupBy
+	}
+	if metadataItem.Source != nil {
+		metadataMap["source"] = metadataItem.Source
+	}
+
+	return metadataMap
+}
+
+func dataSourceJobWorkspaceJobDataSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
+	settingsMap = map[string]interface{}{}
+
+	if settingsItem.Name != nil {
+		settingsMap["name"] = settingsItem.Name
+	}
+	if settingsItem.Value != nil {
+		settingsMap["value"] = settingsItem.Value
+	}
+	if settingsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobSettingsMetadataToMap(*settingsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		settingsMap["metadata"] = metadataList
+	}
+	if settingsItem.Link != nil {
+		settingsMap["link"] = settingsItem.Link
+	}
+
+	return settingsMap
+}
+
+func dataSourceJobWorkspaceJobDataTemplateDataToMap(templateDataItem schematicsv1.JobDataTemplate) (templateDataMap map[string]interface{}) {
+	templateDataMap = map[string]interface{}{}
+
+	if templateDataItem.TemplateID != nil {
+		templateDataMap["template_id"] = templateDataItem.TemplateID
+	}
+	if templateDataItem.TemplateName != nil {
+		templateDataMap["template_name"] = templateDataItem.TemplateName
+	}
+	if templateDataItem.FlowIndex != nil {
+		templateDataMap["flow_index"] = templateDataItem.FlowIndex
+	}
+	if templateDataItem.Inputs != nil {
+		inputsList := []map[string]interface{}{}
+		for _, inputsItem := range templateDataItem.Inputs {
+			inputsList = append(inputsList, dataSourceJobTemplateDataInputsToMap(inputsItem))
+		}
+		templateDataMap["inputs"] = inputsList
+	}
+	if templateDataItem.Outputs != nil {
+		outputsList := []map[string]interface{}{}
+		for _, outputsItem := range templateDataItem.Outputs {
+			outputsList = append(outputsList, dataSourceJobTemplateDataOutputsToMap(outputsItem))
+		}
+		templateDataMap["outputs"] = outputsList
+	}
+	if templateDataItem.Settings != nil {
+		settingsList := []map[string]interface{}{}
+		for _, settingsItem := range templateDataItem.Settings {
+			settingsList = append(settingsList, dataSourceJobTemplateDataSettingsToMap(settingsItem))
+		}
+		templateDataMap["settings"] = settingsList
+	}
+	if templateDataItem.UpdatedAt != nil {
+		templateDataMap["updated_at"] = templateDataItem.UpdatedAt.String()
+	}
+
+	return templateDataMap
+}
+
+func dataSourceJobTemplateDataInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
+	inputsMap = map[string]interface{}{}
+
+	if inputsItem.Name != nil {
+		inputsMap["name"] = inputsItem.Name
+	}
+	if inputsItem.Value != nil {
+		inputsMap["value"] = inputsItem.Value
+	}
+	if inputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobInputsMetadataToMap(*inputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		inputsMap["metadata"] = metadataList
+	}
+	if inputsItem.Link != nil {
+		inputsMap["link"] = inputsItem.Link
+	}
+
+	return inputsMap
+}
+
+func dataSourceJobTemplateDataOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
+	outputsMap = map[string]interface{}{}
+
+	if outputsItem.Name != nil {
+		outputsMap["name"] = outputsItem.Name
+	}
+	if outputsItem.Value != nil {
+		outputsMap["value"] = outputsItem.Value
+	}
+	if outputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobOutputsMetadataToMap(*outputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		outputsMap["metadata"] = metadataList
+	}
+	if outputsItem.Link != nil {
+		outputsMap["link"] = outputsItem.Link
+	}
+
+	return outputsMap
+}
+
+func dataSourceJobTemplateDataSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
+	settingsMap = map[string]interface{}{}
+
+	if settingsItem.Name != nil {
+		settingsMap["name"] = settingsItem.Name
+	}
+	if settingsItem.Value != nil {
+		settingsMap["value"] = settingsItem.Value
+	}
+	if settingsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobSettingsMetadataToMap(*settingsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		settingsMap["metadata"] = metadataList
+	}
+	if settingsItem.Link != nil {
+		settingsMap["link"] = settingsItem.Link
+	}
+
+	return settingsMap
 }
 
 func dataSourceJobDataActionJobDataToMap(actionJobDataItem schematicsv1.JobDataAction) (actionJobDataMap map[string]interface{}) {
@@ -1530,6 +3719,15 @@ func dataSourceJobDataActionJobDataToMap(actionJobDataItem schematicsv1.JobDataA
 	}
 	if actionJobDataItem.UpdatedAt != nil {
 		actionJobDataMap["updated_at"] = actionJobDataItem.UpdatedAt.String()
+	}
+	if actionJobDataItem.InventoryRecord != nil {
+		inventoryRecordList := []map[string]interface{}{}
+		inventoryRecordMap := dataSourceJobActionJobDataInventoryRecordToMap(*actionJobDataItem.InventoryRecord)
+		inventoryRecordList = append(inventoryRecordList, inventoryRecordMap)
+		actionJobDataMap["inventory_record"] = inventoryRecordList
+	}
+	if actionJobDataItem.MaterializedInventory != nil {
+		actionJobDataMap["materialized_inventory"] = actionJobDataItem.MaterializedInventory
 	}
 
 	return actionJobDataMap
@@ -1601,7 +3799,323 @@ func dataSourceJobActionJobDataSettingsToMap(settingsItem schematicsv1.VariableD
 	return settingsMap
 }
 
-func dataSourceJobFlattenBastion(result schematicsv1.TargetResourceset) (finalList []map[string]interface{}) {
+func dataSourceJobActionJobDataInventoryRecordToMap(inventoryRecordItem schematicsv1.InventoryResourceRecord) (inventoryRecordMap map[string]interface{}) {
+	inventoryRecordMap = map[string]interface{}{}
+
+	if inventoryRecordItem.Name != nil {
+		inventoryRecordMap["name"] = inventoryRecordItem.Name
+	}
+	if inventoryRecordItem.ID != nil {
+		inventoryRecordMap["id"] = inventoryRecordItem.ID
+	}
+	if inventoryRecordItem.Description != nil {
+		inventoryRecordMap["description"] = inventoryRecordItem.Description
+	}
+	if inventoryRecordItem.Location != nil {
+		inventoryRecordMap["location"] = inventoryRecordItem.Location
+	}
+	if inventoryRecordItem.ResourceGroup != nil {
+		inventoryRecordMap["resource_group"] = inventoryRecordItem.ResourceGroup
+	}
+	if inventoryRecordItem.CreatedAt != nil {
+		inventoryRecordMap["created_at"] = inventoryRecordItem.CreatedAt.String()
+	}
+	if inventoryRecordItem.CreatedBy != nil {
+		inventoryRecordMap["created_by"] = inventoryRecordItem.CreatedBy
+	}
+	if inventoryRecordItem.UpdatedAt != nil {
+		inventoryRecordMap["updated_at"] = inventoryRecordItem.UpdatedAt.String()
+	}
+	if inventoryRecordItem.UpdatedBy != nil {
+		inventoryRecordMap["updated_by"] = inventoryRecordItem.UpdatedBy
+	}
+	if inventoryRecordItem.InventoriesIni != nil {
+		inventoryRecordMap["inventories_ini"] = inventoryRecordItem.InventoriesIni
+	}
+	if inventoryRecordItem.ResourceQueries != nil {
+		inventoryRecordMap["resource_queries"] = inventoryRecordItem.ResourceQueries
+	}
+
+	return inventoryRecordMap
+}
+
+func dataSourceJobDataSystemJobDataToMap(systemJobDataItem schematicsv1.JobDataSystem) (systemJobDataMap map[string]interface{}) {
+	systemJobDataMap = map[string]interface{}{}
+
+	if systemJobDataItem.KeyID != nil {
+		systemJobDataMap["key_id"] = systemJobDataItem.KeyID
+	}
+	if systemJobDataItem.SchematicsResourceID != nil {
+		systemJobDataMap["schematics_resource_id"] = systemJobDataItem.SchematicsResourceID
+	}
+	if systemJobDataItem.UpdatedAt != nil {
+		systemJobDataMap["updated_at"] = systemJobDataItem.UpdatedAt.String()
+	}
+
+	return systemJobDataMap
+}
+
+func dataSourceJobDataFlowJobDataToMap(flowJobDataItem schematicsv1.JobDataFlow) (flowJobDataMap map[string]interface{}) {
+	flowJobDataMap = map[string]interface{}{}
+
+	if flowJobDataItem.FlowID != nil {
+		flowJobDataMap["flow_id"] = flowJobDataItem.FlowID
+	}
+	if flowJobDataItem.FlowName != nil {
+		flowJobDataMap["flow_name"] = flowJobDataItem.FlowName
+	}
+	if flowJobDataItem.Workitems != nil {
+		workitemsList := []map[string]interface{}{}
+		for _, workitemsItem := range flowJobDataItem.Workitems {
+			workitemsList = append(workitemsList, dataSourceJobFlowJobDataWorkitemsToMap(workitemsItem))
+		}
+		flowJobDataMap["workitems"] = workitemsList
+	}
+	if flowJobDataItem.UpdatedAt != nil {
+		flowJobDataMap["updated_at"] = flowJobDataItem.UpdatedAt.String()
+	}
+
+	return flowJobDataMap
+}
+
+func dataSourceJobFlowJobDataWorkitemsToMap(workitemsItem schematicsv1.JobDataWorkItem) (workitemsMap map[string]interface{}) {
+	workitemsMap = map[string]interface{}{}
+
+	if workitemsItem.CommandObjectID != nil {
+		workitemsMap["command_object_id"] = workitemsItem.CommandObjectID
+	}
+	if workitemsItem.CommandObjectName != nil {
+		workitemsMap["command_object_name"] = workitemsItem.CommandObjectName
+	}
+	if workitemsItem.Layers != nil {
+		workitemsMap["layers"] = workitemsItem.Layers
+	}
+	if workitemsItem.SourceType != nil {
+		workitemsMap["source_type"] = workitemsItem.SourceType
+	}
+	if workitemsItem.Source != nil {
+		sourceList := []map[string]interface{}{}
+		sourceMap := dataSourceJobWorkitemsSourceToMap(*workitemsItem.Source)
+		sourceList = append(sourceList, sourceMap)
+		workitemsMap["source"] = sourceList
+	}
+	if workitemsItem.Inputs != nil {
+		inputsList := []map[string]interface{}{}
+		for _, inputsItem := range workitemsItem.Inputs {
+			inputsList = append(inputsList, dataSourceJobWorkitemsInputsToMap(inputsItem))
+		}
+		workitemsMap["inputs"] = inputsList
+	}
+	if workitemsItem.Outputs != nil {
+		outputsList := []map[string]interface{}{}
+		for _, outputsItem := range workitemsItem.Outputs {
+			outputsList = append(outputsList, dataSourceJobWorkitemsOutputsToMap(outputsItem))
+		}
+		workitemsMap["outputs"] = outputsList
+	}
+	if workitemsItem.Settings != nil {
+		settingsList := []map[string]interface{}{}
+		for _, settingsItem := range workitemsItem.Settings {
+			settingsList = append(settingsList, dataSourceJobWorkitemsSettingsToMap(settingsItem))
+		}
+		workitemsMap["settings"] = settingsList
+	}
+	if workitemsItem.LastJob != nil {
+		lastJobList := []map[string]interface{}{}
+		lastJobMap := dataSourceJobWorkitemsLastJobToMap(*workitemsItem.LastJob)
+		lastJobList = append(lastJobList, lastJobMap)
+		workitemsMap["last_job"] = lastJobList
+	}
+	if workitemsItem.UpdatedAt != nil {
+		workitemsMap["updated_at"] = workitemsItem.UpdatedAt.String()
+	}
+
+	return workitemsMap
+}
+
+func dataSourceJobWorkitemsSourceToMap(sourceItem schematicsv1.ExternalSource) (sourceMap map[string]interface{}) {
+	sourceMap = map[string]interface{}{}
+
+	if sourceItem.SourceType != nil {
+		sourceMap["source_type"] = sourceItem.SourceType
+	}
+	if sourceItem.Git != nil {
+		gitList := []map[string]interface{}{}
+		gitMap := dataSourceJobSourceGitToMap(*sourceItem.Git)
+		gitList = append(gitList, gitMap)
+		sourceMap["git"] = gitList
+	}
+	if sourceItem.Catalog != nil {
+		catalogList := []map[string]interface{}{}
+		catalogMap := dataSourceJobSourceCatalogToMap(*sourceItem.Catalog)
+		catalogList = append(catalogList, catalogMap)
+		sourceMap["catalog"] = catalogList
+	}
+	if sourceItem.CosBucket != nil {
+		cosBucketList := []map[string]interface{}{}
+		cosBucketMap := dataSourceJobSourceCosBucketToMap(*sourceItem.CosBucket)
+		cosBucketList = append(cosBucketList, cosBucketMap)
+		sourceMap["cos_bucket"] = cosBucketList
+	}
+
+	return sourceMap
+}
+
+func dataSourceJobSourceGitToMap(gitItem schematicsv1.ExternalSourceGit) (gitMap map[string]interface{}) {
+	gitMap = map[string]interface{}{}
+
+	if gitItem.ComputedGitRepoURL != nil {
+		gitMap["computed_git_repo_url"] = gitItem.ComputedGitRepoURL
+	}
+	if gitItem.GitRepoURL != nil {
+		gitMap["git_repo_url"] = gitItem.GitRepoURL
+	}
+	if gitItem.GitToken != nil {
+		gitMap["git_token"] = gitItem.GitToken
+	}
+	if gitItem.GitRepoFolder != nil {
+		gitMap["git_repo_folder"] = gitItem.GitRepoFolder
+	}
+	if gitItem.GitRelease != nil {
+		gitMap["git_release"] = gitItem.GitRelease
+	}
+	if gitItem.GitBranch != nil {
+		gitMap["git_branch"] = gitItem.GitBranch
+	}
+
+	return gitMap
+}
+
+func dataSourceJobSourceCatalogToMap(catalogItem schematicsv1.ExternalSourceCatalog) (catalogMap map[string]interface{}) {
+	catalogMap = map[string]interface{}{}
+
+	if catalogItem.CatalogName != nil {
+		catalogMap["catalog_name"] = catalogItem.CatalogName
+	}
+	if catalogItem.OfferingName != nil {
+		catalogMap["offering_name"] = catalogItem.OfferingName
+	}
+	if catalogItem.OfferingVersion != nil {
+		catalogMap["offering_version"] = catalogItem.OfferingVersion
+	}
+	if catalogItem.OfferingKind != nil {
+		catalogMap["offering_kind"] = catalogItem.OfferingKind
+	}
+	if catalogItem.OfferingID != nil {
+		catalogMap["offering_id"] = catalogItem.OfferingID
+	}
+	if catalogItem.OfferingVersionID != nil {
+		catalogMap["offering_version_id"] = catalogItem.OfferingVersionID
+	}
+	if catalogItem.OfferingRepoURL != nil {
+		catalogMap["offering_repo_url"] = catalogItem.OfferingRepoURL
+	}
+
+	return catalogMap
+}
+
+func dataSourceJobSourceCosBucketToMap(cosBucketItem schematicsv1.ExternalSourceCosBucket) (cosBucketMap map[string]interface{}) {
+	cosBucketMap = map[string]interface{}{}
+
+	if cosBucketItem.CosBucketURL != nil {
+		cosBucketMap["cos_bucket_url"] = cosBucketItem.CosBucketURL
+	}
+
+	return cosBucketMap
+}
+
+func dataSourceJobWorkitemsInputsToMap(inputsItem schematicsv1.VariableData) (inputsMap map[string]interface{}) {
+	inputsMap = map[string]interface{}{}
+
+	if inputsItem.Name != nil {
+		inputsMap["name"] = inputsItem.Name
+	}
+	if inputsItem.Value != nil {
+		inputsMap["value"] = inputsItem.Value
+	}
+	if inputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobInputsMetadataToMap(*inputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		inputsMap["metadata"] = metadataList
+	}
+	if inputsItem.Link != nil {
+		inputsMap["link"] = inputsItem.Link
+	}
+
+	return inputsMap
+}
+
+func dataSourceJobWorkitemsOutputsToMap(outputsItem schematicsv1.VariableData) (outputsMap map[string]interface{}) {
+	outputsMap = map[string]interface{}{}
+
+	if outputsItem.Name != nil {
+		outputsMap["name"] = outputsItem.Name
+	}
+	if outputsItem.Value != nil {
+		outputsMap["value"] = outputsItem.Value
+	}
+	if outputsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobOutputsMetadataToMap(*outputsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		outputsMap["metadata"] = metadataList
+	}
+	if outputsItem.Link != nil {
+		outputsMap["link"] = outputsItem.Link
+	}
+
+	return outputsMap
+}
+
+func dataSourceJobWorkitemsSettingsToMap(settingsItem schematicsv1.VariableData) (settingsMap map[string]interface{}) {
+	settingsMap = map[string]interface{}{}
+
+	if settingsItem.Name != nil {
+		settingsMap["name"] = settingsItem.Name
+	}
+	if settingsItem.Value != nil {
+		settingsMap["value"] = settingsItem.Value
+	}
+	if settingsItem.Metadata != nil {
+		metadataList := []map[string]interface{}{}
+		metadataMap := dataSourceJobSettingsMetadataToMap(*settingsItem.Metadata)
+		metadataList = append(metadataList, metadataMap)
+		settingsMap["metadata"] = metadataList
+	}
+	if settingsItem.Link != nil {
+		settingsMap["link"] = settingsItem.Link
+	}
+
+	return settingsMap
+}
+
+func dataSourceJobWorkitemsLastJobToMap(lastJobItem schematicsv1.JobDataWorkItemLastJob) (lastJobMap map[string]interface{}) {
+	lastJobMap = map[string]interface{}{}
+
+	if lastJobItem.CommandObject != nil {
+		lastJobMap["command_object"] = lastJobItem.CommandObject
+	}
+	if lastJobItem.CommandObjectName != nil {
+		lastJobMap["command_object_name"] = lastJobItem.CommandObjectName
+	}
+	if lastJobItem.CommandObjectID != nil {
+		lastJobMap["command_object_id"] = lastJobItem.CommandObjectID
+	}
+	if lastJobItem.CommandName != nil {
+		lastJobMap["command_name"] = lastJobItem.CommandName
+	}
+	if lastJobItem.JobID != nil {
+		lastJobMap["job_id"] = lastJobItem.JobID
+	}
+	if lastJobItem.JobStatus != nil {
+		lastJobMap["job_status"] = lastJobItem.JobStatus
+	}
+
+	return lastJobMap
+}
+
+func dataSourceJobFlattenBastion(result schematicsv1.BastionResourceDefinition) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceJobBastionToMap(result)
 	finalList = append(finalList, finalMap)
@@ -1609,66 +4123,17 @@ func dataSourceJobFlattenBastion(result schematicsv1.TargetResourceset) (finalLi
 	return finalList
 }
 
-func dataSourceJobBastionToMap(bastionItem schematicsv1.TargetResourceset) (bastionMap map[string]interface{}) {
+func dataSourceJobBastionToMap(bastionItem schematicsv1.BastionResourceDefinition) (bastionMap map[string]interface{}) {
 	bastionMap = map[string]interface{}{}
 
 	if bastionItem.Name != nil {
 		bastionMap["name"] = bastionItem.Name
 	}
-	if bastionItem.Type != nil {
-		bastionMap["type"] = bastionItem.Type
-	}
-	if bastionItem.Description != nil {
-		bastionMap["description"] = bastionItem.Description
-	}
-	if bastionItem.ResourceQuery != nil {
-		bastionMap["resource_query"] = bastionItem.ResourceQuery
-	}
-	if bastionItem.CredentialRef != nil {
-		bastionMap["credential_ref"] = bastionItem.CredentialRef
-	}
-	if bastionItem.ID != nil {
-		bastionMap["id"] = bastionItem.ID
-	}
-	if bastionItem.CreatedAt != nil {
-		bastionMap["created_at"] = bastionItem.CreatedAt.String()
-	}
-	if bastionItem.CreatedBy != nil {
-		bastionMap["created_by"] = bastionItem.CreatedBy
-	}
-	if bastionItem.UpdatedAt != nil {
-		bastionMap["updated_at"] = bastionItem.UpdatedAt.String()
-	}
-	if bastionItem.UpdatedBy != nil {
-		bastionMap["updated_by"] = bastionItem.UpdatedBy
-	}
-	if bastionItem.SysLock != nil {
-		sysLockList := []map[string]interface{}{}
-		sysLockMap := dataSourceJobBastionSysLockToMap(*bastionItem.SysLock)
-		sysLockList = append(sysLockList, sysLockMap)
-		bastionMap["sys_lock"] = sysLockList
-	}
-	if bastionItem.ResourceIds != nil {
-		bastionMap["resource_ids"] = bastionItem.ResourceIds
+	if bastionItem.Host != nil {
+		bastionMap["host"] = bastionItem.Host
 	}
 
 	return bastionMap
-}
-
-func dataSourceJobBastionSysLockToMap(sysLockItem schematicsv1.SystemLock) (sysLockMap map[string]interface{}) {
-	sysLockMap = map[string]interface{}{}
-
-	if sysLockItem.SysLocked != nil {
-		sysLockMap["sys_locked"] = sysLockItem.SysLocked
-	}
-	if sysLockItem.SysLockedBy != nil {
-		sysLockMap["sys_locked_by"] = sysLockItem.SysLockedBy
-	}
-	if sysLockItem.SysLockedAt != nil {
-		sysLockMap["sys_locked_at"] = sysLockItem.SysLockedAt.String()
-	}
-
-	return sysLockMap
 }
 
 func dataSourceJobFlattenLogSummary(result schematicsv1.JobLogSummary) (finalList []map[string]interface{}) {
@@ -1710,17 +4175,35 @@ func dataSourceJobLogSummaryToMap(logSummaryItem schematicsv1.JobLogSummary) (lo
 		repoDownloadJobList = append(repoDownloadJobList, repoDownloadJobMap)
 		logSummaryMap["repo_download_job"] = repoDownloadJobList
 	}
+	if logSummaryItem.WorkspaceJob != nil {
+		workspaceJobList := []map[string]interface{}{}
+		workspaceJobMap := dataSourceJobLogSummaryWorkspaceJobToMap(*logSummaryItem.WorkspaceJob)
+		workspaceJobList = append(workspaceJobList, workspaceJobMap)
+		logSummaryMap["workspace_job"] = workspaceJobList
+	}
+	if logSummaryItem.FlowJob != nil {
+		flowJobList := []map[string]interface{}{}
+		flowJobMap := dataSourceJobLogSummaryFlowJobToMap(*logSummaryItem.FlowJob)
+		flowJobList = append(flowJobList, flowJobMap)
+		logSummaryMap["flow_job"] = flowJobList
+	}
 	if logSummaryItem.ActionJob != nil {
 		actionJobList := []map[string]interface{}{}
 		actionJobMap := dataSourceJobLogSummaryActionJobToMap(*logSummaryItem.ActionJob)
 		actionJobList = append(actionJobList, actionJobMap)
 		logSummaryMap["action_job"] = actionJobList
 	}
+	if logSummaryItem.SystemJob != nil {
+		systemJobList := []map[string]interface{}{}
+		systemJobMap := dataSourceJobLogSummarySystemJobToMap(*logSummaryItem.SystemJob)
+		systemJobList = append(systemJobList, systemJobMap)
+		logSummaryMap["system_job"] = systemJobList
+	}
 
 	return logSummaryMap
 }
 
-func dataSourceJobLogSummaryLogErrorsToMap(logErrorsItem schematicsv1.JobLogSummaryLogErrorsItem) (logErrorsMap map[string]interface{}) {
+func dataSourceJobLogSummaryLogErrorsToMap(logErrorsItem schematicsv1.JobLogSummaryLogErrors) (logErrorsMap map[string]interface{}) {
 	logErrorsMap = map[string]interface{}{}
 
 	if logErrorsItem.ErrorCode != nil {
@@ -1756,6 +4239,70 @@ func dataSourceJobLogSummaryRepoDownloadJobToMap(repoDownloadJobItem schematicsv
 	}
 
 	return repoDownloadJobMap
+}
+
+func dataSourceJobLogSummaryWorkspaceJobToMap(workspaceJobItem schematicsv1.JobLogSummaryWorkspaceJob) (workspaceJobMap map[string]interface{}) {
+	workspaceJobMap = map[string]interface{}{}
+
+	if workspaceJobItem.ResourcesAdd != nil {
+		workspaceJobMap["resources_add"] = workspaceJobItem.ResourcesAdd
+	}
+	if workspaceJobItem.ResourcesModify != nil {
+		workspaceJobMap["resources_modify"] = workspaceJobItem.ResourcesModify
+	}
+	if workspaceJobItem.ResourcesDestroy != nil {
+		workspaceJobMap["resources_destroy"] = workspaceJobItem.ResourcesDestroy
+	}
+
+	return workspaceJobMap
+}
+
+func dataSourceJobLogSummaryFlowJobToMap(flowJobItem schematicsv1.JobLogSummaryFlowJob) (flowJobMap map[string]interface{}) {
+	flowJobMap = map[string]interface{}{}
+
+	if flowJobItem.WorkitemsCompleted != nil {
+		flowJobMap["workitems_completed"] = flowJobItem.WorkitemsCompleted
+	}
+	if flowJobItem.WorkitemsPending != nil {
+		flowJobMap["workitems_pending"] = flowJobItem.WorkitemsPending
+	}
+	if flowJobItem.WorkitemsFailed != nil {
+		flowJobMap["workitems_failed"] = flowJobItem.WorkitemsFailed
+	}
+	if flowJobItem.Workitems != nil {
+		workitemsList := []map[string]interface{}{}
+		for _, workitemsItem := range flowJobItem.Workitems {
+			workitemsList = append(workitemsList, dataSourceJobFlowJobWorkitemsToMap(workitemsItem))
+		}
+		flowJobMap["workitems"] = workitemsList
+	}
+
+	return flowJobMap
+}
+
+func dataSourceJobFlowJobWorkitemsToMap(workitemsItem schematicsv1.JobLogSummaryWorkitems) (workitemsMap map[string]interface{}) {
+	workitemsMap = map[string]interface{}{}
+
+	if workitemsItem.WorkspaceID != nil {
+		workitemsMap["workspace_id"] = workitemsItem.WorkspaceID
+	}
+	if workitemsItem.JobID != nil {
+		workitemsMap["job_id"] = workitemsItem.JobID
+	}
+	if workitemsItem.ResourcesAdd != nil {
+		workitemsMap["resources_add"] = workitemsItem.ResourcesAdd
+	}
+	if workitemsItem.ResourcesModify != nil {
+		workitemsMap["resources_modify"] = workitemsItem.ResourcesModify
+	}
+	if workitemsItem.ResourcesDestroy != nil {
+		workitemsMap["resources_destroy"] = workitemsItem.ResourcesDestroy
+	}
+	if workitemsItem.LogURL != nil {
+		workitemsMap["log_url"] = workitemsItem.LogURL
+	}
+
+	return workitemsMap
 }
 
 func dataSourceJobLogSummaryActionJobToMap(actionJobItem schematicsv1.JobLogSummaryActionJob) (actionJobMap map[string]interface{}) {
@@ -1803,4 +4350,20 @@ func dataSourceJobActionJobRecapToMap(recapItem schematicsv1.JobLogSummaryAction
 	}
 
 	return recapMap
+}
+
+func dataSourceJobLogSummarySystemJobToMap(systemJobItem schematicsv1.JobLogSummarySystemJob) (systemJobMap map[string]interface{}) {
+	systemJobMap = map[string]interface{}{}
+
+	if systemJobItem.TargetCount != nil {
+		systemJobMap["target_count"] = systemJobItem.TargetCount
+	}
+	if systemJobItem.Success != nil {
+		systemJobMap["success"] = systemJobItem.Success
+	}
+	if systemJobItem.Failed != nil {
+		systemJobMap["failed"] = systemJobItem.Failed
+	}
+
+	return systemJobMap
 }

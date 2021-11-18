@@ -111,7 +111,7 @@ func dataSourceIBMComputeReservedCapacityRead(context context.Context, d *schema
 			grp = mostRecentReservedCapacity(grps)
 		} else {
 			return diag.FromErr(fmt.Errorf(
-				"[Error] More than one reserved capacity found with name"+
+				"[Error] More than one reserved capacity found with name "+
 					"matching [%s]. Set 'most_recent' to true in your configuration to force the most recent reserved capacity "+
 					"to be used", name))
 		}

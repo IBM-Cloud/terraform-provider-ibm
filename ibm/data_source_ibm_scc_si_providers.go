@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 )
 
@@ -44,9 +45,10 @@ func dataSourceIBMSccSiProviders() *schema.Resource {
 				},
 			},
 			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The number of elements returned in the current instance. The default is 200.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: ValidatePageSize,
+				Description:  "The number of elements returned in the current instance. The default is 200.",
 			},
 			"skip": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -90,21 +92,21 @@ func dataSourceIBMSccSiProvidersRead(context context.Context, d *schema.Resource
 		listProvidersOptions.SetLimit(int64(limit.(int)))
 	}
 
-	apiListProvidersResponse, response, err := findingsClient.ListProvidersWithContext(context, listProvidersOptions)
+	apiProviders, totalCount, err := collectAllProviders(findingsClient, context, listProvidersOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListProvidersWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListProvidersWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] ListProvidersWithContext failed %s", err)
+		return diag.FromErr(fmt.Errorf("ListProvidersWithContext failed %s", err))
 	}
 
 	d.SetId(dataSourceIBMSccSiProvidersID(d))
 
-	if apiListProvidersResponse.Providers != nil {
-		err = d.Set("providers", dataSourceAPIListProvidersResponseFlattenProviders(apiListProvidersResponse.Providers))
+	if apiProviders != nil {
+		err = d.Set("providers", dataSourceAPIListProvidersResponseFlattenProviders(apiProviders))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting providers %s", err))
 		}
 	}
-	if err = d.Set("total_count", intValue(apiListProvidersResponse.TotalCount)); err != nil {
+	if err = d.Set("total_count", intValue(totalCount)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
@@ -114,6 +116,39 @@ func dataSourceIBMSccSiProvidersRead(context context.Context, d *schema.Resource
 // dataSourceIBMSccSiProviderID returns a reasonable ID for the list.
 func dataSourceIBMSccSiProvidersID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
+}
+
+func collectAllProviders(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListProvidersOptions) ([]findingsv1.APIProvider, *int64, error) {
+	finalList := []findingsv1.APIProvider{}
+	totalCount := core.Int64Ptr(0)
+
+	for {
+		apiListProvidersResponse, response, err := findingsClient.ListProvidersWithContext(ctx, options)
+		if err != nil {
+			return nil, core.Int64Ptr(0), fmt.Errorf("%s\n%s", err, response)
+		}
+
+		totalCount = apiListProvidersResponse.TotalCount
+
+		finalList = append(finalList, apiListProvidersResponse.Providers...)
+
+		// if user has specified some limit, then stop once finalList has length equal to the limit specified
+		if options.Limit != nil && int64(len(finalList)) == *options.Limit {
+			break
+		}
+
+		// if skip is specified, then stop once the finalList has length equal to difference of totalCount and skip
+		if options.Skip != nil && int64(len(finalList)) == *apiListProvidersResponse.TotalCount-*options.Skip {
+			break
+		}
+
+		// if user has not specified the limit, then stop once the finalList has length equal to totalCount
+		if options.Limit == nil && int64(len(finalList)) == *apiListProvidersResponse.TotalCount {
+			break
+		}
+	}
+
+	return finalList, totalCount, nil
 }
 
 func dataSourceAPIListProvidersResponseFlattenProviders(result []findingsv1.APIProvider) (providers []map[string]interface{}) {

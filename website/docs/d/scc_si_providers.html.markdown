@@ -29,7 +29,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the scc_si_provider.
+* `id` - The unique identifier of the scc_si_providers.
 * `limit` - (Optional, Integer) The number of elements returned in the current instance. The default is 200.
 
 * `providers` - (Optional, List) The providers requested.

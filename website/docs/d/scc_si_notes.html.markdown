@@ -14,7 +14,7 @@ Provides a read-only data source for scc_si_notes. You can then reference the fi
 
 ```hcl
 data "ibm_scc_si_notes" "notes" {
-  page_size = 3
+  provider_id = "tf-test"
 }
 ```
 
@@ -23,6 +23,7 @@ data "ibm_scc_si_notes" "notes" {
 Review the argument reference that you can specify for your data source.
 
 * `account_id` - (Optional, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
+* `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
 * `pages_size` - (Optional, String) Number of notes to return in the list.
 * `page_token` - (Optional, String) Token to provide to skip to a particular spot in the list.
 
