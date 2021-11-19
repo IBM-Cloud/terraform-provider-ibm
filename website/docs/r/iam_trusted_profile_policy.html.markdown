@@ -164,6 +164,25 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 }
 ```
 
+### Trusted Profile Policy using service_type with region
+
+```terraform
+resource "ibm_iam_trusted_profile" "profileID" {
+  name = "test"
+}
+
+resource "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile.profileID.id
+  roles      = ["Viewer"]
+
+  resources {
+    service_type = "service"
+    region = "us-south"
+  }
+}
+
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -174,7 +193,9 @@ Review the argument references that you can specify for your resource.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
-  - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`.
+  - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`. Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note**  The policy resource must include either the service_type, service, or resourceGroupId attribute and the accountId attribute. 
+  Attributes service, service_type are mutually exclusive.
   - `resource_instance_id` - (Optional, String) The ID of the resource instance of the policy definition.
   - `region` - (Optional, String) The region of the policy definition.
   - `resource_type` - (Optional, String) The resource type of the policy definition.
