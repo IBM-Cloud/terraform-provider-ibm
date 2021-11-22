@@ -509,6 +509,8 @@ func Provider() *schema.Provider {
 			"ibm_tg_gateways":  transitgateway.DataSourceIBMTransitGateways(),
 			"ibm_tg_locations": transitgateway.DataSourceIBMTransitGatewaysLocations(),
 			"ibm_tg_location":  transitgateway.DataSourceIBMTransitGatewaysLocation(),
+			"ibm_tg_route_report":  dataSourceIBMTransitGatewayRouteReport(),
+			"ibm_tg_route_reports": dataSourceIBMTransitGatewayRouteReports(),
 
 			// //Added for BSS Enterprise
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
@@ -841,6 +843,7 @@ func Provider() *schema.Provider {
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":    transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection": transitgateway.ResourceIBMTransitGatewayConnection(),
+			"ibm_tg_route_report": resourceIBMTransitGatewayRouteReport(),
 
 			// //Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
