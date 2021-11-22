@@ -42,9 +42,7 @@ func testAccCheckIBMContainerALBCreateDestroy(s *terraform.State) error {
 			continue
 		}
 
-		fmt.Println("DESTROY ibm_container_alb_create")
 		albID := rs.Primary.ID
-		fmt.Println("DESTROY ibm_container_alb_create ID: ", albID)
 		targetEnv := v1.ClusterTargetHeader{
 			Region: "us-south",
 		}
@@ -55,10 +53,9 @@ func testAccCheckIBMContainerALBCreateDestroy(s *terraform.State) error {
 		}
 		albAPI := csClient.Albs()
 		resp, err := albAPI.GetALB(albID, targetEnv)
-		fmt.Println("DESTROY resp: ", resp)
 
 		if err == nil {
-			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Instance still exists: %s, values: %v", rs.Primary.ID, resp)
 		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

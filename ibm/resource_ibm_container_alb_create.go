@@ -78,10 +78,8 @@ func resourceIBMContainerAlbCreate() *schema.Resource {
 
 			//response
 			"alb_id": {
-				Type: schema.TypeString,
-				//Required:    false,
+				Type:        schema.TypeString,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The ID of the application load balancer (ALB).",
 			},
 			"name": {
@@ -90,32 +88,23 @@ func resourceIBMContainerAlbCreate() *schema.Resource {
 				Description: "ALB name",
 			},
 			"disable_deployment": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"enable"},
-				Description:   "Set to true if ALB needs to be disabled",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Set to true if ALB needs to be disabled",
 			},
 			"user_ip": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "IP assigned by the user",
 			},
 			"replicas": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "number of instances",
 			},
 			"resize": {
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "resize",
 			},
 		},
@@ -139,47 +128,38 @@ func resourceIBMContainerClassicAlbCreate(d *schema.ResourceData, meta interface
 	// "vlanID": "string", //mandatory
 	// "zone": "string" //mandatory
 
+	params := v1.CreateALB{}
+
+	if v, ok := d.GetOkExists("alb_type"); ok {
+		params.Type = v.(string)
+	}
+
+	if v, ok := d.GetOkExists("vlan_id"); ok {
+		params.VlanID = v.(string)
+	}
+
+	if v, ok := d.GetOkExists("zone"); ok {
+		params.Zone = v.(string)
+	}
+
+	if v, ok := d.GetOk("enable"); ok {
+		params.EnableByDefault = v.(bool)
+	}
+
+	if v, ok := d.GetOk("ingress_image"); ok {
+		params.IngressImage = v.(string)
+	}
+
+	if v, ok := d.GetOk("ip"); ok {
+		params.IP = v.(string)
+	}
+
+	if v, ok := d.GetOk("nlb_version"); ok {
+		params.NLBVersion = v.(string)
+	}
 	var cluster string
 	if v, ok := d.GetOkExists("cluster"); ok {
 		cluster = v.(string)
-	} else {
-		return fmt.Errorf("Provide `clusterIDorName`")
-	}
-
-	var albType string
-	if v, ok := d.GetOkExists("alb_type"); ok {
-		albType = v.(string)
-	} else {
-		return fmt.Errorf("Provide `alb_type`")
-	}
-
-	var vlanID string
-	if v, ok := d.GetOkExists("vlan_id"); ok {
-		vlanID = v.(string)
-	} else {
-		return fmt.Errorf("Provide `vlanID`")
-	}
-
-	var zone string
-	if v, ok := d.GetOkExists("zone"); ok {
-		zone = v.(string)
-	} else {
-		return fmt.Errorf("Provide `zone`")
-	}
-
-	enableByDefault := d.Get("enable").(bool)
-	ingressImage := d.Get("ingress_image").(string)
-	ip := d.Get("ip").(string)
-	nlbVersion := d.Get("nlb_version").(string)
-
-	params := v1.CreateALB{
-		Zone:            zone,
-		VlanID:          vlanID,
-		Type:            albType,
-		EnableByDefault: enableByDefault,
-		IP:              ip,
-		NLBVersion:      nlbVersion,
-		IngressImage:    ingressImage,
 	}
 
 	targetEnv, err := getAlbTargetHeader(d, meta)

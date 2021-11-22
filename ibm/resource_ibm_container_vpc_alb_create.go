@@ -4,7 +4,6 @@
 package ibm
 
 import (
-	"fmt"
 	"time"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -24,13 +23,6 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 
-			//post req
-			// "enable_by_default": {
-			// 	Type:        schema.TypeBool,
-			// 	Optional:    true,
-			// 	Default:     true,
-			// 	Description: "If set to true, the ALB is enabled by default.",
-			// },
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -42,12 +34,6 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The zone where you want to deploy the ALB.",
-			},
-			"ingress_image": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The type of Ingress image that you want to use for your ALB deployment.",
 			},
 			"cluster": {
 				Type:        schema.TypeString,
@@ -63,8 +49,7 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 
 			//response
 			"alb_id": {
-				Type: schema.TypeString,
-				//Required:    false,
+				Type:        schema.TypeString,
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The ID of the application load balancer (ALB).",
@@ -77,18 +62,14 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Description: "Type of the ALB",
 			},
 			"enable": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				ConflictsWith: []string{"disable_deployment"},
-				Description:   "Enable the ALB instance in the cluster",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Enable the ALB instance in the cluster",
 			},
 			"disable_deployment": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"enable"},
-				Description:   "Disable the ALB instance in the cluster",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Disable the ALB instance in the cluster",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -127,34 +108,22 @@ func resourceIBMContainerVpcAlbCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	albAPI := albClient.Albs()
 
-	var cluster string
+	params := v2.AlbCreateReq{}
+
 	if v, ok := d.GetOkExists("cluster"); ok {
-		cluster = v.(string)
-	} else {
-		return fmt.Errorf("Provide `clusterIDorName`")
+		params.Cluster = v.(string)
 	}
 
-	var albType string
 	if v, ok := d.GetOkExists("type"); ok {
-		albType = v.(string)
-	} else {
-		return fmt.Errorf("Provide `type`")
+		params.Type = v.(string)
 	}
 
-	var zone string
 	if v, ok := d.GetOkExists("zone"); ok {
-		zone = v.(string)
-	} else {
-		return fmt.Errorf("Provide `zone`")
+		params.ZoneAlb = v.(string)
 	}
 
-	enableByDefault := d.Get("enable").(bool)
-
-	params := v2.AlbCreateReq{
-		ZoneAlb:         zone,
-		Type:            albType,
-		EnableByDefault: enableByDefault,
-		Cluster:         cluster,
+	if v, ok := d.GetOk("enable"); ok {
+		params.EnableByDefault = v.(bool)
 	}
 
 	targetEnv, _ := getVpcClusterTargetHeader(d, meta)

@@ -420,7 +420,7 @@ func isWaitForPublicGatewayDeleted(pg *vpcv1.VpcV1, id string, timeout time.Dura
 
 func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is pubic gateway delete function here")
 		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 			ID: &id,
 		}
