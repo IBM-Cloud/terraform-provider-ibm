@@ -29,5 +29,6 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+* `id` - The unique identifier of the scc_account_settings.
 * `location_id` - (Required, String) The programatic ID of the location that you want to work in.
   * Constraints: Allowable values are: `us`, `eu`, `uk`.

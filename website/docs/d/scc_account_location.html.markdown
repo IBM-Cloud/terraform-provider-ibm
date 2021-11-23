@@ -29,6 +29,8 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+* `id` - The unique identifier of the scc_account_location.
+
 * `analytics_endpoint_url` - (String) The endpoint that is used to generate analytics for the Posture Management component.
 
 * `compliance_endpoint_url` - (String) The endpoint that is used to call the Posture Management APIs.
