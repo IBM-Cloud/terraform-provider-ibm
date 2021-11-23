@@ -22,5 +22,5 @@ data "ibm_scc_account_location_settings" "scc_account_location_settings" {
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - (Required, String) The programatic ID of the location that you want to work in.
+* `id` - (String) The programatic ID of the location that you want to work in.
   * Constraints: Allowable values are: `us`, `eu`, `uk`.

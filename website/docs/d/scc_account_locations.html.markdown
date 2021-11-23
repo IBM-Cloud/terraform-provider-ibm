@@ -23,7 +23,7 @@ data "ibm_scc_account_locations" "scc_account_locations" {
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the scc_account_locations.
-* `locations` - (Required, List)
+* `locations` - (List)
 Nested scheme for **locations**:
 	* `analytics_endpoint_url` - (String) The endpoint that is used to generate analytics for the Posture Management component.
 	* `compliance_endpoint_url` - (String) The endpoint that is used to call the Posture Management APIs.
@@ -33,7 +33,7 @@ Nested scheme for **locations**:
 	* `main_endpoint_url` - (String) The base URL for the service.
 	* `regions` - (List)
 	Nested scheme for **regions**:
-		* `id` - (Required, String) The programatic ID of the available regions.
+		* `id` - (String) The programatic ID of the available regions.
 		  * Constraints: Allowable values are: `us`, `eu`, `uk`.
 	* `results_endpoint_url` - (String) The endpoint that is used to get the results for the Configuration Governance component.
 	* `si_endpoint_url` - (String) The endpoint that is used to call the Security Insights APIs.
