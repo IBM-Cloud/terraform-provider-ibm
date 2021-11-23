@@ -1534,7 +1534,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
 		if err != nil {
-			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("us-south")
+			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("global")
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
