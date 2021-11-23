@@ -477,9 +477,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_si_notes":                  dataSourceIBMSccSiNotes(),
 			"ibm_scc_si_occurrence":             dataSourceIBMSccSiOccurrence(),
 			"ibm_scc_si_occurrences":            dataSourceIBMSccSiOccurrences(),
-			"ibm_scc_account_location":          dataSourceIbmSccAccountLocation(),
+			"ibm_scc_account_location":  				 dataSourceIbmSccAccountLocation(),
 			"ibm_scc_account_locations":         dataSourceIbmSccAccountLocations(),
-			"ibm_scc_account_location_settings": dataSourceIbmSccAccountLocationSettings(),
+			"ibm_scc_account_settings":          dataSourceIbmSccAccountLocationSettings(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),

@@ -18,8 +18,8 @@ func TestAccIbmSccAccountLocationSettingsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccAccountLocationSettingsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_account_location_settings.scc_account_location_settings", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_account_location_settings.scc_account_location_settings", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_account_settings.scc_account_location_settings", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_account_settings.scc_account_location_settings", "id"),
 				),
 			},
 		},
@@ -28,7 +28,7 @@ func TestAccIbmSccAccountLocationSettingsDataSourceBasic(t *testing.T) {
 
 func testAccCheckIbmSccAccountLocationSettingsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_scc_account_location_settings" "scc_account_location_settings" {
+		data "ibm_scc_account_settings" "scc_account_location_settings" {
 		}
 	`)
 }

@@ -7,5 +7,5 @@ output "location_details" {
 }
 
 output "current_location_settings_details" {
-  value = data.ibm_scc_account_location_settings.scc_account_location_settings_instance
+  value = data.ibm_scc_account_settings.scc_account_location_settings_instance
 }
