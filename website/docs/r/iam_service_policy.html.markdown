@@ -202,7 +202,7 @@ resource "ibm_iam_service_policy" "policy" {
   roles          = ["Viewer"]
 
   resources {
-		service_type = "service"
+    service_type = "service"
     region = "us-south"
 	}
 }
