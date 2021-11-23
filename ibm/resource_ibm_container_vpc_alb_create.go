@@ -46,7 +46,11 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Optional:    true,
 				Description: "ID of the resource group.",
 			},
-
+			"enable": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Enable the ALB instance in the cluster",
+			},
 			//response
 			"alb_id": {
 				Type:        schema.TypeString,
@@ -60,11 +64,6 @@ func resourceIBMContainerVpcAlbCreateNew() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Type of the ALB",
-			},
-			"enable": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Enable the ALB instance in the cluster",
 			},
 			"disable_deployment": {
 				Type:        schema.TypeBool,
