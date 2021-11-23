@@ -1,14 +1,14 @@
 ---
 layout: "ibm"
 subcategory: "Security and Compliance Center"
-page_title: "IBM : ibm_scc_si_occurence"
+page_title: "IBM : ibm_scc_si_occurrence"
 description: |-
-  Manages scc_si_occurence.
+  Manages scc_si_occurrence.
 ---
 
-# ibm_scc_si_occurence
+# ibm_scc_si_occurrence
 
-Provides a resource for scc_si_occurence. This allows scc_si_occurence to be created, updated and deleted.
+Provides a resource for scc_si_occurrence. This allows scc_si_occurrence to be created, updated and deleted.
 
 ## Example Usage
 
@@ -94,7 +94,7 @@ Nested scheme for **finding**:
 		* `url` - (Optional, String) The URL associated to this next steps.
 	* `severity` - (Optional, String) Note provider-assigned severity/impact ranking- LOW&#58; Low Impact- MEDIUM&#58; Medium Impact- HIGH&#58; High Impact- CRITICAL&#58; Critical Impact.
 	  * Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-* `kind` - (Required, String) The type of note. Use this field to filter notes and occurences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
+* `kind` - (Required, String) The type of note. Use this field to filter notes and occurrences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
   * Constraints: Allowable values are: `FINDING`, `KPI`, `CARD`, `CARD_CONFIGURED`, `SECTION`.
 * `kpi` - (Optional, List) Kpi provides details about a KPI occurrence.
 Nested scheme for **kpi**:
@@ -112,13 +112,13 @@ Nested scheme for **kpi**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the scc_si_occurence.
+* `id` - The unique identifier of the scc_si_occurrence.
 * `create_time` - (Optional, String) Output only. The time this `Occurrence` was created.
 * `update_time` - (Optional, String) Output only. The time this `Occurrence` was last updated.
 
 ## Import
 
-You can import the `ibm_scc_si_occurence` resource by using `id`.
+You can import the `ibm_scc_si_occurrence` resource by using `id`.
 The `id` property can be formed from `provider_id`, and `occurrence_id` in the following format:
 
 ```
@@ -130,5 +130,5 @@ The `id` property can be formed from `provider_id`, and `occurrence_id` in the f
 
 # Syntax
 ```
-$ terraform import ibm_scc_si_occurence.scc_si_occurence <provider_id>/<occurrence_id>
+$ terraform import ibm_scc_si_occurrence.scc_si_occurrence <account_id>/<provider_id>/<occurrence_id>
 ```

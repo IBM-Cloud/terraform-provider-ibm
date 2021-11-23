@@ -2674,6 +2674,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
+	if os.Getenv("TF_LOG") != "" {
+		logDestination := log.Writer()
+		goLogger := log.New(logDestination, "", log.LstdFlags)
+		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
+	}
 	return session, nil
 }
 
@@ -2720,7 +2725,7 @@ func newSession(c *Config) (*Session, error) {
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
@@ -2743,7 +2748,7 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,

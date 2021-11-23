@@ -296,6 +296,8 @@ func Provider() *schema.Provider {
 			"ibm_is_placement_group":                 dataSourceIbmIsPlacementGroup(),
 			"ibm_is_placement_groups":                dataSourceIbmIsPlacementGroups(),
 			"ibm_is_floating_ip":                     dataSourceIBMISFloatingIP(),
+			"ibm_is_floating_ips":                    dataSourceIBMIsFloatingIps(),
+			"ibm_is_flow_log":                        dataSourceIBMIsFlowLog(),
 			"ibm_is_flow_logs":                       dataSourceIBMISFlowLogs(),
 			"ibm_is_image":                           dataSourceIBMISImage(),
 			"ibm_is_images":                          dataSourceIBMISImages(),
@@ -318,6 +320,8 @@ func Provider() *schema.Provider {
 			"ibm_is_instance_profiles":               dataSourceIBMISInstanceProfiles(),
 			"ibm_is_instance":                        dataSourceIBMISInstance(),
 			"ibm_is_instances":                       dataSourceIBMISInstances(),
+			"ibm_is_instance_network_interface":      dataSourceIBMIsInstanceNetworkInterface(),
+			"ibm_is_instance_network_interfaces":     dataSourceIBMIsInstanceNetworkInterfaces(),
 			"ibm_is_instance_disk":                   dataSourceIbmIsInstanceDisk(),
 			"ibm_is_instance_disks":                  dataSourceIbmIsInstanceDisks(),
 			"ibm_is_instance_volume_attachment":      dataSourceIBMISInstanceVolumeAttachment(),
@@ -383,11 +387,13 @@ func Provider() *schema.Provider {
 			"ibm_space":                              dataSourceIBMSpace(),
 
 			// Added for Schematics
-			"ibm_schematics_workspace": dataSourceIBMSchematicsWorkspace(),
-			"ibm_schematics_output":    dataSourceIBMSchematicsOutput(),
-			"ibm_schematics_state":     dataSourceIBMSchematicsState(),
-			"ibm_schematics_action":    dataSourceIBMSchematicsAction(),
-			"ibm_schematics_job":       dataSourceIBMSchematicsJob(),
+			"ibm_schematics_workspace":      dataSourceIBMSchematicsWorkspace(),
+			"ibm_schematics_output":         dataSourceIBMSchematicsOutput(),
+			"ibm_schematics_state":          dataSourceIBMSchematicsState(),
+			"ibm_schematics_action":         dataSourceIBMSchematicsAction(),
+			"ibm_schematics_job":            dataSourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      dataSourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": dataSourceIBMSchematicsResourceQuery(),
 
 			// Added for Power Resources
 
@@ -633,6 +639,7 @@ func Provider() *schema.Provider {
 			"ibm_is_flow_log":                                    resourceIBMISFlowLog(),
 			"ibm_is_instance":                                    resourceIBMISInstance(),
 			"ibm_is_instance_action":                             resourceIBMISInstanceAction(),
+			"ibm_is_instance_network_interface":                  resourceIBMIsInstanceNetworkInterface(),
 			"ibm_is_instance_disk_management":                    resourceIBMISInstanceDiskManagement(),
 			"ibm_is_instance_group":                              resourceIBMISInstanceGroup(),
 			"ibm_is_instance_group_membership":                   resourceIBMISInstanceGroupMembership(),
@@ -731,6 +738,9 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
 			"ibm_pi_cloud_connection":    resourceIBMPICloudConnection(),
+			"ibm_pi_ike_policy":          resourceIBMPIIKEPolicy(),
+			"ibm_pi_ipsec_policy":        resourceIBMPIIPSecPolicy(),
+			"ibm_pi_vpn_connection":      resourceIBMPIVPNConnection(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
@@ -765,9 +775,11 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account":       resourceIbmEnterpriseAccount(),
 
 			//Added for Schematics
-			"ibm_schematics_workspace": resourceIBMSchematicsWorkspace(),
-			"ibm_schematics_action":    resourceIBMSchematicsAction(),
-			"ibm_schematics_job":       resourceIBMSchematicsJob(),
+			"ibm_schematics_workspace":      resourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":         resourceIBMSchematicsAction(),
+			"ibm_schematics_job":            resourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      resourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": resourceIBMSchematicsResourceQuery(),
 
 			//satellite  resources
 			"ibm_satellite_location":            resourceIBMSatelliteLocation(),
@@ -860,6 +872,7 @@ func Validator() ValidatorDict {
 				"ibm_is_instance_template":                resourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                         resourceIBMISInstanceValidator(),
 				"ibm_is_instance_action":                  resourceIBMISInstanceActionValidator(),
+				"ibm_is_instance_network_interface":       resourceIBMIsInstanceNetworkInterfaceValidator(),
 				"ibm_is_instance_disk_management":         resourceIBMISInstanceDiskManagementValidator(),
 				"ibm_is_instance_volume_attachment":       resourceIBMISInstanceVolumeAttachmentValidator(),
 				"ibm_is_ipsec_policy":                     resourceIBMISIPSECValidator(),
@@ -895,6 +908,8 @@ func Validator() ValidatorDict {
 				"ibm_schematics_action":                   resourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                      resourceIBMSchematicsJobValidator(),
 				"ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
+				"ibm_schematics_inventory":                resourceIBMSchematicsInventoryValidator(),
+				"ibm_schematics_resource_query":           resourceIBMSchematicsResourceQueryValidator(),
 				"ibm_resource_instance":                   resourceIBMResourceInstanceValidator(),
 				"ibm_is_virtual_endpoint_gateway":         resourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        resourceIBMResourceTagValidator(),
