@@ -24,11 +24,6 @@ func dataSourceIbmSccAccountLocation() *schema.Resource {
 				Required:    true,
 				Description: "The programatic ID of the location that you want to work in.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The programatic ID of the location that you want to work in.",
-			},
 			"main_endpoint_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -93,9 +88,6 @@ func dataSourceIbmSccAccountLocationRead(context context.Context, d *schema.Reso
 	}
 
 	d.SetId(*location.ID)
-	if err = d.Set("id", location.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 	if err = d.Set("main_endpoint_url", location.MainEndpointURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting main_endpoint_url: %s", err))
 	}

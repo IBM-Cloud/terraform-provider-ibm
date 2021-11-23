@@ -22,11 +22,5 @@ data "ibm_scc_account_location_settings" "scc_account_location_settings" {
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the scc_account_location_settings.
-* `cleanup_inactive_locations` - (Required, Boolean) Used to determine when to delete data in an inactive location.
-
 * `id` - (Required, String) The programatic ID of the location that you want to work in.
   * Constraints: Allowable values are: `us`, `eu`, `uk`.
-
-* `modified` - (Required, String) The time that the location was last updated.
-

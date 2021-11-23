@@ -30,16 +30,6 @@ func resourceIBMSccAccountSettings() *schema.Resource {
 				ValidateFunc: InvokeValidator("ibm_scc_account_settings", "location_id"),
 				Description:  "The programatic ID of the location that you want to work in.",
 			},
-			"modified": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The time that the location was last updated.",
-			},
-			"cleanup_inactive_locations": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Used to determine when to delete data in an inactive location.",
-			},
 		},
 	}
 }
@@ -100,6 +90,8 @@ func resourceIbmSccAccountSettingsUpdate(context context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("PatchAccountSettingsWithContext failed %s\n%s", err, response))
 	}
 
+	d.SetId(locationID)
+
 	return resourceIbmSccAccountSettingsRead(context, d, meta)
 }
 
@@ -120,5 +112,5 @@ func resourceIBMSccAccountSettingsValidator() *ResourceValidator {
 }
 
 func resourceIbmSccAccountSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return resourceIbmSccAccountSettingsRead(context, d, meta)
+	return nil
 }

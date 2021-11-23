@@ -29,24 +29,22 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the scc_account_location.
-* `analytics_endpoint_url` - (Optional, String) The endpoint that is used to generate analytics for the Posture Management component.
+* `analytics_endpoint_url` - (String) The endpoint that is used to generate analytics for the Posture Management component.
 
-* `compliance_endpoint_url` - (Optional, String) The endpoint that is used to call the Posture Management APIs.
+* `compliance_endpoint_url` - (String) The endpoint that is used to call the Posture Management APIs.
 
-* `governance_endpoint_url` - (Optional, String) The endpoint that is used to call the Configuration Governance APIs.
+* `governance_endpoint_url` - (String) The endpoint that is used to call the Configuration Governance APIs.
 
-* `id` - (Optional, String) The programatic ID of the location that you want to work in.
+* `id` - (String) The programatic ID of the location that you want to work in.
   * Constraints: Allowable values are: `us`, `eu`, `uk`.
 
-* `main_endpoint_url` - (Optional, String) The base URL for the service.
+* `main_endpoint_url` - (String) The base URL for the service.
 
-* `regions` - (Optional, List) 
+* `regions` - (List)
 Nested scheme for **regions**:
 	* `id` - (Required, String) The programatic ID of the available regions.
 	  * Constraints: Allowable values are: `us`, `eu`, `uk`.
 
-* `results_endpoint_url` - (Optional, String) The endpoint that is used to get the results for the Configuration Governance component.
+* `results_endpoint_url` - (String) The endpoint that is used to get the results for the Configuration Governance component.
 
-* `si_endpoint_url` - (Optional, String) The endpoint that is used to call the Security Insights APIs.
-
+* `si_endpoint_url` - (String) The endpoint that is used to call the Security Insights APIs.
