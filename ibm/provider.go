@@ -471,9 +471,12 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers": dataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":      dataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":     dataSourceIBMSccSiNotes(),
+			"ibm_scc_si_providers":      dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":           dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":          dataSourceIBMSccSiNotes(),
+			"ibm_scc_account_location":  dataSourceIbmSccAccountLocation(),
+			"ibm_scc_account_locations": dataSourceIbmSccAccountLocations(),
+			"ibm_scc_account_settings":  dataSourceIbmSccAccountLocationSettings(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
@@ -777,7 +780,8 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_note": resourceIBMSccSiNote(),
+			"ibm_scc_si_note":          resourceIBMSccSiNote(),
+			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
 
 			// Added for Event Notifications
 			"ibm_en_destination":  resourceIBMEnDestination(),
@@ -906,6 +910,7 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_account_settings":    resourceIBMSccAccountSettingsValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
 			},
