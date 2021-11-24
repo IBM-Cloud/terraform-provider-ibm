@@ -58,6 +58,7 @@ var regionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
+var InstanceName string
 var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
@@ -72,6 +73,8 @@ var workspaceID string
 var templateID string
 var actionID string
 var jobID string
+var repoURL string
+var repoBranch string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
@@ -96,6 +99,7 @@ var pi_network_name string
 var pi_cloud_instance_id string
 var pi_instance_name string
 var pi_dhcp_id string
+var piCloudConnectionName string
 
 // For Image
 
@@ -124,6 +128,11 @@ var scc_posture_scan_id string
 var scc_posture_profile_id string
 
 func init() {
+	testlogger := os.Getenv("TF_LOG")
+	if testlogger != "" {
+		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
@@ -162,7 +171,6 @@ func init() {
 		datacenter = "par01"
 		fmt.Println("[WARN] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
-
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
@@ -391,6 +399,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
 	}
 
+	InstanceName = os.Getenv("IS_INSTANCE_NAME")
+	if InstanceName == "" {
+		InstanceName = "placement-check-ins" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
+	}
+
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if instanceProfileName == "" {
 		//instanceProfileName = "bc1-2x8" // for classic infrastructure
@@ -512,6 +526,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_DHCP_ID for testing ibm_pi_dhcp resource else it is set to default value 'terraform-test-power'")
 	}
 
+	piCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
+	if piCloudConnectionName == "" {
+		piCloudConnectionName = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
+	}
+
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
 		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -531,6 +551,14 @@ func init() {
 	if actionID == "" {
 		actionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
+	repoURL = os.Getenv("SCHEMATICS_REPO_URL")
+	if repoURL == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_URL for testing schematics resources else tests will fail if this is not set correctly")
+	}
+	repoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
+	if repoBranch == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")

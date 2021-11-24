@@ -144,6 +144,7 @@ func resourceIBMUserInvite() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
 			},
 			"access_groups": {
 				Description: "access group ids to associate the inviting user",

@@ -34,8 +34,12 @@ data "ibm_schematics_output" "test" {
 Review the argument references that you can specify for your data source. 
 
 - `workspace_id` - (Required, String) The ID of the workspace for which you want to retrieve output values. To find the workspace ID, use the `GET /workspaces` API.
+- `template_id` - (Required, String) The ID of the template
+- `output_json` - (Optional, String)  The json output in string
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `id`-  (String) The unique identifier of the Schematics output.
+- `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this Workspace
+- `output_values` - (Map) Output values.

@@ -201,6 +201,24 @@ data "ibm_is_instance" "ds_instance" {
   passphrase = ""
 }
 
+
+resource "ibm_is_instance_network_interface" "is_instance_network_interface" {
+  instance = ibm_is_instance.instance1.id
+  subnet = ibm_is_subnet.subnet1.id
+  allow_ip_spoofing = true
+  name = "my-network-interface"
+  primary_ipv4_address = "10.0.0.5"
+}
+
+data "ibm_is_instance_network_interface" "is_instance_network_interface" {
+	instance_name = ibm_is_instance.instance1.name
+	network_interface_name = ibm_is_instance_network_interface.is_instance_network_interface.name
+}
+
+data "ibm_is_instance_network_interfaces" "is_instance_network_interfaces" {
+	instance_name = ibm_is_instance.instance1.name
+}
+
 resource "ibm_is_floating_ip" "floatingip1" {
   name   = "fip1"
   target = ibm_is_instance.instance1.primary_network_interface[0].id
