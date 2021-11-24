@@ -920,6 +920,7 @@ func Validator() ValidatorDict {
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
+				"ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
 
 				// Added for Event Notifications
@@ -933,7 +934,6 @@ func Validator() ValidatorDict {
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
-				"ibm_scc_account_settings":    resourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrences":      dataSourceIBMSccSiOccurrencesValidator(),
 				"ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
