@@ -96,6 +96,62 @@ resource "ibm_cos_bucket" "archive_expire_rule_cos" {
     prefix  = "logs/"
   }
 }
+resource "ibm_cos_bucket" "expirebucket" {
+  bucket_name          = "a-bucket-expiredat"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "standard"
+  force_delete         = true
+  object_versioning {
+    enable  = true
+  }
+  expire_rule {
+    rule_id = "a-bucket-expire-rule"
+    enable  = true
+    date    = "2021-11-18"
+    prefix  = "logs/"
+  }
+  noncurrent_version_expiration {
+    rule_id = "my-rule-id-bucket-ncversion"
+    enable  = true
+    prefix  = ""
+    noncurrent_days = 1
+  }
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = "a-bucket-expireddelemarkertest"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-south"
+  storage_class         = "standard"
+  object_versioning {
+    enable  = true
+  }
+  expire_rule {
+    rule_id = "my-rule-id-bucket-expired"
+    enable  = true
+    expired_object_delete_marker = true
+  }
+  noncurrent_version_expiration {
+    rule_id = "my-rule-id-bucket-ncversion"
+    enable  = true
+    prefix  = ""
+    noncurrent_days = 1
+  }
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = "a-bucket-multipartupload"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-south"
+  storage_class         = "standard"
+  abort_incomplete_multipart_upload_days {
+    rule_id = var.abort_mpu_ruleid
+    enable  = true
+    prefix  = ""
+    days_after_initiation = 1
+  }
+}
 
 resource "ibm_cos_bucket" "retention_cos" {
   bucket_name          = "a-bucket-retention"
@@ -171,13 +227,15 @@ data "ibm_cos_bucket" "standard-ams03" {
 | usage_metrics_enabled | Specify true or false to set usage metrics (i.e. bytes_used). | `bool` | no
 | request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get,put,post request). | `bool` | no
 | metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | yes
-| archive_ruleid | Unique identifier for the rule. | `string` | no
 | regional_loc | The location for a regional bucket. Supported values are au-syd, eu-de, eu-gb, jp-tok,,us-east,us-south. | `string` | no
-| archive_days | Specifies the number of days when the specific archive rule action takes effect. | `int` | yes
-| archive_types | Specifies the archive type to which you want the object to transition. Supported values are  Glacier or Accelerated. | `string` | yes
-| expire_ruleid | Unique identifier for the rule. | `string` | no
-| expire_days | Specifies the number of days when the specific expire rule action takes effect. | `int` | yes
-| expire_prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
+| type | Specifies the archive type to which you want the object to transition. Supported values are  Glacier or Accelerated. | `string` |yes
+| rule_id | Unique identifier for the rule. | `string` | no
+| days | Specifies the number of days when the specific expire rule action takes effect. | `int` | no
+| date | After the specifies date , the current version of objects in your bucket expires.. | `string` | no
+| expired_object_delete_marker | Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration. | `bool` | no
+| prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
+| noncurrent_days | Configuration parameter in your policy that says how long to retain a non-current version before deleting it. | `int` | no
+| days_after_initiation | Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. | `int` | no
 | default | Specifies a default retention period to apply in all objects in the bucket. | `int` | yes
 | maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
 | minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
