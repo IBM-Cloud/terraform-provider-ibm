@@ -33,7 +33,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Action name (unique for an account).",
+				Description:  "The unique name of your action. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. **Example** you can use the name to stop action.",
 				ValidateFunc: InvokeValidator("ibm_schematics_action", actionName),
 			},
 			"description": &schema.Schema{
@@ -45,7 +45,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_schematics_action", "location"),
-				Description:  "List of action locations supported by IBM Cloud Schematics service.  **Note** this does not limit the location of the resources provisioned using Schematics.",
+				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
@@ -68,19 +68,19 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "User defined states  * `draft` Object can be modified, and can be used by jobs run by an author, during execution  * `live` Object can be modified, and can be used by jobs during execution  * `locked` Object cannot be modified, and can be used by jobs during execution  * `disable` Object can be modified, and cannot be used by Jobs during execution.",
+							Description: "User-defined states  * `draft` Object can be modified; can be used by Jobs run by the author, during execution  * `live` Object can be modified; can be used by Jobs during execution  * `locked` Object cannot be modified; can be used by Jobs during execution  * `disable` Object can be modified. cannot be used by Jobs during execution.",
 						},
 						"set_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Name of the user who set the state of an Object.",
+							Description: "Name of the User who set the state of the Object.",
 						},
 						"set_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "When the user who set the state of an Object.",
+							Description: "When the User who set the state of the Object.",
 						},
 					},
 				},
@@ -88,7 +88,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"source_readme_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "URL of the `README` file, for the source.",
+				Description: "URL of the `README` file, for the source URL.",
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -107,6 +107,11 @@ func resourceIBMSchematicsAction() *schema.Resource {
 							Description: "Connection details to Git source.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"computed_git_repo_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The Complete URL which is computed by git_repo_url, git_repo_folder and branch.",
+									},
 									"git_repo_url": &schema.Schema{
 										Type:         schema.TypeString,
 										Optional:     true,
@@ -136,6 +141,66 @@ func resourceIBMSchematicsAction() *schema.Resource {
 								},
 							},
 						},
+						"catalog": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Connection details to IBM Cloud Catalog source.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"catalog_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "name of the private catalog.",
+									},
+									"offering_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Name of the offering in the IBM Catalog.",
+									},
+									"offering_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Version string of the offering in the IBM Catalog.",
+									},
+									"offering_kind": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Type of the offering, in the IBM Catalog.",
+									},
+									"offering_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Id of the offering the IBM Catalog.",
+									},
+									"offering_version_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Id of the offering version the IBM Catalog.",
+									},
+									"offering_repo_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Repo Url of the offering, in the IBM Catalog.",
+									},
+								},
+							},
+						},
+						"cos_bucket": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Connection details to a IBM Cloud Object Storage bucket.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cos_bucket_url": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "COS Bucket Url.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -148,109 +213,16 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"command_parameter": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Schematics job command parameter (playbook-name, capsule-name or flow-name).",
+				Description: "Schematics job command parameter (playbook-name).",
 			},
-			"bastion": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Complete target details with the user inputs and the system generated data.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Target name.",
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Target type (`cluster`, `vsi`, `icd`, `vpc`).",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Target description.",
-						},
-						"resource_query": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Resource selection query string.",
-						},
-						"credential_ref": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Override credential for each resource.  Reference to credentials values, used by all the resources.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Target ID.",
-						},
-						"created_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Targets creation time.",
-						},
-						"created_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "E-mail address of the user who created the targets.",
-						},
-						"updated_at": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Targets updation time.",
-						},
-						"updated_by": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "E-mail address of user who updated the targets.",
-						},
-						"sys_lock": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Description: "System lock status.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"sys_locked": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Is the Workspace locked by the Schematic action ?.",
-									},
-									"sys_locked_by": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Name of the user who performed the action, that lead to lock the Workspace.",
-									},
-									"sys_locked_at": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "When the user performed the action that lead to lock the Workspace ?.",
-									},
-								},
-							},
-						},
-						"resource_ids": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Computed:    true,
-							Description: "Array of the resource IDs.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-					},
-				},
-			},
-			"targets_ini": &schema.Schema{
+			"inventory": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
+				Description: "Target inventory record ID, used by the action or ansible playbook.",
 			},
 			"credentials": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
 				Description: "credentials of the Action.",
 				Elem: &schema.Resource{
@@ -365,10 +337,152 @@ func resourceIBMSchematicsAction() *schema.Resource {
 					},
 				},
 			},
+			"bastion": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Describes a bastion resource.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Bastion Name(Unique).",
+						},
+						"host": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Reference to the Inventory resource definition.",
+						},
+					},
+				},
+			},
+			"bastion_credential": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "User editable variable data & system generated reference to value.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of the variable.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Value for the variable or reference to the value.",
+						},
+						"metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "User editable metadata for the variables.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Type of the variable.",
+									},
+									"aliases": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "List of aliases for the variable name.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Description of the meta data.",
+									},
+									"default_value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Default value for the variable, if the override value is not specified.",
+									},
+									"secure": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Is the variable secure or sensitive ?.",
+									},
+									"immutable": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Is the variable readonly ?.",
+									},
+									"hidden": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If true, the variable will not be displayed on UI or CLI.",
+									},
+									"options": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"min_value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Minimum value of the variable. Applicable for integer type.",
+									},
+									"max_value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Maximum value of the variable. Applicable for integer type.",
+									},
+									"min_length": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Minimum length of the variable value. Applicable for string type.",
+									},
+									"max_length": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Maximum length of the variable value. Applicable for string type.",
+									},
+									"matches": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Regex for the variable value.",
+									},
+									"position": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Relative position of this variable in a list.",
+									},
+									"group_by": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Display name of the group this variable belongs to.",
+									},
+									"source": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Source of this meta-data.",
+									},
+								},
+							},
+						},
+						"link": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Reference link to the variable value By default the expression will point to self.value.",
+						},
+					},
+				},
+			},
+			"targets_ini": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Inventory of host and host group for the playbook in `INI` file format. For example, `\"targets_ini\": \"[webserverhost]  172.22.192.6  [dbhost]  172.22.192.5\"`. For more information, about an inventory host group syntax, see [Inventory host groups](https://cloud.ibm.com/docs/schematics?topic=schematics-schematics-cli-reference#schematics-inventory-host-grps).",
+			},
 			"action_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Input variables for an action.",
+				Description: "Input variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -484,7 +598,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"action_outputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Output variables for an action.",
+				Description: "Output variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -600,7 +714,7 @@ func resourceIBMSchematicsAction() *schema.Resource {
 			"settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Environment variables for an action.",
+				Description: "Environment variables for the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -713,15 +827,10 @@ func resourceIBMSchematicsAction() *schema.Resource {
 					},
 				},
 			},
-			"trigger_record_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ID to the trigger.",
-			},
 			"state": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Computed state of an action.",
+				Description: "Computed state of the Action.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status_code": &schema.Schema{
@@ -752,17 +861,17 @@ func resourceIBMSchematicsAction() *schema.Resource {
 						"sys_locked": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Is the Workspace locked by the Schematic action ?.",
+							Description: "Is the automation locked by a Schematic job ?.",
 						},
 						"sys_locked_by": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name of the user who performed the action, that lead to lock the Workspace.",
+							Description: "Name of the User who performed the job, that lead to the locking of the automation.",
 						},
 						"sys_locked_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "When the user performed the action that lead to lock the Workspace ?.",
+							Description: "When the User performed the job that lead to locking of the automation ?.",
 						},
 					},
 				},
@@ -822,11 +931,6 @@ func resourceIBMSchematicsAction() *schema.Resource {
 				Computed:    true,
 				Description: "E-mail address of the user who updated an action.",
 			},
-			"namespace": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the namespace.",
-			},
 			"playbook_names": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -852,7 +956,7 @@ func resourceIBMSchematicsActionValidator() *ResourceValidator {
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
 			Optional:                   true,
-			AllowedValues:              "external_scm, git_hub, git_hub_enterprise, git_lab, ibm_cloud_catalog, ibm_git_lab, local",
+			AllowedValues:              "cos_bucket, external_scm, git_hub, git_hub_enterprise, git_lab, ibm_cloud_catalog, ibm_git_lab, local",
 		},
 		ValidateSchema{
 			Identifier:                 actionName,
@@ -891,21 +995,15 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		createActionOptions.SetTags(expandStringList(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("user_state"); ok {
-		userStateAttr := d.Get("user_state").([]interface{})
-		if len(userStateAttr) > 0 {
-			userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
-			createActionOptions.SetUserState(&userState)
-		}
+		userState := resourceIBMSchematicsActionMapToUserState(d.Get("user_state.0").(map[string]interface{}))
+		createActionOptions.SetUserState(&userState)
 	}
 	if _, ok := d.GetOk("source_readme_url"); ok {
 		createActionOptions.SetSourceReadmeURL(d.Get("source_readme_url").(string))
 	}
 	if _, ok := d.GetOk("source"); ok {
-		sourceAttr := d.Get("source").([]interface{})
-		if len(sourceAttr) > 0 {
-			source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
-			createActionOptions.SetSource(&source)
-		}
+		source := resourceIBMSchematicsActionMapToExternalSource(d.Get("source.0").(map[string]interface{}))
+		createActionOptions.SetSource(&source)
 	}
 	if _, ok := d.GetOk("source_type"); ok {
 		createActionOptions.SetSourceType(d.Get("source_type").(string))
@@ -913,15 +1011,8 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 	if _, ok := d.GetOk("command_parameter"); ok {
 		createActionOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
-	if _, ok := d.GetOk("bastion"); ok {
-		bastionAttr := d.Get("bastion").([]interface{})
-		if len(bastionAttr) > 0 {
-			bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
-			createActionOptions.SetBastion(&bastion)
-		}
-	}
-	if _, ok := d.GetOk("targets_ini"); ok {
-		createActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
+	if _, ok := d.GetOk("inventory"); ok {
+		createActionOptions.SetInventory(d.Get("inventory").(string))
 	}
 	if _, ok := d.GetOk("credentials"); ok {
 		var credentials []schematicsv1.VariableData
@@ -932,23 +1023,34 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		}
 		createActionOptions.SetCredentials(credentials)
 	}
+	if _, ok := d.GetOk("bastion"); ok {
+		bastion := resourceIBMSchematicsActionMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
+		createActionOptions.SetBastion(&bastion)
+	}
+	if _, ok := d.GetOk("bastion_credential"); ok {
+		bastionCredential := resourceIBMSchematicsActionMapToVariableData(d.Get("bastion_credential.0").(map[string]interface{}))
+		createActionOptions.SetBastionCredential(&bastionCredential)
+	}
+	if _, ok := d.GetOk("targets_ini"); ok {
+		createActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
+	}
 	if _, ok := d.GetOk("action_inputs"); ok {
-		var inputs []schematicsv1.VariableData
+		var actionInputs []schematicsv1.VariableData
 		for _, e := range d.Get("action_inputs").([]interface{}) {
 			value := e.(map[string]interface{})
-			inputsItem := resourceIBMSchematicsActionMapToVariableData(value)
-			inputs = append(inputs, inputsItem)
+			actionInputsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			actionInputs = append(actionInputs, actionInputsItem)
 		}
-		createActionOptions.SetInputs(inputs)
+		createActionOptions.SetInputs(actionInputs)
 	}
 	if _, ok := d.GetOk("action_outputs"); ok {
-		var outputs []schematicsv1.VariableData
+		var actionOutputs []schematicsv1.VariableData
 		for _, e := range d.Get("action_outputs").([]interface{}) {
 			value := e.(map[string]interface{})
-			outputsItem := resourceIBMSchematicsActionMapToVariableData(value)
-			outputs = append(outputs, outputsItem)
+			actionOutputsItem := resourceIBMSchematicsActionMapToVariableData(value)
+			actionOutputs = append(actionOutputs, actionOutputsItem)
 		}
-		createActionOptions.SetOutputs(outputs)
+		createActionOptions.SetOutputs(actionOutputs)
 	}
 	if _, ok := d.GetOk("settings"); ok {
 		var settings []schematicsv1.VariableData
@@ -959,22 +1061,13 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 		}
 		createActionOptions.SetSettings(settings)
 	}
-	if _, ok := d.GetOk("trigger_record_id"); ok {
-		createActionOptions.SetTriggerRecordID(d.Get("trigger_record_id").(string))
-	}
 	if _, ok := d.GetOk("state"); ok {
-		stateAttr := d.Get("state").([]interface{})
-		if len(stateAttr) > 0 {
-			state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
-			createActionOptions.SetState(&state)
-		}
+		state := resourceIBMSchematicsActionMapToActionState(d.Get("state.0").(map[string]interface{}))
+		createActionOptions.SetState(&state)
 	}
 	if _, ok := d.GetOk("sys_lock"); ok {
-		sysLockAttr := d.Get("sys_lock").([]interface{})
-		if len(sysLockAttr) > 0 {
-			sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
-			createActionOptions.SetSysLock(&sysLock)
-		}
+		sysLock := resourceIBMSchematicsActionMapToSystemLock(d.Get("sys_lock.0").(map[string]interface{}))
+		createActionOptions.SetSysLock(&sysLock)
 	}
 	if _, ok := d.GetOk("x_github_token"); ok {
 		createActionOptions.SetXGithubToken(d.Get("x_github_token").(string))
@@ -983,7 +1076,7 @@ func resourceIBMSchematicsActionCreate(context context.Context, d *schema.Resour
 	action, response, err := schematicsClient.CreateActionWithContext(context, createActionOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateActionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("CreateActionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*action.ID)
@@ -1018,6 +1111,10 @@ func resourceIBMSchematicsActionMapToExternalSource(externalSourceMap map[string
 		externalSourceGit := resourceIBMSchematicsActionMapToExternalSourceGit(externalSourceMap["git"].([]interface{})[0].(map[string]interface{}))
 		externalSource.Git = &externalSourceGit
 	}
+	if externalSourceMap["catalog"] != nil {
+		externalSourceCatalog := resourceIBMSchematicsActionMapToExternalSourceCatalog(externalSourceMap["catalog"].([]interface{})[0].(map[string]interface{}))
+		externalSource.Catalog = &externalSourceCatalog
+	}
 
 	return externalSource
 }
@@ -1025,6 +1122,9 @@ func resourceIBMSchematicsActionMapToExternalSource(externalSourceMap map[string
 func resourceIBMSchematicsActionMapToExternalSourceGit(externalSourceGitMap map[string]interface{}) schematicsv1.ExternalSourceGit {
 	externalSourceGit := schematicsv1.ExternalSourceGit{}
 
+	if externalSourceGitMap["computed_git_repo_url"] != nil {
+		externalSourceGit.ComputedGitRepoURL = core.StringPtr(externalSourceGitMap["computed_git_repo_url"].(string))
+	}
 	if externalSourceGitMap["git_repo_url"] != nil {
 		externalSourceGit.GitRepoURL = core.StringPtr(externalSourceGitMap["git_repo_url"].(string))
 	}
@@ -1044,77 +1144,42 @@ func resourceIBMSchematicsActionMapToExternalSourceGit(externalSourceGitMap map[
 	return externalSourceGit
 }
 
-func resourceIBMSchematicsActionMapToTargetResourceset(targetResourcesetMap map[string]interface{}) schematicsv1.TargetResourceset {
-	targetResourceset := schematicsv1.TargetResourceset{}
+func resourceIBMSchematicsActionMapToExternalSourceCatalog(externalSourceCatalogMap map[string]interface{}) schematicsv1.ExternalSourceCatalog {
+	externalSourceCatalog := schematicsv1.ExternalSourceCatalog{}
 
-	if targetResourcesetMap["name"] != nil {
-		targetResourceset.Name = core.StringPtr(targetResourcesetMap["name"].(string))
+	if externalSourceCatalogMap["catalog_name"] != nil {
+		externalSourceCatalog.CatalogName = core.StringPtr(externalSourceCatalogMap["catalog_name"].(string))
 	}
-	if targetResourcesetMap["type"] != nil {
-		targetResourceset.Type = core.StringPtr(targetResourcesetMap["type"].(string))
+	if externalSourceCatalogMap["offering_name"] != nil {
+		externalSourceCatalog.OfferingName = core.StringPtr(externalSourceCatalogMap["offering_name"].(string))
 	}
-	if targetResourcesetMap["description"] != nil {
-		targetResourceset.Description = core.StringPtr(targetResourcesetMap["description"].(string))
+	if externalSourceCatalogMap["offering_version"] != nil {
+		externalSourceCatalog.OfferingVersion = core.StringPtr(externalSourceCatalogMap["offering_version"].(string))
 	}
-	if targetResourcesetMap["resource_query"] != nil {
-		targetResourceset.ResourceQuery = core.StringPtr(targetResourcesetMap["resource_query"].(string))
+	if externalSourceCatalogMap["offering_kind"] != nil {
+		externalSourceCatalog.OfferingKind = core.StringPtr(externalSourceCatalogMap["offering_kind"].(string))
 	}
-	if targetResourcesetMap["credential_ref"] != nil {
-		targetResourceset.CredentialRef = core.StringPtr(targetResourcesetMap["credential_ref"].(string))
+	if externalSourceCatalogMap["offering_id"] != nil {
+		externalSourceCatalog.OfferingID = core.StringPtr(externalSourceCatalogMap["offering_id"].(string))
 	}
-	if targetResourcesetMap["id"] != nil {
-		targetResourceset.ID = core.StringPtr(targetResourcesetMap["id"].(string))
+	if externalSourceCatalogMap["offering_version_id"] != nil {
+		externalSourceCatalog.OfferingVersionID = core.StringPtr(externalSourceCatalogMap["offering_version_id"].(string))
 	}
-	if targetResourcesetMap["created_at"] != nil {
-		createdAt, err := strfmt.ParseDateTime(targetResourcesetMap["created_at"].(string))
-		if err != nil {
-			targetResourceset.CreatedAt = &createdAt
-		}
-	}
-	if targetResourcesetMap["created_by"] != nil {
-		targetResourceset.CreatedBy = core.StringPtr(targetResourcesetMap["created_by"].(string))
-	}
-	if targetResourcesetMap["updated_at"] != nil {
-		updatedAt, err := strfmt.ParseDateTime(targetResourcesetMap["updated_at"].(string))
-		if err != nil {
-			targetResourceset.CreatedAt = &updatedAt
-		}
-	}
-	if targetResourcesetMap["updated_by"] != nil {
-		targetResourceset.UpdatedBy = core.StringPtr(targetResourcesetMap["updated_by"].(string))
-	}
-	if targetResourcesetMap["sys_lock"] != nil && len(targetResourcesetMap["sys_lock"].([]interface{})) != 0 {
-		sysLock := resourceIBMSchematicsActionMapToSystemLock(targetResourcesetMap["sys_lock"].([]interface{})[0].(map[string]interface{}))
-		targetResourceset.SysLock = &sysLock
-	}
-	if targetResourcesetMap["resource_ids"] != nil {
-		resourceIds := []string{}
-		for _, resourceIdsItem := range targetResourcesetMap["resource_ids"].([]interface{}) {
-			resourceIds = append(resourceIds, resourceIdsItem.(string))
-		}
-		targetResourceset.ResourceIds = resourceIds
+	if externalSourceCatalogMap["offering_repo_url"] != nil {
+		externalSourceCatalog.OfferingRepoURL = core.StringPtr(externalSourceCatalogMap["offering_repo_url"].(string))
 	}
 
-	return targetResourceset
+	return externalSourceCatalog
 }
 
-func resourceIBMSchematicsActionMapToSystemLock(systemLockMap map[string]interface{}) schematicsv1.SystemLock {
-	systemLock := schematicsv1.SystemLock{}
+func resourceIBMSchematicsActionMapToExternalSourceCosBucket(externalSourceCosBucketMap map[string]interface{}) schematicsv1.ExternalSourceCosBucket {
+	externalSourceCosBucket := schematicsv1.ExternalSourceCosBucket{}
 
-	if systemLockMap["sys_locked"] != nil {
-		systemLock.SysLocked = core.BoolPtr(systemLockMap["sys_locked"].(bool))
-	}
-	if systemLockMap["sys_locked_by"] != nil {
-		systemLock.SysLockedBy = core.StringPtr(systemLockMap["sys_locked_by"].(string))
-	}
-	if systemLockMap["sys_locked_at"] != nil {
-		sysLockedAt, err := strfmt.ParseDateTime(systemLockMap["sys_locked_at"].(string))
-		if err != nil {
-			systemLock.SysLockedAt = &sysLockedAt
-		}
+	if externalSourceCosBucketMap["cos_bucket_url"] != nil {
+		externalSourceCosBucket.CosBucketURL = core.StringPtr(externalSourceCosBucketMap["cos_bucket_url"].(string))
 	}
 
-	return systemLock
+	return externalSourceCosBucket
 }
 
 func resourceIBMSchematicsActionMapToVariableData(variableDataMap map[string]interface{}) schematicsv1.VariableData {
@@ -1200,6 +1265,19 @@ func resourceIBMSchematicsActionMapToVariableMetadata(variableMetadataMap map[st
 	return variableMetadata
 }
 
+func resourceIBMSchematicsActionMapToBastionResourceDefinition(bastionResourceDefinitionMap map[string]interface{}) schematicsv1.BastionResourceDefinition {
+	bastionResourceDefinition := schematicsv1.BastionResourceDefinition{}
+
+	if bastionResourceDefinitionMap["name"] != nil {
+		bastionResourceDefinition.Name = core.StringPtr(bastionResourceDefinitionMap["name"].(string))
+	}
+	if bastionResourceDefinitionMap["host"] != nil {
+		bastionResourceDefinition.Host = core.StringPtr(bastionResourceDefinitionMap["host"].(string))
+	}
+
+	return bastionResourceDefinition
+}
+
 func resourceIBMSchematicsActionMapToActionState(actionStateMap map[string]interface{}) schematicsv1.ActionState {
 	actionState := schematicsv1.ActionState{}
 
@@ -1214,6 +1292,22 @@ func resourceIBMSchematicsActionMapToActionState(actionStateMap map[string]inter
 	}
 
 	return actionState
+}
+
+func resourceIBMSchematicsActionMapToSystemLock(systemLockMap map[string]interface{}) schematicsv1.SystemLock {
+	systemLock := schematicsv1.SystemLock{}
+
+	if systemLockMap["sys_locked"] != nil {
+		systemLock.SysLocked = core.BoolPtr(systemLockMap["sys_locked"].(bool))
+	}
+	if systemLockMap["sys_locked_by"] != nil {
+		systemLock.SysLockedBy = core.StringPtr(systemLockMap["sys_locked_by"].(string))
+	}
+	if systemLockMap["sys_locked_at"] != nil {
+
+	}
+
+	return systemLock
 }
 
 func resourceIBMSchematicsActionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1233,7 +1327,7 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 			return nil
 		}
 		log.Printf("[DEBUG] GetActionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetActionWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("name", action.Name); err != nil {
@@ -1276,16 +1370,8 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 	if err = d.Set("command_parameter", action.CommandParameter); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
 	}
-	if _, ok := d.GetOk("bastion"); ok {
-		if action.Bastion != nil {
-			bastionMap := resourceIBMSchematicsActionTargetResourcesetToMap(*action.Bastion)
-			if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
-				return diag.FromErr(fmt.Errorf("Error setting bastion: %s", err))
-			}
-		}
-	}
-	if err = d.Set("targets_ini", action.TargetsIni); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting targets_ini: %s", err))
+	if err = d.Set("inventory", action.Inventory); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting inventory: %s", err))
 	}
 	if action.Credentials != nil {
 		credentials := []map[string]interface{}{}
@@ -1297,23 +1383,40 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("Error setting credentials: %s", err))
 		}
 	}
-	if action.Inputs != nil {
-		inputs := []map[string]interface{}{}
-		for _, inputsItem := range action.Inputs {
-			inputsItemMap := resourceIBMSchematicsActionVariableDataToMap(inputsItem)
-			inputs = append(inputs, inputsItemMap)
+	if _, ok := d.GetOk("bastion"); ok {
+		if action.Bastion != nil {
+			bastionMap := resourceIBMSchematicsActionBastionResourceDefinitionToMap(*action.Bastion)
+			if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting bastion: %s", err))
+			}
 		}
-		if err = d.Set("action_inputs", inputs); err != nil {
+	}
+	if action.BastionCredential != nil {
+		bastionCredentialMap := resourceIBMSchematicsActionVariableDataToMap(*action.BastionCredential)
+		if err = d.Set("bastion_credential", []map[string]interface{}{bastionCredentialMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting bastion_credential: %s", err))
+		}
+	}
+	if err = d.Set("targets_ini", action.TargetsIni); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting targets_ini: %s", err))
+	}
+	if action.Inputs != nil {
+		actionInputs := []map[string]interface{}{}
+		for _, actionInputsItem := range action.Inputs {
+			actionInputsItemMap := resourceIBMSchematicsActionVariableDataToMap(actionInputsItem)
+			actionInputs = append(actionInputs, actionInputsItemMap)
+		}
+		if err = d.Set("action_inputs", actionInputs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting action_inputs: %s", err))
 		}
 	}
 	if action.Outputs != nil {
-		outputs := []map[string]interface{}{}
-		for _, outputsItem := range action.Outputs {
-			outputsItemMap := resourceIBMSchematicsActionVariableDataToMap(outputsItem)
-			outputs = append(outputs, outputsItemMap)
+		actionOutputs := []map[string]interface{}{}
+		for _, actionOutputsItem := range action.Outputs {
+			actionOutputsItemMap := resourceIBMSchematicsActionVariableDataToMap(actionOutputsItem)
+			actionOutputs = append(actionOutputs, actionOutputsItemMap)
 		}
-		if err = d.Set("action_outputs", outputs); err != nil {
+		if err = d.Set("action_outputs", actionOutputs); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting action_outputs: %s", err))
 		}
 	}
@@ -1326,9 +1429,6 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 		if err = d.Set("settings", settings); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting settings: %s", err))
 		}
-	}
-	if err = d.Set("trigger_record_id", action.TriggerRecordID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trigger_record_id: %s", err))
 	}
 	if action.State != nil {
 		stateMap := resourceIBMSchematicsActionActionStateToMap(*action.State)
@@ -1348,40 +1448,29 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 	if err = d.Set("account", action.Account); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account: %s", err))
 	}
-	if action.SourceCreatedAt != nil {
-		if err = d.Set("source_created_at", action.SourceCreatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
-		}
+	if err = d.Set("source_created_at", dateTimeToString(action.SourceCreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source_created_at: %s", err))
 	}
 	if err = d.Set("source_created_by", action.SourceCreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_created_by: %s", err))
 	}
-	if action.SourceUpdatedAt != nil {
-		if err = d.Set("source_updated_at", action.SourceUpdatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
-		}
+	if err = d.Set("source_updated_at", dateTimeToString(action.SourceUpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source_updated_at: %s", err))
 	}
 	if err = d.Set("source_updated_by", action.SourceUpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting source_updated_by: %s", err))
 	}
-	if action.CreatedAt != nil {
-		if err = d.Set("created_at", action.CreatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
+	if err = d.Set("created_at", dateTimeToString(action.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", action.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if action.UpdatedAt != nil {
-		if err = d.Set("updated_at", action.UpdatedAt.String()); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
+	if err = d.Set("updated_at", dateTimeToString(action.UpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", action.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
-	}
-	if err = d.Set("namespace", action.Namespace); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting namespace: %s", err))
 	}
 	if action.PlaybookNames != nil && len(action.PlaybookNames) > 0 {
 		if err = d.Set("playbook_names", action.PlaybookNames); err != nil {
@@ -1397,9 +1486,15 @@ func resourceIBMSchematicsActionRead(context context.Context, d *schema.Resource
 func resourceIBMSchematicsActionUserStateToMap(userState schematicsv1.UserState) map[string]interface{} {
 	userStateMap := map[string]interface{}{}
 
-	userStateMap["state"] = userState.State
-	userStateMap["set_by"] = userState.SetBy
-	userStateMap["set_at"] = userState.SetAt.String()
+	if userState.State != nil {
+		userStateMap["state"] = userState.State
+	}
+	if userState.SetBy != nil {
+		userStateMap["set_by"] = userState.SetBy
+	}
+	if userState.SetAt != nil {
+		userStateMap["set_at"] = userState.SetAt.String()
+	}
 
 	return userStateMap
 }
@@ -1412,6 +1507,14 @@ func resourceIBMSchematicsActionExternalSourceToMap(externalSource schematicsv1.
 		GitMap := resourceIBMSchematicsActionExternalSourceGitToMap(*externalSource.Git)
 		externalSourceMap["git"] = []map[string]interface{}{GitMap}
 	}
+	if externalSource.Catalog != nil {
+		CatalogMap := resourceIBMSchematicsActionExternalSourceCatalogToMap(*externalSource.Catalog)
+		externalSourceMap["catalog"] = []map[string]interface{}{CatalogMap}
+	}
+	if externalSource.CosBucket != nil {
+		CosBucketMap := resourceIBMSchematicsActionExternalSourceCosBucketToMap(*externalSource.CosBucket)
+		externalSourceMap["cos_bucket"] = []map[string]interface{}{CosBucketMap}
+	}
 
 	return externalSourceMap
 }
@@ -1419,59 +1522,82 @@ func resourceIBMSchematicsActionExternalSourceToMap(externalSource schematicsv1.
 func resourceIBMSchematicsActionExternalSourceGitToMap(externalSourceGit schematicsv1.ExternalSourceGit) map[string]interface{} {
 	externalSourceGitMap := map[string]interface{}{}
 
-	externalSourceGitMap["git_repo_url"] = externalSourceGit.GitRepoURL
-	externalSourceGitMap["git_token"] = externalSourceGit.GitToken
-	externalSourceGitMap["git_repo_folder"] = externalSourceGit.GitRepoFolder
-	externalSourceGitMap["git_release"] = externalSourceGit.GitRelease
-	externalSourceGitMap["git_branch"] = externalSourceGit.GitBranch
+	if externalSourceGit.ComputedGitRepoURL != nil {
+		externalSourceGitMap["computed_git_repo_url"] = externalSourceGit.ComputedGitRepoURL
+	}
+	if externalSourceGit.GitRepoURL != nil {
+		externalSourceGitMap["git_repo_url"] = externalSourceGit.GitRepoURL
+	}
+	if externalSourceGit.GitToken != nil {
+		externalSourceGitMap["git_token"] = externalSourceGit.GitToken
+	}
+	if externalSourceGit.GitRepoFolder != nil {
+		externalSourceGitMap["git_repo_folder"] = externalSourceGit.GitRepoFolder
+	}
+	if externalSourceGit.GitRelease != nil {
+		externalSourceGitMap["git_release"] = externalSourceGit.GitRelease
+	}
+	if externalSourceGit.GitBranch != nil {
+		externalSourceGitMap["git_branch"] = externalSourceGit.GitBranch
+	}
 
 	return externalSourceGitMap
 }
 
-func resourceIBMSchematicsActionTargetResourcesetToMap(targetResourceset schematicsv1.TargetResourceset) map[string]interface{} {
-	targetResourcesetMap := map[string]interface{}{}
+func resourceIBMSchematicsActionExternalSourceCatalogToMap(externalSourceCatalog schematicsv1.ExternalSourceCatalog) map[string]interface{} {
+	externalSourceCatalogMap := map[string]interface{}{}
 
-	targetResourcesetMap["name"] = targetResourceset.Name
-	targetResourcesetMap["type"] = targetResourceset.Type
-	targetResourcesetMap["description"] = targetResourceset.Description
-	targetResourcesetMap["resource_query"] = targetResourceset.ResourceQuery
-	targetResourcesetMap["credential_ref"] = targetResourceset.CredentialRef
-	targetResourcesetMap["id"] = targetResourceset.ID
-	targetResourcesetMap["created_at"] = targetResourceset.CreatedAt.String()
-	targetResourcesetMap["created_by"] = targetResourceset.CreatedBy
-	targetResourcesetMap["updated_at"] = targetResourceset.UpdatedAt.String()
-	targetResourcesetMap["updated_by"] = targetResourceset.UpdatedBy
-	if targetResourceset.SysLock != nil {
-		SysLockMap := resourceIBMSchematicsActionSystemLockToMap(*targetResourceset.SysLock)
-		targetResourcesetMap["sys_lock"] = []map[string]interface{}{SysLockMap}
+	if externalSourceCatalog.CatalogName != nil {
+		externalSourceCatalogMap["catalog_name"] = externalSourceCatalog.CatalogName
 	}
-	if targetResourceset.ResourceIds != nil {
-		targetResourcesetMap["resource_ids"] = targetResourceset.ResourceIds
+	if externalSourceCatalog.OfferingName != nil {
+		externalSourceCatalogMap["offering_name"] = externalSourceCatalog.OfferingName
+	}
+	if externalSourceCatalog.OfferingVersion != nil {
+		externalSourceCatalogMap["offering_version"] = externalSourceCatalog.OfferingVersion
+	}
+	if externalSourceCatalog.OfferingKind != nil {
+		externalSourceCatalogMap["offering_kind"] = externalSourceCatalog.OfferingKind
+	}
+	if externalSourceCatalog.OfferingID != nil {
+		externalSourceCatalogMap["offering_id"] = externalSourceCatalog.OfferingID
+	}
+	if externalSourceCatalog.OfferingVersionID != nil {
+		externalSourceCatalogMap["offering_version_id"] = externalSourceCatalog.OfferingVersionID
+	}
+	if externalSourceCatalog.OfferingRepoURL != nil {
+		externalSourceCatalogMap["offering_repo_url"] = externalSourceCatalog.OfferingRepoURL
 	}
 
-	return targetResourcesetMap
+	return externalSourceCatalogMap
 }
 
-func resourceIBMSchematicsActionSystemLockToMap(systemLock schematicsv1.SystemLock) map[string]interface{} {
-	systemLockMap := map[string]interface{}{}
+func resourceIBMSchematicsActionExternalSourceCosBucketToMap(externalSourceCosBucket schematicsv1.ExternalSourceCosBucket) map[string]interface{} {
+	externalSourceCosBucketMap := map[string]interface{}{}
 
-	systemLockMap["sys_locked"] = systemLock.SysLocked
-	systemLockMap["sys_locked_by"] = systemLock.SysLockedBy
-	systemLockMap["sys_locked_at"] = systemLock.SysLockedAt.String()
+	if externalSourceCosBucket.CosBucketURL != nil {
+		externalSourceCosBucketMap["cos_bucket_url"] = externalSourceCosBucket.CosBucketURL
+	}
 
-	return systemLockMap
+	return externalSourceCosBucketMap
 }
 
 func resourceIBMSchematicsActionVariableDataToMap(variableData schematicsv1.VariableData) map[string]interface{} {
 	variableDataMap := map[string]interface{}{}
 
-	variableDataMap["name"] = variableData.Name
-	variableDataMap["value"] = variableData.Value
+	if variableData.Name != nil {
+		variableDataMap["name"] = variableData.Name
+	}
+	if variableData.Value != nil {
+		variableDataMap["value"] = variableData.Value
+	}
 	if variableData.Metadata != nil {
 		MetadataMap := resourceIBMSchematicsActionVariableMetadataToMap(*variableData.Metadata)
 		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap}
 	}
-	variableDataMap["link"] = variableData.Link
+	if variableData.Link != nil {
+		variableDataMap["link"] = variableData.Link
+	}
 
 	return variableDataMap
 }
@@ -1479,38 +1605,101 @@ func resourceIBMSchematicsActionVariableDataToMap(variableData schematicsv1.Vari
 func resourceIBMSchematicsActionVariableMetadataToMap(variableMetadata schematicsv1.VariableMetadata) map[string]interface{} {
 	variableMetadataMap := map[string]interface{}{}
 
-	variableMetadataMap["type"] = variableMetadata.Type
+	if variableMetadata.Type != nil {
+		variableMetadataMap["type"] = variableMetadata.Type
+	}
 	if variableMetadata.Aliases != nil {
 		variableMetadataMap["aliases"] = variableMetadata.Aliases
 	}
-	variableMetadataMap["description"] = variableMetadata.Description
-	variableMetadataMap["default_value"] = variableMetadata.DefaultValue
-	variableMetadataMap["secure"] = variableMetadata.Secure
-	variableMetadataMap["immutable"] = variableMetadata.Immutable
-	variableMetadataMap["hidden"] = variableMetadata.Hidden
+	if variableMetadata.Description != nil {
+		variableMetadataMap["description"] = variableMetadata.Description
+	}
+	if variableMetadata.DefaultValue != nil {
+		variableMetadataMap["default_value"] = variableMetadata.DefaultValue
+	}
+	if variableMetadata.Secure != nil {
+		variableMetadataMap["secure"] = variableMetadata.Secure
+	}
+	if variableMetadata.Immutable != nil {
+		variableMetadataMap["immutable"] = variableMetadata.Immutable
+	}
+	if variableMetadata.Hidden != nil {
+		variableMetadataMap["hidden"] = variableMetadata.Hidden
+	}
 	if variableMetadata.Options != nil {
 		variableMetadataMap["options"] = variableMetadata.Options
 	}
-	variableMetadataMap["min_value"] = intValue(variableMetadata.MinValue)
-	variableMetadataMap["max_value"] = intValue(variableMetadata.MaxValue)
-	variableMetadataMap["min_length"] = intValue(variableMetadata.MinLength)
-	variableMetadataMap["max_length"] = intValue(variableMetadata.MaxLength)
-	variableMetadataMap["matches"] = variableMetadata.Matches
-	variableMetadataMap["position"] = intValue(variableMetadata.Position)
-	variableMetadataMap["group_by"] = variableMetadata.GroupBy
-	variableMetadataMap["source"] = variableMetadata.Source
+	if variableMetadata.MinValue != nil {
+		variableMetadataMap["min_value"] = intValue(variableMetadata.MinValue)
+	}
+	if variableMetadata.MaxValue != nil {
+		variableMetadataMap["max_value"] = intValue(variableMetadata.MaxValue)
+	}
+	if variableMetadata.MinLength != nil {
+		variableMetadataMap["min_length"] = intValue(variableMetadata.MinLength)
+	}
+	if variableMetadata.MaxLength != nil {
+		variableMetadataMap["max_length"] = intValue(variableMetadata.MaxLength)
+	}
+	if variableMetadata.Matches != nil {
+		variableMetadataMap["matches"] = variableMetadata.Matches
+	}
+	if variableMetadata.Position != nil {
+		variableMetadataMap["position"] = intValue(variableMetadata.Position)
+	}
+	if variableMetadata.GroupBy != nil {
+		variableMetadataMap["group_by"] = variableMetadata.GroupBy
+	}
+	if variableMetadata.Source != nil {
+		variableMetadataMap["source"] = variableMetadata.Source
+	}
 
 	return variableMetadataMap
+}
+
+func resourceIBMSchematicsActionBastionResourceDefinitionToMap(bastionResourceDefinition schematicsv1.BastionResourceDefinition) map[string]interface{} {
+	bastionResourceDefinitionMap := map[string]interface{}{}
+
+	if bastionResourceDefinition.Name != nil {
+		bastionResourceDefinitionMap["name"] = bastionResourceDefinition.Name
+	}
+	if bastionResourceDefinition.Host != nil {
+		bastionResourceDefinitionMap["host"] = bastionResourceDefinition.Host
+	}
+
+	return bastionResourceDefinitionMap
 }
 
 func resourceIBMSchematicsActionActionStateToMap(actionState schematicsv1.ActionState) map[string]interface{} {
 	actionStateMap := map[string]interface{}{}
 
-	actionStateMap["status_code"] = actionState.StatusCode
-	actionStateMap["status_job_id"] = actionState.StatusJobID
-	actionStateMap["status_message"] = actionState.StatusMessage
+	if actionState.StatusCode != nil {
+		actionStateMap["status_code"] = actionState.StatusCode
+	}
+	if actionState.StatusJobID != nil {
+		actionStateMap["status_job_id"] = actionState.StatusJobID
+	}
+	if actionState.StatusMessage != nil {
+		actionStateMap["status_message"] = actionState.StatusMessage
+	}
 
 	return actionStateMap
+}
+
+func resourceIBMSchematicsActionSystemLockToMap(systemLock schematicsv1.SystemLock) map[string]interface{} {
+	systemLockMap := map[string]interface{}{}
+
+	if systemLock.SysLocked != nil {
+		systemLockMap["sys_locked"] = systemLock.SysLocked
+	}
+	if systemLock.SysLockedBy != nil {
+		systemLockMap["sys_locked_by"] = systemLock.SysLockedBy
+	}
+	if systemLock.SysLockedAt != nil {
+		systemLockMap["sys_locked_at"] = systemLock.SysLockedAt.String()
+	}
+
+	return systemLockMap
 }
 
 func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1573,26 +1762,33 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		updateActionOptions.SetCommandParameter(d.Get("command_parameter").(string))
 		hasChange = true
 	}
+	if d.HasChange("inventory") {
+		updateActionOptions.SetInventory(d.Get("inventory").(string))
+		hasChange = true
+	}
+	if d.HasChange("credentials") {
+		// TODO: handle Credentials of type TypeList -- not primitive, not model
+		hasChange = true
+	}
 	if d.HasChange("bastion") {
 		bastionAttr := d.Get("bastion").([]interface{})
 		if len(bastionAttr) > 0 {
-			bastion := resourceIBMSchematicsActionMapToTargetResourceset(d.Get("bastion.0").(map[string]interface{}))
+			bastion := resourceIBMSchematicsActionMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
 			updateActionOptions.SetBastion(&bastion)
 			hasChange = true
 		}
 	}
-	if d.HasChange("targets_ini") {
-		updateActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
+	if d.HasChange("inventory") {
+		updateActionOptions.SetInventory(d.Get("inventory").(string))
 		hasChange = true
 	}
-	if d.HasChange("credentials") {
-		var credentials []schematicsv1.VariableData
-		for _, e := range d.Get("credentials").([]interface{}) {
-			value := e.(map[string]interface{})
-			credentialsItem := resourceIBMSchematicsActionMapToVariableData(value)
-			credentials = append(credentials, credentialsItem)
-		}
-		updateActionOptions.SetCredentials(credentials)
+	if d.HasChange("bastion_credential") {
+		bastionCredential := resourceIBMSchematicsActionMapToVariableData(d.Get("bastion_credential.0").(map[string]interface{}))
+		updateActionOptions.SetBastionCredential(&bastionCredential)
+		hasChange = true
+	}
+	if d.HasChange("targets_ini") {
+		updateActionOptions.SetTargetsIni(d.Get("targets_ini").(string))
 		hasChange = true
 	}
 	if d.HasChange("action_inputs") {
@@ -1625,10 +1821,6 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		updateActionOptions.SetSettings(settings)
 		hasChange = true
 	}
-	if d.HasChange("trigger_record_id") {
-		updateActionOptions.SetTriggerRecordID(d.Get("trigger_record_id").(string))
-		hasChange = true
-	}
 	if d.HasChange("state") {
 		stateAttr := d.Get("state").([]interface{})
 		if len(stateAttr) > 0 {
@@ -1650,7 +1842,7 @@ func resourceIBMSchematicsActionUpdate(context context.Context, d *schema.Resour
 		_, response, err := schematicsClient.UpdateActionWithContext(context, updateActionOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateActionWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("UpdateActionWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -1670,7 +1862,7 @@ func resourceIBMSchematicsActionDelete(context context.Context, d *schema.Resour
 	response, err := schematicsClient.DeleteActionWithContext(context, deleteActionOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteActionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("DeleteActionWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

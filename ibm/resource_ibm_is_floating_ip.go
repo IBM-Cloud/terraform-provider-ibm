@@ -307,6 +307,8 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	target, ok := floatingip.Target.(*vpcv1.FloatingIPTarget)
 	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
+	} else {
+		d.Set(isFloatingIPTarget, "")
 	}
 	tags, err := GetTagsUsingCRN(meta, *floatingip.CRN)
 	if err != nil {

@@ -6,9 +6,10 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"log"
 	"time"
+
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,6 +29,7 @@ func resourceIBMIAMAccessGroupMembers() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of the access group",
+				ForceNew:    true,
 			},
 
 			"ibm_ids": {

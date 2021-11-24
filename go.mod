@@ -13,17 +13,16 @@ require (
 	github.com/IBM/container-registry-go-sdk v0.0.14
 	github.com/IBM/event-notifications-go-admin-sdk v0.0.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v4 v4.10.0
 	github.com/IBM/go-sdk-core/v5 v5.7.2
 	github.com/IBM/ibm-cos-sdk-go v1.7.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/keyprotect-go-client v0.7.0
-	github.com/IBM/networking-go-sdk v0.23.0
+	github.com/IBM/networking-go-sdk v0.23.1
 	github.com/IBM/platform-services-go-sdk v0.22.3
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.3
-	github.com/IBM/schematics-go-sdk v0.0.2
+	github.com/IBM/schematics-go-sdk v0.1.3
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
 	github.com/IBM/vpc-go-sdk v0.13.0
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect

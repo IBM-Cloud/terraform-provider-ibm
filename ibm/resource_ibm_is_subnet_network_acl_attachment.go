@@ -246,6 +246,7 @@ func resourceIBMISSubnetNetworkACLAttachmentRead(d *schema.ResourceData, meta in
 	d.Set(isNetworkACLName, *nwacl.Name)
 	d.Set(isNetworkACLCRN, *nwacl.CRN)
 	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
+	d.Set(isNetworkACLID, *nwacl.ID)
 	if nwacl.ResourceGroup != nil {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 	}
