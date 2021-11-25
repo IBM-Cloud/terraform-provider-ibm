@@ -101,12 +101,6 @@ func keyGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 	}
 	listKeysOptions := &vpcv1.ListKeysOptions{}
 
-	resourceGroup := ""
-	if rg, ok := d.GetOk("resource_group"); ok {
-		resourceGroup = rg.(string)
-		listKeysOptions.ResourceGroupID = &resourceGroup
-	}
-
 	start := ""
 	allrecs := []vpcv1.Key{}
 	for {
