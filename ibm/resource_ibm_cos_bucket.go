@@ -1394,7 +1394,6 @@ func resourceExpiryValidate(_ context.Context, diff *schema.ResourceDiff, meta i
 			if ctr > 1 {
 				return fmt.Errorf("The expiry 3 action elements (Days, Date, ExpiredObjectDeleteMarker) are all mutually exclusive. These can not be used with each other. Please set one expiry element on the same rule of expiration.")
 			}
-			return nil
 		}
 	}
 	return nil
