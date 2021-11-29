@@ -33,16 +33,15 @@ The `ibm_container_alb_create` provides the following [Timeouts](https://www.ter
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
-  
 
+- `alb_type` - (String) The type of the ALB. Supported values are `public` and `private`.
 - `cluster` - (String) The name of the cluster where the ALB is going to be created.
 - `enable` - (Optional, Bool) If set to **true**, the default Ingress ALB in your cluster is enabled and configured with the IBM-provided Ingress subdomain. If set to **false**, the default Ingress ALB is enabled in your cluster.
-- `alb_type` - (String) The type of the ALB. Supported values are `public` and `private`.
-- `vlan_id` - (String) ID of the cluster's vlan where the ALB is going to be created.
-- `zone` - (String) The name of cluster's zone where the ALB is going to be created.
 - `ingress_image` - (Optional,ForceNew,String) The type of Ingress image that you want to use for your ALB deployment.
 - `ip` - (Optional,String) The IP address that you want to assign to the ALB.
 - `nlb_version` - (Optional,String) The version of the network load balancer that you want to use for the ALB.
+- `vlan_id` - (String) ID of the cluster's vlan where the ALB is going to be created.
+- `zone` - (String) The name of cluster's zone where the ALB is going to be created.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
