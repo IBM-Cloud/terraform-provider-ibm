@@ -212,8 +212,7 @@ func TestAccIBMPIInstanceVTL(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					resource.TestCheckResourceAttrSet(instanceRes, "license_repository_capacity"),
-					resource.TestCheckResourceAttr(instanceRes, "license_repository_capacity", "3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_license_repository_capacity", "3"),
 				),
 			},
 		},

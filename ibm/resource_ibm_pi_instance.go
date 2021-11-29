@@ -540,7 +540,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		if imageData.Specifications.ImageType == "stock-vtl" {
 			body.LicenseRepositoryCapacity = int64(lrc.(int))
 		} else {
-			return fmt.Errorf("license_repository_capacity should only be used when creating VTL instances. %e", err)
+			return fmt.Errorf("pi_license_repository_capacity should only be used when creating VTL instances. %e", err)
 		}
 	}
 	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
@@ -687,13 +687,9 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if &powervmdata.VirtualCores.Min != nil {
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
-	// if &powervmdata.LicenseRepositoryCapacity != nil {
-	// 	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
-	// }
-	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
+	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 
 	return nil
-
 }
 
 func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error {

@@ -112,7 +112,6 @@ In addition to all argument reference list, you can access the following attribu
 - `min_memory` - (Float) The minimum memory that was allocated to the instance.
 - `max_memory`- (Float) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum number of virtual cores.
-- `pi_license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
 - `status` - (String) The status of the instance.
 - `pin_policy`  - (String) The pinning policy of the instance.
 - `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
