@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -415,6 +416,10 @@ func flattenCISPageRuleActions(actions []cispagerulev1.PageRulesBodyActionsItemI
 			value := item.Value.(map[string]interface{})
 			actionItemOutput[cisPageRuleActionsValueURL] = value[cisPageRuleActionsValueURL]
 			actionItemOutput[cisPageRuleActionsValueStatusCode] = value[cisPageRuleActionsValueStatusCode]
+		} else if *item.ID == cisPageRuleActionsIDBrowserCacheTTL || *item.ID == cisPageRuleActionsIDEdgeCacheTTL {
+			value := fmt.Sprintf("%v", item.Value)
+			actionItemOutput[cisPageRuleActionsValue] = value
+
 		} else {
 			actionItemOutput[cisPageRuleActionsValue] = item.Value
 		}
