@@ -271,6 +271,7 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_schema":               dataSourceIBMEventStreamsSchema(),
 			"ibm_hpcs":                               dataSourceIBMHPCS(),
 			"ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_access_group_policy":            dataSourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
 			"ibm_iam_auth_token":                     dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                   datasourceIBMIAMRoleAction(),
