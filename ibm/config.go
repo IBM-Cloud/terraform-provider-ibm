@@ -1260,7 +1260,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" {
+	// If the APIKey was configured, or the IAM refresh token is available...
+	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
 		iamURL := iamidentity.DefaultServiceURL
 		if c.Visibility == "private" || c.Visibility == "public-and-private" {
 			if c.Region == "us-south" || c.Region == "us-east" {
@@ -1272,9 +1273,21 @@ func (c *Config) ClientSession() (interface{}, error) {
 		if fileMap != nil && c.Visibility != "public-and-private" {
 			iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
 		}
-		authenticator = &core.IamAuthenticator{
-			ApiKey: c.BluemixAPIKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+
+		if c.BluemixAPIKey != "" {
+			// Construct the IamAuthenticator with the APIKey.
+			authenticator = &core.IamAuthenticator{
+				ApiKey: c.BluemixAPIKey,
+				URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
+		} else {
+			// Construct the IamAuthenticator with the IAM refresh token.
+			authenticator = &core.IamAuthenticator{
+				RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
+				ClientId:     "bx",
+				ClientSecret: "bx",
+				URL:          envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
