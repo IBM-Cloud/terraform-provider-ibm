@@ -15,11 +15,11 @@ In the following example, you can configure a ALB:
 
 ```terraform
 resource ibm_container_vpc_alb_create alb {
-	cluster = "exampleClusterID"
-	type = "private"
+  cluster = "exampleClusterID"
+  type = "private"
   zone = "us-south-1"
-	resource_group_id = "123456"
-	enable = "true"
+  resource_group_id = "123456"
+  enable = "true"
 }
 
 ```
