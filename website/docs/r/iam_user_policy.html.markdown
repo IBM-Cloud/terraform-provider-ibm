@@ -169,8 +169,7 @@ Review the argument references that you can specify for your resource.
   - `resource` - (Optional, String) The resource of the policy definition.
   - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
   - `service` - (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started). Attributes service, service_type are mutually exclusive.
-  - `service_type`  (Optional, String) The service type of the policy definition. **Note**  The policy resource must include either the service_type, service, or resourceGroupId attribute and the accountId attribute. 
-  Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
 - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
   
   Nested scheme for `resource_attributes`:

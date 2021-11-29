@@ -194,8 +194,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `resources`:
   - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`. Attributes service, service_type are mutually exclusive.
-  - `service_type`  (Optional, String) The service type of the policy definition. **Note**  The policy resource must include either the service_type, service, or resourceGroupId attribute and the accountId attribute. 
-  Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
   - `resource_instance_id` - (Optional, String) The ID of the resource instance of the policy definition.
   - `region` - (Optional, String) The region of the policy definition.
   - `resource_type` - (Optional, String) The resource type of the policy definition.
