@@ -125,9 +125,6 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 
 	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 	policies := policyList.Policies
-	if err != nil {
-		return err
-	}
 
 	if err != nil {
 		return err
