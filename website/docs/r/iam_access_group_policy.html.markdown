@@ -7,7 +7,7 @@ description: |-
   Manages IBM IAM access group policy.
 ---
 
-# ibm_access_group_policy
+# ibm_iam_access_group_policy
 
 Create, update, or delete an IAM policy for an IAM access group. For more information, about IBM access group policy, see [creating policies for account management service access](https://cloud.ibm.com/docs/account?topic=account-account-services#account-management-access).
 

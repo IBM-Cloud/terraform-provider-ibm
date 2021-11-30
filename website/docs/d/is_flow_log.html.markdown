@@ -4,7 +4,6 @@ layout: "ibm"
 page_title: "IBM : ibm_is_flow_log"
 description: |-
   Get information about FlowLogCollector
-subcategory: "Virtual Private Cloud API"
 ---
 
 # ibm_is_flow_log
