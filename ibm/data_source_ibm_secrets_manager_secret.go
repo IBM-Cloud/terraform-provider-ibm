@@ -272,7 +272,7 @@ func dataSourceIBMSecretsManagerSecretRead(context context.Context, d *schema.Re
 
 	if crnData[4] == "secrets-manager" {
 		if endpointType == "private" {
-			smEndpointURL = "https://" + instanceID + "private" + "." + region + ".secrets-manager.appdomain.cloud"
+			smEndpointURL = "https://" + instanceID + ".private." + region + ".secrets-manager.appdomain.cloud"
 		} else {
 			smEndpointURL = "https://" + instanceID + "." + region + ".secrets-manager.appdomain.cloud"
 		}
