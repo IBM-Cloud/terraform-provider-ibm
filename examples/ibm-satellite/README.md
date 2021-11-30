@@ -10,15 +10,9 @@ This example uses below modules to set up the satellite location with IBM enviro
 4. [satellite-link](modules/link) This module will create satellite link.
 5. [satellite-route](modules/route) This module will create openshift route.
 6. [satellite-endpoint](modules/endpoint) This module will create satellite endpoint.
+7. [satellite-dns](modules/dns) This module will register public IPs to control plane & open-shit cluster subdomain DNS records.
  
-## Prerequisite
-
-* Set up the IBM Cloud command line interface (CLI), the Satellite plug-in, and other related CLIs.
-* Install cli and plugin package
-```console
-    ibmcloud plugin install container-service
-```
-* Follow the Host [requirements](https://cloud.ibm.com/docs/satellite?topic=satellite-host-reqs) 
+ 
 ## Usage
 
 ```
@@ -77,6 +71,15 @@ module "satellite-cluster" {
   host_labels          = var.host_labels
 }
 
+module "satellite-dns" {
+  source = "./modules/dns"
+
+  location          = var.location
+  cluster           = var.cluster_server_url
+  control_plane_ips = var.control_plane_ips
+  cluster_ips       = var.cluster_ips
+}
+
 module "satellite-link" {
   source = "./modules/link"
 
@@ -128,9 +131,9 @@ module "satellite-endpoint" {
 | Name                           | Description                                                       | Type     | Default | Required |
 |--------------------------------|-------------------------------------------------------------------|----------|---------|----------|
 | ibmcloud_api_key               | IBM Cloud API Key.                                                | string   | n/a     | yes      |
-| resource_group                 | Resource Group Name that has to be targeted.                      | string   | n/a     | no       |
-| ibm_region                     | The location or the region in which VM instance exists.           | string   | us-east | yes      |
-| location                       | Name of the Location that has to be created                       | string   | satellite-ibm      | yes |
+| resource_group                 | Resource Group Name that has to be targeted.                      | string   | n/a     | yes      |
+| ibm_region                     | The location or the region in which VM instance exists.           | string   | us-east | no       |
+| location                       | Name of the Location that has to be created                       | string   | satellite-ibm      | no  |
 | managed_from                   | The IBM Cloud region to manage your Satellite location from.      | string   | n/a     | yes      |
 | location_zones                 | Allocate your hosts across these three zones                      | list     | ["us-east-1", "us-east-2", "us-east-3"]     | no       |
 | location_bucket                | COS bucket name                                                   | string   | n/a     | no       |
@@ -155,8 +158,8 @@ module "satellite-endpoint" {
 | server_protocol                | The protocol in the server application side. This parameter will change to default value if it is omitted even when using PATCH API. If client_protocol is 'udp', server_protocol must be 'udp'. If client_protocol is 'tcp'/'http', server_protocol could be 'tcp'/'tls' and default to 'tcp'. If client_protocol is 'tls'/'https', server_protocol could be 'tcp'/'tls' and default to 'tls'. If client_protocol is 'http-tunnel', server_protocol must be 'tcp'. | string | n/a | no |
 | server_mutual_auth             | Whether enable mutual auth in the server application side, when client_protocol is 'tls', this field is required. | bool | n/a | no |
 | reject_unauth                  | Whether reject any connection to the server application which is not authorized with the list of supplied CAs in the fields certs.server_cert. | bool | n/a | no |
-| timeout                        | The inactivity timeout in the Endpoint side. | number | n/a | no |
+| timeout                        | The inactivity timeout in the Endpoint side.                                      | number | n/a | no  |
 | created_by                     | The service or person who created the endpoint. Must be 1000 characters or fewer. | string | n/a | no |
-| client_certificate | The certs.| string | n/a | no |
+| client_certificate             | The certs.                                                                        | string | n/a | no |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -679,8 +680,8 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire
-		if r.Expiration == nil {
+		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire or non current version or abort incomplete multipart upload
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.AbortIncompleteMultipartUpload == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -714,7 +715,7 @@ func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		if r.Expiration != nil {
+		if r.Expiration != nil && r.Transitions == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -730,12 +731,86 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 			}
 
 			if r.Expiration != nil {
-				rule["days"] = int(*(r.Expiration).Days)
+				if r.Expiration.Days != nil {
+					days := int(*(r.Expiration).Days)
+					if days > 0 {
+						rule["days"] = days
+					}
+				}
+				if r.Expiration.Date != nil {
+					expirationTime := *(r.Expiration).Date
+					d := strings.Split(expirationTime.Format(time.RFC3339), "T")
+					rule["date"] = d[0]
+				}
+
+				if r.Expiration.ExpiredObjectDeleteMarker != nil {
+					rule["expired_object_delete_marker"] = *(r.Expiration).ExpiredObjectDeleteMarker
+				}
 			}
 			if r.Filter != nil && r.Filter.Prefix != nil {
 				rule["prefix"] = *(r.Filter).Prefix
 			}
 
+			rules = append(rules, rule)
+		}
+	}
+
+	return rules
+
+}
+
+func nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.AbortIncompleteMultipartUpload == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.NoncurrentVersionExpiration != nil {
+				rule["noncurrent_days"] = int(*(r.NoncurrentVersionExpiration).NoncurrentDays)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
+			rules = append(rules, rule)
+		}
+	}
+	return rules
+}
+
+func abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.AbortIncompleteMultipartUpload != nil {
+				rule["days_after_initiation"] = int(*(r.AbortIncompleteMultipartUpload).DaysAfterInitiation)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
 			rules = append(rules, rule)
 		}
 	}

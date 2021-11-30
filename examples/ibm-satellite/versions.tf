@@ -3,6 +3,10 @@ terraform {
     ibm = {
       source = "IBM-Cloud/ibm"
     }
+    restapi = {
+      source  = "fmontezuma/restapi"
+      version = "1.14.1"
+    }
   }
 }
 

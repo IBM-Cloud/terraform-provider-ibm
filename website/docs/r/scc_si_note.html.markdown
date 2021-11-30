@@ -191,5 +191,5 @@ The `note_id` property can be formed from `account_id`, `provider_id`, and `note
 
 # Syntax
 ```
-$ terraform import ibm_scc_si_note.scc_si_note <provider_id>/<note_id>
+$ terraform import ibm_scc_si_note.scc_si_note <account_id>/<provider_id>/<note_id>
 ```

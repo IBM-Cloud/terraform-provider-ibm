@@ -14,7 +14,7 @@ Provides a read-only data source for scc_si_occurences. You can then reference t
 
 ```hcl
 data "ibm_scc_si_occurences" "scc_si_occurences" {
-  page_size = 3
+  provider_id = "tf-test"
 }
 ```
 

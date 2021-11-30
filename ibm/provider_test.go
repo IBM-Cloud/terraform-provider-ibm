@@ -127,6 +127,9 @@ var scc_posture_scope_id string
 var scc_posture_scan_id string
 var scc_posture_profile_id string
 
+//ROKS Cluster
+var clusterName string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -686,6 +689,11 @@ func init() {
 	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
 	if cloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
+	if clusterName == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 
 }
