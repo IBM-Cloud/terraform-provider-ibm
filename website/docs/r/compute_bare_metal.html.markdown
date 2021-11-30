@@ -192,3 +192,13 @@ In addition to all argument reference list, you can access the following attribu
 - `private_ipv4_address` - (String) The private IPv4 address of the Bare Metal server.
 - `private_ipv4_address_id` - (String) The unique identifier for the private IPv4 address of the Bare Metal server.
 - `secondary_ip_addresses` - (String) The public secondary IPv4 addresses of the Bare Metal server instance when `secondary_ip_count` is set to non zero value.
+
+## Import
+
+The `ibm_compute_bare_metal` resource can be imported by using Bare Metal server ID.
+
+**Example**
+
+```
+$ terraform import ibm_compute_bare_metal.server <server_id>
+```
