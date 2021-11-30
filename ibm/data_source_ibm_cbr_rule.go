@@ -24,11 +24,6 @@ func dataSourceIBMCbrRule() *schema.Resource {
 				Required:    true,
 				Description: "The ID of a rule.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The globally unique ID of the rule.",
-			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -170,9 +165,6 @@ func dataSourceIBMCbrRuleRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getRuleOptions.RuleID))
-	if err = d.Set("id", rule.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 	if err = d.Set("crn", rule.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}

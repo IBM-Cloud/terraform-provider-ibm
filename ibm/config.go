@@ -1326,7 +1326,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service client.
 	session.contextBasedRestrictionsClient, err = contextbasedrestrictionsv1.NewContextBasedRestrictionsV1(contextBasedRestrictionsClientOptions)
-	if err == nil {
+	if err == nil && session.contextBasedRestrictionsClient != nil {
 		// Enable retries for API calls
 		session.contextBasedRestrictionsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
