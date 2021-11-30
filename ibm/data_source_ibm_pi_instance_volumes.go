@@ -68,6 +68,10 @@ func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"pool": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"shareable": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -117,6 +121,7 @@ func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interf
 			"name":      *i.Name,
 			"size":      *i.Size,
 			"type":      *i.DiskType,
+			"pool":      i.VolumePool,
 			"shareable": *i.Shareable,
 			"bootable":  *i.Bootable,
 		}

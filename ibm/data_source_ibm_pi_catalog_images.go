@@ -32,6 +32,10 @@ func dataSourceIBMPICatalogImages() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"vtl": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"images": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -54,6 +58,10 @@ func dataSourceIBMPICatalogImages() *schema.Resource {
 							Computed: true,
 						},
 						"storage_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"storage_pool": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -112,13 +120,17 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	sap := false
+	vtl := false
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	if v, ok := d.GetOk("sap"); ok {
 		sap = v.(bool)
 	}
+	if v, ok := d.GetOk("vtl"); ok {
+		vtl = v.(bool)
+	}
 
 	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	result, err := imageC.GetSAPImages(powerinstanceid, sap)
+	result, err := imageC.GetAllStockImages(powerinstanceid, sap, vtl)
 	if err != nil {
 		return err
 	}
@@ -136,6 +148,9 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 		}
 		if i.StorageType != nil {
 			image["storage_type"] = *i.StorageType
+		}
+		if i.StoragePool != nil {
+			image["storage_pool"] = *i.StoragePool
 		}
 		if i.CreationDate != nil {
 			image["creation_date"] = i.CreationDate.String()

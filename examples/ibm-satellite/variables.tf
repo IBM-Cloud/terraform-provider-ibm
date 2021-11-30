@@ -9,6 +9,7 @@ variable "ibmcloud_api_key" {
 
 variable "ibm_region" {
   description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
+  default     = "us-east"
 }
 
 variable "resource_group" {
@@ -74,13 +75,13 @@ variable "host_count" {
 variable "addl_host_count" {
   description = "The total number of additional host for cluster assignment"
   type        = number
-  default     = 6
+  default     = 3
 }
 
 variable "is_prefix" {
   description = "Prefix to the Names of the VPC Infrastructure resources"
   type        = string
-  default     = "satellite-ibm"
+  default     = "satellite-ibm-eb"
 }
 
 variable "public_key" {
@@ -106,7 +107,7 @@ variable "cluster_zones" {
 
 variable "default_wp_labels" {
   description = "Label to add default worker pool"
-  type        = map
+  type        = map(any)
 
   default = {
     "pool_name" = "default-worker-pool"
@@ -127,7 +128,7 @@ variable "worker_pool_name" {
 
 variable "workerpool_labels" {
   description = "Label to add to workerpool"
-  type        = map
+  type        = map(any)
 
   default = {
     "pool_name" = "worker-pool"
@@ -162,9 +163,16 @@ variable "is_provision_link" {
   description = "Determines if the link has to be created or not"
 }
 
+variable "namespace" {
+  type        = string
+  description = "Namespace name"
+  default     = "default"
+}
+
 variable "route_name" {
   type        = string
   description = "Cluster route name."
+  default     = "sat-route-01"
 }
 
 // Resource arguments for satellite_link
@@ -183,12 +191,13 @@ variable "connection_type" {
 variable "display_name" {
   description = "The display name of the endpoint. Endpoint names must start with a letter and end with an alphanumeric character, can contain letters, numbers, and hyphen (-), and must be 63 characters or fewer."
   type        = string
+  default     = "ds-01"
 }
 
 variable "server_host" {
   description = "The host name or IP address of the server endpoint. For 'http-tunnel' protocol, server_host can start with '*.' , which means a wildcard to it's sub domains. Such as '*.example.com' can accept request to 'api.example.com' and 'www.example.com'."
   type        = string
-  default = "cloud.ibm.com"
+  default     = "cloud.ibm.com"
 }
 
 variable "server_port" {
@@ -248,5 +257,5 @@ variable "created_by" {
 variable "client_certificate" {
   description = "The certs."
   type        = string
-  default     = "-----BEGIN CERTIFICATE-----\nMIIDmzCCAoOgAwIBAgIUMVdDe4IYAIMKRixT4v+bbvkXhxMwDQYJKoZIhvcNAQEL\nBQAwHTEbMBkGA1UEAxMScm9vdC1jYS0xNjI2OTYyMzg0MB4XDTIxMDcyMjEzNTYw\nMFoXDTIzMTAyNTEzNTYwMFowYjELMAkGA1UEBhMCVVMxFjAUBgNVBAgTDVNhbiBG\ncmFuY2lzY28xCzAJBgNVBAcTAkNBMRcwFQYDVQQKEw5zeXN0ZW06bWFzdGVyczEV\nMBMGA1UEAxMMc3lzdGVtOmFkbWluMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\nCgKCAQEAuJ5VeZGEA10qgnqhSSeBtEFxrxCDRvXyY7NFw9NYvwy6ihTPpWAISSs6\nHsH1jlXuXgXtizru8QQ4HSGXyYNvFqVreZgrseUE08B3sL9FTzAehO3Q/azm5jTX\nFLTseUE2mSfSeWPMIYTWgvwMBl1DGRO3GATsp7Ep4uRN4zWIOC94JD76rk8HZSn6\nBVcvOyQT4XcyD9xYRcmztUoQjd92OAbI362OdjrJd/GaOFXSMYsK5MqhT/R/5p/I\nkDP+tHcp4m8ECI55//ztZvmxWAZsVymsvtU0HombLGSGO6WHcdqwenDyqX1toq+t\nVmgmkdzglV34dZkz7jxtS3j3GdzpDQIDAQABo4GNMIGKMA4GA1UdDwEB/wQEAwIF\noDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAd\nBgNVHQ4EFgQU4V3A7K5Fe2cO2XesFhvtiwe2QTowHwYDVR0jBBgwFoAUHpq8RvCW\n/vJ31q3868e5CyhhLiAwCwYDVR0RBAQwAoIAMA0GCSqGSIb3DQEBCwUAA4IBAQB0\n0H+QlV6QlALq3tKwPkYaBkYW2m403T/pBtziaxKI5d1GOx4AR4per3IASVWOQYJE\nmA6Iur5dmfKasUJXFZada7KseGFSdrEqG8bhghwn3O0TvCeINgwaiOSS2PRLsIg3\nGo9ErbdhiJgvZ7fSy9B3Gd9SlJpKMNiWrPwyhyv5yGdgxwnKO0hn994eMziag1AH\nfvuIBU0MRYCF3+lq6Nn+ZyUE4H3zv2bvMc9SzRlhDOg6cQUjGWYVTBszR9UmPnC9\nIAzW51A7d2MIEI5Nt7dsuCnnT/TLMOZG4mDnLXrCulvCnaRfk64jq9oUs+K9cYAM\ns3v73KPkn8OrZRh2CKbF\n-----END CERTIFICATE-----"
+  default     = null
 }

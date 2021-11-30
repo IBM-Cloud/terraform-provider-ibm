@@ -8,7 +8,7 @@ description: |-
 
 # ibm_appid_idp_facebook
 
-Update or reset an IBM Cloud AppID Management Services Facebook IDP configuration.
+Update or reset an IBM Cloud AppID Management Services Facebook IDP configuration. For more information, see [App ID social identity providers](https://cloud.ibm.com/docs/appid?topic=appid-social)
 
 ## Example usage
 

@@ -1,19 +1,19 @@
 ---
 subcategory: "Satellite"
 layout: "ibm"
-page_title: "IBM : satellite_link"
+page_title: "IBM : ibm_satellite_link"
 description: |-
-  Get information about satellite_link
+  Get information about ibm_satellite_link
 ---
 
 # ibm\_satellite_link
 
-Provides a read-only data source for satellite_link. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_satellite_link. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "satellite_link" "satellite_link" {
+data "ibm_satellite_link" "satellite_link" {
 	location = "location_id"
 }
 ```
@@ -31,7 +31,7 @@ In addition to all arguments above, the following attributes are exported:
 * `crn` - Service instance associated with this location.
 * `created_at` - Timestamp of creation of location.
 * `description` - Description of the location.
-* `id` - The unique identifier of the satellite_link.
+* `id` - The unique identifier of the ibm_satellite_link.
 * `last_change` - Timestamp of latest modification of location.
 * `performance` - The last performance data of the Location. Nested `performance` blocks have the following structure:
 	* `avg_latency` - Average latency calculated form latency of each Connector between Tunnel Server, unit is ms. -1 means no Connector established Tunnel.

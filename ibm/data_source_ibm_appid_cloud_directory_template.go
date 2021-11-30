@@ -67,14 +67,14 @@ func dataSourceIBMAppIDCloudDirectoryTemplateRead(ctx context.Context, d *schema
 	templateName := d.Get("template_name").(string)
 	language := d.Get("language").(string)
 
-	template, _, err := appIDClient.GetTemplateWithContext(ctx, &appid.GetTemplateOptions{
+	template, resp, err := appIDClient.GetTemplateWithContext(ctx, &appid.GetTemplateOptions{
 		TenantID:     &tenantID,
 		TemplateName: &templateName,
 		Language:     &language,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error loading AppID Cloud Directory template: %s", err)
+		return diag.Errorf("Error loading AppID Cloud Directory template: %s\n%s", err, resp)
 	}
 
 	if template.Subject != nil {

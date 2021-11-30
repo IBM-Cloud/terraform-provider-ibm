@@ -53,6 +53,12 @@ func resourceIBMISSubnetNetworkACLAttachment() *schema.Resource {
 				Description: "Network ACL name",
 			},
 
+			isNetworkACLCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn for this Network ACL",
+			},
+
 			isNetworkACLVPC: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -238,7 +244,9 @@ func resourceIBMISSubnetNetworkACLAttachmentRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("Error getting subnet's (%s) attached network ACL: %s\n%s", id, err, response)
 	}
 	d.Set(isNetworkACLName, *nwacl.Name)
+	d.Set(isNetworkACLCRN, *nwacl.CRN)
 	d.Set(isNetworkACLVPC, *nwacl.VPC.ID)
+	d.Set(isNetworkACLID, *nwacl.ID)
 	if nwacl.ResourceGroup != nil {
 		d.Set(isNetworkACLResourceGroup, *nwacl.ResourceGroup.ID)
 	}

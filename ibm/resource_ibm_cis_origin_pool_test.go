@@ -8,7 +8,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -115,61 +115,6 @@ func TestAccIBMCisPool_CreateAfterManualDestroy(t *testing.T) {
 			},
 			{
 				Config: testAccCheckCisPoolConfigCisDSBasic(testName, cisDomainStatic),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisPoolExists(name, &poolTwo),
-					func(state *terraform.State) error {
-						if poolOne == poolTwo {
-							return fmt.Errorf("id is unchanged even after we thought we deleted it ( %s )",
-								poolTwo)
-						}
-						return nil
-					},
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMCisPool_CreateAfterCisRIManualDestroy(t *testing.T) {
-	//t.Parallel()
-	t.Skip()
-	var poolOne, poolTwo string
-	testName := "test"
-	name := "ibm_cis_origin_pool.origin_pool"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCisPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCisPoolConfigCisRIBasic(testName, cisDomainTest),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCisPoolExists(name, &poolOne),
-					testAccCisPoolManuallyDelete(&poolOne),
-					func(state *terraform.State) error {
-						cisClient, err := testAccProvider.Meta().(ClientSession).CisAPI()
-						if err != nil {
-							return err
-						}
-						for _, r := range state.RootModule().Resources {
-							if r.Type == "ibm_cis_domain" {
-								log.Printf("[WARN] Removing domain")
-								zoneID, cisID, _ := convertTftoCisTwoVar(r.Primary.ID)
-								_ = cisClient.Zones().DeleteZone(cisID, zoneID)
-								cisPtr := &cisID
-								log.Printf("[WARN] Removing Cis Instance")
-								_ = testAccCisInstanceManuallyDeleteUnwrapped(state, cisPtr)
-							}
-
-						}
-						return nil
-					},
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccCheckCisPoolConfigCisRIBasic(testName, cisDomainTest),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCisPoolExists(name, &poolTwo),
 					func(state *terraform.State) error {
@@ -296,24 +241,6 @@ func testAccCheckCisPoolConfigCisDSUpdate(resourceID string, cisDomainStatic str
 		monitor = ibm_cis_healthcheck.health_check.monitor_id
 	  }
 	  `, resourceID)
-}
-
-func testAccCheckCisPoolConfigCisRIBasic(resourceID string, cisDomain string) string {
-	return testAccCheckCisDomainConfigCisRIbasic(resourceID, cisDomain) + fmt.Sprintf(`
-	resource "ibm_cis_origin_pool" "origin_pool" {
-		cis_id        = ibm_cis.cis.id
-		name          = "my-tf-pool-basic-%[1]s"
-		check_regions = ["WEU"]
-		description   = "tfacc-fully-specified"
-		origins {
-		  name    = "example-1"
-		  address = "www.google.com"
-		  enabled = true
-		  weight  = 1
-		}
-		enabled = false
-	  }
-	`, resourceID)
 }
 
 func testAccCheckCisPoolConfigFullySpecified(resourceID string, cisDomainStatic string) string {

@@ -45,7 +45,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "direct"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -137,6 +137,34 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"abort_incomplete_multipart_upload_days": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"days_after_initiation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
 			"archive_rule": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -178,6 +206,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Computed:    true,
 							Description: "Enable or disable an archive rule for a bucket",
 						},
+						"date": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the date when the specific rule action takes effect.",
+						},
 						"days": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -187,6 +220,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"expired_object_delete_marker": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration.",
 						},
 					},
 				},
@@ -234,6 +272,35 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"noncurrent_version_expiration": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique identifier for the rule.Expire rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an expire rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"noncurrent_days": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
 			"hard_quota": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -254,9 +321,12 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, apiEndpointPrivate := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -378,7 +448,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	}
 
-	// Read the lifecycle configuration (archive)
+	// Read the lifecycle configuration
 
 	gInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -394,11 +464,19 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		if len(lifecycleptr.Rules) > 0 {
 			archiveRules := archiveRuleGet(lifecycleptr.Rules)
 			expireRules := expireRuleGet(lifecycleptr.Rules)
+			nc_expRules := nc_exp_RuleGet(lifecycleptr.Rules)
+			abort_mpuRules := abort_mpu_RuleGet(lifecycleptr.Rules)
 			if len(archiveRules) > 0 {
 				d.Set("archive_rule", archiveRules)
 			}
 			if len(expireRules) > 0 {
 				d.Set("expire_rule", expireRules)
+			}
+			if len(nc_expRules) > 0 {
+				d.Set("noncurrent_version_expiration", nc_expRules)
+			}
+			if len(abort_mpuRules) > 0 {
+				d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 			}
 		}
 	}

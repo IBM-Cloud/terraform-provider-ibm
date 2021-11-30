@@ -30,7 +30,9 @@ const (
 	warningTimeOut = 30 * time.Second
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
-	CUSTOM_VIRTUAL_CORES = "custom-virtualcores"
+	CUSTOM_VIRTUAL_CORES  = "custom-virtualcores"
+	PIInstanceNetwork     = "pi_network"
+	PIInstanceStoragePool = "pi_storage_pool"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -94,10 +96,12 @@ func resourceIBMPIInstance() *schema.Resource {
 			},
 			helpers.PIInstanceNetworkIds: {
 				Type:             schema.TypeList,
-				Required:         true,
+				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Description:      "List of Networks that have been configured for the account",
 				DiffSuppressFunc: applyOnce,
+				Deprecated:       "Use pi_network instead",
+				ConflictsWith:    []string{PIInstanceNetwork},
 			},
 
 			helpers.PIInstanceVolumeIds: {
@@ -122,6 +126,44 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Storage type for server deployment",
 			},
+			PIInstanceStoragePool: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Storage Pool for server deployment; if provided then pi_affinity_policy and pi_storage_type will be ignored",
+			},
+			PIAffinityPolicy: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Affinity policy for pvm instance being created; ignored if pi_storage_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
+				ValidateFunc: validateAllowedStringValue([]string{"affinity", "anti-affinity"}),
+			},
+			PIAffinityVolume: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Volume (ID or Name) to base storage affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
+				ConflictsWith: []string{PIAffinityInstance},
+			},
+			PIAffinityInstance: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "PVM Instance (ID or Name) to base storage affinity policy against; required if requesting storage affinity and pi_affinity_volume is not provided",
+				ConflictsWith: []string{PIAffinityVolume},
+			},
+			PIAntiAffinityVolumes: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of volumes to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
+				ConflictsWith: []string{PIAntiAffinityInstances},
+			},
+			PIAntiAffinityInstances: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
+				ConflictsWith: []string{PIAntiAffinityVolumes},
+			},
 
 			helpers.PIInstanceStorageConnection: {
 				Type:         schema.TypeString,
@@ -129,10 +171,48 @@ func resourceIBMPIInstance() *schema.Resource {
 				ValidateFunc: validateAllowedStringValue([]string{"vSCSI"}),
 				Description:  "Storage Connectivity Group for server deployment",
 			},
-
+			PIInstanceNetwork: {
+				Type: schema.TypeList,
+				// TODO: Once pi_network_ids is removed this will be a required field
+				Optional:         true,
+				ConflictsWith:    []string{helpers.PIInstanceNetworkIds},
+				Computed:         true,
+				DiffSuppressFunc: applyOnce,
+				Description:      "List of one or more networks to attach to the instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip_address": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"network_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"external_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"addresses": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Deprecated: "Use pi_network instead",
+				Type:       schema.TypeList,
+				Computed:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip": {
@@ -182,10 +262,10 @@ func resourceIBMPIInstance() *schema.Resource {
 				Computed:    true,
 				Description: "PIN Policy of the Instance",
 			},
-			helpers.PIInstanceImageName: {
+			helpers.PIInstanceImageId: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "PI instance image name",
+				Description: "PI instance image id",
 			},
 			helpers.PIInstanceProcessors: {
 				Type:        schema.TypeFloat,
@@ -306,7 +386,22 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	mem := d.Get(helpers.PIInstanceMemory).(float64)
 	procs := d.Get(helpers.PIInstanceProcessors).(float64)
 	systype := d.Get(helpers.PIInstanceSystemType).(string)
-	networks := expandStringList(d.Get(helpers.PIInstanceNetworkIds).([]interface{}))
+
+	var pvmNetworks []*models.PVMInstanceAddNetwork
+	// Either pi_network_ids or pi_network is provided
+	// TODO: Once pi_network_ids is removed pi_network will be a required field
+	if v, ok := d.GetOk(helpers.PIInstanceNetworkIds); ok {
+		networks := expandStringList(v.([]interface{}))
+		pvmNetworks = buildPVMNetworks(networks)
+	}
+	if v, ok := d.GetOk(PIInstanceNetwork); ok {
+		networksMap := v.([]interface{})
+		pvmNetworks = expandPVMNetworks(networksMap)
+	}
+	if len(pvmNetworks) <= 0 {
+		return fmt.Errorf("one of pi_network_ids or pi_network must be configured")
+	}
+
 	var volids []string
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
 		volids = expandStringList((v.(*schema.Set)).List())
@@ -327,7 +422,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if m, ok := d.GetOk("pi_migratable"); ok {
 		migratable = m.(bool)
 	}
-	imageid := d.Get(helpers.PIInstanceImageName).(string)
+	imageid := d.Get(helpers.PIInstanceImageId).(string)
 	processortype := d.Get(helpers.PIInstanceProcType).(string)
 
 	var pinpolicy string
@@ -366,7 +461,7 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		UserData:                userData,
 		ReplicantNamingScheme:   ptrToString(replicationNamingScheme),
 		ReplicantAffinityPolicy: ptrToString(replicationpolicy),
-		Networks:                buildPVMNetworks(networks),
+		Networks:                pvmNetworks,
 		Migratable:              &migratable,
 	}
 	if len(volids) > 0 {
@@ -384,6 +479,37 @@ func resourceIBMPIInstanceCreate(d *schema.ResourceData, meta interface{}) error
 
 	if st, ok := d.GetOk(helpers.PIInstanceStorageType); ok {
 		body.StorageType = st.(string)
+	}
+	if sp, ok := d.GetOk(PIInstanceStoragePool); ok {
+		body.StoragePool = sp.(string)
+	}
+
+	if ap, ok := d.GetOk(PIAffinityPolicy); ok {
+		policy := ap.(string)
+		affinity := &models.StorageAffinity{
+			AffinityPolicy: &policy,
+		}
+
+		if policy == "affinity" {
+			if av, ok := d.GetOk(PIAffinityVolume); ok {
+				afvol := av.(string)
+				affinity.AffinityVolume = &afvol
+			}
+			if ai, ok := d.GetOk(PIAffinityInstance); ok {
+				afins := ai.(string)
+				affinity.AffinityPVMInstance = &afins
+			}
+		} else {
+			if avs, ok := d.GetOk(PIAntiAffinityVolumes); ok {
+				afvols := expandStringList(avs.([]interface{}))
+				affinity.AntiAffinityVolumes = afvols
+			}
+			if ais, ok := d.GetOk(PIAntiAffinityInstances); ok {
+				afinss := expandStringList(ais.([]interface{}))
+				affinity.AntiAffinityPVMInstances = afinss
+			}
+		}
+		body.StorageAffinity = affinity
 	}
 
 	if sc, ok := d.GetOk(helpers.PIInstanceStorageConnection); ok {
@@ -451,52 +577,58 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	if powervmdata.Migratable != nil {
 		d.Set("pi_migratable", powervmdata.Migratable)
 	}
-	if &powervmdata.Minproc != nil {
-		d.Set("min_processors", powervmdata.Minproc)
-	}
-	if &powervmdata.Progress != nil {
-		d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
-	}
-	if &powervmdata.StorageType != nil {
+	d.Set("min_processors", powervmdata.Minproc)
+	d.Set(helpers.PIInstanceProgress, powervmdata.Progress)
+	if powervmdata.StorageType != nil {
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
+	d.Set(PIInstanceStoragePool, powervmdata.StoragePool)
 	d.Set(helpers.PICloudInstanceId, powerinstanceid)
-	if powervmdata.PvmInstanceID != nil {
-		d.Set("instance_id", powervmdata.PvmInstanceID)
-	}
+	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
-	d.Set(helpers.PIInstanceImageName, powervmdata.ImageID)
-	var networks []string
-	networks = make([]string, 0)
-	if powervmdata.Networks != nil {
-		for _, n := range powervmdata.Networks {
-			if n != nil {
-				networks = append(networks, n.NetworkID)
-			}
+	d.Set(helpers.PIInstanceImageId, powervmdata.ImageID)
 
+	if _, ok := d.GetOk(helpers.PIInstanceNetworkIds); ok {
+		var networks []string
+		networks = make([]string, 0)
+		if powervmdata.Networks != nil {
+			for _, n := range powervmdata.Networks {
+				if n != nil {
+					networks = append(networks, n.NetworkID)
+				}
+			}
 		}
+		d.Set(helpers.PIInstanceNetworkIds, networks)
+	} else {
+		networksMap := []map[string]interface{}{}
+		if powervmdata.Networks != nil {
+			for _, n := range powervmdata.Networks {
+				if n != nil {
+					v := map[string]interface{}{
+						"ip_address":   n.IPAddress,
+						"mac_address":  n.MacAddress,
+						"network_id":   n.NetworkID,
+						"network_name": n.NetworkName,
+						"type":         n.Type,
+						"external_ip":  n.ExternalIP,
+					}
+					networksMap = append(networksMap, v)
+				}
+			}
+		}
+		d.Set(PIInstanceNetwork, networksMap)
 	}
-	d.Set(helpers.PIInstanceNetworkIds, networks)
+
 	if powervmdata.VolumeIds != nil {
 		d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
 	}
 	d.Set(helpers.PIInstanceSystemType, powervmdata.SysType)
-	if &powervmdata.Minmem != nil {
-		d.Set("min_memory", powervmdata.Minmem)
-	}
-	if &powervmdata.Maxproc != nil {
-		d.Set("max_processors", powervmdata.Maxproc)
-	}
-	if &powervmdata.Maxmem != nil {
-		d.Set("max_memory", powervmdata.Maxmem)
-	}
-	if &powervmdata.PinPolicy != nil {
-		d.Set("pin_policy", powervmdata.PinPolicy)
-	}
-	if &powervmdata.OperatingSystem != nil {
-		d.Set("operating_system", powervmdata.OperatingSystem)
-	}
-	if &powervmdata.OsType != nil {
+	d.Set("min_memory", powervmdata.Minmem)
+	d.Set("max_processors", powervmdata.Maxproc)
+	d.Set("max_memory", powervmdata.Maxmem)
+	d.Set("pin_policy", powervmdata.PinPolicy)
+	d.Set("operating_system", powervmdata.OperatingSystem)
+	if powervmdata.OsType != nil {
 		d.Set("os_type", powervmdata.OsType)
 	}
 
@@ -506,24 +638,12 @@ func resourceIBMPIInstanceRead(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("Now entering the powervm address space....")
 
 			p := make(map[string]interface{})
-			if &pvmip.IP != nil {
-				p["ip"] = pvmip.IP
-			}
-			if &pvmip.NetworkName != nil {
-				p["network_name"] = pvmip.NetworkName
-			}
-			if &pvmip.NetworkID != nil {
-				p["network_id"] = pvmip.NetworkID
-			}
-			if &pvmip.MacAddress != nil {
-				p["macaddress"] = pvmip.MacAddress
-			}
-			if &pvmip.Type != nil {
-				p["type"] = pvmip.Type
-			}
-			if &pvmip.ExternalIP != nil {
-				p["external_ip"] = pvmip.ExternalIP
-			}
+			p["ip"] = pvmip.IP
+			p["network_name"] = pvmip.NetworkName
+			p["network_id"] = pvmip.NetworkID
+			p["macaddress"] = pvmip.MacAddress
+			p["type"] = pvmip.Type
+			p["external_ip"] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
 		d.Set("addresses", pvmaddress)
@@ -677,7 +797,7 @@ func resourceIBMPIInstanceUpdate(d *schema.ResourceData, meta interface{}) error
 				migratable := m.(bool)
 				body.Migratable = &migratable
 			}
-			if cores_enabled == true {
+			if cores_enabled {
 				log.Printf("support for %s is enabled", CUSTOM_VIRTUAL_CORES)
 				body.VirtualCores = &models.VirtualCores{Assigned: &assignedVirtualCores}
 			} else {
@@ -979,6 +1099,19 @@ func buildPVMNetworks(networks []string) []*models.PVMInstanceAddNetwork {
 		}
 		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 
+	}
+	return pvmNetworks
+}
+
+func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
+	pvmNetworks := make([]*models.PVMInstanceAddNetwork, 0, len(networks))
+	for _, v := range networks {
+		network := v.(map[string]interface{})
+		pvmInstanceNetwork := &models.PVMInstanceAddNetwork{
+			IPAddress: network["ip_address"].(string),
+			NetworkID: ptrToString(network["network_id"].(string)),
+		}
+		pvmNetworks = append(pvmNetworks, pvmInstanceNetwork)
 	}
 	return pvmNetworks
 }

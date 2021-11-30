@@ -44,6 +44,11 @@ You can access the following attribute references after your data source is crea
 		- `primary_ipv4_address` - (String) The IPv4 address assigned to the network interface.
 		- `subnet` - (String) The VPC subnet to assign to the interface.
 		- `security_groups` - (String) List of security groups of  the subnet.
+	- `placement_target` - (List) The placement restrictions to use for the virtual server instance.
+	  Nested scheme for `placement_target`:
+		- `crn` - (String) The unique identifier for this placement target.
+		- `href` - (String) The CRN for this placement target.
+		- `id` - (String) The URL for this placement target.
 	- `profile` - (String) The number of instances created in the instance group.
 	- `primary_network_interfaces` - (List) A nested block describes the primary network interface for the template.
 
@@ -52,7 +57,8 @@ You can access the following attribute references after your data source is crea
 		- `primary_ipv4_address` - (String) The IPv4 address assigned to the primary network interface.
 		- `subnet` - (String) The VPC subnet to assign to the interface.
 		- `security_groups` - (String) List of security groups of the subnet.
-	- `resource_group` - (String) The resource group ID.	
+	- `resource_group` - (String) The resource group ID.
+	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes	
 	- `user_data` -  (String) The user data provided for the instance.
 	- `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 

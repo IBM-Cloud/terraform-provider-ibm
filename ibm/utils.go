@@ -27,6 +27,8 @@ func GetPrivateServiceURLForRegion(region string) (string, error) {
 		"au-syd":     "https://private.au.icr.io",  // au-syd
 		"global":     "https://private.icr.io",     // global
 		"jp-osa":     "https://private.jp2.icr.io", // jp-osa
+		"ca-tor":     "https://private.ca.icr.io",  // ca-tor
+		"br-sao":     "https://private.br.icr.io",  // br-sao
 	}
 
 	if url, ok := endpoints[region]; ok {

@@ -5,8 +5,10 @@ package ibm
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	gohttp "net/http"
@@ -22,7 +24,7 @@ import (
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
@@ -35,6 +37,7 @@ import (
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisfiltersv1 "github.com/IBM/networking-go-sdk/filtersv1"
+	cisfirewallrulesv1 "github.com/IBM/networking-go-sdk/firewallrulesv1"
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
@@ -63,6 +66,7 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
+	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
@@ -96,7 +100,9 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -169,8 +175,9 @@ type Config struct {
 	PowerServiceInstance string
 
 	// Zone
-	Zone       string
-	Visibility string
+	Zone          string
+	Visibility    string
+	EndpointsFile string
 }
 
 //Session stores the information required for communication with the SoftLayer and Bluemix API
@@ -192,7 +199,6 @@ type ClientSession interface {
 	ContainerAPI() (containerv1.ContainerServiceAPI, error)
 	VpcContainerAPI() (containerv2.ContainerServiceAPI, error)
 	ContainerRegistryV1() (*containerregistryv1.ContainerRegistryV1, error)
-	CisAPI() (cisv1.CisServiceAPI, error)
 	FunctionClient() (*whisk.Client, error)
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
@@ -209,6 +215,7 @@ type ClientSession interface {
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
 	PushServiceV1() (*pushservicev1.PushServiceV1, error)
+	EventNotificationsApiV1() (*eventnotificationsv1.EventNotificationsV1, error)
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
@@ -255,9 +262,12 @@ type ClientSession interface {
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
+	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
+	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
+	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 }
 
 type clientSession struct {
@@ -349,6 +359,9 @@ type clientSession struct {
 
 	pushServiceClient    *pushservicev1.PushServiceV1
 	pushServiceClientErr error
+
+	eventNotificationsApiClient    *eventnotificationsv1.EventNotificationsV1
+	eventNotificationsApiClientErr error
 
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
@@ -498,6 +511,10 @@ type clientSession struct {
 	cisFiltersClient *cisfiltersv1.FiltersV1
 	cisFiltersErr    error
 
+	// CIS FirewallRules options
+	cisFirewallRulesClient *cisfirewallrulesv1.FirewallRulesV1
+	cisFirewallRulesErr    error
+
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
 	atrackerClientErr error
@@ -512,6 +529,14 @@ type clientSession struct {
 	// Security and Compliance Center (SCC)
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
+
+	// Security and Compliance Center (SCC) Admin
+	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
+	adminServiceApiClientErr error
+
+	//Security and Compliance Center (SCC) Compliance posture
+	postureManagementClientErr error
+	postureManagementClient    *posturemanagementv1.PostureManagementV1
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -561,11 +586,6 @@ func (session clientSession) ContainerRegistryV1() (*containerregistryv1.Contain
 // SchematicsAPI provides schematics Service APIs ...
 func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
 	return sess.schematicsClient, sess.schematicsClientErr
-}
-
-// CisAPI provides Cloud Internet Services APIs ...
-func (sess clientSession) CisAPI() (cisv1.CisServiceAPI, error) {
-	return sess.cisServiceAPI, sess.cisConfigErr
 }
 
 // FunctionClient ...
@@ -660,6 +680,10 @@ func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, e
 
 func (session clientSession) PushServiceV1() (*pushservicev1.PushServiceV1, error) {
 	return session.pushServiceClient, session.pushServiceClientErr
+}
+
+func (session clientSession) EventNotificationsApiV1() (*eventnotificationsv1.EventNotificationsV1, error) {
+	return session.eventNotificationsApiClient, session.eventNotificationsApiClientErr
 }
 
 func (session clientSession) AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error) {
@@ -930,6 +954,14 @@ func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	return sess.cisFiltersClient.Clone(), nil
 }
 
+// CIS FirewallRules
+func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error) {
+	if sess.cisFirewallRulesErr != nil {
+		return sess.cisFirewallRulesClient, sess.cisFirewallRulesErr
+	}
+	return sess.cisFirewallRulesClient.Clone(), nil
+}
+
 // Activity Tracker API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
@@ -945,6 +977,19 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 		return session.findingsClient, session.findingsClientErr
 	}
 	return session.findingsClient.Clone(), nil
+}
+
+//Security and Compliance center Admin API
+func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
+	return session.adminServiceApiClient, session.adminServiceApiClientErr
+}
+
+// Security and Compliance center Posture Management
+func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
+	if session.postureManagementClientErr != nil {
+		return session.postureManagementClient, session.postureManagementClientErr
+	}
+	return session.postureManagementClient.Clone(), nil
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1100,7 +1145,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config)
 
 	BluemixRegion = sess.BluemixSession.Config.Region
-
+	var fileMap map[string]interface{}
+	if f := envFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
+		jsonFile, err := os.Open(f)
+		if err != nil {
+			log.Fatalf("Unable to open Endpoints File %s", err)
+		}
+		defer jsonFile.Close()
+		bytes, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			log.Fatalf("Unable to read Endpoints File %s", err)
+		}
+		err = json.Unmarshal([]byte(bytes), &fileMap)
+		if err != nil {
+			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
+		}
+	}
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
 		session.accountV1ConfigErr = fmt.Errorf("Error occured while configuring Bluemix Accountv1 Service: %q", err)
@@ -1141,6 +1201,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kpurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		kpurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kpurl)
+	}
 	var options kp.ClientConfig
 	if c.BluemixAPIKey != "" {
 		options = kp.ClientConfig{
@@ -1164,9 +1227,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
+	// KEY MANAGEMENT Service
 	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kmsurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		kmsurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kmsurl)
 	}
 	var kmsOptions kp.ClientConfig
 	if c.BluemixAPIKey != "" {
@@ -1202,6 +1269,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 				iamURL = contructEndpoint("private.iam", cloudEndpoint)
 			}
 		}
+		if fileMap != nil && c.Visibility != "public-and-private" {
+			iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
 			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
@@ -1216,107 +1286,156 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	// APPID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
+	if c.Visibility == "private" {
+		session.appidErr = fmt.Errorf("App Id resources doesnot support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		appIDEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT", c.Region, appIDEndpoint)
+	}
 	appIDClientOptions := &appid.AppIDManagementV4Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT"}, appIDEndpoint),
 	}
-
 	appIDClient, err := appid.NewAppIDManagementV4(appIDClientOptions)
-
 	if err != nil {
 		session.appidErr = fmt.Errorf("error occured while configuring AppID service: #{err}")
 	}
-
-	if appIDClient != nil {
-		appIDClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	if appIDClient != nil && appIDClient.Service != nil {
+		appIDClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		appIDClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
-
 	session.appidAPI = appIDClient
 
-	// Construct an "options" struct for creating the service client.
+	// CATALOG MANAGEMENT Service
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
 	if c.Visibility == "private" {
 		session.catalogManagementClientErr = fmt.Errorf("Catalog Management resource doesnot support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT", c.Region, catalogManagementURL)
 	}
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
 	}
-
-	// Construct an "options" struct for creating the atracker service client.
-	var atrackerClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
-		}
-	} else {
-		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
-	}
-	if err != nil {
-		atrackerClientURL = atrackerv1.DefaultServiceURL
-	}
-	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
-		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
-	}
-
-	// Construct the service client.
-	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
-	}
-
-	// Construct an "options" struct for creating the service client.
-	var findingsClientURL string
-	if c.Visibility == "public" {
-		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
-	} else {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
-	}
-	if err != nil {
-		findingsClientURL = findingsv1.DefaultServiceURL
-	}
-
-	findingsClientOptions := &findingsv1.FindingsV1Options{
-		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
-		AccountID:     core.StringPtr(userConfig.userAccount),
-	}
-
-	// Construct the service client.
-	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.findingsClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
-	}
-
 	// Construct the service client.
 	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
-	if err == nil {
+	if err != nil {
+		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
+	}
+	if session.catalogManagementClient != nil && session.catalogManagementClient.Service != nil {
 		// Enable retries for API calls
 		session.catalogManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.catalogManagementClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
 	}
+
+	// ATRACKER Service
+	var atrackerClientURL string
+	atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+	if err != nil {
+		session.atrackerClientErr = err
+	}
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
+			if err != nil {
+				session.atrackerClientErr = err
+			}
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		atrackerClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientURL)
+	}
+	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+	// Construct the service client.
+	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
+	if err != nil {
+		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
+	}
+	if session.atrackerClient != nil && session.atrackerClient.Service != nil {
+		// Enable retries for API calls
+		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// SCC FINDINGS Service
+	var findingsClientURL string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
+		if err != nil {
+			session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
+		}
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
+	}
+	findingsClientOptions := &findingsv1.FindingsV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
+		AccountID:     core.StringPtr(userConfig.userAccount),
+	}
+	// Construct the service client.
+	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
+	if err != nil {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
+	}
+	if session.findingsClient != nil && session.findingsClient.Service != nil {
+		// Enable retries for API calls
+		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.findingsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// SCC ADMIN Service
+	var adminServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		adminServiceApiClientURL = adminserviceapiv1.DefaultServiceURL
+	}
+	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
+	}
+
+	// Construct the service client.
+	session.adminServiceApiClient, err = adminserviceapiv1.NewAdminServiceApiV1(adminServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.adminServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.adminServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.adminServiceApiClientErr = fmt.Errorf("Error occurred while configuring Admin Service API service: %q", err)
+	}
+
+	// SCHEMATICS Service
 	schematicsEndpoint := "https://schematics.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -1327,28 +1446,34 @@ func (c *Config) ClientSession() (interface{}, error) {
 			schematicsEndpoint = "https://schematics.cloud.ibm.com"
 		}
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		schematicsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCHEMATICS_API_ENDPOINT", c.Region, schematicsEndpoint)
+	}
 	schematicsClientOptions := &schematicsv1.SchematicsV1Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
 	}
-
 	// Construct the service client.
 	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
+	if err != nil {
+		session.schematicsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Schematics Service API service: %q", err)
+	}
 	// Enable retries for API calls
 	if schematicsClient != nil && schematicsClient.Service != nil {
 		schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		if err != nil {
-			session.schematicsClientErr = fmt.Errorf("Error occurred while configuring Schematics Service API service: %q", err)
-		}
+		schematicsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.schematicsClient = schematicsClient
 
+	// VPC Service
 	vpcurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
 			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
-			session.vpcErr = fmt.Errorf("VPC supports private endpoints only in us-south and us-east")
+			session.vpcErr = fmt.Errorf("[ERROR] VPC supports private endpoints only in us-south and us-east")
 		}
 	}
 	if c.Visibility == "public-and-private" {
@@ -1357,37 +1482,78 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 		vpcurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		vpcurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IS_NG_API_ENDPOINT", c.Region, vpcurl)
+	}
 	vpcoptions := &vpc.VpcV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 		Authenticator: authenticator,
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
 	if err != nil {
-		session.vpcErr = fmt.Errorf("Error occured while configuring vpc service: %q", err)
+		session.vpcErr = fmt.Errorf("[ERROR] Error occured while configuring vpc service: %q", err)
 	}
 	if vpcclient != nil && vpcclient.Service != nil {
 		vpcclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		vpcclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.vpcAPI = vpcclient
 
+	// PUSH NOTIFICATIONS Service
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)
 	if c.Visibility == "private" {
 		session.pushServiceClientErr = fmt.Errorf("Push Notifications Service API doesnot support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		pnurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PUSH_API_ENDPOINT", c.Region, pnurl)
 	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
 		Authenticator: authenticator,
 	}
 	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
-	if pnclient != nil {
-		// Enable retries for API calls
-		pnclient.EnableRetries(c.RetryCount, c.RetryDelay)
-		session.pushServiceClient = pnclient
-	} else {
-		session.pushServiceClientErr = fmt.Errorf("Error occured while configuring push notification service: %q", err)
+	if err != nil {
+		session.pushServiceClientErr = fmt.Errorf("[ERROR] Error occured while configuring Push Notifications service: %q", err)
 	}
+	if pnclient != nil && pnclient.Service != nil {
+		// Enable retries for API calls
+		pnclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		pnclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.pushServiceClient = pnclient
+	// event notifications
+	enurl := fmt.Sprintf("https://%s.event-notifications.cloud.ibm.com/event-notifications", c.Region)
 	if c.Visibility == "private" {
-		session.appConfigurationClientErr = fmt.Errorf("App Configuration Service API doesnot support private endpoints")
+		session.eventNotificationsApiClientErr = fmt.Errorf("Event Notifications Service does not support private endpoints")
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		enurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT", c.Region, enurl)
+	}
+	enClientOptions := &eventnotificationsv1.EventNotificationsV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT"}, enurl),
+	}
+	// Construct the service client.
+	session.eventNotificationsApiClient, err = eventnotificationsv1.NewEventNotificationsV1(enClientOptions)
+	if err != nil {
+		// Enable {
+		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications service: %q", err)
+	}
+	if session.eventNotificationsApiClient != nil && session.eventNotificationsApiClient.Service != nil {
+		// Enable retries for API calls
+		session.eventNotificationsApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.eventNotificationsApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// APP CONFIGURATION Service
+	if c.Visibility == "private" {
+		session.appConfigurationClientErr = fmt.Errorf("[ERROR] App Configuration Service API doesnot support private endpoints")
 	}
 	appConfigurationClientOptions := &appconfigurationv1.AppConfigurationV1Options{
 		Authenticator: authenticator,
@@ -1398,8 +1564,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		appConfigClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.appConfigurationClient = appConfigClient
 	} else {
-		session.appConfigurationClientErr = fmt.Errorf("Error occurred while configuring App Configuration service: %q", err)
+		session.appConfigurationClientErr = fmt.Errorf("[ERROR] Error occurred while configuring App Configuration service: %q", err)
 	}
+
+	// CONTAINER REGISTRY Service
 	// Construct an "options" struct for creating the service client.
 	containerRegistryClientURL, err := containerregistryv1.GetServiceURLForRegion(c.Region)
 	if err != nil {
@@ -1408,57 +1576,59 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
 		if err != nil {
-			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("us-south")
+			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("global")
 		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		containerRegistryClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, containerRegistryClientURL)
 	}
 	containerRegistryClientOptions := &containerregistryv1.ContainerRegistryV1Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_CR_API_ENDPOINT"}, containerRegistryClientURL),
 		Account:       core.StringPtr(userConfig.userAccount),
 	}
-
 	// Construct the service client.
 	session.containerRegistryClient, err = containerregistryv1.NewContainerRegistryV1(containerRegistryClientOptions)
-	if err == nil {
+	if err != nil {
+		session.containerRegistryClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Container Registry API service: %q", err)
+	}
+	if session.containerRegistryClient != nil && session.containerRegistryClient.Service != nil {
 		// Enable retries for API calls
 		session.containerRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.containerRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.containerRegistryClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Container Registry API service: %q", err)
 	}
 
-	//cosconfigurl := fmt.Sprintf("https://%s.iaas.cloud.ibm.com/v1", c.Region)
+	// OBJECT STORAGE Service
+	cosconfigurl := "https://config.cloud-object-storage.cloud.ibm.com/v1"
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cosconfigurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COS_CONFIG_ENDPOINT", c.Region, cosconfigurl)
+	}
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, "https://config.cloud-object-storage.cloud.ibm.com/v1"),
+		URL:           envFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosconfigurl),
 	}
 	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
 	if err != nil {
-		session.cosConfigErr = fmt.Errorf("Error occured while configuring COS config service: %q", err)
+		session.cosConfigErr = fmt.Errorf("[ERROR] Error occured while configuring COS config service: %q", err)
 	}
 	session.cosConfigAPI = cosconfigclient
 
-	cisAPI, err := cisv1.New(sess.BluemixSession)
-	if err != nil {
-		session.cisConfigErr = fmt.Errorf("Error occured while configuring Cloud Internet Services: %q", err)
-	}
-	session.cisServiceAPI = cisAPI
-
 	globalSearchAPI, err := globalsearchv2.New(sess.BluemixSession)
 	if err != nil {
-		session.globalSearchConfigErr = fmt.Errorf("Error occured while configuring Global Search: %q", err)
+		session.globalSearchConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
 	}
 	session.globalSearchServiceAPI = globalSearchAPI
-
+	// Global Tagging Bluemix-go
 	globalTaggingAPI, err := globaltaggingv3.New(sess.BluemixSession)
 	if err != nil {
-		session.globalTaggingConfigErr = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+		session.globalTaggingConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Global Tagging: %q", err)
 	}
 	session.globalTaggingServiceAPI = globalTaggingAPI
 
+	// GLOBAL TAGGING Service
 	globalTaggingEndpoint := "https://tags.global-search-tagging.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		var globalTaggingRegion string
@@ -1469,19 +1639,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 		globalTaggingEndpoint = contructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
-
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		globalTaggingEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GT_API_ENDPOINT", c.Region, globalTaggingEndpoint)
+	}
 	globalTaggingV1Options := &globaltaggingv1.GlobalTaggingV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
 		Authenticator: authenticator,
 	}
-
 	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
 	if err != nil {
 		session.globalTaggingConfigErrV1 = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
 	}
-	if globalTaggingAPIV1 != nil {
+	if globalTaggingAPIV1 != nil && globalTaggingAPIV1.Service != nil {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.globalTaggingServiceAPIV1.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	icdAPI, err := icdv4.New(sess.BluemixSession)
@@ -1519,6 +1693,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.userManagementErr = fmt.Errorf("Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
+
 	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
 	if err != nil {
 		session.certManagementErr = fmt.Errorf("Error occured while configuring Certificate manager service: %q", err)
@@ -1531,9 +1706,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.functionIAMNamespaceAPI = namespaceFunction
 
+	//  API GATEWAY service
 	apicurl := contructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		apicurl = contructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		apicurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_API_GATEWAY_ENDPOINT", c.Region, apicurl)
 	}
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
@@ -1545,86 +1724,108 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.apigatewayAPI = apigatewayAPI
 
+	// POWER SYSTEMS Service
 	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, 90000000000, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
 	}
-
 	session.ibmpiSession = ibmpisession
 
+	// PRIVATE DNS Service
 	pdnsURL := dns.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		pdnsURL = contructEndpoint("api.private.dns-svcs", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		pdnsURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PRIVATE_DNS_API_ENDPOINT", c.Region, pdnsURL)
 	}
 	dnsOptions := &dns.DnsSvcsV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
 		Authenticator: authenticator,
 	}
-
 	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
 	if session.pDNSErr != nil {
 		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
 	if session.pDNSClient != nil && session.pDNSClient.Service != nil {
 		session.pDNSClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.pDNSClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
+	// DIRECT LINK Service
 	ver := time.Now().Format("2006-01-02")
-
 	dlURL := dl.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		dlURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		dlURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_API_ENDPOINT", c.Region, dlURL)
 	}
 	directlinkOptions := &dl.DirectLinkV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
-
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
 	if session.directlinkErr != nil {
 		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
 		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.directlinkAPI.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
-	//Direct link provider
+	// DIRECT LINK PROVIDER Service
 	dlproviderURL := dlProviderV2.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		dlproviderURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/provider/v2", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		dlproviderURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_PROVIDER_API_ENDPOINT", c.Region, dlproviderURL)
 	}
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
 		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, dlproviderURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
-
 	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
 	if session.dlProviderErr != nil {
 		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
 	}
 	if session.dlProviderAPI != nil && session.dlProviderAPI.Service != nil {
 		session.dlProviderAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.dlProviderAPI.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
+	// TRANSIT GATEWAY Service
 	tgURL := tg.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		tgURL = contructEndpoint("private.transit", fmt.Sprintf("%s/v1", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		tgURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TG_API_ENDPOINT", c.Region, tgURL)
 	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, tgURL),
 		Authenticator: authenticator,
 		Version:       CreateVersionDate(),
 	}
-
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
 		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}
 	if session.transitgatewayAPI != nil && session.transitgatewayAPI.Service != nil {
 		session.transitgatewayAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// session.transitgatewayAPI.SetDefaultHeaders(gohttp.Header{
+		// 	"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		// })
 	}
 
 	// CIS Service instances starts here.
@@ -1654,6 +1855,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cisURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CIS_API_ENDPOINT", c.Region, cisURL)
+	}
 	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
 	// IBM Network CIS Zones service
@@ -1670,6 +1874,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisZonesV1Client != nil && session.cisZonesV1Client.Service != nil {
 		session.cisZonesV1Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisZonesV1Client.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS DNS Record service
@@ -1685,6 +1892,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisDNSRecordsClient != nil && session.cisDNSRecordsClient.Service != nil {
 		session.cisDNSRecordsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDNSRecordsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS DNS Record bulk service
@@ -1702,6 +1912,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisDNSRecordBulkClient != nil && session.cisDNSRecordBulkClient.Service != nil {
 		session.cisDNSRecordBulkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDNSRecordBulkClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer pool
@@ -1719,6 +1932,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBPoolClient != nil && session.cisGLBPoolClient.Service != nil {
 		session.cisGLBPoolClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBPoolClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer
@@ -1736,6 +1952,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBClient != nil && session.cisGLBClient.Service != nil {
 		session.cisGLBClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Global load balancer health check/monitor
@@ -1753,6 +1972,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisGLBHealthCheckClient != nil && session.cisGLBHealthCheckClient.Service != nil {
 		session.cisGLBHealthCheckClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisGLBHealthCheckClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS IP
@@ -1767,6 +1989,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisIPClient != nil && session.cisIPClient.Service != nil {
 		session.cisIPClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisIPClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Zone Rate Limit
@@ -1784,6 +2009,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
 		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Page Rules
@@ -1801,6 +2029,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisPageRuleClient != nil && session.cisPageRuleClient.Service != nil {
 		session.cisPageRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisPageRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Edge Function
@@ -1819,6 +2050,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisEdgeFunctionClient != nil && session.cisEdgeFunctionClient.Service != nil {
 		session.cisEdgeFunctionClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisEdgeFunctionClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS SSL certificate
@@ -1837,6 +2071,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisSSLClient != nil && session.cisSSLClient.Service != nil {
 		session.cisSSLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisSSLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Package
@@ -1855,6 +2092,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFPackageClient != nil && session.cisWAFPackageClient.Service != nil {
 		session.cisWAFPackageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFPackageClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Domain settings
@@ -1868,11 +2108,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisdomainsettingsv1.NewZonesSettingsV1(cisDomainSettingsOpt)
 	if session.cisDomainSettingsErr != nil {
 		session.cisDomainSettingsErr =
-			fmt.Errorf("Error occured while configuring CIS Domain Settings service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Domain Settings service: %s",
 				session.cisDomainSettingsErr)
 	}
 	if session.cisDomainSettingsClient != nil && session.cisDomainSettingsClient.Service != nil {
 		session.cisDomainSettingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisDomainSettingsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Routing
@@ -1886,11 +2129,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisroutingv1.NewRoutingV1(cisRoutingOpt)
 	if session.cisRoutingErr != nil {
 		session.cisRoutingErr =
-			fmt.Errorf("Error occured while configuring CIS Routing service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Routing service: %s",
 				session.cisRoutingErr)
 	}
 	if session.cisRoutingClient != nil && session.cisRoutingClient.Service != nil {
 		session.cisRoutingClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRoutingClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Group
@@ -1909,6 +2155,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFGroupClient != nil && session.cisWAFGroupClient.Service != nil {
 		session.cisWAFGroupClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFGroupClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Cache service
@@ -1927,6 +2176,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisCacheClient != nil && session.cisCacheClient.Service != nil {
 		session.cisCacheClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisCacheClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Custom pages service
@@ -1946,6 +2198,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisCustomPageClient != nil && session.cisCustomPageClient.Service != nil {
 		session.cisCustomPageClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisCustomPageClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall Access rule
@@ -1964,6 +2219,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisAccessRuleClient != nil && session.cisAccessRuleClient.Service != nil {
 		session.cisAccessRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisAccessRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall User Agent Blocking rule
@@ -1982,6 +2240,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisUARuleClient != nil && session.cisUARuleClient.Service != nil {
 		session.cisUARuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisUARuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Firewall Lockdown rule
@@ -2000,6 +2261,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisLockdownClient != nil && session.cisLockdownClient.Service != nil {
 		session.cisLockdownClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisLockdownClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Range Application rule
@@ -2018,6 +2282,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisRangeAppClient != nil && session.cisRangeAppClient.Service != nil {
 		session.cisRangeAppClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisRangeAppClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS WAF Rule Service
@@ -2036,6 +2303,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
 		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWAFRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
 	// IBM Network CIS Filters
@@ -2051,8 +2321,30 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if session.cisFiltersClient != nil && session.cisFiltersClient.Service != nil {
 		session.cisFiltersClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisFiltersClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 
+	// IBM Network CIS Firewall rules
+	cisFirewallrulesOpt := &cisfirewallrulesv1.FirewallRulesV1Options{
+		URL:           cisEndPoint,
+		Authenticator: authenticator,
+	}
+	session.cisFirewallRulesClient, session.cisFirewallRulesErr = cisfirewallrulesv1.NewFirewallRulesV1(cisFirewallrulesOpt)
+	if session.cisFirewallRulesErr != nil {
+		session.cisFirewallRulesErr =
+			fmt.Errorf("Error occured while configuring CIS Firewall rules : %s",
+				session.cisFirewallRulesErr)
+	}
+	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
+		session.cisFirewallRulesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisFirewallRulesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IAM IDENTITY Service
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
 	iamURL := iamidentity.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
@@ -2061,6 +2353,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		} else {
 			iamURL = contructEndpoint("private.iam", cloudEndpoint)
 		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
 	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
@@ -2072,9 +2367,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamIdentityClient != nil && iamIdentityClient.Service != nil {
 		iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamIdentityClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamIdentityAPI = iamIdentityClient
 
+	// IAM POLICY MANAGEMENT Service
 	iamPolicyManagementURL := iampolicymanagement.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2082,6 +2381,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		} else {
 			iamPolicyManagementURL = contructEndpoint("private.iam", cloudEndpoint)
 		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamPolicyManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamPolicyManagementURL)
 	}
 	iamPolicyManagementOptions := &iampolicymanagement.IamPolicyManagementV1Options{
 		Authenticator: authenticator,
@@ -2093,10 +2395,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
 		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamPolicyManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamPolicyManagementAPI = iamPolicyManagementClient
 
-	// ag
+	// IAM ACCESS GROUP
 	iamAccessGroupsURL := iamaccessgroups.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2104,6 +2409,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		} else {
 			iamAccessGroupsURL = contructEndpoint("private.iam", cloudEndpoint)
 		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamAccessGroupsURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamAccessGroupsURL)
 	}
 	iamAccessGroupsOptions := &iamaccessgroups.IamAccessGroupsV2Options{
 		Authenticator: authenticator,
@@ -2115,24 +2423,31 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if iamAccessGroupsClient != nil && iamAccessGroupsClient.Service != nil {
 		iamAccessGroupsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		iamAccessGroupsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.iamAccessGroupsAPI = iamAccessGroupsClient
 
+	// RESOURCE MANAGEMENT Service
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s", cloudEndpoint))
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s/v2", cloudEndpoint))
+			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			rmURL = resourcemanager.DefaultServiceURL
 		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		rmURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT", c.Region, rmURL)
 	}
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
@@ -2142,25 +2457,35 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
 	}
-	if resourceManagerClient != nil {
-		resourceManagerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	if resourceManagerClient != nil && resourceManagerClient.Service != nil {
+		resourceManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.resourceManagerAPI = resourceManagerClient
 
+	//CLOUD SHELL Service
+	cloudShellUrl := ibmcloudshellv1.DefaultServiceURL
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cloudShellUrl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CLOUD_SHELL_API_ENDPOINT", c.Region, cloudShellUrl)
+	}
 	ibmCloudShellClientOptions := &ibmcloudshellv1.IBMCloudShellV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, ibmcloudshellv1.DefaultServiceURL),
+		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, cloudShellUrl),
 	}
 	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
-	if err == nil {
+	if err != nil {
+		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
+	}
+	if session.ibmCloudShellClient != nil && session.ibmCloudShellClient.Service != nil {
 		session.ibmCloudShellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.ibmCloudShellClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
 	}
 
+	// ENTERPRISE Service
 	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
@@ -2178,19 +2503,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 			enterpriseURL = enterprisemanagementv1.DefaultServiceURL
 		}
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		enterpriseURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ENTERPRISE_API_ENDPOINT", c.Region, enterpriseURL)
+	}
 	enterpriseManagementClientOptions := &enterprisemanagementv1.EnterpriseManagementV1Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
 	}
 	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
-	if err == nil {
-		enterpriseManagementClient.EnableRetries(c.RetryCount, c.RetryDelay)
-	} else {
+	if err != nil {
 		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
+	}
+	if enterpriseManagementClient != nil && enterpriseManagementClient.Service != nil {
+		enterpriseManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		enterpriseManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.enterpriseManagementClient = enterpriseManagementClient
 
-	// resource controller API
+	// RESOURCE CONTROLLER Service
 	rcURL := resourcecontroller.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2207,6 +2539,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 			rcURL = resourcecontroller.DefaultServiceURL
 		}
 	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		rcURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT", c.Region, rcURL)
+	}
 	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
 		Authenticator: authenticator,
 		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, rcURL),
@@ -2215,82 +2550,135 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if err != nil {
 		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
 	}
-	if resourceControllerClient != nil {
-		resourceControllerClient.EnableRetries(c.RetryCount, c.RetryDelay)
+	if resourceControllerClient != nil && resourceControllerClient.Service != nil {
+		resourceControllerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		resourceControllerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
 	}
 	session.resourceControllerAPI = resourceControllerClient
-	// var authenticator2 *core.BearerTokenAuthenticator
-	// Construct an "options" struct for creating the service client.
+
+	// SECRETS MANAGER Service
 	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
 		Authenticator: authenticator,
 	}
-
 	/// Construct the service client.
 	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
-	if err == nil {
+	if err != nil {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
+	}
+	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
 		// Enable retries for API calls
 		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
 
+	// SATELLITE Service
 	containerEndpoint := kubernetesserviceapiv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		containerEndpoint = contructEndpoint(fmt.Sprintf("private.%s.containers", c.Region), fmt.Sprintf("%s/global", cloudEndpoint))
 	}
-
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		containerEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_API_ENDPOINT", c.Region, containerEndpoint)
+	}
 	kubernetesServiceV1Options := &kubernetesserviceapiv1.KubernetesServiceApiV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_API_ENDPOINT"}, containerEndpoint),
 		Authenticator: authenticator,
 	}
-
 	session.satelliteClient, err = kubernetesserviceapiv1.NewKubernetesServiceApiV1(kubernetesServiceV1Options)
 	if err != nil {
 		session.satelliteClientErr = fmt.Errorf("Error occured while configuring satellite client: %q", err)
 	}
-	// Enable retries for API calls
-	session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 
+	// Enable retries for API calls
+	if session.satelliteClient != nil && session.satelliteClient.Service != nil {
+		session.satelliteClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.satelliteClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// SATELLITE LINK Service
 	// Construct an "options" struct for creating the service client.
 	satelliteLinkEndpoint := satellitelinkv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		satelliteLinkEndpoint = contructEndpoint("private.api.link.satellite", cloudEndpoint)
 	}
-
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		satelliteLinkEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_LINK_API_ENDPOINT", c.Region, satelliteLinkEndpoint)
+	}
 	satelliteLinkClientOptions := &satellitelinkv1.SatelliteLinkV1Options{
 		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_LINK_API_ENDPOINT"}, satelliteLinkEndpoint),
 		Authenticator: authenticator,
 	}
-
 	session.satelliteLinkClient, err = satellitelinkv1.NewSatelliteLinkV1(satelliteLinkClientOptions)
-	if err == nil {
+	if err != nil {
+		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+	}
+	if session.satelliteLinkClient != nil && session.satelliteLinkClient.Service != nil {
 		// Enable retries for API calls
 		session.satelliteLinkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.satelliteLinkClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
 	}
 
 	esSchemaRegistryV1Options := &schemaregistryv1.SchemaregistryV1Options{
 		Authenticator: authenticator,
 	}
 	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
-	if err == nil {
+	if err != nil {
+		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
+	}
+	if session.esSchemaRegistryClient != nil && session.esSchemaRegistryClient.Service != nil {
 		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	} else {
-		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
 	}
 
+	//COMPLIANCE Service
+	// Construct an "options" struct for creating the service client.
+	var postureManagementClientURL string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		postureManagementClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_API_ENDPOINT", c.Region, postureManagementClientURL)
+	}
+	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
+		AccountID:     core.StringPtr(userConfig.userAccount),
+	}
+
+	// Construct the service client.
+	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
+	if err != nil {
+		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
+	}
+	if session.postureManagementClient != nil && session.postureManagementClient.Service != nil {
+		// Enable retries for API calls
+		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	if os.Getenv("TF_LOG") != "" {
+		logDestination := log.Writer()
+		goLogger := log.New(logDestination, "", log.LstdFlags)
+		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
+	}
 	return session, nil
 }
 
@@ -2337,13 +2725,15 @@ func newSession(c *Config) (*Session, error) {
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
+			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {
@@ -2358,13 +2748,16 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
 			RetryDelay:    &c.RetryDelay,
 			MaxRetries:    &c.RetryCount,
 			Visibility:    c.Visibility,
+			EndpointsFile: c.EndpointsFile,
+			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+
 			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
@@ -2381,7 +2774,8 @@ func authenticateAPIKey(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {
@@ -2394,7 +2788,8 @@ func authenticateCF(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewUAARepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{http.UserAgent()},
 		},
 	})
 	if err != nil {
@@ -2451,7 +2846,8 @@ func refreshToken(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"User-Agent": []string{http.UserAgent()},
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
 	})
 	if err != nil {
@@ -2465,6 +2861,16 @@ func envFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
 			return v
+		}
+	}
+	return defaultValue
+}
+func fileFallBack(fileMap map[string]interface{}, visibility, key, region, defaultValue string) string {
+	if val, ok := fileMap[key]; ok {
+		if v, ok := val.(map[string]interface{})[visibility]; ok {
+			if r, ok := v.(map[string]interface{})[region]; ok && r.(string) != "" {
+				return r.(string)
+			}
 		}
 	}
 	return defaultValue

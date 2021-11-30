@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -679,8 +680,8 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire
-		if r.Expiration == nil {
+		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire or non current version or abort incomplete multipart upload
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.AbortIncompleteMultipartUpload == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -714,7 +715,7 @@ func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		if r.Expiration != nil {
+		if r.Expiration != nil && r.Transitions == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -730,12 +731,86 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 			}
 
 			if r.Expiration != nil {
-				rule["days"] = int(*(r.Expiration).Days)
+				if r.Expiration.Days != nil {
+					days := int(*(r.Expiration).Days)
+					if days > 0 {
+						rule["days"] = days
+					}
+				}
+				if r.Expiration.Date != nil {
+					expirationTime := *(r.Expiration).Date
+					d := strings.Split(expirationTime.Format(time.RFC3339), "T")
+					rule["date"] = d[0]
+				}
+
+				if r.Expiration.ExpiredObjectDeleteMarker != nil {
+					rule["expired_object_delete_marker"] = *(r.Expiration).ExpiredObjectDeleteMarker
+				}
 			}
 			if r.Filter != nil && r.Filter.Prefix != nil {
 				rule["prefix"] = *(r.Filter).Prefix
 			}
 
+			rules = append(rules, rule)
+		}
+	}
+
+	return rules
+
+}
+
+func nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.AbortIncompleteMultipartUpload == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.NoncurrentVersionExpiration != nil {
+				rule["noncurrent_days"] = int(*(r.NoncurrentVersionExpiration).NoncurrentDays)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
+			rules = append(rules, rule)
+		}
+	}
+	return rules
+}
+
+func abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.AbortIncompleteMultipartUpload != nil {
+				rule["days_after_initiation"] = int(*(r.AbortIncompleteMultipartUpload).DaysAfterInitiation)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
 			rules = append(rules, rule)
 		}
 	}
@@ -1288,10 +1363,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func flattenMembersData(list *iamaccessgroupsv2.GroupMembersList, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func flattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
 	var ibmid []string
 	var serviceid []string
-	for _, m := range list.Members {
+	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
 				if user.IamID == *m.IamID {
@@ -2004,6 +2079,43 @@ func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func resourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
+	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
+	policyAction := policyActionIntf.(string)
+
+	if policyAction == "forward" {
+		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
+
+		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
+			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
+		}
+	} else if policyAction == "redirect" {
+		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
+
+		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
+		}
+
+		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
+		}
+	} else if policyAction == "https_redirect" {
+		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
+		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+
+		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
+			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
+		}
+
+		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
+		}
+	}
+
+	return nil
+}
+
 func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
 	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
@@ -2172,6 +2284,29 @@ func resourceVolumeValidate(diff *schema.ResourceDiff) error {
 			}
 		}
 	}
+	return nil
+}
+
+func resourceRouteModeValidate(diff *schema.ResourceDiff) error {
+
+	var lbtype, lbprofile string
+	if typeOk, ok := diff.GetOk(isLBType); ok {
+		lbtype = typeOk.(string)
+	}
+	if profileOk, ok := diff.GetOk(isLBProfile); ok {
+		lbprofile = profileOk.(string)
+	}
+	if rmOk, ok := diff.GetOk(isLBRouteMode); ok {
+		routeMode := rmOk.(bool)
+
+		if routeMode && lbtype != "private" {
+			return fmt.Errorf("'type' must be 'private', at present public load balancers are not supported with route mode enabled.")
+		}
+		if routeMode && lbprofile != "network-fixed" {
+			return fmt.Errorf("'profile' must be 'network-fixed', route mode is supported by private network load balancer.")
+		}
+	}
+
 	return nil
 }
 
@@ -2347,9 +2482,10 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	result := make(map[string]string)
 
 	for k, v := range labels {
-		if strings.HasPrefix(k, SystemIBMLabelPrefix) ||
+		if (strings.HasPrefix(k, SystemIBMLabelPrefix) ||
 			strings.HasPrefix(k, KubernetesLabelPrefix) ||
-			strings.HasPrefix(k, K8sLabelPrefix) {
+			strings.HasPrefix(k, K8sLabelPrefix)) &&
+			!strings.Contains(k, "node-local-dns-enabled") {
 			continue
 		}
 
@@ -2753,6 +2889,24 @@ func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResp
 	}
 
 	return workerPools
+}
+
+func flattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode) []map[string]interface{} {
+	hosts := make([]map[string]interface{}, len(hostList))
+	for i, host := range hostList {
+		l := map[string]interface{}{
+			"host_id":      *host.ID,
+			"host_name":    *host.Name,
+			"status":       *host.Health.Status,
+			"ip_address":   *host.Assignment.IpAddress,
+			"cluster_name": *host.Assignment.ClusterName,
+			"zone":         *host.Assignment.Zone,
+			"host_labels":  *&host.Labels,
+		}
+		hosts[i] = l
+	}
+
+	return hosts
 }
 
 func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {

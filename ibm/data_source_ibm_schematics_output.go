@@ -109,7 +109,7 @@ func dataSourceIBMSchematicsOutputID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesItem) (outputValues interface{}) {
+func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputValuesInner) (outputValues interface{}) {
 	for _, outputValuesItem := range result {
 		outputValues = dataSourceOutputValuesListOutputValuesToMap(outputValuesItem)
 	}
@@ -117,7 +117,7 @@ func dataSourceOutputValuesListFlattenOutputValues(result []schematicsv1.OutputV
 	return outputValues
 }
 
-func dataSourceOutputValuesListOutputValuesToMap(outputValuesItem schematicsv1.OutputValuesItem) (outputValuesMap map[string]interface{}) {
+func dataSourceOutputValuesListOutputValuesToMap(outputValuesItem schematicsv1.OutputValuesInner) (outputValuesMap map[string]interface{}) {
 	outputValuesMap = map[string]interface{}{}
 
 	if outputValuesItem.Folder != nil {

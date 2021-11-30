@@ -34,20 +34,19 @@ func TestAccIBMPrivateDNSCustomResolverDataSource_basic(t *testing.T) {
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverDataSourceConfig(crname, crdescription string) string {
-	// status filter defaults to empty
 	return fmt.Sprintf(`
-
 	resource "ibm_dns_custom_resolver" "test" {
-		name                      = "%s"
-		instance_id               = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8"
-		description               = "%s"
-		locations {
-		  subnet_crn  = "crn:v1:staging:public:is:us-south-1:a/01652b251c3ae2787110a995d8db0135::subnet:0716-6c3a997d-72b2-47f6-8788-6bd95e1bdb03"
-		  enabled     = true
+		name		= "%s"
+		instance_id	= "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
+		description	= "%s"
+		high_availability = false
+		locations{
+			subnet_crn	= "crn:v1:bluemix:public:is:us-south-1:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0717-4f53a236-cd7a-4688-9347-066bb5058a5c"
+			enabled		= true
 		}
 	}
-
 	data "ibm_dns_custom_resolvers" "test-cr" {
-		instance_id = ibm_dns_custom_resolver.test.instance_id
+		depends_on  = [ibm_dns_custom_resolver.test]
+		instance_id	= ibm_dns_custom_resolver.test.instance_id
 	}`, crname, crdescription)
 }

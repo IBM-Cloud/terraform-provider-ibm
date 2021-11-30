@@ -54,6 +54,11 @@ func dataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "Load Balancer name",
 						},
+						isLBRouteMode: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Load Balancer route mode",
+						},
 
 						isLBType: {
 							Type:        schema.TypeString,
@@ -250,6 +255,9 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		//	log.Printf("******* lb ******** : (%+v)", lb)
 		lbInfo[ID] = *lb.ID
 		lbInfo[isLBName] = *lb.Name
+		if lb.RouteMode != nil {
+			lbInfo[isLBRouteMode] = *lb.RouteMode
+		}
 		lbInfo[CRN] = *lb.CRN
 		lbInfo[ProvisioningStatus] = *lb.ProvisioningStatus
 

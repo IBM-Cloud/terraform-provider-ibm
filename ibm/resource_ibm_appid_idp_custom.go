@@ -58,7 +58,7 @@ func resourceIBMAppIDIDPCustomRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
-		return diag.Errorf("Error loading AppID custom IDP: %s", err)
+		return diag.Errorf("Error loading AppID custom IDP: %s\n%s", err, resp)
 	}
 
 	d.Set("is_active", *config.IsActive)
@@ -97,10 +97,10 @@ func resourceIBMAppIDIDPCustomCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	_, _, err = appIDClient.SetCustomIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetCustomIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error applying AppID custom IDP configuration: %s", err)
+		return diag.Errorf("Error applying AppID custom IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId(tenantID)
@@ -125,10 +125,10 @@ func resourceIBMAppIDIDPCustomDelete(ctx context.Context, d *schema.ResourceData
 	tenantID := d.Get("tenant_id").(string)
 	config := appIDCustomIDPDefaults(tenantID)
 
-	_, _, err = appIDClient.SetCustomIDPWithContext(ctx, config)
+	_, resp, err := appIDClient.SetCustomIDPWithContext(ctx, config)
 
 	if err != nil {
-		return diag.Errorf("Error resetting AppID custom IDP configuration: %s", err)
+		return diag.Errorf("Error resetting AppID custom IDP configuration: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

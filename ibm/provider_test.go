@@ -13,6 +13,7 @@ import (
 )
 
 var appIDTenantID string
+var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
 var cisDomainStatic string
@@ -34,6 +35,7 @@ var publicSubnetID string
 var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId string
+var lbListerenerCertificateInstance string
 var ipsecDatacenter string
 var customersubnetid string
 var customerpeerip string
@@ -56,6 +58,7 @@ var regionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
+var InstanceName string
 var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
@@ -70,6 +73,8 @@ var workspaceID string
 var templateID string
 var actionID string
 var jobID string
+var repoURL string
+var repoBranch string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
@@ -80,15 +85,21 @@ var hpcsAdmin1 string
 var hpcsToken1 string
 var hpcsAdmin2 string
 var hpcsToken2 string
+var realmName string
+var iksSa string
 
 // For Power Colo
 
 var pi_image string
+var pi_image_bucket_name string
+var pi_image_bucket_file_name string
 var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
 var pi_cloud_instance_id string
 var pi_instance_name string
+var pi_dhcp_id string
+var piCloudConnectionName string
 
 // For Image
 
@@ -111,10 +122,28 @@ var account_to_be_imported string
 //Security and Compliance Center, SI
 var scc_si_account string
 
+//Security and Compliance Center, Posture Management
+var scc_posture_scope_id string
+var scc_posture_scan_id string
+var scc_posture_profile_id string
+
+//ROKS Cluster
+var clusterName string
+
 func init() {
+	testlogger := os.Getenv("TF_LOG")
+	if testlogger != "" {
+		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
+	}
+
+	appIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
+	if appIDTestUserEmail == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
 	cfOrganization = os.Getenv("IBM_ORG")
@@ -145,7 +174,6 @@ func init() {
 		datacenter = "par01"
 		fmt.Println("[WARN] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
-
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
@@ -282,6 +310,11 @@ func init() {
 		lbaasSubnetId = "2144241"
 		fmt.Println("[WARN] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '2144241'")
 	}
+	lbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
+	if lbListerenerCertificateInstance == "" {
+		lbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+		fmt.Println("[WARN] Set the environment variable IBM_LB_LISTENER_CERTIFICATE_INSTANCE for testing ibm_is_lb_listener resource for https redirect else it is set to default value 'crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed'")
+	}
 
 	dedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")
 	if dedicatedHostName == "" {
@@ -358,7 +391,7 @@ func init() {
 	isImage = os.Getenv("IS_IMAGE")
 	if isImage == "" {
 		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		isImage = "r006-5b05b4fe-bcbc-4309-ad45-3354813227a0" // for next gen infrastructure
+		isImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 
@@ -367,6 +400,12 @@ func init() {
 		//isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
 		isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
+	}
+
+	InstanceName = os.Getenv("IS_INSTANCE_NAME")
+	if InstanceName == "" {
+		InstanceName = "placement-check-ins" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
 	}
 
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
@@ -443,6 +482,16 @@ func init() {
 		pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
 	}
+	pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
+	if pi_image_bucket_name == "" {
+		pi_image_bucket_name = "images-public-bucket"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_NAME for testing ibm_pi_image resource else it is set to default value 'images-public-bucket'")
+	}
+	pi_image_bucket_file_name = os.Getenv("PI_IMAGE_BUCKET_FILE_NAME")
+	if pi_image_bucket_file_name == "" {
+		pi_image_bucket_file_name = "rhel.ova.gz"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
+	}
 
 	pi_key_name = os.Getenv("PI_KEY_NAME")
 	if pi_key_name == "" {
@@ -473,6 +522,19 @@ func init() {
 		pi_instance_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing pi_instance_name resource else it is set to default value 'terraform-test-power'")
 	}
+
+	pi_dhcp_id = os.Getenv("PI_DHCP_ID")
+	if pi_dhcp_id == "" {
+		pi_dhcp_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_DHCP_ID for testing ibm_pi_dhcp resource else it is set to default value 'terraform-test-power'")
+	}
+
+	piCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
+	if piCloudConnectionName == "" {
+		piCloudConnectionName = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
+	}
+
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
 		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -492,6 +554,14 @@ func init() {
 	if actionID == "" {
 		actionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
+	repoURL = os.Getenv("SCHEMATICS_REPO_URL")
+	if repoURL == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_URL for testing schematics resources else tests will fail if this is not set correctly")
+	}
+	repoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
+	if repoBranch == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")
@@ -582,6 +652,16 @@ func init() {
 	if hpcsAdmin2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN2 with a VALID HPCS Admin Key2 Path")
 	}
+	realmName = os.Getenv("IBM_IAM_REALM_NAME")
+	if realmName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_REALM_NAME with a VALID realm name for iam trusted profile claim rule")
+	}
+
+	iksSa = os.Getenv("IBM_IAM_IKS_SA")
+	if iksSa == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_IKS_SA with a VALID realm name for iam trusted profile link")
+	}
+
 	hpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
 	if hpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
@@ -591,9 +671,29 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
 	}
 
+	scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
+	if scc_posture_scope_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
+	if scc_posture_scan_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
+	if scc_posture_profile_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
 	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
 	if cloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
+	if clusterName == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 
 }
@@ -682,6 +782,15 @@ func testAccPreCheckHPCS(t *testing.T) {
 	}
 	if hpcsToken2 == "" {
 		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
+	}
+}
+func testAccPreCheckIAMTrustedProfile(t *testing.T) {
+	testAccPreCheck(t)
+	if realmName == "" {
+		t.Fatal("IBM_IAM_REALM_NAME must be set for acceptance tests")
+	}
+	if iksSa == "" {
+		t.Fatal("IBM_IAM_IKS_SA must be set for acceptance tests")
 	}
 }
 

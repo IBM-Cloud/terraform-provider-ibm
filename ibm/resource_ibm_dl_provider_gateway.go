@@ -35,22 +35,29 @@ func resourceIBMDLProviderGateway() *schema.Resource {
 			dlBgpAsn: {
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 				Description: "BGP ASN",
 			},
 			dlBgpCerCidr: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP customer edge router CIDR",
+			},
+			dlBgpIbmAsn: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "IBM BGP ASN",
 			},
 			dlBgpIbmCidr: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "BGP IBM CIDR",
+			},
+			dlBgpStatus: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Gateway BGP status",
 			},
 			dlPort: {
 				Type:        schema.TypeString,
@@ -256,9 +263,6 @@ func resourceIBMdlProviderGatewayRead(d *schema.ResourceData, meta interface{}) 
 		}
 		return fmt.Errorf("Error Getting Direct Link Gateway (%s Template): %s\n%s", dtype, err, response)
 	}
-	if instance.ID != nil {
-		d.Set("id", *instance.ID)
-	}
 	if instance.Name != nil {
 		d.Set(dlName, *instance.Name)
 	}
@@ -356,6 +360,18 @@ func resourceIBMdlProviderGatewayUpdate(d *schema.ResourceData, meta interface{}
 	if d.HasChange(dlSpeedMbps) {
 		speed := int64(d.Get(dlSpeedMbps).(int))
 		updateGatewayOptionsModel.SpeedMbps = &speed
+	}
+	if d.HasChange(dlBgpAsn) {
+		bgpAsn := int64(d.Get(dlBgpAsn).(int))
+		updateGatewayOptionsModel.BgpAsn = &bgpAsn
+	}
+	if d.HasChange(dlBgpCerCidr) {
+		bgpCerCidr := d.Get(dlBgpCerCidr).(string)
+		updateGatewayOptionsModel.BgpCerCidr = &bgpCerCidr
+	}
+	if d.HasChange(dlBgpIbmCidr) {
+		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
+		updateGatewayOptionsModel.BgpIbmCidr = &bgpIbmCidr
 	}
 
 	_, response, err = directLink.UpdateProviderGateway(updateGatewayOptionsModel)

@@ -6,9 +6,10 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"log"
 	"time"
+
+	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,12 +29,14 @@ func resourceIBMIAMAccessGroupMembers() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of the access group",
+				ForceNew:    true,
 			},
 
 			"ibm_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      resourceIBMVPCHash,
 			},
 
 			"iam_service_ids": {
@@ -124,9 +127,24 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 
 	grpID := parts[0]
 	listAccessGroupMembersOptions := iamAccessGroupsClient.NewListAccessGroupMembersOptions(grpID)
+	offset := int64(0)
+	// lets fetch 100 in a single pagination
+	limit := int64(100)
+	listAccessGroupMembersOptions.SetLimit(limit)
 	members, detailedResponse, err := iamAccessGroupsClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group members: %s. API Response: %s", err, detailedResponse))
+	}
+	allMembers := members.Members
+	totalMembers := intValue(members.TotalCount)
+	for len(allMembers) < totalMembers {
+		offset = offset + limit
+		listAccessGroupMembersOptions.SetOffset(offset)
+		members, detailedResponse, err = iamAccessGroupsClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group members: %s. API Response: %s", err, detailedResponse))
+		}
+		allMembers = append(allMembers, members.Members...)
 	}
 
 	d.Set("access_group_id", grpID)
@@ -176,8 +194,8 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 		}
 	}
 
-	d.Set("members", flattenAccessGroupMembers(members.Members, res, allrecs))
-	ibmID, serviceID := flattenMembersData(members, res, allrecs)
+	d.Set("members", flattenAccessGroupMembers(allMembers, res, allrecs))
+	ibmID, serviceID := flattenMembersData(allMembers, res, allrecs)
 	if len(ibmID) > 0 {
 		d.Set("ibm_ids", ibmID)
 	}

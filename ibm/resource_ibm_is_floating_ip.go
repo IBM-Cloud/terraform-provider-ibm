@@ -18,6 +18,7 @@ import (
 
 const (
 	isFloatingIPAddress       = "address"
+	isFloatingIPCRN           = "crn"
 	isFloatingIPName          = "name"
 	isFloatingIPStatus        = "status"
 	isFloatingIPZone          = "zone"
@@ -53,14 +54,21 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+
 					if diff.HasChange(isFloatingIPTarget) {
-						old, new := diff.GetChange(isFloatingIPTarget)
-						sess, err := vpcClient(v)
-						if err != nil {
-							return err
-						}
-						if checkIfZoneChanged(old.(string), new.(string), sess) {
+						if !diff.NewValueKnown(isFloatingIPTarget) {
 							diff.ForceNew(isFloatingIPTarget)
+							return nil
+						}
+						old, new := diff.GetChange(isFloatingIPTarget)
+						if old != "" || new != "" {
+							sess, err := vpcClient(v)
+							if err != nil {
+								return err
+							}
+							if checkIfZoneChanged(old.(string), new.(string), diff.Get(isFloatingIPZone).(string), sess) {
+								diff.ForceNew(isFloatingIPTarget)
+							}
 						}
 					}
 					return nil
@@ -100,7 +108,6 @@ func resourceIBMISFloatingIP() *schema.Resource {
 
 			isFloatingIPTarget: {
 				Type:          schema.TypeString,
-				ForceNew:      false,
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
@@ -137,6 +144,12 @@ func resourceIBMISFloatingIP() *schema.Resource {
 			},
 
 			ResourceCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
+			isFloatingIPCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
@@ -294,6 +307,8 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	target, ok := floatingip.Target.(*vpcv1.FloatingIPTarget)
 	if ok {
 		d.Set(isFloatingIPTarget, target.ID)
+	} else {
+		d.Set(isFloatingIPTarget, "")
 	}
 	tags, err := GetTagsUsingCRN(meta, *floatingip.CRN)
 	if err != nil {
@@ -307,11 +322,12 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	d.Set(ResourceControllerURL, controller+"/vpc-ext/network/floatingIPs")
 	d.Set(ResourceName, *floatingip.Name)
+	d.Set(isFloatingIPCRN, *floatingip.CRN)
 	d.Set(ResourceCRN, *floatingip.CRN)
 	d.Set(ResourceStatus, *floatingip.Status)
 	if floatingip.ResourceGroup != nil {
-		d.Set(ResourceGroupName, *floatingip.ResourceGroup.Name)
-		d.Set(isFloatingIPResourceGroup, *floatingip.ResourceGroup.ID)
+		d.Set(ResourceGroupName, floatingip.ResourceGroup.Name)
+		d.Set(isFloatingIPResourceGroup, floatingip.ResourceGroup.ID)
 	}
 	return nil
 }
@@ -512,7 +528,7 @@ func isInstanceFloatingIPRefreshFunc(floatingipC *vpcv1.VpcV1, id string) resour
 	}
 }
 
-func checkIfZoneChanged(oldNic, newNic string, floatingipC *vpcv1.VpcV1) bool {
+func checkIfZoneChanged(oldNic, newNic, currentZone string, floatingipC *vpcv1.VpcV1) bool {
 	var oldZone, newZone string
 	listInstancesOptions := &vpcv1.ListInstancesOptions{}
 	start := ""
@@ -544,6 +560,9 @@ func checkIfZoneChanged(oldNic, newNic string, floatingipC *vpcv1.VpcV1) bool {
 		}
 	}
 	if newZone != oldZone {
+		if oldZone == "" && newZone == currentZone {
+			return false
+		}
 		return true
 	}
 	return false

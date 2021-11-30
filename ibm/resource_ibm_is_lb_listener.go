@@ -15,19 +15,24 @@ import (
 )
 
 const (
-	isLBListenerLBID                = "lb"
-	isLBListenerPort                = "port"
-	isLBListenerProtocol            = "protocol"
-	isLBListenerCertificateInstance = "certificate_instance"
-	isLBListenerConnectionLimit     = "connection_limit"
-	isLBListenerDefaultPool         = "default_pool"
-	isLBListenerStatus              = "status"
-	isLBListenerDeleting            = "deleting"
-	isLBListenerDeleted             = "done"
-	isLBListenerProvisioning        = "provisioning"
-	isLBListenerAcceptProxyProtocol = "accept_proxy_protocol"
-	isLBListenerProvisioningDone    = "done"
-	isLBListenerID                  = "listener_id"
+	isLBListenerLBID                    = "lb"
+	isLBListenerPort                    = "port"
+	isLBListenerPortMin                 = "port_min"
+	isLBListenerPortMax                 = "port_max"
+	isLBListenerProtocol                = "protocol"
+	isLBListenerCertificateInstance     = "certificate_instance"
+	isLBListenerConnectionLimit         = "connection_limit"
+	isLBListenerDefaultPool             = "default_pool"
+	isLBListenerStatus                  = "status"
+	isLBListenerDeleting                = "deleting"
+	isLBListenerDeleted                 = "done"
+	isLBListenerProvisioning            = "provisioning"
+	isLBListenerAcceptProxyProtocol     = "accept_proxy_protocol"
+	isLBListenerProvisioningDone        = "done"
+	isLBListenerID                      = "listener_id"
+	isLBListenerHTTPSRedirectListener   = "https_redirect_listener"
+	isLBListenerHTTPSRedirectStatusCode = "https_redirect_status_code"
+	isLBListenerHTTPSRedirectURI        = "https_redirect_uri"
 )
 
 func resourceIBMISLBListener() *schema.Resource {
@@ -56,9 +61,20 @@ func resourceIBMISLBListener() *schema.Resource {
 
 			isLBListenerPort: {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validateLBListenerPort,
+				Computed:     true,
 				Description:  "Loadbalancer listener port",
+			},
+			isLBListenerPortMin: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The inclusive lower bound of the range of ports used by this listener. Only load balancers in the `network` family support more than one port per listener.",
+			},
+			isLBListenerPortMax: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The inclusive upper bound of the range of ports used by this listener. Only load balancers in the `network` family support more than one port per listener",
 			},
 
 			isLBListenerProtocol: {
@@ -79,6 +95,27 @@ func resourceIBMISLBListener() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Listener will forward proxy protocol",
+			},
+
+			isLBListenerHTTPSRedirectStatusCode: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerHTTPSRedirectListener},
+				Description:  "The HTTP status code to be returned in the redirect response",
+			},
+
+			isLBListenerHTTPSRedirectURI: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerHTTPSRedirectStatusCode, isLBListenerHTTPSRedirectListener},
+				Description:  "Target URI where traffic will be redirected",
+			},
+
+			isLBListenerHTTPSRedirectListener: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{isLBListenerHTTPSRedirectStatusCode},
+				Description:  "ID of the listener that will be set as http redirect target",
 			},
 
 			isLBListenerConnectionLimit: {
@@ -155,7 +192,6 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	lbID := d.Get(isLBListenerLBID).(string)
 	port := int64(d.Get(isLBListenerPort).(int))
 	protocol := d.Get(isLBListenerProtocol).(string)
-	acceptProxyProtocol := d.Get(isLBListenerAcceptProxyProtocol).(bool)
 	var defPool, certificateCRN string
 	if pool, ok := d.GetOk(isLBListenerDefaultPool); ok {
 		lbPool, err := getPoolId(pool.(string))
@@ -175,11 +211,29 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 		connLimit = int64(limit.(int))
 	}
 
+	var httpStatusCode int64
+
+	if statusCode, ok := d.GetOk(isLBListenerHTTPSRedirectStatusCode); ok {
+		httpStatusCode = int64(statusCode.(int))
+	}
+
+	var uri string
+
+	if redirecturi, ok := d.GetOk(isLBListenerHTTPSRedirectURI); ok {
+		uri = redirecturi.(string)
+	}
+
+	var listener string
+
+	if redirectListener, ok := d.GetOk(isLBListenerHTTPSRedirectListener); ok {
+		listener = redirectListener.(string)
+	}
+
 	isLBKey := "load_balancer_key_" + lbID
 	ibmMutexKV.Lock(isLBKey)
 	defer ibmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, port, connLimit, acceptProxyProtocol)
+	err := lbListenerCreate(d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, connLimit, httpStatusCode)
 	if err != nil {
 		return err
 	}
@@ -187,21 +241,58 @@ func resourceIBMISLBListenerCreate(d *schema.ResourceData, meta interface{}) err
 	return resourceIBMISLBListenerRead(d, meta)
 }
 
-func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN string, port, connLimit int64, acceptProxyProtocol bool) error {
+func lbListenerCreate(d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, connLimit, httpStatusCode int64) error {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return err
 	}
+
 	options := &vpcv1.CreateLoadBalancerListenerOptions{
-		LoadBalancerID:      &lbID,
-		Port:                &port,
-		Protocol:            &protocol,
-		AcceptProxyProtocol: &acceptProxyProtocol,
+		LoadBalancerID: &lbID,
+		Protocol:       &protocol,
 	}
+
+	getlboptions := &vpcv1.GetLoadBalancerOptions{
+		ID: &lbID,
+	}
+	lb, response, err := sess.GetLoadBalancer(getlboptions)
+
+	if err != nil || lb == nil {
+		return fmt.Errorf("Error getting Load Balancer : %s\n%s", err, response)
+	}
+
+	if lb != nil && *lb.RouteMode && lb.Profile != nil && *lb.Profile.Name == "network-fixed" {
+		portMin := int64(1)
+		portMax := int64(65535)
+
+		options.PortMin = &portMin
+		options.PortMax = &portMax
+	} else {
+		options.Port = &port
+	}
+
+	if app, ok := d.GetOk(isLBListenerAcceptProxyProtocol); ok {
+		acceptProxyProtocol := app.(bool)
+		options.AcceptProxyProtocol = &acceptProxyProtocol
+	}
+
 	if defPool != "" {
 		options.DefaultPool = &vpcv1.LoadBalancerPoolIdentity{
 			ID: &defPool,
 		}
+	}
+
+	if listener != "" {
+		httpsRedirect := &vpcv1.LoadBalancerListenerHTTPSRedirectPrototype{
+			HTTPStatusCode: &httpStatusCode,
+			Listener: &vpcv1.LoadBalancerListenerIdentity{
+				ID: &listener,
+			},
+		}
+		if uri != "" {
+			httpsRedirect.URI = &uri
+		}
+		options.HTTPSRedirect = httpsRedirect
 	}
 	if certificateCRN != "" {
 		options.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
@@ -308,12 +399,27 @@ func lbListenerGet(d *schema.ResourceData, meta interface{}, lbID, lbListenerID 
 		return fmt.Errorf("Error Getting Load Balancer Listener : %s\n%s", err, response)
 	}
 	d.Set(isLBListenerLBID, lbID)
-	d.Set(isLBListenerPort, *lbListener.Port)
+	if lbListener.Port != nil {
+		d.Set(isLBListenerPort, *lbListener.Port)
+	}
+	if lbListener.PortMin != nil {
+		d.Set(isLBListenerPortMin, *lbListener.PortMin)
+	}
+	if lbListener.PortMax != nil {
+		d.Set(isLBListenerPortMax, *lbListener.PortMax)
+	}
 	d.Set(isLBListenerProtocol, *lbListener.Protocol)
 	d.Set(isLBListenerAcceptProxyProtocol, *lbListener.AcceptProxyProtocol)
 	d.Set(isLBListenerID, lbListenerID)
 	if lbListener.DefaultPool != nil {
 		d.Set(isLBListenerDefaultPool, *lbListener.DefaultPool.ID)
+	}
+	if lbListener.HTTPSRedirect != nil {
+		d.Set(isLBListenerHTTPSRedirectStatusCode, *lbListener.HTTPSRedirect.HTTPStatusCode)
+		d.Set(isLBListenerHTTPSRedirectListener, *lbListener.HTTPSRedirect.Listener.ID)
+		if lbListener.HTTPSRedirect.URI != nil {
+			d.Set(isLBListenerHTTPSRedirectURI, *lbListener.HTTPSRedirect.URI)
+		}
 	}
 	if lbListener.CertificateInstance != nil {
 		d.Set(isLBListenerCertificateInstance, *lbListener.CertificateInstance.CRN)
@@ -357,8 +463,8 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		return err
 	}
 	hasChanged := false
-	var certificateInstance, defPool, protocol string
-	var connLimit, port int64
+	var certificateInstance, defPool, protocol, listener, uri string
+	var connLimit, port, httpStatusCode int64
 	updateLoadBalancerListenerOptions := &vpcv1.UpdateLoadBalancerListenerOptions{
 		LoadBalancerID: &lbID,
 		ID:             &lbListenerID,
@@ -384,6 +490,32 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 			ID: &defPool,
 		}
 		hasChanged = true
+	}
+	httpsRedirectRemoved := false
+	httpsURIRemoved := false
+	if d.HasChange(isLBListenerHTTPSRedirectListener) || d.HasChange(isLBListenerHTTPSRedirectURI) || d.HasChange(isLBListenerHTTPSRedirectStatusCode) {
+		hasChanged = true
+		listener = d.Get(isLBListenerHTTPSRedirectListener).(string)
+		httpStatusCode = int64(d.Get(isLBListenerHTTPSRedirectStatusCode).(int))
+		uri = d.Get(isLBListenerHTTPSRedirectURI).(string)
+		if listener == "" {
+			httpsRedirectRemoved = true
+		} else {
+			HTTPSRedirect := &vpcv1.LoadBalancerListenerHTTPSRedirectPatch{
+				HTTPStatusCode: &httpStatusCode,
+				Listener:       &vpcv1.LoadBalancerListenerIdentityByID{ID: &listener},
+			}
+			if d.HasChange(isLBListenerHTTPSRedirectURI) {
+				if uri == "" {
+					HTTPSRedirect.URI = nil
+					httpsURIRemoved = true
+				} else {
+					HTTPSRedirect.URI = &uri
+				}
+			}
+
+			loadBalancerListenerPatchModel.HTTPSRedirect = HTTPSRedirect
+		}
 	}
 	if d.HasChange(isLBListenerPort) {
 		port = int64(d.Get(isLBListenerPort).(int))
@@ -413,6 +545,12 @@ func lbListenerUpdate(d *schema.ResourceData, meta interface{}, lbID, lbListener
 		loadBalancerListenerPatch, err := loadBalancerListenerPatchModel.AsPatch()
 		if err != nil {
 			return fmt.Errorf("Error calling asPatch for LoadBalancerListenerPatch: %s", err)
+		}
+		if httpsRedirectRemoved {
+			loadBalancerListenerPatch["https_redirect"] = nil
+		}
+		if httpsURIRemoved {
+			loadBalancerListenerPatch["https_redirect"].(map[string]interface{})["uri"] = nil
 		}
 		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 

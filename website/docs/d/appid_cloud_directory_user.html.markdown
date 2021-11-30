@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_cloud_directory_user
-Retrieve information about an IBM Cloud AppID Management Services Cloud Directory User.
+Retrieve information about an IBM Cloud AppID Management Services Cloud Directory User. For more information, see [managing users](https://cloud.ibm.com/docs/appid?topic=appid-cd-users)
 
 ## Example usage
 
@@ -30,6 +30,7 @@ In addition to all argument reference list, you can access the following attribu
 - `active` - (Boolean) Determines if the user account is active or not
 - `locked_until` - (Integer) Epoch time in milliseconds, determines till when the user account will be locked
 - `display_name` - (String) Optional user's display name
+- `subject` - (String) The user's identifier ('subject' in identity token)
 - `user_name` - (String) Username
 - `status` - (String) `PENDING` or `CONFIRMED`
 - `email` - (Set of Object) A set of user emails

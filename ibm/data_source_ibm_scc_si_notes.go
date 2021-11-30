@@ -54,6 +54,11 @@ func dataSourceIBMSccSiNotes() *schema.Resource {
 				Description: "The notes requested.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"note_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of the note.",
+						},
 						"short_description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -383,22 +388,71 @@ func dataSourceIBMSccSiNotesRead(context context.Context, d *schema.ResourceData
 	}
 	listNoteOptions.SetProviderID(d.Get("provider_id").(string))
 
-	apiListNotesResponse, response, err := findingsClient.ListNotesWithContext(context, listNoteOptions)
-	if err != nil {
-		log.Printf("[DEBUG] GetNoteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s\n%s", err, response))
+	apiNotes := []findingsv1.APINote{}
+
+	if listNoteOptions.PageToken != nil {
+		apiNotes, err = collectSpecificNotes(findingsClient, context, listNoteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
+			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
+		}
+	} else {
+		apiNotes, err = collectAllNotes(findingsClient, context, listNoteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] GetNoteWithContext failed %s", err)
+			return diag.FromErr(fmt.Errorf("GetNoteWithContext failed %s", err))
+		}
 	}
 
 	d.SetId(dataSourceIBMSccSiNotesID(d))
 
-	if apiListNotesResponse.Notes != nil {
-		err = d.Set("notes", dataSourceAPIListNotesResponseFlattenProviders(apiListNotesResponse.Notes))
+	if apiNotes != nil {
+		err = d.Set("notes", dataSourceAPIListNotesResponseFlattenProviders(apiNotes))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting notes %s", err))
 		}
 	}
 
 	return nil
+}
+
+// dataSourceIBMSccSiNotesID returns a reasonable ID for the list.
+func dataSourceIBMSccSiNotesID(d *schema.ResourceData) string {
+	return time.Now().UTC().String()
+}
+
+func collectSpecificNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
+	apiListNotesResponse, response, err := findingsClient.ListNotesWithContext(ctx, options)
+	if err != nil {
+		return nil, fmt.Errorf("%s\n%s", err, response)
+	}
+
+	return apiListNotesResponse.Notes, nil
+}
+
+func collectAllNotes(findingsClient *findingsv1.FindingsV1, ctx context.Context, options *findingsv1.ListNotesOptions) ([]findingsv1.APINote, error) {
+	finalList := []findingsv1.APINote{}
+
+	for {
+		apiListNotesResponse, response, err := findingsClient.ListNotesWithContext(ctx, options)
+		if err != nil {
+			return nil, fmt.Errorf("%s\n%s", err, response)
+		}
+
+		finalList = append(finalList, apiListNotesResponse.Notes...)
+
+		if options.PageSize != nil && int64(len(finalList)) == *options.PageSize {
+			break
+		}
+
+		options.PageToken = apiListNotesResponse.NextPageToken
+
+		if *apiListNotesResponse.NextPageToken == "" {
+			break
+		}
+	}
+
+	return finalList, nil
 }
 
 func dataSourceAPIListNotesResponseFlattenProviders(result []findingsv1.APINote) (notes []map[string]interface{}) {
@@ -412,6 +466,9 @@ func dataSourceAPIListNotesResponseFlattenProviders(result []findingsv1.APINote)
 func dataSourceAPIListNotesResponseProvidersToMap(notesItem findingsv1.APINote) (notesMap map[string]interface{}) {
 	notesMap = map[string]interface{}{}
 
+	if notesItem.ID != nil {
+		notesMap["note_id"] = notesItem.ID
+	}
 	if notesItem.ShortDescription != nil {
 		notesMap["short_description"] = notesItem.ShortDescription
 	}
@@ -423,7 +480,7 @@ func dataSourceAPIListNotesResponseProvidersToMap(notesItem findingsv1.APINote) 
 	}
 
 	if notesItem.RelatedURL != nil {
-		notesMap["related_url"] = dataSourceAPINoteFlattenRelatedURL(notesItem.RelatedURL)
+		notesMap["related_url"] = dataSourceAPINotesFlattenRelatedURL(notesItem.RelatedURL)
 	}
 
 	if notesItem.CreateTime != nil {
@@ -437,36 +494,31 @@ func dataSourceAPIListNotesResponseProvidersToMap(notesItem findingsv1.APINote) 
 	}
 
 	if notesItem.ReportedBy != nil {
-		notesMap["reported_by"] = dataSourceAPINoteFlattenReportedBy(*notesItem.ReportedBy)
+		notesMap["reported_by"] = dataSourceAPINotesFlattenReportedBy(*notesItem.ReportedBy)
 	}
 
 	if notesItem.Finding != nil {
-		notesMap["finding"] = dataSourceAPINoteFlattenFinding(*notesItem.Finding)
+		notesMap["finding"] = dataSourceAPINotesFlattenFinding(*notesItem.Finding)
 	}
 
 	if notesItem.Kpi != nil {
-		notesMap["kpi"] = dataSourceAPINoteFlattenKpi(*notesItem.Kpi)
+		notesMap["kpi"] = dataSourceAPINotesFlattenKpi(*notesItem.Kpi)
 	}
 
 	if notesItem.Card != nil {
-		notesMap["card"] = dataSourceAPINoteFlattenCard(*notesItem.Card)
+		notesMap["card"] = dataSourceAPINotesFlattenCard(*notesItem.Card)
 	}
 
 	if notesItem.Section != nil {
-		notesMap["section"] = dataSourceAPINoteFlattenSection(*notesItem.Section)
+		notesMap["section"] = dataSourceAPINotesFlattenSection(*notesItem.Section)
 	}
 
 	return notesMap
 }
 
-// dataSourceIBMSccSiNotesID returns a reasonable ID for the list.
-func dataSourceIBMSccSiNotesID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
-}
-
 func dataSourceAPINotesFlattenRelatedURL(result []findingsv1.APINoteRelatedURL) (relatedURL []map[string]interface{}) {
 	for _, relatedURLItem := range result {
-		relatedURL = append(relatedURL, dataSourceAPINoteRelatedURLToMap(relatedURLItem))
+		relatedURL = append(relatedURL, dataSourceAPINotesRelatedURLToMap(relatedURLItem))
 	}
 
 	return relatedURL
@@ -487,7 +539,7 @@ func dataSourceAPINotesRelatedURLToMap(relatedURLItem findingsv1.APINoteRelatedU
 
 func dataSourceAPINotesFlattenReportedBy(result findingsv1.Reporter) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceAPINoteReportedByToMap(result)
+	finalMap := dataSourceAPINotesReportedByToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
@@ -511,7 +563,7 @@ func dataSourceAPINotesReportedByToMap(reportedByItem findingsv1.Reporter) (repo
 
 func dataSourceAPINotesFlattenFinding(result findingsv1.FindingType) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceAPINoteFindingToMap(result)
+	finalMap := dataSourceAPINotesFindingToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
@@ -526,7 +578,7 @@ func dataSourceAPINotesFindingToMap(findingItem findingsv1.FindingType) (finding
 	if findingItem.NextSteps != nil {
 		nextStepsList := []map[string]interface{}{}
 		for _, nextStepsItem := range findingItem.NextSteps {
-			nextStepsList = append(nextStepsList, dataSourceAPINoteFindingNextStepsToMap(nextStepsItem))
+			nextStepsList = append(nextStepsList, dataSourceAPINotesFindingNextStepsToMap(nextStepsItem))
 		}
 		findingMap["next_steps"] = nextStepsList
 	}
@@ -549,7 +601,7 @@ func dataSourceAPINotesFindingNextStepsToMap(nextStepsItem findingsv1.Remediatio
 
 func dataSourceAPINotesFlattenKpi(result findingsv1.KpiType) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceAPINoteKpiToMap(result)
+	finalMap := dataSourceAPINotesKpiToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
@@ -567,7 +619,7 @@ func dataSourceAPINotesKpiToMap(kpiItem findingsv1.KpiType) (kpiMap map[string]i
 
 func dataSourceAPINotesFlattenCard(result findingsv1.Card) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceAPINoteCardToMap(result)
+	finalMap := dataSourceAPINotesCardToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
@@ -603,7 +655,7 @@ func dataSourceAPINotesCardToMap(cardItem findingsv1.Card) (cardMap map[string]i
 	if cardItem.Elements != nil {
 		elementsList := []map[string]interface{}{}
 		for _, elementsItem := range cardItem.Elements {
-			elementsList = append(elementsList, dataSourceAPINoteCardElementsToMap(elementsItem))
+			elementsList = append(elementsList, dataSourceAPINotesCardElementsToMap(elementsItem))
 		}
 		cardMap["elements"] = elementsList
 	}
@@ -612,11 +664,18 @@ func dataSourceAPINotesCardToMap(cardItem findingsv1.Card) (cardMap map[string]i
 }
 
 func dataSourceAPINotesCardElementsToMap(elementsItem findingsv1.CardElementIntf) (elementsMap map[string]interface{}) {
-	elementsMap = map[string]interface{}{}
+	cardElementMap := map[string]interface{}{}
 
-	// TODO: Add code here to convert a findingsv1.CardElementIntf to map[string]interface{}
+	switch v := elementsItem.(type) {
+	case *findingsv1.CardElementNumericCardElement:
+		cardElementMap["value_type"] = []map[string]interface{}{dataSourceAPINotesElementsValueTypeToMap(*v.ValueType)}
+	case *findingsv1.CardElementBreakdownCardElement:
+		cardElementMap["value_types"] = dataSourceAPINotesElementsValueTypesToMap(v.ValueTypes)
+	case *findingsv1.CardElementTimeSeriesCardElement:
+		cardElementMap["value_types"] = dataSourceAPINotesElementsValueTypesToMap(v.ValueTypes)
+	}
 
-	return elementsMap
+	return cardElementMap
 }
 
 func dataSourceAPINotesElementsValueTypeToMap(valueTypeItem findingsv1.NumericCardElementValueType) (valueTypeMap map[string]interface{}) {
@@ -638,17 +697,63 @@ func dataSourceAPINotesElementsValueTypeToMap(valueTypeItem findingsv1.NumericCa
 	return valueTypeMap
 }
 
-func dataSourceAPINotesElementsValueTypesToMap(valueTypesItem findingsv1.ValueTypeIntf) (valueTypesMap map[string]interface{}) {
-	valueTypesMap = map[string]interface{}{}
+func dataSourceAPINotesElementsFindingCountValueTypeToMap(valueTypeItem findingsv1.ValueTypeFindingCountValueType) (valueTypeMap map[string]interface{}) {
+	valueTypeMap = map[string]interface{}{}
 
-	// TODO: Add code here to convert a findingsv1.ValueTypeIntf to map[string]interface{}
+	if valueTypeItem.Kind != nil {
+		valueTypeMap["kind"] = valueTypeItem.Kind
+	}
+	if valueTypeItem.Text != nil {
+		valueTypeMap["text"] = valueTypeItem.Text
+	}
+	if valueTypeItem.FindingNoteNames != nil {
+		valueTypeMap["finding_note_names"] = valueTypeItem.FindingNoteNames
+	}
+
+	return valueTypeMap
+}
+
+func dataSourceAPINotesElementsKpiValueTypeToMap(valueTypeItem findingsv1.ValueTypeKpiValueType) (valueTypeMap map[string]interface{}) {
+	valueTypeMap = map[string]interface{}{}
+
+	if valueTypeItem.Kind != nil {
+		valueTypeMap["kind"] = valueTypeItem.Kind
+	}
+	if valueTypeItem.Text != nil {
+		valueTypeMap["text"] = valueTypeItem.Text
+	}
+	if valueTypeItem.KpiNoteName != nil {
+		valueTypeMap["kpi_note_name"] = valueTypeItem.KpiNoteName
+	}
+
+	return valueTypeMap
+}
+
+func dataSourceAPINotesElementsValueTypesToMap(valueTypesItem []findingsv1.ValueTypeIntf) (valueTypesMap []map[string]interface{}) {
+	valueTypesMap = []map[string]interface{}{}
+
+	valueTypeMap := map[string]interface{}{}
+
+	for _, valueType := range valueTypesItem {
+
+		switch v := valueType.(type) {
+		case *findingsv1.NumericCardElementValueType:
+			valueTypeMap = dataSourceAPINotesElementsValueTypeToMap(*v)
+		case *findingsv1.ValueTypeFindingCountValueType:
+			valueTypeMap = dataSourceAPINotesElementsFindingCountValueTypeToMap(*v)
+		case *findingsv1.ValueTypeKpiValueType:
+			valueTypeMap = dataSourceAPINotesElementsKpiValueTypeToMap(*v)
+		}
+
+		valueTypesMap = append(valueTypesMap, valueTypeMap)
+	}
 
 	return valueTypesMap
 }
 
 func dataSourceAPINotesFlattenSection(result findingsv1.Section) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceAPINoteSectionToMap(result)
+	finalMap := dataSourceAPINotesSectionToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList

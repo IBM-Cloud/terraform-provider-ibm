@@ -14,7 +14,6 @@ import (
 
 func TestAccIBMAppIDCloudDirectoryUser_basic(t *testing.T) {
 	userName := fmt.Sprintf("tf_testacc_user_%d", acctest.RandIntRange(10, 100))
-	email := fmt.Sprintf("%s@mail.com", userName)
 	lockedUntil := time.Now().Add(time.Hour*2).UnixNano() / int64(time.Millisecond)
 
 	resource.Test(t, resource.TestCase{
@@ -23,15 +22,16 @@ func TestAccIBMAppIDCloudDirectoryUser_basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAppIDCloudDirectoryUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAppIDCloudDirectoryUserConfig(appIDTenantID, userName, email, lockedUntil),
+				Config: testAccCheckIBMAppIDCloudDirectoryUserConfig(appIDTenantID, userName, appIDTestUserEmail, lockedUntil),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "active", "false"),
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "locked_until", strconv.Itoa(int(lockedUntil))),
 					resource.TestCheckResourceAttrSet("ibm_appid_cloud_directory_user.user", "user_id"),
+					resource.TestCheckResourceAttrSet("ibm_appid_cloud_directory_user.user", "subject"),
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "display_name", "Test TF User"),
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "status", "PENDING"),
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "email.#", "1"),
-					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "email.0.value", email),
+					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "email.0.value", appIDTestUserEmail),
 					resource.TestCheckResourceAttr("ibm_appid_cloud_directory_user.user", "email.0.primary", "true"),
 				),
 			},

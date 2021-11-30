@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_appid_application
-Retrieve information about an IBM Cloud AppID Management Services application.
+Retrieve information about an IBM Cloud AppID Management Services application. For more information, see [application identity and authorization](https://cloud.ibm.com/docs/appid?topic=appid-app)
 
 ## Example usage
 

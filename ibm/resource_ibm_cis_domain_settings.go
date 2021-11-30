@@ -6,7 +6,7 @@ package ibm
 import (
 	"log"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -637,6 +637,14 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					_, resp, err = cisClient.UpdateMinTlsVersion(opt)
 				}
 			}
+		case cisDomainSettingsBrotli:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateBrotliOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateBrotli(opt)
+				}
+			}
 		case cisDomainSettingsCNAMEFlattening:
 			if d.HasChange(item) {
 				if v, ok := d.GetOk(item); ok {
@@ -942,16 +950,12 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			settingErr = err
 
 		case cisDomainSettingsBrotli:
-			cisClient, err := meta.(ClientSession).CisAPI()
-			if err != nil {
-				return err
-			}
-			settingsResult, err := cisClient.Settings().GetSetting(crn, zoneID, item)
+			opt := cisClient.NewGetBrotliOptions()
+			result, resp, err := cisClient.GetBrotli(opt)
 			if err == nil {
-				settingsObj := *settingsResult
-				d.Set(item, settingsObj.Value)
+				d.Set(cisDomainSettingsBrotli, result.Result.Value)
 			}
-			settingErr = err
+			settingResponse = resp
 
 		case cisDomainSettingsMinTLSVersion:
 			opt := cisClient.NewGetMinTlsVersionOptions()

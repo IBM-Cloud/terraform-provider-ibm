@@ -1,3 +1,298 @@
+# 1.36.0 (Nov16, 2021)
+Features
+* Support VPC Infrastructure
+    - **DataSources**
+        - ibm_is_network_acls
+        - ibm_is_network_acl
+        - ibm_is_flow_log
+        - ibm_is_floating_ips
+    - **Resources**
+        - ibm_is_instance_action
+* Support Power Instance
+    - **DataSources**
+        - ibm_pi_dhcp
+        - ibm_pi_dhcps
+        - ibm_pi_cloud_connection
+    - **Resources**
+        - ibm_pi_dhcp
+        - ibm_pi_cloud_connection
+* Support SCC Security Insights
+    - **DataSources**
+        - ibm_scc_si_occurrence
+        - ibm_scc_si_occurrences
+    - **Resources**
+        - ibm_scc_si_occurrence
+* Support Schematics
+    - **DataSources**
+        - ibm_schematics_inventory
+        - ibm_schematics_resource_query
+    - **Resources**
+        - ibm_schematics_inventory
+        - ibm_schematics_resource_query
+
+
+ENHANCEMENTS:
+* Support storage pool and affinity for instance and volume ([3270](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3270))
+
+* Import image from public and private COS bucket ([3265](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3265))
+
+* Support br-sao region for Container Registry ([3258](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3258))
+
+* Support gpu for instance profile datasource ([3158](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3158))
+
+* add resource group to cm_catalog resource and datasource ([3291](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3291))
+
+* Support: default headers for service client ([3257](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3257))
+
+* Support VPC instance bandwidth ([3156](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3156))
+
+* Postgres configuration through terraform ([3278](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3278))
+
+* Configure Redis database ([1428](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/1428))
+
+* Add force_create to create classic infrastructure reserved capacity with exisitng name ([3306](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3306))
+
+* vtl and sap options for Power Instance stock images ([3310](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3310))
+
+* Allow Power Instance volume update when in-use ([3323](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3323))
+
+* added support for enabling sdk debug logging ([3268](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3268))
+
+
+BUGFIXES:
+* updated docs and examples for vpn gateway and gateway connections ([3283](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3283))
+
+* Load Balancer cannot be updated because its status is 'UPDATE_PENDING' ([3006](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3006))
+
+* VPC Address Prefix can't delete even though Subnet Deletion process complete. ([2759](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2759))
+
+* RC api returning incorrect response when instance already exists ([3187](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3187))
+
+* Failures when creating ibm_database because of bad values for allocations should be more clear ([3294](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3294))
+
+* Fix: nil pointer on pi_key ([3133](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3133))
+
+* Regression: "AuthorizationDelegator" no longer works in 1.30.0 ([3013](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3013))
+
+* adding custom retry to fix the enabling of logging and moniotirg ([3319](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3319))
+
+* Update ibm-hpcs-tke-sdk ([3313](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3313))
+
+* Update schematics terraform resources and datasources based on latest API's ([2901](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2901))
+
+* ibm_schematics_workspace adding template_inputs causes panic ([3295](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3295))
+
+* ibm_schematics_workspace add template_git_url fails ([3296](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3296))
+
+* Cannot provision Schematics workspaces with recent versions of Terraform ([3048](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3048))
+
+
+# 1.35.0 (Oct28, 2021)
+
+Features
+* Support Event Notifications
+    - **Resources**
+        - ibm_en_destination
+        - ibm_en_topic
+        - ibm_en_subscription
+    - **DataSources**
+        - ibm_en_destination
+        - ibm_en_destinations
+        - ibm_en_topic
+        - ibm_en_topics
+        - ibm_en_subscription
+        - ibm_en_subscriptions
+
+* Support Container Storage Attachment
+    - **Resources**
+        - ibm_container_storage_attachment
+    - **DataSources**
+        - ibm_container_storage_attachment
+
+ENHANCEMENTS:
+
+*  Implemented feature to edit BGP IPs and ASN values for non provider and provider flow  gateways ([3186](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3186))
+
+* Support VPC load balancer https redirect ([3115](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3115))
+
+* Support route_mode for VPC NLB vnf ([3208](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3208))
+
+* Support direct endpoints for cos_bucket ([3252](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3252))
+
+* Add support for pi_network jumbo option ([3255](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3255))
+
+* Support enable/update the BFD config for the DirectLink gateways ([3194](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3194))
+
+* Added port range support for VPC NLBs with route mode enabled ([3207](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3207))
+
+* Support high availablity for custom resolver ([3190](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3190))
+
+* Add resource_group_id ibm_container_vpc_alb resource and datasource ([2768](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2768))
+
+
+BUGFIXES:
+
+* ibm_is_lb_pool_member member weight is not working as expected when weight is 0 ([3124](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3124))
+
+* Documentation for data "ibm_iam_trusted_profile_policy" is wrong ([3201](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3201))
+
+* Wrong documentation for iam_trusted_profile_claim_rule ([3216](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3216))
+
+* added placement_group documentation in instance_template ([3210](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3210))
+
+* VPE documentation issue ([3225](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3225))
+
+* Do not ignore label to enable node-local-dns-enabled for kubernetes service ([3232](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3232))
+
+* ibm_is_lb how to create a network load balancer, what is profile, resource group name ([3108](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3108))
+
+* Fix VPC lb listener access protocol ([3240](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3240))
+
+* Fix documentation for atracker resources ([3246](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3246))
+
+* Conrefs in https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database documentation ([3233](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3233))
+
+* Fix ibm_iam_trusted_profile_link, argument "namespace" is not required if cr_type is VSI ([3219](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3219))
+
+* Add links to App ID documentation ([3220](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3220))
+
+* What are the valid values for the attributes? (App ID) ([3221](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3221))
+
+* ibm_iam_access_group_members incorrect state when members list >50 users ([3189](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3189))
+
+* ibm_iam_account_settings modify issue ([3249](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3249))
+
+* ibm_cloud_shell_account_settings modify issue ([3247](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3247))
+
+* ibm_cloud_shell_account_settings delete issue ([3242](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3242))
+
+* Error downloading the cluster config - config.zip: no such file or directory ([2806](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2806))
+
+* IBM Cloud Shell data resource ([3275](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3275))
+
+# 1.34.0 (Oct12, 2021)
+
+**Note**
+This release replace github.com/dgrijalva/jwt-go dependency with github.com/golang-jwt/jwt to fix ([CVE-2020-26160] (https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3191))
+FEATURES:
+
+* Support IBM IAM Trusted Profile
+    - **Resources**
+        - ibm_iam_trusted_profile
+        - ibm_iam_trusted_profile_claim_rule
+        - ibm_iam_trusted_profile_link
+        - ibm_iam_trusted_profile_policy
+    - **DataSources**
+        - ibm_iam_trusted_profile
+        - ibm_iam_trusted_profile_claim_rule
+        - ibm_iam_trusted_profile_link
+        - ibm_iam_trusted_profile_policy
+
+* Support Classic Infrastructure Reserved Capacity
+    - **Resources**
+        - ibm_compute_reserved_capacity
+    - **DataSources**
+        - ibm_compute_reserved_capacity
+ENHANCEMENTS:
+
+* Support for reading the endpoints for supported IBM Cloud Services via file ([3071](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3071))
+
+* Support for provisioning Monthly based servers on reserved capacity ([3185](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3185))
+
+## 1.33.1 (Oct1, 2021)
+ENHANCEMENTS
+
+* Ability to provide IP address for provisioning Power Systems using ibm_pi_instance resource ([3102](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3102))
+
+
+BUGFIXES
+
+* Regression: ibm_is_instance 1.33.0 no longer creates user_data ([3163](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3163))
+* Regression: "AuthorizationDelegator" no longer works in 1.30.0 ([3013](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3013))
+* Fix: ibm_database datasource returns nil for connectionstrings ([3166](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3166))
+* Fix: appid token config destination_claim should be optional ([3143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3143))
+* Dereferencing of rg id, name and target update in floating ip ([3164](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3164))
+* DocFix: Security and compliance doc updates ([3155](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3155))
+
+# 1.33.0 (Sep28, 2021)
+FEATURES:
+
+* Support IBM Cloud Shell
+    - **Resources**
+        - ibm_cloud_shell_account_settings
+    - **DataSources**
+        - ibm_cloud_shell_account_settings
+
+* Support Security and Compliance Center
+    - **Resources**
+        - ibm_scc_si_note
+    - **DataSources**
+        - ibm_scc_si_note
+        - ibm_scc_si_notes
+        - ibm_scc_si_providers
+        - ibm_scc_posture_scopes
+        - ibm_scc_posture_latest_scans
+        - ibm_scc_posture_profiles
+        - ibm_scc_posture_scan_summary
+        -ibm_scc_posture_scan_summaries
+
+* Support Event Streams Schema
+    - **Resources**
+        - ibm_event_streams_schema
+    - **DataSources**
+        - ibm_event_streams_schema
+
+* Support AppID
+    - **Resources**
+        - ibm_appid_idp_google
+        - ibm_appid_mfa_channel
+    - **DataSources**
+        - ibm_appid_idp_google
+        - ibm_appid_mfa_channel
+
+* Support Cloudant database
+    - **Resources**
+        - ibm_cloudant
+    - **DataSources**
+        - ibm_cloudant
+
+* Support CIS Firewall Rules
+    - **Resources**
+        - ibm_cis_firewall_rules
+    - **DataSources**
+        - ibm_cis_firewall_rule
+
+**DeprecationMessage**: Resource ibm_is_security_group_network_interface_attachment is deprecated. Use ibm_is_security_group_target to attach a network interface to a security group
+
+ENHANCEMENTS
+
+* Feature: add support for Transit Gateway DLaaS ([3105](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3105))
+* Added changes for adjustable iops, capacity and volume profile ([3068](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3068))
+
+
+BUGFIXES
+
+* suppressing the change in wait_before_delete on import of is_instance which showed update in place ([3075](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3075))
+
+* ibm_is_instance_volume_attachment - Multiple volume creation and attachment failure ([3077](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3077))
+
+* data "ibm_container_cluster_config" results in intermittent authentication as 'system:anonymous ([2811](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2811))
+
+* Added missing crn to is resources ([3130](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3130))
+
+* Added a document update regarding allow_ip_spoofing on network interfaces for VSIs ([3145](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3145))
+
+* Changing an ibm_is_instance causes the associated ibm_is_floating_ip to fail ([3110](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3110))
+
+* Updated security group target APIs ([2896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/2896))
+
+* Failure modifying volume_name in ibm_is_instance_volume_attachment ([3089](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3089))
+
+* DocFix: Satellite Link and Endpoint resources ([3152](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3152))
+
+* Added zones parameter to immutable list and added hosts parameter to satellite location data source ([3137](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3137))
+
+
 ## 1.32.1 (Sep20, 2021)
 ENHANCEMENTS
 

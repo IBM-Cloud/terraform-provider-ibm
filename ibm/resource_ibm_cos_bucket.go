@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"regexp"
@@ -43,12 +44,13 @@ const (
 
 func resourceIBMCOSBucket() *schema.Resource {
 	return &schema.Resource{
-		Read:     resourceIBMCOSBucketRead,
-		Create:   resourceIBMCOSBucketCreate,
-		Update:   resourceIBMCOSBucketUpdate,
-		Delete:   resourceIBMCOSBucketDelete,
-		Exists:   resourceIBMCOSBucketExists,
-		Importer: &schema.ResourceImporter{},
+		Read:          resourceIBMCOSBucketRead,
+		Create:        resourceIBMCOSBucketCreate,
+		Update:        resourceIBMCOSBucketUpdate,
+		Delete:        resourceIBMCOSBucketDelete,
+		Exists:        resourceIBMCOSBucketExists,
+		Importer:      &schema.ResourceImporter{},
+		CustomizeDiff: resourceExpiryValidate,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -114,7 +116,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc:     validateAllowedStringValue([]string{"public", "private", "direct"}),
 				Description:      "public or private",
 				DiffSuppressFunc: applyOnce,
 				Default:          "public",
@@ -190,6 +192,39 @@ func resourceIBMCOSBucket() *schema.Resource {
 					},
 				},
 			},
+			"abort_incomplete_multipart_upload_days": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enable abort incomplete multipart upload to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"days_after_initiation": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validateAllowedRangeInt(1, 3650),
+							Description:  "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
 			"archive_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -248,11 +283,22 @@ func resourceIBMCOSBucket() *schema.Resource {
 							Computed:    true,
 							Description: "The rule applies to any objects with keys that match this prefix",
 						},
+						"date": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validBucketLifecycleTimestamp,
+							Description:  "Specify a rule to expire the current version of objects in bucket after a specific date.",
+						},
 						"days": {
 							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 3650),
+							Optional:     true,
+							ValidateFunc: validateAllowedRangeInt(1, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
+						},
+						"expired_object_delete_marker": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration.",
 						},
 					},
 				},
@@ -299,7 +345,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"retention_rule", "expire_rule"},
+				ConflictsWith: []string{"retention_rule"},
 				Description:   "Protect objects from accidental deletion or overwrites. Versioning allows you to keep multiple versions of an object protecting from unintentional data loss.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -308,6 +354,39 @@ func resourceIBMCOSBucket() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 							Description: "Enable or suspend the versioning for objects in the bucket",
+						},
+					},
+				},
+			},
+			"noncurrent_version_expiration": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Unique identifier for the rule.Expire rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable an expire rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"noncurrent_days": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validateAllowedRangeInt(1, 3650),
+							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 					},
 				},
@@ -377,9 +456,107 @@ func archiveRuleList(archiveList []interface{}) []*s3.LifecycleRule {
 	return rules
 }
 
+func nc_expRuleList(nc_expList []interface{}) []*s3.LifecycleRule {
+	var nc_exp_prefix, nc_exp_status, rule_id string
+	var nc_days int64
+	var rules []*s3.LifecycleRule
+
+	for _, l := range nc_expList {
+		nc_expMap, _ := l.(map[string]interface{})
+		//Rule ID
+		if rule_idSet, exist := nc_expMap["rule_id"]; exist {
+			id := rule_idSet.(string)
+			rule_id = id
+		}
+
+		//Status Enable/Disable
+		if nc_exp_statusSet, exist := nc_expMap["enable"]; exist {
+			nc_expStatusEnabled := nc_exp_statusSet.(bool)
+			if nc_expStatusEnabled == true {
+				nc_exp_status = "Enabled"
+			} else {
+				nc_exp_status = "Disabled"
+			}
+		}
+		//Days
+		if nc_exp_daySet, exist := nc_expMap["noncurrent_days"]; exist {
+			nc_exp_days := int64(nc_exp_daySet.(int))
+			nc_days = nc_exp_days
+		}
+		//Expire Prefix
+		if nc_expPrefixClassSet, exist := nc_expMap["prefix"]; exist {
+			prefix_check := nc_expPrefixClassSet.(string)
+			nc_exp_prefix = prefix_check
+		}
+
+		nc_exp_rule := s3.LifecycleRule{
+			ID:     aws.String(rule_id),
+			Status: aws.String(nc_exp_status),
+			Filter: &s3.LifecycleRuleFilter{
+				Prefix: aws.String(nc_exp_prefix),
+			},
+			NoncurrentVersionExpiration: &s3.NoncurrentVersionExpiration{
+				NoncurrentDays: aws.Int64(nc_days),
+			},
+		}
+		rules = append(rules, &nc_exp_rule)
+	}
+	return rules
+}
+
+func abortmpuRuleList(abortmpuList []interface{}) []*s3.LifecycleRule {
+	var abort_mpu_prefix, abort_mpu_status, rule_id string
+	var abort_mpu_days_init int64
+	var rules []*s3.LifecycleRule
+
+	for _, l := range abortmpuList {
+		abortmpuMap, _ := l.(map[string]interface{})
+		//Rule ID
+		if rule_idSet, exist := abortmpuMap["rule_id"]; exist {
+			id := rule_idSet.(string)
+			rule_id = id
+		}
+
+		//Status Enable/Disable
+		if abort_mpu_statusSet, exist := abortmpuMap["enable"]; exist {
+			abort_mpuStatusEnabled := abort_mpu_statusSet.(bool)
+			if abort_mpuStatusEnabled == true {
+				abort_mpu_status = "Enabled"
+			} else {
+				abort_mpu_status = "Disabled"
+			}
+		}
+		//Days
+		if abort_mpu_daySet, exist := abortmpuMap["days_after_initiation"]; exist {
+			abort_mpu_days := int64(abort_mpu_daySet.(int))
+			abort_mpu_days_init = abort_mpu_days
+		}
+		//Expire Prefix
+		if abort_mpuPrefixClassSet, exist := abortmpuMap["prefix"]; exist {
+			prefix_check := abort_mpuPrefixClassSet.(string)
+			abort_mpu_prefix = prefix_check
+		}
+
+		abort_mpu_rule := s3.LifecycleRule{
+			ID:     aws.String(rule_id),
+			Status: aws.String(abort_mpu_status),
+			Filter: &s3.LifecycleRuleFilter{
+				Prefix: aws.String(abort_mpu_prefix),
+			},
+			AbortIncompleteMultipartUpload: &s3.AbortIncompleteMultipartUpload{
+				DaysAfterInitiation: aws.Int64(abort_mpu_days_init),
+			},
+		}
+		rules = append(rules, &abort_mpu_rule)
+	}
+	return rules
+}
+
 func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 	var expire_prefix, expire_status, rule_id string
+	var expire_date time.Time
 	var days int64
+	var expired_object_del_marker bool
 	var rules []*s3.LifecycleRule
 
 	for _, l := range expireList {
@@ -392,8 +569,8 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 
 		//Status Enable/Disable
 		if expire_statusSet, exist := expireMap["enable"]; exist {
-			archiveStatusEnabled := expire_statusSet.(bool)
-			if archiveStatusEnabled == true {
+			expireStatusEnabled := expire_statusSet.(bool)
+			if expireStatusEnabled == true {
 				expire_status = "Enabled"
 			} else {
 				expire_status = "Disabled"
@@ -404,22 +581,44 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 			daysexpire := int64(daysexpireSet.(int))
 			days = daysexpire
 		}
+		//Date
+		if dateexpireSet, exist := expireMap["date"]; exist {
+			expiredatevalue := dateexpireSet.(string)
+			expire_date, _ = time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", expiredatevalue))
+		}
 		//Expire Prefix
 		if expirePrefixClassSet, exist := expireMap["prefix"]; exist {
-			expire_prefix = expirePrefixClassSet.(string)
+			prefix := expirePrefixClassSet.(string)
+			expire_prefix = prefix
 		}
+		// Expired Object Delete Marker
+		if expireObjectDelMarkerSet, exist := expireMap["expired_object_delete_marker"]; exist {
+			expired_object_del_marker = expireObjectDelMarkerSet.(bool)
+		}
+		var i *s3.LifecycleExpiration
 
+		if expired_object_del_marker == true {
+			i = &s3.LifecycleExpiration{
+				ExpiredObjectDeleteMarker: aws.Bool(expired_object_del_marker),
+			}
+		} else if days > 0 {
+			i = &s3.LifecycleExpiration{
+				Days: aws.Int64(days),
+			}
+		} else if !expire_date.IsZero() {
+			i = &s3.LifecycleExpiration{
+				Date: aws.Time(expire_date),
+			}
+		}
 		expire_rule := s3.LifecycleRule{
 			ID:     aws.String(rule_id),
 			Status: aws.String(expire_status),
 			Filter: &s3.LifecycleRuleFilter{
 				Prefix: aws.String(expire_prefix),
 			},
-			Expiration: &s3.LifecycleExpiration{
-				Days: aws.Int64(days),
-			},
-		}
 
+			Expiration: i,
+		}
 		rules = append(rules, &expire_rule)
 	}
 	return rules
@@ -434,9 +633,12 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -463,28 +665,36 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
 
-	//// Update  the lifecycle (Archive or Expire)
-	if d.HasChange("archive_rule") || d.HasChange("expire_rule") {
+	//// Update  the lifecycle (Archive or Expire or Non Current version or Abort incomplete Multipart Upload)
+	if d.HasChange("archive_rule") || d.HasChange("expire_rule") || d.HasChange("noncurrent_version_expiration") || d.HasChange("abort_incomplete_multipart_upload_days") {
 		var archive, archive_ok = d.GetOk("archive_rule")
 		var expire, expire_ok = d.GetOk("expire_rule")
+		var noncurrentverexp, nc_exp_ok = d.GetOk("noncurrent_version_expiration")
+		var abortmpu, abort_mpu_ok = d.GetOk("abort_incomplete_multipart_upload_days")
 		var rules []*s3.LifecycleRule
-		if archive_ok || expire_ok {
-			if expire_ok {
-				rules = append(rules, expireRuleList(expire.([]interface{}))...)
-			}
+		if archive_ok || expire_ok || nc_exp_ok || abort_mpu_ok {
 			if archive_ok {
 				rules = append(rules, archiveRuleList(archive.([]interface{}))...)
 			}
-
+			if nc_exp_ok {
+				rules = append(rules, nc_expRuleList(noncurrentverexp.([]interface{}))...)
+			}
+			if abort_mpu_ok {
+				rules = append(rules, abortmpuRuleList(abortmpu.([]interface{}))...)
+			}
+			if expire_ok {
+				rules = append(rules, expireRuleList(expire.([]interface{}))...)
+			}
 			lInput := &s3.PutBucketLifecycleConfigurationInput{
 				Bucket: aws.String(bucketName),
 				LifecycleConfiguration: &s3.LifecycleConfiguration{
 					Rules: rules,
 				},
 			}
+
 			_, err := s3Client.PutBucketLifecycleConfiguration(lInput)
 			if err != nil {
-				return fmt.Errorf("failed to update the archive rule on COS bucket %s, %v", bucketName, err)
+				return fmt.Errorf("failed to update the lifecyle rule on COS bucket %s, %v", bucketName, err)
 			}
 
 		} else {
@@ -694,9 +904,12 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
@@ -813,7 +1026,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("hard_quota", bucketPtr.HardQuota)
 		}
 	}
-	// Read the lifecycle configuration (archive & expiration)
+	// Read the lifecycle configuration (archive & expiration or non current version or abort incomplete multipart upload)
 
 	gInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -824,15 +1037,22 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if (err != nil && !strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist")) && (err != nil && bucketPtr != nil && bucketPtr.Firewall != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied")) {
 		return err
 	}
-
 	if lifecycleptr != nil {
 		archiveRules := archiveRuleGet(lifecycleptr.Rules)
 		expireRules := expireRuleGet(lifecycleptr.Rules)
+		nc_expRules := nc_exp_RuleGet(lifecycleptr.Rules)
+		abort_mpuRules := abort_mpu_RuleGet(lifecycleptr.Rules)
 		if len(archiveRules) > 0 {
 			d.Set("archive_rule", archiveRules)
 		}
 		if len(expireRules) > 0 {
 			d.Set("expire_rule", expireRules)
+		}
+		if len(nc_expRules) > 0 {
+			d.Set("noncurrent_version_expiration", nc_expRules)
+		}
+		if len(abort_mpuRules) > 0 {
+			d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 		}
 	}
 
@@ -902,9 +1122,12 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, privateApiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, privateApiEndpoint, directApiEndpoint := selectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = privateApiEndpoint
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -980,9 +1203,12 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		apiType = "ssl"
 	}
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(apiType, bLocation)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -1060,9 +1286,12 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
+	}
+	if endpointType == "direct" {
+		apiEndpoint = directApiEndpoint
 	}
 	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
@@ -1107,17 +1336,17 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	return false, nil
 }
 
-func selectCosApi(apiType string, bLocation string) (string, string) {
+func selectCosApi(apiType string, bLocation string) (string, string, string) {
 	if apiType == "crl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "rl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
 	if apiType == "ssl" {
-		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation)
+		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
-	return "", ""
+	return "", "", ""
 }
 
 func parseBucketId(id string, info string) string {
@@ -1145,4 +1374,27 @@ func parseBucketId(id string, info string) string {
 
 	}
 	return ""
+}
+
+func resourceExpiryValidate(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if expire, ok := diff.GetOk("expire_rule"); ok {
+		expire_list := expire.([]interface{})
+		for _, l := range expire_list {
+			expireMap, _ := l.(map[string]interface{})
+			ctr := 0
+			if val, days_exist := expireMap["days"]; days_exist && val.(int) != 0 {
+				ctr++
+			}
+			if val, date_exist := expireMap["date"]; date_exist && val != "" {
+				ctr++
+			}
+			if val, expired_object_delete_marker_exist := expireMap["expired_object_delete_marker"]; expired_object_delete_marker_exist && val.(bool) != false {
+				ctr++
+			}
+			if ctr > 1 {
+				return fmt.Errorf("The expiry 3 action elements (Days, Date, ExpiredObjectDeleteMarker) are all mutually exclusive. These can not be used with each other. Please set one expiry element on the same rule of expiration.")
+			}
+		}
+	}
+	return nil
 }

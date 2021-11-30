@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -151,6 +152,16 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 						},
 						"certbase64": {
 							Description: "Certificate in base64 encoding",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"bundlename": {
+							Description: "Cassandra Bundle Name",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"bundlebase64": {
+							Description: "Cassandra base64 encoding",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -503,6 +514,11 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"configuration_schema": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The configuration schema in JSON format",
+			},
 			ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -728,6 +744,20 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Error writing certificate to file: %s", err)
 	}
 	d.Set("cert_file_path", certFile)
+	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
+		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err)
+		}
+		s, err := json.Marshal(configSchema)
+		if err != nil {
+			return fmt.Errorf("error marshalling the database configuration schema: %s", err)
+		}
+
+		if err = d.Set("configuration_schema", string(s)); err != nil {
+			return fmt.Errorf("error setting the database configuration schema: %s", err)
+		}
+	}
 
 	return nil
 }

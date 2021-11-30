@@ -93,6 +93,44 @@ func dataSourceIBMSatelliteLocation() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"hosts": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"host_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"host_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cluster_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ip_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"zone": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"host_labels": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      schema.HashString,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -146,6 +184,18 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 	if instance.Ingress != nil {
 		d.Set("ingress_hostname", *instance.Ingress.Hostname)
 		d.Set("ingress_secret", *instance.Ingress.SecretName)
+	}
+
+	getSatHostOptions := &kubernetesserviceapiv1.GetSatelliteHostsOptions{
+		Controller: &location,
+	}
+
+	hostList, response, err := satClient.GetSatelliteHosts(getSatHostOptions)
+	if err != nil {
+		return fmt.Errorf("Error retrieving location hosts %s : %s\n%s", location, err, response)
+	}
+	if hostList != nil {
+		d.Set("hosts", flattenSatelliteHosts(hostList))
 	}
 
 	tags, err := GetTagsUsingCRN(meta, *instance.Crn)

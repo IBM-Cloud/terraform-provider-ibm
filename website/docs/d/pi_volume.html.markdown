@@ -42,9 +42,11 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `bootable` -  (Bool) If set to **true**, the Power Systems Virtual Server instance can boot from this volume. If set to **false**, this volume is not used during the boot process of the instance.
+- `disk_type` - (String) The disk type that is used for the volume.
+- `bootable` -  (Bool) Indicates if the volume is boot capable.
 - `id` - (String) The unique identifier of the volume.
+- `shareable` - (String) Indicates if the volume is shareable between VMs. 
 - `size` - (Integer) The size of the volume in gigabytes.
 - `state` - (String) The state of the volume.
-- `type` - (String) The disk type that is used for the volume.
+- `volume_pool` - (String) Volume pool, name of storage pool where the volume is located.
 - `wwn` - (String) The world wide name of the volume.

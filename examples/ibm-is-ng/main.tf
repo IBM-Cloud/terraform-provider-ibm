@@ -201,6 +201,24 @@ data "ibm_is_instance" "ds_instance" {
   passphrase = ""
 }
 
+
+resource "ibm_is_instance_network_interface" "is_instance_network_interface" {
+  instance = ibm_is_instance.instance1.id
+  subnet = ibm_is_subnet.subnet1.id
+  allow_ip_spoofing = true
+  name = "my-network-interface"
+  primary_ipv4_address = "10.0.0.5"
+}
+
+data "ibm_is_instance_network_interface" "is_instance_network_interface" {
+	instance_name = ibm_is_instance.instance1.name
+	network_interface_name = ibm_is_instance_network_interface.is_instance_network_interface.name
+}
+
+data "ibm_is_instance_network_interfaces" "is_instance_network_interfaces" {
+	instance_name = ibm_is_instance.instance1.name
+}
+
 resource "ibm_is_floating_ip" "floatingip1" {
   name   = "fip1"
   target = ibm_is_instance.instance1.primary_network_interface[0].id
@@ -370,6 +388,7 @@ resource "ibm_is_volume" "vol2" {
 
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
+  vpc = ibm_is_vpc.vpc1.id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -418,6 +437,18 @@ data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
 
 data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
   network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl" {
+	network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl1" {
+	name = ibm_is_network_acl.isExampleACL.name
+	vpc_name = ibm_is_vpc.vpc1.name
+}
+
+data "ibm_is_network_acls" "is_network_acls" {
 }
 
 resource "ibm_is_public_gateway" "publicgateway1" {
@@ -670,4 +701,8 @@ data "ibm_is_placement_group" "is_placement_group" {
 }
 
 data "ibm_is_placement_groups" "is_placement_groups" {
+}
+
+## List regions 
+data "ibm_is_regions" "regions" {
 }

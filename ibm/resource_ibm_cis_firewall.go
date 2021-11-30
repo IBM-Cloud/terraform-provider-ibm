@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM/go-sdk-core/v4/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

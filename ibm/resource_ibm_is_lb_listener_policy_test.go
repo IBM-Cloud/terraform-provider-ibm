@@ -153,6 +153,60 @@ func TestAccIBMISLBListenerPolicyReject_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLBListenerPolicyHttpRedirect_basic(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
+	lbpolicyname := fmt.Sprintf("tflblispol%d", acctest.RandIntRange(10, 100))
+	protocol1 := "https"
+	port1 := "9086"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBListenerPolicyHttpsRedirectConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port1, protocol1, lbpolicyname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_status_code", "302"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_uri", "/example?doc=geta"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigUpdate(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port1, protocol1, lbpolicyname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_status_code", "303"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_uri", "/example?doc=updated"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigRemove(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port1, protocol1, lbpolicyname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener_policy.lb_listener_policy", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckNoResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_uri"),
+					resource.TestCheckNoResourceAttr(
+						"ibm_is_lb_listener_policy.lb_listener_policy", "target_https_redirect_listener"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBListenerPolicyDestroy(s *terraform.State) error {
 
 	sess, _ := testAccProvider.Meta().(ClientSession).VpcV1API()
@@ -451,5 +505,182 @@ func testAccCheckIBMISLBListenerPolicyRejectConfigUpdate(vpcname, subnetname, zo
 		priority = %s
 		name = "%s"
 }`, vpcname, subnetname, zone, cidr, lbname, port, protocol, priority, lblistenerpolicyname)
+
+}
+
+func testAccCheckIBMISLBListenerPolicyHttpsRedirectConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+			}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	}
+	  
+	resource "ibm_is_lb_listener" "lb_listener2"{
+	lb       = ibm_is_lb.testacc_LB.id
+	port     = "9087"
+	protocol = "http"
+	https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+	https_redirect_status_code = 301
+	https_redirect_uri = "/example?doc=geta" 
+	}
+	resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+	name = "%s"
+	lb = ibm_is_lb.testacc_LB.id
+	listener = ibm_is_lb_listener.lb_listener2.listener_id
+	action = "https_redirect"
+	target_id = ibm_is_lb_pool.testacc_pool.pool_id
+	priority = 2
+	target_http_status_code = 302
+	target_url = "https://www.redirect.com"
+	target_https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+	target_https_redirect_status_code = 302
+	target_https_redirect_uri = "/example?doc=geta"
+	}
+	
+	
+	resource "ibm_is_lb_pool" "testacc_pool" {
+	name           = "test-pool-1"
+	lb             = ibm_is_lb.testacc_LB.id
+	algorithm      = "round_robin"
+	protocol       = "https"
+	health_delay   = 60
+	health_retries = 5
+	health_timeout = 30
+	health_type    = "https"
+	proxy_protocol = "v1"
+	}`, vpcname, subnetname, zone, cidr, lbname, lbListerenerCertificateInstance, lbpolicyname)
+
+}
+
+func testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+			}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	}
+	  
+	resource "ibm_is_lb_listener" "lb_listener2"{
+	lb       = ibm_is_lb.testacc_LB.id
+	port     = "9087"
+	protocol = "http"
+	https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+	https_redirect_status_code = 301
+	https_redirect_uri = "/example?doc=geta" 
+	}
+	resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+	name = "%s"
+	lb = ibm_is_lb.testacc_LB.id
+	listener = ibm_is_lb_listener.lb_listener2.listener_id
+	action = "https_redirect"
+	target_id = ibm_is_lb_pool.testacc_pool.pool_id
+	priority = 2
+	target_http_status_code = 302
+	target_url = "https://www.redirect.com"
+	target_https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+	target_https_redirect_status_code = 303
+	target_https_redirect_uri = "/example?doc=updated"
+	}
+	
+	
+	resource "ibm_is_lb_pool" "testacc_pool" {
+	name           = "test-pool-1"
+	lb             = ibm_is_lb.testacc_LB.id
+	algorithm      = "round_robin"
+	protocol       = "https"
+	health_delay   = 60
+	health_retries = 5
+	health_timeout = 30
+	health_type    = "https"
+	proxy_protocol = "v1"
+	}`, vpcname, subnetname, zone, cidr, lbname, lbListerenerCertificateInstance, lbpolicyname)
+
+}
+
+func testAccCheckIBMISLBListenerPolicyHttpsRedirectConfigRemove(vpcname, subnetname, zone, cidr, lbname, port, protocol, lbpolicyname string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+			}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+	}
+	resource "ibm_is_lb_listener" "lb_listener1"{
+		lb       = ibm_is_lb.testacc_LB.id
+		port     = "9086"
+		protocol = "https"
+		certificate_instance="%s"
+	}
+	  
+	resource "ibm_is_lb_listener" "lb_listener2"{
+	lb       = ibm_is_lb.testacc_LB.id
+	port     = "9087"
+	protocol = "http"
+	https_redirect_listener = ibm_is_lb_listener.lb_listener1.listener_id
+	https_redirect_status_code = 301
+	https_redirect_uri = "/example?doc=geta" 
+	}
+	resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
+	name = "%s"
+	lb = ibm_is_lb.testacc_LB.id
+	listener = ibm_is_lb_listener.lb_listener2.listener_id
+	action = "forward"
+	target_id = ibm_is_lb_pool.testacc_pool.pool_id
+	priority = 2
+	target_http_status_code = 302
+	target_url = "https://www.redirect.com"
+	}
+	
+	
+	resource "ibm_is_lb_pool" "testacc_pool" {
+	name           = "test-pool-1"
+	lb             = ibm_is_lb.testacc_LB.id
+	algorithm      = "round_robin"
+	protocol       = "https"
+	health_delay   = 60
+	health_retries = 5
+	health_timeout = 30
+	health_type    = "https"
+	proxy_protocol = "v1"
+	}`, vpcname, subnetname, zone, cidr, lbname, lbListerenerCertificateInstance, lbpolicyname)
 
 }

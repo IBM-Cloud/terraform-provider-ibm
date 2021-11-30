@@ -87,10 +87,10 @@ func resourceIBMAppIDApplicationCreate(ctx context.Context, d *schema.ResourceDa
 		Type:     &appType,
 	}
 
-	app, _, err := appIDClient.RegisterApplicationWithContext(ctx, input)
+	app, resp, err := appIDClient.RegisterApplicationWithContext(ctx, input)
 
 	if err != nil {
-		return diag.Errorf("Error creating AppID application: %s", err)
+		return diag.Errorf("Error creating AppID application: %s\n%s", err, resp)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", tenantID, *app.ClientID))
@@ -127,7 +127,7 @@ func resourceIBMAppIDApplicationRead(ctx context.Context, d *schema.ResourceData
 			return nil
 		}
 
-		return diag.Errorf("Error getting AppID application: %s", err)
+		return diag.Errorf("Error getting AppID application: %s\n%s", err, resp)
 	}
 
 	if app.Name != nil {
@@ -172,14 +172,14 @@ func resourceIBMAppIDApplicationUpdate(ctx context.Context, d *schema.ResourceDa
 		appName := d.Get("name").(string)
 		clientID := d.Get("client_id").(string)
 
-		_, _, err = appIDClient.UpdateApplicationWithContext(ctx, &appid.UpdateApplicationOptions{
+		_, resp, err := appIDClient.UpdateApplicationWithContext(ctx, &appid.UpdateApplicationOptions{
 			TenantID: &tenantID,
 			Name:     &appName,
 			ClientID: &clientID,
 		})
 
 		if err != nil {
-			return diag.Errorf("Error updating AppID application: %s", err)
+			return diag.Errorf("Error updating AppID application: %s\n%s", err, resp)
 		}
 	}
 
@@ -196,13 +196,13 @@ func resourceIBMAppIDApplicationDelete(ctx context.Context, d *schema.ResourceDa
 	tenantID := d.Get("tenant_id").(string)
 	clientID := d.Get("client_id").(string)
 
-	_, err = appIDClient.DeleteApplicationWithContext(ctx, &appid.DeleteApplicationOptions{
+	resp, err := appIDClient.DeleteApplicationWithContext(ctx, &appid.DeleteApplicationOptions{
 		TenantID: &tenantID,
 		ClientID: &clientID,
 	})
 
 	if err != nil {
-		return diag.Errorf("Error deleting AppID application: %s", err)
+		return diag.Errorf("Error deleting AppID application: %s\n%s", err, resp)
 	}
 
 	d.SetId("")

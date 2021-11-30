@@ -12,41 +12,41 @@ Retrieve information about of an existing VPC subnets in an IBM Cloud account. F
 ## Example usage
 
 ```hcl
-data "ibm_resource_group" "resourceGroup" {
+data "ibm_resource_group" "example" {
   name = "Default"
 }
 
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_routing_table" "test_cr_route_table1" {
-  name = "test-cr-route-table1"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_vpc_routing_table" "example" {
+  name = "example-routing-table"
+  vpc  = ibm_is_vpc.example.id
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test_subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
-  routing_table   = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
-  resource_group  = data.ibm_resource_group.resourceGroup.id
+  ipv4_cidr_block = "10.240.0.0/24"
+  routing_table   = ibm_is_vpc_routing_table.example.routing_table
+  resource_group  = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "ds_subnets_resource_group" {
-  resource_group = data.ibm_resource_group.resourceGroup.id
+data "ibm_is_subnets" "example_resource_group" {
+  resource_group = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "ds_subnets_routing_table_name" {
-  routing_table_name = ibm_is_vpc_routing_table.test_cr_route_table1.name
+data "ibm_is_subnets" "example_routing_table_name" {
+  routing_table_name = ibm_is_vpc_routing_table.example.name
 }
 
-data "ibm_is_subnets" "ds_subnets_routing_table" {
-  routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.id
+data "ibm_is_subnets" "example_routing_table" {
+  routing_table = ibm_is_vpc_routing_table.example.id
 }
 
-data "ibm_is_subnets" "ds_subnets" {
+data "ibm_is_subnets" "example" {
 }
 ```
 

@@ -18,6 +18,7 @@ resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
   network_interface = "6d6128aa-badc-45c4-bb0e-7c2c1c47be55"
 }
 ```
+**Note** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

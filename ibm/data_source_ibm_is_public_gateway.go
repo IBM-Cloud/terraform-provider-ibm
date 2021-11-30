@@ -73,6 +73,12 @@ func dataSourceIBMISPublicGateway() *schema.Resource {
 				Description: "The name of the resource",
 			},
 
+			isPublicGatewayCRN: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The crn of the resource",
+			},
+
 			ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -152,6 +158,7 @@ func dataSourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) 
 			d.Set(ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
 			d.Set(ResourceName, *publicgw.Name)
 			d.Set(ResourceCRN, *publicgw.CRN)
+			d.Set(isPublicGatewayCRN, *publicgw.CRN)
 			d.Set(ResourceStatus, *publicgw.Status)
 			if publicgw.ResourceGroup != nil {
 				d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)
