@@ -4,13 +4,13 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"log"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -110,7 +110,7 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		log.Printf("CloudStorageRegion is not provided")
 	}
 
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
 	body := &models.PVMInstanceCapture{
 		CaptureDestination:    ptrToString(capturedestination),
@@ -122,14 +122,10 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		CloudStorageSecretKey: "",
 	}
 
-	captureinfo, err := client.CaptureInstanceToImageCatalog(name, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams{
-		Body: body,
-	}, createTimeOut)
-
-	log.Printf("Printing the data from the capture %+v", &captureinfo)
+	err = client.CaptureInstanceToImageCatalog(name, body)
 
 	if err != nil {
-		return errors.New("The capture cannot be performed")
+		return errors.New("the capture cannot be performed")
 	}
 
 	// If this is an image catalog then we need to check what the status is

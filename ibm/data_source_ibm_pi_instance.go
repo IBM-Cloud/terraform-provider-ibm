@@ -4,6 +4,9 @@
 package ibm
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -14,7 +17,7 @@ import (
 func dataSourceIBMPIInstance() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIInstancesRead,
+		ReadContext: dataSourceIBMPIInstancesRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIInstanceName: {
@@ -142,21 +145,21 @@ func dataSourceIBMPIInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := meta.(ClientSession).IBMPISession()
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 
-	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
+	powerC := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
+	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	pvminstanceid := *powervmdata.PvmInstanceID

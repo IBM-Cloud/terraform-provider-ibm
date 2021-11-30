@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -28,10 +27,10 @@ func TestAccIBMPIInstanceIPDataSource_basic(t *testing.T) {
 
 func testAccCheckIBMPIInstanceIPDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
-    pi_network_name = "%[1]s"
-    pi_instance_name = "%[2]s"
-    pi_cloud_instance_id = "%[3]s"
-}`, pi_network_name, pi_instance_name, pi_cloud_instance_id)
-
+	data "ibm_pi_instance_ip" "testacc_ds_instance_ip" {
+		pi_network_name = "%[1]s"
+		pi_instance_name = "%[2]s"
+		pi_cloud_instance_id = "%[3]s"
+	}
+	`, pi_network_name, pi_instance_name, pi_cloud_instance_id)
 }
