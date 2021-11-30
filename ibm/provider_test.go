@@ -103,6 +103,7 @@ var pi_cloud_instance_id string
 var pi_instance_name string
 var pi_dhcp_id string
 var piCloudConnectionName string
+var piSAPProfileID string
 
 // For Image
 
@@ -536,6 +537,12 @@ func init() {
 	if piCloudConnectionName == "" {
 		piCloudConnectionName = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
+	}
+
+	piSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
+	if piSAPProfileID == "" {
+		piSAPProfileID = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
