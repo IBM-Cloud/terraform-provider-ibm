@@ -27,7 +27,7 @@ resource "ibm_cbr_zone" "cbr_zone" {
 
 Review the argument reference that you can specify for your resource.
 
-* `addresses` - (Optional, List) The list of addresses in the zone.
+* `addresses` - (Required, List) The list of addresses in the zone.
   * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
 Nested scheme for **addresses**:
     * `ref` - (Optional, List) A service reference value.
@@ -36,11 +36,11 @@ Nested scheme for **addresses**:
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-\/]+$`.
         * `service_name` - (Optional, String) The service name.
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
-        * `service_type` - (Optional, String) The service type.
+        * `service_type` - (required, String) The service type.
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-    * `type` - (Optional, String) The type of address.
+    * `type` - (required, String) The type of address.
       * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
-    * `value` - (Optional, String) The IP address.
+    * `value` - (required, String) The IP address.
       * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
 * `description` - (Optional, String) The description of the zone.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `^[\x20-\xFE]*$`.
@@ -53,13 +53,13 @@ Nested scheme for **excluded**:
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-/]+$`.
         * `service_name` - (Optional, String) The service name.
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
-        * `service_type` - (Optional, String) The service type.
+        * `service_type` - (required, String) The service type.
           * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-    * `type` - (Optional, String) The type of address.
+    * `type` - (required, String) The type of address.
       * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
-    * `value` - (Optional, String) The IP address.
+    * `value` - (required, String) The IP address.
       * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `/^[a-zA-Z0-9:.]+$/`.
-* `name` - (Optional, String) The name of the zone.
+* `name` - (required, String) The name of the zone.
   * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
 
 ## Attribute Reference

@@ -22,7 +22,7 @@ data "ibm_cbr_rule" "cbr_rule" {
 
 Review the argument reference that you can specify for your data source.
 
-* `rule_id` - (Required, Forces new resource, String) The ID of a rule.
+* `rule_id` - (Required, String) The ID of a rule.
 	* Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `^[a-fA-F0-9]{32}$`.
 
 ## Attribute Reference

@@ -13,16 +13,29 @@ Provides a resource for cbr_rule. This allows cbr_rule to be created, updated an
 ## Example Usage
 
 ```hcl
-resource "ibm_cbr_rule" "cbr_rule" { 
-	description = "this is an example of rule"
+resource "ibm_cbr_rule" "cbr_rule" {
+  description = "this is an example of rule"
+  contexts {
+    attributes {
+      name = "networkZoneId"
+      value = "322af80e125f6842cded8ba7a1008370"
+    }
+  }
+  resources {
+    attributes {
+      name = "serviceName"
+      value = "user-management"
+    }
+  }
 }
+
 ```
 
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
 
-* `contexts` - (Optional, List) The contexts this rule applies to.
+* `contexts` - (Required, List) The contexts this rule applies to.
   * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
 Nested scheme for **contexts**:
     * `attributes` - (Required, List) The attributes.
@@ -34,7 +47,7 @@ Nested scheme for **contexts**:
           * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `^[\S\s]+$`.
 * `description` - (Optional, String) The description of the rule.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `^[\x20-\xFE]*$`.
-* `resources` - (Optional, List) The resources this rule apply to.
+* `resources` - (Required, List) The resources this rule apply to.
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **resources**:
     * `attributes` - (Required, List) The resource attributes.

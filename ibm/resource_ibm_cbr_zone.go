@@ -31,10 +31,9 @@ func resourceIBMCbrZone() *schema.Resource {
 				Description:  "The name of the zone.",
 			},
 			"account_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Computed:     true,
-				ValidateFunc: InvokeValidator("ibm_cbr_zone", "account_id"),
-				Description:  "The id of the account owning this zone.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the account owning this zone.",
 			},
 			"description": &schema.Schema{
 				Type:         schema.TypeString,
@@ -139,18 +138,6 @@ func resourceIBMCbrZone() *schema.Resource {
 						},
 					},
 				},
-			},
-			"x_correlation_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_cbr_zone", "x_correlation_id"),
-				Description:  "The supplied or generated value of this header is logged for a request and repeated in a response header for the corresponding response. The same value is used for downstream requests and retries of those requests. If a value of this headers is not supplied in a request, the service generates a random (version 4) UUID.",
-			},
-			"transaction_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Computed:     true,
-				ValidateFunc: InvokeValidator("ibm_cbr_zone", "transaction_id"),
-				Description:  "The `Transaction-Id` header behaves as the `X-Correlation-Id` header. It is supported for backward compatibility with other IBM platform services that support the `Transaction-Id` header only. If both `X-Correlation-Id` and `Transaction-Id` are provided, `X-Correlation-Id` has the precedence over `Transaction-Id`.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
