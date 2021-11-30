@@ -26,7 +26,7 @@ func resourceIBMCbrZone() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_cbr_zone", "name"),
 				Description:  "The name of the zone.",
 			},
@@ -44,7 +44,7 @@ func resourceIBMCbrZone() *schema.Resource {
 			},
 			"addresses": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The list of addresses in the zone.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

@@ -32,7 +32,7 @@ func resourceIBMCbrRule() *schema.Resource {
 			},
 			"contexts": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The contexts this rule applies to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -60,7 +60,7 @@ func resourceIBMCbrRule() *schema.Resource {
 			},
 			"resources": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The resources this rule apply to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
