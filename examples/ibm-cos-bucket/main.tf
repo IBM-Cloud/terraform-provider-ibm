@@ -13,14 +13,14 @@ resource "ibm_resource_instance" "activity_tracker" {
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "logdnaat"
   plan              = "lite"
-  location          = "us-south"
+  location          =  var.regional_loc
 }
 resource "ibm_resource_instance" "metrics_monitor" {
   name              = "metrics_monitor"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "sysdig-monitor"
   plan              = "graduated-tier"
-  location          = "us-south"
+  location          = var.regional_loc
   parameters        = {
     default_receiver = true
   }
@@ -78,6 +78,24 @@ resource "ibm_cos_bucket" "cos_bucket" {
   hard_quota            = var.quota
   object_versioning {
     enable  = true
+  }
+  abort_incomplete_multipart_upload_days {
+    rule_id = var.abort_mpu_ruleid
+    enable  = true
+    prefix  = var.abort_mpu_prefix
+    days_after_initiation = var.abort_mpu_days_init
+  }
+  expire_rule {
+    rule_id = var.expire_ruleid
+    enable  = true
+    date    = var.expire_date
+    prefix  = var.expire_prefix
+  }
+  noncurrent_version_expiration {
+    rule_id = var.nc_exp_ruleid
+    enable  = true
+    prefix  = var.nc_exp_prefix
+    noncurrent_days = var.nc_exp_days
   }
 }
 
