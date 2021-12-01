@@ -73,6 +73,28 @@ func TestAccIBMIAMAccessGroupPolicy_With_Service(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_With_ServiceType(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicyServiceType(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resources.0.service_type", "service"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAccessGroupPolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -375,6 +397,26 @@ func testAccCheckIBMIAMAccessGroupPolicyService(name string) string {
 
 			resources {
 		  	service = "cloud-object-storage"
+			}
+		  }
+		  
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyServiceType(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+			name = "%s"
+  		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles        = ["Viewer"]
+
+			resources {
+				service_type = "service"
+				region = "us-south"
 			}
 		  }
 		  

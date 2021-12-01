@@ -69,6 +69,25 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 ```
 
+### Access group policy using service_type with region
+
+```terraform
+resource "ibm_iam_access_group" "accgrp" {
+  name = "test"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
+
+  resources {
+    service_type = "service"
+    region = "us-south"
+  }
+}
+
+```
+
 ### Access group policy using resource instance 
 The following example creates an IAM policy that grants members of the access group the IAM `Viewer` and `Administrator` platform role, and the `Manager` service access role to a single service instance. 
 
@@ -208,7 +227,8 @@ Review the argument references that you can specify for your resource.
   - `resource_type`  (Optional, String) The resource type of the policy definition.
   - `resource`  (Optional, String) The resource of the policy definition.
   - `resources.resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
-  - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
+  - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output. Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
 
 - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 

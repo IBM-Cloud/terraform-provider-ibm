@@ -76,6 +76,28 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Service(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMTrustedProfilePolicy_With_ServiceType(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyServiceType(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resources.0.service_type", "service"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMTrustedProfilePolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -357,6 +379,25 @@ func testAccCheckIBMIAMTrustedProfilePolicyService(name string) string {
 	  
 			resources {
 		 	 service = "cloudantnosqldb"
+			}
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyServiceType(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles          = ["Viewer"]
+	  
+			resources {
+				service_type = "service"
+				region = "us-south"
 			}
 	  	}
 	`, name)
