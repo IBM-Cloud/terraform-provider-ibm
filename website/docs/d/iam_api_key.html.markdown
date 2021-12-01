@@ -31,7 +31,7 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `account_id` - (String) ID of the account that this API key authenticates for.
-- `apikey_id` - (String) The unique identifier of the `ibm_iam_api_key`.
+- `apikey_id` - (String) The unique identifier of the IBM-Cloud Api Key.
 - `crn` - (String) Cloud Resource Name (CRN) of the item. For example Cloud Resource Name: `crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::apikey:1234-9012-5678`.
 - `created_at` - (Timestamp) If set contains a date time string of the creation date in ISO format.
 - `created_by` - (String) IAM ID of the user or service which created the API key.

@@ -1,4 +1,4 @@
-Activity Tracker API
+Activity Tracker
 API Gateway
 App ID Management
 App Configuration
