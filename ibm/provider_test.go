@@ -130,6 +130,9 @@ var scc_posture_scope_id string
 var scc_posture_scan_id string
 var scc_posture_profile_id string
 
+//ROKS Cluster
+var clusterName string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -704,6 +707,11 @@ func init() {
 	iksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
 	if iksClusterSubnetID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+  
+	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
+	if clusterName == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 }
 

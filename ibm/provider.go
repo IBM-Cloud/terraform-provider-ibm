@@ -478,11 +478,14 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": dataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers":   dataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":        dataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":       dataSourceIBMSccSiNotes(),
-			"ibm_scc_si_occurrence":  dataSourceIBMSccSiOccurrence(),
-			"ibm_scc_si_occurrences": dataSourceIBMSccSiOccurrences(),
+			"ibm_scc_si_providers":      dataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":           dataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":          dataSourceIBMSccSiNotes(),
+			"ibm_scc_account_location":  dataSourceIbmSccAccountLocation(),
+			"ibm_scc_account_locations": dataSourceIbmSccAccountLocations(),
+			"ibm_scc_account_settings":  dataSourceIbmSccAccountLocationSettings(),
+			"ibm_scc_si_occurrence":     dataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences":    dataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
@@ -595,6 +598,7 @@ func Provider() *schema.Provider {
 			"ibm_container_worker_pool":                          resourceIBMContainerWorkerPool(),
 			"ibm_container_worker_pool_zone_attachment":          resourceIBMContainerWorkerPoolZoneAttachment(),
 			"ibm_container_storage_attachment":                   resourceIBMContainerVpcWorkerVolumeAttachment(),
+			"ibm_container_nlb_dns":                              resourceIbmContainerNlbDns(),
 			"ibm_cr_namespace":                                   resourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                            resourceIBMCrRetentionPolicy(),
 			"ibm_ob_logging":                                     resourceIBMObLogging(),
@@ -737,6 +741,9 @@ func Provider() *schema.Provider {
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
 			"ibm_pi_dhcp":                resourceIBMPIDhcp(),
 			"ibm_pi_cloud_connection":    resourceIBMPICloudConnection(),
+			"ibm_pi_ike_policy":          resourceIBMPIIKEPolicy(),
+			"ibm_pi_ipsec_policy":        resourceIBMPIIPSecPolicy(),
+			"ibm_pi_vpn_connection":      resourceIBMPIVPNConnection(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
@@ -784,6 +791,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_cluster_worker_pool": resourceIBMSatelliteClusterWorkerPool(),
 			"ibm_satellite_link":                resourceIbmSatelliteLink(),
 			"ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
+			"ibm_satellite_location_nlb_dns":    resourceIbmSatelliteLocationNlbDns(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": resourceIBMResourceTag(),
@@ -793,8 +801,9 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":  resourceIBMAtrackerRoute(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_note":       resourceIBMSccSiNote(),
-			"ibm_scc_si_occurrence": resourceIBMSccSiOccurrence(),
+			"ibm_scc_si_note":          resourceIBMSccSiNote(),
+			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
+			"ibm_scc_si_occurrence":    resourceIBMSccSiOccurrence(),
 
 			// Added for Event Notifications
 			"ibm_en_destination":  resourceIBMEnDestination(),
@@ -915,6 +924,7 @@ func Validator() ValidatorDict {
 				"ibm_atracker_route":                      resourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  resourceIbmSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
+				"ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
 
 				// Added for Event Notifications
