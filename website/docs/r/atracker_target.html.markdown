@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_target"
 description: |-
   Manages Activity Tracker Target.
-subcategory: "Activity Tracker API"
+subcategory: "Activity Tracker"
 ---
 
 # ibm_atracker_target
