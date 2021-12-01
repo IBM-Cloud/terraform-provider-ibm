@@ -80,6 +80,7 @@ const (
 	isInstanceStatusFailed         = "failed"
 
 	isInstanceBootAttachmentName = "name"
+	isInstanceBootAttachmentId   = "volume_id"
 	isInstanceBootSize           = "size"
 	isInstanceBootIOPS           = "iops"
 	isInstanceBootEncryption     = "encryption"
@@ -436,6 +437,11 @@ func resourceIBMISInstance() *schema.Resource {
 							ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
+						isInstanceBootAttachmentId: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
 						isInstanceVolumeSnapshot: {
 							Type:          schema.TypeString,
 							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
@@ -450,8 +456,10 @@ func resourceIBMISInstance() *schema.Resource {
 							Computed: true,
 						},
 						isInstanceBootSize: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: InvokeValidator("ibm_is_instance", isInstanceBootSize),
+							Computed:     true,
 						},
 						isInstanceBootIOPS: {
 							Type:     schema.TypeInt,
@@ -726,6 +734,13 @@ func resourceIBMISInstanceValidator() *ResourceValidator {
 			MinValue:                   "500"})
 	validateSchema = append(validateSchema,
 		ValidateSchema{
+			Identifier:                 isInstanceBootSize,
+			ValidateFunctionIdentifier: IntAtLeast,
+			Type:                       TypeInt,
+			Optional:                   true,
+			MinValue:                   "250"})
+	validateSchema = append(validateSchema,
+		ValidateSchema{
 			Identifier:                 isInstanceAction,
 			ValidateFunctionIdentifier: ValidateAllowedStringValue,
 			Type:                       TypeString,
@@ -797,6 +812,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1020,6 +1041,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
 		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
+		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
 		if ok && encstr != "" {
@@ -1227,6 +1254,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1691,6 +1724,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVol := map[string]interface{}{}
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
+			bootVol[isInstanceBootAttachmentId] = *instance.BootVolumeAttachment.Volume.ID
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -1759,6 +1793,34 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
+	bootVolSize := "boot_volume.0.size"
+	if d.HasChange(bootVolSize) && !d.IsNewResource() {
+		old, new := d.GetChange(bootVolSize)
+		if new.(int) < old.(int) {
+			return fmt.Errorf("Error while updating boot volume size of the instance, only expansion is possible")
+		}
+		bootVol := int64(new.(int))
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Capacity: &bootVol,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("Error encountered while apply as patch for boot volume of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("Error encountered while expanding boot volume of instance %s/n%s", err, res))
+		}
+	}
 
 	if d.HasChange(isInstanceAction) && !d.IsNewResource() {
 
@@ -1804,6 +1866,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		}
 	}
+
 	if d.HasChange(isInstanceVolumes) {
 		ovs, nvs := d.GetChange(isInstanceVolumes)
 		ov := ovs.(*schema.Set)
