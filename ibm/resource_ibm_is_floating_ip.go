@@ -480,7 +480,7 @@ func isWaitForFloatingIPDeleted(fip *vpcv1.VpcV1, id string, timeout time.Durati
 
 func isFloatingIPDeleteRefreshFunc(fip *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] floating ip delete function here")
 		getfipoptions := &vpcv1.GetFloatingIPOptions{
 			ID: &id,
 		}

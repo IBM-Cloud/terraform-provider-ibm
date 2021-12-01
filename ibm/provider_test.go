@@ -87,6 +87,9 @@ var hpcsAdmin2 string
 var hpcsToken2 string
 var realmName string
 var iksSa string
+var iksClusterVpcID string
+var iksClusterSubnetID string
+var iksClusterResourceGroupID string
 
 // For Power Colo
 
@@ -177,7 +180,7 @@ func init() {
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
-		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u2c.2x4'")
+		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'b3c.4x16'")
 	}
 
 	certCRN = os.Getenv("IBM_CERT_CRN")
@@ -691,11 +694,25 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	iksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
+	if iksClusterVpcID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_create tests will fail if this is not set")
+	}
+
+	iksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+
+	iksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+
 	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
 	if clusterName == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
-
 }
 
 var testAccProviders map[string]*schema.Provider

@@ -469,7 +469,7 @@ func isWaitForTransitGatewayConnectionDeleted(client *transitgatewayapisv1.Trans
 
 func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] tg gateway connection delete function here")
 		parts, err := idParts(id)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway connection: %s", err)

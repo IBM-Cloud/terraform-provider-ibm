@@ -412,7 +412,7 @@ func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayA
 
 func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] tg gateway delete function here")
 		gettgwoptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &id,
 		}
