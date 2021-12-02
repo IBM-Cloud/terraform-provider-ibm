@@ -20,14 +20,14 @@ resource "ibm_resource_instance" "kms_instance" {
   plan     = "tiered-pricing"
   location = "us-south"
 }
-resource "ibm_kms_key_rings" "keyRing" {
+resource "ibm_kms_key_rings" "key_ring" {
   instance_id = ibm_resource_instance.kms_instance.guid
   key_ring_id = "key-ring-id"
 }
 resource "ibm_kms_key" "key" {
   instance_id = ibm_resource_instance.kp_instance.guid
   key_name       = "key"
-  key_ring_id = ibm_kms_key_rings.keyRing.key_ring_id
+  key_ring_id = ibm_kms_key_rings.key_ring.key_ring_id
   standard_key   = false
   payload = "aW1wb3J0ZWQucGF5bG9hZA=="
 }
