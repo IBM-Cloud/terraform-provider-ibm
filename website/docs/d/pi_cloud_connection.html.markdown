@@ -55,7 +55,7 @@ In addition to all argument reference list, you can access the following attribu
 - `metered` - (String) Is metered enabled for this cloud connection.
 - `networks` - (Set of String) Set of Networks attached to this cloud connection.
 - `port` - (String) Port.
-- `speed` - (String) Speed of the cloud connection (speed in megabits per second).
+- `speed` - (Integer) Speed of the cloud connection (speed in megabits per second).
 - `status` - (String) Link status.
 - `user_ip_address` - (String) User IP address.
 - `vpc_crns` - (Set of String) Set of VPCs attached to this cloud connection.

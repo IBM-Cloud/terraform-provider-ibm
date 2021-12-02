@@ -19,10 +19,6 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/models"
 )
 
-const (
-	PICloudConnectionId = "cloud_connection_id"
-)
-
 func resourceIBMPICloudConnection() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPICloudConnectionCreate,
