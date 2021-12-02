@@ -497,6 +497,10 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
 			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
 
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": dataSourceIBMCbrZone(),
+			"ibm_cbr_rule": dataSourceIBMCbrRule(),
+
 			// Added for Event Notifications
 			"ibm_en_destination":   dataSourceIBMEnDestination(),
 			"ibm_en_destinations":  dataSourceIBMEnDestinations(),
@@ -808,6 +812,10 @@ func Provider() *schema.Provider {
 			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
 			"ibm_scc_si_occurrence":    resourceIBMSccSiOccurrence(),
 
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": resourceIBMCbrZone(),
+			"ibm_cbr_rule": resourceIBMCbrRule(),
+
 			// Added for Event Notifications
 			"ibm_en_destination":  resourceIBMEnDestination(),
 			"ibm_en_topic":        resourceIBMEnTopic(),
@@ -929,6 +937,8 @@ func Validator() ValidatorDict {
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
+				"ibm_cbr_zone":                            resourceIBMCbrZoneValidator(),
+				"ibm_cbr_rule":                            resourceIBMCbrRuleValidator(),
 
 				// Added for Event Notifications
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
