@@ -3,17 +3,17 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : is_instance_network_interfaces"
 description: |-
-  Get information about NetworkInterfaceCollection
+  Get information about Network Interface collection
 
 ---
 
 # ibm_is_instance_network_interfaces
 
-Provides a read-only data source for NetworkInterfaceCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information about a network interface collection. For more information, about network interace collection, see [Network interface configurations](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-nic-for-bare-metal-servers#nic-configs).
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
@@ -54,44 +54,54 @@ data "ibm_is_instance_network_interfaces" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument reference that you can specify for your data source.
 
-- `instance_name` - (Required, string) The name of instance.
+- `instance_name` - (Required, string) The name of an instance.
 
 ## Attribute Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 - `network_interfaces` - (List) Collection of network interfaces. Nested `network_interfaces` blocks have the following structure:
 	- `allow_ip_spoofing` - (Boolean) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
 	- `created_at` - (String) The date and time that the network interface was created.
-	- `floating_ips` - (List) The floating IPs associated with this network interface. Nested `floating_ips` blocks have the following structure:
-		- `address` - (String) The globally unique IP address.
-		- `crn` - (String) The CRN for this floating IP.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			- `more_info` - (String) Link to documentation about deleted resources.
-		- `href` - (String) The URL for this floating IP.
-		- `id` - (String) The unique identifier for this floating IP.
-		- `name` - (String) The unique user-defined name for this floating IP.
+	- `floating_ips` - (List) The floating IPs associated with this network interface. 
+	
+	  Nested scheme for `floating_ips`:
+	  - `address` - (String) The globally unique IP address.
+	  - `crn` - (String) The CRN for this floating IP.
+	  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. 
+	     
+		 Nested scheme for `deleted`:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	  - `href` - (String) The URL for this floating IP.
+	  - `id` - (String) The unique identifier for this floating IP.
+	  - `name` - (String) The unique user-defined name for this floating IP.
 	- `href` - (String) The URL for this network interface.
 	- `id` - (String) The unique identifier for this network interface.
 	- `name` - (String) The user-defined name for this network interface.
 	- `port_speed` - (Integer) The network interface port speed in Mbps.
 	- `primary_ipv4_address` - (String) The primary IPv4 address.
 	- `resource_type` - (String) The resource type.
-	- `security_groups` - (List) Collection of security groups. Nested `security_groups` blocks have the following structure:
-		- `crn` - (String) The security group's CRN.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-			- `more_info` - (String) Link to documentation about deleted resources.
-		- `href` - (String) The security group's canonical URL.
-		- `id` - (String) The unique identifier for this security group.
-		- `name` - (String) The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
+	- `security_groups` - (List) Collection of security groups. 
+	
+	  Nested scheme for `security_groups`:
+	  - `crn` - (String) The security group's CRN.
+	  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. 
+	  
+	    Nested scheme for `deleted`:
+		 - `more_info` - (String) Link to documentation about deleted resources.
+	  - `href` - (String) The security group's canonical URL.
+	  - `id` - (String) The unique identifier for this security group.
+	  - `name` - (String) The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
 	- `status` - (String) The status of the network interface.
 	- `subnet` - (List) The associated subnet. Nested `subnet` blocks have the following structure:
 		- `crn` - (String) The CRN for this subnet.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. 
+		
+		  Nested `deleted` blocks have the following structure:
 			- `more_info` - (String) Link to documentation about deleted resources.
 		- `href` - (String) The URL for this subnet.
 		- `id` - (String) The unique identifier for this subnet.

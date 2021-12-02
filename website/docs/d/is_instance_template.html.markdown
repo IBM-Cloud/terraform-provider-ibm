@@ -18,6 +18,7 @@ data "ibm_is_instance_template" "instancetemplate" {
 }
 
 ```
+
 ```terraform	
 data "ibm_is_instance_template" "instancetemplate" {
 	identifier = "xxxxx-xxxxx-xxxxxx-xxxxx"	   
