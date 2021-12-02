@@ -119,24 +119,22 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-	sap := false
-	vtl := false
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	if v, ok := d.GetOk("sap"); ok {
-		sap = v.(bool)
+	includeSAP := false
+	if s, ok := d.GetOk("sap"); ok {
+		includeSAP = s.(bool)
 	}
+	includeVTL := false
 	if v, ok := d.GetOk("vtl"); ok {
-		vtl = v.(bool)
+		includeVTL = v.(bool)
 	}
-
 	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	result, err := imageC.GetAllStockImages(powerinstanceid, sap, vtl)
+	stockImages, err := imageC.GetAllStockImages(powerinstanceid, includeSAP, includeVTL)
 	if err != nil {
 		return err
 	}
-	imageData := result.Images
 	images := make([]map[string]interface{}, 0)
-	for _, i := range imageData {
+	for _, i := range stockImages.Images {
 		image := make(map[string]interface{})
 		image["image_id"] = *i.ImageID
 		image["name"] = *i.Name
