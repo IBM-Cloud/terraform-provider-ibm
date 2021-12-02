@@ -66,7 +66,6 @@ resource "ibm_is_instance" "testacc_instance" {
     delete = "15m"
   }
 }
-
 ```
 
 ### Sample for creating an instance with custom security group rules.
