@@ -17,6 +17,8 @@ import (
 )
 
 const (
+	PICloudConnectionId               = "cloud_connection_id"
+	PICloudConnectionName             = "name"
 	PICloudConnectionSpeed            = "speed"
 	PICloudConnectionGlobalRouting    = "global_routing"
 	PICloudConnectionMetered          = "metered"

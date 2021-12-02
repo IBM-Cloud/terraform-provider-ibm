@@ -418,6 +418,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_dhcp":               dataSourceIBMPIDhcp(),
 			"ibm_pi_dhcps":              dataSourceIBMPIDhcps(),
 			"ibm_pi_cloud_connection":   dataSourceIBMPICloudConnection(),
+			"ibm_pi_cloud_connections":  dataSourceIBMPICloudConnections(),
 			"ibm_pi_sap_profiles":       dataSourceIBMPISAPProfiles(),
 			"ibm_pi_sap_profile":        dataSourceIBMPISAPProfile(),
 
