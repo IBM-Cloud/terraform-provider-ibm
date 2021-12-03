@@ -47,16 +47,22 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `floating_ip` - (List) A list of floating IP addresses that you want to assign to the public gateway.
-	- `id` - (String) The unique identifier of the floating IP address. If you specify this parameter, do not specify `address` at the same time. 
-	- `address` - (String) The floating IP address. If you specify this parameter, do not specify `id` at the same time.
-- `name` -  (String) Enter a name for your public gateway.
-- `resource_group` - (String) Enter the ID of the resource group where you want to create the public gateway. To list available resource groups, run `ibmcloud resource groups`. If you do not specify a resource group, the public gateway is created in the `default` resource group.
-- `vpc` - (String) Enter the ID of the VPC, for which you want to create a public gateway. To list available VPCs, run `ibmcloud is vpcs`.
-- `zone` - (String) Enter the zone where you want to create the public gateway. 
+- `crn` - (String) The CRN for this public gateway.
+- `floating_ip` - (List) The floating IP bound to this public gateway.
+  Nested scheme for `floating_ip`:
+	- `address` - (String) The globally unique IP address for this floating ip.
+	- `id` - (String) The unique identifier of the floating IP address.
+- `id` - (String) The unique identifier of the subnet.
+- `name` -  (String) The user-defined name for this public gateway.
+- `resource_group` - (String) The resource group identifier for this public gateway.
+- `resource_group_name` - (String) The name for the resource group for this public gateway.
+- `resource_type` - (String) The resource type for this public gateway.
+- `status` - (String) The status of this public gateway.
+- `vpc` - (String) The identifier of the VPC this public gateway serves.
+- `zone` - (String) The zone this public gateway resides in.
 
 ## Import
-The `ibm_is_subnet_public_gateway_attachment` resource can be imported by using the ID. 
+The `ibm_is_subnet_public_gateway_attachment` resource can be imported by using the subnet ID. 
 
 **Syntax**
 
