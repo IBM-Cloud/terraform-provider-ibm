@@ -680,6 +680,7 @@ func Provider() *schema.Provider {
 			"ibm_is_subnet":                                      resourceIBMISSubnet(),
 			"ibm_is_subnet_reserved_ip":                          resourceIBMISReservedIP(),
 			"ibm_is_subnet_network_acl_attachment":               resourceIBMISSubnetNetworkACLAttachment(),
+			"ibm_is_subnet_public_gateway_attachment":            resourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_ssh_key":                                     resourceIBMISSSHKey(),
 			"ibm_is_snapshot":                                    resourceIBMSnapshot(),
 			"ibm_is_volume":                                      resourceIBMISVolume(),

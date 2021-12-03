@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_is_public_gateway
-Create, update, or delete a public gateway for a VPC subnet. Public gateways enable a VPC subnet and all the instances that are connected to the subnet to connect to the internet. For more information, see [use a Public Gateway for external connectivity of a subnet](hhttps://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity).
+Create, update, or delete a public gateway for a VPC subnet. Public gateways enable a VPC subnet and all the instances that are connected to the subnet to connect to the internet. For more information, see [use a Public Gateway for external connectivity of a subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity).
 
 ## Example usage
 The following example shows how you can create a public gateway for all the subnets that are located in a specific zone.
