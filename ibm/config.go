@@ -701,6 +701,29 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 }
 
 func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
+
+	if sess.kmsErr == nil {
+		var clientConfig *kp.ClientConfig
+		if sess.kmsAPI.Config.APIKey != "" {
+			clientConfig = &kp.ClientConfig{
+				BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				APIKey:  sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
+				Verbose: kp.VerboseFailOnly,
+			}
+		} else {
+			clientConfig = &kp.ClientConfig{
+				BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				Authorization: sess.session.BluemixSession.Config.IAMAccessToken, //pragma: allowlist secret
+				Verbose:       kp.VerboseFailOnly,
+			}
+		}
+
+		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
+		if err != nil {
+			sess.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+		}
+		return kpClient, nil
+	}
 	return sess.kmsAPI, sess.kmsErr
 }
 
