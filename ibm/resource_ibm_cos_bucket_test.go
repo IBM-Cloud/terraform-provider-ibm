@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"gotest.tools/assert"
 )
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
@@ -1475,4 +1476,57 @@ func testAccCheckIBMCosBucket_update_noncurrentversion(cosServiceName string, bu
 		storage_class         = "%s"
 	}
 	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func TestSingleSiteLocationRegex(t *testing.T) {
+	var re = singleSiteLocationRegex
+	for _, singleSite := range singleSiteLocation {
+		for _, sc := range storageClass {
+			assert.Equal(t, re.MatchString(singleSite+"-"+sc), true)
+		}
+	}
+
+	for _, region := range regionLocation {
+		assert.Equal(t, re.MatchString(region+"-standard"), false)
+	}
+
+	for _, crossRegion := range crossRegionLocation {
+		assert.Equal(t, re.MatchString(crossRegion+"-standard"), false)
+	}
+}
+
+func TestRegionLocationRegex(t *testing.T) {
+	var re = regionLocationRegex
+	for _, singleSite := range singleSiteLocation {
+		assert.Equal(t, re.MatchString(singleSite+"-standard"), false)
+	}
+
+	for _, region := range regionLocation {
+		for _, sc := range storageClass {
+			assert.Equal(t, re.MatchString(region+"-"+sc), true)
+			// test numeric suffix
+			assert.Equal(t, re.MatchString(region+"2-"+sc), true)
+		}
+	}
+
+	for _, crossRegion := range crossRegionLocation {
+		assert.Equal(t, re.MatchString(crossRegion+"-standard"), false)
+	}
+}
+
+func TestCrossRegionLocationRegex(t *testing.T) {
+	var re = crossRegionLocationRegex
+	for _, singleSite := range singleSiteLocation {
+		assert.Equal(t, re.MatchString(singleSite+"-standard"), false)
+	}
+
+	for _, region := range regionLocation {
+		assert.Equal(t, re.MatchString(region+"-standard"), false)
+	}
+
+	for _, crossRegion := range crossRegionLocation {
+		for _, sc := range storageClass {
+			assert.Equal(t, re.MatchString(crossRegion+"-"+sc), true)
+		}
+	}
 }

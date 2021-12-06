@@ -38,6 +38,10 @@ var storageClass = []string{
 	"standard", "vault", "cold", "flex", "smart",
 }
 
+var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
+var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,8}$")
+var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{4,8}$")
+
 const (
 	keyAlgorithm = "AES256"
 )
@@ -956,19 +960,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		if *b.Name == bucketName {
 			bLocationConstraint = *b.LocationConstraint
 		}
-	}
-
-	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}$")
-	if err != nil {
-		return err
 	}
 
 	if singleSiteLocationRegex.MatchString(bLocationConstraint) {
