@@ -165,7 +165,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, publicKey, name),
+				Config: testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, publicKey, name, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -175,7 +175,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, publicKey, name),
+				Config: testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, publicKey, name, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -185,7 +185,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, publicKey, name),
+				Config: testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, publicKey, name, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
@@ -662,7 +662,7 @@ func testAccCheckIBMISInstanceBandwidthUpdateConfig(vpcname, subnetname, sshname
 	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, bandwidth, ISZoneName)
 }
 
-func testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, publicKey, name string) string {
+func testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, publicKey, name, userData string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -687,6 +687,7 @@ func testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, pub
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
+		user_data = "%s"
 		action = "stop"
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
@@ -695,10 +696,10 @@ func testAccCheckIBMISInstanceConfigActionStop(vpcname, subnetname, sshname, pub
 		  subnet = ibm_is_subnet.testacc_subnet.id
 		  name   = "eth1"
 		}
-	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)
+	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, userData, ISZoneName)
 }
 
-func testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, publicKey, name string) string {
+func testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, publicKey, name, userData string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -723,6 +724,7 @@ func testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, pu
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
+		user_data = "%s"
 		action = "start"
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
@@ -731,10 +733,10 @@ func testAccCheckIBMISInstanceConfigActionStart(vpcname, subnetname, sshname, pu
 		  subnet = ibm_is_subnet.testacc_subnet.id
 		  name   = "eth1"
 		}
-	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)
+	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, userData, ISZoneName)
 }
 
-func testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, publicKey, name string) string {
+func testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, publicKey, name, userData string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -759,6 +761,7 @@ func testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, p
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
+		user_data = "%s"
 		action = "reboot"
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
@@ -767,7 +770,7 @@ func testAccCheckIBMISInstanceConfigActionReboot(vpcname, subnetname, sshname, p
 		  subnet = ibm_is_subnet.testacc_subnet.id
 		  name   = "eth1"
 		}
-	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName)
+	  }`, vpcname, subnetname, ISZoneName, ISCIDR, sshname, publicKey, name, isImage, instanceProfileName, userData, ISZoneName)
 }
 
 func testAccCheckIBMISInstanceSnapshotRestoreConfig(vpcname, subnetname, sshname, publicKey, name, snapshot, insRestore string) string {
