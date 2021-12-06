@@ -82,6 +82,7 @@ In addition to all argument reference list, you can access the following attribu
 		  - `sort_query_string_for_cache` - (String) The sort query string.
 		  - `true_client_ip_header` - (String) The true client IP header.
 		  - `waf` - (String) The Web Application Firewall.
+		  - `minify` - (String) The Minify web content.
 		- `value` - (String) The values for corresponding actions.
 
 		  Nested scheme for `value`:
@@ -116,3 +117,6 @@ In addition to all argument reference list, you can access the following attribu
 		  - `waf` - (String) The valid values are `on`, `off`.
 	- `status_code` - (String) The status code to check for URL forwarding. The required attribute for `forwarding_url` action. Valid values are `301` and `302`. It returns `0` for all other actions.
 	- `url` - (String) The forward rule URL, a required attribute for `forwarding_url` action.
+	- `css` - (String) The required attribute for `minify` action. CSS supported values are `on` and `off`.
+    - `html` - (String) The required attribute for `minify` action. HTML supported values are `on` and `off`.
+    - `js` - (String) The required attribute for `minify` action. JS supported values are `on` and `off`.
