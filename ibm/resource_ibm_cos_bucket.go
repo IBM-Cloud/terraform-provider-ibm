@@ -962,7 +962,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}$")
+	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,8}$")
 	if err != nil {
 		return err
 	}
