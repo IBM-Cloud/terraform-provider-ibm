@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 )
 
@@ -112,7 +112,7 @@ func resourceIBMPISnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		description = "Testing from Terraform"
 	}
 
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
 	snapshotBody := &models.SnapshotCreate{Name: &name, Description: description}
 
@@ -122,9 +122,7 @@ func resourceIBMPISnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		log.Printf("no volumeids provided. Will snapshot the entire instance")
 	}
 
-	snapshotResponse, err := client.CreatePvmSnapShot(&p_cloud_p_vm_instances.PcloudPvminstancesSnapshotsPostParams{
-		Body: snapshotBody,
-	}, instanceid, powerinstanceid, createTimeOut)
+	snapshotResponse, err := client.CreatePvmSnapShot(instanceid, snapshotBody)
 
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)

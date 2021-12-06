@@ -50,3 +50,4 @@ In addition to all argument reference list, you can access the following attribu
 - `state` - (String) The state for this image. 
 - `storage_type` - (String) The storage type for this image.
 - `storage_pool` - (String) Storage pool where image resides.
+- `image_type` - (String) The identifier of this image type.

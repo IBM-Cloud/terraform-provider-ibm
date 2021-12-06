@@ -726,7 +726,7 @@ func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Durati
 
 func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is subnet delete function here")
 		getSubnetOptions := &vpcv1.GetSubnetOptions{
 			ID: &id,
 		}

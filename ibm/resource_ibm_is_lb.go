@@ -690,7 +690,7 @@ func isWaitForLBDeleted(lbc *vpcv1.VpcV1, id string, timeout time.Duration) (int
 
 func isLBDeleteRefreshFunc(lbc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is lb delete function here")
 		getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 			ID: &id,
 		}

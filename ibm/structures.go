@@ -1288,6 +1288,7 @@ func flattenPolicyResource(list []iampolicymanagementv1.PolicyResource) []map[st
 			"resource_type":        getResourceAttribute("resourceType", i),
 			"resource":             getResourceAttribute("resource", i),
 			"resource_group_id":    getResourceAttribute("resourceGroupId", i),
+			"service_type":         getResourceAttribute("serviceType", i),
 		}
 		customAttributes := getCustomAttributes(i)
 		if len(customAttributes) > 0 {
@@ -2720,6 +2721,18 @@ func generatePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("resourceGroupId"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_type"]; ok && r != nil {
+				serviceName = r.(string)
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("serviceType"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}

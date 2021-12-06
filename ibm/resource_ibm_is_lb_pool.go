@@ -733,7 +733,7 @@ func isWaitForLBPoolDeleted(lbc *vpcv1.VpcV1, lbId, lbPoolId string, timeout tim
 
 func isLBPoolDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbId, lbPoolId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is lb pool delete function here")
 		getlbpOptions := &vpcv1.GetLoadBalancerPoolOptions{
 			LoadBalancerID: &lbId,
 			ID:             &lbPoolId,

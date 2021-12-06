@@ -90,6 +90,12 @@ func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
 							Description: "ID of the resource group.",
 						},
 
+						"service_type": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service type of the policy definition",
+						},
+
 						"attributes": {
 							Type:        schema.TypeMap,
 							Optional:    true,

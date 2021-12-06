@@ -7,12 +7,11 @@ description: |-
   Manages IBM instance action.
 ---
 
-# ibm\_is_instance_action
+# ibm_is_instance_action
 
-Start/Stop/Reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
+Start, Stop, or Reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
-
-## Example Usage
+## Example usage
 
 In the following example, you can perform instance action:
 
@@ -75,32 +74,30 @@ resource "ibm_is_instance_action" "example" {
 
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument references that you can specify for your resource. 
 
-
-- `action` - (Required, String) The type of action to perfrom on the instance. Supported values are `stop`, `start`, or `reboot`.
+- `action` - (Required, String) The type of action to perform on the instance. Supported values are `stop`, `start`, or `reboot`.
 - `force_action` - (Optional, Boolean)  If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action. The Default value is `false`.
-- `instance` - (Required, String) Instance identifier
+- `instance` - (Required, String) Instance identifier.
 
-
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `status` - (String) The status of the instance :[ failed, pending, restarting, running, starting, stopped, stopping ]
+- `status` - (String) The status of the instance. The supported status are **failed**, **pending**, **restarting**, **running**, **starting**, **stopped**, or **stopping**.
 - `status_reasons` - (List) Array of reasons for the current status (if any).
 
   Nested `status_reasons`:
-    - `code` - (String) The status reason code
-    - `message` - (String) An explanation of the status reason
+    - `code` - (String) The status reason code.
+    - `message` - (String) An explanation of the status reason.
 
 ## Import
-The `ibm_is_instance_action` resource can be imported by using Instance action ID.
+The `ibm_is_instance_action` resource can be imported by using instance action ID.
 
 **Example**
 
-```
+```sh
 $ terraform import ibm_is_instance_action.example d7bec597-4726-451f-8a63-e62e6f121c32c
 ```

@@ -143,6 +143,12 @@ func Provider() *schema.Provider {
 				//DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_GENERATION", "IBMCLOUD_GENERATION"}, nil),
 				Deprecated: "The generation field is deprecated and will be removed after couple of releases",
 			},
+			"iam_profile_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IAM Trusted Profile Authentication token",
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
+			},
 			"iam_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -271,6 +277,7 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_schema":               dataSourceIBMEventStreamsSchema(),
 			"ibm_hpcs":                               dataSourceIBMHPCS(),
 			"ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
+			"ibm_iam_access_group_policy":            dataSourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
 			"ibm_iam_auth_token":                     dataSourceIBMIAMAuthToken(),
 			"ibm_iam_role_actions":                   datasourceIBMIAMRoleAction(),
@@ -284,6 +291,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile":                dataSourceIBMIamTrustedProfile(),
 			"ibm_iam_trusted_profile_claim_rule":     dataSourceIBMIamTrustedProfileClaimRule(),
 			"ibm_iam_trusted_profile_link":           dataSourceIBMIamTrustedProfileLink(),
+			"ibm_iam_trusted_profile_claim_rules":    dataSourceIBMIamTrustedProfileClaimRules(),
+			"ibm_iam_trusted_profile_links":          dataSourceIBMIamTrustedProfileLinks(),
+			"ibm_iam_trusted_profiles":               dataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":         dataSourceIBMIAMTrustedProfilePolicy(),
 			"ibm_is_dedicated_host":                  dataSourceIbmIsDedicatedHost(),
 			"ibm_is_dedicated_hosts":                 dataSourceIbmIsDedicatedHosts(),
@@ -415,6 +425,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_dhcp":               dataSourceIBMPIDhcp(),
 			"ibm_pi_dhcps":              dataSourceIBMPIDhcps(),
 			"ibm_pi_cloud_connection":   dataSourceIBMPICloudConnection(),
+			"ibm_pi_sap_profiles":       dataSourceIBMPISAPProfiles(),
+			"ibm_pi_sap_profile":        dataSourceIBMPISAPProfile(),
 
 			// Added for private dns zones
 
@@ -493,6 +505,10 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
 			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
 			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": dataSourceIBMCbrZone(),
+			"ibm_cbr_rule": dataSourceIBMCbrRule(),
 
 			// Added for Event Notifications
 			"ibm_en_destination":   dataSourceIBMEnDestination(),
@@ -585,8 +601,10 @@ func Provider() *schema.Provider {
 			"ibm_compute_vm_instance":                            resourceIBMComputeVmInstance(),
 			"ibm_container_addons":                               resourceIBMContainerAddOns(),
 			"ibm_container_alb":                                  resourceIBMContainerALB(),
+			"ibm_container_alb_create":                           resourceIBMContainerAlbCreate(),
 			"ibm_container_api_key_reset":                        resourceIBMContainerAPIKeyReset(),
 			"ibm_container_vpc_alb":                              resourceIBMContainerVpcALB(),
+			"ibm_container_vpc_alb_create":                       resourceIBMContainerVpcAlbCreateNew(),
 			"ibm_container_vpc_worker_pool":                      resourceIBMContainerVpcWorkerPool(),
 			"ibm_container_vpc_cluster":                          resourceIBMContainerVpcCluster(),
 			"ibm_container_alb_cert":                             resourceIBMContainerALBCert(),
@@ -803,6 +821,10 @@ func Provider() *schema.Provider {
 			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
 			"ibm_scc_si_occurrence":    resourceIBMSccSiOccurrence(),
 
+			// Added for Context Based Restrictions
+			"ibm_cbr_zone": resourceIBMCbrZone(),
+			"ibm_cbr_rule": resourceIBMCbrRule(),
+
 			// Added for Event Notifications
 			"ibm_en_destination":  resourceIBMEnDestination(),
 			"ibm_en_topic":        resourceIBMEnTopic(),
@@ -924,6 +946,8 @@ func Validator() ValidatorDict {
 				"ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
+				"ibm_cbr_zone":                            resourceIBMCbrZoneValidator(),
+				"ibm_cbr_rule":                            resourceIBMCbrRuleValidator(),
 
 				// Added for Event Notifications
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
@@ -948,7 +972,7 @@ func Validator() ValidatorDict {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	var bluemixAPIKey string
 	var bluemixTimeout int
-	var iamToken, iamRefreshToken string
+	var iamToken, iamRefreshToken, iamTrustedProfileId string
 	if key, ok := d.GetOk("bluemix_api_key"); ok {
 		bluemixAPIKey = key.(string)
 	}
@@ -960,6 +984,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	if rtoken, ok := d.GetOk("iam_refresh_token"); ok {
 		iamRefreshToken = rtoken.(string)
+	}
+	if ttoken, ok := d.GetOk("iam_profile_id"); ok {
+		iamTrustedProfileId = ttoken.(string)
 	}
 	var softlayerUsername, softlayerAPIKey, softlayerEndpointUrl string
 	var softlayerTimeout int
@@ -1037,6 +1064,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Zone:                 zone,
 		Visibility:           visibility,
 		EndpointsFile:        file,
+		IAMTrustedProfileID:  iamTrustedProfileId,
 		//PowerServiceInstance: powerServiceInstance,
 	}
 

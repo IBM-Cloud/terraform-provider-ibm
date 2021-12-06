@@ -27,7 +27,7 @@ resource "ibm_kms_key" "key" {
   standard_key   = false
 }
 
-resource "ibm_kms_key_policies" "keyPolicy" {
+resource "ibm_kms_key_policies" "key_policy" {
   instance_id = ibm_resource_instance.kms_instance.guid
   key_id = ibm_kms_key.key.key_id
   rotation {

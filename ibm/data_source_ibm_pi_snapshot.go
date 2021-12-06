@@ -4,19 +4,22 @@
 package ibm
 
 import (
+	"context"
+	"log"
+
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
 )
 
 func dataSourceIBMPISnapshot() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPISnapshotRead,
+		ReadContext: dataSourceIBMPISnapshotRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PICloudInstanceId: {
@@ -81,20 +84,20 @@ func dataSourceIBMPISnapshot() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerinstancename := d.Get(helpers.PIInstanceName).(string)
-	snapshot := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	snapshotData, err := snapshot.GetSnapShotVM(powerinstanceid, powerinstancename, getTimeOut)
+	snapshot := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
+	snapshotData, err := snapshot.GetSnapShotVM(powerinstancename)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()

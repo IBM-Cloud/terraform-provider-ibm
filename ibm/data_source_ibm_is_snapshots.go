@@ -22,6 +22,30 @@ func dataSourceSnapshots() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
+			isSnapshotResourceGroup: {
+				Type:        schema.TypeString,
+				Description: "Filters the snapshot collection by resources group id",
+				Optional:    true,
+			},
+
+			isSnapshotName: {
+				Type:        schema.TypeString,
+				Description: "Filters the snapshot collection by snapshot name",
+				Optional:    true,
+			},
+
+			isSnapshotSourceImage: {
+				Type:        schema.TypeString,
+				Description: "Filters the snapshot collection by source image id",
+				Optional:    true,
+			},
+
+			isSnapshotSourceVolume: {
+				Type:        schema.TypeString,
+				Description: "Filters the snapshot collection by source volume id",
+				Optional:    true,
+			},
+
 			isSnapshots: {
 				Type:        schema.TypeList,
 				Description: "List of snapshots",
@@ -132,6 +156,23 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		if start != "" {
 			listSnapshotOptions.Start = &start
 		}
+		if rgFilterOk, ok := d.GetOk(isSnapshotResourceGroup); ok {
+			rgFilter := rgFilterOk.(string)
+			listSnapshotOptions.ResourceGroupID = &rgFilter
+		}
+		if nameFilterOk, ok := d.GetOk(isSnapshotName); ok {
+			nameFilter := nameFilterOk.(string)
+			listSnapshotOptions.Name = &nameFilter
+		}
+		if sourceImageFilterOk, ok := d.GetOk(isSnapshotSourceImage); ok {
+			sourceImageFilter := sourceImageFilterOk.(string)
+			listSnapshotOptions.SourceImageID = &sourceImageFilter
+		}
+		if sourceVolumeFilterOk, ok := d.GetOk(isSnapshotSourceVolume); ok {
+			sourceVolumeFilter := sourceVolumeFilterOk.(string)
+			listSnapshotOptions.SourceVolumeID = &sourceVolumeFilter
+		}
+
 		snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
 		if err != nil {
 			return fmt.Errorf("Error fetching snapshots %s\n%s", err, response)

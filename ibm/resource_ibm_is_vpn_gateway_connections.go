@@ -318,7 +318,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 
 	if ikePolicy, ok := d.GetOk(isVPNGatewayConnectionIKEPolicy); ok {
 		ikePolicyIdentity = ikePolicy.(string)
-		vpnGatewayConnectionPrototypeModel.IkePolicy = &vpcv1.IkePolicyIdentity{
+		vpnGatewayConnectionPrototypeModel.IkePolicy = &vpcv1.VPNGatewayConnectionIkePolicyPrototype{
 			ID: &ikePolicyIdentity,
 		}
 	} else {
@@ -326,7 +326,7 @@ func vpngwconCreate(d *schema.ResourceData, meta interface{}, name, gatewayID, p
 	}
 	if ipsecPolicy, ok := d.GetOk(isVPNGatewayConnectionIPSECPolicy); ok {
 		ipsecPolicyIdentity = ipsecPolicy.(string)
-		vpnGatewayConnectionPrototypeModel.IpsecPolicy = &vpcv1.IPsecPolicyIdentity{
+		vpnGatewayConnectionPrototypeModel.IpsecPolicy = &vpcv1.VPNGatewayConnectionIPsecPolicyPrototype{
 			ID: &ipsecPolicyIdentity,
 		}
 	} else {
@@ -495,18 +495,18 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 		interval := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionInterval).(int))
 		timeout := int64(d.Get(isVPNGatewayConnectionDeadPeerDetectionTimeout).(int))
 
-		// Construct an instance of the VPNGatewayConnectionDpdPrototype model
-		vpnGatewayConnectionDpdPrototypeModel := new(vpcv1.VPNGatewayConnectionDpdPrototype)
-		vpnGatewayConnectionDpdPrototypeModel.Action = &action
-		vpnGatewayConnectionDpdPrototypeModel.Interval = &interval
-		vpnGatewayConnectionDpdPrototypeModel.Timeout = &timeout
-		vpnGatewayConnectionPatchModel.DeadPeerDetection = vpnGatewayConnectionDpdPrototypeModel
+		// Construct an instance of the VPNGatewayConnectionDpdPatch model
+		vpnGatewayConnectionDpdPatchModel := new(vpcv1.VPNGatewayConnectionDpdPatch)
+		vpnGatewayConnectionDpdPatchModel.Action = &action
+		vpnGatewayConnectionDpdPatchModel.Interval = &interval
+		vpnGatewayConnectionDpdPatchModel.Timeout = &timeout
+		vpnGatewayConnectionPatchModel.DeadPeerDetection = vpnGatewayConnectionDpdPatchModel
 		hasChanged = true
 	}
 
 	if d.HasChange(isVPNGatewayConnectionIKEPolicy) {
 		ikePolicyIdentity := d.Get(isVPNGatewayConnectionIKEPolicy).(string)
-		vpnGatewayConnectionPatchModel.IkePolicy = &vpcv1.IkePolicyIdentity{
+		vpnGatewayConnectionPatchModel.IkePolicy = &vpcv1.VPNGatewayConnectionIkePolicyPatch{
 			ID: &ikePolicyIdentity,
 		}
 		hasChanged = true
@@ -516,7 +516,7 @@ func vpngwconUpdate(d *schema.ResourceData, meta interface{}, gID, gConnID strin
 
 	if d.HasChange(isVPNGatewayConnectionIPSECPolicy) {
 		ipsecPolicyIdentity := d.Get(isVPNGatewayConnectionIPSECPolicy).(string)
-		vpnGatewayConnectionPatchModel.IpsecPolicy = &vpcv1.IPsecPolicyIdentity{
+		vpnGatewayConnectionPatchModel.IpsecPolicy = &vpcv1.VPNGatewayConnectionIPsecPolicyPatch{
 			ID: &ipsecPolicyIdentity,
 		}
 		hasChanged = true

@@ -4,12 +4,14 @@
 package ibm
 
 import (
+	"context"
 	"log"
 	"net"
 	"strconv"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -17,7 +19,7 @@ import (
 func dataSourceIBMPIInstanceIP() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIInstancesIPRead,
+		ReadContext: dataSourceIBMPIInstancesIPRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIInstanceName: {
@@ -69,44 +71,45 @@ func dataSourceIBMPIInstanceIP() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesIPRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	checkValidSubnet(d, meta)
+	err = checkValidSubnet(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
-	powerC := instance.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
+	powerC := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
 
+	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	for i, _ := range powervmdata.Addresses {
-		if powervmdata.Addresses[i].NetworkName == powerinstancesubnet {
-			log.Printf("Printing the ip %s", powervmdata.Addresses[i].IP)
-			d.Set("ip", powervmdata.Addresses[i].IP)
-			d.Set("network_id", powervmdata.Addresses[i].NetworkID)
-			d.Set("macaddress", powervmdata.Addresses[i].MacAddress)
-			d.Set("external_ip", powervmdata.Addresses[i].ExternalIP)
-			d.Set("type", powervmdata.Addresses[i].Type)
+	for _, address := range powervmdata.Addresses {
+		if address.NetworkName == powerinstancesubnet {
+			log.Printf("Printing the ip %s", address.IP)
+			d.Set("ip", address.IP)
+			d.Set("network_id", address.NetworkID)
+			d.Set("macaddress", address.MacAddress)
+			d.Set("external_ip", address.ExternalIP)
+			d.Set("type", address.Type)
 
-			IPObject := net.ParseIP(powervmdata.Addresses[i].IP).To4()
+			IPObject := net.ParseIP(address.IP).To4()
 
 			d.Set("ipoctet", strconv.Itoa(int(IPObject[3])))
 
+			return nil
 		}
-
 	}
 
-	return nil
-
+	return diag.Errorf("failed to find instance ip that belongs to the given network")
 }
 
 func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
@@ -122,7 +125,6 @@ func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
 
 	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
 	networkdata, err := networkC.Get(powerinstancesubnet, powerinstanceid, getTimeOut)
-
 	if err != nil {
 		return err
 	}

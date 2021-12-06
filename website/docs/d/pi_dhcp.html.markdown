@@ -8,6 +8,7 @@ description: |-
 ---
 
 # ibm_pi_dhcp
+
 Retrieve information about a DHCP Server. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage

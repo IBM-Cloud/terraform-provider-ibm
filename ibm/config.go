@@ -57,6 +57,7 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
@@ -168,6 +169,9 @@ type Config struct {
 	//IAM Token
 	IAMToken string
 
+	//TrustedProfileToken Token
+	IAMTrustedProfileID string
+
 	//IAM Refresh Token
 	IAMRefreshToken string
 
@@ -268,6 +272,7 @@ type ClientSession interface {
 	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
+	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 }
 
 type clientSession struct {
@@ -537,6 +542,10 @@ type clientSession struct {
 	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr error
 	postureManagementClient    *posturemanagementv1.PostureManagementV1
+
+	// context Based Restrictions (CBR)
+	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
+	contextBasedRestrictionsClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -695,6 +704,29 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 }
 
 func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
+
+	if sess.kmsErr == nil {
+		var clientConfig *kp.ClientConfig
+		if sess.kmsAPI.Config.APIKey != "" {
+			clientConfig = &kp.ClientConfig{
+				BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				APIKey:  sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
+				Verbose: kp.VerboseFailOnly,
+			}
+		} else {
+			clientConfig = &kp.ClientConfig{
+				BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				Authorization: sess.session.BluemixSession.Config.IAMAccessToken, //pragma: allowlist secret
+				Verbose:       kp.VerboseFailOnly,
+			}
+		}
+
+		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
+		if err != nil {
+			sess.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+		}
+		return kpClient, nil
+	}
 	return sess.kmsAPI, sess.kmsErr
 }
 
@@ -992,6 +1024,11 @@ func (session clientSession) PostureManagementV1() (*posturemanagementv1.Posture
 	return session.postureManagementClient.Clone(), nil
 }
 
+// Context Based Restrictions
+func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
+	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1076,6 +1113,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
+		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1114,7 +1152,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
-	if sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
+	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
 		err := refreshToken(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1309,6 +1347,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.appidAPI = appIDClient
+
+	// Construct an "options" struct for creating Context Based Restrictions service client.
+	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
+	}
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
+	}
+
+	// Construct the service client.
+	session.contextBasedRestrictionsClient, err = contextbasedrestrictionsv1.NewContextBasedRestrictionsV1(contextBasedRestrictionsClientOptions)
+	if err == nil && session.contextBasedRestrictionsClient != nil {
+		// Enable retries for API calls
+		session.contextBasedRestrictionsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.contextBasedRestrictionsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Error occurred while configuring Context Based Restrictions service: %q", err)
+	}
 
 	// CATALOG MANAGEMENT Service
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
@@ -2714,11 +2778,14 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
+	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
+		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
+	}
 
-	if c.IAMToken != "" && c.IAMRefreshToken != "" {
+	if c.IAMToken != "" {
 		log.Println("Configuring IBM Cloud Session with token")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{

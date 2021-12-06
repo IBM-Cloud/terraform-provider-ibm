@@ -17,7 +17,7 @@ import (
 
 func resourceIBMContainerVpcALB() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMContainerVpcALBCreate,
+		Create:   resourceIBMContainerVpcALBEnable,
 		Read:     resourceIBMContainerVpcALBRead,
 		Update:   resourceIBMContainerVpcALBUpdate,
 		Delete:   resourceIBMContainerVpcALBDelete,
@@ -98,7 +98,7 @@ func resourceIBMContainerVpcALB() *schema.Resource {
 	}
 }
 
-func resourceIBMContainerVpcALBCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerVpcALBEnable(d *schema.ResourceData, meta interface{}) error {
 	albClient, err := meta.(ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err

@@ -87,6 +87,11 @@ func dataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 										Computed:    true,
 										Description: "ID of the resource group.",
 									},
+									"service_type": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Service type of the policy definition",
+									},
 								},
 							},
 						},

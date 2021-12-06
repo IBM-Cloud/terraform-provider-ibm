@@ -19,6 +19,15 @@ data "ibm_is_snapshots" "ds_snapshots" {
 
 ```
 
+## Argument reference
+Review the argument references that you can specify for your data source. 
+
+- `name` - (Optional, String) Filter snapshot collection by name of the snapshot.
+- `resource_group` - (Optional, String) Filter snapshot collection by resource group id of the snapshot.
+- `source_image` - (Optional, String) Filter snapshot collection by source image of the snapshot.
+- `source_volume` - (Optional, String) Filter snapshot collection by source volume of the snapshot.
+
+
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
