@@ -13,13 +13,13 @@ require (
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/event-notifications-go-admin-sdk v0.0.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.7.2
+	github.com/IBM/go-sdk-core/v5 v5.8.2
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.23.1
-	github.com/IBM/platform-services-go-sdk v0.22.3
+	github.com/IBM/platform-services-go-sdk v0.22.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.3
 	github.com/IBM/schematics-go-sdk v0.1.3
@@ -33,7 +33,7 @@ require (
 	github.com/aws/aws-sdk-go v1.37.0 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-openapi/strfmt v0.21.0
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-cmp v0.5.6
