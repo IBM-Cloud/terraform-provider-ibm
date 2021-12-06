@@ -148,14 +148,14 @@ func TestAccIBMISInstance_action(t *testing.T) {
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
 	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
-
+	userData := "a"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, name),
+				Config: testAccCheckIBMISInstanceConfig(vpcname, subnetname, sshname, publicKey, name, userData),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
