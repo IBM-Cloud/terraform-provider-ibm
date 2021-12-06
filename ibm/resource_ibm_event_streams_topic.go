@@ -135,7 +135,7 @@ func resourceIBMEventStreamsTopicCreate(d *schema.ResourceData, meta interface{}
 	err = adminClient.CreateTopic(topicName, &topicDetail, false)
 	if err != nil {
 		if kafkaErr, ok := err.(*sarama.TopicError); ok {
-			if kafkaErr.Err == sarama.ErrTopicAlreadyExists {
+			if kafkaErr != nil && kafkaErr.Err == sarama.ErrTopicAlreadyExists {
 				exists, err := resourceIBMEventStreamsTopicExists(d, meta)
 				if err != nil {
 					log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate resourceIBMEventStreamsTopicExists err %s", err)
