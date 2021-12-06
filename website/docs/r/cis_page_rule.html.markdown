@@ -34,6 +34,12 @@ resource "ibm_cis_page_rule" "page_rule" {
     url         = "https://ibm.travis-kuganes1.sdk.cistest-load.com/*"
     status_code = 302
   }
+  actions {
+    id    = "minify"
+    html  = "off"
+    css   = "on"
+    js    = "off"
+  }
 }
 ```
 
@@ -78,6 +84,10 @@ Review the argument references that you can specify for your resource.
     - `sort_query_string_for_cache` - (String) The sort query string.
     - `true_client_ip_header` - (String) The true client IP header.
     - `waf` - (String) The Web Application Firewall.
+    - `minify` - (String) The Minify web content.
+    - `css` - (String) The required attribute for `minify` action. CSS supported values are `on` and `off`.
+    - `html` - (String) The required attribute for `minify` action. HTML supported values are `on` and `off`.
+    - `js` - (String) The required attribute for `minify` action. JS supported values are `on` and `off`.
   - `status_code` - (Optional, String) The status code to check for URL forwarding. The required attribute for `forwarding_url` action. Valid values are `301` and `302`. It returns `0` for all other actions.
   - `url` - (Optional, String) The forward rule URL, a required attribute for `forwarding_url` action.
   - `value` - (Required, String) The values for corresponding actions.
@@ -101,7 +111,6 @@ Review the argument references that you can specify for your resource.
     - `image_size_optimization` - (String) The valid values are `on`, `off`.
     - `ip_geolocation` - (String) The valid values are `on`, `off`.
     - `origin_error_page_pass_thru` - (String) The valid values are `on`, `off`.
-    - `minify` - (String) This is not supported yet.
     - `opportunistic_encryption` - (String) The valid values are `on`, `off`.
     - `resolve_override` - (String) The value for resolving URL override.
     - `response_buffering` - (String) The valid values are `on`, `off`.
