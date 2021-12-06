@@ -119,6 +119,21 @@ func dataSourceIBMCISPageRules() *schema.Resource {
 										Computed:    true,
 										Description: "Page rule actions status code",
 									},
+									cisPageRuleActionsMinifyCSS: {
+										Type:        schema.TypeString,
+										Description: "Minify CSS value",
+										Computed:    true,
+									},
+									cisPageRuleActionsMinifyHTML: {
+										Type:        schema.TypeString,
+										Description: "Minify HTML value",
+										Computed:    true,
+									},
+									cisPageRuleActionsMinifyJS: {
+										Type:        schema.TypeString,
+										Description: "Minify JS value",
+										Computed:    true,
+									},
 								},
 							},
 						},
