@@ -37,7 +37,7 @@ data "ibm_iam_access_group_policy" "policy" {
 Review the argument references that you can specify for your data source.
 
 - `access_group_id` - (Required, Forces new resource, String) The ID of the access group.
-- `sort`- (Optional, String) The single field sort query for policies.
+- `sort`- (Optional, String) The single field sort query for policies. Allowed values are `id`, `type`, `href`, `created_at`, `created_by_id`, `last_modified_at`,`last_modified_by_id`, `state`
 
 ## Attribute reference
 
