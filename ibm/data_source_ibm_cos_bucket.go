@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -373,19 +372,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	bLocationConstraint := *bucketLocationConstraint.LocationConstraint
-
-	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
 
 	if singleSiteLocationRegex.MatchString(bLocationConstraint) {
 		d.Set("single_site_location", strings.Split(bLocationConstraint, "-")[0])
