@@ -64,71 +64,38 @@ Review the argument references that you can specify for your resource.
       |         id                |                 description                   |valid values|
       |---------------------------|-----------------------------------------------|------------|
       |`always_online`              |The action conflicts with all other settings.	|`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`always_use_https`           |The action conflicts with all other settings.	|The value is not required.|
-      |---------------------------|-----------------------------------------------|------------|
       |`automatic_https_rewrites`   |The automatic HTTPS rewrites.				 	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`browser_cache_ttl`          |The browser cache TTL.  					  	          |`0`, `1800`, `3600`, `7200`, `10800`, `14400`, `18000`, `28800`, `43200`, `57600`, `72000`, `86400`, `172800`, `259200`, `345600`, `432000`, `691200`, `1382400`, `2073600`, `2678400`, `5356800`, `16070400`, `31536000`|
-      |---------------------------|-----------------------------------------------|------------|
       |`bypass_cache_on_cookie`     |The bypass cache on cookie.				  	        |cookie tags|
-      |---------------------------|-----------------------------------------------|------------|
       |`browser_check`              |The browser integrity check.				  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`cache_level`                |The cache level.							  	              |`bypass`, `aggressive`, `basic`, `simplified`, `cache_everything`|
-      |---------------------------|-----------------------------------------------|------------|
       |`cache_on_cookie`            |The cache on cookie.						  	            |The cookie value|
-      |---------------------------|-----------------------------------------------|------------|
       |`cache_deception_armor`      |The cache deception armor.					  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`disable_security`           |The action conflicts with `email_obfuscation`, `server_side_exclude`, `waf`.|The value is not required.|
-      |---------------------------|-----------------------------------------------|------------|
       |`disable_apps`               |The disable apps.							  	            |The value is not required|
-      |---------------------------|-----------------------------------------------|------------|
       |`disable_performance`        |The disable performance.					  	          |The value is not required.|
-      |---------------------------|-----------------------------------------------|------------|
       |`edge_cache_ttl`             |The edge cache TTL.						  	            |`0`, `30`, `60`, `300`, `600`, `1200`, `1800`, `3600`, `7200`, `10800`, `14400`, `18000`, `28800`, `43200`, `57600`, `72000`, `86400`, `172800`, `259200`, `345600`, `432000`, `518400`, `604800`, `1209600`, `2419200`|
-      |---------------------------|-----------------------------------------------|------------|
       |`email_obfuscation`          |The Email obfuscation.						  	          |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`explicit_cache_control`     |The origin cache control.					  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`forwarding_url`             |The action conflicts with all other settings.	|The value is not required.|
-      |---------------------------|-----------------------------------------------|------------|
       |`host_header_override`       |The host header override.					  	        |The header value.|
-      |---------------------------|-----------------------------------------------|------------|
       |`image_load_optimization`  	|The image load optimization.				  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`image_size_optimization`  	|The image size optimization.				 	          |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`ip_geolocation`  			      |The IP geography location header.			  	    |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`opportunistic_encryption`   |The opportunistic encryption.				  	      |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`origin_error_page_pass_thru`|The origin error page pass-through.		  	    |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`resolve_override`  			    |The resolve override.						  	          |The value for resolving URL override.|
-      |---------------------------|-----------------------------------------------|------------|
       |`response_buffering` 		    |The response buffering.					  	          |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`script_load_optimization`   |The script load optimization.				  	      |`off`, `lossless`, `lossy`|
-      |---------------------------|-----------------------------------------------|------------|
       |`ssl` 						            |The TLS settings.							  	            |`off`, `flexible`, `full`, `strict`,`origin_pull`|
-      |---------------------------|-----------------------------------------------|------------|
       |`security_level`  			      |The security level.						  	            |`disable_security`, `always_use_https`|
-      |---------------------------|-----------------------------------------------|------------|
       |`server_side_exclude`  	  	|The server side excludes.					  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`server_stale_content`  		  |The server stale content.					  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`sort_query_string_for_cache`|The sort query string.						  	          |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`true_client_ip_header`  	  |The true client IP header.					  	        |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`waf`  						          |The Web Application Firewall.				  	      |`on`, `off`|
-      |---------------------------|-----------------------------------------------|------------|
       |`minify`  					          |The Minify web content						  	          |The value is not required|
-      |---------------------------|-----------------------------------------------|------------|
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `domain_id` - (Required, String) The ID of the IBM Cloud Internet Services domain.
 - `priority` - (Optional, Integer) The priority of the page rule. Default value is `1`. `Set` and `Update` are not supported yet.
