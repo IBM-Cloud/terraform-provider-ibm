@@ -27,10 +27,9 @@ func testAccCheckIBMPIInstanceConfig(name string) string {
 		pi_image_name        = "%[3]s"
 		pi_cloud_instance_id = "%[1]s"
 	  }
-	  resource "ibm_pi_network" "power_networks" {
+	  data "ibm_pi_network" "power_networks" {
 		pi_cloud_instance_id = "%[1]s"
-		pi_network_name      = "%[2]s"
-		pi_network_type      = "pub-vlan"
+		pi_network_name      = "%[4]s"
 	  }
 	  resource "ibm_pi_volume" "power_volume" {
 		pi_volume_size       = 20
@@ -48,13 +47,13 @@ func testAccCheckIBMPIInstanceConfig(name string) string {
 		pi_key_pair_name      = ibm_pi_key.key.key_id
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
-		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_health_status      = "WARNING"
 		pi_network {
-			network_id = ibm_pi_network.power_networks.network_id
+			network_id = data.ibm_pi_network.power_networks.id
 		}
 	  }
-	`, pi_cloud_instance_id, name, pi_image)
+	`, pi_cloud_instance_id, name, pi_image, pi_network_name)
 }
 
 func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {

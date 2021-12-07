@@ -26,7 +26,7 @@ const (
 	getTimeOut    = 60 * time.Second
 	deleteTimeOut = 60 * time.Second
 	//Added timeout values for warning  and active status
-	warningTimeOut = 30 * time.Second
+	warningTimeOut = 60 * time.Second
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES   = "custom-virtualcores"
@@ -313,7 +313,7 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceHealthStatus: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"OK", "WARNING"}),
+				ValidateFunc: validateAllowedStringValue([]string{helpers.PIInstanceHealthOk, helpers.PIInstanceHealthWarning}),
 				Default:      "OK",
 				Description:  "Allow the user to set the status of the lpar so that they can connect to it faster",
 			},
@@ -725,11 +725,9 @@ func isPIInstanceDeleteRefreshFunc(client *st.IBMPIInstanceClient, id string) re
 func isWaitForPIInstanceAvailable(ctx context.Context, client *st.IBMPIInstanceClient, id string, instanceReadyStatus string) (interface{}, error) {
 	log.Printf("Waiting for PIInstance (%s) to be available and active ", id)
 
-	var queryTimeOut time.Duration
-	if instanceReadyStatus == "WARNING" {
+	queryTimeOut := activeTimeOut
+	if instanceReadyStatus == helpers.PIInstanceHealthWarning {
 		queryTimeOut = warningTimeOut
-	} else {
-		queryTimeOut = activeTimeOut
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -751,8 +749,8 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 		if err != nil {
 			return nil, "", err
 		}
-		allowableStatus := instanceReadyStatus
-		if *pvm.Status == helpers.PIInstanceAvailable && (pvm.Health.Status == allowableStatus) {
+		// Check for `instanceReadyStatus` health status and also the final health status "OK"
+		if *pvm.Status == helpers.PIInstanceAvailable && (pvm.Health.Status == instanceReadyStatus || pvm.Health.Status == helpers.PIInstanceHealthOk) {
 			return pvm, helpers.PIInstanceAvailable, nil
 		}
 		if *pvm.Status == "ERROR" {
