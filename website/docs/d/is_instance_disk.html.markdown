@@ -29,12 +29,12 @@ resource "ibm_is_ssh_key" "example" {
 }
 
 resource "ibm_is_image" "example" {
-  name                   = "example-image"
-  href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
-  operating_system       = "ubuntu-16-04-amd64"
-  encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
-  encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
-   
+  name               = "example-image"
+  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+
 }
 
 resource "ibm_is_instance" "example" {
@@ -57,14 +57,14 @@ resource "ibm_is_instance" "example" {
 }
 
 data "ibm_is_instance" "example" {
-  name        = "${ibm_is_instance.testacc_instance.name}"
+  name        = "ibm_is_instance.example.name"
   private_key = file("~/.ssh/id_rsa")
   passphrase  = ""
 }
 
 data "is_instance_disk" "example" {
   instance = data.ibm_is_instance.example.id
-  disk = data.ibm_is_instance.example.disks.0.id
+  disk     = data.ibm_is_instance.example.disks.0.id
 }
 ```
 

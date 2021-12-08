@@ -26,27 +26,27 @@ resource "ibm_is_vpc_routing_table" "example" {
 }
 
 resource "ibm_is_subnet" "example" {
-  name            = "example_subnet"
+  name            = "example-subnet"
   vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
   routing_table   = ibm_is_vpc_routing_table.example.routing_table
   resource_group  = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example1" {
   resource_group = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example2" {
   routing_table_name = ibm_is_vpc_routing_table.example.name
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example3" {
   routing_table = ibm_is_vpc_routing_table.example.id
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example4" {
 }
 ```
 

@@ -19,7 +19,7 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_security_group" "example" {
-  name = "example-sg"
+  name = "example-security-group"
   vpc  = ibm_is_vpc.example.id
 }
 ```

@@ -14,7 +14,7 @@ The following example gets an instance group information.
 
 ```terraform
 data "ibm_is_instance_group" "example" {
-	name =  ibm_is_instance_group.example.name
+  name = ibm_is_instance_group.example.name
 }
 
 ```

@@ -14,7 +14,7 @@ Provides a read-only data source for PlacementGroup. You can then reference the 
 
 ```hcl
 data "ibm_is_placement_group" "example" {
-	id = ibm_is_placement_group.example.id
+  name = ibm_is_placement_group.example.name
 }
 ```
 

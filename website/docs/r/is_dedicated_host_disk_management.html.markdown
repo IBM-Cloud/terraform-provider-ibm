@@ -15,33 +15,33 @@ Create, update, delete and suspend the dedicated host disk management resource. 
 ```terraform
 resource "ibm_is_dedicated_host_group" "example" {
   family = "memory"
-  class = "beta"
-  zone = "us-south-1"
+  class  = "beta"
+  zone   = "us-south-1"
 }
 data "ibm_is_dedicated_host_group" "example" {
   name = ibm_is_dedicated_host_group.example.name
 }
 resource "ibm_is_dedicated_host" "example" {
-  profile = "dh2-56x464"
+  profile    = "dh2-56x464"
   host_group = ibm_is_dedicated_host_group.example.id
-  name = "example-dedicated-host"
+  name       = "example-dedicated-host"
 }
 data "ibm_is_dedicated_host" "example" {
-	host_group = ibm_is_dedicated_host_group.example.id
-	name = "example-dedicated-host"
+  host_group = ibm_is_dedicated_host_group.example.id
+  name       = "example-dedicated-host"
 }
 data "ibm_is_dedicated_host_disks" "example" {
   dedicated_host = data.ibm_is_dedicated_host.example.id
 }
 data "ibm_is_dedicated_host_disk" "example" {
   dedicated_host = data.ibm_is_dedicated_host.example.id
-  disk = ibm_is_dedicated_host_disk_management.example.disks.0.id
+  disk           = ibm_is_dedicated_host_disk_management.example.disks.0.id
 }
-resource "ibm_is_dedicated_host_disk_management" "example"{
+resource "ibm_is_dedicated_host_disk_management" "example" {
   dedicated_host = data.ibm_is_dedicated_host.example.id
   disks {
     name = "example-disks"
-    id = data.ibm_is_dedicated_host.example.disks.0.id
+    id   = data.ibm_is_dedicated_host.example.disks.0.id
   }
 }
 ```

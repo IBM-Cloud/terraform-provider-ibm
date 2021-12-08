@@ -18,20 +18,20 @@ resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 resource "ibm_is_vpc_routing_table" "example" {
-  vpc = ibm_is_vpc.example.id
-  name = "example-routTabletest"
-  route_direct_link_ingress = true
+  vpc                           = ibm_is_vpc.example.id
+  name                          = "example-routing-table"
+  route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
-  route_vpc_zone_ingress = false
+  route_vpc_zone_ingress        = false
 }
 resource "ibm_is_vpc_routing_table_route" "example" {
-  vpc = ibm_is_vpc.example.id
+  vpc           = ibm_is_vpc.example.id
   routing_table = ibm_is_vpc_routing_table.example.routing_table
-  zone = "us-south-1"
-  name = "custom-route-2"
-  destination = "192.168.4.0/24"
-  action = "deliver"
-  next_hop = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
+  zone          = "us-south-1"
+  name          = "custom-route-2"
+  destination   = "192.168.4.0/24"
+  action        = "deliver"
+  next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
 }
 ```
 

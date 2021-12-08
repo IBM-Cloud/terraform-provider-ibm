@@ -12,11 +12,9 @@ Retrieve an information of VPC floating IP on IBM Cloud as a read-only data sour
 ## Example usage
 
 ```terraform
-
-    data "ibm_is_floating_ip" "example" {
-        name   = "example-fp"
-    }
-
+data "ibm_is_floating_ip" "example" {
+  name = "example-floating-ip"
+}
 ```
 
 ## Argument reference

@@ -13,15 +13,13 @@ Retrieve information of an existing IBM Cloud Infrastructure Virtual Pricate Clo
 ## Example usage
 
 ```terraform
-
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 
 data "ibm_is_vpc_default_routing_table" "example" {
-	vpc = ibm_is_vpc.example.id
+  vpc = ibm_is_vpc.example.id
 }
-
 ```
 
 ## Argument reference

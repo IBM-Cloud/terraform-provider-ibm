@@ -14,8 +14,8 @@ The following example retrieves information about the dedicated host data source
 
 ```terraform
 data "ibm_is_dedicated_host" "example" {
-	host_group = ibm_is_dedicated_host_group.example.id
-	name = "example-dedicated-host"
+  host_group = ibm_is_dedicated_host_group.example.id
+  name       = "example-dedicated-host"
 }
 ```
 

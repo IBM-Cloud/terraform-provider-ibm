@@ -54,12 +54,12 @@ resource "ibm_is_instance_group" "example" {
   timeouts {
     create = "15m"
     delete = "15m"
-	  update = "10m"
+    update = "10m"
   }
 }
 
 resource "ibm_is_instance_group_manager" "example" {
-  name                 = "example-igmanager"
+  name                 = "example-ig-manager"
   aggregation_window   = 120
   instance_group       = ibm_is_instance_group.example.id
   cooldown             = 300
@@ -70,7 +70,7 @@ resource "ibm_is_instance_group_manager" "example" {
 }
 
 resource "ibm_is_instance_group_manager" "example" {
-  name           = "example-instancegroupmanager"
+  name           = "example-instance-group-manager"
   instance_group = ibm_is_instance_group.example.id
   manager_type   = "scheduled"
   enable_manager = true

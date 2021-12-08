@@ -16,8 +16,8 @@ In the following example, you can create a security group target:
 
 ```terraform
 data "ibm_is_security_group_target" "example" {
-    security_group = ibm_is_security_group.example.id
-    name = "example-security-group-target"
+  security_group = ibm_is_security_group.example.id
+  name           = "example-security-group-target"
 }
 ```
 

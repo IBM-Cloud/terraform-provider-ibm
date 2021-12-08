@@ -13,7 +13,7 @@ Retrieve the dedicated host group data sources. For more information, about dedi
 
 ```terraform
 data "ibm_is_dedicated_host_group" "example" {
-	name = "example-host-group"
+  name = "example-host-group"
 }
 ```
 

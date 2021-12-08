@@ -9,7 +9,7 @@ description: |-
 # ibm_is_lb_listener
 Create, update, or delete a listener for a VPC load balancer. For more information, about load balancer listener, see [working with listeners](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-listeners).
 
-**Note**
+~> **Note:**
 
 When provisioning the load balancer listener along with load balancer pool or pool member, Use explicit depends on the resources or perform the terraform apply with parallelism. For more information, about explicit dependencies, see [create resource dependencies](https://learn.hashicorp.com/terraform/getting-started/dependencies#implicit-and-explicit-dependencies).
 
@@ -19,12 +19,12 @@ An example, to create a load balancer listener along with the pool and pool memb
 ```terraform
 
 resource "ibm_is_lb_listener" "example" {
-  lb       = ibm_is_lb.example.id
-  port     = "9080"
-  protocol = "http"
-  https_redirect_listener=ibm_is_lb_listener.example.listener_id
-  https_redirect_status_code=301
-  https_redirect_uri="/example?doc=get"
+  lb                         = ibm_is_lb.example.id
+  port                       = "9080"
+  protocol                   = "http"
+  https_redirect_listener    = ibm_is_lb_listener.example.listener_id
+  https_redirect_status_code = 301
+  https_redirect_uri         = "/example?doc=get"
 }
 
 resource "ibm_is_lb_pool" "example" {
@@ -53,25 +53,25 @@ resource "ibm_is_lb_pool_member" "example" {
 ### Sample to create a load balancer listener policy for a `https_redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "example2"{
+resource "ibm_is_lb" "example2" {
   name    = "example-lb"
   subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "example1"{
-  lb       = ibm_is_lb.example2.id
-  port     = "9086"
-  protocol = "https"
-  certificate_instance="crn:v1:bluemix:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+resource "ibm_is_lb_listener" "example1" {
+  lb                   = ibm_is_lb.example2.id
+  port                 = "9086"
+  protocol             = "https"
+  certificate_instance = "crn:v1:bluemix:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 }
 
-resource "ibm_is_lb_listener" "example2"{
-  lb       = ibm_is_lb.example2.id
-  port     = "9087"
-  protocol = "http"
-  https_redirect_listener = ibm_is_lb_listener.example1.listener_id
+resource "ibm_is_lb_listener" "example2" {
+  lb                         = ibm_is_lb.example2.id
+  port                       = "9087"
+  protocol                   = "http"
+  https_redirect_listener    = ibm_is_lb_listener.example1.listener_id
   https_redirect_status_code = 301
-  https_redirect_uri = "/example?doc=geta" 
+  https_redirect_uri         = "/example?doc=geta"
 }
 ```
 
@@ -79,28 +79,28 @@ resource "ibm_is_lb_listener" "example2"{
 
 ```terraform
 
-resource "ibm_is_vpc" "vpc" {
-  name = "test-vpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "subnet" {
-  name 			= "test-subnet"
-  vpc 			= "${ibm_is_vpc.vpc.id}"
-  zone 			= "us-south-2"
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-2"
   ipv4_cidr_block = "10.240.68.0/24"
 }
 
-resource "ibm_is_lb" "nlb" {
-  name           = "test-nlb"
-  subnets        = [ibm_is_subnet.subnet.id]
-  profile        = "network-fixed"
-  type           = "private"
-  route_mode     = "true"
+resource "ibm_is_lb" "example" {
+  name       = "example-lb"
+  subnets    = [ibm_is_subnet.example.id]
+  profile    = "network-fixed"
+  type       = "private"
+  route_mode = "true"
 }
 
-resource "ibm_is_lb_listener" "nlbHttpListener1" {
-  lb           = ibm_is_lb.nlb.id
-  protocol     = "tcp"
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
+  protocol = "tcp"
 }
 ```
 
@@ -119,7 +119,7 @@ Review the argument references that you can specify for your resource.
 - `lb` - (Required, Forces new resource, String) The load balancer unique identifier.
 - `port`- (Optional, Integer) The listener port number. Valid range `1` to `65535`.
 
-  **NOTE**:
+  ~> **NOTE:**:
     - Private network load balancers with `route_mode` enabled don't support `port`, they support `port` range from `port_min`(1) - `port_max`(65535).
     - Only accepted value of `port` for `route_mode` enabled private network load balancer is `1`. Any other value will show change or update-in-place and returns an error.
 
@@ -137,12 +137,12 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the load balancer listener.
 - `port_min`- (Integer) The inclusive lower bound of the range of ports used by this listener.
 
-  **NOTE**
+  ~> **NOTE:**
     - Only load balancers in the `network` family support more than one port per listener.
     - Currently, only load balancers operating with route mode enabled support different values for `port_min` and port_max. When route mode is enabled, only a value of `1` is supported for `port_min`.
 - `port_max`- (Integer) The inclusive upper bound of the range of ports used by this listener.
 
-  **NOTE**
+  ~> **NOTE:**
     - Only load balancers in the `network` family support more than one port per listener.
     - Currently, only load balancers operating with `route_mode` enabled support different values for `port_min` and `port_max`. When `route mode` is enabled, only a value of `65535` is supported for port_max.
 - `status` - (String) The status of load balancer listener.

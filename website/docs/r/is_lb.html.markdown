@@ -16,7 +16,7 @@ An example to create an application load balancer.
 
 ```terraform
 resource "ibm_is_lb" "example" {
-  name    = "example-loadbalancer"
+  name    = "example-load-balancer"
   subnets = [ibm_is_subnet.example.id]
 }
 
@@ -26,7 +26,7 @@ An example to create a network load balancer.
 
 ```terraform
 resource "ibm_is_lb" "example" {
-  name    = "example-loadbalancer"
+  name    = "example-load-balancer"
   subnets = [ibm_is_subnet.example.id]
   profile = "network-fixed"
 }
@@ -48,7 +48,7 @@ Review the argument references that you can specify for your resource.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.
 - `resource_group` - (Optional, Forces new resource, String) The resource group where the load balancer to be created.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
-  **NOTE** Currently, public load balancers are not supported with `route_mode` enabled.
+  ~> **NOTE:** Currently, public load balancers are not supported with `route_mode` enabled.
 - `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
 - `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your load balancer. Tags can help you find the load balancer more easily later.

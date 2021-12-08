@@ -10,11 +10,11 @@ description: |-
 Retrieve information of an instance group managers information of an instance group. For more information, about instance group manager, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
 
 ## Example usage
-In the following example, you can retrive list of instance group managers information.
+In the following example, you can retrieve list of instance group managers information.
 
 ```terraform
 data "ibm_is_instance_group_managers" "example" {
-    instance_group = ibm_is_instance_group.example.id
+  instance_group = ibm_is_instance_group.example.id
 }
 ```
 

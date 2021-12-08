@@ -13,7 +13,7 @@ Retrieve information of an existing IBM VPC load balancers as a read-only data s
 
 ```terraform
 data "ibm_is_lbs" "example" {
- }
+}
 ```
 
 

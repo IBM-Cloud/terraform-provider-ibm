@@ -74,54 +74,54 @@ The following example shows how you can create a virtual server instance with cu
 ```terraform
 
 resource "ibm_is_vpc" "example" {
-    name = "example-vpc"
+  name = "example-vpc"
 }
 
 resource "ibm_is_security_group" "example" {
-    name = "example-security-group"
-    vpc = ibm_is_vpc.example.id
+  name = "example-security-group"
+  vpc  = ibm_is_vpc.example.id
 }
 
 resource "ibm_is_security_group_rule" "example1" {
-    group = ibm_is_security_group.example.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    depends_on = [ibm_is_security_group.example]
- }
+  group      = ibm_is_security_group.example.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  depends_on = [ibm_is_security_group.example]
+}
 
- resource "ibm_is_security_group_rule" "example2" {
-    group = ibm_is_security_group.example.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    icmp {
-        code = 20
-        type = 30
-    }
-    depends_on = [ibm_is_security_group_rule.example1]
+resource "ibm_is_security_group_rule" "example2" {
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  icmp {
+    code = 20
+    type = 30
+  }
+  depends_on = [ibm_is_security_group_rule.example1]
 
- }
+}
 
- resource "ibm_is_security_group_rule" "example_security_group_rule_udp" {
-    group = ibm_is_security_group.example.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    udp {
-        port_min = 805
-        port_max = 807
-    }
-    depends_on = [ibm_is_security_group_rule.example2]
- }
+resource "ibm_is_security_group_rule" "example3" {
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  udp {
+    port_min = 805
+    port_max = 807
+  }
+  depends_on = [ibm_is_security_group_rule.example2]
+}
 
- resource "ibm_is_security_group_rule" "example3" {
-    group = ibm_is_security_group.example_security_group.id
-    direction = "outbound"
-    remote = "127.0.0.1"
-    tcp {
-        port_min = 8080
-        port_max = 8080
-    }
-    depends_on = [ibm_is_security_group_rule.example2]
- }
+resource "ibm_is_security_group_rule" "example3" {
+  group     = ibm_is_security_group.example.id
+  direction = "outbound"
+  remote    = "127.0.0.1"
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
+  depends_on = [ibm_is_security_group_rule.example2]
+}
 
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
@@ -129,13 +129,13 @@ resource "ibm_is_instance" "example" {
   profile = "bc1-2x8"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet          = ibm_is_subnet.example.id
     security_groups = [ibm_is_security_group.example.id]
   }
 
-  vpc  = ibm_is_vpc.example.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.example.id]
+  vpc        = ibm_is_vpc.example.id
+  zone       = "us-south-1"
+  keys       = [ibm_is_ssh_key.example.id]
   depends_on = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
@@ -146,23 +146,23 @@ resource "ibm_is_instance" "example" {
   }
 }
 
-data "ibm_resource_group" "default" {
-  name = "Default" ///give your resource grp
+resource "ibm_resource_group" "example" {
+  name = "example-resource-group" 
 }
 
 resource "ibm_is_dedicated_host_group" "example" {
-  family = "compute"
-  class = "cx2"
-  zone = "us-south-1"
-  name = "my-dh-group-01"
-  resource_group = data.ibm_resource_group.default.id
+  family         = "compute"
+  class          = "cx2"
+  zone           = "us-south-1"
+  name           = "example-dh-group-01"
+  resource_group = ibm_resource_group.example.id
 }
 
 resource "ibm_is_dedicated_host" "example" {
-  profile = "bx2d-host-152x608"
-  name = "example-dedicated-host-01"
-	host_group = ibm_is_dedicated_host_group.example.id
-  resource_group = data.ibm_resource_group.default.id
+  profile        = "bx2d-host-152x608"
+  name           = "example-dedicated-host-01"
+  host_group     = ibm_is_dedicated_host_group.example.id
+  resource_group = ibm_resource_group.example.id
 }
 
 // Example to provision instance in a dedicated host
@@ -172,14 +172,14 @@ resource "ibm_is_instance" "example1" {
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet          = ibm_is_subnet.example.id
     security_groups = [ibm_is_security_group.example.id]
   }
   dedicated_host = ibm_is_dedicated_host.example.id
-  vpc  = ibm_is_vpc.example.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.example.id]
-  depends_on = [ibm_is_security_group_rule.example_security_group_rule_tcp]
+  vpc            = ibm_is_vpc.example.id
+  zone           = "us-south-1"
+  keys           = [ibm_is_ssh_key.example.id]
+  depends_on     = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -196,14 +196,14 @@ resource "ibm_is_instance" "example2" {
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet          = ibm_is_subnet.example.id
     security_groups = [ibm_is_security_group.example.id]
   }
-  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
-  vpc  = ibm_is_vpc.example.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.example.id]
-  depends_on = [ibm_is_security_group_rule.example_security_group_rule_tcp]
+  dedicated_host_group = ibm_is_dedicated_host_group.example.id
+  vpc                  = ibm_is_vpc.example.id
+  zone                 = "us-south-1"
+  keys                 = [ibm_is_ssh_key.example.id]
+  depends_on           = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -216,8 +216,8 @@ resource "ibm_is_instance" "example2" {
 // Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
 
 resource "ibm_is_snapshot" "example" {
-  name 		      	= "example-snapshot"
-  source_volume 	= ibm_is_instance.example.volume_attachments[0].volume_id
+  name          = "example-snapshot"
+  source_volume = ibm_is_instance.example.volume_attachments[0].volume_id
 }
 
 resource "ibm_is_instance" "example" {
@@ -228,7 +228,7 @@ resource "ibm_is_instance" "example" {
     snapshot = ibm_is_snapshot.example.id
   }
   primary_network_interface {
-    subnet     = ibm_is_subnet.example.id
+    subnet = ibm_is_subnet.example.id
   }
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
@@ -254,24 +254,24 @@ The `ibm_is_instance` resource provides the following [[Timeouts](https://www.te
 ## Argument reference
 Review the argument references that you can specify for your resource.
 - `action` - (Optional, String) Action to be taken on the instance. Supported values are `stop`, `start`, or `reboot`.
-  ~> **Note** 
+  ~> **Note:** 
   - `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
-- `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+- `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. ~>**Note:** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
   - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
-    **Note** 
+    ~> **Note:** 
     
      - `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 - `force_action` - (Optional, Boolean) Required with `action`. If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
-- `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
+- `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. ~>**Note:** The force_recovery_time is used to retry multiple times until timeout.
 - `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
-  **Note** 
+  ~> **Note:** 
     
   - `image` conflicts with `boot_volume.0.snapshot`  
 - `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance.
@@ -280,7 +280,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `network_interaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
-    **NOTE**:
+    ~> **NOTE:**:
       - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
       - Use this only if you have **IP spoofing operator** access.
 
@@ -293,7 +293,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `primary_network_interface`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
-    **NOTE**:
+    ~> **NOTE:**:
       - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
       - Use this only if you have **IP spoofing operator** access.
 
@@ -305,7 +305,7 @@ Review the argument references that you can specify for your resource.
 - `profile` - (Optional, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the source template.
-  **Note** 
+  ~> **Note:** 
     
   - `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.

@@ -18,10 +18,10 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_subnet" "example" {
-  name            			    = "example-subnet"
-  vpc             			    = ibm_is_vpc.example.id
-  zone            			    = "us-south-2"
-  total_ipv4_address_count 	= 16
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
+  total_ipv4_address_count = 16
 }
 
 resource "ibm_is_ssh_key" "example" {
@@ -30,12 +30,12 @@ resource "ibm_is_ssh_key" "example" {
 }
 
 resource "ibm_is_image" "example" {
- name                   = "example-image"
- href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
- operating_system       = "ubuntu-16-04-amd64"
- encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
- encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
-   
+  name               = "example-image"
+  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+
 }
 
 resource "ibm_is_instance" "example" {
@@ -43,7 +43,7 @@ resource "ibm_is_instance" "example" {
   image   = ibm_is_image.example.id
   profile = "bx2-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.example.id
+    subnet = ibm_is_subnet.example.id
   }
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
@@ -54,30 +54,27 @@ resource "ibm_is_instance" "example" {
   }
 }
 resource "ibm_is_snapshot" "example" {
-  name            = "example-snapshot"
-  source_volume   = ibm_is_instance.example.volume_attachments[0].volume_id
+  name          = "example-snapshot"
+  source_volume = ibm_is_instance.example.volume_attachments[0].volume_id
 }
 
 data "ibm_is_snapshot" "example" {
-    identifier = ibm_is_snapshot.example.id
+  identifier = ibm_is_snapshot.example.id
 }
-
 ```
 
 ```terraform
-
 data "ibm_is_snapshot" "example" {
-    name = ibm_is_snapshot.example.name
+  name = ibm_is_snapshot.example.name
 }
-
 ```
 
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The unique identifier for this snapshot.
-- `name` - (Optional, String) The name of the snapshot.
+- `identifier` - (Optional, String) The unique identifier for this snapshot,`name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the snapshot,`name` and `identifier` are mutually exclusive.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.

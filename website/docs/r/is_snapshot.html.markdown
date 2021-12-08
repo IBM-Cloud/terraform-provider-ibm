@@ -19,10 +19,10 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_subnet" "example" {
-  name            			    = "example-subnet"
-  vpc             			    = ibm_is_vpc.example.id
-  zone            			    = "us-south-2"
-  total_ipv4_address_count 	= 16
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
+  total_ipv4_address_count = 16
 }
 
 resource "ibm_is_ssh_key" "example" {
@@ -35,7 +35,7 @@ resource "ibm_is_instance" "example" {
   image   = ibm_is_image.example.id
   profile = "bx2-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.example.id
+    subnet = ibm_is_subnet.example.id
   }
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
@@ -46,8 +46,8 @@ resource "ibm_is_instance" "example" {
   }
 }
 resource "ibm_is_snapshot" "example" {
-  name            = "example-snapshot"
-  source_volume   = ibm_is_instance.example.volume_attachments[0].volume_id
+  name          = "example-snapshot"
+  source_volume = ibm_is_instance.example.volume_attachments[0].volume_id
 
   //User can configure timeouts
   timeouts {
@@ -62,7 +62,7 @@ resource "ibm_is_snapshot" "example" {
 The `ibm_is_snapshot` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 10 minutes) Used for creating Snapshot.
-- **delete** - (Default 10 minutes) Used for deleting Snaphsot.
+- **delete** - (Default 10 minutes) Used for deleting Snapshot.
 
 
 ## Argument reference

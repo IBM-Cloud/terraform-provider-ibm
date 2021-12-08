@@ -14,20 +14,20 @@ Provides a read-only data source for NetworkACL. You can then reference the fiel
 
 ```hcl
 resource "ibm_is_vpc" "example" {
-  name = "vpctest"
+  name = "example-vpc"
 }
 
 resource "ibm_is_network_acl" "example" {
-  name = "is-example-acl"
+  name = "example-network-acl"
   vpc  = ibm_is_vpc.example.id
-}  
+}
 
 data "ibm_is_network_acl" "example" {
   network_acl = ibm_is_network_acl.example.id
 }
 
 data "ibm_is_network_acl" "is_network_acl1" {
-  name = ibm_is_network_acl.example.name
+  name     = ibm_is_network_acl.example.name
   vpc_name = ibm_is_vpc.example.name
 }
 ```
@@ -39,7 +39,7 @@ Review the argument reference that you can specify for your data source.
 - `name` - (Optional, String) The name of the network acl.
 - `network_acl` - (Optional, String) The network acl identifier.
 - `vpc_name` - (Optional, String) The name of the VPC.
-  **Note** Provide `network_acl` or the combination of `vpc_name` and `name`
+  ~> **Note:** Provide `network_acl` or the combination of `vpc_name` and `name`
 
 ## Attribute Reference
 

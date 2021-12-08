@@ -14,22 +14,20 @@ In the following example, you can get information of an instance template of VPC
 
 ```terraform	
 data "ibm_is_instance_template" "example" {
-	name = "example-instance-template"	   
+  name = "example-instance-template"
 }
-
 ```
 ```terraform	
 data "ibm_is_instance_template" "example" {
-	identifier = ibm_is_instance_template.example.id	   
+  identifier = ibm_is_instance_template.example.id
 }
-
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The id of the instance template.
-- `name` - (Optional, String) The name of the instance template.
+- `identifier` - (Optional, String) The id of the instance template, `name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the instance template, `name` and `identifier` are mutually exclusive.
 
 
 

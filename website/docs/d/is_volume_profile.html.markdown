@@ -14,7 +14,7 @@ Retrieve information of an existing IBM Cloud virtual server volume profile as a
 
 ```terraform
 
-data "ibm_is_volume_profile" "example"{
+data "ibm_is_volume_profile" "example" {
   name = "general-purpose"
 }
 

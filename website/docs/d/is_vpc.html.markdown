@@ -20,7 +20,6 @@ resource "ibm_is_vpc" "example" {
 data "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
-
 ```
 
 ## Argument reference

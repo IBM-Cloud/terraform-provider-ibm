@@ -15,7 +15,6 @@ Retrieve information of an existing VPN gateways. For more information, about IB
 ```terraform
 
 data "ibm_is_vpn_gateways" "example" {
-  
 }
 
 ```

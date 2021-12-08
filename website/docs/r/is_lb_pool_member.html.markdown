@@ -18,25 +18,23 @@ Create, update, or delete a pool member for a VPC load balancer.
 ```terraform
 resource "ibm_is_lb_pool_member" "example" {
   lb             = ibm_is_lb.example.id
-  pool           = element(split("/",ibm_is_lb_pool.example.id),1)
+  pool           = element(split("/", ibm_is_lb_pool.example.id), 1)
   port           = 8080
   target_address = "127.0.0.1"
   weight         = 60
 }
-
 ```
 
 ### Sample to create a load balancer pool member for network load balancer.
 
 ```terraform
 resource "ibm_is_lb_pool_member" "example" {
-  lb             = ibm_is_lb.example.id
-  pool           = element(split("/",ibm_is_lb_pool.example.id),1)
-  port           = 8080
-  target_id      = ibm_is_instance.example.id}
-  weight         = 60
+  lb        = ibm_is_lb.example.id
+  pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
+  port      = 8080
+  target_id = ibm_is_instance.example.id
+  weight    = 60
 }
-
 ```
 
 ## Timeouts

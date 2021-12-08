@@ -13,7 +13,7 @@ Retrieve information of an existing IBM Cloud VSI. For more information, about t
 
 ```terraform
 
-data "ibm_is_volume_profiles" "example"{
+data "ibm_is_volume_profiles" "example" {
 }
 
 ```

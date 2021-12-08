@@ -18,9 +18,9 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_subnet" "example" {
-  name            = "example-subnet"
-  vpc             = ibm_is_vpc.example.id
-  zone            = "us-south-2"
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
   total_ipv4_address_count = 16
 }
 
@@ -34,7 +34,7 @@ resource "ibm_is_instance" "example" {
   image   = ibm_is_image.example.id
   profile = "bc1-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.example.id
+    subnet = ibm_is_subnet.example.id
   }
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
@@ -48,12 +48,12 @@ resource "ibm_is_instance" "example" {
 resource "ibm_is_instance_volume_attachment" "example" {
   instance = ibm_is_instance.example.id
 
-  name = "test-vol-att-1"
-  profile = "general-purpose"
-  capacity = "20"
+  name                               = "example-vol-att-1"
+  profile                            = "general-purpose"
+  capacity                           = "20"
   delete_volume_on_attachment_delete = true
-  delete_volume_on_instance_delete = true
-  volume_name = "testvol1"
+  delete_volume_on_instance_delete   = true
+  volume_name                        = "example-vol-1"
 
   //User can configure timeouts
   timeouts {
@@ -76,13 +76,13 @@ resource "ibm_is_volume" "example" {
 resource "ibm_is_instance_volume_attachment" "example" {
   instance = ibm_is_instance.example.id
 
-  name = "test-col-att-2"
+  name   = "example-col-att-2"
   volume = ibm_is_volume.example.id
 
   // it is recommended to keep the delete_volume_on_attachment_delete as false here otherwise on deleting attachment, existing volume will also get deleted
 
   delete_volume_on_attachment_delete = false
-  delete_volume_on_instance_delete = false
+  delete_volume_on_instance_delete   = false
 }
 
 ```
@@ -92,12 +92,12 @@ resource "ibm_is_instance_volume_attachment" "example" {
 resource "ibm_is_instance_volume_attachment" "example" {
   instance = ibm_is_instance.example.id
 
-  name = "test-col-att-3"
-  profile = "general-purpose"
-  snapshot = xxxx-xx-x-xxxxx
+  name                               = "example-col-att-3"
+  profile                            = "general-purpose"
+  snapshot                           = xxxx-xx-x-xxxxx
   delete_volume_on_attachment_delete = true
-  delete_volume_on_instance_delete = true
-  volume_name = "testvol3"
+  delete_volume_on_instance_delete   = true
+  volume_name                        = "example-vol-3"
 
   //User can configure timeouts
   timeouts {
@@ -106,7 +106,6 @@ resource "ibm_is_instance_volume_attachment" "example" {
     delete = "15m"
   }
 }
-
 ```
 
 ## Timeouts
@@ -123,7 +122,7 @@ Review the argument references that you can specify for your resource.
 
 - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. 
 
-  **NOTE** 
+  ~> **NOTE:** 
     - The specified minimum and maximum capacity values for creating or updating volumes may expand in the future. Accepted value is in [10-16000].
     - If unspecified, the capacity will be the source snapshot's `minimum_capacity` when `snapshot` is provided.
     - Supports only expansion on update (must not be less than the current volume capacity)
@@ -135,7 +134,7 @@ Review the argument references that you can specify for your resource.
 - `encryption_key` - (Optional, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource. If this property is not provided but the image is encrypted, the image's encryption_key will be used. Otherwise, the encryption type for the volume will be `provider_managed`.
 - `instance` - (Required, String) The id of the instance.
 - `iops` - (Optional, Integer) The bandwidth for the new volume.  This value is required for `custom` storage profiles only.
-**NOTE**
+~> **NOTE:**
   - `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
   - This table shows how storage size affects the `iops` ranges:
 
@@ -155,13 +154,13 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The name of the volume attachment.
 - `profile` - (Optional, String) The globally unique name for this volume profile.
 
-  **NOTE**
+  ~> **NOTE:**
     - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other.
     - Can be applied only if volume is attached to an running virtual server instance.
     - Stopped instances will be started on update of volume.
 - `snapshot` - (Optional, String) The unique identifier for this snapshot from which to clone the new volume. 
 
-  **NOTE**
+  ~> **NOTE:**
   - one of `capacity` or `snapshot` must be present for volume creation
   - if `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_cpacity` is taken as the volume capacity.
 - `volume` - (Optional, String) The unique identifier for the existing volume

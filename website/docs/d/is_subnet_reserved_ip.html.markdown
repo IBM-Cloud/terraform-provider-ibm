@@ -13,7 +13,7 @@ Retrieve information of an existing reserved IP in a subnet. For more informatio
 
 ```terraform
 data "ibm_is_subnet_reserved_ip" "example" {
-  subnet = ibm_is_subnet.example.id
+  subnet      = ibm_is_subnet.example.id
   reserved_ip = ibm_is_subnet_reserved_ip.example.reserved_ip
 }
 ```

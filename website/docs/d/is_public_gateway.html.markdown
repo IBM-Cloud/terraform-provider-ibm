@@ -23,10 +23,9 @@ resource "ibm_is_public_gateway" "example" {
   zone = "us-south-1"
 }
 
-data "ibm_is_public_gateway" "example"{
+data "ibm_is_public_gateway" "example" {
   name = ibm_is_public_gateway.example.name
 }
-
 ```
 
 ## Argument reference

@@ -14,29 +14,29 @@ Create, update, or delete a VPC load balancer listener policy rule. For more inf
 Sample to create a load balancer listener policy rule, along with `lb` and `lb listener`.
 
 ```terraform
-resource "ibm_is_lb" "example"{
+resource "ibm_is_lb" "example" {
   name    = "example-lb"
   subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "example"{
+resource "ibm_is_lb_listener" "example" {
   lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
 resource "ibm_is_lb_listener_policy" "example" {
-  lb = ibm_is_lb.example.id
-  listener = ibm_is_lb_listener.example.listener_id
-  action = "redirect"
-  priority = 2
-  name = "example-listener"
+  lb                      = ibm_is_lb.example.id
+  listener                = ibm_is_lb_listener.example.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "example-listener"
   target_http_status_code = 302
-  target_url = "https://www.redirect.com"
-  rules{
-      condition = "contains"
-      type = "header"
-      field = "1"
-      value = "2"
+  target_url              = "https://www.redirect.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
   }
 }
 

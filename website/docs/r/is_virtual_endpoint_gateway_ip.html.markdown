@@ -15,10 +15,9 @@ The following example creates a Virtual Private Endpoint gateway IP.
 
 ```terraform
 resource "ibm_is_virtual_endpoint_gateway_ip" "example" {
-	gateway     = ibm_is_virtual_endpoint_gateway.example.id
-	reserved_ip = "0737-5ab3c18e-6f6c-4a69-8f48-20e3456647b5"
+  gateway     = ibm_is_virtual_endpoint_gateway.example.id
+  reserved_ip = ibm_is_subnet_reserved_ip.example.reserved_ip
 }
-
 ```
 
 

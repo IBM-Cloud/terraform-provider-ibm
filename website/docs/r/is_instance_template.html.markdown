@@ -30,37 +30,34 @@ resource "ibm_is_ssh_key" "example" {
   public_key = "SSH KEY"
 }
 
-data "ibm_resource_group" "example" {
-  name = "Default" ///give your resource grp
+resource "ibm_resource_group" "example" {
+  name = "example-resource-group"
 }
 
 resource "ibm_is_dedicated_host_group" "example" {
-  family = "compute"
-  class = "cx2"
-  zone = "us-south-1"
-  name = "my-dh-group-01"
-  resource_group = data.ibm_resource_group.example.id
+  family         = "compute"
+  class          = "cx2"
+  zone           = "us-south-1"
+  name           = "example-dedicated-host-group-01"
+  resource_group = ibm_resource_group.example.id
 }
 
 resource "ibm_is_dedicated_host" "example" {
-  profile = "bx2d-host-152x608"
-  name = "example-dedicated-host"
-	host_group = ibm_is_dedicated_host_group.example.id
-  resource_group = data.ibm_resource_group.example.id
+  profile        = "bx2d-host-152x608"
+  name           = "example-dedicated-host"
+  host_group     = ibm_is_dedicated_host_group.example.id
+  resource_group = ibm_resource_group.example.id
 }
 
 resource "ibm_is_volume" "example" {
-  name           = "example-datavol1"
-  resource_group = data.ibm_resource_group.example.id
+  name           = "example-data-vol1"
+  resource_group = ibm_resource_group.example.id
   zone           = "us-south-2"
 
   profile  = "general-purpose"
   capacity = 50
 }
 
-data "ibm_resource_group" "example" {
-  is_default = true
-}
 
 // Create a new volume with the volume attachment. This template format can be used with instance groups
 resource "ibm_is_instance_template" "example" {
@@ -69,7 +66,7 @@ resource "ibm_is_instance_template" "example" {
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
@@ -78,28 +75,28 @@ resource "ibm_is_instance_template" "example" {
   keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "example-bootvol"
+    name                             = "example-boot-volume"
     delete_volume_on_instance_delete = true
   }
-   volume_attachments {
-        delete_volume_on_instance_delete = true
-        name                             = "volatt-01"
-        volume_prototype {
-            iops = 3000
-            profile = "general-purpose"
-            capacity = 200
-        }
+  volume_attachments {
+    delete_volume_on_instance_delete = true
+    name                             = "volume-att-01"
+    volume_prototype {
+      iops     = 3000
+      profile  = "general-purpose"
+      capacity = 200
     }
+  }
 }
 
-// Template with volume attachment that attaches exisiting storage volume. This template cannot be used with instance groups
-resource "ibm_is_instance_template" "example" {
+// Template with volume attachment that attaches existing storage volume. This template cannot be used with instance groups
+resource "ibm_is_instance_template" "example1" {
   name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
@@ -108,54 +105,54 @@ resource "ibm_is_instance_template" "example" {
   keys = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "example-bootvol"
+    name                             = "example-boot-volume"
     delete_volume_on_instance_delete = true
   }
-   volume_attachments {
-        delete_volume_on_instance_delete = true
-        name                             = "example-volatt"
-        volume                           = ibm_is_volume.example.id
-    }
+  volume_attachments {
+    delete_volume_on_instance_delete = true
+    name                             = "example-volume-att"
+    volume                           = ibm_is_volume.example.id
+  }
 }
 
-resource "ibm_is_instance_template" "example" {
+resource "ibm_is_instance_template" "example3" {
   name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
   dedicated_host_group = ibm_is_dedicated_host_group.example.id
-  vpc  = ibm_is_vpc.example.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.example.id]
+  vpc                  = ibm_is_vpc.example.id
+  zone                 = "us-south-2"
+  keys                 = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "example-bootvol"
+    name                             = "example-boot-volume"
     delete_volume_on_instance_delete = true
   }
 }
 
-resource "ibm_is_instance_template" "example" {
-  name    = "example-templat"
+resource "ibm_is_instance_template" "example4" {
+  name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = true
   }
 
   dedicated_host = ibm_is_dedicated_host.example.id
-  vpc  = ibm_is_vpc.vpc2.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.example.id]
+  vpc            = ibm_is_vpc.vpc2.id
+  zone           = "us-south-2"
+  keys           = [ibm_is_ssh_key.example.id]
 
   boot_volume {
-    name                             = "example-bootvol"
+    name                             = "example-boot-volume"
     delete_volume_on_instance_delete = true
   }
 }
@@ -222,7 +219,7 @@ Review the argument references that you can specify for your resource.
     - `iops` - (Optional, Integer) The maximum input and output operations per second (IOPS) for the volume.
     - `profile` - (Optional, String) The global unique name for the volume profile to use for the volume.
     
-    **Note** 
+    ~>**Note:** 
     
     `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.

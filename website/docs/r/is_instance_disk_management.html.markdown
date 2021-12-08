@@ -48,21 +48,21 @@ resource "ibm_is_instance" "example" {
 }
 
 data "ibm_is_instance" "example" {
-  name        = "${ibm_is_instance.example.name}"
+  name        = ibm_is_instance.example.name
   private_key = file("~/.ssh/id_rsa")
   passphrase  = ""
 }
 
 data "is_instance_disk" "example" {
   instance = data.ibm_is_instance.example.id
-  disk = data.ibm_is_instance.example.disks.0.id
+  disk     = data.ibm_is_instance.example.disks.0.id
 }
 
-resource "ibm_is_instance_disk_management" "example"{
+resource "ibm_is_instance_disk_management" "example" {
   instance = data.ibm_is_instance.example.id
   disks {
     name = "example-disk"
-    id = data.ibm_is_instance.example.disks.0.id
+    id   = data.ibm_is_instance.example.disks.0.id
   }
 }
 ```

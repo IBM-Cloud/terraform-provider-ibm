@@ -20,22 +20,21 @@ resource "ibm_is_vpc" "example" {
 resource "ibm_is_network_acl" "example" {
   name = "example-network-acl"
   vpc  = ibm_is_vpc.example.id
-}  
+}
 
 resource "ibm_is_network_acl_rule" "example" {
-  network_acl    = ibm_is_network_acl.example.id
-  name           = "example-nacl-rule"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "outbound"
-}
-
-data "ibm_is_network_acl_rule" "example"{
   network_acl = ibm_is_network_acl.example.id
-  name = "example-nacl-rule"
+  name        = "example-network-acl-rule"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
 }
 
+data "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "example-network-acl-rule"
+}
 ```
 
 ## Argument reference

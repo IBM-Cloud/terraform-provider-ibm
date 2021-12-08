@@ -13,7 +13,7 @@ Retrieve the dedicated hosts. For more information, about dedicated hosts in the
 
 ```terraform
 data "ibm_is_dedicated_hosts" "example" {
-	host_group = ibm_is_dedicated_host_group.example.id
+  host_group = ibm_is_dedicated_host_group.example.id
 }
 ```
 

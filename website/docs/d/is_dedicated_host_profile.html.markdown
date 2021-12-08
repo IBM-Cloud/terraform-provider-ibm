@@ -14,7 +14,7 @@ Retrieve an information about the dedicated host profile. For more information, 
 
 ```terraform
 data "ibm_is_dedicated_host_profile" "example" {
-	name = "dh2-56x464"
+  name = "dh2-56x464"
 }
 ```
 

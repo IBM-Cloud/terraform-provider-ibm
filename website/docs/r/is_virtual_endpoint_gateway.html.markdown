@@ -16,45 +16,45 @@ The following example, creates a Virtual Private Endpoint gateway.
 ```terraform
 resource "ibm_is_virtual_endpoint_gateway" "example" {
 
-  name = "endpoint-gateway"
+  name = "example-endpoint-gateway"
   target {
-	name          = "ibm-ntp-server"
+    name          = "ibm-ntp-server"
     resource_type = "provider_infrastructure_service"
   }
-  vpc = ibm_is_vpc.example.id
+  vpc            = ibm_is_vpc.example.id
   resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "example-1" {
-	name = "endpoint-gateway-1"
-	target {
-	  name          = "ibm-ntp-server"
-	  resource_type = "provider_infrastructure_service"
-	}
-	vpc = ibm_is_vpc.example.id
-	ips {
-		subnet   = ibm_is_subnet.example.id
-		name        = "example-reserved-ip"
-	}
-	resource_group = data.ibm_resource_group.example.id
+resource "ibm_is_virtual_endpoint_gateway" "example1" {
+  name = "example-endpoint-gateway-1"
+  target {
+    name          = "ibm-ntp-server"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc = ibm_is_vpc.example.id
+  ips {
+    subnet = ibm_is_subnet.example.id
+    name   = "example-reserved-ip"
+  }
+  resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "example-3" {
-	name = "endpoint-gateway-2"
-	target {
-	  name          = "ibm-ntp-server"
-	  resource_type = "provider_infrastructure_service"
-	}
-	vpc = ibm_is_vpc.example.id
-	ips {
-			subnet   = ibm_is_subnet.example.id
-		  name        = "example-reserved-ip"
-	}
-	resource_group = data.ibm_resource_group.example.id
+resource "ibm_is_virtual_endpoint_gateway" "example3" {
+  name = "example-endpoint-gateway-2"
+  target {
+    name          = "ibm-ntp-server"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc = ibm_is_vpc.example.id
+  ips {
+    subnet = ibm_is_subnet.example.id
+    name   = "example-reserved-ip"
+  }
+  resource_group = data.ibm_resource_group.example.id
 }
 
-resource "ibm_is_virtual_endpoint_gateway" "example-4" {
-  name = "endpoint-gateway-3"
+resource "ibm_is_virtual_endpoint_gateway" "example4" {
+  name = "example-endpoint-gateway-3"
   target {
     crn           = "crn:v1:bluemix:public:cloud-object-storage:global:::endpoint:s3.direct.mil01.cloud-object-storage.appdomain.cloud"
     resource_type = "provider_cloud_service"
@@ -75,7 +75,7 @@ Review the argument references that you can specify for your resource.
   - `name` - (Optional, String) The endpoint gateway resource group IPs name.
   - `subnet` - (Optional, String) The endpoint gateway resource group subnet ID.
   
-  **NOTE**: `id` and `subnet` are mutually exclusive.
+  ~> **NOTE:** `id` and `subnet` are mutually exclusive.
 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
@@ -91,7 +91,7 @@ Review the argument references that you can specify for your resource.
   - `resource_type` - (Required, String) The endpoint gateway target resource type. The possible values are `provider_cloud_service`, `provider_infrastructure_service`.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 
-**NOTE**: `ips` configured inline in this resource are not modifiable. Prefer using `ibm_is_virtual_endpoint_gateway_ip` resource to bind/unbind new reserved IPs to endpoint gateways and use the resource `ibm_is_subnet_reserved_ip` to create new reserved IP.
+~> **NOTE:** `ips` configured inline in this resource are not modifiable. Prefer using `ibm_is_virtual_endpoint_gateway_ip` resource to bind/unbind new reserved IPs to endpoint gateways and use the resource `ibm_is_subnet_reserved_ip` to create new reserved IP.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

@@ -47,21 +47,21 @@ resource "ibm_is_instance_template" "example" {
 }
 
 resource "ibm_is_instance_group" "example" {
-  name              = "example-instancegroup"
+  name              = "example-instance-group"
   instance_template = ibm_is_instance_template.example.id
   instance_count    = 2
   subnets           = [ibm_is_subnet.example.id]
 }
 
 resource "ibm_is_instance_group_manager" "example" {
-  name           = "example-instancegroup-manager"
+  name           = "example-instance-group-manager"
   instance_group = ibm_is_instance_group.example.id
   manager_type   = "scheduled"
   enable_manager = true
 }
 
 resource "ibm_is_instance_group_manager_action" "example" {
-  name                   = "example-instancegroupmanager-action"
+  name                   = "example-instance-group-manager-action"
   instance_group         = ibm_is_instance_group.example.id
   instance_group_manager = ibm_is_instance_group_manager.example.manager_id
   cron_spec              = "*/5 1,2,3 * * *"

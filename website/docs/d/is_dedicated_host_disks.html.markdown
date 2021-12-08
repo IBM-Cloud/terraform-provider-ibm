@@ -14,7 +14,7 @@ Retrieve the dedicated host disk collection. For more information, about dedicat
 
 ```terraform
 data "ibm_is_dedicated_host_disks" "example" {
-	dedicated_host = ibm_is_dedicated_host.example.id
+  dedicated_host = ibm_is_dedicated_host.example.id
 }
 ```
 

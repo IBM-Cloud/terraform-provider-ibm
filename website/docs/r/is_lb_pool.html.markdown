@@ -26,7 +26,6 @@ resource "ibm_is_lb_pool" "example" {
   health_type    = "http"
   proxy_protocol = "v1"
 }
-
 ```
 
 ### Sample to create a load balancer pool with `https` protocol.
@@ -46,56 +45,56 @@ resource "ibm_is_lb_pool" "example" {
 
 ```
 
-In the following example, you can create a load balancer pool with `app_cookie` session persistence:
+//In the following example, you can create a load balancer pool with `app_cookie` session persistence:
 
 ```hcl
 resource "ibm_is_lb_pool" "example" {
-  name           = "example-pool"
-  lb             = ibm_is_lb.example.id
-  algorithm      = "round_robin"
-  protocol       = "https"
-  health_delay   = 60
-  health_retries = 5
-  health_timeout = 30
-  health_type    = "https"
-  proxy_protocol = "v1"
-  session_persistence_type = "app_cookie"
+  name                                = "example-pool"
+  lb                                  = ibm_is_lb.example.id
+  algorithm                           = "round_robin"
+  protocol                            = "https"
+  health_delay                        = 60
+  health_retries                      = 5
+  health_timeout                      = 30
+  health_type                         = "https"
+  proxy_protocol                      = "v1"
+  session_persistence_type            = "app_cookie"
   session_persistence_app_cookie_name = "cookie1"
 }
 
 ```
 
-In the following example, you can create a load balancer pool with `http_cookie` session persistence:
+//In the following example, you can create a load balancer pool with `http_cookie` session persistence:
 
 ```hcl
 resource "ibm_is_lb_pool" "example" {
-  name           = "example-pool"
-  lb             = ibm_is_lb.example.id
-  algorithm      = "round_robin"
-  protocol       = "https"
-  health_delay   = 60
-  health_retries = 5
-  health_timeout = 30
-  health_type    = "https"
-  proxy_protocol = "v1"
+  name                     = "example-pool"
+  lb                       = ibm_is_lb.example.id
+  algorithm                = "round_robin"
+  protocol                 = "https"
+  health_delay             = 60
+  health_retries           = 5
+  health_timeout           = 30
+  health_type              = "https"
+  proxy_protocol           = "v1"
   session_persistence_type = "http_cookie"
 }
 
 ```
 
-In the following example, you can create a load balancer pool with `source_ip` session persistence:
+//In the following example, you can create a load balancer pool with `source_ip` session persistence:
 
 ```hcl
 resource "ibm_is_lb_pool" "example" {
-  name           = "example-pool"
-  lb             = ibm_is_lb.example.id
-  algorithm      = "round_robin"
-  protocol       = "https"
-  health_delay   = 60
-  health_retries = 5
-  health_timeout = 30
-  health_type    = "https"
-  proxy_protocol = "v1"
+  name                     = "example-pool"
+  lb                       = ibm_is_lb.example.id
+  algorithm                = "round_robin"
+  protocol                 = "https"
+  health_delay             = 60
+  health_retries           = 5
+  health_timeout           = 30
+  health_type              = "https"
+  proxy_protocol           = "v1"
   session_persistence_type = "source_ip"
 }
 ```

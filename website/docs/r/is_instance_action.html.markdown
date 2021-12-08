@@ -44,14 +44,14 @@ resource "ibm_is_instance" "example" {
   }
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet               = ibm_is_subnet.example.id
     primary_ipv4_address = "10.240.0.6"
-    allow_ip_spoofing = true
+    allow_ip_spoofing    = true
   }
 
   network_interfaces {
-    name   = "eth1"
-    subnet = ibm_is_subnet.example.id
+    name              = "eth1"
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = false
   }
 
@@ -68,7 +68,7 @@ resource "ibm_is_instance" "example" {
 }
 
 resource "ibm_is_instance_action" "example" {
-  action = "stop"
+  action       = "stop"
   force_action = true
 }
 

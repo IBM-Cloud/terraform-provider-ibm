@@ -19,9 +19,9 @@ Sample to create a security group target.
 
 ```terraform
 resource "ibm_is_security_group_target" "example" {
-    security_group = ibm_is_security_group.example.id
-    target = ibm_is_lb.example.id
-  }
+  security_group = ibm_is_security_group.example.id
+  target         = ibm_is_lb.example.id
+}
 ```
 
 ## Argument reference

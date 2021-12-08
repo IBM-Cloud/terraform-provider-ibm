@@ -20,7 +20,7 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_security_group" "example" {
-  name = "example-sg"
+  name = "example-security-group"
   vpc  = ibm_is_vpc.example.id
 }
 
@@ -30,7 +30,7 @@ resource "ibm_is_security_group_rule" "example" {
   remote    = "127.0.0.1"
 }
 
-resource "ibm_is_security_group_rule" "example" {
+resource "ibm_is_security_group_rule" "example1" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
@@ -40,7 +40,7 @@ resource "ibm_is_security_group_rule" "example" {
   }
 }
 
-resource "ibm_is_security_group_rule" "example" {
+resource "ibm_is_security_group_rule" "example2" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
@@ -50,7 +50,7 @@ resource "ibm_is_security_group_rule" "example" {
   }
 }
 
-resource "ibm_is_security_group_rule" "example" {
+resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "egress"
   remote    = "127.0.0.1"
@@ -84,7 +84,7 @@ Review the argument references that you can specify for your resource.
   - `port_min`- (Required, Integer) The UDP port range that includes minimum bound. Valid values are from 1 to 65535.
   - `port_max`- (Required, Integer) The UDP port range that includes maximum bound. Valid values are from 1 to 65535.
 
-**Note** 
+~> **Note:** 
 
 If any of the `icmp` , `tcp`, or `udp` is not specified it creates a rule with protocol `ALL`.
 

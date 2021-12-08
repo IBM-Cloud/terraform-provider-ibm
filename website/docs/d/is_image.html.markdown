@@ -28,9 +28,9 @@ data "ibm_is_image" "example" {
 Review the argument references that you can specify for your data source.
 
 - `identifier` - (Optional, String) The id of the image.
-    ~> **Note:** One of `identifier` or  `name` is required
+    ~> **Note:** `name` and `identifier` are mutually exclusive.
 - `name` - (Optional, String) The name of the image.
-    ~> **Note:** One of `identifier` or  `name` is required
+    ~> **Note:** `name` and `identifier` are mutually exclusive.
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
 ## Attribute reference

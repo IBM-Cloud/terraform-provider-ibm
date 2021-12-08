@@ -18,7 +18,7 @@ Create, update, delete and suspend the flow log resource. For more information, 
 resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
-  profile = "b-2x8"
+  profile = "bc1-2x8"
 
   primary_network_interface {
     port_speed = "1000"
@@ -31,30 +31,30 @@ resource "ibm_is_instance" "example" {
 }
 
 
-data "ibm_resource_group" "example" {
-  name = "example-instance-group"
+resource "ibm_resource_group" "example" {
+  name = "example-resource-group"
 }
 
 resource "ibm_resource_instance" "example" {
   name              = "example-cos-instance"
-  resource_group_id = data.ibm_resource_group.example.id
+  resource_group_id = ibm_resource_group.example.id
   service           = "cloud-object-storage"
   plan              = "standard"
   location          = "global"
 }
 
 resource "ibm_cos_bucket" "example" {
-   bucket_name          = "us-south-bucket-vpc1"
-   resource_instance_id = ibm_resource_instance.example.id
-   region_location = var.region
-   storage_class = "standard"
+  bucket_name          = "us-south-bucket-vpc1"
+  resource_instance_id = ibm_resource_instance.example.id
+  region_location      = var.region
+  storage_class        = "standard"
 }
 
-resource ibm_is_flow_log example {
-  depends_on = [ibm_cos_bucket.example]
-  name = "example-instance-flow-log"
-  target = ibm_is_instance.example.id
-  active = true
+resource "ibm_is_flow_log" "example" {
+  depends_on     = [ibm_cos_bucket.example]
+  name           = "example-instance-flow-log"
+  target         = ibm_is_instance.example.id
+  active         = true
   storage_bucket = ibm_cos_bucket.example.bucket_name
 }
 

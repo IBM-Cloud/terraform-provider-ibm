@@ -13,8 +13,8 @@ Retrieve an information of VPC floating IPs on IBM Cloud as a read-only data sou
 ## Example Usage
 
 ```hcl
-data "ibm_is_floating_ips" "is_floating_ips" {
-	name = "my-floating-ip"
+data "ibm_is_floating_ips" "example" {
+  name = "example-floating-ips"
 }
 ```
 

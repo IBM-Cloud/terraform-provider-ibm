@@ -13,22 +13,20 @@ Retrieve information of an existing IBM Cloud Infrastructure Virtual Private Clo
 ## Example usage
 
 ```terraform
-
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 
 resource "ibm_is_vpc_routing_table" "example" {
-  name   = "example-routing-table"
-  vpc    = ibm_is_vpc.example.id
+  name = "example-routing-table"
+  vpc  = ibm_is_vpc.example.id
 }
 
 
 data "ibm_is_vpc_routing_table_routes" "example" {
-	vpc = ibm_is_vpc.test_vpc.id
-	routing_table = ibm_is_vpc_routing_tables.example.routing_table
+  vpc           = ibm_is_vpc.example.id
+  routing_table = ibm_is_vpc_routing_tables.example.routing_table
 }
-
 ```
 ## Argument reference
 Review the argument references that you can specify for your data source. 

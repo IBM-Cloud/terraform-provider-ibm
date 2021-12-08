@@ -13,13 +13,13 @@ Retrieve information of an existing IBM Cloud VSI volume. For more information, 
 ## Example usage
 
 ```terraform
-resource "ibm_is_volume" "example"{
-    name = "example-vol"
-    profile = "10iops-tier"
-    zone = "us-south-1"
+resource "ibm_is_volume" "example" {
+  name    = "example-volume"
+  profile = "10iops-tier"
+  zone    = "us-south-1"
 }
 data "ibm_is_volume" "example" {
-    name = ibm_is_volume.example.name
+  name = ibm_is_volume.example.name
 }
 
 ```

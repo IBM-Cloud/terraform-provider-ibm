@@ -12,10 +12,8 @@ Retrieve an information of an endpoint gateway targets on IBM Cloud as a read-on
 ## Example usage
 
 ```terraform
-
-    data "ibm_is_endpoint_gateway_targets" "example" {
-    }
-
+data "ibm_is_endpoint_gateway_targets" "example" {
+}
 ```
 
 ## Attribute reference

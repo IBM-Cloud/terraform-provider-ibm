@@ -18,7 +18,7 @@ resource "ibm_is_security_group_network_interface_attachment" "example" {
   network_interface = ibm_is_instance.example.primary_network_interface[0].id
 }
 ```
-**Note** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
+~> **Note:** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

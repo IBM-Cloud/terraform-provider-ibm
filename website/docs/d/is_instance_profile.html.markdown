@@ -11,12 +11,12 @@ Retrieve information of an existing IBM Cloud virtual server instance profile. F
 
 
 ## Example usage
-The following example retrieves information about the `b-2x8` instance profile. 
+The following example retrieves information about the `cx2-2x4` instance profile. 
 
 ```terraform
 
 data "ibm_is_instance_profile" "example" {
-  name = "b-2x8"
+  name = "cx2-2x4"
 }
 
 ```

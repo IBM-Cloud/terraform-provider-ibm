@@ -13,7 +13,7 @@ Retrieve information of an existing IBM Cloud Infrastructure virtual endpoint ga
 
 ```terraform
 data "ibm_is_virtual_endpoint_gateway" "example" {
-    name = ibm_is_virtual_endpoint_gateway.example.name
+  name = ibm_is_virtual_endpoint_gateway.example.name
 }
 ```
 
