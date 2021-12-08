@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 )
@@ -124,11 +123,11 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		body.Authentication = models.IKEPolicyAuthentication(v.(string))
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-	ikePolicy, err := client.CreateIKEPolicyWithContext(ctx, body, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	ikePolicy, err := client.CreateIKEPolicy(body)
 	if err != nil {
 		log.Printf("[DEBUG] create ike policy failed %v", err)
-		return diag.Errorf(errors.CreateVPNPolicyOperationFailed, cloudInstanceID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *ikePolicy.ID))
@@ -142,15 +141,12 @@ func resourceIBMPIIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
-
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	body := &models.IKEPolicyUpdate{}
 
 	if d.HasChange(helpers.PIVPNPolicyName) {
@@ -182,9 +178,9 @@ func resourceIBMPIIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 		body.Authentication = models.IKEPolicyAuthentication(authentication)
 	}
 
-	_, err = client.UpdateIKEPolicyWithContext(ctx, body, policyID, cloudInstanceID)
+	_, err = client.UpdateIKEPolicy(policyID, body)
 	if err != nil {
-		return diag.Errorf(errors.UpdateVPNPolicyOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	return resourceIBMPIIKEPolicyRead(ctx, d, meta)
@@ -196,16 +192,13 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
-
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-	ikePolicy, err := client.GetIKEPolicyWithContext(ctx, policyID, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	ikePolicy, err := client.GetIKEPolicy(policyID)
 	if err != nil {
 		// FIXME: Uncomment when 404 error is available
 		// switch err.(type) {
@@ -215,7 +208,7 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 		// 	return nil
 		// }
 		log.Printf("[DEBUG] get VPN policy failed %v", err)
-		return diag.Errorf(errors.GetCloudConnectionOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	d.Set(PIPolicyId, ikePolicy.ID)
@@ -235,17 +228,14 @@ func resourceIBMPIIKEPolicyDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-
-	err = client.DeleteIKEPolicyWithContext(ctx, policyID, cloudInstanceID)
+	err = client.DeleteIKEPolicy(policyID)
 	if err != nil {
 		// FIXME: Uncomment when 404 error is available
 		// switch err.(type) {
@@ -255,7 +245,7 @@ func resourceIBMPIIKEPolicyDelete(ctx context.Context, d *schema.ResourceData, m
 		// 	return nil
 		// }
 		log.Printf("[DEBUG] delete VPN policy failed %v", err)
-		return diag.Errorf(errors.DeleteVPNPolicyOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

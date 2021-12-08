@@ -120,12 +120,12 @@ func dataSourceIBMPICloudConnectionsRead(ctx context.Context, d *schema.Resource
 	}
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPICloudConnectionClient(sess, cloudInstanceID)
+	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 
-	cloudConnections, err := client.GetAllWithContext(ctx, cloudInstanceID)
-	if err != nil || cloudConnections == nil {
+	cloudConnections, err := client.GetAll()
+	if err != nil {
 		log.Printf("[DEBUG] get cloud connections failed %v", err)
-		return diag.Errorf("failed to perform get cloud connections operation with error %v", err)
+		return diag.FromErr(err)
 	}
 
 	result := make([]map[string]interface{}, 0, len(cloudConnections.CloudConnections))

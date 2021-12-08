@@ -182,10 +182,10 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		jobClient := st.NewIBMPIJobClient(sess, cloudInstanceID)
-		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
+		jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
+		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.Errorf(errors.CreateImageOperationFailed, cloudInstanceID, err)
+			return diag.FromErr(err)
 		}
 
 		// Once the job is completed find by name
@@ -216,14 +216,15 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 	imageC := st.NewIBMPIImageClient(sess, cloudInstanceID)
 	imagedata, err := imageC.GetWithContext(ctx, imageID, cloudInstanceID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
 			log.Printf("[DEBUG] image does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] get image failed %v", err)
-		return diag.Errorf(errors.GetImageOperationFailed, imageID, err)
+		return diag.FromErr(err)
 	}
 
 	imageid := *imagedata.ImageID
@@ -292,12 +293,12 @@ func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, i
 	}
 }
 
-func waitForIBMPIJobCompleted(ctx context.Context, client *st.IBMPIJobClient, jobID, cloudInstanceID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIJobCompleted(ctx context.Context, client *st.IBMPIJobClient, jobID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{helpers.JobStatusQueued, helpers.JobStatusReadyForProcessing, helpers.JobStatusInProgress, helpers.JobStatusRunning, helpers.JobStatusWaiting},
 		Target:  []string{helpers.JobStatusCompleted, helpers.JobStatusFailed},
 		Refresh: func() (interface{}, string, error) {
-			job, err := client.GetWithContext(ctx, jobID, cloudInstanceID)
+			job, err := client.Get(jobID)
 			if err != nil {
 				log.Printf("[DEBUG] get job failed %v", err)
 				return nil, "", fmt.Errorf(errors.GetJobOperationFailed, jobID, err)

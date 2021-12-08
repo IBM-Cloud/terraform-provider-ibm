@@ -99,18 +99,18 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	client := st.NewIBMPIDhcpClient(sess, cloudInstanceID)
-	dhcpServer, err := client.CreateWithContext(ctx, cloudInstanceID)
+	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	dhcpServer, err := client.Create()
 	if err != nil {
 		log.Printf("[DEBUG] create DHCP failed %v", err)
-		return diag.Errorf(errors.CreateDchpOperationFailed, cloudInstanceID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *dhcpServer.ID))
 
-	_, err = waitForIBMPIDhcpStatus(ctx, client, *dhcpServer.ID, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForIBMPIDhcpStatus(ctx, client, *dhcpServer.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.Errorf(errors.CreateDchpOperationFailed, cloudInstanceID, err)
+		diag.FromErr(err)
 	}
 
 	return resourceIBMPIDhcpRead(ctx, d, meta)
@@ -122,25 +122,23 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, dhcpID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	dhcpID := parts[1]
-
-	client := st.NewIBMPIDhcpClient(sess, cloudInstanceID)
-	dhcpServer, err := client.GetWithContext(ctx, dhcpID, cloudInstanceID)
+	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	dhcpServer, err := client.Get(dhcpID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_service_d_h_c_p.PcloudDhcpGetNotFound:
 			log.Printf("[DEBUG] dhcp does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] get DHCP failed %v", err)
-		return diag.Errorf(errors.GetDhcpOperationFailed, dhcpID, err)
+		return diag.FromErr(err)
 	}
 
 	d.Set(PIDhcpId, *dhcpServer.ID)
@@ -168,27 +166,25 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, dhcpID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	dhcpID := parts[1]
-
-	client := st.NewIBMPIDhcpClient(sess, cloudInstanceID)
-	_, err = client.DeleteWithContext(ctx, dhcpID, cloudInstanceID)
+	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	err = client.Delete(dhcpID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_service_d_h_c_p.PcloudDhcpDeleteNotFound:
 			log.Printf("[DEBUG] dhcp does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] delete DHCP failed %v", err)
-		return diag.Errorf(errors.DeleteDhcpOperationFailed, dhcpID, err)
+		return diag.FromErr(err)
 	}
-	_, err = waitForIBMPIDhcpDeleted(ctx, client, dhcpID, cloudInstanceID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForIBMPIDhcpDeleted(ctx, client, dhcpID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,15 +193,15 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID, cloudInstanceID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{PIDhcpStatusBuilding},
 		Target:  []string{PIDhcpStatusActive},
 		Refresh: func() (interface{}, string, error) {
-			dhcpServer, err := client.GetWithContext(ctx, dhcpID, cloudInstanceID)
+			dhcpServer, err := client.Get(dhcpID)
 			if err != nil {
 				log.Printf("[DEBUG] get DHCP failed %v", err)
-				return nil, "", fmt.Errorf(errors.GetDhcpOperationFailed, dhcpID, err)
+				return nil, "", err
 			}
 			if *dhcpServer.Status != PIDhcpStatusActive {
 				return dhcpServer, PIDhcpStatusBuilding, nil
@@ -219,12 +215,12 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *st.IBMPIDhcpClient, dhc
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func waitForIBMPIDhcpDeleted(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID, cloudInstanceID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpDeleted(ctx context.Context, client *st.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{PIDhcpDeleting},
 		Target:  []string{PIDhcpDeleted},
 		Refresh: func() (interface{}, string, error) {
-			dhcpServer, err := client.GetWithContext(ctx, dhcpID, cloudInstanceID)
+			dhcpServer, err := client.Get(dhcpID)
 			if err != nil {
 				log.Printf("[DEBUG] dhcp does not exist %v", err)
 				return dhcpServer, PIDhcpDeleted, nil
