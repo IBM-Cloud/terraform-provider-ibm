@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -53,14 +54,12 @@ func testAccCheckIBMPIIKEPolicyDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_ike_policy" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, policyID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		policyID := parts[1]
-		client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-		_, err = client.GetIKEPolicy(policyID, cloudInstanceID)
+		client := st.NewIBMPIVpnPolicyClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.GetIKEPolicy(policyID)
 		if err == nil {
 			return fmt.Errorf("ike policy still exists: %s", rs.Primary.ID)
 		}
@@ -81,15 +80,13 @@ func testAccCheckIBMPIIKEPolicyExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, policyID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		policyID := parts[1]
-		client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
+		client := st.NewIBMPIVpnPolicyClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.GetIKEPolicy(policyID, cloudInstanceID)
+		_, err = client.GetIKEPolicy(policyID)
 		if err != nil {
 			return err
 		}

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -41,14 +42,14 @@ func testAccCheckIBMPIDhcpDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_dhcp" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+
+		cloudInstanceID, dhcpID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudConnectionID := parts[0]
-		dhcpID := parts[1]
-		client := st.NewIBMPIDhcpClient(sess, cloudConnectionID)
-		_, err = client.Get(dhcpID, cloudConnectionID)
+
+		client := st.NewIBMPIDhcpClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.Get(dhcpID)
 		if err == nil {
 			return fmt.Errorf("PI DHCP still exists: %s", rs.Primary.ID)
 		}
@@ -70,15 +71,14 @@ func testAccCheckIBMPIDhcpExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+
+		cloudInstanceID, dhcpID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudConnectionID := parts[0]
-		dhcpID := parts[1]
-		client := st.NewIBMPIDhcpClient(sess, cloudConnectionID)
+		client := st.NewIBMPIDhcpClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.Get(dhcpID, cloudConnectionID)
+		_, err = client.Get(dhcpID)
 		if err != nil {
 			return err
 		}

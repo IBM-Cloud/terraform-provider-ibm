@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 )
@@ -112,11 +111,11 @@ func resourceIBMPIIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		body.Authentication = models.IPSECPolicyAuthentication(v.(string))
 	}
 
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-	ipsecPolicy, err := client.CreateIPSecPolicyWithContext(ctx, body, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	ipsecPolicy, err := client.CreateIPSecPolicy(body)
 	if err != nil {
 		log.Printf("[DEBUG] create ipsec policy failed %v", err)
-		return diag.Errorf(errors.CreateVPNPolicyOperationFailed, cloudInstanceID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *ipsecPolicy.ID))
@@ -130,15 +129,12 @@ func resourceIBMPIIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
-
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	body := &models.IPSecPolicyUpdate{}
 
 	if d.HasChange(helpers.PIVPNPolicyName) {
@@ -166,9 +162,9 @@ func resourceIBMPIIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 		body.Authentication = models.IPSECPolicyAuthentication(authentication)
 	}
 
-	_, err = client.UpdateIPSecPolicyWithContext(ctx, body, policyID, cloudInstanceID)
+	_, err = client.UpdateIPSecPolicy(policyID, body)
 	if err != nil {
-		return diag.Errorf(errors.UpdateVPNPolicyOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	return resourceIBMPIIPSecPolicyRead(ctx, d, meta)
@@ -180,16 +176,13 @@ func resourceIBMPIIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
-
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-	ipsecPolicy, err := client.GetIPSecPolicyWithContext(ctx, policyID, cloudInstanceID)
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
+	ipsecPolicy, err := client.GetIPSecPolicy(policyID)
 	if err != nil {
 		// FIXME: Uncomment when 404 error is available
 		// switch err.(type) {
@@ -199,7 +192,7 @@ func resourceIBMPIIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		// 	return nil
 		// }
 		log.Printf("[DEBUG] get VPN policy failed %v", err)
-		return diag.Errorf(errors.GetCloudConnectionOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	d.Set(PIPolicyId, ipsecPolicy.ID)
@@ -219,17 +212,14 @@ func resourceIBMPIIPSecPolicyDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, policyID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	policyID := parts[1]
+	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 
-	client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-
-	err = client.DeleteIPSecPolicyWithContext(ctx, policyID, cloudInstanceID)
+	err = client.DeleteIPSecPolicy(policyID)
 	if err != nil {
 		// FIXME: Uncomment when 404 error is available
 		// switch err.(type) {
@@ -239,7 +229,7 @@ func resourceIBMPIIPSecPolicyDelete(ctx context.Context, d *schema.ResourceData,
 		// 	return nil
 		// }
 		log.Printf("[DEBUG] delete VPN policy failed %v", err)
-		return diag.Errorf(errors.DeleteVPNPolicyOperationFailed, policyID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

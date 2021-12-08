@@ -68,11 +68,11 @@ func dataSourceIBMPIDhcpServersRead(ctx context.Context, d *schema.ResourceData,
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	client := st.NewIBMPIDhcpClient(sess, cloudInstanceID)
-	dhcpServers, err := client.GetAllWithContext(ctx, cloudInstanceID)
+	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
+	dhcpServers, err := client.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] get all DHCP failed %v", err)
-		return diag.Errorf("failed to perform get all DHCP operation with error %v", err)
+		return diag.FromErr(err)
 	}
 
 	result := make([]map[string]interface{}, 0, len(dhcpServers))

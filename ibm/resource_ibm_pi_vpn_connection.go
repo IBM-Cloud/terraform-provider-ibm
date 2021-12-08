@@ -157,11 +157,11 @@ func resourceIBMPIVPNConnectionCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("%s is a required field", helpers.PIVPNConnectionPeerSubnets)
 	}
 
-	client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
-	vpnConnection, err := client.CreateWithContext(ctx, body, cloudInstanceID)
+	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
+	vpnConnection, err := client.Create(body)
 	if err != nil {
 		log.Printf("[DEBUG] create VPN connection failed %v", err)
-		return diag.Errorf(errors.CreateVPNConnectionOperationFailed, cloudInstanceID, err)
+		return diag.FromErr(err)
 	}
 
 	vpnConnectionId := *vpnConnection.ID
@@ -169,11 +169,11 @@ func resourceIBMPIVPNConnectionCreate(ctx context.Context, d *schema.ResourceDat
 
 	if vpnConnection.JobRef != nil {
 		jobID := *vpnConnection.JobRef.ID
-		jobClient := st.NewIBMPIJobClient(sess, cloudInstanceID)
+		jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 
-		_, err = waitForIBMPIJobCompleted(ctx, jobClient, jobID, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
+		_, err = waitForIBMPIJobCompleted(ctx, jobClient, jobID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.Errorf(errors.CreateVPNConnectionOperationFailed, cloudInstanceID, err)
+			return diag.FromErr(err)
 		}
 	}
 
@@ -186,16 +186,13 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, vpnConnectionID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	vpnConnectionID := parts[1]
-
-	client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
-	jobClient := st.NewIBMPIJobClient(sess, cloudInstanceID)
+	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
+	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 
 	if d.HasChangesExcept(helpers.PIVPNConnectionNetworks, helpers.PIVPNConnectionPeerSubnets) {
 		body := &models.VPNConnectionUpdate{}
@@ -217,9 +214,9 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 			body.PeerGatewayAddress = models.PeerGatewayAddress(peerGatewayAddress)
 		}
 
-		_, err = client.UpdateWithContext(ctx, body, vpnConnectionID, cloudInstanceID)
+		_, err = client.Update(vpnConnectionID, body)
 		if err != nil {
-			return diag.Errorf(errors.UpdateVPNConnectionOperationFailed, vpnConnectionID, err)
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChanges(helpers.PIVPNConnectionNetworks) {
@@ -231,23 +228,27 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 		toRemove := old.Difference(new)
 
 		for _, n := range expandStringList(toAdd.List()) {
-			jobReference, err := client.AddNetworkWithContext(ctx, vpnConnectionID, n, cloudInstanceID)
+			jobReference, err := client.AddNetwork(vpnConnectionID, n)
 			if err != nil {
-				return diag.Errorf("failed to perform the network add operation... %v", err)
+				return diag.FromErr(err)
 			}
-			_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, cloudInstanceID, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.Errorf(errors.UpdateVPNConnectionOperationFailed, vpnConnectionID, err)
+			if jobReference != nil {
+				_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 		for _, n := range expandStringList(toRemove.List()) {
-			jobReference, err := client.DeleteNetworkWithContext(ctx, vpnConnectionID, n, cloudInstanceID)
+			jobReference, err := client.DeleteNetwork(vpnConnectionID, n)
 			if err != nil {
-				return diag.Errorf("failed to perform the network delete operation... %v", err)
+				return diag.FromErr(err)
 			}
-			_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, cloudInstanceID, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.Errorf(errors.UpdateVPNConnectionOperationFailed, vpnConnectionID, err)
+			if jobReference != nil {
+				_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 
@@ -261,15 +262,15 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 		toRemove := old.Difference(new)
 
 		for _, s := range expandStringList(toAdd.List()) {
-			_, err := client.AddSubnetWithContext(ctx, vpnConnectionID, s, cloudInstanceID)
+			_, err := client.AddSubnet(vpnConnectionID, s)
 			if err != nil {
-				return diag.Errorf("failed to perform the subnet add operation... %v", err)
+				return diag.FromErr(err)
 			}
 		}
 		for _, s := range expandStringList(toRemove.List()) {
-			err := client.DeleteSubnetWithContext(ctx, vpnConnectionID, s, cloudInstanceID)
+			_, err := client.DeleteSubnet(vpnConnectionID, s)
 			if err != nil {
-				return diag.Errorf("failed to perform the subnet delete operation... %v", err)
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -282,25 +283,23 @@ func resourceIBMPIVPNConnectionRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, vpnConnectionID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	vpnConnectionID := parts[1]
-
-	client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
-	vpnConnection, err := client.GetWithContext(ctx, vpnConnectionID, cloudInstanceID)
+	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
+	vpnConnection, err := client.Get(vpnConnectionID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_v_p_n_connections.PcloudVpnconnectionsGetNotFound:
 			log.Printf("[DEBUG] VPN connection does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] get VPN connection failed %v", err)
-		return diag.Errorf(errors.GetVPNConnectionOperationFailed, vpnConnectionID, err)
+		return diag.FromErr(err)
 	}
 
 	d.Set(PIVPNConnectionId, vpnConnection.ID)
@@ -339,33 +338,31 @@ func resourceIBMPIVPNConnectionDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, vpnConnectionID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	vpnConnectionID := parts[1]
+	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
+	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 
-	client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
-	jobClient := st.NewIBMPIJobClient(sess, cloudInstanceID)
-
-	jobRef, err := client.DeleteWithContext(ctx, vpnConnectionID, cloudInstanceID)
+	jobRef, err := client.Delete(vpnConnectionID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_v_p_n_connections.PcloudVpnconnectionsDeleteNotFound:
 			log.Printf("[DEBUG] VPN connection does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] delete VPN connection failed %v", err)
-		return diag.Errorf(errors.DeleteVPNConnectionOperationFailed, vpnConnectionID, err)
+		return diag.FromErr(err)
 	}
 	if jobRef != nil {
 		jobID := *jobRef.ID
-		_, err = waitForIBMPIJobCompleted(ctx, jobClient, jobID, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
+		_, err = waitForIBMPIJobCompleted(ctx, jobClient, jobID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.Errorf(errors.DeleteVPNConnectionOperationFailed, vpnConnectionID, err)
+			return diag.FromErr(err)
 		}
 	}
 

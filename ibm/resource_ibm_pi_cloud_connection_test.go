@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -46,14 +47,12 @@ func testAccCheckIBMPICloudConnectionDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_cloud_connection" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, cloudConnectionID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		cloudConnectionID := parts[1]
-		client := st.NewIBMPICloudConnectionClient(sess, cloudInstanceID)
-		_, err = client.Get(cloudConnectionID, cloudInstanceID)
+		client := st.NewIBMPICloudConnectionClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.Get(cloudConnectionID)
 		if err == nil {
 			return fmt.Errorf("Cloud Connection still exists: %s", rs.Primary.ID)
 		}
@@ -74,15 +73,13 @@ func testAccCheckIBMPICloudConnectionExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, cloudConnectionID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		cloudConnectionID := parts[1]
-		client := st.NewIBMPICloudConnectionClient(sess, cloudInstanceID)
+		client := st.NewIBMPICloudConnectionClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.Get(cloudConnectionID, cloudInstanceID)
+		_, err = client.Get(cloudConnectionID)
 		if err != nil {
 			return err
 		}

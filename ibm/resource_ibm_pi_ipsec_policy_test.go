@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -44,14 +45,12 @@ func testAccCheckIBMPIIPSecPolicyDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_ipsec_policy" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, policyID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		policyID := parts[1]
-		client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
-		_, err = client.GetIPSecPolicy(policyID, cloudInstanceID)
+		client := st.NewIBMPIVpnPolicyClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.GetIPSecPolicy(policyID)
 		if err == nil {
 			return fmt.Errorf("ipsec policy still exists: %s", rs.Primary.ID)
 		}
@@ -72,15 +71,13 @@ func testAccCheckIBMPIIPSecPolicyExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, policyID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		policyID := parts[1]
-		client := st.NewIBMPIVpnPolicyClient(sess, cloudInstanceID)
+		client := st.NewIBMPIVpnPolicyClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.GetIPSecPolicy(policyID, cloudInstanceID)
+		_, err = client.GetIPSecPolicy(policyID)
 		if err != nil {
 			return err
 		}

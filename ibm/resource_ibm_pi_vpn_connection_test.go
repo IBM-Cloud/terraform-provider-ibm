@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -56,14 +57,12 @@ func testAccCheckIBMPIVPNConnectionDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_vpn_connection" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, vpnConnectionID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		vpnConnectionID := parts[1]
-		client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
-		_, err = client.Get(vpnConnectionID, cloudInstanceID)
+		client := st.NewIBMPIVpnConnectionClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.Get(vpnConnectionID)
 		if err == nil {
 			return fmt.Errorf("vpn connection still exists: %s", rs.Primary.ID)
 		}
@@ -84,15 +83,13 @@ func testAccCheckIBMPIVPNConnectionExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, vpnConnectionID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		cloudInstanceID := parts[0]
-		vpnConnectionID := parts[1]
-		client := st.NewIBMPIVpnConnectionClient(sess, cloudInstanceID)
+		client := st.NewIBMPIVpnConnectionClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.Get(vpnConnectionID, cloudInstanceID)
+		_, err = client.Get(vpnConnectionID)
 		if err != nil {
 			return err
 		}
