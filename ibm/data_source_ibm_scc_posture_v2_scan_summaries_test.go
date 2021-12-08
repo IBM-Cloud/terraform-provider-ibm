@@ -1,0 +1,39 @@
+// Copyright IBM Corp. 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package ibm
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+)
+
+func TestAccIBMSccPostureV2ScanSummariesDataSourceBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMSccPostureV2ScanSummariesDataSourceConfigBasic(scc_posture_v2_report_setting_id),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_v2_scan_summaries.scan_summaries", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_v2_scan_summaries.scan_summaries", "report_setting_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_v2_scan_summaries.scan_summaries", "first.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_v2_scan_summaries.scan_summaries", "last.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_v2_scan_summaries.scan_summaries", "summaries.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMSccPostureV2ScanSummariesDataSourceConfigBasic(report_setting_id string) string {
+	return fmt.Sprintf(`
+		data "ibm_scc_posture_v2_scan_summaries" "scan_summaries" {
+			report_setting_id = "%s"
+		}
+	`,report_setting_id)
+}
+
