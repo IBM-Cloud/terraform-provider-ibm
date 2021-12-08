@@ -72,7 +72,7 @@ func resourceIBMISInstanceTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			isInstanceTemplateName: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ForceNew:     false,
 				ValidateFunc: validateISName,
 				Description:  "Instance Template name",
@@ -460,10 +460,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		Profile: &vpcv1.InstanceProfileIdentity{
 			Name: &profile,
 		},
-		Name: &name,
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	if name != "" {
+		instanceproto.Name = &name
 	}
 
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
