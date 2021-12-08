@@ -104,6 +104,7 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -273,6 +274,7 @@ type ClientSession interface {
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
+	PostureManagementV2()   (*posturemanagementv2.PostureManagementV2, error)
 }
 
 type clientSession struct {
@@ -546,6 +548,10 @@ type clientSession struct {
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
+	
+	//Security and Compliance Center (SCC) Compliance posture v2
+	postureManagementClientv2     *posturemanagementv2.PostureManagementV2
+    	postureManagementClientErrv2  error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1022,6 +1028,14 @@ func (session clientSession) PostureManagementV1() (*posturemanagementv1.Posture
 		return session.postureManagementClient, session.postureManagementClientErr
 	}
 	return session.postureManagementClient.Clone(), nil
+}
+
+//Security and Compliance center Posture Management v2
+func (session clientSession) PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error) {
+    if session.postureManagementClientErrv2 != nil {
+        return session.postureManagementClientv2, session.postureManagementClientErrv2
+    }
+    return session.postureManagementClientv2.Clone(), nil
 }
 
 // Context Based Restrictions
@@ -2735,6 +2749,39 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	
+	//COMPLIANCE Service v2 version
+	// Construct an "options" struct for creating the service client.
+	var postureManagementClientURLv2 string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		postureManagementClientURLv2, err = posturemanagementv2.GetServiceURLForRegion(c.Region)
+	} else {
+		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		postureManagementClientURLv2 = posturemanagementv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_V2_API_ENDPOINT", c.Region, postureManagementClientURLv2)
+	}
+	postureManagementClientOptionsv2 := &posturemanagementv2.PostureManagementV2Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_V2_API_ENDPOINT"}, postureManagementClientURLv2),
+	}
+
+	// Construct the service client.
+	session.postureManagementClientv2, err = posturemanagementv2.NewPostureManagementV2(postureManagementClientOptionsv2)
+	if err != nil {
+		session.postureManagementClientErrv2 = fmt.Errorf("Error occurred while configuring Posture Management v2 service: %q", err)
+	}
+	if session.postureManagementClientv2 != nil && session.postureManagementClientv2.Service != nil {
+		// Enable retries for API calls
+		session.postureManagementClientv2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
