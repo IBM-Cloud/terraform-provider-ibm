@@ -184,7 +184,7 @@ Review the argument references that you can specify for your resource.
 
 - `image` - (Required, String) The ID of the image to create the template.
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
-- `name` - (Required, String) The name of the instance template.
+- `name` - (String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 
   **NOTE:**
