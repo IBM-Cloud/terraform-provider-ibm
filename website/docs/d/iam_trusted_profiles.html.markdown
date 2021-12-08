@@ -6,14 +6,14 @@ description: |-
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_iam_trusted_profile_list
+# ibm_iam_trusted_profiles
 
 List IAM trusted profile resource. For more information, about list trusted profile, see [List a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#list-profile)
 
 ## Example Usage
 
 ```terraform
-data "ibm_iam_trusted_profile_list" "iam_trusted_profiles" {
+data "ibm_iam_trusted_profiles" "iam_trusted_profiles" {
 	account_id = "account_id"
 }
 ```
@@ -23,6 +23,7 @@ data "ibm_iam_trusted_profile_list" "iam_trusted_profiles" {
 Review the argument reference that you can specify for your data source.
 
 * `account_id` - (Optional, String) Account ID to query for trusted profiles.
+* `name` - (Optional, String) Name of the trusted profile to query.
 
 ## Attribute Reference
 
