@@ -2729,7 +2729,6 @@ func generatePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			}
 
 			if r, ok := r["service_type"]; ok && r != nil {
-				serviceName = r.(string)
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("serviceType"),
