@@ -18,11 +18,11 @@ import (
 
 func resourceIBMSccPostureV2Credentials() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMSccPostureV2CredentialsCreate,
-		ReadContext:     resourceIBMSccPostureV2CredentialsRead,
-		UpdateContext:   resourceIBMSccPostureV2CredentialsUpdate,
-		DeleteContext:   resourceIBMSccPostureV2CredentialsDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMSccPostureV2CredentialsCreate,
+		ReadContext:   resourceIBMSccPostureV2CredentialsRead,
+		UpdateContext: resourceIBMSccPostureV2CredentialsUpdate,
+		DeleteContext: resourceIBMSccPostureV2CredentialsDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"enabled": &schema.Schema{
@@ -31,22 +31,22 @@ func resourceIBMSccPostureV2Credentials() *schema.Resource {
 				Description: "Credentials status enabled/disbaled.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_credentials", "type"),
-				Description: "Credentials type.",
+				Description:  "Credentials type.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_credentials", "name"),
-				Description: "Credentials name.",
+				Description:  "Credentials name.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_credentials", "description"),
-				Description: "Credentials description.",
+				Description:  "Credentials description.",
 			},
 			"display_fields": &schema.Schema{
 				Type:        schema.TypeList,
@@ -86,10 +86,10 @@ func resourceIBMSccPostureV2Credentials() *schema.Resource {
 				},
 			},
 			"purpose": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_credentials", "purpose"),
-				Description: "Purpose for which the credential is created.",
+				Description:  "Purpose for which the credential is created.",
 			},
 		},
 	}
@@ -206,7 +206,6 @@ func resourceIBMSccPostureV2CredentialsRead(context context.Context, d *schema.R
 
 	listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
 	listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-	
 
 	credentialList, response, err := postureManagementClient.ListCredentialsWithContext(context, listCredentialsOptions)
 	if err != nil {
@@ -217,7 +216,7 @@ func resourceIBMSccPostureV2CredentialsRead(context context.Context, d *schema.R
 		log.Printf("[DEBUG] ListCredentialsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListCredentialsWithContext failed %s\n%s", err, response))
 	}
-	log.Printf("credentialList %s ",*(credentialList.Credentials[0].ID))
+	log.Printf("credentialList %s ", *(credentialList.Credentials[0].ID))
 	return nil
 }
 
@@ -250,29 +249,28 @@ func resourceIBMSccPostureV2CredentialsUpdate(context context.Context, d *schema
 	updateCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
 
 	updateCredentialOptions.SetID(d.Id())
-	
-		updateCredentialOptions.SetEnabled(d.Get("enabled").(bool))
-	
-		updateCredentialOptions.SetType(d.Get("type").(string))
-	
-		updateCredentialOptions.SetName(d.Get("name").(string))
-	
-		updateCredentialOptions.SetDescription(d.Get("description").(string))
-	
-		updateCredentialDisplayFieldsModel := &posturemanagementv2.UpdateCredentialDisplayFields{
-				IBMAPIKey: core.StringPtr("sample_api_key"),
-			}
-		//displayFields := resourceIBMSccPostureV2CredentialsMapToUpdateCredentialDisplayFields(d.Get("display_fields.0").(map[string]interface{}))
-		updateCredentialOptions.SetDisplayFields(updateCredentialDisplayFieldsModel)
-		
-		updateCredentialOptions.SetPurpose(d.Get("purpose").(string))
-	
-		_, response, err := postureManagementClient.UpdateCredentialWithContext(context, updateCredentialOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateCredentialWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateCredentialWithContext failed %s\n%s", err, response))
-		}
-	
+
+	updateCredentialOptions.SetEnabled(d.Get("enabled").(bool))
+
+	updateCredentialOptions.SetType(d.Get("type").(string))
+
+	updateCredentialOptions.SetName(d.Get("name").(string))
+
+	updateCredentialOptions.SetDescription(d.Get("description").(string))
+
+	updateCredentialDisplayFieldsModel := &posturemanagementv2.UpdateCredentialDisplayFields{
+		IBMAPIKey: core.StringPtr("sample_api_key"),
+	}
+	//displayFields := resourceIBMSccPostureV2CredentialsMapToUpdateCredentialDisplayFields(d.Get("display_fields.0").(map[string]interface{}))
+	updateCredentialOptions.SetDisplayFields(updateCredentialDisplayFieldsModel)
+
+	updateCredentialOptions.SetPurpose(d.Get("purpose").(string))
+
+	_, response, err := postureManagementClient.UpdateCredentialWithContext(context, updateCredentialOptions)
+	if err != nil {
+		log.Printf("[DEBUG] UpdateCredentialWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("UpdateCredentialWithContext failed %s\n%s", err, response))
+	}
 
 	return resourceIBMSccPostureV2CredentialsRead(context, d, meta)
 }

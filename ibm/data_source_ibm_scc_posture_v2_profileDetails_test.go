@@ -44,6 +44,5 @@ func testAccCheckIBMSccPostureV2ProfileDetailsDataSourceConfigBasic(profileId st
 			id = "%s"
 			profile_type = "4"
 		}
-	`,profileId)
+	`, profileId)
 }
-

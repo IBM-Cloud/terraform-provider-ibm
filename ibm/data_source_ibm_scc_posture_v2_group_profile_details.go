@@ -4,11 +4,11 @@
 package ibm
 
 import (
-	"os"
 	"context"
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -159,13 +159,13 @@ func dataSourceIBMSccPostureV2GroupProfileDetailsRead(context context.Context, d
 
 	getProfileControlsOptions.SetProfileID(d.Get("profile_id").(string))
 	getProfileControlsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-	
+
 	var controlList *posturemanagementv2.ControlList
 	var offset int64
 	finalList := []posturemanagementv2.ControlItem{}
 
 	for {
-		
+
 		result, response, err := postureManagementClient.GetProfileControlsWithContext(context, getProfileControlsOptions)
 		controlList = result
 		if err != nil {
@@ -237,7 +237,6 @@ func dataSourceControlListFirstToMap(firstItem posturemanagementv2.PageLink) (fi
 	return firstMap
 }
 
-
 func dataSourceControlListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceControlListLastToMap(result)
@@ -256,7 +255,6 @@ func dataSourceControlListLastToMap(lastItem posturemanagementv2.PageLink) (last
 	return lastMap
 }
 
-
 func dataSourceControlListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceControlListPreviousToMap(result)
@@ -274,7 +272,6 @@ func dataSourceControlListPreviousToMap(previousItem posturemanagementv2.PageLin
 
 	return previousMap
 }
-
 
 func dataSourceControlListFlattenControls(result []posturemanagementv2.ControlItem) (controls []map[string]interface{}) {
 	for _, controlsItem := range result {
@@ -338,8 +335,6 @@ func dataSourceControlListControlsGoalsToMap(goalsItem posturemanagementv2.GoalI
 	return goalsMap
 }
 
-
-
 func dataSourceControlListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -353,15 +348,15 @@ func dataSourceControlListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

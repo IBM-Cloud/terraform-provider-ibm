@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 	"os"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -411,7 +411,6 @@ func dataSourceScopeListFirstToMap(firstItem posturemanagementv2.PageLink) (firs
 	return firstMap
 }
 
-
 func dataSourceScopeListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScopeListLastToMap(result)
@@ -429,7 +428,6 @@ func dataSourceScopeListLastToMap(lastItem posturemanagementv2.PageLink) (lastMa
 
 	return lastMap
 }
-
 
 func dataSourceScopeListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
@@ -449,7 +447,6 @@ func dataSourceScopeListPreviousToMap(previousItem posturemanagementv2.PageLink)
 	return previousMap
 }
 
-
 func dataSourceScopeListFlattenNext(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScopeListNextToMap(result)
@@ -467,7 +464,6 @@ func dataSourceScopeListNextToMap(nextItem posturemanagementv2.PageLink) (nextMa
 
 	return nextMap
 }
-
 
 func dataSourceScopeListFlattenScopes(result []posturemanagementv2.ScopeItem) (scopes []map[string]interface{}) {
 	for _, scopesItem := range result {
@@ -623,5 +619,3 @@ func dataSourceScopeListScopesCollectorsToMap(collectorsItem posturemanagementv2
 
 	return collectorsMap
 }
-
-

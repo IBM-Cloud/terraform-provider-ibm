@@ -31,6 +31,5 @@ func testAccCheckIBMSccPostureV2ScopeCorrelationDataSourceConfigBasic(correlatio
 		data "ibm_scc_posture_v2_scope_correlation" "scope_correlation" {
 			correlation_id = "%s"
 		}
-	`,correlationId)
+	`, correlationId)
 }
-

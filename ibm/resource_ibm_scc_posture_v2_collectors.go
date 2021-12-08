@@ -17,18 +17,18 @@ import (
 
 func resourceIBMSccPostureV2Collectors() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMSccPostureV2CollectorsCreate,
-		ReadContext:     resourceIBMSccPostureV2CollectorsRead,
-		UpdateContext:   resourceIBMSccPostureV2CollectorsUpdate,
-		DeleteContext:   resourceIBMSccPostureV2CollectorsDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMSccPostureV2CollectorsCreate,
+		ReadContext:   resourceIBMSccPostureV2CollectorsRead,
+		UpdateContext: resourceIBMSccPostureV2CollectorsUpdate,
+		DeleteContext: resourceIBMSccPostureV2CollectorsDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_collectors", "name"),
-				Description: "A unique name for your collector.",
+				Description:  "A unique name for your collector.",
 			},
 			"is_public": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -36,23 +36,23 @@ func resourceIBMSccPostureV2Collectors() *schema.Resource {
 				Description: "Determines whether the collector endpoint is accessible on a public network. If set to `true`, the collector connects to resources in your account over a public network. If set to `false`, the collector connects to resources by using a private IP that is accessible only through the IBM Cloud private network.",
 			},
 			"managed_by": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_collectors", "managed_by"),
-				Description: "Determines whether the collector is an IBM or customer-managed virtual machine. Use `ibm` to allow Security and Compliance Center to create, install, and manage the collector on your behalf. The collector is installed in an OpenShift cluster and approved automatically for use. Use `customer` if you would like to install the collector by using your own virtual machine. For more information, check out the [docs](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-collector).",
+				Description:  "Determines whether the collector is an IBM or customer-managed virtual machine. Use `ibm` to allow Security and Compliance Center to create, install, and manage the collector on your behalf. The collector is installed in an OpenShift cluster and approved automatically for use. Use `customer` if you would like to install the collector by using your own virtual machine. For more information, check out the [docs](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-collector).",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "",
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_collectors", "description"),
-				Description: "A detailed description of the collector.",
+				Description:  "A detailed description of the collector.",
 			},
 			"passphrase": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_collectors", "passphrase"),
-				Description: "To protect the credentials that you add to the service, a passphrase is used to generate a data encryption key. The key is used to securely store your credentials and prevent anyone from accessing them.",
+				Description:  "To protect the credentials that you add to the service, a passphrase is used to generate a data encryption key. The key is used to securely store your credentials and prevent anyone from accessing them.",
 			},
 			"is_ubi_image": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -148,7 +148,6 @@ func resourceIBMSccPostureV2CollectorsRead(context context.Context, d *schema.Re
 	listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
 	listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
 
-
 	collectorList, response, err := postureManagementClient.ListCollectorsWithContext(context, listCollectorsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -158,7 +157,7 @@ func resourceIBMSccPostureV2CollectorsRead(context context.Context, d *schema.Re
 		log.Printf("[DEBUG] ListCollectorsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListCollectorsWithContext failed %s\n%s", err, response))
 	}
-	log.Printf("%s",*(collectorList.Collectors[0].DisplayName))
+	log.Printf("%s", *(collectorList.Collectors[0].DisplayName))
 	return nil
 }
 

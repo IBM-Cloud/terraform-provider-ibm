@@ -34,6 +34,5 @@ func testAccCheckIBMSccPostureV2ScanSummariesDataSourceConfigBasic(report_settin
 		data "ibm_scc_posture_v2_scan_summaries" "scan_summaries" {
 			report_setting_id = "%s"
 		}
-	`,report_setting_id)
+	`, report_setting_id)
 }
-

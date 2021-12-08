@@ -31,6 +31,5 @@ func testAccCheckIBMSccPostureV2GroupProfileDetailsDataSourceConfigBasic(grouppr
 		data "ibm_scc_posture_v2_group_profile_details" "group_profile_details" {
 			profile_id = "%s"
 		}
-	`,groupprofileId)
+	`, groupprofileId)
 }
-

@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -328,7 +328,6 @@ func dataSourceScanListFirstToMap(firstItem posturemanagementv2.PageLink) (first
 	return firstMap
 }
 
-
 func dataSourceScanListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScanListLastToMap(result)
@@ -347,7 +346,6 @@ func dataSourceScanListLastToMap(lastItem posturemanagementv2.PageLink) (lastMap
 	return lastMap
 }
 
-
 func dataSourceScanListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceScanListPreviousToMap(result)
@@ -365,7 +363,6 @@ func dataSourceScanListPreviousToMap(previousItem posturemanagementv2.PageLink) 
 
 	return previousMap
 }
-
 
 func dataSourceScanListFlattenLatestScans(result []posturemanagementv2.ScanItem) (latestScans []map[string]interface{}) {
 	for _, latestScansItem := range result {
@@ -441,7 +438,6 @@ func dataSourceScanListLatestScansProfilesToMap(profilesItem posturemanagementv2
 	return profilesMap
 }
 
-
 func dataSourceScanListLatestScansResultToMap(resultItem posturemanagementv2.ScanResult) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
@@ -479,8 +475,6 @@ func dataSourceScanListLatestScansResultToMap(resultItem posturemanagementv2.Sca
 	return resultMap
 }
 
-
-
 func dataSourceScanListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -494,15 +488,15 @@ func dataSourceScanListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

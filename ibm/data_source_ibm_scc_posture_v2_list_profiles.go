@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -153,7 +153,7 @@ func dataSourceIBMSccPostureV2ListProfilesRead(context context.Context, d *schem
 
 	listProfilesOptions := &posturemanagementv2.ListProfilesOptions{}
 	listProfilesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-	
+
 	var profileList *posturemanagementv2.ProfileList
 	var offset int64
 	finalList := []posturemanagementv2.Profile{}
@@ -233,7 +233,6 @@ func dataSourceProfileListFirstToMap(firstItem posturemanagementv2.PageLink) (fi
 	return firstMap
 }
 
-
 func dataSourceProfileListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceProfileListLastToMap(result)
@@ -252,7 +251,6 @@ func dataSourceProfileListLastToMap(lastItem posturemanagementv2.PageLink) (last
 	return lastMap
 }
 
-
 func dataSourceProfileListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceProfileListPreviousToMap(result)
@@ -270,7 +268,6 @@ func dataSourceProfileListPreviousToMap(previousItem posturemanagementv2.PageLin
 
 	return previousMap
 }
-
 
 func dataSourceProfileListFlattenProfiles(result []posturemanagementv2.Profile) (profiles []map[string]interface{}) {
 	for _, profilesItem := range result {
@@ -326,7 +323,6 @@ func dataSourceProfileListProfilesToMap(profilesItem posturemanagementv2.Profile
 	return profilesMap
 }
 
-
 func dataSourceProfileListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -340,15 +336,15 @@ func dataSourceProfileListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

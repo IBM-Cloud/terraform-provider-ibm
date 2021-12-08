@@ -34,4 +34,3 @@ func testAccCheckIBMSccPostureV2ListProfilesDataSourceConfigBasic() string {
 		}
 	`)
 }
-

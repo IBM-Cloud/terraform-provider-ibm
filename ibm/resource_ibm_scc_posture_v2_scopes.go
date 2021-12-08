@@ -17,24 +17,24 @@ import (
 
 func resourceIBMSccPostureV2Scopes() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMSccPostureV2ScopesCreate,
-		ReadContext:     resourceIBMSccPostureV2ScopesRead,
-		UpdateContext:   resourceIBMSccPostureV2ScopesUpdate,
-		DeleteContext:   resourceIBMSccPostureV2ScopesDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMSccPostureV2ScopesCreate,
+		ReadContext:   resourceIBMSccPostureV2ScopesRead,
+		UpdateContext: resourceIBMSccPostureV2ScopesUpdate,
+		DeleteContext: resourceIBMSccPostureV2ScopesDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_scopes", "name"),
-				Description: "A unique name for your scope.",
+				Description:  "A unique name for your scope.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_scopes", "description"),
-				Description: "A detailed description of the scope.",
+				Description:  "A detailed description of the scope.",
 			},
 			"collector_ids": &schema.Schema{
 				Type:        schema.TypeList,
@@ -43,16 +43,16 @@ func resourceIBMSccPostureV2Scopes() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"credential_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_scopes", "credential_id"),
-				Description: "The unique identifier of the credential.",
+				Description:  "The unique identifier of the credential.",
 			},
 			"credential_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: InvokeValidator("ibm_scc_posture_v2_scopes", "credential_type"),
-				Description: "The environment that the scope is targeted to.",
+				Description:  "The environment that the scope is targeted to.",
 			},
 		},
 	}
@@ -112,7 +112,7 @@ func resourceIBMSccPostureV2ScopesCreate(context context.Context, d *schema.Reso
 
 	createScopeOptions.SetName(d.Get("name").(string))
 	createScopeOptions.SetDescription(d.Get("description").(string))
-	createScopeOptions.SetCollectorIds([]string{"4188"})//[]string{
+	createScopeOptions.SetCollectorIds([]string{"4188"}) //[]string{
 	createScopeOptions.SetCredentialID(d.Get("credential_id").(string))
 	createScopeOptions.SetCredentialType(d.Get("credential_type").(string))
 
@@ -146,7 +146,7 @@ func resourceIBMSccPostureV2ScopesRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("ListScopesWithContext failed %s\n%s", err, response))
 	}
 
-	log.Printf("scopeList ID %s",*(scopeList.Scopes[0].ID))
+	log.Printf("scopeList ID %s", *(scopeList.Scopes[0].ID))
 	return nil
 }
 
@@ -158,12 +158,11 @@ func resourceIBMSccPostureV2ScopesUpdate(context context.Context, d *schema.Reso
 
 	updateScopeDetailsOptions := &posturemanagementv2.UpdateScopeDetailsOptions{}
 	updateScopeDetailsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-	
 
 	hasChange := false
 
 	updateScopeDetailsOptions.SetID(d.Id())
-	
+
 	if d.HasChange("name") {
 		updateScopeDetailsOptions.SetName(d.Get("name").(string))
 		hasChange = true
@@ -172,7 +171,6 @@ func resourceIBMSccPostureV2ScopesUpdate(context context.Context, d *schema.Reso
 		updateScopeDetailsOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
 	}
-	
 
 	if hasChange {
 		_, response, err := postureManagementClient.UpdateScopeDetailsWithContext(context, updateScopeDetailsOptions)

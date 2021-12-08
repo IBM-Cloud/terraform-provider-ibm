@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -381,7 +381,6 @@ func dataSourceSummaryListFirstToMap(firstItem posturemanagementv2.PageLink) (fi
 	return firstMap
 }
 
-
 func dataSourceSummaryListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceSummaryListLastToMap(result)
@@ -400,7 +399,6 @@ func dataSourceSummaryListLastToMap(lastItem posturemanagementv2.PageLink) (last
 	return lastMap
 }
 
-
 func dataSourceSummaryListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceSummaryListPreviousToMap(result)
@@ -418,7 +416,6 @@ func dataSourceSummaryListPreviousToMap(previousItem posturemanagementv2.PageLin
 
 	return previousMap
 }
-
 
 func dataSourceSummaryListFlattenSummaries(result []posturemanagementv2.SummaryItem) (summaries []map[string]interface{}) {
 	for _, summariesItem := range result {
@@ -532,8 +529,6 @@ func dataSourceSummaryListProfilesValidationResultToMap(validationResultItem pos
 	return validationResultMap
 }
 
-
-
 func dataSourceSummaryListSummariesGroupProfilesToMap(groupProfilesItem posturemanagementv2.ProfileResult) (groupProfilesMap map[string]interface{}) {
 	groupProfilesMap = map[string]interface{}{}
 
@@ -593,9 +588,6 @@ func dataSourceSummaryListGroupProfilesValidationResultToMap(validationResultIte
 	return validationResultMap
 }
 
-
-
-
 func dataSourceSummaryListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
@@ -609,15 +601,15 @@ func dataSourceSummaryListGetNext(next interface{}) int64 {
 	q := u.Query()
 	var page string
 
-	if (q.Get("start") != "") {
+	if q.Get("start") != "" {
 		page = q.Get("start")
-	} else if (q.Get("offset") != "") {
+	} else if q.Get("offset") != "" {
 		page = q.Get("offset")
 	}
 
 	convertedVal, err := strconv.ParseInt(page, 10, 64)
 	if err != nil {
-		return 0;
+		return 0
 	}
 	return convertedVal
 }

@@ -337,8 +337,6 @@ func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagem
 	return resourceResultMap
 }
 
-
-
 func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem posturemanagementv2.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
 	resourceStatisticsMap = map[string]interface{}{}
 
@@ -357,5 +355,3 @@ func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem pos
 
 	return resourceStatisticsMap
 }
-
-

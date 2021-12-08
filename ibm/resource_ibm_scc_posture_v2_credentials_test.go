@@ -5,8 +5,8 @@ package ibm
 
 import (
 	"fmt"
-	"testing"
 	"os"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -56,8 +56,8 @@ func TestAccIBMSccPostureV2CredentialsBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_scc_posture_v2_credentials.credentials",
-				ImportState:       true,
+				ResourceName: "ibm_scc_posture_v2_credentials.credentials",
+				ImportState:  true,
 				//ImportStateVerify: true,
 			},
 		},
@@ -100,7 +100,6 @@ func testAccCheckIBMSccPostureV2CredentialsExists(n string, obj posturemanagemen
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
 		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-
 
 		newCredential, _, err := postureManagementClient.ListCredentials(listCredentialsOptions)
 		if err != nil {

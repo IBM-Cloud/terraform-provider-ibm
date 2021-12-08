@@ -5,9 +5,9 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -30,7 +30,7 @@ func TestAccIBMSccPostureV2ScopesBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMSccPostureV2ScopesDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureV2ScopesConfigBasic(name, description, scc_posture_v2_credential_id_scope, credentialType,scc_posture_v2_collector_id_scope),
+				Config: testAccCheckIBMSccPostureV2ScopesConfigBasic(name, description, scc_posture_v2_credential_id_scope, credentialType, scc_posture_v2_collector_id_scope),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureV2ScopesExists("ibm_scc_posture_v2_scopes.scopes", conf),
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "name", name),
@@ -40,7 +40,7 @@ func TestAccIBMSccPostureV2ScopesBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureV2ScopesConfigBasic(nameUpdate, descriptionUpdate, scc_posture_v2_credential_id_scope_update, credentialTypeUpdate,scc_posture_v2_collector_id_scope_update),
+				Config: testAccCheckIBMSccPostureV2ScopesConfigBasic(nameUpdate, descriptionUpdate, scc_posture_v2_credential_id_scope_update, credentialTypeUpdate, scc_posture_v2_collector_id_scope_update),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "description", descriptionUpdate),
@@ -67,7 +67,7 @@ func TestAccIBMScopesAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMSccPostureV2ScopesDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureV2ScopesConfig(name, description, scc_posture_v2_credential_id_scope, credentialType,scc_posture_v2_collector_id_scope),
+				Config: testAccCheckIBMSccPostureV2ScopesConfig(name, description, scc_posture_v2_credential_id_scope, credentialType, scc_posture_v2_collector_id_scope),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureV2ScopesExists("ibm_scc_posture_v2_scopes.scopes", conf),
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "name", name),
@@ -77,7 +77,7 @@ func TestAccIBMScopesAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureV2ScopesConfig(nameUpdate, descriptionUpdate, scc_posture_v2_credential_id_scope_update, credentialTypeUpdate,scc_posture_v2_collector_id_scope_update),
+				Config: testAccCheckIBMSccPostureV2ScopesConfig(nameUpdate, descriptionUpdate, scc_posture_v2_credential_id_scope_update, credentialTypeUpdate, scc_posture_v2_collector_id_scope_update),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_posture_v2_scopes.scopes", "description", descriptionUpdate),
@@ -104,7 +104,7 @@ func testAccCheckIBMSccPostureV2ScopesConfigBasic(name string, description strin
 			credential_type = "%s"
 			collector_ids = %q
 		}
-	`, name, description, credentialID, credentialType,collectorID)
+	`, name, description, credentialID, credentialType, collectorID)
 }
 
 func testAccCheckIBMSccPostureV2ScopesConfig(name string, description string, credentialID string, credentialType string, collectorID []string) string {
@@ -117,7 +117,7 @@ func testAccCheckIBMSccPostureV2ScopesConfig(name string, description string, cr
 			credential_type = "%s"
 			collector_ids = %q
 		}
-	`, name, description, credentialID, credentialType,collectorID)
+	`, name, description, credentialID, credentialType, collectorID)
 }
 
 func testAccCheckIBMSccPostureV2ScopesExists(n string, obj posturemanagementv2.ScopeItem) resource.TestCheckFunc {
@@ -158,7 +158,6 @@ func testAccCheckIBMSccPostureV2ScopesDestroy(s *terraform.State) error {
 
 		listScopesOptions := &posturemanagementv2.ListScopesOptions{}
 		listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
-
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListScopes(listScopesOptions)

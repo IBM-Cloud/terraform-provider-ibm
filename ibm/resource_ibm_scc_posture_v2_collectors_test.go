@@ -5,9 +5,9 @@ package ibm
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -170,7 +170,7 @@ func testAccCheckIBMSccPostureV2CollectorsDestroy(s *terraform.State) error {
 		_, response, err := postureManagementClient.ListCollectors(listCollectorsOptions)
 
 		if err == nil {
-			return err//fmt.Errorf("collectors still exists: %s", rs.Primary.ID)
+			return err //fmt.Errorf("collectors still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for collectors (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

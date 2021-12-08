@@ -129,7 +129,7 @@ func dataSourceIBMSccPostureV2ProfileDetailsRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("Error setting modified_by: %s", err))
 	}
 	if err = d.Set("reason_for_delete", profile.ReasonForDelete); err != nil {
-		return nil//return diag.FromErr(fmt.Errorf("Error setting reason_for_delete: %s", err))
+		return nil //return diag.FromErr(fmt.Errorf("Error setting reason_for_delete: %s", err))
 	}
 	if err = d.Set("base_profile", profile.BaseProfile); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting base_profile: %s", err))

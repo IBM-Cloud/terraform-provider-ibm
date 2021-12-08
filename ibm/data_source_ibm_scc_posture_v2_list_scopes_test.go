@@ -37,4 +37,3 @@ func testAccCheckIBMSccPostureV2ListScopesDataSourceConfigBasic() string {
 		}
 	`)
 }
-
