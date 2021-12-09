@@ -439,7 +439,9 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("endpoint_type", "public")
 	}
 	d.Set("type", crnData[4])
-	d.Set("force_delete", d.Get("force_delete").(bool))
+	if d.Get("force_delete") != nil {
+		d.Set("force_delete", d.Get("force_delete").(bool))
+	}
 	d.Set("key_ring_id", key.KeyRingID)
 	if key.Expiration != nil {
 		expiration := key.Expiration
