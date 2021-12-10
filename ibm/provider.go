@@ -517,16 +517,16 @@ func Provider() *schema.Provider {
 			"ibm_en_topics":        dataSourceIBMEnTopics(),
 			"ibm_en_subscription":  dataSourceIBMEnSubscription(),
 			"ibm_en_subscriptions": dataSourceIBMEnSubscriptions(),
-			
+
 			// Compliance Posture Management v2
-			"ibm_scc_posture_v2_list_scopes": dataSourceIBMSccPostureV2ListScopes(),
-    			"ibm_scc_posture_v2_profileDetails": dataSourceIBMSccPostureV2ProfileDetails(),
-    			"ibm_scc_posture_v2_list_profiles": dataSourceIBMSccPostureV2ListProfiles(),
-    			"ibm_scc_posture_v2_list_latest_scans": dataSourceIBMSccPostureV2ListLatestScans(),
-    			"ibm_scc_posture_v2_scans_summary": dataSourceIBMSccPostureV2ScansSummary(),
-    			"ibm_scc_posture_v2_scan_summaries": dataSourceIBMSccPostureV2ScanSummaries(),
-    			"ibm_scc_posture_v2_group_profile_details": dataSourceIBMSccPostureV2GroupProfileDetails(),
-    			"ibm_scc_posture_v2_scope_correlation": dataSourceIBMSccPostureV2ScopeCorrelation(),
+			"ibm_scc_posture_v2_list_scopes":           dataSourceIBMSccPostureV2ListScopes(),
+			"ibm_scc_posture_v2_profileDetails":        dataSourceIBMSccPostureV2ProfileDetails(),
+			"ibm_scc_posture_v2_list_profiles":         dataSourceIBMSccPostureV2ListProfiles(),
+			"ibm_scc_posture_v2_list_latest_scans":     dataSourceIBMSccPostureV2ListLatestScans(),
+			"ibm_scc_posture_v2_scans_summary":         dataSourceIBMSccPostureV2ScansSummary(),
+			"ibm_scc_posture_v2_scan_summaries":        dataSourceIBMSccPostureV2ScanSummaries(),
+			"ibm_scc_posture_v2_group_profile_details": dataSourceIBMSccPostureV2GroupProfileDetails(),
+			"ibm_scc_posture_v2_scope_correlation":     dataSourceIBMSccPostureV2ScopeCorrelation(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -839,11 +839,11 @@ func Provider() *schema.Provider {
 			"ibm_en_destination":  resourceIBMEnDestination(),
 			"ibm_en_topic":        resourceIBMEnTopic(),
 			"ibm_en_subscription": resourceIBMEnSubscription(),
-			
+
 			// Added for Compliance Posture Management v2
-			"ibm_scc_posture_v2_collectors": resourceIBMSccPostureV2Collectors(),
-    			"ibm_scc_posture_v2_scopes": resourceIBMSccPostureV2Scopes(),
-    			"ibm_scc_posture_v2_credentials": resourceIBMSccPostureV2Credentials(),
+			"ibm_scc_posture_v2_collectors":  resourceIBMSccPostureV2Collectors(),
+			"ibm_scc_posture_v2_scopes":      resourceIBMSccPostureV2Scopes(),
+			"ibm_scc_posture_v2_credentials": resourceIBMSccPostureV2Credentials(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -964,8 +964,8 @@ func Validator() ValidatorDict {
 				"ibm_cbr_zone":                            resourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            resourceIBMCbrRuleValidator(),
 				"ibm_scc_posture_v2_collectors":           resourceIBMSccPostureV2CollectorsValidator(),
-    				"ibm_scc_posture_v2_scopes":               resourceIBMSccPostureV2ScopesValidator(),
-    				"ibm_scc_posture_v2_credentials":          resourceIBMSccPostureV2CredentialsValidator(),
+				"ibm_scc_posture_v2_scopes":               resourceIBMSccPostureV2ScopesValidator(),
+				"ibm_scc_posture_v2_credentials":          resourceIBMSccPostureV2CredentialsValidator(),
 
 				// Added for Event Notifications
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
