@@ -704,20 +704,21 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 }
 
 func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
-
 	if sess.kmsErr == nil {
 		var clientConfig *kp.ClientConfig
 		if sess.kmsAPI.Config.APIKey != "" {
 			clientConfig = &kp.ClientConfig{
-				BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
-				APIKey:  sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
-				Verbose: kp.VerboseFailOnly,
+				BaseURL:  envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				APIKey:   sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
+				Verbose:  kp.VerboseFailOnly,
+				TokenURL: sess.kmsAPI.Config.TokenURL,
 			}
 		} else {
 			clientConfig = &kp.ClientConfig{
 				BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
 				Authorization: sess.session.BluemixSession.Config.IAMAccessToken, //pragma: allowlist secret
 				Verbose:       kp.VerboseFailOnly,
+				TokenURL:      sess.kmsAPI.Config.TokenURL,
 			}
 		}
 
@@ -1265,6 +1266,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
+	iamURL := iamidentity.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+	}
+
 	// KEY MANAGEMENT Service
 	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
@@ -1279,7 +1292,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
-			Verbose: kp.VerboseFailOnly,
+			Verbose:  kp.VerboseFailOnly,
+			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 
 	} else {
@@ -1287,7 +1301,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			Authorization: sess.BluemixSession.Config.IAMAccessToken,
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
-			Verbose: kp.VerboseFailOnly,
+			Verbose:  kp.VerboseFailOnly,
+			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	}
 	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
@@ -1299,17 +1314,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var authenticator core.Authenticator
 
 	if c.BluemixAPIKey != "" {
-		iamURL := iamidentity.DefaultServiceURL
-		if c.Visibility == "private" || c.Visibility == "public-and-private" {
-			if c.Region == "us-south" || c.Region == "us-east" {
-				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
-			} else {
-				iamURL = contructEndpoint("private.iam", cloudEndpoint)
-			}
-		}
-		if fileMap != nil && c.Visibility != "public-and-private" {
-			iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
-		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
 			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
@@ -2410,20 +2414,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// IAM IDENTITY Service
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
-	iamURL := iamidentity.DefaultServiceURL
+	iamIdenityURL := iamidentity.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamIdenityURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamIdenityURL = contructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+		iamIdenityURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamIdenityURL)
 	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamIdenityURL),
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
