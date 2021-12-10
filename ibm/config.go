@@ -104,6 +104,8 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+
+	satcon "github.com/IBM/satcon-client-go/client"
 )
 
 // RetryAPIDelay - retry api delay
@@ -265,6 +267,7 @@ type ClientSession interface {
 	SchematicsV1() (*schematicsv1.SchematicsV1, error)
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
+	SatellitConfigClientSession() (*satcon.SatCon, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
@@ -527,6 +530,10 @@ type clientSession struct {
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
 	satelliteLinkClientErr error
+
+	//Satellite Config service
+	satelliteConfigClient    *satcon.SatCon
+	satelliteConfigClientErr error
 
 	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
 	esSchemaRegistryErr    error
@@ -972,6 +979,11 @@ func (session clientSession) SatellitLinkClientSession() (*satellitelinkv1.Satel
 	return session.satelliteLinkClient, session.satelliteLinkClientErr
 }
 
+// Satellite Config
+func (session clientSession) SatellitConfigClientSession() (*satcon.SatCon, error) {
+	return session.satelliteConfigClient, session.satelliteConfigClientErr
+}
+
 var cloudEndpoint = "cloud.ibm.com"
 
 // Session to the Satellite client
@@ -1113,6 +1125,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
+		session.satelliteConfigClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
 		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 
@@ -2693,6 +2706,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteLinkClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	satConHttpClient := http.NewHTTPClient(sess.BluemixSession.Config)
+	satConEndpoint := contructEndpoint("config.satellite", fmt.Sprintf("%s/graphql", cloudEndpoint))
+
+	satConClient, err := satcon.New(
+		envFallBack([]string{"IBMCLOUD_SATELLITE_CONFIG_API_ENDPOINT"}, satConEndpoint),
+		satConHttpClient,
+		authenticator)
+	if err == nil {
+		session.satelliteConfigClient = &satConClient
+	} else {
+		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Config service: %q", err)
 	}
 
 	esSchemaRegistryV1Options := &schemaregistryv1.SchemaregistryV1Options{

@@ -479,6 +479,9 @@ func Provider() *schema.Provider {
 			"ibm_satellite_link":                dataSourceIbmSatelliteLink(),
 			"ibm_satellite_endpoint":            dataSourceIbmSatelliteEndpoint(),
 
+			//Added for Satellite config
+			"ibm_satellite_config_clustergroup": dataSourceIBMSatconClusterGroup(),
+
 			// Catalog related resources
 			"ibm_cm_catalog":           dataSourceIBMCmCatalog(),
 			"ibm_cm_offering":          dataSourceIBMCmOffering(),
@@ -814,6 +817,9 @@ func Provider() *schema.Provider {
 			"ibm_satellite_link":                resourceIbmSatelliteLink(),
 			"ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
 			"ibm_satellite_location_nlb_dns":    resourceIbmSatelliteLocationNlbDns(),
+
+			//sattelite config resources
+			"ibm_satellite_config_clustergroup": resourceIBMSatconClusterGroup(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": resourceIBMResourceTag(),

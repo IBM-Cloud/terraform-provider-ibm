@@ -21,6 +21,7 @@ require (
 	github.com/IBM/networking-go-sdk v0.23.1
 	github.com/IBM/platform-services-go-sdk v0.22.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
+	github.com/IBM/satcon-client-go v0.2.0
 	github.com/IBM/scc-go-sdk v1.3.3
 	github.com/IBM/schematics-go-sdk v0.1.3
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
