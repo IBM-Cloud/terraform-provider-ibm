@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_iam_trusted_profiles_claim_rules"
+page_title: "IBM : ibm_iam_trusted_profile_claim_rules"
 description: |-
   Get information about iam_trusted_profiles_claim_rules
 subcategory: "Identity & Access Management (IAM)"
 ---
 
-# ibm_iam_trusted_profiles_claim_rules
+# ibm_iam_trusted_profile_claim_rules
 
 Retrieve list of IAM trusted profile claim rule as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about trusted profile claim rules, see [list claim rule for a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#list-claim-rule)
 
 ## Example Usage
 
 ```terraform
-data "ibm_iam_trusted_profiles_claim_rules" "iam_trusted_profiles_claim_rules" {
+data "ibm_iam_trusted_profile_claim_rules" "iam_trusted_profiles_claim_rules" {
 	profile_id = "profile_id"
 }
 ```
