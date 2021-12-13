@@ -30,11 +30,11 @@ resource "ibm_kms_key_alias" "key_alias" {
     alias  = "alias"
     key_id = "ibm_kms_key.test.key_id"
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = ibm_kms_key.test.id
 }
 ```
