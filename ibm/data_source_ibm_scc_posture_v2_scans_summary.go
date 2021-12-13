@@ -228,7 +228,7 @@ func dataSourceIBMSccPostureV2ScansSummaryRead(context context.Context, d *schem
 	}
 
 	if summary.Controls != nil {
-		err = d.Set("controls", dataSourceSummaryFlattenControls(summary.Controls))
+		err = d.Set("controls", dataSourceSummaryFlattenControlsv2(summary.Controls))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting controls %s", err))
 		}
@@ -237,15 +237,15 @@ func dataSourceIBMSccPostureV2ScansSummaryRead(context context.Context, d *schem
 	return nil
 }
 
-func dataSourceSummaryFlattenControls(result []posturemanagementv2.Control) (controls []map[string]interface{}) {
+func dataSourceSummaryFlattenControlsv2(result []posturemanagementv2.Control) (controls []map[string]interface{}) {
 	for _, controlsItem := range result {
-		controls = append(controls, dataSourceSummaryControlsToMap(controlsItem))
+		controls = append(controls, dataSourceSummaryControlsToMapv2(controlsItem))
 	}
 
 	return controls
 }
 
-func dataSourceSummaryControlsToMap(controlsItem posturemanagementv2.Control) (controlsMap map[string]interface{}) {
+func dataSourceSummaryControlsToMapv2(controlsItem posturemanagementv2.Control) (controlsMap map[string]interface{}) {
 	controlsMap = map[string]interface{}{}
 
 	if controlsItem.ID != nil {
@@ -263,13 +263,13 @@ func dataSourceSummaryControlsToMap(controlsItem posturemanagementv2.Control) (c
 	if controlsItem.Goals != nil {
 		goalsList := []map[string]interface{}{}
 		for _, goalsItem := range controlsItem.Goals {
-			goalsList = append(goalsList, dataSourceSummaryControlsGoalsToMap(goalsItem))
+			goalsList = append(goalsList, dataSourceSummaryControlsGoalsToMapv2(goalsItem))
 		}
 		controlsMap["goals"] = goalsList
 	}
 	if controlsItem.ResourceStatistics != nil {
 		resourceStatisticsList := []map[string]interface{}{}
-		resourceStatisticsMap := dataSourceSummaryControlsResourceStatisticsToMap(*controlsItem.ResourceStatistics)
+		resourceStatisticsMap := dataSourceSummaryControlsResourceStatisticsToMapv2(*controlsItem.ResourceStatistics)
 		resourceStatisticsList = append(resourceStatisticsList, resourceStatisticsMap)
 		controlsMap["resource_statistics"] = resourceStatisticsList
 	}
@@ -277,7 +277,7 @@ func dataSourceSummaryControlsToMap(controlsItem posturemanagementv2.Control) (c
 	return controlsMap
 }
 
-func dataSourceSummaryControlsGoalsToMap(goalsItem posturemanagementv2.Goal) (goalsMap map[string]interface{}) {
+func dataSourceSummaryControlsGoalsToMapv2(goalsItem posturemanagementv2.Goal) (goalsMap map[string]interface{}) {
 	goalsMap = map[string]interface{}{}
 
 	if goalsItem.Description != nil {
@@ -301,7 +301,7 @@ func dataSourceSummaryControlsGoalsToMap(goalsItem posturemanagementv2.Goal) (go
 	if goalsItem.ResourceResult != nil {
 		resourceResultList := []map[string]interface{}{}
 		for _, resourceResultItem := range goalsItem.ResourceResult {
-			resourceResultList = append(resourceResultList, dataSourceSummaryGoalsResourceResultToMap(resourceResultItem))
+			resourceResultList = append(resourceResultList, dataSourceSummaryGoalsResourceResultToMapv2(resourceResultItem))
 		}
 		goalsMap["resource_result"] = resourceResultList
 	}
@@ -309,7 +309,7 @@ func dataSourceSummaryControlsGoalsToMap(goalsItem posturemanagementv2.Goal) (go
 	return goalsMap
 }
 
-func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagementv2.ResourceResult) (resourceResultMap map[string]interface{}) {
+func dataSourceSummaryGoalsResourceResultToMapv2(resourceResultItem posturemanagementv2.ResourceResult) (resourceResultMap map[string]interface{}) {
 	resourceResultMap = map[string]interface{}{}
 
 	if resourceResultItem.Name != nil {
@@ -337,7 +337,7 @@ func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagem
 	return resourceResultMap
 }
 
-func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem posturemanagementv2.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
+func dataSourceSummaryControlsResourceStatisticsToMapv2(resourceStatisticsItem posturemanagementv2.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
 	resourceStatisticsMap = map[string]interface{}{}
 
 	if resourceStatisticsItem.PassCount != nil {
