@@ -4,6 +4,9 @@
 package ibm
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -15,7 +18,7 @@ import (
 func dataSourceIBMPICloudInstance() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPICloudInstanceRead,
+		ReadContext: dataSourceIBMPICloudInstanceRead,
 		Schema: map[string]*schema.Schema{
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
@@ -24,13 +27,8 @@ func dataSourceIBMPICloudInstance() *schema.Resource {
 			},
 
 			// Start of Computed Attributes
-
 			"enabled": {
 				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"creation_date": {
-				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"tenant_id": {
@@ -41,7 +39,6 @@ func dataSourceIBMPICloudInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"capabilities": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -103,20 +100,18 @@ func dataSourceIBMPICloudInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICloudInstanceRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	cloud_instance := instance.NewIBMPICloudInstanceClient(sess, powerinstanceid)
-	cloud_instance_data, err := cloud_instance.Get(powerinstanceid)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	cloud_instance := instance.NewIBMPICloudInstanceClient(ctx, sess, cloudInstanceID)
+	cloud_instance_data, err := cloud_instance.Get(cloudInstanceID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*cloud_instance_data.CloudInstanceID)

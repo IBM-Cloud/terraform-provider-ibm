@@ -489,7 +489,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
 	// Check if cloud instance is capable of changing virtual cores
-	cloudInstanceClient := st.NewIBMPICloudInstanceClient(sess, cloudInstanceID)
+	cloudInstanceClient := st.NewIBMPICloudInstanceClient(ctx, sess, cloudInstanceID)
 	cloudInstance, err := cloudInstanceClient.Get(cloudInstanceID)
 	if err != nil {
 		return diag.FromErr(err)

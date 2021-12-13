@@ -50,8 +50,9 @@ resource "ibm_pi_instance" "test-instance" {
 
 The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - The creation of the instance is considered failed if no response is received for 60 minutes. 
-- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes. 
+- **create** - The creation of the instance is considered failed if no response is received for 120 minutes.
+- **Update** The updation of the instance is considered failed if no response is received for 60 minutes.
+- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes.
 
 
 ## Argument reference
