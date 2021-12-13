@@ -264,7 +264,7 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 	_, err = waitForLocationToReady(*instance.ID, d, meta)
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for location (%s) to reach ready state: %s", *instance.ID, err)
+			"Error waiting for location (%s) to reach action required state: %s", *instance.ID, err)
 	}
 
 	return resourceIBMSatelliteLocationRead(d, meta)
