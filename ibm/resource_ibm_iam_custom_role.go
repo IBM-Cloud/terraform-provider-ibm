@@ -207,7 +207,7 @@ func resourceIBMIAMCustomRoleUpdate(d *schema.ResourceData, meta interface{}) er
 	updatedActions := expandStringList(d.Get(iamCRActions).([]interface{}))
 	updatedDisplayName := d.Get(iamCRDisplayName).(string)
 
-	if d.HasChange("display_name") || d.HasChange("desciption") || d.HasChange("actions") {
+	if d.HasChange("display_name") || d.HasChange("description") || d.HasChange("actions") {
 		roleGetOptions := &iampolicymanagementv1.GetRoleOptions{
 			RoleID: &roleID,
 		}
