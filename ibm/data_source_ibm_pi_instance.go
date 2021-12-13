@@ -153,9 +153,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	powerC := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
+	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
 
 	if err != nil {

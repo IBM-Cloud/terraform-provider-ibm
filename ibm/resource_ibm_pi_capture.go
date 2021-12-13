@@ -130,8 +130,8 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 
 	// If this is an image catalog then we need to check what the status is
 
-	imageClient := st.NewIBMPIImageClient(sess, powerinstanceid)
-	imagedata, err := imageClient.Get(d.Get(helpers.PIInstanceCaptureName).(string), powerinstanceid)
+	imageClient := st.NewIBMPIImageClient(context.Background(), sess, powerinstanceid)
+	imagedata, err := imageClient.Get(d.Get(helpers.PIInstanceCaptureName).(string))
 
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
 
 	name := ""
 	if d.HasChange(helpers.PIVolumeAttachName) {
@@ -168,26 +168,26 @@ func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error 
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
 
-	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid, postTimeOut)
+	volrequest, err := client.UpdateVolume(d.Id(), &models.UpdateVolume{Name: &name, Size: size, Shareable: &shareable})
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAvailable(context.Background(), client, *volrequest.VolumeID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMPIVolumeRead(d, meta)
+	return resourceIBMPICaptureRead(d, meta)
 }
 
 func resourceIBMPICaptureDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
 
-	err := client.Delete(d.Id(), powerinstanceid, deleteTimeOut)
+	err := client.DeleteVolume(d.Id())
 	if err != nil {
 		return err
 	}

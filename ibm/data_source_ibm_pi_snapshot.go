@@ -91,9 +91,9 @@ func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	powerinstancename := d.Get(helpers.PIInstanceName).(string)
-	snapshot := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
+	snapshot := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.GetSnapShotVM(powerinstancename)
 
 	if err != nil {

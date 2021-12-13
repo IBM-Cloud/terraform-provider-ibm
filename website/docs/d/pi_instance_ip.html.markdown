@@ -44,8 +44,9 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `external_ip` - (String) The external IP of the network that is attached to this instance.
-- `ip` - (String) The IP address that is attached to this instance from the subnet.
 - `id` - (String) The unique identifier of the network.
+- `ip` - (String) The IP address that is attached to this instance from the subnet.
 - `ipoctet` - (String) The IP octet of the network that is attached to this instance.
 - `macaddress` - (String) The MAC address of the network that is attached to this instance.
+- `network_id` - (String) ID of the network.
 - `type` - (String) The type of the network that is attached to this instance.

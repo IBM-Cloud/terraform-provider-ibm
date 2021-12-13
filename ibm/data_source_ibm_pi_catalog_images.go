@@ -4,8 +4,10 @@
 package ibm
 
 import (
+	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -20,7 +22,7 @@ Datasource to get the list of images that are available when a power instance is
 func dataSourceIBMPICatalogImages() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPICatalogImagesRead,
+		ReadContext: dataSourceIBMPICatalogImagesRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PICloudInstanceId: {
@@ -112,14 +114,13 @@ func dataSourceIBMPICatalogImages() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	includeSAP := false
 	if s, ok := d.GetOk("sap"); ok {
 		includeSAP = s.(bool)
@@ -128,11 +129,12 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 	if v, ok := d.GetOk("vtl"); ok {
 		includeVTL = v.(bool)
 	}
-	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	stockImages, err := imageC.GetAllStockImages(powerinstanceid, includeSAP, includeVTL)
+	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	stockImages, err := imageC.GetAllStockImages(includeSAP, includeVTL)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+
 	images := make([]map[string]interface{}, 0)
 	for _, i := range stockImages.Images {
 		image := make(map[string]interface{})
@@ -187,7 +189,6 @@ func dataSourceIBMPICatalogImagesRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.SetId(time.Now().UTC().String())
 	d.Set("images", images)
-	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 	return nil
 
 }

@@ -49,6 +49,7 @@ func testAccCheckIBMPIInstanceConfig(name string) string {
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
 		pi_health_status      = "WARNING"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}

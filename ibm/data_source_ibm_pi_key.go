@@ -51,9 +51,9 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, powerinstanceid)
+	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string))
 	if err != nil {
 		return diag.FromErr(err)

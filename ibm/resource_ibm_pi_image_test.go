@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -36,7 +37,6 @@ func TestAccIBMPIImagebasic(t *testing.T) {
 }
 
 func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
-
 	sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -45,13 +45,12 @@ func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_image" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, imageID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		imageC := st.NewIBMPIImageClient(sess, powerinstanceid)
-		_, err = imageC.Get(parts[1], powerinstanceid)
+		imageC := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
+		_, err = imageC.Get(imageID)
 		if err == nil {
 			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
 		}
@@ -76,20 +75,18 @@ func testAccCheckIBMPIImageExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, imageID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPIImageClient(sess, powerinstanceid)
+		client := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 
-		_, err = client.Get(parts[1], powerinstanceid)
+		_, err = client.Get(imageID)
 		if err != nil {
 			return err
 		}
 
 		return nil
-
 	}
 }
 
@@ -97,7 +94,7 @@ func testAccCheckIBMPIImageConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_image" "power_image" {
 		pi_image_name       = "%s"
-		pi_image_id         = "cfc02954-8f6f-4e6b-96ae-40b24c90bd54"
+		pi_image_id         = "IBMi-74-01-001"
 		pi_cloud_instance_id = "%s"
 	  }
 	`, name, pi_cloud_instance_id)

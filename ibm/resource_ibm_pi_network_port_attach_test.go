@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -45,9 +46,14 @@ func testAccCheckIBMPINetworkPortAttachDestroy(s *terraform.State) error {
 			continue
 		}
 		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-		_, err = networkC.GetPort(parts[2], parts[1], powerinstanceid, getTimeOut)
+		if err != nil {
+			return err
+		}
+		cloudInstanceID := parts[0]
+		networkID := parts[1]
+		portID := parts[2]
+		networkC := st.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
+		_, err = networkC.GetPort(networkID, portID)
 		if err == nil {
 			return fmt.Errorf("PI Network Port still exists: %s", rs.Primary.ID)
 		}
@@ -76,10 +82,12 @@ func testAccCheckIBMPINetworkPortAttachExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPINetworkClient(sess, powerinstanceid)
+		cloudInstanceID := parts[0]
+		networkID := parts[1]
+		portID := parts[2]
+		client := st.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
 
-		network, err := client.GetPort(parts[2], powerinstanceid, parts[1], getTimeOut)
+		network, err := client.GetPort(networkID, portID)
 		if err != nil {
 			return err
 		}

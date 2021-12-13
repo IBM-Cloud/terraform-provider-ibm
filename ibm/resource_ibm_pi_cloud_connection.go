@@ -205,11 +205,12 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 		log.Printf("[DEBUG] create cloud connection failed %v", err)
 		return diag.FromErr(err)
 	}
-	var cloudConnectionID string
+
 	if cloudConnection != nil {
-		cloudConnectionID = *cloudConnection.CloudConnectionID
+		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
 	} else if cloudConnectionJob != nil {
-		cloudConnectionID = *cloudConnectionJob.CloudConnectionID
+		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
+
 		jobID := *cloudConnectionJob.JobRef.ID
 
 		client := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
@@ -218,8 +219,6 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 	}
-
-	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, cloudConnectionID))
 
 	return resourceIBMPICloudConnectionRead(ctx, d, meta)
 }
