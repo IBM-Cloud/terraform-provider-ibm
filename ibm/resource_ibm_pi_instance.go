@@ -20,11 +20,6 @@ import (
 )
 
 const (
-	createTimeOut = 120 * time.Second
-	updateTimeOut = 120 * time.Second
-	postTimeOut   = 60 * time.Second
-	getTimeOut    = 60 * time.Second
-	deleteTimeOut = 60 * time.Second
 	//Added timeout values for warning  and active status
 	warningTimeOut = 60 * time.Second
 	activeTimeOut  = 2 * time.Minute
@@ -346,13 +341,13 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	sapClient := st.NewIBMPISAPInstanceClient(ctx, sess, cloudInstanceID)
-	imageClient := st.NewIBMPIImageClient(sess, cloudInstanceID)
+	imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 
 	var pvmList *models.PVMInstanceList
 	if _, ok := d.GetOk(PISAPInstanceProfileID); ok {
-		pvmList, err = createSAPInstance(d, meta, sapClient)
+		pvmList, err = createSAPInstance(d, sapClient)
 	} else {
-		pvmList, err = createPVMInstance(d, meta, client, imageClient)
+		pvmList, err = createPVMInstance(d, client, imageClient)
 	}
 	if err != nil {
 		return diag.FromErr(err)
@@ -450,13 +445,9 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if powervmdata.Health != nil {
 		d.Set("health_status", powervmdata.Health.Status)
 	}
-	if powervmdata.VirtualCores.Assigned != nil {
+	if powervmdata.VirtualCores != nil {
 		d.Set(helpers.PIVirtualCoresAssigned, powervmdata.VirtualCores.Assigned)
-	}
-	if &powervmdata.VirtualCores.Max != nil {
 		d.Set("max_virtual_cores", powervmdata.VirtualCores.Max)
-	}
-	if &powervmdata.VirtualCores.Min != nil {
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
@@ -929,7 +920,7 @@ func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_ca
 	}
 	return false
 }
-func createSAPInstance(d *schema.ResourceData, meta interface{}, sapClient *st.IBMPISAPInstanceClient) (*models.PVMInstanceList, error) {
+func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceClient) (*models.PVMInstanceList, error) {
 
 	name := d.Get(helpers.PIInstanceName).(string)
 	profileID := d.Get(PISAPInstanceProfileID).(string)
@@ -1035,7 +1026,7 @@ func createSAPInstance(d *schema.ResourceData, meta interface{}, sapClient *st.I
 
 	return pvmList, nil
 }
-func createPVMInstance(d *schema.ResourceData, meta interface{}, client *st.IBMPIInstanceClient, imageClient *st.IBMPIImageClient) (*models.PVMInstanceList, error) {
+func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, imageClient *st.IBMPIImageClient) (*models.PVMInstanceList, error) {
 
 	name := d.Get(helpers.PIInstanceName).(string)
 	imageid := d.Get(helpers.PIInstanceImageId).(string)
@@ -1177,13 +1168,12 @@ func createPVMInstance(d *schema.ResourceData, meta interface{}, client *st.IBMP
 	}
 
 	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
-		cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 		// check if using vtl image
 		// check if vtl image is stock image
-		imageData, err := imageClient.GetStockImage(imageid, cloudInstanceID)
+		imageData, err := imageClient.GetStockImage(imageid)
 		if err != nil {
 			// check if vtl image is cloud instance image
-			imageData, err = imageClient.Get(imageid, cloudInstanceID)
+			imageData, err = imageClient.Get(imageid)
 			if err != nil {
 				return nil, fmt.Errorf("image doesn't exist. %e", err)
 			}

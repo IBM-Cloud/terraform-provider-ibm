@@ -4,10 +4,13 @@
 package ibm
 
 import (
+	"context"
+	"log"
+
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -18,16 +21,14 @@ import (
 func dataSourceIBMPINetworkPort() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPINetworkPortsRead,
+		ReadContext: dataSourceIBMPINetworkPortsRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -35,7 +36,6 @@ func dataSourceIBMPINetworkPort() *schema.Resource {
 			},
 
 			// Computed Attributes
-
 			"network_ports": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -77,19 +77,17 @@ func dataSourceIBMPINetworkPort() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkPortsRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	networkportC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkportdata, err := networkportC.GetAllPort(d.Get(helpers.PINetworkName).(string), powerinstanceid, getTimeOut)
-
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	networkportC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	networkportdata, err := networkportC.GetAllPorts(d.Get(helpers.PINetworkName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)

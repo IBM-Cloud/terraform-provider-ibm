@@ -5,8 +5,9 @@ package ibm
 
 import (
 	//"fmt"
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -17,17 +18,8 @@ import (
 func dataSourceIBMPIPublicNetwork() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIPublicNetworksRead,
+		ReadContext: dataSourceIBMPIPublicNetworkRead,
 		Schema: map[string]*schema.Schema{
-
-			helpers.PINetworkName: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Network Name to be used for pvminstances",
-				ValidateFunc: validation.NoZeroValues,
-				Deprecated:   "This field is deprectaed.",
-			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -35,22 +27,14 @@ func dataSourceIBMPIPublicNetwork() *schema.Resource {
 			},
 
 			// Computed Attributes
-
-			"network_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vlan_id": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -59,20 +43,23 @@ func dataSourceIBMPIPublicNetwork() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIPublicNetworksRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPIPublicNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.GetPublic(powerinstanceid, getTimeOut)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	if err != nil || networkdata == nil || len(networkdata.Networks) < 1 {
-		return fmt.Errorf("Error getting public network or no public network found in %s", powerinstanceid)
+	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	networkdata, err := networkC.GetAllPublic()
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	if len(networkdata.Networks) < 1 {
+		return diag.Errorf("error getting public network or no public network found in %s", cloudInstanceID)
+	}
+
 	d.SetId(*networkdata.Networks[0].NetworkID)
 	if networkdata.Networks[0].Type != nil {
 		d.Set("type", networkdata.Networks[0].Type)
@@ -83,11 +70,6 @@ func dataSourceIBMPIPublicNetworksRead(d *schema.ResourceData, meta interface{})
 	if networkdata.Networks[0].VlanID != nil {
 		d.Set("vlan_id", networkdata.Networks[0].VlanID)
 	}
-	if networkdata.Networks[0].NetworkID != nil {
-		d.Set("network_id", networkdata.Networks[0].NetworkID)
-	}
-	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
-
 }

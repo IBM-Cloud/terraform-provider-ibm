@@ -6,6 +6,9 @@ package ibm
 import (
 	//"fmt"
 
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -14,18 +17,15 @@ import (
 )
 
 func dataSourceIBMPIVolume() *schema.Resource {
-
 	return &schema.Resource{
-		Read: dataSourceIBMPIVolumeRead,
+		ReadContext: dataSourceIBMPIVolumeRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PIVolumeName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Volume Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -65,18 +65,17 @@ func dataSourceIBMPIVolume() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string), powerinstanceid, getTimeOut)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
+	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*volumedata.VolumeID)
@@ -87,6 +86,6 @@ func dataSourceIBMPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("disk_type", volumedata.DiskType)
 	d.Set("volume_pool", volumedata.VolumePool)
 	d.Set("wwn", volumedata.Wwn)
-	return nil
 
+	return nil
 }

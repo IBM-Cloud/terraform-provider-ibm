@@ -21,30 +21,28 @@ func dataSourceIBMPIInstanceIP() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstancesIPRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Server Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
+
+			// Computed attributes
 			"ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"ipoctet": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -53,12 +51,10 @@ func dataSourceIBMPIInstanceIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"network_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -72,20 +68,14 @@ func dataSourceIBMPIInstanceIP() *schema.Resource {
 }
 
 func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = checkValidSubnet(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
-	powerC := instance.NewIBMPIInstanceClient(ctx, sess, powerinstanceid)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	networkName := d.Get(helpers.PINetworkName).(string)
+	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
 	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
 	if err != nil {
@@ -93,8 +83,9 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	for _, address := range powervmdata.Addresses {
-		if address.NetworkName == powerinstancesubnet {
+		if address.NetworkName == networkName {
 			log.Printf("Printing the ip %s", address.IP)
+			d.SetId(address.NetworkID)
 			d.Set("ip", address.IP)
 			d.Set("network_id", address.NetworkID)
 			d.Set("macaddress", address.MacAddress)
@@ -110,26 +101,4 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return diag.Errorf("failed to find instance ip that belongs to the given network")
-}
-
-func checkValidSubnet(d *schema.ResourceData, meta interface{}) error {
-
-	sess, err := meta.(ClientSession).IBMPISession()
-
-	if err != nil {
-		return err
-	}
-
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	powerinstancesubnet := d.Get(helpers.PINetworkName).(string)
-
-	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(powerinstancesubnet, powerinstanceid, getTimeOut)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(*networkdata.NetworkID)
-
-	return nil
 }

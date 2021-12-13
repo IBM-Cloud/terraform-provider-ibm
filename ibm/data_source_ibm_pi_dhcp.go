@@ -77,7 +77,7 @@ func dataSourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	dhcpID := d.Get(PIDhcpId).(string)
+	dhcpID := d.Get(PIDhcpID).(string)
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServer, err := client.Get(dhcpID)

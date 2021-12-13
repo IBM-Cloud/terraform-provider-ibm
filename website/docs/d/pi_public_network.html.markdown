@@ -38,7 +38,6 @@ data "ibm_pi_public_network" "ds_public_network" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `pi_network_name` - (Deprecated, string) The name of the network.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
 ## Attribute reference
