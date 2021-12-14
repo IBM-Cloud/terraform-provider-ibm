@@ -84,6 +84,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "Private endpoint for the COS bucket",
 			},
+			"s3_endpoint_direct": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Direct endpoint for the COS bucket",
+			},
 			"allowed_ip": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -398,6 +403,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_instance_id", serviceID)
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
+	d.Set("s3_endpoint_direct", directApiEndpoint)
 
 	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
 		Bucket: &bucketName,

@@ -359,6 +359,9 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_instance_id` - (String) The ID of IBM Cloud Object Storage instance. 
 - `single_site_location` - (String) The location if you created a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
+- `s3_endpoint_public` - (String) Public endpoint for cos bucket.
+- `s3_endpoint_private` - (String) Private endpoint for cos bucket.
+- `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.
 
 ## Import
 The `ibm_cos_bucket` resource can be imported by using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.
