@@ -95,7 +95,7 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 	})
 }
 
-func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
+func TestAccIBMResourceKey_WithCustomRole(t *testing.T) {
 	resourceName := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 	crName := fmt.Sprintf("Name%d", acctest.RandIntRange(10, 100))
@@ -112,7 +112,7 @@ func TestAccIBMResourceKeyWithCustomRole(t *testing.T) {
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
-					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", crName),
+					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", displayName),
 				),
 			},
 		},
