@@ -42,7 +42,7 @@ func resourceIBMResourceKey() *schema.Resource {
 
 			"role": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "Name of the user role.Valid roles are Writer, Reader, Manager, Administrator, Operator, Viewer, Editor and Custom Roles.",
 				// ValidateFunc: validateRole,
@@ -190,7 +190,6 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 	name := d.Get("name").(string)
-	role := d.Get("role").(string)
 
 	var instanceID, aliasID string
 	if insID, ok := d.GetOk("resource_instance_id"); ok {
@@ -235,19 +234,22 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	if err != nil {
 		return fmt.Errorf("Error creating resource key when get service: %s", err)
 	}
-	serviceRole, err := getRoleFromName(role, service.Name, meta)
-	if err != nil {
-		return fmt.Errorf("Error creating resource key when get role: %s", err)
-	}
-
-	keyParameters.SetProperty("role_crn", serviceRole.RoleID)
 
 	resourceKeyCreate := rc.CreateResourceKeyOptions{
 		Name:       &name,
 		Source:     sourceCRN,
-		Role:       serviceRole.RoleID,
 		Parameters: &keyParameters,
 	}
+	if r, ok := d.GetOk("role"); ok {
+		role := r.(string)
+		serviceRole, err := getRoleFromName(role, service.Name, meta)
+		if err != nil {
+			return fmt.Errorf("Error creating resource key when get role: %s", err)
+		}
+		keyParameters.SetProperty("role_crn", serviceRole.RoleID)
+		resourceKeyCreate.Role = serviceRole.RoleID
+	}
+
 	resourceKey, resp, err := rsContClient.CreateResourceKey(&resourceKeyCreate)
 	if err != nil {
 		return fmt.Errorf("Error creating resource key: %s with resp code: %s", err, resp)
