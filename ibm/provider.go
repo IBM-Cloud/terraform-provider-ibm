@@ -360,6 +360,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpcs":                            dataSourceIBMISVPCs(),
 			"ibm_is_vpn_gateways":                    dataSourceIBMISVPNGateways(),
 			"ibm_is_vpc_address_prefixes":            dataSourceIbmIsVpcAddressPrefixes(),
+			"ibm_is_vpc_address_prefix":              dataSourceIBMIsVPCAddressPrefix(),
 			"ibm_is_vpn_gateway_connections":         dataSourceIBMISVPNGatewayConnections(),
 			"ibm_is_vpc_default_routing_table":       dataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_tables":              dataSourceIBMISVPCRoutingTables(),
