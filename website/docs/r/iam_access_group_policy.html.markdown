@@ -51,7 +51,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ```
 
 ### Access group policy using service with region
-The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all service instances of IBM Cloud Object Storage. 
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all service instances of cloudantnosqldb in us-south region
 
 ```terraform
 resource "ibm_iam_access_group" "accgrp" {
@@ -63,10 +63,10 @@ resource "ibm_iam_access_group_policy" "policy" {
   roles           = ["Viewer"]
 
   resources {
-    service = "cloud-object-storage"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
-
 ```
 
 ### Access group policy using service_type with region

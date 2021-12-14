@@ -16,12 +16,12 @@ Create, update, or delete an IAM trusted profile policy. For more information, a
 ### Trusted Profile Policy for all Identity and Access enabled services 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id  = ibm_iam_trusted_profile.profileID.id
+  profile_id  = ibm_iam_trusted_profile.profile_id.id
   roles       = ["Viewer"]
   description = "IAM Trusted Profile Policy"
 }
@@ -31,16 +31,17 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy using service with region
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
-  roles      = ["Viewer"]
+  profile_id = ibm_iam_trusted_profile.profile_id.id
+  roles      = ["Viewer", "Manager"]
 
   resources {
-    service = "cloud-object-storage"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
 
@@ -48,7 +49,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource instance 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -60,7 +61,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -74,7 +75,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource group 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -83,7 +84,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Viewer"]
 
   resources {
@@ -97,7 +98,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource and resource type 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -106,7 +107,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Administrator"]
 
   resources {
@@ -120,7 +121,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using attributes 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -129,7 +130,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Administrator"]
 
   resources {
@@ -146,11 +147,11 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource_attributes
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Viewer"]
   resource_attributes {
     name     = "resource"
@@ -167,12 +168,12 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy using service_type with region
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Viewer"]
 
   resources {
