@@ -233,7 +233,6 @@ func TestAccIBMIAMTrustedProfilePolicyWithCustomRole(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "2"),
 				),
 			},
@@ -347,7 +346,10 @@ func testAccCheckIBMIAMTrustedProfilePolicyBasic(name string) string {
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
 			profile_id = ibm_iam_trusted_profile.profileID.id
 			roles          = ["Viewer"]
-			tags           = ["tag1"]
+			tags           {
+				name = "one"
+				value = "Terrafrom"
+			}
 			description    = "IAM Trusted Profile Policy Creation for test scenario"
 	  	}
 
@@ -364,7 +366,14 @@ func testAccCheckIBMIAMTrustedProfilePolicyUpdateRole(name string) string {
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
 			profile_id = ibm_iam_trusted_profile.profileID.id
 			roles          = ["Viewer", "Manager"]
-			tags           = ["tag1", "tag2"]
+			tags   {
+				name = "one"
+				value = "terrformupdate"
+			}
+			tags   {
+				name = "two"
+				value = "terrformupdate"
+			}
 			description    = "IAM Trusted Profile Policy Update for test scenario"
 	  	}
 	`, name)
@@ -550,7 +559,6 @@ func testAccCheckIBMIAMTrustedProfilePolicyWithCustomRole(name, crName, displayN
 	  	resource "ibm_iam_trusted_profile_policy" "policy" {
 			profile_id = ibm_iam_trusted_profile.profileID.id
 			roles          = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
-			tags           = ["tag1"]
 			resources {
 				service           = "kms"
 		   }

@@ -233,7 +233,6 @@ func TestAccIBMIAMServicePolicyWithCustomRole(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
 				),
 			},
@@ -347,7 +346,10 @@ func testAccCheckIBMIAMServicePolicyBasic(name string) string {
 	  	resource "ibm_iam_service_policy" "policy" {
 			iam_service_id = ibm_iam_service_id.serviceID.id
 			roles          = ["Viewer"]
-			tags           = ["tag1"]
+			tags {
+				name = "env"
+				value = "test"
+			  }
 			description    = "IAM Service Policy Creation for test scenario"
 	  	}
 
@@ -364,7 +366,14 @@ func testAccCheckIBMIAMServicePolicyUpdateRole(name string) string {
 	  	resource "ibm_iam_service_policy" "policy" {
 			iam_service_id = ibm_iam_service_id.serviceID.id
 			roles          = ["Viewer", "Manager"]
-			tags           = ["tag1", "tag2"]
+			tags   {
+				name = "one"
+				value = "terrformupdate"
+			}
+			tags   {
+				name = "two"
+				value = "terrformupdate"
+			}
 			description    = "IAM Service Policy Update for test scenario"
 	  	}
 	`, name)
@@ -550,7 +559,6 @@ func testAccCheckIBMIAMServicePolicyWithCustomRole(name, crName, displayName str
 	  	resource "ibm_iam_service_policy" "policy" {
 			iam_service_id = ibm_iam_service_id.serviceID.id
 			roles          = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
-			tags           = ["tag1"]
 			resources {
 				service           = "kms"
 		   }

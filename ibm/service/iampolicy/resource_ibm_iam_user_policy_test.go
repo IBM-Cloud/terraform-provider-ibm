@@ -357,7 +357,10 @@ func testAccCheckIBMIAMUserPolicyBasic() string {
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
 			roles  = ["Viewer"]
-			tags   = ["tag1"]
+			tags   {
+				name = "test"
+				value = "terraform"
+			}
 			description = "IAM User Policy Creation for test scenario"
 	  	}
 
@@ -370,7 +373,14 @@ func testAccCheckIBMIAMUserPolicyUpdateRole() string {
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
 			roles  = ["Viewer", "Manager"]
-			tags   = ["tag1", "tag2"]
+			tags   {
+				name = "one"
+				value = "terrformupdate"
+			}
+			tags   {
+				name = "two"
+				value = "terrformupdate"
+			}
 			description = "IAM User Policy Update for test scenario"
 	  	}
 	`, acc.IAMUser)

@@ -281,7 +281,6 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
 				),
 			},
@@ -367,7 +366,10 @@ func testAccCheckIBMIAMAccessGroupPolicyBasic(name string) string {
 		resource "ibm_iam_access_group_policy" "policy" {
   			access_group_id = ibm_iam_access_group.accgrp.id
   			roles           = ["Viewer"]
-  			tags            = ["tag1"]
+			  tags   {
+				name = "test"
+				value = "terrformcreate"
+			}
 		}
 
 	`, name)
@@ -383,7 +385,14 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateRole(name string) string {
 	  	resource "ibm_iam_access_group_policy" "policy" {
 			access_group_id = ibm_iam_access_group.accgrp.id
 			roles           = ["Viewer", "Administrator"]
-			tags            = ["tag1", "tag2"]
+			tags   {
+				name = "one"
+				value = "terrformupdate"
+			}
+			tags   {
+				name = "two"
+				value = "terrformupdate"
+			}
 	  	}
 	`, name)
 }
@@ -591,7 +600,6 @@ func testAccCheckIBMIAMAccessGroupPolicyWithCustomRole(name, crName, displayName
 		resource "ibm_iam_access_group_policy" "policy" {
   			access_group_id = ibm_iam_access_group.accgrp.id
   			roles           = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
-			  tags            = ["tag1"]
 			  resources {
 				service = "kms"
 			  }

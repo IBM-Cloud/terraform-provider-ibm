@@ -1337,6 +1337,23 @@ func FlattenPolicyResourceAttributes(list []iampolicymanagementv1.PolicyResource
 	return result
 }
 
+func FlattenPolicyResourceTags(resources []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+
+	for _, resource := range resources {
+		for _, tags := range resource.Tags {
+			tag := map[string]interface{}{
+				"name":     tags.Name,
+				"value":    tags.Value,
+				"operator": tags.Operator,
+			}
+			result = append(result, tag)
+		}
+
+	}
+	return result
+}
+
 // Cloud Internet Services
 func FlattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
@@ -2953,6 +2970,26 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 	}
 
 	return iampolicymanagementv1.CreatePolicyOptions{Roles: policyRoles, Resources: []iampolicymanagementv1.PolicyResource{policyResources}}, nil
+}
+
+func SetTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
+	resourceAttributes := []iampolicymanagementv1.ResourceTag{}
+	if r, ok := d.GetOk("tags"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			tag := iampolicymanagementv1.ResourceTag{
+				Name:     &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, tag)
+		}
+		return resourceAttributes
+	}
+	return []iampolicymanagementv1.ResourceTag{}
 }
 
 func GetIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {

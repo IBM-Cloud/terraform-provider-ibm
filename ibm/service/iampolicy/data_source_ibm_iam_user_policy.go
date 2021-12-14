@@ -88,6 +88,30 @@ func DataSourceIBMIAMUserPolicy() *schema.Resource {
 								},
 							},
 						},
+						"tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Description: "Set access management tags.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of attribute.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value of attribute.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator of attribute.",
+									},
+								},
+							},
+						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -130,15 +154,12 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
-	if err != nil {
-		return err
-	}
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Error listing user policies: %s, %s", err, resp)
 	}
+	policies := policyList.Policies
 
 	userPolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
@@ -151,6 +172,7 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 			"id":        fmt.Sprintf("%s/%s", userEmail, *policy.ID),
 			"roles":     roles,
 			"resources": resources,
+			"tags":      flattenPolicyResourceTags(policy.Resources),
 		}
 		if policy.Description != nil {
 			p["description"] = policy.Description
