@@ -16,12 +16,12 @@ Create, update, or delete an IAM service policy. For more information, about IAM
 ### Service policy for all Identity and Access enabled services 
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Viewer"]
   description    = "IAM Service Policy"
 }
@@ -31,16 +31,17 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service Policy using service with region
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
-  roles          = ["Viewer"]
+  iam_service_id = ibm_iam_service_id.service_id.id
+  roles          = ["Viewer", "Manager"]
 
   resources {
-    service = "cloud-object-storage"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
 
@@ -48,7 +49,7 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service policy by using resource instance 
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
@@ -60,7 +61,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -74,7 +75,7 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service policy by using resource group 
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
@@ -83,7 +84,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Viewer"]
 
   resources {
@@ -97,7 +98,7 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service policy by using resource and resource type 
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
@@ -106,7 +107,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Administrator"]
 
   resources {
@@ -120,7 +121,7 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service policy by using attributes 
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
@@ -129,7 +130,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Administrator"]
 
   resources {
@@ -149,7 +150,7 @@ provider "ibm" {
     alias             = "accA"
     ibmcloud_api_key  = "Account A Api Key"
 }
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   provider = ibm.accA
   name     = "test"
 }
@@ -160,7 +161,7 @@ provider "ibm" {
 }
 resource "ibm_iam_service_policy" "policy" {
   provider       =  ibm.accB
-  iam_id         =  ibm_iam_service_id.serviceID.iam_id
+  iam_id         =  ibm_iam_service_id.service_id.iam_id
   roles          =  ["Reader"]
   resources {
     service = "cloud-object-storage"
@@ -172,11 +173,11 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service policy by using resource_attributes
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles           = ["Viewer"]
   resource_attributes {
     name  = "resource"
@@ -193,12 +194,12 @@ resource "ibm_iam_service_policy" "policy" {
 ### Service Policy using service_type with region
 
 ```terraform
-resource "ibm_iam_service_id" "serviceID" {
+resource "ibm_iam_service_id" "service_id" {
   name = "test"
 }
 
 resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Viewer"]
 
   resources {
