@@ -77,7 +77,12 @@ func resourceIBMResourceKey() *schema.Resource {
 				Sensitive:   true,
 				Computed:    true,
 			},
-
+			"credentials_json": {
+				Description: "Credentials asociated with the key in json string",
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				Computed:    true,
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -280,6 +285,14 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	cred, _ := json.Marshal(resourceKey.Credentials)
 	json.Unmarshal(cred, &credInterface)
 	d.Set("credentials", Flatten(credInterface))
+
+	creds, err := json.Marshal(resourceKey.Credentials)
+	if err != nil {
+		return fmt.Errorf("error marshalling resource key credentials: %s", err)
+	}
+	if err = d.Set("credentials_json", string(creds)); err != nil {
+		return fmt.Errorf("error setting the credentials json: %s", err)
+	}
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)
 	if resourceKey.Credentials != nil && resourceKey.Credentials.IamRoleCRN != nil {

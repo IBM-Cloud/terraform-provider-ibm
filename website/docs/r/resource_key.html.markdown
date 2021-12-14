@@ -89,6 +89,40 @@ resource "ibm_resource_key" "resourceKey" {
 }
 
 ```
+### Example to access resource credentials using credentials:
+
+```terraform
+resource "ibm_resource_key" "key" {
+  name                 = "my-cos-bucket-xx-key"
+  resource_instance_id = ibm_resource_instance.resource_instance.id
+  role                 = "Manager"
+}
+output "access_key_id" {
+  value = ibm_resource_key.key.credentials["cos_hmac_keys.access_key_id"]
+}
+output "secret_access_key" {
+  value = ibm_resource_key.key.credentials["cos_hmac_keys.secret_access_key"]
+}
+```
+
+### Example to access resource credentials using credentials_json:
+
+```terraform
+resource "ibm_resource_key" "key" {
+  name                 = "my-cos-bucket-xx-key"
+  resource_instance_id = ibm_resource_instance.resource_instance.id
+  role                 = "Manager"
+}
+locals {
+  resource_credentials =jsondecode(ibm_resource_key.key.credentials_json)
+}
+output "access_key_id" {
+  value = local.resource_credentials.cos_hmac_keys.access_key_id
+}
+output "secret_access_key" {
+  value = local.resource_credentials.cos_hmac_keys.secret_access_key
+}
+```
 
 ## Timeouts
 
@@ -113,7 +147,8 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `account_id` - (String) An alpha-numeric value identifying the account ID.
-- `credentials` - (String) The credentials associated with the key.
+- `credentials` - (Map) The credentials associated with the key.
+- `credentials_json` - (String) The credentials associated with the key in json format.
 - `created_at` - (Timestamp) The date when the key was created.
 - `created_by` - (String) The subject who created the key.
 - `crn` - (String) The full Cloud Resource Name (CRN) associated with the key.
