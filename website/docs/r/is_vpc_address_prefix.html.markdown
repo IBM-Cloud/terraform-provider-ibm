@@ -51,8 +51,9 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the address prefix.
+- `id` - (String) The ID of the address prefix. The ID is composed of `<vpc_id>/<address_prefix_id>`.
 - `has_subnets`- (Bool) Indicates whether subnets exist with addresses from this prefix.
+- `address_prefix` - (String) the unique identifier of the address prefix.
 
 ## Import
 The `ibm_is_vpc_address_prefix` resource can be imported by using the VPC ID and VPC address prefix ID.
