@@ -29,6 +29,31 @@ func TestAccResourceTagDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccResourceTagDataSourceTagType(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckResourceTagwithTagType(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_resource_tag.access_tags", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_tag.tags", "id"),
+				),
+			},
+		},
+	})
+}
+func testAccCheckResourceTagwithTagType() string {
+	return fmt.Sprintf(`
+
+	data "ibm_resource_tag" "access_tags" {
+        tag_type ="access"
+	}
+	data "ibm_resource_tag" "tags" {
+	}
+`)
+}
 
 func testAccCheckResourceTagReadDataSource(name, managed_from string) string {
 	return fmt.Sprintf(`

@@ -1859,7 +1859,9 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	}
 
 	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
-	ListTagsOptions.AttachedTo = &resourceID
+	if resourceID != "" {
+		ListTagsOptions.AttachedTo = &resourceID
+	}
 	ListTagsOptions.Providers = providers
 	if len(tagType) > 0 {
 		ListTagsOptions.TagType = ptrToString(tagType)
