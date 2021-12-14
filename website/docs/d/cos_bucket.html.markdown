@@ -110,3 +110,6 @@ In addition to all argument reference list, you can access the following attribu
   - `permanent` - (String) Specifies a permanent retention status either enable or disable for a bucket.
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
+- `s3_endpoint_public` - (String) Public endpoint for cos bucket.
+- `s3_endpoint_private` - (String) Private endpoint for cos bucket.
+- `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.
