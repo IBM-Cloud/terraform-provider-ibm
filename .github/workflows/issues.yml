@@ -1,0 +1,15 @@
+on:
+  issues:
+    types: [opened]
+name: Issue Labels
+jobs:
+  labelIssues:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Apply Issue Labels
+      uses: github/issue-labeler@v2.4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: .github/labeler-issue.yml
+        enable-versioned-regex: 0
