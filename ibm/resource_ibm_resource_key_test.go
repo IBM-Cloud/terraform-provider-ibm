@@ -29,6 +29,7 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 					testAccCheckIBMResourceKeyExists("ibm_resource_key.resourceKey"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "name", resourceKey),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "credentials.%", "7"),
+					resource.TestCheckResourceAttrSet("ibm_resource_key.resourceKey", "credentials_json"),
 					resource.TestCheckResourceAttr("ibm_resource_key.resourceKey", "role", "Reader"),
 				),
 			},
