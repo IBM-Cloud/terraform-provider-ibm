@@ -2,18 +2,18 @@
 
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: pi_sap_profiles"
+page_title: "IBM: pi_keys"
 description: |-
-  Manages SAP profiles in the Power Virtual Server cloud.
+  Manages SSH keys in the Power Virtual Server cloud.
 ---
 
-# ibm_pi_sap_profiles
-Retrieve information about all SAP profiles. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+# ibm_pi_keys
+Retrieve information about all SSH keys. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
 
 ```terraform
-data "ibm_pi_sap_profiles" "example" {
+data "ibm_pi_keys" "example" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
@@ -42,11 +42,9 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `profiles` - (List) List of all the SAP Profiles.
+- `keys` - (List) List of all the SSH keys.
 
-  Nested scheme for `profiles`:
-  - `certified` - (Boolean) Has certification been performed on profile.
-  - `cores` - (Integer) Amount of cores.
-  - `memory` - (Integer) Amount of memory (in GB).
-  - `profile_id` - (String) SAP Profile ID.
-  - `type` - (String) Type of profile.
+  Nested scheme for `keys`:
+  - `creation_date` - (String) Date of SSH key creation.
+  - `name` - (String) User defined name for the SSH key.
+  - `ssh_key` - (String) SSH RSA key.

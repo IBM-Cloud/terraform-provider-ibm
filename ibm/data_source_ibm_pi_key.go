@@ -17,7 +17,7 @@ import (
 func dataSourceIBMPIKey() *schema.Resource {
 
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPIKeysRead,
+		ReadContext: dataSourceIBMPIKeyRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIKeyName: {
@@ -45,7 +45,7 @@ func dataSourceIBMPIKey() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
