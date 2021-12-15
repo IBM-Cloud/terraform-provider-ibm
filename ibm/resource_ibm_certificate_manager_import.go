@@ -123,7 +123,9 @@ func resourceIBMCertificateManagerGet(d *schema.ResourceData, meta interface{}) 
 	}
 	certID := d.Id()
 	certificatedata, err := cmService.Certificate().GetCertData(certID)
-
+	if err != nil {
+		return fmt.Errorf("Error getting certificate during import: %s", err)
+	}
 	cminstanceid := strings.Split(certID, ":certificate:")
 	d.Set("certificate_manager_instance_id", cminstanceid[0]+"::")
 	d.Set("name", certificatedata.Name)
@@ -221,7 +223,7 @@ func resourceIBMCertificateManagerExists(d *schema.ResourceData, meta interface{
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error gettting certificate details in exists %s", err)
 	}
 
 	return true, nil

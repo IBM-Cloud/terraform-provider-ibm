@@ -301,7 +301,7 @@ func resourceIBMContainerWorkerPoolZoneAttachmentExists(d *schema.ResourceData, 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting container workerpool during zone attachment: %s", err)
 	}
 	zones := workerPool.Zones
 	var zone v1.WorkerPoolZoneResponse

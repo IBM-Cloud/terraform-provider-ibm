@@ -124,7 +124,7 @@ func resourceIBMAppDomainSharedExists(d *schema.ResourceData, meta interface{}) 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("Error getting shared domains: %s", err)
 	}
 
 	return shdomain.Metadata.GUID == shdomainGUID, nil

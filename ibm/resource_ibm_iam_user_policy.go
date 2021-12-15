@@ -448,7 +448,7 @@ func resourceIBMIAMUserPolicyExists(d *schema.ResourceData, meta interface{}) (b
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting user policy: %s\n%s", err, resp)
 	}
 
 	if userPolicy != nil && userPolicy.State != nil && *userPolicy.State == "deleted" {

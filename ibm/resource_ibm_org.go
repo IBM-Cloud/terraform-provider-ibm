@@ -220,7 +220,7 @@ func resourceIBMOrgExists(d *schema.ResourceData, meta interface{}) (bool, error
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting Organization: %s", err)
 	}
 	return org.Metadata.GUID == id, nil
 }

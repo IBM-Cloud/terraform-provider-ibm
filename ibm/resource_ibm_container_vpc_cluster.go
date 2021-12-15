@@ -1193,7 +1193,7 @@ func resourceIBMContainerVpcClusterExists(d *schema.ResourceData, meta interface
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting container vpc cluster: %s", err)
 	}
 	return cls.ID == clusterID, nil
 }

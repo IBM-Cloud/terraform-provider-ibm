@@ -234,7 +234,7 @@ func resourceIBMContainerVpcWorkerVolumeAttachmentExists(d *schema.ResourceData,
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", getErr)
+		return false, fmt.Errorf("[ERROR] Error getting storage attachement: %s", getErr)
 	}
 	return true, nil
 }
