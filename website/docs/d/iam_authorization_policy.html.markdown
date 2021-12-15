@@ -3,26 +3,17 @@ subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_authorization_policy"
 description: |-
-  Manages IBM IAM service authorizations.
+  Get information about an IBM IAM service authorizations.
 ---
 
-# ibm_iam_authorization_policy
+# ibm_iam_authorization_policies
 
-Create or delete an IAM service authorization policy. For more information, about IAM service authorizations, see [using authorizations to grant access between services](https://cloud.ibm.com/docs/account?topic=account-serviceauth).
+Retrieve information about an IAM service authorization policy. For more information, about IAM service authorizations, see [using authorizations to grant access between services](https://cloud.ibm.com/docs/account?topic=account-serviceauth).
 
 ## Example usage
 
 ```terraform
-resource "ibm_iam_authorization_policy" "policy" {
-  source_service_name         = "databases-for-redis"
-  target_service_name         = "kms"
-  roles                       = ["Reader", "Authorization Delegator"]
-  description                 = "Authorization Policy"
-}
-
-data "ibm_iam_authorization_policy" "testacc_ds_authorization_policy" {
-  account_id = ""
-  id = ibm_iam_authorization_policy.policy.id
+data "ibm_iam_authorization_policies" "testacc_ds_authorization_policy" {
 }
 
 ```
