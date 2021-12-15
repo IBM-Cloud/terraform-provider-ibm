@@ -19,7 +19,7 @@ data "ibm_resource_key" "resourceKeydata" {
   resource_instance_id  = ibm_resource_instance.resource.id
 }
 ```
-### Example to access resource credentials using credentials:
+### Example to access resource credentials using credentials attribute:
 
 ```terraform
 data "ibm_resource_key" "key" {
@@ -33,7 +33,7 @@ output "secret_access_key" {
   value = data.ibm_resource_key.key.credentials["cos_hmac_keys.secret_access_key"]
 }
 ```
-### Example to access resource credentials:
+### Example to access resource credentials using credentials_json attribute:
 
 ```terraform
 data "ibm_resource_key" "key" {

@@ -89,7 +89,7 @@ resource "ibm_resource_key" "resourceKey" {
 }
 
 ```
-### Example to access resource credentials using credentials:
+### Example to access resource credentials using credentials attribute:
 
 ```terraform
 resource "ibm_resource_key" "key" {
@@ -105,7 +105,7 @@ output "secret_access_key" {
 }
 ```
 
-### Example to access resource credentials using credentials_json:
+### Example to access resource credentials using credentials_json attribute:
 
 ```terraform
 resource "ibm_resource_key" "key" {
