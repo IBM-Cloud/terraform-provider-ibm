@@ -390,7 +390,7 @@ func resourceIBMResourceKeyExists(d *schema.ResourceData, meta interface{}) (boo
 		if resp != nil && (resp.StatusCode == 404 || resp.StatusCode == 410) {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with resp code: %s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting resource key: %s with resp code: %s", err, resp)
 	}
 	if err == nil && *resourceKey.State == "removed" {
 		return false, nil

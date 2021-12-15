@@ -358,7 +358,7 @@ func resourceIBMComputeAutoScalePolicyExists(d *schema.ResourceData, meta interf
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting compute autoscale policy: %s", err)
 	}
 	return result.Id != nil && *result.Id == policyId, nil
 

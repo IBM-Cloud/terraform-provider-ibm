@@ -349,7 +349,7 @@ func resourceIBMPIVolumeExists(d *schema.ResourceData, meta interface{}) (bool, 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting pi volume: %s", err)
 	}
 
 	log.Printf("Calling the existing function.. %s", *(vol.VolumeID))

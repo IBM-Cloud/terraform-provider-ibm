@@ -501,7 +501,7 @@ func resourceIBMIAMServicePolicyExists(d *schema.ResourceData, meta interface{})
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s\n%s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting service policy: %s\n%s", err, resp)
 	}
 
 	if servicePolicy != nil && servicePolicy.State != nil && *servicePolicy.State == "deleted" {

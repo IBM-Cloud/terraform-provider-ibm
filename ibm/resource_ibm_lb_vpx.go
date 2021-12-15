@@ -621,7 +621,7 @@ func resourceIBMLbVpxExists(d *schema.ResourceData, meta interface{}) (bool, err
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting lb vpx: %s", err)
 	}
 	return nadc.Id != nil && *nadc.Id == id, nil
 }

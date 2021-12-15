@@ -1938,7 +1938,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s %s", err, response)
+		return false, fmt.Errorf("[ERROR] Error getting database: %s %s", err, response)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, databaseInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")

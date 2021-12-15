@@ -163,7 +163,7 @@ func resourceIBMNetworkInterfaceSGAttachmentExists(d *schema.ResourceData, meta 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting network component bindings: %s", err)
 	}
 	for _, b := range bindings {
 		if *b.NetworkComponentId == interfaceID {

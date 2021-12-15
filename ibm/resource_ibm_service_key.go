@@ -144,7 +144,7 @@ func resourceIBMServiceKeyExists(d *schema.ResourceData, meta interface{}) (bool
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting service key: %s", err)
 	}
 
 	return serviceKey.Metadata.GUID == serviceKeyGUID, nil
