@@ -723,3 +723,56 @@ data "ibm_is_vpc_address_prefix" "example-3" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
 }
+
+## Security Groups/Rules/Rule
+// Create is_security_groups data source
+data "ibm_is_security_groups" "example" {
+}
+
+// Create is_security_group data source
+resource "ibm_is_security_group" "example" {
+  name = "example-security-group"
+  vpc  = ibm_is_vpc.vpc1.id
+}
+
+resource "ibm_is_security_group_rule" "exampleudp" {
+  depends_on = [
+      ibm_is_security_group.example,
+  ]
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  udp {
+    port_min = 805
+    port_max = 807
+  }
+}
+
+data "ibm_is_security_group_rule" "example" {
+  depends_on = [
+      ibm_is_security_group_rule.exampleudp,
+  ]
+    security_group_rule = ibm_is_security_group_rule.exampleudp.rule_id
+    security_group = ibm_is_security_group.example.id
+}
+
+// Create is_security_group_rules data source
+resource "ibm_is_security_group_rule" "exampletcp" {
+  group     = ibm_is_security_group.example.id
+  direction = "outbound"
+  remote    = "127.0.0.1"
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
+  depends_on = [
+    ibm_is_security_group.example,
+  ]
+}
+
+data "ibm_is_security_group_rules" "example" {
+  depends_on = [
+    ibm_is_security_group_rule.exampletcp,
+  ]
+  security_group = ibm_is_security_group.example.id
+}
