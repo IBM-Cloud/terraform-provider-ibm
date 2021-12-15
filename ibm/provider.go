@@ -277,7 +277,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_users":                          dataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                          datasourceIBMIAMRole(),
 			"ibm_iam_user_policy":                    dataSourceIBMIAMUserPolicy(),
-			"ibm_iam_authorization_policy":           dataSourceIBMIAMAuthorizationPolicy(),
+			"ibm_iam_authorization_policies":         dataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                   dataSourceIBMIAMUserProfile(),
 			"ibm_iam_service_id":                     dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                 dataSourceIBMIAMServicePolicy(),

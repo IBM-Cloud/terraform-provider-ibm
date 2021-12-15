@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
@@ -12,20 +13,16 @@ import (
 )
 
 // Data source to find all the authorization policies in a particular account
-func dataSourceIBMIAMAuthorizationPolicy() *schema.Resource {
+func dataSourceIBMIAMAuthorizationPolicies() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMIAMAuthorizationPolicyRead,
+		Read: dataSourceIBMIAMAuthorizationPoliciesRead,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Description: "The unique ID of an account",
 				Type:        schema.TypeString,
 				Optional:    true,
-			},
-			"id": {
-				Description: "The UUID of policy",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 			},
 			"sort": {
 				Description: "Sort query for policies",
@@ -44,72 +41,62 @@ func dataSourceIBMIAMAuthorizationPolicy() *schema.Resource {
 
 						"source_service_name": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The source service name",
-							ForceNew:    true,
 						},
 
 						"target_service_name": {
 							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "The target service name",
 						},
 
 						"roles": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
 
 						"source_resource_instance_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "The source resource instance Id",
 						},
 
 						"target_resource_instance_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "The target resource instance Id",
 						},
 
 						"source_resource_group_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "The source resource group Id",
 						},
 
 						"target_resource_group_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "The target resource group Id",
 						},
 
 						"source_resource_type": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "Resource type of source service",
 						},
 
 						"target_resource_type": {
 							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
+							Computed:    true,
 							Description: "Resource type of target service",
 						},
 
 						"source_service_account": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
-							ForceNew:    true,
 							Description: "Account GUID of source service",
 						},
 
@@ -120,7 +107,7 @@ func dataSourceIBMIAMAuthorizationPolicy() *schema.Resource {
 
 						"description": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Description of the Policy",
 						},
 					},
@@ -130,7 +117,7 @@ func dataSourceIBMIAMAuthorizationPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMIAMAuthorizationPoliciesRead(d *schema.ResourceData, meta interface{}) error {
 	var accountID string
 
 	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
@@ -157,12 +144,13 @@ func dataSourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interf
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Error listing authorization policies: %s, %s", err, resp)
 	}
+
+	policies := policyList.Policies
 
 	authorizationPolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
@@ -191,7 +179,9 @@ func dataSourceIBMIAMAuthorizationPolicyRead(d *schema.ResourceData, meta interf
 		}
 		authorizationPolicies = append(authorizationPolicies, p)
 	}
-	d.SetId(accountID)
+
+	d.SetId(time.Now().UTC().String())
+	d.Set("account_id", accountID)
 	d.Set("policies", authorizationPolicies)
 
 	return nil
