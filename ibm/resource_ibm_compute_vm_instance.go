@@ -1878,7 +1878,7 @@ func resourceIBMComputeVmInstanceExists(d *schema.ResourceData, meta interface{}
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting compute vm instance: %s", err)
 	}
 
 	return result.Id != nil && *result.Id == guestID, nil

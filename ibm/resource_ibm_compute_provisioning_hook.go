@@ -146,7 +146,7 @@ func resourceIBMComputeProvisioningHookExists(d *schema.ResourceData, meta inter
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting compute provisioning hooks: %s", err)
 	}
 	return result.Id != nil && *result.Id == hookId, nil
 }

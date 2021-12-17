@@ -4,6 +4,9 @@
 package ibm
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -14,7 +17,7 @@ import (
 func dataSourceIBMPIKey() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIKeysRead,
+		ReadContext: dataSourceIBMPIKeyRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIKeyName: {
@@ -42,28 +45,24 @@ func dataSourceIBMPIKey() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIKeysRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	sshkeyC := instance.NewIBMPIKeyClient(sess, powerinstanceid)
-	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string), powerinstanceid)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	sshkeyC := instance.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
+	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*sshkeydata.Name)
 	d.Set("creation_date", sshkeydata.CreationDate.String())
 	d.Set("sshkey", sshkeydata.SSHKey)
 	d.Set(helpers.PIKeyName, sshkeydata.Name)
-	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
-
 }

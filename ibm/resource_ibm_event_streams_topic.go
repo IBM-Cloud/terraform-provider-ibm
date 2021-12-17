@@ -98,10 +98,21 @@ func resourceIBMEventStreamsTopicExists(d *schema.ResourceData, meta interface{}
 		return false, err
 	}
 	topicName := d.Get("name").(string)
-	topics, err := adminClient.DescribeTopics([]string{topicName})
-	if err != nil || len(topics) != 1 {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists DescribeTopics err %s", err)
-		return false, err
+	topicsMetadata, err := adminClient.DescribeTopics([]string{topicName})
+	if err != nil {
+		descErr := fmt.Errorf("error describing topic %s : %v", topicName, err)
+		log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists DescribeTopics err %v", descErr)
+		return false, descErr
+	}
+	if len(topicsMetadata) == 0 {
+		descErr := fmt.Errorf("no metadata was returned for topic %s", topicName)
+		log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists DescribeTopics err %v", descErr)
+		return false, descErr
+	}
+	if topicsMetadata[0].Err != sarama.ErrNoError {
+		metadataErr := topicsMetadata[0].Err
+		log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists DescribeTopics err %v", metadataErr)
+		return false, metadataErr
 	}
 	log.Printf("[INFO] resourceIBMEventStreamsTopicExists topic %s exists", topicName)
 	return true, nil
@@ -123,7 +134,20 @@ func resourceIBMEventStreamsTopicCreate(d *schema.ResourceData, meta interface{}
 	}
 	err = adminClient.CreateTopic(topicName, &topicDetail, false)
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate CreateTopic err %s", err)
+		if kafkaErr, ok := err.(*sarama.TopicError); ok {
+			if kafkaErr != nil && kafkaErr.Err == sarama.ErrTopicAlreadyExists {
+				exists, err := resourceIBMEventStreamsTopicExists(d, meta)
+				if err != nil {
+					log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate resourceIBMEventStreamsTopicExists err %s", err)
+					return err
+				}
+				if exists {
+					d.SetId(getTopicID(instanceCRN, topicName))
+					return resourceIBMEventStreamsTopicRead(d, meta)
+				}
+			}
+		}
+		log.Printf("[ERROR] resourceIBMEventStreamsTopicCreate CreateTopic err %s", err)
 		return err
 	}
 	log.Printf("[INFO] resourceIBMEventStreamsTopicCreate CreateTopic: topic is %s, detail is %v", topicName, topicDetail)

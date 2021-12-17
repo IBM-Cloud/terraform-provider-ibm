@@ -38,18 +38,21 @@ func resourceIBMSpace() *schema.Resource {
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have auditor role in this space, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"managers": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have manager role in this space, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"developers": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The IBMID of the users who will have developer role in this space, ex - user@example.com",
+				Set:         resourceIBMVPCHash,
 			},
 			"space_quota": {
 				Description: "The name of the Space Quota Definition",
@@ -248,7 +251,7 @@ func resourceIBMSpaceExists(d *schema.ResourceData, meta interface{}) (bool, err
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting space: %s", err)
 	}
 
 	return space.Metadata.GUID == id, nil

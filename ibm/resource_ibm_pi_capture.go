@@ -4,13 +4,13 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"log"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -110,7 +110,7 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		log.Printf("CloudStorageRegion is not provided")
 	}
 
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
 	body := &models.PVMInstanceCapture{
 		CaptureDestination:    ptrToString(capturedestination),
@@ -122,20 +122,16 @@ func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error 
 		CloudStorageSecretKey: "",
 	}
 
-	captureinfo, err := client.CaptureInstanceToImageCatalog(name, powerinstanceid, &p_cloud_p_vm_instances.PcloudPvminstancesCapturePostParams{
-		Body: body,
-	}, createTimeOut)
-
-	log.Printf("Printing the data from the capture %+v", &captureinfo)
+	err = client.CaptureInstanceToImageCatalog(name, body)
 
 	if err != nil {
-		return errors.New("The capture cannot be performed")
+		return errors.New("the capture cannot be performed")
 	}
 
 	// If this is an image catalog then we need to check what the status is
 
-	imageClient := st.NewIBMPIImageClient(sess, powerinstanceid)
-	imagedata, err := imageClient.Get(d.Get(helpers.PIInstanceCaptureName).(string), powerinstanceid)
+	imageClient := st.NewIBMPIImageClient(context.Background(), sess, powerinstanceid)
+	imagedata, err := imageClient.Get(d.Get(helpers.PIInstanceCaptureName).(string))
 
 	if err != nil {
 		return err
@@ -162,7 +158,7 @@ func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
 
 	name := ""
 	if d.HasChange(helpers.PIVolumeAttachName) {
@@ -172,26 +168,26 @@ func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error 
 	size := float64(d.Get(helpers.PIVolumeSize).(float64))
 	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
 
-	volrequest, err := client.Update(d.Id(), name, size, shareable, powerinstanceid, postTimeOut)
+	volrequest, err := client.UpdateVolume(d.Id(), &models.UpdateVolume{Name: &name, Size: size, Shareable: &shareable})
 	if err != nil {
 		return err
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(client, *volrequest.VolumeID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForIBMPIVolumeAvailable(context.Background(), client, *volrequest.VolumeID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
 
-	return resourceIBMPIVolumeRead(d, meta)
+	return resourceIBMPICaptureRead(d, meta)
 }
 
 func resourceIBMPICaptureDelete(d *schema.ResourceData, meta interface{}) error {
 
 	sess, _ := meta.(ClientSession).IBMPISession()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
 
-	err := client.Delete(d.Id(), powerinstanceid, deleteTimeOut)
+	err := client.DeleteVolume(d.Id())
 	if err != nil {
 		return err
 	}

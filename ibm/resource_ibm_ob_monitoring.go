@@ -164,7 +164,7 @@ func resourceIBMMonitoringCreate(d *schema.ResourceData, meta interface{}) error
 		monitoring, err = client.Monitoring().CreateMonitoringConfig(params, targetEnv)
 		if err != nil {
 			log.Printf("[DEBUG] monitoring Instance err %s", err)
-			if strings.Contains(err.Error(), "The user doesn't have enough privileges to perform this action") {
+			if strings.Contains(err.Error(), "The user doesn't have enough privileges to perform this action") || strings.Contains(err.Error(), "A logging or monitoring configuration for this cluster already exists. To use a different configuration, delete the existing configuration and try again") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

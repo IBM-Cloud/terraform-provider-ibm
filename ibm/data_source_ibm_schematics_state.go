@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package ibm
@@ -25,12 +25,12 @@ func dataSourceIBMSchematicsState() *schema.Resource {
 			"workspace_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID of the workspace for which you want to retrieve the Terraform statefile. To find the workspace ID, use the `GET /v1/workspaces` API.",
+				Description: "The ID of the workspace for which you want to retrieve the Terraform statefile URL.  To find the workspace ID, use the GET /v1/workspaces API.",
 			},
 			"template_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID of the Terraform template for which you want to retrieve the Terraform statefile. When you create a workspace, the Terraform template that your workspace points to is assigned a unique ID. To find this ID, use the `GET /v1/workspaces` API and review the `template_data.id` value.",
+				Description: "The ID of the Terraform template for which you want to retrieve the Terraform statefile.  When you create a workspace, the Terraform template that your workspace points to is assigned a unique ID.  To find this ID, use the GET /v1/workspaces API and review the template_data.id value.",
 			},
 			"state_store": &schema.Schema{
 				Type:     schema.TypeString,
@@ -60,18 +60,18 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	getWorkspaceTemplateStateOptions.SetWID(d.Get("workspace_id").(string))
 	getWorkspaceTemplateStateOptions.SetTID(d.Get("template_id").(string))
 
-	_, response, err := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
-	if err != nil {
+	_, response, _ := schematicsClient.GetWorkspaceTemplateStateWithContext(context, getWorkspaceTemplateStateOptions)
+	if response.StatusCode != 200 {
 		log.Printf("[DEBUG] GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("GetWorkspaceTemplateStateWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(dataSourceIBMSchematicsStateID(d))
 
 	var stateStore map[string]interface{}
-	json.Unmarshal(response.Result.(json.RawMessage), &stateStore)
+	json.Unmarshal(response.RawResult, &stateStore)
 
-	b := bytes.NewReader(response.Result.(json.RawMessage))
+	b := bytes.NewReader(response.RawResult)
 
 	decoder := json.NewDecoder(b)
 	decoder.UseNumber()

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -55,6 +56,13 @@ func dataSourceIBMResourceKey() *schema.Resource {
 				Description: "Credentials asociated with the key",
 				Sensitive:   true,
 				Type:        schema.TypeMap,
+				Computed:    true,
+			},
+
+			"credentials_json": {
+				Description: "Credentials asociated with the key in json string",
+				Type:        schema.TypeString,
+				Sensitive:   true,
 				Computed:    true,
 			},
 
@@ -133,6 +141,13 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.Set("credentials", Flatten(key.Credentials))
+	creds, err := json.Marshal(key.Credentials)
+	if err != nil {
+		return fmt.Errorf("error marshalling resource key credentials: %s", err)
+	}
+	if err = d.Set("credentials_json", string(creds)); err != nil {
+		return fmt.Errorf("error setting the credentials json: %s", err)
+	}
 	d.Set("status", key.State)
 	d.Set("crn", key.Crn.String())
 	return nil

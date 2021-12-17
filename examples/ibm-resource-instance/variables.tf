@@ -14,7 +14,7 @@ variable "location" {
   default = "global"
 }
 
-variable "name" {
+variable "resource_group" {
   default = "default"
 }
 

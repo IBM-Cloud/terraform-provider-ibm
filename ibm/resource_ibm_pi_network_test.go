@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -43,10 +44,12 @@ func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_network" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-		_, err = networkC.Get(parts[1], powerinstanceid, getTimeOut)
+		cloudInstanceID, networkID, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		networkC := st.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
+		_, err = networkC.Get(networkID)
 		if err == nil {
 			return fmt.Errorf("PI Network still exists: %s", rs.Primary.ID)
 		}
@@ -71,20 +74,17 @@ func testAccCheckIBMPINetworkExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, networkID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPINetworkClient(sess, powerinstanceid)
+		client := st.NewIBMPINetworkClient(context.Background(), sess, cloudInstanceID)
 
-		network, err := client.Get(parts[1], powerinstanceid, getTimeOut)
+		_, err = client.Get(networkID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *network.NetworkID
 		return nil
-
 	}
 }
 

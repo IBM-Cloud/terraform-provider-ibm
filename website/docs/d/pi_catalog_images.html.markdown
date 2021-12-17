@@ -36,7 +36,9 @@ data "ibm_pi_catalog_images" "ds_images" {
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account. 
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `sap` - (Optional, Bool) Set `true` to include SAP images. The default value is `false`.
+- `vtl` - (Optional, Bool) Set `true` to include VTL images. The default value is `false`.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
@@ -51,10 +53,11 @@ In addition to the argument reference list, you can access the following attribu
 	- `endianness` - (String) The `Endianness` order.
 	- `hypervisor_type` - (String) Hypervisor type.
 	- `href` - (String) The `href` of an image.
-  - `image_id` - (String) The unique identifier of an image.
+	- `image_id` - (String) The unique identifier of an image.
 	- `image_type` - (String) The type of the format.
 	- `last_update_date` - (String) The last updated date of an image.
 	- `name` - (String) The name of the image.
 	- `operating_system` - (String)  Operating System.
-  - `storage_type` - (String) The storage type of an image.
+	- `storage_pool` - (String) Storage pool where image resides.
+	- `storage_type` - (String) The storage type of an image.
 	- `state` - (String) The state of an Operating System.

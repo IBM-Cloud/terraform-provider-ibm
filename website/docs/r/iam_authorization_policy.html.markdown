@@ -31,7 +31,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "databases-for-postgresql"
   target_service_name         = "kms"
-  roles                       = ["Reader", "AuthorizationDelegator"]
+  roles                       = ["Reader", "Authorization Delegator"]
 }
 ```
 

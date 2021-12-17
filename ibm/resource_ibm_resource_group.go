@@ -244,7 +244,7 @@ func resourceIBMResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with response code  %s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting resource group: %s with response code  %s", err, resp)
 	}
 
 	return *resourceGroup.ID == resourceGroupID, nil

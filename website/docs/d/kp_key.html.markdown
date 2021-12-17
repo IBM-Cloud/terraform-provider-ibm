@@ -17,11 +17,11 @@ The following example creates a read-only copy of the `mydatabase` instance in `
 data "ibm_kp_key" "test" {
   key_protect_id = "id-of-keyprotect-instance"
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = data.ibm_kp_key.test.keys.0.crn
 }
 ```

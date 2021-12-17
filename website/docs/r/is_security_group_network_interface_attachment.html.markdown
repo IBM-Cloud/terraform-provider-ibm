@@ -23,8 +23,9 @@ resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `security_group` - (Required, Forces new resource, String) The security group ID. 
-- `network_interface` - (Required, Forces new resource, String) The network interface ID.
+- `security_group` - (Required, Forces new resource, String) The `.id` attribute of a `ibm_is_security_group` resource or data.
+- `network_interface` - (Required, Forces new resource, String) The network interface `id` that is available in the `ibm_is_instance.primary_network_interface[0].id`.
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -52,19 +53,17 @@ In addition to all argument reference list, you can access the following attribu
 	- `name` - (String) The name of this security group.
 - `type` - (String) The type of this network interface as it relates to a instance.
 
-
-
 ## Import
 The `ibm_is_security_group_network_interface_attachment` resource can be imported by using security group ID and network interface ID.
 
 **Syntax**
 
-```
+```sh
 $ terraform import ibm_is_security_group_network_interface_attachment.example <security_group_ID>/<network_interface_ID>
 ```
 
 **Example**
 
-```
+```sh
 $ terraform import ibm_is_security_group_network_interface_attachment.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```

@@ -248,6 +248,29 @@ resource "ibm_database" "edb" {
   }
 }
 ```
+### Updating configuration for postgres database
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "db" {
+  location                     = "us-east"
+  members_cpu_allocation_count = 0
+  members_disk_allocation_mb   = 10240
+  members_memory_allocation_mb = 2048
+  name                         = "telus-database"
+  service                      = "databases-for-postgresql"
+  plan                         = "standard"
+  configuration           		= <<CONFIGURATION
+  {
+    "max_connections": 400
+  }
+  CONFIGURATION
+} 
+
+```
 
 **provider.tf**
 Please make sure to target right region in the provider block, If database is created in region other than `us-south`
@@ -310,6 +333,7 @@ Review the argument reference that you can specify for your resource.
     - `rate_units` - (Optional, String) Auto scaling rate in units.
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
+- `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services `databases-for-postgresql`, `databases-for-redis` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4#setdatabaseconfiguration-request).
 - `guid` - (Optional, String) The unique identifier of the database instance.
 - `key_protect_key` - (Optional, Forces new resource, String) The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS)  that you want to use for disk encryption. A key CRN is in the format `crn:v1:<…>:key:`. You can specify the root key during the database creation only. After the database is created, you cannot update the root key. For more information, refer [Disk encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key) documentation.
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
@@ -324,7 +348,7 @@ Review the argument reference that you can specify for your resource.
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb` Either members or node arguments has to be provided
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
-- `plan` - (Required, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for cassandra (`databases-for-cassandra`) and mongodb(`databases-for-mongodb`)
+- `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. All databases use `standard`. `enterprise` is supported only for cassandra (`databases-for-cassandra`) and mongodb(`databases-for-mongodb`)
 * `plan_validation` - (Optional, bool) Enable or disable validating the database parameters for elasticsearch and postgres (more coming soon) during the plan phase. If not specified defaults to true.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
@@ -350,6 +374,7 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references list, you can access the following attribute references after your resource is created. 
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
+- `configuration_schema` (String) Database Configuration Schema in JSON format.
 - `connectionstrings` - (Array) A list of connection strings for the database for each user ID. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.

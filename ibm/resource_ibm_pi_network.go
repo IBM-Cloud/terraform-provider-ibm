@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -11,21 +12,22 @@ import (
 	"time"
 
 	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 )
 
 func resourceIBMPINetwork() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMPINetworkCreate,
-		Read:   resourceIBMPINetworkRead,
-		Update: resourceIBMPINetworkUpdate,
-		Delete: resourceIBMPINetworkDelete,
-		//Exists:   resourceIBMPINetworkExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMPINetworkCreate,
+		ReadContext:   resourceIBMPINetworkRead,
+		UpdateContext: resourceIBMPINetworkUpdate,
+		DeleteContext: resourceIBMPINetworkDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -33,14 +35,12 @@ func resourceIBMPINetwork() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
 			helpers.PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"vlan", "pub-vlan"}),
 				Description:  "PI network type",
 			},
-
 			helpers.PINetworkName: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -52,27 +52,23 @@ func resourceIBMPINetwork() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of PI network DNS name",
 			},
-
 			helpers.PINetworkCidr: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network CIDR",
 			},
-
 			helpers.PINetworkGateway: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "PI network gateway",
 			},
-
 			helpers.PINetworkJumbo: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network enable MTU Jumbo option",
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -80,7 +76,6 @@ func resourceIBMPINetwork() *schema.Resource {
 			},
 
 			//Computed Attributes
-
 			"network_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -95,60 +90,79 @@ func resourceIBMPINetwork() *schema.Resource {
 	}
 }
 
-func resourceIBMPINetworkCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	networkname := d.Get(helpers.PINetworkName).(string)
 	networktype := d.Get(helpers.PINetworkType).(string)
-	networkcidr := d.Get(helpers.PINetworkCidr).(string)
 	networkdns := expandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List())
-	jumbo := d.Get(helpers.PINetworkJumbo).(bool)
 
-	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	var networkgateway, firstip, lastip string
-	if networktype == "vlan" {
-		networkgateway, firstip, lastip, err = generateIPData(networkcidr)
-		if err != nil {
-			return err
-		}
+	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	var body = &models.NetworkCreate{
+		Type: &networktype,
+		Name: networkname,
 	}
-	networkResponse, err := client.Create(networkname, networktype, networkcidr, networkdns, networkgateway, firstip, lastip, jumbo, powerinstanceid, postTimeOut)
+	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
+		body.Jumbo = v.(bool)
+	}
+	if len(networkdns) > 0 {
+		body.DNSServers = networkdns
+	}
+
+	if networktype == "vlan" {
+		var networkcidr string
+		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
+			networkcidr = v.(string)
+		} else {
+			diag.Errorf("%s is required when %s is vlan", helpers.PINetworkCidr, helpers.PINetworkType)
+		}
+
+		gateway, firstip, lastip, err := generateIPData(networkcidr)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		var ipbody = []*models.IPAddressRange{{EndingIPAddress: &lastip, StartingIPAddress: &firstip}}
+		body.IPAddressRanges = ipbody
+		body.Gateway = gateway
+		body.Cidr = networkcidr
+	}
+
+	networkResponse, err := client.Create(body)
 	if err != nil {
-		return fmt.Errorf("failed to create the network %v", err)
+		return diag.FromErr(err)
 	}
 
 	IBMPINetworkID := *networkResponse.NetworkID
 
-	d.SetId(fmt.Sprintf("%s/%s", powerinstanceid, IBMPINetworkID))
+	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, IBMPINetworkID))
 
-	_, err = isWaitForIBMPINetworkAvailable(client, IBMPINetworkID, d.Timeout(schema.TimeoutCreate), powerinstanceid)
+	_, err = isWaitForIBMPINetworkAvailable(ctx, client, IBMPINetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceIBMPINetworkRead(d, meta)
+	return resourceIBMPINetworkRead(ctx, d, meta)
 }
 
-func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
-
+func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, networkID, err := splitID(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := parts[0]
-	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(parts[1], powerinstanceid, getTimeOut)
+	networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	networkdata, err := networkC.Get(networkID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("network_id", networkdata.NetworkID)
@@ -158,79 +172,54 @@ func resourceIBMPINetworkRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
 	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
-	d.Set(helpers.PICloudInstanceId, powerinstanceid)
 
 	return nil
 
 }
 
-func resourceIBMPINetworkUpdate(data *schema.ResourceData, meta interface{}) error {
+func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
-func resourceIBMPINetworkDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	log.Printf("Calling the network delete functions. ")
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	parts, err := idParts(d.Id())
+
+	cloudInstanceID, networkID, err := splitID(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	powerinstanceid := parts[0]
-	networkC := st.NewIBMPINetworkClient(sess, powerinstanceid)
-	err = networkC.Delete(parts[1], powerinstanceid, deleteTimeOut)
+
+	networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	err = networkC.Delete(networkID)
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourceIBMPINetworkExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-
-	sess, err := meta.(ClientSession).IBMPISession()
-	if err != nil {
-		return false, err
-	}
-	parts, err := idParts(d.Id())
-	if err != nil {
-		return false, err
-	}
-	if len(parts) < 2 {
-		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of powerInstanceID/NetworkID", d.Id())
-	}
-	powerinstanceid := parts[0]
-	client := st.NewIBMPINetworkClient(sess, powerinstanceid)
-
-	network, err := client.Get(parts[0], powerinstanceid, getTimeOut)
-	if err != nil {
-
-		return false, err
-	}
-	return *network.NetworkID == parts[1], nil
-}
-
-func isWaitForIBMPINetworkAvailable(client *st.IBMPINetworkClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
-
+func isWaitForIBMPINetworkAvailable(ctx context.Context, client *st.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PINetworkProvisioning},
 		Target:     []string{"NETWORK_READY"},
-		Refresh:    isIBMPINetworkRefreshFunc(client, id, powerinstanceid),
+		Refresh:    isIBMPINetworkRefreshFunc(client, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
 
-	return stateConf.WaitForState()
+	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id, powerinstanceid string) resource.StateRefreshFunc {
+func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		network, err := client.Get(id, powerinstanceid, getTimeOut)
+		network, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}

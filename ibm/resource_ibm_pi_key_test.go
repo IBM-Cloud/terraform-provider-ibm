@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -47,10 +48,12 @@ func testAccCheckIBMPIKeyDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_key" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		sshkeyC := st.NewIBMPIKeyClient(sess, powerinstanceid)
-		_, err = sshkeyC.Get(parts[1], powerinstanceid)
+		cloudInstanceID, key, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		sshkeyC := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		_, err = sshkeyC.Get(key)
 		if err == nil {
 			return fmt.Errorf("PI key still exists: %s", rs.Primary.ID)
 		}
@@ -75,18 +78,17 @@ func testAccCheckIBMPIKeyExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPIKeyClient(sess, powerinstanceid)
 
-		key, err := client.Get(parts[1], powerinstanceid)
+		cloudInstanceID, key, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *key.Name
+
+		client := st.NewIBMPIKeyClient(context.Background(), sess, cloudInstanceID)
+		_, err = client.Get(key)
+		if err != nil {
+			return err
+		}
 		return nil
 
 	}

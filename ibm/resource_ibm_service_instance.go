@@ -301,7 +301,7 @@ func resourceIBMServiceInstanceExists(d *schema.ResourceData, meta interface{}) 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting service instance: %s", err)
 	}
 
 	return service.Metadata.GUID == serviceGUID, nil

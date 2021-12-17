@@ -9,7 +9,7 @@ description: |-
 # ibm_is_instance_group_membership
 Create, update, or delete a instance group memership of an instance group. For more information, about instance group membership, see [bulk provisioning instances with instance groups](https://cloud.ibm.com/docs/vpc?topic=vpc-bulk-provisioning).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "is_instance_group_membership" "is_instance_group_membership" {

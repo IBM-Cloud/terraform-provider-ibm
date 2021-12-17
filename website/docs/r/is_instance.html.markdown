@@ -10,6 +10,8 @@ description: |-
 # ibm_is_instance
 Create, update, or delete a Virtual Servers for VPC instance. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
+~> **Note**
+   IBM Cloud terraform provider currently provides both a standalone `ibm_is_instance_network_interface` resource and a `network_interfaces` block defined in-line in the `ibm_is_instance` resource. At this time you cannot use the `network_interfaces` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_instance_network_interface`. Doing so will create a conflict of network interfaces and will overwrite it.
 
 ## Example usage
 
@@ -64,7 +66,6 @@ resource "ibm_is_instance" "testacc_instance" {
     delete = "15m"
   }
 }
-
 ```
 
 ### Sample for creating an instance with custom security group rules.
@@ -253,7 +254,10 @@ The `ibm_is_instance` resource provides the following [[Timeouts](https://www.te
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
-
+- `action` - (Optional, String) Action to be taken on the instance. Supported values are `stop`, `start`, or `reboot`.
+  
+  ~> **Note** 
+    `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
@@ -266,7 +270,7 @@ Review the argument references that you can specify for your resource.
      - `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
-- `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
+- `force_action` - (Optional, Boolean) Required with `action`. If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
 - `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
 - `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
   **Note** 
@@ -286,6 +290,7 @@ Review the argument references that you can specify for your resource.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
+- `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
 - `primary_network_interface` - (Optional, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance.
 
   Nested scheme for `primary_network_interface`:
@@ -299,13 +304,19 @@ Review the argument references that you can specify for your resource.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
-- `profile` - (Optional, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+- `profile` - (Optional, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+
+  ~>**NOTE:**
+      When the `profile` is changed, the VSI is restarted. The new profile must:                                                                                                                                          
+          1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
+          2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the source template.
   **Note** 
     
   - `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
+- `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
 - `vpc` - (Optional, Forces new resource, String) The ID of the VPC where you want to create the instance.
@@ -315,6 +326,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `bandwidth` - The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
 
   Nested scheme for `boot_volume`:
@@ -375,6 +387,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
+- `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 
   Nested scheme for `volume_attachements`:

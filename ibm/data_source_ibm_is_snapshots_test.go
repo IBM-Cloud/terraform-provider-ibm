@@ -38,9 +38,10 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				),
 			},
 			{
-				Config: testDSCheckIBMISSnapshotsConfig(),
+				Config: testDSCheckIBMISSnapshotsConfig(name1),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.delatable"),
+					resource.TestCheckResourceAttr(
+						snpName, "snapshots.0.name", name1),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.href"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.crn"),
 					resource.TestCheckResourceAttrSet(snpName, "snapshots.0.lifecycle_state"),
@@ -51,8 +52,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func testDSCheckIBMISSnapshotsConfig() string {
+func testDSCheckIBMISSnapshotsConfig(name1 string) string {
 	return fmt.Sprintf(`
 		data "ibm_is_snapshots" "ds_snapshot" {
-}`)
+			name = "%s"
+		}`, name1)
 }

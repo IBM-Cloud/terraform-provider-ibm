@@ -27,11 +27,11 @@ data "ibm_kms_key" "test" {
   limit = 100
   key_name = "name-of-key"
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = data.ibm_kms_key.test.key.0.crn
 }
 ```

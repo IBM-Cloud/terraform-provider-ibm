@@ -4,6 +4,9 @@
 package ibm
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	//"fmt"
@@ -15,7 +18,7 @@ import (
 func dataSourceIBMPITenant() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPITenantRead,
+		ReadContext: dataSourceIBMPITenantRead,
 		Schema: map[string]*schema.Schema{
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
@@ -28,18 +31,15 @@ func dataSourceIBMPITenant() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"enabled": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-
 			"tenant_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"cloud_instances": {
-
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -59,30 +59,26 @@ func dataSourceIBMPITenant() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPITenantRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	//tenantid := d.Get("tenantid").(string)
 
-	tenantC := instance.NewIBMPITenantClient(sess, powerinstanceid)
-	tenantData, err := tenantC.Get(powerinstanceid)
-
+	tenantC := instance.NewIBMPITenantClient(ctx, sess, cloudInstanceID)
+	tenantData, err := tenantC.GetSelfTenant()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*tenantData.TenantID)
-	d.Set("creation_date", tenantData.CreationDate)
+	d.Set("creation_date", tenantData.CreationDate.String())
 	d.Set("enabled", tenantData.Enabled)
 
 	if tenantData.CloudInstances != nil {
-
 		d.Set("tenant_name", tenantData.CloudInstances[0].Name)
 	}
 
@@ -99,5 +95,4 @@ func dataSourceIBMPITenantRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return nil
-
 }

@@ -6,6 +6,9 @@ package ibm
 import (
 	//"fmt"
 
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -16,16 +19,14 @@ import (
 func dataSourceIBMPINetwork() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPINetworksRead,
+		ReadContext: dataSourceIBMPINetworkRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -33,7 +34,6 @@ func dataSourceIBMPINetwork() *schema.Resource {
 			},
 
 			// Computed Attributes
-
 			"cidr": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -76,19 +76,18 @@ func dataSourceIBMPINetwork() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	networkC := instance.NewIBMPINetworkClient(sess, powerinstanceid)
-	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string), powerinstanceid, getTimeOut)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string))
 	if err != nil || networkdata == nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*networkdata.NetworkID)
@@ -98,9 +97,7 @@ func dataSourceIBMPINetworksRead(d *schema.ResourceData, meta interface{}) error
 	if networkdata.Type != nil {
 		d.Set("type", networkdata.Type)
 	}
-	if &networkdata.Gateway != nil {
-		d.Set("gateway", networkdata.Gateway)
-	}
+	d.Set("gateway", networkdata.Gateway)
 	if networkdata.VlanID != nil {
 		d.Set("vlan_id", networkdata.VlanID)
 	}

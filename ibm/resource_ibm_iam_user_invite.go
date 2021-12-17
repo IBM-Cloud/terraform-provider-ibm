@@ -144,6 +144,7 @@ func resourceIBMUserInvite() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         resourceIBMVPCHash,
 			},
 			"access_groups": {
 				Description: "access group ids to associate the inviting user",
@@ -854,19 +855,22 @@ func getInfraPermissions(d *schema.ResourceData, meta interface{}) []string {
 	var infraPermissions = make([]string, 0)
 	if data, ok := d.GetOk("classic_infra_roles"); ok {
 		for _, resource := range data.([]interface{}) {
-			d := resource.(map[string]interface{})
-			if permissions, ok := d["permissions"]; ok && permissions != nil {
-				for _, value := range permissions.([]interface{}) {
-					infraPermissions = append(infraPermissions, fmt.Sprintf("%v", value))
+			if resource != nil {
+				d := resource.(map[string]interface{})
+				if permissions, ok := d["permissions"]; ok && permissions != nil {
+					for _, value := range permissions.([]interface{}) {
+						infraPermissions = append(infraPermissions, fmt.Sprintf("%v", value))
+					}
 				}
-			}
-			if permissionSet, ok := d["permission_set"]; ok && permissionSet != nil {
-				if permissions, ok := permissionSets[permissionSet.(string)]; ok {
-					for _, permission := range permissions {
-						infraPermissions = append(infraPermissions, permission)
+				if permissionSet, ok := d["permission_set"]; ok && permissionSet != nil {
+					if permissions, ok := permissionSets[permissionSet.(string)]; ok {
+						for _, permission := range permissions {
+							infraPermissions = append(infraPermissions, permission)
+						}
 					}
 				}
 			}
+
 		}
 		return infraPermissions
 	}

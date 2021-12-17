@@ -5,7 +5,6 @@ package ibm
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -85,6 +84,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 				Computed:    true,
 				Description: "Private endpoint for the COS bucket",
 			},
+			"s3_endpoint_direct": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Direct endpoint for the COS bucket",
+			},
 			"allowed_ip": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -137,6 +141,34 @@ func dataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"abort_incomplete_multipart_upload_days": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"days_after_initiation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the number of days when the specific rule action takes effect.",
+						},
+					},
+				},
+			},
 			"archive_rule": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -178,6 +210,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Computed:    true,
 							Description: "Enable or disable an archive rule for a bucket",
 						},
+						"date": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the date when the specific rule action takes effect.",
+						},
 						"days": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -187,6 +224,11 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"expired_object_delete_marker": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration.",
 						},
 					},
 				},
@@ -230,6 +272,35 @@ func dataSourceIBMCosBucket() *schema.Resource {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Enable or suspend the versioning for objects in the bucket",
+						},
+					},
+				},
+			},
+			"noncurrent_version_expiration": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Enable configuration expire_rule to COS Bucket after a defined period of time",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique identifier for the rule.Expire rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket",
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an expire rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"noncurrent_days": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the number of days when the specific rule action takes effect.",
 						},
 					},
 				},
@@ -307,19 +378,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	bLocationConstraint := *bucketLocationConstraint.LocationConstraint
 
-	singleSiteLocationRegex, err := regexp.Compile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	regionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{2,5}-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-	crossRegionLocationRegex, err := regexp.Compile("^[a-z]{2}-[a-z]{4,8}$")
-	if err != nil {
-		return err
-	}
-
 	if singleSiteLocationRegex.MatchString(bLocationConstraint) {
 		d.Set("single_site_location", strings.Split(bLocationConstraint, "-")[0])
 		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
@@ -345,6 +403,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("resource_instance_id", serviceID)
 	d.Set("s3_endpoint_public", apiEndpoint)
 	d.Set("s3_endpoint_private", apiEndpointPrivate)
+	d.Set("s3_endpoint_direct", directApiEndpoint)
 
 	getBucketConfigOptions := &resourceconfigurationv1.GetBucketConfigOptions{
 		Bucket: &bucketName,
@@ -381,7 +440,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	}
 
-	// Read the lifecycle configuration (archive)
+	// Read the lifecycle configuration
 
 	gInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -397,11 +456,19 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		if len(lifecycleptr.Rules) > 0 {
 			archiveRules := archiveRuleGet(lifecycleptr.Rules)
 			expireRules := expireRuleGet(lifecycleptr.Rules)
+			nc_expRules := nc_exp_RuleGet(lifecycleptr.Rules)
+			abort_mpuRules := abort_mpu_RuleGet(lifecycleptr.Rules)
 			if len(archiveRules) > 0 {
 				d.Set("archive_rule", archiveRules)
 			}
 			if len(expireRules) > 0 {
 				d.Set("expire_rule", expireRules)
+			}
+			if len(nc_expRules) > 0 {
+				d.Set("noncurrent_version_expiration", nc_expRules)
+			}
+			if len(abort_mpuRules) > 0 {
+				d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 			}
 		}
 	}

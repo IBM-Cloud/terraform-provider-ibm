@@ -70,6 +70,26 @@ func TestAccIBMIAMUserPolicy_With_Service(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_With_ServiceType(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyServiceType(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service_type", "service"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMUserPolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -239,6 +259,26 @@ func TestAccIBMIAMUserPolicyWithCustomRole(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyWithServiceSpecificRole(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resources.0.service", "cloudantnosqldb"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "3"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	rsContClient, err := testAccProvider.Meta().(ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -342,6 +382,37 @@ func testAccCheckIBMIAMUserPolicyService() string {
 	  
 			resources {
 		 		 service = "cloudantnosqldb"
+			}
+	  	}
+
+	`, IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyWithServiceSpecificRole() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = [ "Monitor", "Reader", "Viewer"]
+			resources {
+		 		 service = "cloudantnosqldb"
+			}
+	  	}
+
+	`, IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyServiceType() string {
+	return fmt.Sprintf(`
+
+		
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+	  
+			resources {
+				service_type = "service"
+				region = "us-south"
 			}
 	  	}
 

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -34,8 +35,8 @@ func TestAccIBMPIImagebasic(t *testing.T) {
 		},
 	})
 }
-func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 
+func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 	sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -44,10 +45,12 @@ func testAccCheckIBMPIImageDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_image" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		networkC := st.NewIBMPIImageClient(sess, powerinstanceid)
-		_, err = networkC.Get(parts[1], powerinstanceid)
+		cloudInstanceID, imageID, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		imageC := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
+		_, err = imageC.Get(imageID)
 		if err == nil {
 			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
 		}
@@ -72,20 +75,18 @@ func testAccCheckIBMPIImageExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, imageID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPIImageClient(sess, powerinstanceid)
+		client := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
 
-		image, err := client.Get(parts[1], powerinstanceid)
+		_, err = client.Get(imageID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *image.ImageID
+
 		return nil
-
 	}
 }
 
@@ -93,8 +94,42 @@ func testAccCheckIBMPIImageConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_image" "power_image" {
 		pi_image_name       = "%s"
-		pi_image_id         = "cfc02954-8f6f-4e6b-96ae-40b24c90bd54"
+		pi_image_id         = "IBMi-74-01-001"
 		pi_cloud_instance_id = "%s"
 	  }
 	`, name, pi_cloud_instance_id)
+}
+
+func TestAccIBMPIImageCOSPublicImport(t *testing.T) {
+	imageRes := "ibm_pi_image.cos_image"
+	name := fmt.Sprintf("tf-pi-image-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMPIImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIImageCOSPublicConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIImageExists(imageRes),
+					resource.TestCheckResourceAttr(imageRes, "pi_image_name", name),
+					resource.TestCheckResourceAttrSet(imageRes, "image_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIImageCOSPublicConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_image" "cos_image" {
+		pi_image_name       = "%[1]s"
+		pi_cloud_instance_id = "%[2]s"
+		pi_image_bucket_name = "%[3]s"
+		pi_image_bucket_access = "public"
+		pi_image_bucket_region = "us-south"
+		pi_image_bucket_file_name = "%[4]s"
+		pi_image_storage_type = "tier1"
+	}
+	`, name, pi_cloud_instance_id, pi_image_bucket_name, pi_image_bucket_file_name)
 }

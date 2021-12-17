@@ -147,6 +147,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
+				ForceNew:     true,
 			},
 
 			"status": {
@@ -175,6 +176,23 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				// DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 				//  return true
 				// },
+			},
+			"configuration": {
+				Type:     schema.TypeString,
+				Optional: true,
+				StateFunc: func(v interface{}) string {
+					json, err := normalizeJSONString(v)
+					if err != nil {
+						return fmt.Sprintf("%q", err.Error())
+					}
+					return json
+				},
+				Description: "The configuration in JSON format",
+			},
+			"configuration_schema": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The configuration schema in JSON format",
 			},
 			"version": {
 				Description: "The database version to provision if specified",
@@ -1403,6 +1421,20 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set("connectionstrings", flattenConnectionStrings(connectionStrings))
 
+	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
+		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error getting database (%s) configuration schema : %s", icdId, err)
+		}
+		s, err := json.Marshal(configSchema)
+		if err != nil {
+			return fmt.Errorf("error marshalling the database configuration schema: %s", err)
+		}
+
+		if err = d.Set("configuration_schema", string(s)); err != nil {
+			return fmt.Errorf("error setting the database configuration schema: %s", err)
+		}
+	}
 	return nil
 }
 
@@ -1467,6 +1499,29 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 		if err != nil {
 			return err
 		}
+	}
+	if d.HasChange("configuration") {
+		service := d.Get("service").(string)
+		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
+			if s, ok := d.GetOk("configuration"); ok {
+				var configuration interface{}
+				json.Unmarshal([]byte(s.(string)), &configuration)
+				configPayload := icdv4.ConfigurationReq{Configuration: configuration}
+				task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err)
+				}
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err)
+				}
+			}
+
+		} else {
+			return fmt.Errorf("[ERROR] given database type %s is not configurable", service)
+		}
+
 	}
 
 	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") || d.HasChange("node_memory_allocation_mb") || d.HasChange("node_disk_allocation_mb") || d.HasChange("node_cpu_allocation_count") {
@@ -1883,7 +1938,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s %s", err, response)
+		return false, fmt.Errorf("[ERROR] Error getting database: %s %s", err, response)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, databaseInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")

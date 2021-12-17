@@ -4,7 +4,6 @@ layout: "ibm"
 page_title: "IBM : ibm_is_lb_pool"
 description: |-
   Get information about LoadBalancerPool
-subcategory: "Virtual Private Cloud API"
 ---
 
 # ibm_is_lb_pool
@@ -14,9 +13,9 @@ Provides a read-only data source for LoadBalancerPool. For more information, abo
 ## Example Usage
 
 ```terraform
-data "ibm_is_lb_pool" "is_lb_pool" {
-	identifier = "id"
-	lb = "lb"
+data "ibm_is_lb_pool" "example" {
+	identifier = ibm_is_lb.example.id
+	lb = element(split("/",ibm_is_lb_pool.example.id),1)
 }
 ```
 

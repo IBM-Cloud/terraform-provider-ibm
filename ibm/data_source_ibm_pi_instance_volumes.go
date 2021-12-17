@@ -4,9 +4,12 @@
 package ibm
 
 import (
+	"context"
+
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -16,16 +19,14 @@ import (
 func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIInstanceVolumesRead,
+		ReadContext: dataSourceIBMPIInstanceVolumesRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Instance Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -33,12 +34,10 @@ func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 			},
 
 			//Computed Attributes
-
 			"boot_volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"instance_volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -68,6 +67,10 @@ func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"pool": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"shareable": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -83,19 +86,18 @@ func dataSourceIBMPIInstanceVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstanceVolumesRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	volumeC := instance.NewIBMPIVolumeClient(sess, powerinstanceid)
-	volumedata, err := volumeC.GetAll(d.Get(helpers.PIInstanceName).(string), powerinstanceid, getTimeOut)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
+	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(helpers.PIInstanceName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -117,6 +119,7 @@ func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interf
 			"name":      *i.Name,
 			"size":      *i.Size,
 			"type":      *i.DiskType,
+			"pool":      i.VolumePool,
 			"shareable": *i.Shareable,
 			"bootable":  *i.Bootable,
 		}

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -44,10 +45,12 @@ func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_snapshot" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		networkC := st.NewIBMPISnapshotClient(sess, powerinstanceid)
-		_, err = networkC.Get(parts[1], powerinstanceid, getTimeOut)
+		cloudInstanceID, snapshotID, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		networkC := st.NewIBMPISnapshotClient(context.Background(), sess, cloudInstanceID)
+		_, err = networkC.Get(snapshotID)
 		if err == nil {
 			return fmt.Errorf("PI Instance Snapshot still exists: %s", rs.Primary.ID)
 		}
@@ -72,20 +75,17 @@ func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, snapshotID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPISnapshotClient(sess, powerinstanceid)
+		client := st.NewIBMPISnapshotClient(context.Background(), sess, cloudInstanceID)
 
-		snapshot, err := client.Get(parts[1], powerinstanceid, getTimeOut)
+		_, err = client.Get(snapshotID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *snapshot.SnapshotID
 		return nil
-
 	}
 }
 

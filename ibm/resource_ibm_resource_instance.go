@@ -759,7 +759,7 @@ func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{})
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with resp code: %s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting resource instance: %s with resp code: %s", err, resp)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, rsInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")

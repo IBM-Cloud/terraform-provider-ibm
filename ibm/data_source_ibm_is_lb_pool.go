@@ -27,17 +27,15 @@ func dataSourceIBMISLBPool() *schema.Resource {
 			"identifier": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ExactlyOneOf: []string{isSubnetName, "identifier"},
-				// ValidateFunc: InvokeDataSourceValidator("ibm_is_lb_pool", "identifier"),
-				Description: "The pool identifier.",
+				ExactlyOneOf: []string{"name", "identifier"},
+				Description:  "The pool identifier.",
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Computed:     true,
 				Optional:     true,
-				ExactlyOneOf: []string{isSubnetName, "identifier"},
-				// ValidateFunc: InvokeDataSourceValidator("ibm_is_lb_pool", "name"),
-				Description: "The user-defined name for this load balancer pool.",
+				ExactlyOneOf: []string{"name", "identifier"},
+				Description:  "The user-defined name for this load balancer pool.",
 			},
 			"algorithm": &schema.Schema{
 				Type:        schema.TypeString,

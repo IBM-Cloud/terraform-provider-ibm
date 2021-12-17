@@ -53,6 +53,8 @@ Review the argument references that you can specify for your resource.
 - `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
 - `zone` - (Optional, Force New Resource, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. **Note** Conflicts with `target` and one of `target`, or `zone` is mandatory.
 
+~> **Note**
+  - `target` cannot be used in conjunction with the `floating_ip` argument of `ibm_is_instance_network_interface` resource and might cause cyclic dependency/unexpected issues if used used both ways.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -31,6 +32,16 @@ func TestAccIBMPIVolumebasic(t *testing.T) {
 						"ibm_pi_volume.power_volume", "pi_volume_name", name),
 				),
 			},
+			{
+				Config: testAccCheckIBMPIVolumeSizeConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_size", "30"),
+				),
+			},
 		},
 	})
 }
@@ -44,10 +55,12 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_volume" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		volumeC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-		volume, err := volumeC.Get(parts[1], powerinstanceid, volGetTimeOut)
+		cloudInstanceID, volumeID, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		volumeC := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
+		volume, err := volumeC.Get(volumeID)
 		if err == nil {
 			log.Println("volume*****", volume.State)
 			return fmt.Errorf("PI Volume still exists: %s", rs.Primary.ID)
@@ -73,18 +86,16 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, volumeID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+		client := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
 
-		volume, err := client.Get(parts[1], powerinstanceid, volGetTimeOut)
+		_, err = client.Get(volumeID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *volume.VolumeID
 		return nil
 
 	}
@@ -96,6 +107,51 @@ func testAccCheckIBMPIVolumeConfig(name string) string {
 		pi_volume_size       = 20
 		pi_volume_name       = "%s"
 		pi_volume_type       = "tier1"
+		pi_volume_shareable  = true
+		pi_cloud_instance_id = "%s"
+	  }
+	`, name, pi_cloud_instance_id)
+}
+
+func testAccCheckIBMPIVolumeSizeConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size       = 30
+		pi_volume_name       = "%s"
+		pi_volume_type       = "tier1"
+		pi_volume_shareable  = true
+		pi_cloud_instance_id = "%s"
+	  }
+	`, name, pi_cloud_instance_id)
+}
+
+func TestAccIBMPIVolumePool(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumePoolConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_pool", "Tier3-Flash-1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumePoolConfig(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size       = 20
+		pi_volume_name       = "%s"
+		pi_volume_pool       = "Tier3-Flash-1"
 		pi_volume_shareable  = true
 		pi_cloud_instance_id = "%s"
 	  }
