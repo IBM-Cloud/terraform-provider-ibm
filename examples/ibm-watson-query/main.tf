@@ -7,8 +7,8 @@ data "ibm_resource_group" "group" {
 resource "ibm_resource_instance" "wq_instance_1" {
   name              = "terraform-integration-1"
   service           = "data-virtualization"
-  plan              = "data-virtualization-enterprise-dev-stable" # "lite", "enterprise-3nodes-2tb"
-  location          = "us-south" # "us-east", "eu-gb", "eu-de", "jp-tok", "au-syd"
+  plan              = "data-virtualization-enterprise" # "data-virtualization-enterprise-dev","data-virtualization-enterprise-preprod","data-virtualization-enterprise-dev-stable"
+  location          = "us-south" # "eu-gb", "eu-de", "jp-tok"
   resource_group_id = data.ibm_resource_group.group.id
 
   # timeouts {
