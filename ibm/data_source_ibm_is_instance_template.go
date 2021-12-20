@@ -101,6 +101,22 @@ func dataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
 			},
+			isInstanceTemplateAvailablePolicy: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "The availability policy to use for this virtual server instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceTemplateHostFailure: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The action to perform if the compute host experiences a failure.",
+						},
+					},
+				},
+			},
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -290,7 +306,13 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 		d.Set(isInstanceTemplateCrn, instance.CRN)
 		d.Set(isInstanceTemplateName, instance.Name)
 		d.Set(isInstanceTemplateUserData, instance.UserData)
-
+		if instance.AvailabilityPolicy != nil {
+			availabilityPolicyList := make([]map[string]interface{}, 0)
+			availabilityPolicy := map[string]interface{}{}
+			availabilityPolicy[isInstanceTemplateHostFailure] = *instance.AvailabilityPolicy.HostFailure
+			availabilityPolicyList = append(availabilityPolicyList, availabilityPolicy)
+			d.Set(isInstanceTemplateAvailablePolicy, availabilityPolicyList)
+		}
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {

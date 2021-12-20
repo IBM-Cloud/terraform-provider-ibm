@@ -47,6 +47,12 @@ In addition to all argument reference list, you can access the following attribu
 - `instances`- (List of Object) A list of Virtual Servers for VPC instances that exist in your account.
    
    Nested scheme for `instances`:
+    - availability_policy - (List) The availability policy for this virtual server instance
+
+  	  Nested scheme for `availability_policy`:
+        - `host_failure`- (String) The action to perform if the compute host experiences a failure. 
+          - `restart` - Automatically restart the virtual server instance after host failure
+          - `stop` -  Leave the virtual server instance stopped after host failure   
     - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
 

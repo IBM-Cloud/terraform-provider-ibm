@@ -22,6 +22,12 @@ data "ibm_is_instance_templates" "instancetemplates" {
 You can access the following attribute references after your data source is created. 
 
 - `templates` - (List of Objects) List of templates.
+	- availability_policy - (Optional, List) The availability policy to use for this virtual server instance
+
+		Nested scheme for `availability_policy`:
+		- `host_failure`- (Optional, Forces new resource, String) The action to perform if the compute host experiences a failure. 
+			- `restart` - Automatically restart the virtual server instance after host failure
+			- `stop` -  Leave the virtual server instance stopped after host failure
 	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:

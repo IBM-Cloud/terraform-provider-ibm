@@ -325,7 +325,12 @@ Review the argument references that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+- availability_policy - (Optional, List) The availability policy to use for this virtual server instance
 
+  Nested scheme for `availability_policy`:
+  - `host_failure`- (Optional, String) The action to perform if the compute host experiences a failure. 
+    - `restart` - Automatically restart the virtual server instance after host failure
+    - `stop` -  Leave the virtual server instance stopped after host failure
 - `bandwidth` - The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
 

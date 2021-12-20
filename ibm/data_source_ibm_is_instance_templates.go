@@ -146,6 +146,22 @@ func dataSourceIBMISInstanceTemplates() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									isInstanceTemplateAvailablePolicy: {
+										Type:        schema.TypeList,
+										Computed:    true,
+										MinItems:    1,
+										MaxItems:    1,
+										Description: "The availability policy to use for this virtual server instance",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												isInstanceTemplateHostFailure: {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The action to perform if the compute host experiences a failure.",
+												},
+											},
+										},
+									},
 									isInstanceTemplateVolAttVolPrototype: {
 										Type:     schema.TypeList,
 										Computed: true,
@@ -327,7 +343,13 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			placementTargetMap := resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
 			template["placement_target"] = []map[string]interface{}{placementTargetMap}
 		}
-
+		if instance.AvailabilityPolicy != nil {
+			availabilityPolicyList := make([]map[string]interface{}, 0)
+			availabilityPolicy := map[string]interface{}{}
+			availabilityPolicy[isInstanceTemplateHostFailure] = *instance.AvailabilityPolicy.HostFailure
+			availabilityPolicyList = append(availabilityPolicyList, availabilityPolicy)
+			d.Set(isInstanceTemplateAvailablePolicy, availabilityPolicyList)
+		}
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {
