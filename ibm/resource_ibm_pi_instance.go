@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -190,7 +191,11 @@ func resourceIBMPIInstance() *schema.Resource {
 					},
 				},
 			},
-
+			helpers.PIPlacementGroupID: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Placement group ID",
+			},
 			"health_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -407,6 +412,9 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
 	d.Set(helpers.PIInstanceImageId, powervmdata.ImageID)
+	if *powervmdata.PlacementGroup != "none" {
+		d.Set(helpers.PIPlacementGroupID, powervmdata.PlacementGroup)
+	}
 
 	networksMap := []map[string]interface{}{}
 	if powervmdata.Networks != nil {
@@ -653,6 +661,42 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		err := startLparAfterResourceChange(ctx, client, instanceID)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(helpers.PIPlacementGroupID) {
+
+		pgClient := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
+
+		oldRaw, newRaw := d.GetChange(helpers.PIPlacementGroupID)
+		old := oldRaw.(string)
+		new := newRaw.(string)
+
+		if len(strings.TrimSpace(old)) > 0 {
+			placementGroupID := old
+			//remove server from old placement group
+			body := &models.PlacementGroupServer{
+				ID: &instanceID,
+			}
+			_, err := pgClient.DeleteMember(placementGroupID, body)
+			if err != nil {
+				// ignore delete member error where the server is already not in the PG
+				if !strings.Contains(err.Error(), "is not part of placement-group") {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		if len(strings.TrimSpace(new)) > 0 {
+			placementGroupID := new
+			// add server to a new placement group
+			body := &models.PlacementGroupServer{
+				ID: &instanceID,
+			}
+			_, err := pgClient.AddMember(placementGroupID, body)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1165,6 +1209,10 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 
 	if sc, ok := d.GetOk(helpers.PIInstanceStorageConnection); ok {
 		body.StorageConnection = sc.(string)
+	}
+
+	if pg, ok := d.GetOk(helpers.PIPlacementGroupID); ok {
+		body.PlacementGroup = pg.(string)
 	}
 
 	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {
