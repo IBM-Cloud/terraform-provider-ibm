@@ -104,6 +104,7 @@ var pi_instance_name string
 var pi_dhcp_id string
 var piCloudConnectionName string
 var piSAPProfileID string
+var pi_placement_group_name string
 
 // For Image
 
@@ -366,6 +367,12 @@ func init() {
 	if placementGroupName == "" {
 		placementGroupName = "terraform_group"
 		fmt.Println("[WARN] Set the environment variable IBM_PLACEMENT_GROUP_NAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-group'")
+	}
+
+	pi_placement_group_name = os.Getenv("PI_PLACEMENT_GROUP_NAME")
+	if pi_placement_group_name == "" {
+		pi_placement_group_name = "tf-pi-placement-group"
+		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
 
 	regionName = os.Getenv("SL_REGION")
