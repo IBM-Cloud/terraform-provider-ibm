@@ -9,6 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	tgRouteReport = "route_report"
+)
+
 func dataSourceIBMTransitGatewayRouteReport() *schema.Resource {
 
 	return &schema.Resource{
@@ -19,7 +23,7 @@ func dataSourceIBMTransitGatewayRouteReport() *schema.Resource {
 				Required:    true,
 				Description: "The Transit Gateway identifier",
 			},
-			tgID: {
+			tgRouteReport: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The Transit Gateway Route Report identifier",
@@ -133,7 +137,7 @@ func dataSourceIBMTransitGatewayRouteReportRead(d *schema.ResourceData, meta int
 	}
 
 	gatewayId := d.Get(tgGatewayId).(string)
-	routeReportId := d.Get(tgID).(string)
+	routeReportId := d.Get(tgRouteReport).(string)
 
 	getTransitGatewayRouteReportOptionsModel := &transitgatewayapisv1.GetTransitGatewayRouteReportOptions{}
 	getTransitGatewayRouteReportOptionsModel.SetTransitGatewayID(gatewayId)
@@ -143,7 +147,7 @@ func dataSourceIBMTransitGatewayRouteReportRead(d *schema.ResourceData, meta int
 		return fmt.Errorf("Error while retrieving transit gateway route report %s\n%s", err, response)
 	}
 
-	d.Set(tgID, routeReport.ID)
+	d.Set(tgRouteReport, routeReport.ID)
 	d.SetId(*routeReport.ID)
 	d.Set(tgStatus, routeReport.Status)
 	d.Set(tgCreatedAt, routeReport.CreatedAt.String())

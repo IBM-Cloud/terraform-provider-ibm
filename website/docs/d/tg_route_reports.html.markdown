@@ -2,13 +2,14 @@
 
 subcategory: "Transit Gateway"
 layout: "ibm"
-page_title: "IBM : tg_gateways"
+page_title: "IBM : tg_route_reports"
 description: |-
-  Manages IBM Cloud Infrastructure Transit Gateways.
+  Manages IBM Cloud Infrastructure Transit Gateway Route Reports.
 ---
 
 # ibm_tg_route_reports
 Retrieve information of an existing IBM Cloud infrastructure transit gateway route reports as a read only data source. For more information about Transit Gateway Route Reports, see [generating and viewing a route report](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-route-reports&interface=ui#generate-route-report-ui).
+
 ## Example usage
 
 ```terraform

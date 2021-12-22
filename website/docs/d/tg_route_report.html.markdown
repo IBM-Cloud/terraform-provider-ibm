@@ -2,9 +2,9 @@
 
 subcategory: "Transit Gateway"
 layout: "ibm"
-page_title: "IBM : tg_gateway"
+page_title: "IBM : tg_route_report"
 description: |-
-  Manages IBM Cloud Infrastructure Transit Gateway.
+  Manages IBM Cloud Infrastructure Transit Gateway Route Report.
 ---
 
 # ibm_tg_route_report
@@ -23,7 +23,7 @@ data "ibm_tg_route_report" "tg_route_report" {
 Review the argument references that you can specify for your data source. 
 
 - `gateway` - (Required, String) The unique identifier of the gateway.
-- `id` - (Required, String) The unique identifier of the gateway route report
+- `route_report` - (Required, String) The unique identifier of the gateway route report
 
 
 ## Attribute reference

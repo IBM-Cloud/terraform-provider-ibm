@@ -1,9 +1,9 @@
 ---
 subcategory: "Transit Gateway"
 layout: "ibm"
-page_title: "IBM : tg_connection"
+page_title: "IBM : tg_route_report"
 description: |-
-  Manages IBM Transit Gateway connection.
+  Manages IBM Transit Gateway Route Report.
 ---
 
 # ibm_tg_route_report

@@ -41,7 +41,6 @@ func resourceIBMTransitGatewayRouteReport() *schema.Resource {
 			},
 			tgRouteReportId: {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The Transit Gateway Route Report identifier",
 			},

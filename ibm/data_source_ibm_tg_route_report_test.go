@@ -44,7 +44,7 @@ func testAccCheckIBMTransitGatewayDataRouteReportSourceConfig(gatewayname, locat
 
 	data "ibm_tg_route_report" "test_tg_route_get" {
 		gateway = ibm_tg_gateway.test_tg_gateway.id
-		id = ibm_tg_route_report.test_tg_route.route_report_id
+		route_report = ibm_tg_route_report.test_tg_route.route_report_id
 	}
 	`, gatewayname, location)
 }
