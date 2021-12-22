@@ -132,6 +132,27 @@ func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	sServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	tServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, tServiceInstance, acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAuthorizationPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -266,4 +287,54 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourc
 	  }
 	  
 	`, sResourceGroup, tResourceGroup)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, tServiceInstance, sAccountID, tAccountID string) string {
+
+	return fmt.Sprintf(`
+	
+	resource "ibm_resource_instance" "cos" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
+	}
+	
+	resource "ibm_resource_instance" "kms" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	}
+
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles                       = ["Reader"]
+
+		subject_attributes {
+			name   = "accountId"
+			value = "%s"
+		}
+		subject_attributes {
+			name   = "serviceInstance"
+			value = ibm_resource_instance.cos.id
+		}
+		subject_attributes {
+			name   = "serviceName"
+			value = "cloud-object-storage"
+		}
+
+		resource_attributes {
+			name   = "serviceName"
+			value = "kms"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value = "%s"
+		}
+		resource_attributes {
+			name   = "serviceInstance"
+			value = ibm_resource_instance.kms.id
+		}
+	}
+	`, sServiceInstance, tServiceInstance, sAccountID, tAccountID)
 }
