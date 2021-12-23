@@ -1341,15 +1341,16 @@ func FlattenPolicyResourceTags(resources []iampolicymanagementv1.PolicyResource)
 	result := make([]map[string]interface{}, 0)
 
 	for _, resource := range resources {
-		for _, tags := range resource.Tags {
-			tag := map[string]interface{}{
-				"name":     tags.Name,
-				"value":    tags.Value,
-				"operator": tags.Operator,
+		if resource.Tags != nil {
+			for _, tags := range resource.Tags {
+				tag := map[string]interface{}{
+					"name":     tags.Name,
+					"value":    tags.Value,
+					"operator": tags.Operator,
+				}
+				result = append(result, tag)
 			}
-			result = append(result, tag)
 		}
-
 	}
 	return result
 }
@@ -2974,7 +2975,7 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 
 func SetTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
 	resourceAttributes := []iampolicymanagementv1.ResourceTag{}
-	if r, ok := d.GetOk("tags"); ok {
+	if r, ok := d.GetOk("resource_tags"); ok {
 		for _, attribute := range r.(*schema.Set).List() {
 			a := attribute.(map[string]interface{})
 			name := a["name"].(string)

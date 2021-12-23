@@ -281,7 +281,38 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "tags.#", "1"),
 					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_tags.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
 				),
 			},
 		},
@@ -366,10 +397,7 @@ func testAccCheckIBMIAMAccessGroupPolicyBasic(name string) string {
 		resource "ibm_iam_access_group_policy" "policy" {
   			access_group_id = ibm_iam_access_group.accgrp.id
   			roles           = ["Viewer"]
-			  tags   {
-				name = "test"
-				value = "terrformcreate"
-			}
+			tags            = ["tag1"]
 		}
 
 	`, name)
@@ -385,14 +413,7 @@ func testAccCheckIBMIAMAccessGroupPolicyUpdateRole(name string) string {
 	  	resource "ibm_iam_access_group_policy" "policy" {
 			access_group_id = ibm_iam_access_group.accgrp.id
 			roles           = ["Viewer", "Administrator"]
-			tags   {
-				name = "one"
-				value = "terrformupdate"
-			}
-			tags   {
-				name = "two"
-				value = "terrformupdate"
-			}
+			tags            = ["tag1", "tag2"]
 	  	}
 	`, name)
 }
@@ -600,6 +621,7 @@ func testAccCheckIBMIAMAccessGroupPolicyWithCustomRole(name, crName, displayName
 		resource "ibm_iam_access_group_policy" "policy" {
   			access_group_id = ibm_iam_access_group.accgrp.id
   			roles           = [ibm_iam_custom_role.customrole.display_name,"Viewer"]
+			  tags            = ["tag1"]
 			  resources {
 				service = "kms"
 			  }
@@ -646,5 +668,48 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceAttributesUpdate(name string) st
 				value    = "messagehub"
 			}
 	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyResourceTags(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+  			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+  			access_group_id = ibm_iam_access_group.accgrp.id
+  			roles           = ["Viewer"]
+			
+			resource_tags {
+				name = "one"
+				value = "terrformupdate"
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateResourceTags(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+  			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+  			access_group_id = ibm_iam_access_group.accgrp.id
+  			roles           = ["Viewer"]
+			
+			resource_tags {
+				name = "one"
+				value = "terrformupdate"
+			}
+
+			resource_tags   {
+				name = "two"
+				value = "terrformupdate"
+            }
+		}
 	`, name)
 }

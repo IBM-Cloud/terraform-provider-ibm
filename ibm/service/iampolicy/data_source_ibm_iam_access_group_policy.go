@@ -88,7 +88,7 @@ func DataSourceIBMIAMAccessGroupPolicy() *schema.Resource {
 								},
 							},
 						},
-						"tags": {
+						"resource_tags": {
 							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Set access management tags.",
@@ -163,10 +163,10 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"id":        fmt.Sprintf("%s/%s", accessGroupId, *policy.ID),
-			"roles":     roles,
-			"resources": resources,
-			"tags":      flattenPolicyResourceTags(policy.Resources),
+			"id":            fmt.Sprintf("%s/%s", accessGroupId, *policy.ID),
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if policy.Description != nil {
 			p["description"] = policy.Description

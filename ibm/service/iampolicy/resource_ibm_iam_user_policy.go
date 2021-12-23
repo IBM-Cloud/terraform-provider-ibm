@@ -142,6 +142,13 @@ func ResourceIBMIAMUserPolicy() *schema.Resource {
 			},
 
 			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			"resource_tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Set access management tags.",
@@ -326,8 +333,8 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(userPolicy.Resources))
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		d.Set("tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
 	}
 
 	if len(userPolicy.Resources) > 0 {
@@ -349,7 +356,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("tags") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
 			return err
@@ -380,11 +387,9 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 			Operator: core.StringPtr("stringEquals"),
 		}
 
-		policyTags := flex.SetTags(d)
-
 		policyResources := iampolicymanagementv1.PolicyResource{
 			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
-			Tags:       policyTags,
+			Tags:       flex.SetTags(d),
 		}
 
 		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
@@ -511,6 +516,6 @@ func importUserPolicy(d *schema.ResourceData, meta interface{}) (interface{}, in
 	}
 	resources := flex.FlattenPolicyResource(userPolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(userPolicy.Resources)
-	d.Set("tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
 	return resources, resource_attributes, nil
 }

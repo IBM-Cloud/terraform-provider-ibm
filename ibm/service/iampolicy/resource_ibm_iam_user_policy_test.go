@@ -283,6 +283,36 @@ func TestAccIBMIAMUserPolicyWithSpecificServiceRole(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyResourceTags(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Creation for test scenario"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIAMUserPolicyResourceTagsUpdate(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_tags.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "roles.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Update for test scenario"),
+				),
+			},
+		},
+	})
+
+}
+
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -357,10 +387,7 @@ func testAccCheckIBMIAMUserPolicyBasic() string {
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
 			roles  = ["Viewer"]
-			tags   {
-				name = "test"
-				value = "terraform"
-			}
+			tags   = ["tag1"]
 			description = "IAM User Policy Creation for test scenario"
 	  	}
 
@@ -373,14 +400,7 @@ func testAccCheckIBMIAMUserPolicyUpdateRole() string {
 		resource "ibm_iam_user_policy" "policy" {
 			ibm_id = "%s"
 			roles  = ["Viewer", "Manager"]
-			tags   {
-				name = "one"
-				value = "terrformupdate"
-			}
-			tags   {
-				name = "two"
-				value = "terrformupdate"
-			}
+			tags   = ["tag1", "tag2"]
 			description = "IAM User Policy Update for test scenario"
 	  	}
 	`, acc.IAMUser)
@@ -606,5 +626,48 @@ func testAccCheckIBMIAMUserPolicyResourceAttributesUpdate() string {
 			value    = "messagehub"
 		}
 	  }
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyResourceTags() string {
+	return fmt.Sprintf(`
+  
+	resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer"]
+		description = "IAM User Policy Creation for test scenario"
+		resources {
+			service_type = "service"
+		}
+		
+		resource_tags {
+			name = "test"
+			value = "terraform"
+		}
+	}
+	  
+`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyResourceTagsUpdate() string {
+	return fmt.Sprintf(`
+	
+	resource "ibm_iam_user_policy" "policy" {
+		ibm_id = "%s"
+		roles  = ["Viewer", "Manager"]
+		description = "IAM User Policy Update for test scenario"
+		resources {
+			service_type = "service"
+		}
+		
+		resource_tags {
+			name = "test"
+			value = "terraform"
+		}
+		resource_tags {
+			name = "two"
+			value = "terrformupdate"
+		}
+	}
 	`, acc.IAMUser)
 }

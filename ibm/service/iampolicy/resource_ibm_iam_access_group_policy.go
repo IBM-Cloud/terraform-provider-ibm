@@ -143,6 +143,13 @@ func ResourceIBMIAMAccessGroupPolicy() *schema.Resource {
 			},
 
 			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			"resource_tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Set access management tags.",
@@ -324,8 +331,8 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(accessGroupPolicy.Resources))
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		d.Set("tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
 	}
 
 	if len(accessGroupPolicy.Resources) > 0 {
@@ -350,7 +357,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("tags") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
 			return err
@@ -497,7 +504,7 @@ func importAccessGroupPolicy(d *schema.ResourceData, meta interface{}) (interfac
 
 	resources := flex.FlattenPolicyResource(accessGroupPolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(accessGroupPolicy.Resources)
-	d.Set("tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
 
 	return resources, resource_attributes, nil
 }

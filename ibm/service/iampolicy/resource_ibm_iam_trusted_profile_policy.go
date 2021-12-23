@@ -152,6 +152,13 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 			},
 
 			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			"resource_tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Set access management tags.",
@@ -358,8 +365,8 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(trustedProfilePolicy.Resources))
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		d.Set("tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
 	}
 
 	if len(trustedProfilePolicy.Resources) > 0 {
@@ -379,7 +386,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 
 func resourceIBMIAMTrustedProfilePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("tags") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
@@ -561,6 +568,6 @@ func importTrustedProfilePolicy(d *schema.ResourceData, meta interface{}) (inter
 	}
 	resources := flex.FlattenPolicyResource(trustedProfilePolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(trustedProfilePolicy.Resources)
-	d.Set("tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
 	return resources, resource_attributes, nil
 }

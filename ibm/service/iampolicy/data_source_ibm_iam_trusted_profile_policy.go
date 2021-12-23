@@ -97,7 +97,7 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 								},
 							},
 						},
-						"tags": {
+						"resource_tags": {
 							Type:        schema.TypeSet,
 							Computed:    true,
 							Description: "Set access management tags.",
@@ -190,9 +190,9 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"roles":     roles,
-			"resources": resources,
-			"tags":      flattenPolicyResourceTags(policy.Resources),
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if v, ok := d.GetOk("profile_id"); ok && v != nil {
 			profileUUID := v.(string)

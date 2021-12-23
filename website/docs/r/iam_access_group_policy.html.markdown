@@ -25,7 +25,7 @@ resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
   roles           = ["Viewer"]
   
-  tags {
+  resource_tags {
     name = "env"
     value = "dev"
   }
@@ -241,9 +241,10 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
   - `value` - (Required, String) Value of an attribute.
   - `operator` - (Optional, string) Operator of an attribute. Default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
-- `tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `Tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
+
+- `resource_tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `resource_tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
   
-  Nested scheme for `tags`:
+  Nested scheme for `resource_tags`:
   - `name` - (Required, String) The key of an access management tag. 
   - `value` - (Required, String) The value of an access management tag.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.

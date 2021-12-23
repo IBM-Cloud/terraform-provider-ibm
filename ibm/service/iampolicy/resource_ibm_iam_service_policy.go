@@ -152,6 +152,13 @@ func ResourceIBMIAMServicePolicy() *schema.Resource {
 			},
 
 			"tags": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
+			},
+
+			"resource_tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Set access management tags.",
@@ -358,8 +365,8 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(servicePolicy.Resources))
 	}
 
-	if _, ok := d.GetOk("tags"); ok {
-		d.Set("tags", flex.FlattenPolicyResourceTags(servicePolicy.Resources))
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(servicePolicy.Resources))
 	}
 
 	if len(servicePolicy.Resources) > 0 {
@@ -379,7 +386,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 
 func resourceIBMIAMServicePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("tags") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
@@ -561,6 +568,6 @@ func importServicePolicy(d *schema.ResourceData, meta interface{}) (interface{},
 	}
 	resources := flex.FlattenPolicyResource(servicePolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(servicePolicy.Resources)
-	d.Set("tags", flex.FlattenPolicyResourceTags(servicePolicy.Resources))
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(servicePolicy.Resources))
 	return resources, resource_attributes, nil
 }

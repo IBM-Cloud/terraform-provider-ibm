@@ -20,8 +20,8 @@ resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
   description = "IAM User Policy"
-
-   tags {
+  
+  resource_tags {
     name = "env"
     value = "dev"
   }
@@ -183,9 +183,10 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) The name of an Attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`. **Note**: Conflicts with `account_management` and `resources`.
-- `tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `Tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
 
-  Nested scheme for `tags`:
+- `resource_tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `resource_tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
+
+  Nested scheme for `resource_tags`:
   - `name` - (Required, String) The key of an access management tag. 
   - `value` - (Required, String) The value of an access management tag.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
