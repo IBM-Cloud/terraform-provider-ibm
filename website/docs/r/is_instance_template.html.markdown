@@ -80,7 +80,7 @@ resource "ibm_is_instance_template" "example" {
   }
   volume_attachments {
     delete_volume_on_instance_delete = true
-    name                             = "volume-att-01"
+    name                             = "example-volume-att-01"
     volume_prototype {
       iops     = 3000
       profile  = "general-purpose"
