@@ -1833,8 +1833,8 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 		dbConnection = connection.Rediss
 	case "databases-for-mongodb":
 		dbConnection = connection.Mongo
-	// case "databases-for-mysql":
-	// 	dbConnection = connection.Mysql
+	case "databases-for-mysql":
+		dbConnection = connection.Mysql
 	case "databases-for-elasticsearch":
 		dbConnection = connection.Https
 	case "databases-for-cassandra":
