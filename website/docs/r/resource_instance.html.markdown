@@ -69,6 +69,29 @@ resource "ibm_resource_instance" "myhpdbcluster" {
 }
 ```
 
+### Example to provision a Watson Query service instance
+The following example enables you to create a service instance of IBM Watson Query. For detailed argument reference, see the tables in the [Watson Query documentation](https://cloud.ibm.com/docs/data-virtualization?topic=data-virtualization-provisioning).
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "wq_instance_1" {
+  name              = "terraform-integration-1"
+  service           = "data-virtualization"
+  plan              = "data-virtualization-enterprise" # "data-virtualization-enterprise-dev","data-virtualization-enterprise-preprod","data-virtualization-enterprise-dev-stable"
+  location          = "us-south" # "eu-gb", "eu-de", "jp-tok"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
