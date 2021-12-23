@@ -53,7 +53,7 @@ data "ibm_dns_permitted_networks" "test" {
 ## Argument reference
 Review the argument reference that you can specify for your data source.
 
-- `instance_id` - (Required, String) The ID of the private DNS service instance where you created permitted networks.
+- `instance_id` - (Required, String) The GUID of the private DNS service instance where you created permitted networks.
 - `zone_id` - (Required, String) The ID of the zone where you added the permitted networks.
 
 ## Attribute reference
