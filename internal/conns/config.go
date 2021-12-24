@@ -1154,7 +1154,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
-		err := refreshToken(sess.BluemixSession)
+		err := RefreshToken(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
 				if err == nil || !isRetryable(err) {
@@ -1162,7 +1162,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 				}
 				time.Sleep(c.RetryDelay)
 				log.Printf("Retrying refresh token %d", count)
-				err = refreshToken(sess.BluemixSession)
+				err = RefreshToken(sess.BluemixSession)
 			}
 			if err != nil {
 				return nil, fmt.Errorf("Error occured while refreshing the token: %q", err)
@@ -2913,7 +2913,7 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	return &user, nil
 }
 
-func refreshToken(sess *bxsession.Session) error {
+func RefreshToken(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{

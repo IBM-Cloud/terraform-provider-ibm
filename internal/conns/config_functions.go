@@ -82,13 +82,13 @@ func setupOpenWhiskClientConfig(namespace string, sess *bxsession.Session, funct
 			if n.IsIamEnabled() {
 				additionalHeaders := make(http.Header)
 
-				err := refreshToken(sess)
+				err := RefreshToken(sess)
 				if err != nil {
 					for count := sess.Config.MaxRetries; *count >= 0; *count-- {
 						if err == nil || !isRetryable(err) {
 							break
 						}
-						err = refreshToken(sess)
+						err = RefreshToken(sess)
 					}
 					if err != nil {
 						return nil, err

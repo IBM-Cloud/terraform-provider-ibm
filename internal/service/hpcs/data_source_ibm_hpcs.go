@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package hpcs
 
 import (
 	"context"
@@ -15,9 +15,11 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
-func dataSourceIBMHPCS() *schema.Resource {
+func DataSourceIBMHPCS() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMHPCSRead,
 
@@ -157,7 +159,7 @@ func dataSourceIBMHPCS() *schema.Resource {
 }
 
 func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPIV2()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,14 +173,14 @@ func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInstQuery.ResourceGroupID = rsGrpID.(string)
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		rsInstQuery.ResourceGroupID = defaultRg
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +208,7 @@ func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta
 	if loc, ok := d.GetOk("location"); ok {
 		location = loc.(string)
 		for _, instance := range instances {
-			if getLocation(instance) == location {
+			if flex.GetLocation(instance) == location {
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
@@ -240,10 +242,10 @@ func dataSourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
-		d.Set("extensions", Flatten(instance.Extensions))
+		d.Set("extensions", flex.Flatten(instance.Extensions))
 	}
 	if instance.Parameters != nil {
-		instanceParameters := Flatten(instance.Parameters)
+		instanceParameters := flex.Flatten(instance.Parameters)
 
 		if endpoint, ok := instanceParameters["allowed_network"]; ok {
 			if endpoint != "private-only" {

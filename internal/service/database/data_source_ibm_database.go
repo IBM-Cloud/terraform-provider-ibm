@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package database
 
 import (
 	"encoding/base64"
@@ -17,9 +17,11 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
-func dataSourceIBMDatabaseInstance() *schema.Resource {
+func DataSourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMDatabaseInstanceRead,
 
@@ -519,30 +521,30 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The configuration schema in JSON format",
 			},
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
 
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
 
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 
-			ResourceGroupName: {
+			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group name in which resource is provisioned",
+				Description: "The resource group name in which resource is provisioned",
 			},
-			ResourceControllerURL: {
+			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
@@ -552,7 +554,7 @@ func dataSourceIBMDatabaseInstance() *schema.Resource {
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPIV2()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
 	}
@@ -566,14 +568,14 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInstQuery.ResourceGroupID = rsGrpID.(string)
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
 		rsInstQuery.ResourceGroupID = defaultRg
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -583,7 +585,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
 		if err != nil {
-			return fmt.Errorf("Error retrieving database offering: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving database offering: %s", err)
 		}
 
 		rsInstQuery.ServiceID = serviceOff[0].ID
@@ -601,7 +603,7 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	if loc, ok := d.GetOk("location"); ok {
 		location = loc.(string)
 		for _, instance := range instances {
-			if getLocation(instance) == location {
+			if flex.GetLocation(instance) == location {
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
@@ -623,10 +625,9 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(instance.ID)
 
-	err = GetTags(d, meta)
+	err = flex.GetTags(d, meta)
 	if err != nil {
-		return fmt.Errorf(
-			"Error on get of resource instance (%s) tags: %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error on get of resource instance (%s) tags: %s", d.Id(), err)
 	}
 
 	d.Set("name", instance.Name)
@@ -637,40 +638,40 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(flex.ResourceName, instance.Name)
+	d.Set(flex.ResourceCRN, instance.Crn.String())
+	d.Set(flex.ResourceStatus, instance.State)
+	d.Set(flex.ResourceGroupName, instance.ResourceGroupName)
 
-	rcontroller, err := getBaseController(meta)
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
 
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
-		return fmt.Errorf("Error getting database client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	icdId := EscapeUrlParm(instance.ID)
+	icdId := flex.EscapeUrlParm(instance.ID)
 	cdb, err := icdClient.Cdbs().GetCdb(icdId)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 			return fmt.Errorf("The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 		}
-		return fmt.Errorf("Error getting database config for: %s with error %s\n", icdId, err)
+		return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
 	}
 	d.Set("adminuser", cdb.AdminUser)
 	d.Set("version", cdb.Version)
@@ -685,23 +686,23 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	groupList, err := icdClient.Groups().GetGroups(icdId)
 	if err != nil {
-		return fmt.Errorf("Error getting database groups: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
-	d.Set("groups", flattenIcdGroups(groupList))
+	d.Set("groups", flex.FlattenIcdGroups(groupList))
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
 	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
 	if err != nil {
-		return fmt.Errorf("Error getting database groups: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
-		return fmt.Errorf("Error getting database whitelist: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
 	}
-	d.Set("whitelist", flattenWhitelist(whitelist))
+	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {
@@ -713,10 +714,10 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	}
 
-	var connectionStrings []CsEntry
+	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
 	tfusers := d.Get("users").(*schema.Set)
-	users := expandUsers(tfusers)
+	users := flex.ExpandUsers(tfusers)
 	user := icdv4.User{
 		UserName: cdb.AdminUser,
 	}
@@ -725,23 +726,23 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		userName := user.UserName
 		csEntry, err := getConnectionString(d, userName, connectionEndpoint, meta)
 		if err != nil {
-			return fmt.Errorf("Error getting user connection string for user (%s): %s", userName, err)
+			return fmt.Errorf("[ERROR] Error getting user connection string for user (%s): %s", userName, err)
 		}
 		connectionStrings = append(connectionStrings, csEntry)
 	}
-	d.Set("connectionstrings", flattenConnectionStrings(connectionStrings))
+	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
 	connStr := connectionStrings[0]
 	certFile, err := filepath.Abs(connStr.CertName + ".pem")
 	if err != nil {
-		return fmt.Errorf("Error generating certificate file path: %s", err)
+		return fmt.Errorf("[ERROR] Error generating certificate file path: %s", err)
 	}
 	content, err := base64.StdEncoding.DecodeString(connStr.CertBase64)
 	if err != nil {
-		return fmt.Errorf("Error decoding certificate content: %s", err)
+		return fmt.Errorf("[ERROR] Error decoding certificate content: %s", err)
 	}
 	if err := ioutil.WriteFile(certFile, content, 0644); err != nil {
-		return fmt.Errorf("Error writing certificate to file: %s", err)
+		return fmt.Errorf("[ERROR] Error writing certificate to file: %s", err)
 	}
 	d.Set("cert_file_path", certFile)
 	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {

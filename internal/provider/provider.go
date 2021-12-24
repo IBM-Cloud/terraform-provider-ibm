@@ -12,7 +12,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/database"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/hpcs"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcemanager"
@@ -248,7 +250,7 @@ func Provider() *schema.Provider {
 			// "ibm_cis_filters":                        dataSourceIBMCISFilters(),
 			// "ibm_cis_firewall_rules":                 dataSourceIBMCISFirewallRules(),
 			"ibm_cloudant": cloudant.DataSourceIBMCloudant(),
-			// "ibm_database":                           dataSourceIBMDatabaseInstance(),
+			"ibm_database": database.DataSourceIBMDatabaseInstance(),
 			// "ibm_compute_bare_metal":                 dataSourceIBMComputeBareMetal(),
 			// "ibm_compute_image_template":             dataSourceIBMComputeImageTemplate(),
 			// "ibm_compute_placement_group":            dataSourceIBMComputePlacementGroup(),
@@ -281,7 +283,7 @@ func Provider() *schema.Provider {
 			// "ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
 			// "ibm_event_streams_topic":                dataSourceIBMEventStreamsTopic(),
 			// "ibm_event_streams_schema":               dataSourceIBMEventStreamsSchema(),
-			// "ibm_hpcs":                               dataSourceIBMHPCS(),
+			"ibm_hpcs": hpcs.DataSourceIBMHPCS(),
 			// "ibm_iam_access_group":                   dataSourceIBMIAMAccessGroup(),
 			// "ibm_iam_access_group_policy":            dataSourceIBMIAMAccessGroupPolicy(),
 			// "ibm_iam_account_settings":               dataSourceIBMIAMAccountSettings(),
@@ -640,7 +642,7 @@ func Provider() *schema.Provider {
 			// "ibm_event_streams_schema":                           resourceIBMEventStreamsSchema(),
 			// "ibm_firewall":                                       resourceIBMFirewall(),
 			// "ibm_firewall_policy":                                resourceIBMFirewallPolicy(),
-			// "ibm_hpcs":                                           resourceIBMHPCS(),
+			"ibm_hpcs": hpcs.ResourceIBMHPCS(),
 			// "ibm_iam_access_group":                               resourceIBMIAMAccessGroup(),
 			// "ibm_iam_account_settings":                           resourceIbmIamAccountSettings(),
 			// "ibm_iam_custom_role":                                resourceIBMIAMCustomRole(),
@@ -890,13 +892,13 @@ func Validator() validate.ValidatorDict {
 				// "ibm_dl_virtual_connection":               resourceIBMdlGatewayVCValidator(),
 				// "ibm_dl_gateway":                          resourceIBMDLGatewayValidator(),
 				// "ibm_dl_provider_gateway":                 resourceIBMDLProviderGatewayValidator(),
-				// "ibm_database":                            resourceIBMICDValidator(),
+				"ibm_database": database.ResourceIBMICDValidator(),
 				// "ibm_function_package":                    resourceIBMFuncPackageValidator(),
 				// "ibm_function_action":                     resourceIBMFuncActionValidator(),
 				// "ibm_function_rule":                       resourceIBMFuncRuleValidator(),
 				// "ibm_function_trigger":                    resourceIBMFuncTriggerValidator(),
 				// "ibm_function_namespace":                  resourceIBMFuncNamespaceValidator(),
-				// "ibm_hpcs":                                resourceIBMHPCSValidator(),
+				"ibm_hpcs": hpcs.ResourceIBMHPCSValidator(),
 				// "ibm_is_dedicated_host_group":             resourceIbmIsDedicatedHostGroupValidator(),
 				// "ibm_is_dedicated_host":                   resourceIbmIsDedicatedHostValidator(),
 				// "ibm_is_dedicated_host_disk_management":   resourceIBMISDedicatedHostDiskManagementValidator(),

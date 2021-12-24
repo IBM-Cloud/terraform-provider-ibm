@@ -25,13 +25,13 @@ import (
 )
 
 const (
-	rsInstanceSuccessStatus      = "active"
-	rsInstanceProgressStatus     = "in progress"
-	rsInstanceProvisioningStatus = "provisioning"
-	rsInstanceInactiveStatus     = "inactive"
-	rsInstanceFailStatus         = "failed"
-	rsInstanceRemovedStatus      = "removed"
-	rsInstanceReclamation        = "pending_reclamation"
+	RsInstanceSuccessStatus      = "active"
+	RsInstanceProgressStatus     = "in progress"
+	RsInstanceProvisioningStatus = "provisioning"
+	RsInstanceInactiveStatus     = "inactive"
+	RsInstanceFailStatus         = "failed"
+	RsInstanceRemovedStatus      = "removed"
+	RsInstanceReclamation        = "pending_reclamation"
 )
 
 func ResourceIBMResourceInstance() *schema.Resource {
@@ -413,7 +413,7 @@ func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	if len(deployments) == 0 {
 		return fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan)
 	}
-	deployments, supportedLocations := filterDeployments(deployments, location)
+	deployments, supportedLocations := FilterDeployments(deployments, location)
 
 	if len(deployments) == 0 {
 		locationList := make([]string, 0, len(supportedLocations))
@@ -785,7 +785,7 @@ func ResourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{})
 		}
 		return false, fmt.Errorf("[ERROR] Error getting resource instance: %s with resp code: %s", err, resp)
 	}
-	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, rsInstanceReclamation)) {
+	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, RsInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")
 		d.SetId("")
 		return false, nil
@@ -805,8 +805,8 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceProvisioningStatus},
-		Target:  []string{rsInstanceSuccessStatus},
+		Pending: []string{RsInstanceProgressStatus, RsInstanceInactiveStatus, RsInstanceProvisioningStatus},
+		Target:  []string{RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
@@ -815,7 +815,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -839,8 +839,8 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
-		Target:  []string{rsInstanceSuccessStatus},
+		Pending: []string{RsInstanceProgressStatus, RsInstanceInactiveStatus},
+		Target:  []string{RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
@@ -849,7 +849,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -872,17 +872,17 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 		ID: &instanceID,
 	}
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceSuccessStatus},
-		Target:  []string{rsInstanceRemovedStatus, rsInstanceReclamation},
+		Pending: []string{RsInstanceProgressStatus, RsInstanceInactiveStatus, RsInstanceSuccessStatus},
+		Target:  []string{RsInstanceRemovedStatus, RsInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					return instance, rsInstanceSuccessStatus, nil
+					return instance, RsInstanceSuccessStatus, nil
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -895,7 +895,7 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 	return stateConf.WaitForState()
 }
 
-func filterDeployments(deployments []models.ServiceDeployment, location string) ([]models.ServiceDeployment, map[string]bool) {
+func FilterDeployments(deployments []models.ServiceDeployment, location string) ([]models.ServiceDeployment, map[string]bool) {
 	supportedDeployments := []models.ServiceDeployment{}
 	supportedLocations := make(map[string]bool)
 	for _, d := range deployments {

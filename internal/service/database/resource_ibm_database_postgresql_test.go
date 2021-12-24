@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package database_test
 
 import (
 	"fmt"
@@ -9,7 +9,12 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
 	"time"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -18,6 +23,16 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
+)
+
+const (
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
+	databaseInstanceReclamation        = "pending_reclamation"
 )
 
 func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
@@ -29,8 +44,8 @@ func TestAccIBMDatabaseInstance_Postgres_Basic(t *testing.T) {
 	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -112,8 +127,8 @@ func TestAccIBMDatabaseInstance_Postgres_Node(t *testing.T) {
 	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -220,8 +235,8 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -246,7 +261,7 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 }
 
 func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -282,7 +297,7 @@ func testAccDatabaseInstanceManuallyDelete(tfDatabaseID *string) resource.TestCh
 }
 
 func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDatabaseID *string) error {
-	rsConClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+	rsConClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -291,7 +306,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 	if strings.HasPrefix(instance, "crn") {
 		instanceID = instance
 	} else {
-		_, instanceID, _ = convertTftoCisTwoVar(instance)
+		_, instanceID, _ = flex.ConvertTftoCisTwoVar(instance)
 	}
 	recursive := true
 	deleteReq := rc.DeleteResourceInstanceOptions{
@@ -341,7 +356,7 @@ func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseID *string) resou
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}

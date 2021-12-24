@@ -403,8 +403,8 @@ func validateIP(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-//validateCIDR...
-func validateCIDR(v interface{}, k string) (ws []string, errors []error) {
+//ValidateCIDR...
+func ValidateCIDR(v interface{}, k string) (ws []string, errors []error) {
 	address := v.(string)
 	_, _, err := net.ParseCIDR(address)
 	if err != nil {
@@ -453,7 +453,7 @@ func validateOverlappingAddress() schema.SchemaValidateFunc {
 
 //validateRemoteIP...
 func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
-	_, err1 := validateCIDR(v, k)
+	_, err1 := ValidateCIDR(v, k)
 	_, err2 := validateIP(v, k)
 
 	if len(err1) != 0 && len(err2) != 0 {
@@ -467,7 +467,7 @@ func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
 //validateIPorCIDR...
 func validateIPorCIDR() schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
-		_, err1 := validateCIDR(v, k)
+		_, err1 := ValidateCIDR(v, k)
 		_, err2 := validateIP(v, k)
 
 		if len(err1) != 0 && len(err2) != 0 {
@@ -501,7 +501,7 @@ func validateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors 
 }
 
 //func validateJSONString(v interface{}, k string) (ws []string, errors []error) {
-//	if _, err := normalizeJSONString(v); err != nil {
+//	if _, err := flex.NormalizeJSONString(v); err != nil {
 //		errors = append(errors, fmt.Errorf("%q contains an invalid JSON: %s", k, err))
 //	}
 //	if err := validateKeyValue(v); err != nil {

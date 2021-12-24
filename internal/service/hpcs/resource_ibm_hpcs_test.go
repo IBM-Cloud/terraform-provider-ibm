@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package hpcs_test
 
 import (
 	"fmt"
@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -22,8 +25,8 @@ func TestAccIBMHPCSInstanceBasic(t *testing.T) {
 	name := "ibm_hpcs.hpcs"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckHPCS(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckHPCS(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMHPCSInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -65,7 +68,7 @@ func TestAccIBMHPCSInstanceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMHPCSInstanceDestroy(s *terraform.State) error {
-	rsConClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+	rsConClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -80,7 +83,7 @@ func testAccCheckIBMHPCSInstanceDestroy(s *terraform.State) error {
 		}
 		instance, response, err := rsConClient.GetResourceInstance(&rsInst)
 		if err == nil {
-			if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, rsInstanceReclamation)) {
+			if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, resourcecontroller.RsInstanceReclamation)) {
 				log.Printf("[WARN]Returning nil because it's in removed or pending_reclamation state")
 				return nil
 			}
@@ -100,7 +103,7 @@ func testAccCheckIBMHPCSInstanceExists(n string, tfHPCSID string) resource.TestC
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsConClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+		rsConClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
@@ -142,7 +145,7 @@ func testAccCheckIBMHPCSInstanceBasic(name string) string {
 			token = "%s"
 		}
 	}
-	`, name, hpcsAdmin1, hpcsToken1)
+	`, name, acc.HpcsAdmin1, acc.HpcsToken1)
 }
 func testAccCheckIBMHPCSInstanceAdminUpdate(name string) string {
 	return fmt.Sprintf(`
@@ -164,7 +167,7 @@ func testAccCheckIBMHPCSInstanceAdminUpdate(name string) string {
 			token = "%s"
 		}
 	}
-	`, name, hpcsAdmin1, hpcsToken1, hpcsAdmin2, hpcsToken2)
+	`, name, acc.HpcsAdmin1, acc.HpcsToken1, acc.HpcsAdmin2, acc.HpcsToken2)
 }
 func testAccCheckIBMHPCSInstanceAdminDelete(name string) string {
 	return fmt.Sprintf(`
@@ -181,7 +184,7 @@ func testAccCheckIBMHPCSInstanceAdminDelete(name string) string {
 			token = "%s"
 		}
 	}
-	`, name, hpcsAdmin1, hpcsToken1)
+	`, name, acc.HpcsAdmin1, acc.HpcsToken1)
 }
 func testAccCheckIBMHPCSInstanceUnitsUpdate(name string) string {
 	return fmt.Sprintf(`
@@ -198,5 +201,5 @@ func testAccCheckIBMHPCSInstanceUnitsUpdate(name string) string {
 			token = "%s"
 		}
 	}
-	`, name, hpcsAdmin1, hpcsToken1)
+	`, name, acc.HpcsAdmin1, acc.HpcsToken1)
 }

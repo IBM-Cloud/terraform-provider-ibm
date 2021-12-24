@@ -17,7 +17,7 @@ var appIDTenantID string
 var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
-var cisDomainStatic string
+var CisDomainStaticstring
 var cisDomainTest string
 var cisInstance string
 var cisResourceGroup string
@@ -82,10 +82,10 @@ var HpcsInstanceID string
 var secretsManagerInstanceID string
 var secretsManagerSecretType string
 var secretsManagerSecretID string
-var hpcsAdmin1 string
-var hpcsToken1 string
-var hpcsAdmin2 string
-var hpcsToken2 string
+var HpcsAdmin1 string
+var HpcsToken1 string
+var HpcsAdmin2 string
+var HpcsToken2 string
 var realmName string
 var iksSa string
 var iksClusterVpcID string
@@ -208,9 +208,9 @@ func init() {
 		cisInstance = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_INSTANCE with a VALID CIS Instance NAME for testing ibm_cis resources on staging/test")
 	}
-	cisDomainStatic = os.Getenv("IBM_CIS_DOMAIN_STATIC")
-	if cisDomainStatic == "" {
-		cisDomainStatic = ""
+	CisDomainStatic= os.Getenv("IBM_CIS_DOMAIN_STATIC")
+	if CisDomainStatic== "" {
+		CisDomainStatic= ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN_STATIC with the Domain name registered with the CIS instance on test/staging. Domain must be predefined in CIS to avoid CIS billing costs due to domain delete/create")
 	}
 
@@ -651,16 +651,16 @@ func init() {
 	if account_to_be_imported == "" {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
 	}
-	hpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
-	if hpcsAdmin1 == "" {
+	HpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
+	if HpcsAdmin1 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN1 with a VALID HPCS Admin Key1 Path")
 	}
-	hpcsToken1 = os.Getenv("IBM_HPCS_TOKEN1")
-	if hpcsToken1 == "" {
+	HpcsToken1 = os.Getenv("IBM_HPCS_TOKEN1")
+	if HpcsToken1 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN1 with a VALID token for HPCS Admin Key1")
 	}
-	hpcsAdmin2 = os.Getenv("IBM_HPCS_ADMIN2")
-	if hpcsAdmin2 == "" {
+	HpcsAdmin2 = os.Getenv("IBM_HPCS_ADMIN2")
+	if HpcsAdmin2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN2 with a VALID HPCS Admin Key2 Path")
 	}
 	realmName = os.Getenv("IBM_IAM_REALM_NAME")
@@ -673,8 +673,8 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_IAM_IKS_SA with a VALID realm name for iam trusted profile link")
 	}
 
-	hpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
-	if hpcsToken2 == "" {
+	HpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
+	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
 	scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
@@ -771,7 +771,7 @@ func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
 	}
 
 }
-func testAccPreCheckCis(t *testing.T) {
+func TestAccPreCheckCis(t *testing.T) {
 	TestAccPreCheck(t)
 	if cisInstance == "" {
 		t.Fatal("IBM_CIS_INSTANCE must be set for acceptance tests")
@@ -779,7 +779,7 @@ func testAccPreCheckCis(t *testing.T) {
 	if cisResourceGroup == "" {
 		t.Fatal("IBM_CIS_RESOURCE_GROUP must be set for acceptance tests")
 	}
-	if cisDomainStatic == "" {
+	if CisDomainStatic== "" {
 		t.Fatal("IBM_CIS_DOMAIN_STATIC must be set for acceptance tests")
 	}
 	if cisDomainTest == "" {
@@ -794,18 +794,18 @@ func testAccPreCheckCloudShell(t *testing.T) {
 	}
 }
 
-func testAccPreCheckHPCS(t *testing.T) {
+func TestAccPreCheckHPCS(t *testing.T) {
 	TestAccPreCheck(t)
-	if hpcsAdmin1 == "" {
+	if HpcsAdmin1 == "" {
 		t.Fatal("IBM_HPCS_ADMIN1 must be set for acceptance tests")
 	}
-	if hpcsToken1 == "" {
+	if HpcsToken1 == "" {
 		t.Fatal("IBM_HPCS_TOKEN1 must be set for acceptance tests")
 	}
-	if hpcsAdmin2 == "" {
+	if HpcsAdmin2 == "" {
 		t.Fatal("IBM_HPCS_ADMIN2 must be set for acceptance tests")
 	}
-	if hpcsToken2 == "" {
+	if HpcsToken2 == "" {
 		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
 	}
 }
