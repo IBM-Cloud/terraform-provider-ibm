@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller
 
 import (
 	"context"
@@ -19,6 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
 const (
@@ -31,13 +34,13 @@ const (
 	rsInstanceReclamation        = "pending_reclamation"
 )
 
-func resourceIBMResourceInstance() *schema.Resource {
+func ResourceIBMResourceInstance() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMResourceInstanceCreate,
-		Read:     resourceIBMResourceInstanceRead,
-		Update:   resourceIBMResourceInstanceUpdate,
-		Delete:   resourceIBMResourceInstanceDelete,
-		Exists:   resourceIBMResourceInstanceExists,
+		Create:   ResourceIBMResourceInstanceCreate,
+		Read:     ResourceIBMResourceInstanceRead,
+		Update:   ResourceIBMResourceInstanceUpdate,
+		Delete:   ResourceIBMResourceInstanceDelete,
+		Exists:   ResourceIBMResourceInstanceExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -48,7 +51,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
+				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
 
@@ -111,8 +114,8 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_resource_instance", "tag")},
-				Set:      resourceIBMVPCHash,
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_resource_instance", "tag")},
+				Set:      flex.ResourceIBMVPCHash,
 			},
 
 			"status": {
@@ -138,7 +141,7 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
 			},
 
 			"dashboard_url": {
@@ -309,30 +312,30 @@ func resourceIBMResourceInstance() *schema.Resource {
 				Computed:    true,
 			},
 
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
 
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
 
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 
-			ResourceGroupName: {
+			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group name in which resource is provisioned",
+				Description: "The resource group name in which resource is provisioned",
 			},
-			ResourceControllerURL: {
+			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
@@ -347,24 +350,24 @@ func resourceIBMResourceInstance() *schema.Resource {
 	}
 }
 
-func resourceIBMResourceInstanceValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 0)
+func ResourceIBMResourceInstanceValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "tag",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmResourceInstanceResourceValidator := ResourceValidator{ResourceName: "ibm_resource_instance", Schema: validateSchema}
+	ibmResourceInstanceResourceValidator := validate.ResourceValidator{ResourceName: "ibm_resource_instance", Schema: validateSchema}
 	return &ibmResourceInstanceResourceValidator
 }
 
-func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -378,7 +381,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		Name: &name,
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -386,7 +389,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	if metadata, ok := serviceOff[0].Metadata.(*models.ServiceResourceMetadata); ok {
@@ -394,21 +397,21 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("%s cannot be provisioned by resource controller", serviceName)
 		}
 	} else {
-		return fmt.Errorf("Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
+		return fmt.Errorf("[ERROR] Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
 	}
 
 	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return fmt.Errorf("Error retrieving deployment for plan %s : %s", plan, err)
+		return fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err)
 	}
 	if len(deployments) == 0 {
-		return fmt.Errorf("No deployment found for service plan : %s", plan)
+		return fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan)
 	}
 	deployments, supportedLocations := filterDeployments(deployments, location)
 
@@ -417,7 +420,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		for l := range supportedLocations {
 			locationList = append(locationList, l)
 		}
-		return fmt.Errorf("No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service.", plan, location, locationList)
+		return fmt.Errorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service", plan, location, locationList)
 	}
 
 	rsInst.Target = &deployments[0].CatalogCRN
@@ -426,7 +429,7 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		rg := rsGrpID.(string)
 		rsInst.ResourceGroup = &rg
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
@@ -474,31 +477,30 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		log.Printf(
 			"Error when creating resource instance: %s, Instance info  NAME->%s, LOCATION->%s, GROUP_ID->%s, PLAN_ID->%s",
 			err, *rsInst.Name, *rsInst.Target, *rsInst.ResourceGroup, *rsInst.ResourcePlanID)
-		return fmt.Errorf("Error when creating resource instance: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error when creating resource instance: %s with resp code: %s", err, resp)
 	}
 
 	d.SetId(*instance.ID)
 
 	_, err = waitForResourceInstanceCreate(d, meta)
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error waiting for create resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of resource instance (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	return resourceIBMResourceInstanceRead(d, meta)
+	return ResourceIBMResourceInstanceRead(d, meta)
 }
-func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -510,10 +512,10 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil {
-		return fmt.Errorf("Error retrieving resource instance: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 	}
 
-	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of resource instance tags (%s) tags: %s", d.Id(), err)
@@ -531,7 +533,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("crn", instance.CRN)
 	d.Set("dashboard_url", instance.DashboardURL)
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -539,25 +541,25 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.CRN)
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupCRN)
+	d.Set(flex.ResourceName, instance.Name)
+	d.Set(flex.ResourceCRN, instance.CRN)
+	d.Set(flex.ResourceStatus, instance.State)
+	d.Set(flex.ResourceGroupName, instance.ResourceGroupCRN)
 
-	rcontroller, err := getBaseController(meta)
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/")
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 	d.Set("guid", instance.GUID)
@@ -570,7 +572,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
-		d.Set("extensions", Flatten(instance.Extensions))
+		d.Set("extensions", flex.Flatten(instance.Extensions))
 	}
 	d.Set("account_id", instance.AccountID)
 	d.Set("restored_by", instance.RestoredBy)
@@ -597,7 +599,7 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("resource_bindings_url", instance.ResourceBindingsURL)
 	d.Set("resource_aliases_url", instance.ResourceAliasesURL)
 	if instance.LastOperation != nil {
-		d.Set("last_operation", Flatten(instance.LastOperation))
+		d.Set("last_operation", flex.Flatten(instance.LastOperation))
 	}
 	d.Set("locked", instance.Locked)
 	d.Set("allow_cleanup", instance.AllowCleanup)
@@ -615,8 +617,8 @@ func resourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -634,7 +636,7 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if d.HasChange("plan") {
 		plan := d.Get("plan").(string)
 		service := d.Get("service").(string)
-		rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 		if err != nil {
 			return err
 		}
@@ -642,12 +644,12 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 		serviceOff, err := rsCatRepo.FindByName(service, true)
 		if err != nil {
-			return fmt.Errorf("Error retrieving service offering: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 
 		servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 		if err != nil {
-			return fmt.Errorf("Error retrieving plan: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 		}
 
 		resourceInstanceUpdate.ResourcePlanID = &servicePlan
@@ -666,7 +668,7 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if d.HasChange("parameters") {
 		instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 		if err != nil {
-			return fmt.Errorf("Error retrieving resource instance: %s with resp code: %s", err, resp)
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 		}
 
 		if parameters, ok := d.GetOk("parameters"); ok {
@@ -712,12 +714,12 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 	}
 	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil {
-		return fmt.Errorf("Error Getting resource instance: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error Getting resource instance: %s with resp code: %s", err, resp)
 	}
 
 	if d.HasChange("tags") {
-		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on update of resource instance (%s) tags: %s", d.Id(), err)
@@ -726,20 +728,19 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 
 	_, resp, err = rsConClient.UpdateResourceInstance(&resourceInstanceUpdate)
 	if err != nil {
-		return fmt.Errorf("Error updating resource instance: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error updating resource instance: %s with resp code: %s", err, resp)
 	}
 
 	_, err = waitForResourceInstanceUpdate(d, meta)
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error waiting for update resource instance (%s) to be succeeded: %s", d.Id(), err)
 	}
 
-	return resourceIBMResourceInstanceRead(d, meta)
+	return ResourceIBMResourceInstanceRead(d, meta)
 }
 
-func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func ResourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -755,21 +756,20 @@ func resourceIBMResourceInstanceDelete(d *schema.ResourceData, meta interface{})
 		if resp != nil && resp.StatusCode == 410 {
 			return nil
 		}
-		return fmt.Errorf("Error deleting resource instance: %s with resp code: %s", error, resp)
+		return fmt.Errorf("[ERROR] Error deleting resource instance: %s with resp code: %s", error, resp)
 	}
 
 	_, err = waitForResourceInstanceDelete(d, meta)
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for resource instance (%s) to be deleted: %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error waiting for resource instance (%s) to be deleted: %s", d.Id(), err)
 	}
 
 	d.SetId("")
 
 	return nil
 }
-func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func ResourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -795,7 +795,7 @@ func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{})
 }
 
 func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -811,12 +811,12 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
-				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
+				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
 			if *instance.State == rsInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
 		},
@@ -829,7 +829,7 @@ func waitForResourceInstanceCreate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -845,12 +845,12 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					return nil, "", fmt.Errorf("The resource instance %s does not exist anymore: %v", d.Id(), err)
+					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %v", d.Id(), err)
 				}
-				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
+				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
 			if *instance.State == rsInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("The resource instance %s failed: %v", d.Id(), err)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
 		},
@@ -863,7 +863,7 @@ func waitForResourceInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -880,10 +880,10 @@ func waitForResourceInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 				if resp != nil && resp.StatusCode == 404 {
 					return instance, rsInstanceSuccessStatus, nil
 				}
-				return nil, "", fmt.Errorf("Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
+				return nil, "", fmt.Errorf("[ERROR] Get the resource instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
 			if *instance.State == rsInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v", d.Id(), err)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
 		},
@@ -911,7 +911,7 @@ func filterDeployments(deployments []models.ServiceDeployment, location string) 
 }
 
 func flattenPlanHistory(keys []rc.PlanHistoryItem) []interface{} {
-	var out = make([]interface{}, len(keys), len(keys))
+	var out = make([]interface{}, len(keys))
 	for i, k := range keys {
 		m := make(map[string]interface{})
 		m["resource_plan_id"] = k.ResourcePlanID

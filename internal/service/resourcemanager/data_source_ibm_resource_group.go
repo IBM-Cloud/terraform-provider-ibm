@@ -1,16 +1,17 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcemanager
 
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMResourceGroup() *schema.Resource {
+func DataSourceIBMResourceGroup() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMResourceGroupRead,
 
@@ -85,7 +86,7 @@ func dataSourceIBMResourceGroup() *schema.Resource {
 }
 
 func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
@@ -102,11 +103,11 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 	if !defaultGrp && name == "" {
 		return fmt.Errorf("[ERROR] Missing required properties. Need a resource group name, or the is_default true")
 	}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 
 	resourceGroupList := rg.ListResourceGroupsOptions{
 		AccountID: &accountID,

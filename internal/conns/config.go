@@ -120,7 +120,7 @@ var (
 type UserConfig struct {
 	userID      string
 	userEmail   string
-	userAccount string
+	UserAccount string
 	CloudName   string `default:"bluemix"`
 	cloudType   string `default:"public"`
 	generation  int    `default:"2"`
@@ -1456,7 +1456,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	findingsClientOptions := &findingsv1.FindingsV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
-		AccountID:     core.StringPtr(userConfig.userAccount),
+		AccountID:     core.StringPtr(userConfig.UserAccount),
 	}
 	// Construct the service client.
 	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
@@ -1653,7 +1653,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	containerRegistryClientOptions := &containerregistryv1.ContainerRegistryV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CR_API_ENDPOINT"}, containerRegistryClientURL),
-		Account:       core.StringPtr(userConfig.userAccount),
+		Account:       core.StringPtr(userConfig.UserAccount),
 	}
 	// Construct the service client.
 	session.containerRegistryClient, err = containerregistryv1.NewContainerRegistryV1(containerRegistryClientOptions)
@@ -1793,7 +1793,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.apigatewayAPI = apigatewayAPI
 
 	// POWER SYSTEMS Service
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, session.bmxUserDetails.userAccount, c.Zone)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, session.bmxUserDetails.UserAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -2726,7 +2726,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
-		AccountID:     core.StringPtr(userConfig.userAccount),
+		AccountID:     core.StringPtr(userConfig.UserAccount),
 	}
 
 	// Construct the service client.
@@ -2900,7 +2900,7 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 		user.userEmail = email.(string)
 	}
 	user.userID = claims["id"].(string)
-	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
+	user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	iss := claims["iss"].(string)
 	if strings.Contains(iss, "https://iam.cloud.ibm.com") {
 		user.CloudName = "bluemix"

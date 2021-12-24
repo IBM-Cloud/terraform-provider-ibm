@@ -1,16 +1,18 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package globaltagging
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMResourceTag() *schema.Resource {
+func DataSourceIBMResourceTag() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMResourceTagRead,
 
@@ -18,14 +20,14 @@ func dataSourceIBMResourceTag() *schema.Resource {
 			"resource_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_resource_tag", resourceID),
+				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", resourceID),
 				Description:  "CRN of the resource on which the tags should be attached",
 			},
 			"tags": {
 				Type:        schema.TypeSet,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_resource_tag", tags)},
-				Set:         resourceIBMVPCHash,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_resource_tag", tags)},
+				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of tags associated with resource instance",
 			},
 			"resource_type": {
@@ -36,7 +38,7 @@ func dataSourceIBMResourceTag() *schema.Resource {
 			"tag_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_resource_tag", "tag_type"),
+				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", "tag_type"),
 				Description:  "Tag type on which the tags should be fetched",
 				Default:      "user",
 			},
@@ -58,7 +60,7 @@ func dataSourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) erro
 		tType = t.(string)
 	}
 
-	tags, err := GetGlobalTagsUsingCRN(meta, rID, rType, tType)
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
 	if err != nil {
 		return fmt.Errorf(
 			"Error on get of resource tags (%s) tags: %s", d.Id(), err)

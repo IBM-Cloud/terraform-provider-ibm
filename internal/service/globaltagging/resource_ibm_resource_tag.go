@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package globaltagging
 
 import (
 	"context"
@@ -15,6 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
 const (
@@ -27,7 +30,7 @@ const (
 	crnRegex     = "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 )
 
-func resourceIBMResourceTag() *schema.Resource {
+func ResourceIBMResourceTag() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMResourceTagCreate,
 		Read:     resourceIBMResourceTagRead,
@@ -37,7 +40,7 @@ func resourceIBMResourceTag() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
+				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
 
@@ -45,15 +48,15 @@ func resourceIBMResourceTag() *schema.Resource {
 			resourceID: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_resource_tag", resourceID),
+				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", resourceID),
 				Description:  "CRN of the resource on which the tags should be attached",
 			},
 			tags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_resource_tag", tags)},
-				Set:         resourceIBMVPCHash,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_resource_tag", tags)},
+				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of tags associated with resource instance",
 			},
 			resourceType: {
@@ -65,7 +68,7 @@ func resourceIBMResourceTag() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: InvokeValidator("ibm_resource_tag", "tag_type"),
+				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", "tag_type"),
 				Description:  "Type of the tag. Only allowed values are: user, or service or access (default value : user)",
 			},
 			acccountID: {
@@ -77,37 +80,37 @@ func resourceIBMResourceTag() *schema.Resource {
 	}
 }
 
-func resourceIBMResourceTagValidator() *ResourceValidator {
+func ResourceIBMResourceTagValidator() *validate.ResourceValidator {
 	tagTypeAllowedValues := "service,access,user"
-	validateSchema := make([]ValidateSchema, 0)
+	validateSchema := make([]validate.ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 resourceID,
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^crn:v1(:[a-zA-Z0-9 \-\._~\*\+,;=!$&'\(\)\/\?#\[\]@]*){8}$|^[0-9]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 tags,
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "tag_type",
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              tagTypeAllowedValues})
 
-	ibmResourceTagValidator := ResourceValidator{ResourceName: "ibm_resource_tag", Schema: validateSchema}
+	ibmResourceTagValidator := validate.ResourceValidator{ResourceName: "ibm_resource_tag", Schema: validateSchema}
 	return &ibmResourceTagValidator
 }
 
@@ -115,15 +118,15 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	var rType, tType string
 	resources := []globaltaggingv1.Resource{}
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 
-	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 
 	resourceID := d.Get(resourceID).(string)
@@ -131,7 +134,7 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 		rType = v.(string)
 	}
 
-	r := globaltaggingv1.Resource{ResourceID: ptrToString(resourceID), ResourceType: ptrToString(rType)}
+	r := globaltaggingv1.Resource{ResourceID: flex.PtrToString(resourceID), ResourceType: flex.PtrToString(rType)}
 	resources = append(resources, r)
 
 	var add []string
@@ -154,17 +157,17 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 	AttachTagOptions.TagNames = add
 	if v, ok := d.GetOk(tagType); ok && v != nil {
 		tType = v.(string)
-		AttachTagOptions.TagType = ptrToString(tType)
+		AttachTagOptions.TagType = flex.PtrToString(tType)
 
 		if tType == service {
-			AttachTagOptions.AccountID = ptrToString(accountID)
+			AttachTagOptions.AccountID = flex.PtrToString(accountID)
 		}
 	}
 
 	if len(add) > 0 {
 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("Error attaching resource tags : %v\n%s", resp, err)
+			return fmt.Errorf("[ERROR] Error attaching resource tags : %v\n%s", resp, err)
 		}
 	}
 
@@ -185,11 +188,11 @@ func resourceIBMResourceTagCreate(d *schema.ResourceData, meta interface{}) erro
 func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error {
 	var rID, rType, tType string
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	acctID := userDetails.userAccount
+	acctID := userDetails.UserAccount
 
 	crn, err := regexp.Compile(crnRegex)
 	if err != nil {
@@ -199,12 +202,12 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 	if crn.MatchString(d.Id()) {
 		rID = d.Id()
 	} else {
-		parts, err := vmIdParts(d.Id())
+		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
 			return err
 		}
 		if len(parts) < 2 {
-			return fmt.Errorf("Incorrect ID %s: Id should be a combination of resourceID/resourceType", d.Id())
+			return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of resourceID/resourceType", d.Id())
 		}
 		rID = parts[0]
 		rType = parts[1]
@@ -218,13 +221,13 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	tagList, err := GetGlobalTagsUsingCRN(meta, rID, resourceType, tType)
+	tagList, err := flex.GetGlobalTagsUsingCRN(meta, rID, resourceType, tType)
 	if err != nil {
 		if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error getting resource tags for: %s with error : %s\n", rID, err)
+		return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
 	}
 
 	d.Set(resourceID, rID)
@@ -245,7 +248,7 @@ func resourceIBMResourceTagUpdate(d *schema.ResourceData, meta interface{}) erro
 	if crn.MatchString(d.Id()) {
 		rID = d.Id()
 	} else {
-		parts, err := vmIdParts(d.Id())
+		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
 			return err
 		}
@@ -259,10 +262,9 @@ func resourceIBMResourceTagUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	if _, ok := d.GetOk(tags); ok {
 		oldList, newList := d.GetChange(tags)
-		err := UpdateGlobalTagsUsingCRN(oldList, newList, meta, rID, rType, tType)
+		err := flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, rID, rType, tType)
 		if err != nil {
-			return fmt.Errorf(
-				"Error on create of resource tags: %s", err)
+			return fmt.Errorf("[ERROR] Error on create of resource tags: %s", err)
 		}
 	}
 
@@ -280,7 +282,7 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 	if crn.MatchString(d.Id()) {
 		rID = d.Id()
 	} else {
-		parts, err := vmIdParts(d.Id())
+		parts, err := flex.VmIdParts(d.Id())
 		if err != nil {
 			return err
 		}
@@ -288,9 +290,9 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 		rType = parts[1]
 	}
 
-	gtClient, err := meta.(ClientSession).GlobalTaggingAPIv1()
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 
 	var remove []string
@@ -302,7 +304,7 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 
 	if len(remove) > 0 {
 		resources := []globaltaggingv1.Resource{}
-		r := globaltaggingv1.Resource{ResourceID: ptrToString(rID), ResourceType: ptrToString(rType)}
+		r := globaltaggingv1.Resource{ResourceID: flex.PtrToString(rID), ResourceType: flex.PtrToString(rType)}
 		resources = append(resources, r)
 
 		detachTagOptions := &globaltaggingv1.DetachTagOptions{
@@ -312,15 +314,15 @@ func resourceIBMResourceTagDelete(d *schema.ResourceData, meta interface{}) erro
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
-			return fmt.Errorf("Error detaching resource tags %v: %s\n%s", remove, err, resp)
+			return fmt.Errorf("[ERROR] Error detaching resource tags %v: %s\n%s", remove, err, resp)
 		}
 		for _, v := range remove {
 			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-				TagName: ptrToString(v),
+				TagName: flex.PtrToString(v),
 			}
 			_, resp, err := gtClient.DeleteTag(delTagOptions)
 			if err != nil {
-				return fmt.Errorf("Error deleting resource tag %v: %s\n%s", v, err, resp)
+				return fmt.Errorf("[ERROR] Error deleting resource tag %v: %s\n%s", v, err, resp)
 			}
 		}
 	}
