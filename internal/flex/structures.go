@@ -4,6 +4,7 @@
 package flex
 
 import (
+	"bytes"
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
@@ -23,6 +24,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
@@ -898,7 +900,7 @@ func expandExec(execs []interface{}) *whisk.Exec {
 		obj := &whisk.Exec{
 			Image:      e["image"].(string),
 			Init:       e["init"].(string),
-			Code:       ptrToString(code),
+			Code:       PtrToString(code),
 			Kind:       e["kind"].(string),
 			Main:       e["main"].(string),
 			Components: expandStringList(e["components"].([]interface{})),
@@ -944,7 +946,7 @@ func ptrToInt(i int) *int {
 	return &i
 }
 
-func ptrToString(s string) *string {
+func PtrToString(s string) *string {
 	return &s
 }
 
@@ -1244,7 +1246,7 @@ func sepIdParts(id string, separator string) ([]string, error) {
 	return []string{}, fmt.Errorf("The given id %s does not contain %s please check documentation on how to provider id during import command", id, separator)
 }
 
-func vmIdParts(id string) ([]string, error) {
+func VmIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, "/")
 	return parts, nil
 }
@@ -1839,155 +1841,169 @@ func EscapeUrlParm(urlParm string) string {
 // 	return nil
 // }
 
-// func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
 
-// 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
-// 	}
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
 
-// 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	accountID := userDetails.userAccount
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.UserAccount
 
-// 	var providers []string
-// 	if strings.Contains(resourceType, "SoftLayer_") {
-// 		providers = []string{"ims"}
-// 	}
+	var providers []string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		providers = []string{"ims"}
+	}
 
-// 	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
-// 	if resourceID != "" {
-// 		ListTagsOptions.AttachedTo = &resourceID
-// 	}
-// 	ListTagsOptions.Providers = providers
-// 	if len(tagType) > 0 {
-// 		ListTagsOptions.TagType = ptrToString(tagType)
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	if resourceID != "" {
+		ListTagsOptions.AttachedTo = &resourceID
+	}
+	ListTagsOptions.Providers = providers
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = PtrToString(tagType)
 
-// 		if tagType == service {
-// 			ListTagsOptions.AccountID = ptrToString(accountID)
-// 		}
-// 	}
-// 	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	var taglist []string
-// 	for _, item := range taggingResult.Items {
-// 		taglist = append(taglist, *item.Name)
-// 	}
-// 	log.Println("tagList: ", taglist)
-// 	return newStringSet(resourceIBMVPCHash, taglist), nil
-// }
+		if tagType == "service" {
+			ListTagsOptions.AccountID = PtrToString(accountID)
+		}
+	}
+	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, *item.Name)
+	}
+	log.Println("tagList: ", taglist)
+	return newStringSet(ResourceIBMVPCHash, taglist), nil
+}
 
-// func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
-// 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-// 	if err != nil {
-// 		return fmt.Errorf("Error getting global tagging client settings: %s", err)
-// 	}
+func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
 
-// 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	acctID := userDetails.userAccount
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	acctID := userDetails.UserAccount
 
-// 	resources := []globaltaggingv1.Resource{}
-// 	r := globaltaggingv1.Resource{ResourceID: ptrToString(resourceID), ResourceType: ptrToString(resourceType)}
-// 	resources = append(resources, r)
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: PtrToString(resourceID), ResourceType: PtrToString(resourceType)}
+	resources = append(resources, r)
 
-// 	if oldList == nil {
-// 		oldList = new(schema.Set)
-// 	}
-// 	if newList == nil {
-// 		newList = new(schema.Set)
-// 	}
-// 	olds := oldList.(*schema.Set)
-// 	news := newList.(*schema.Set)
-// 	removeInt := olds.Difference(news).List()
-// 	addInt := news.Difference(olds).List()
-// 	add := make([]string, len(addInt))
-// 	for i, v := range addInt {
-// 		add[i] = fmt.Sprint(v)
-// 	}
-// 	remove := make([]string, len(removeInt))
-// 	for i, v := range removeInt {
-// 		remove[i] = fmt.Sprint(v)
-// 	}
+	if oldList == nil {
+		oldList = new(schema.Set)
+	}
+	if newList == nil {
+		newList = new(schema.Set)
+	}
+	olds := oldList.(*schema.Set)
+	news := newList.(*schema.Set)
+	removeInt := olds.Difference(news).List()
+	addInt := news.Difference(olds).List()
+	add := make([]string, len(addInt))
+	for i, v := range addInt {
+		add[i] = fmt.Sprint(v)
+	}
+	remove := make([]string, len(removeInt))
+	for i, v := range removeInt {
+		remove[i] = fmt.Sprint(v)
+	}
 
-// 	if strings.TrimSpace(tagType) == "" || tagType == "user" {
-// 		schematicTags := os.Getenv("IC_ENV_TAGS")
-// 		var envTags []string
-// 		if schematicTags != "" {
-// 			envTags = strings.Split(schematicTags, ",")
-// 			add = append(add, envTags...)
-// 		}
-// 	}
+	if strings.TrimSpace(tagType) == "" || tagType == "user" {
+		schematicTags := os.Getenv("IC_ENV_TAGS")
+		var envTags []string
+		if schematicTags != "" {
+			envTags = strings.Split(schematicTags, ",")
+			add = append(add, envTags...)
+		}
+	}
 
-// 	if len(remove) > 0 {
-// 		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
-// 		detachTagOptions.Resources = resources
-// 		detachTagOptions.TagNames = remove
-// 		if len(tagType) > 0 {
-// 			detachTagOptions.TagType = ptrToString(tagType)
-// 			if tagType == service {
-// 				detachTagOptions.AccountID = ptrToString(acctID)
-// 			}
-// 		}
+	if len(remove) > 0 {
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+		if len(tagType) > 0 {
+			detachTagOptions.TagType = PtrToString(tagType)
+			if tagType == "service" {
+				detachTagOptions.AccountID = PtrToString(acctID)
+			}
+		}
 
-// 		_, resp, err := gtClient.DetachTag(detachTagOptions)
-// 		if err != nil {
-// 			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
-// 		}
-// 		for _, v := range remove {
-// 			delTagOptions := &globaltaggingv1.DeleteTagOptions{
-// 				TagName: ptrToString(v),
-// 			}
-// 			_, resp, err := gtClient.DeleteTag(delTagOptions)
-// 			if err != nil {
-// 				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
-// 			}
-// 		}
-// 	}
+		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
+		}
+		for _, v := range remove {
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: PtrToString(v),
+			}
+			_, resp, err := gtClient.DeleteTag(delTagOptions)
+			if err != nil {
+				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
+			}
+		}
+	}
 
-// 	if len(add) > 0 {
-// 		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
-// 		AttachTagOptions.Resources = resources
-// 		AttachTagOptions.TagNames = add
-// 		if len(tagType) > 0 {
-// 			AttachTagOptions.TagType = ptrToString(tagType)
-// 			if tagType == service {
-// 				AttachTagOptions.AccountID = ptrToString(acctID)
-// 			}
-// 		}
+	if len(add) > 0 {
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		if len(tagType) > 0 {
+			AttachTagOptions.TagType = PtrToString(tagType)
+			if tagType == "service" {
+				AttachTagOptions.AccountID = PtrToString(acctID)
+			}
+		}
 
-// 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
-// 		if err != nil {
-// 			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
-// 		}
-// 	}
+		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		if err != nil {
+			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
+func ResourceIBMVPCHash(v interface{}) int {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("%s",
+		strings.ToLower(v.(string))))
+	return conns.String(buf.String())
+}
 
-// 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
-// 	}
-// 	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	var taglist []string
-// 	for _, item := range taggingResult.Items {
-// 		taglist = append(taglist, item.Name)
-// 	}
-// 	log.Println("tagList: ", taglist)
-// 	return newStringSet(resourceIBMVPCHash, taglist), nil
-// }
+// Use this function for attributes which only should be applied in resource creation time.
+func ApplyOnce(k, o, n string, d *schema.ResourceData) bool {
+	if len(d.Id()) == 0 {
+		return false
+	}
+	return true
+}
+func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) {
+
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+	}
+	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
+	if err != nil {
+		return nil, err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+	log.Println("tagList: ", taglist)
+	return newStringSet(ResourceIBMVPCHash, taglist), nil
+}
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
@@ -2062,7 +2078,7 @@ func flattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set 
 	return newStringSet(schema.HashString, c)
 }
 
-func resourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
+func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 
 	if diff.Id() != "" && diff.HasChange("tags") {
 		o, n := diff.GetChange("tags")
@@ -2398,7 +2414,7 @@ func GetNextIAM(next interface{}) string {
 }
 
 /* Return the default resource group */
-func defaultResourceGroup(meta interface{}) (string, error) {
+func DefaultResourceGroup(meta interface{}) (string, error) {
 
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
@@ -2504,9 +2520,9 @@ func expandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
 	}
 	in := cos[0].(map[string]interface{})
 	obj := &kubernetesserviceapiv1.COSBucket{
-		Bucket:   ptrToString(in["bucket"].(string)),
-		Endpoint: ptrToString(in["endpoint"].(string)),
-		Region:   ptrToString(in["region"].(string)),
+		Bucket:   PtrToString(in["bucket"].(string)),
+		Endpoint: PtrToString(in["endpoint"].(string)),
+		Region:   PtrToString(in["region"].(string)),
 	}
 	return obj
 }
@@ -2518,8 +2534,8 @@ func expandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthoriz
 	}
 	in := cos[0].(map[string]interface{})
 	obj := &kubernetesserviceapiv1.COSAuthorization{
-		AccessKeyID:     ptrToString(in["access_key-id"].(string)),
-		SecretAccessKey: ptrToString(in["secret_access_key"].(string)),
+		AccessKeyID:     PtrToString(in["access_key-id"].(string)),
+		SecretAccessKey: PtrToString(in["secret_access_key"].(string)),
 	}
 	return obj
 }
@@ -2625,7 +2641,7 @@ func setResourceAttribute(name *string, value *string, r []iampolicymanagementv1
 // 	return filteredRoles, nil
 // }
 
-func mapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampolicymanagementv1.PolicyRole {
+func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampolicymanagementv1.PolicyRole {
 	var policyRoles []iampolicymanagementv1.PolicyRole
 	for _, customRole := range roleList.CustomRoles {
 		newPolicyRole := iampolicymanagementv1.PolicyRole{
@@ -2806,7 +2822,7 @@ func mapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampoli
 // 	}
 
 // 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-// 		AccountID:   &userDetails.userAccount,
+// 		AccountID:   &userDetails.UserAccount,
 // 		ServiceName: &serviceToQuery,
 // 	}
 
@@ -2815,7 +2831,7 @@ func mapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampoli
 // 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 // 	}
 
-// 	roles := mapRoleListToPolicyRoles(*roleList)
+// 	roles := MapRoleListToPolicyRoles(*roleList)
 // 	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
 // 	if err != nil {
 // 		return iampolicymanagementv1.CreatePolicyOptions{}, err

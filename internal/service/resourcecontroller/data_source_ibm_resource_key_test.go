@@ -1,11 +1,13 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller_test
 
 import (
 	"fmt"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,10 +18,10 @@ func TestAccIBMResourceKeyDataSource_basic(t *testing.T) {
 	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMResourceKeyDataSourceConfig(resourceName, resourceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "name", resourceKey),
@@ -39,10 +41,10 @@ func TestAccIBMResourceKeyDataSource_mostrecent(t *testing.T) {
 	resourceKey := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMResourceKeyDataSourceConfigRecent(resourceName, resourceKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_key.testacc_ds_resource_key", "name", resourceKey),

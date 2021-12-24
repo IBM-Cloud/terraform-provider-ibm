@@ -724,12 +724,12 @@ func init() {
 }
 
 var TestAccProviders map[string]*schema.Provider
-var testAccProvider *schema.Provider
+var TestAccProvider *schema.Provider
 
 func init() {
-	testAccProvider = provider.Provider()
+	TestAccProvider = provider.Provider()
 	TestAccProviders = map[string]*schema.Provider{
-		"ibm": testAccProvider,
+		"ibm": TestAccProvider,
 	}
 }
 

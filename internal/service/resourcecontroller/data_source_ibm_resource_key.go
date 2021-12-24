@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller
 
 import (
 	"encoding/json"
@@ -11,11 +11,13 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMResourceKey() *schema.Resource {
+func DataSourceIBMResourceKey() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMResourceKeyRead,
 
@@ -66,7 +68,7 @@ func dataSourceIBMResourceKey() *schema.Resource {
 				Computed:    true,
 			},
 
-			"most_recent": &schema.Schema{
+			"most_recent": {
 				Description: "If true and multiple entries are found, the most recently created resource key is used. " +
 					"If false, an error is returned",
 				Type:     schema.TypeBool,
@@ -84,7 +86,7 @@ func dataSourceIBMResourceKey() *schema.Resource {
 }
 
 func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error {
-	rsContClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return err
 	}
@@ -98,7 +100,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	var filteredKeys []models.ServiceKey
 
-	if d.Get("resource_instance_id") == "" && d.Get("resource_instance_id") == "" {
+	if d.Get("resource_instance_id") == "" {
 		filteredKeys = keys
 	} else {
 		crn, err := getCRN(d, meta)
@@ -114,7 +116,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if len(filteredKeys) == 0 {
-		return fmt.Errorf("No resource keys found with name [%s]", name)
+		return fmt.Errorf("[ERROR] No resource keys found with name [%s]", name)
 	}
 
 	var key models.ServiceKey
@@ -123,10 +125,9 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 		if mostRecent {
 			key = mostRecentResourceKey(filteredKeys)
 		} else {
-			return fmt.Errorf(
-				"More than one resource key found with name matching [%s]. "+
-					"Set 'most_recent' to true in your configuration to force the most recent resource key "+
-					"to be used", name)
+			return fmt.Errorf("[ERROR] More than one resource key found with name matching [%s]. "+
+				"Set 'most_recent' to true in your configuration to force the most recent resource key "+
+				"to be used", name)
 		}
 	} else {
 		key = filteredKeys[0]
@@ -140,7 +141,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	}
 
-	d.Set("credentials", Flatten(key.Credentials))
+	d.Set("credentials", flex.Flatten(key.Credentials))
 	creds, err := json.Marshal(key.Credentials)
 	if err != nil {
 		return fmt.Errorf("error marshalling resource key credentials: %s", err)
@@ -155,7 +156,7 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 
 func getCRN(d *schema.ResourceData, meta interface{}) (*crn.CRN, error) {
 
-	rsContClient, err := meta.(ClientSession).ResourceControllerAPI()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return nil, err
 	}

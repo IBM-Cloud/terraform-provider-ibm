@@ -1,17 +1,18 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcemanager
 
 import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMResourceGroup() *schema.Resource {
+func ResourceIBMResourceGroup() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMResourceGroupCreate,
 		Read:     resourceIBMResourceGroupRead,
@@ -90,17 +91,17 @@ func resourceIBMResourceGroup() *schema.Resource {
 }
 
 func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
 	name := d.Get("name").(string)
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return err
 	}
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 
 	resourceGroupCreate := rg.CreateResourceGroupOptions{
 		Name:      &name,
@@ -118,7 +119,7 @@ func resourceIBMResourceGroupCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
@@ -178,7 +179,7 @@ func resourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
@@ -205,7 +206,7 @@ func resourceIBMResourceGroupUpdate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return err
 	}
@@ -230,7 +231,7 @@ func resourceIBMResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceIBMResourceGroupExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rMgtClient, err := meta.(ClientSession).ResourceManagerV2API()
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
 		return false, err
 	}

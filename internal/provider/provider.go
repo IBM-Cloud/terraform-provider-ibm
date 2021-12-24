@@ -11,7 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
@@ -390,10 +393,10 @@ func Provider() *schema.Provider {
 			// "ibm_app_config_feature":                 dataSourceIbmAppConfigFeature(),
 			// "ibm_app_config_features":                dataSourceIbmAppConfigFeatures(),
 
-			// "ibm_resource_quota":                     dataSourceIBMResourceQuota(),
-			// "ibm_resource_group":                     dataSourceIBMResourceGroup(),
-			// "ibm_resource_instance":                  dataSourceIBMResourceInstance(),
-			// "ibm_resource_key":                       dataSourceIBMResourceKey(),
+			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
+			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
+			"ibm_resource_instance": resourcecontroller.DataSourceIBMResourceInstance(),
+			"ibm_resource_key":      resourcecontroller.DataSourceIBMResourceKey(),
 			// "ibm_security_group":                     dataSourceIBMSecurityGroup(),
 			// "ibm_service_instance":                   dataSourceIBMServiceInstance(),
 			// "ibm_service_key":                        dataSourceIBMServiceKey(),
@@ -489,7 +492,7 @@ func Provider() *schema.Provider {
 			// "ibm_cm_offering_instance": dataSourceIBMCmOfferingInstance(),
 
 			// //Added for Resource Tag
-			// "ibm_resource_tag": dataSourceIBMResourceTag(),
+			"ibm_resource_tag": globaltagging.DataSourceIBMResourceTag(),
 
 			// // Atracker
 			// "ibm_atracker_targets":   dataSourceIBMAtrackerTargets(),
@@ -732,9 +735,9 @@ func Provider() *schema.Provider {
 			"ibm_kms_key_rings":    kms.ResourceIBMKmskeyRings(),
 			"ibm_kms_key_policies": kms.ResourceIBMKmskeyPolicies(),
 			// "ibm_kp_key":           kms.ResourceIBMkey(),
-			// "ibm_resource_group":                                 resourceIBMResourceGroup(),
-			// "ibm_resource_instance":                              resourceIBMResourceInstance(),
-			// "ibm_resource_key":                                   resourceIBMResourceKey(),
+			"ibm_resource_group":    resourcemanager.ResourceIBMResourceGroup(),
+			"ibm_resource_instance": resourcecontroller.ResourceIBMResourceInstance(),
+			"ibm_resource_key":      resourcecontroller.ResourceIBMResourceKey(),
 			// "ibm_security_group":                                 resourceIBMSecurityGroup(),
 			// "ibm_security_group_rule":                            resourceIBMSecurityGroupRule(),
 			// "ibm_service_instance":                               resourceIBMServiceInstance(),
@@ -817,8 +820,8 @@ func Provider() *schema.Provider {
 			// "ibm_satellite_endpoint":            resourceIbmSatelliteEndpoint(),
 			// "ibm_satellite_location_nlb_dns":    resourceIbmSatelliteLocationNlbDns(),
 
-			// //Added for Resource Tag
-			// "ibm_resource_tag": resourceIBMResourceTag(),
+			//Added for Resource Tag
+			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
 			// // Atracker
 			// "ibm_atracker_target": resourceIBMAtrackerTarget(),
@@ -946,9 +949,9 @@ func Validator() validate.ValidatorDict {
 				// "ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
 				// "ibm_schematics_inventory":                resourceIBMSchematicsInventoryValidator(),
 				// "ibm_schematics_resource_query":           resourceIBMSchematicsResourceQueryValidator(),
-				// "ibm_resource_instance":                   resourceIBMResourceInstanceValidator(),
+				"ibm_resource_instance": resourcecontroller.ResourceIBMResourceInstanceValidator(),
 				// "ibm_is_virtual_endpoint_gateway":         resourceIBMISEndpointGatewayValidator(),
-				// "ibm_resource_tag":                        resourceIBMResourceTagValidator(),
+				"ibm_resource_tag": globaltagging.ResourceIBMResourceTagValidator(),
 				// "ibm_satellite_location":                  resourceIBMSatelliteLocationValidator(),
 				// "ibm_satellite_cluster":                   resourceIBMSatelliteClusterValidator(),
 				// "ibm_pi_volume":                           resourceIBMPIVolumeValidator(),

@@ -1,11 +1,13 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package globaltagging_test
 
 import (
 	"fmt"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,11 +18,11 @@ func TestAccResourceTagDataSource_basic(t *testing.T) {
 	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 
-			resource.TestStep{
+			{
 				Config: testAccCheckResourceTagReadDataSource(name, managed_from),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_tag.read_tag", "tags.#", "2"),
@@ -31,8 +33,8 @@ func TestAccResourceTagDataSource_basic(t *testing.T) {
 }
 func TestAccResourceTagDataSourceTagType(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckResourceTagwithTagType(),

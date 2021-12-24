@@ -1,12 +1,14 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcemanager_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -14,8 +16,8 @@ import (
 func TestAccIBMResourceGroupDataSource_Basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMResourceGroupDataSourceConfigDefault(),
@@ -33,8 +35,8 @@ func TestAccIBMResourceGroupDataSource_Basic(t *testing.T) {
 func TestAccIBMResourceGroupDataSource_Default_false(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMResourceGroupDataSourceDefaultFalse(),

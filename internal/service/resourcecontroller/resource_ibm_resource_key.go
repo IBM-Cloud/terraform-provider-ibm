@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller
 
 import (
 	"encoding/json"
@@ -15,10 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
-func resourceIBMResourceKey() *schema.Resource {
+func ResourceIBMResourceKey() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMResourceKeyCreate,
 		Read:     resourceIBMResourceKeyRead,
@@ -67,7 +69,7 @@ func resourceIBMResourceKey() *schema.Resource {
 			"parameters": {
 				Type:             schema.TypeMap,
 				Optional:         true,
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Arbitrary parameters to pass. Must be a JSON object",
 			},
 
@@ -141,7 +143,7 @@ func resourceIBMResourceKey() *schema.Resource {
 			"iam_compatible": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Specifies whether the key’s credentials support IAM.",
+				Description: "Specifies whether the key's credentials support IAM.",
 			},
 
 			"resource_instance_url": {
@@ -190,7 +192,7 @@ func resourceIBMResourceKey() *schema.Resource {
 }
 
 func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	rsContClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -206,7 +208,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if instanceID == "" && aliasID == "" {
-		return fmt.Errorf("Provide either `resource_instance_id` or `resource_alias_id`")
+		return fmt.Errorf("[ERROR] Provide either `resource_instance_id` or `resource_alias_id`")
 	}
 
 	keyParameters := rc.ResourceKeyPostParameters{}
@@ -225,19 +227,19 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 
 	resourceInstance, sourceCRN, err := getResourceInstanceAndCRN(d, meta)
 	if err != nil {
-		return fmt.Errorf("Error creating resource key when get instance and CRN: %s", err)
+		return fmt.Errorf("[ERROR] Error creating resource key when get instance and CRN: %s", err)
 	}
 
 	serviceID := resourceInstance.ResourceID
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
-		return fmt.Errorf("Error creating resource key when get ResourceCatalogAPI: %s", err)
+		return fmt.Errorf("[ERROR] Error creating resource key when get ResourceCatalogAPI: %s", err)
 	}
 
 	service, err := rsCatClient.ResourceCatalog().Get(*serviceID, true)
 	if err != nil {
-		return fmt.Errorf("Error creating resource key when get service: %s", err)
+		return fmt.Errorf("[ERROR] Error creating resource key when get service: %s", err)
 	}
 
 	resourceKeyCreate := rc.CreateResourceKeyOptions{
@@ -249,7 +251,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 		role := r.(string)
 		serviceRole, err := getRoleFromName(role, service.Name, meta)
 		if err != nil {
-			return fmt.Errorf("Error creating resource key when get role: %s", err)
+			return fmt.Errorf("[ERROR] Error creating resource key when get role: %s", err)
 		}
 		keyParameters.SetProperty("role_crn", serviceRole.RoleID)
 		resourceKeyCreate.Role = serviceRole.RoleID
@@ -257,7 +259,7 @@ func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) erro
 
 	resourceKey, resp, err := rsContClient.CreateResourceKey(&resourceKeyCreate)
 	if err != nil {
-		return fmt.Errorf("Error creating resource key: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error creating resource key: %s with resp code: %s", err, resp)
 	}
 
 	d.SetId(*resourceKey.ID)
@@ -270,7 +272,7 @@ func resourceIBMResourceKeyUpdate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error {
-	rsContClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -281,12 +283,12 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 
 	resourceKey, resp, err := rsContClient.GetResourceKey(&resourceKeyGet)
 	if err != nil || resourceKey == nil {
-		return fmt.Errorf("Error retrieving resource key: %s with resp : %s", err, resp)
+		return fmt.Errorf("[ERROR] Error retrieving resource key: %s with resp : %s", err, resp)
 	}
 	var credInterface map[string]interface{}
 	cred, _ := json.Marshal(resourceKey.Credentials)
 	json.Unmarshal(cred, &credInterface)
-	d.Set("credentials", Flatten(credInterface))
+	d.Set("credentials", flex.Flatten(credInterface))
 
 	creds, err := json.Marshal(resourceKey.Credentials)
 	if err != nil {
@@ -303,7 +305,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 
 		// TODO.S: update client
 		if strings.Contains(roleCrn, ":customRole:") {
-			iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+			iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 			if err == nil {
 				var resourceCRN string
 				if resourceKey.CRN != nil {
@@ -370,7 +372,7 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMResourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	rsContClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -382,7 +384,7 @@ func resourceIBMResourceKeyDelete(d *schema.ResourceData, meta interface{}) erro
 
 	resp, err := rsContClient.DeleteResourceKey(&resourceKeyDelete)
 	if err != nil {
-		return fmt.Errorf("Error deleting resource key: %s with resp code: %s", err, resp)
+		return fmt.Errorf("[ERROR] Error deleting resource key: %s with resp code: %s", err, resp)
 	}
 
 	d.SetId("")
@@ -391,7 +393,7 @@ func resourceIBMResourceKeyDelete(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMResourceKeyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsContClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -415,7 +417,7 @@ func resourceIBMResourceKeyExists(d *schema.ResourceData, meta interface{}) (boo
 }
 
 func getResourceInstanceAndCRN(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, *string, error) {
-	rsContClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsContClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -456,18 +458,18 @@ func getResourceInstanceAndCRN(d *schema.ResourceData, meta interface{}) (*rc.Re
 func getRoleFromName(roleName, serviceName string, meta interface{}) (iampolicymanagementv1.PolicyRole, error) {
 
 	role := iampolicymanagementv1.PolicyRole{}
-	iamPolicyManagementClient, err := meta.(ClientSession).IAMPolicyManagementV1API()
+	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
 		return role, err
 	}
 
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return role, err
 	}
 
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
-		AccountID:   &userDetails.userAccount,
+		AccountID:   &userDetails.UserAccount,
 		ServiceName: &serviceName,
 	}
 
@@ -476,7 +478,7 @@ func getRoleFromName(roleName, serviceName string, meta interface{}) (iampolicym
 		return role, err
 	}
 
-	roles := mapRoleListToPolicyRoles(*roleList)
+	roles := flex.MapRoleListToPolicyRoles(*roleList)
 
 	role, err = findRoleByName(roles, roleName)
 	if err != nil {

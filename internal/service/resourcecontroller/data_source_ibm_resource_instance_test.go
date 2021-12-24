@@ -1,11 +1,13 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller_test
 
 import (
 	"fmt"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,10 +17,10 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 	instanceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:  setupResourceInstanceConfig(instanceName),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
@@ -26,7 +28,7 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_resource_instance.instance2", "service", "kms"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config:  testAccCheckIBMResourceInstanceDataSourceConfig(instanceName),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
@@ -36,7 +38,7 @@ func TestAccIBMResourceInstanceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance", "location", "global"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMResourceInstanceDataSourceConfigWithService(instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_instance.testacc_ds_resource_instance2", "name", instanceName),

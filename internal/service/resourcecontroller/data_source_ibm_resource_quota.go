@@ -1,15 +1,16 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller
 
 import (
 	"fmt"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMResourceQuota() *schema.Resource {
+func DataSourceIBMResourceQuota() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMResourceQuotaRead,
 
@@ -59,7 +60,7 @@ func dataSourceIBMResourceQuota() *schema.Resource {
 }
 
 func dataSourceIBMResourceQuotaRead(d *schema.ResourceData, meta interface{}) error {
-	rsManagementAPI, err := meta.(ClientSession).ResourceManagementAPIv2()
+	rsManagementAPI, err := meta.(conns.ClientSession).ResourceManagementAPIv2()
 	if err != nil {
 		return err
 	}
@@ -67,11 +68,11 @@ func dataSourceIBMResourceQuotaRead(d *schema.ResourceData, meta interface{}) er
 	rsQuotaName := d.Get("name").(string)
 	rsQuotas, err := rsQuota.FindByName(rsQuotaName)
 	if err != nil {
-		return fmt.Errorf("Error retrieving resource quota: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving resource quota: %s", err)
 	}
 
 	if len(rsQuotas) == 0 {
-		return fmt.Errorf("Error retrieving resource quota: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving resource quota: %s", err)
 	}
 
 	rsQuotaFields := rsQuotas[0]

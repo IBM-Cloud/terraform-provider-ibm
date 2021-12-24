@@ -1,12 +1,15 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -19,8 +22,8 @@ func TestAccIBMResourceKey_Basic(t *testing.T) {
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -49,8 +52,8 @@ func TestAccIBMResourceKey_With_Tags(t *testing.T) {
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -78,8 +81,8 @@ func TestAccIBMResourceKey_Parameters(t *testing.T) {
 	resourceKey := fmt.Sprintf("tf-cos-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -102,8 +105,8 @@ func TestAccIBMResourceKey_WithCustomRole(t *testing.T) {
 	displayName := fmt.Sprintf("Disp%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMResourceKeyDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -127,7 +130,7 @@ func testAccCheckIBMResourceKeyExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
@@ -146,7 +149,7 @@ func testAccCheckIBMResourceKeyExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerV2API()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}

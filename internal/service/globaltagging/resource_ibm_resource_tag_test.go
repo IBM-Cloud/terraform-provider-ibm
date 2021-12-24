@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package globaltagging_test
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -19,18 +21,18 @@ func TestAccResourceTag_Basic(t *testing.T) {
 	managed_from := "wdc04"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 
-			resource.TestStep{
+			{
 				Config: testAccCheckResourceTagCreate(name, managed_from),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckResourceTagExists("ibm_resource_tag.tag"),
 					resource.TestCheckResourceAttr("ibm_resource_tag.tag", "tags.#", "2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_resource_tag.tag",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -46,7 +48,7 @@ func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-
+		crnRegex := "^crn:v1(:[a-zA-Z0-9 \\-\\._~\\*\\+,;=!$&'\\(\\)\\/\\?#\\[\\]@]*){8}$|^[0-9]+$"
 		crn, err := regexp.Compile(crnRegex)
 		if err != nil {
 			return err
@@ -55,13 +57,13 @@ func testAccCheckResourceTagExists(n string) resource.TestCheckFunc {
 		if crn.MatchString(rs.Primary.ID) {
 			resourceID = rs.Primary.ID
 		} else {
-			parts, err := vmIdParts(rs.Primary.ID)
+			parts, err := flex.VmIdParts(rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 			resourceID = parts[0]
 		}
-		_, err = GetGlobalTagsUsingCRN(testAccProvider.Meta(), resourceID, "", "")
+		_, err = flex.GetGlobalTagsUsingCRN(acc.TestAccProvider.Meta(), resourceID, "", "")
 		if err != nil {
 			log.Printf(
 				"Error on get of resource tags (%s) : %s", resourceID, err)

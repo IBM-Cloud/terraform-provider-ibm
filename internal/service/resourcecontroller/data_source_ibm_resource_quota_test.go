@@ -1,12 +1,14 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -15,10 +17,10 @@ func TestAccIBMResourceQuotaDataSource_basic(t *testing.T) {
 
 	name := "Trial Quota"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMResourceQuotaDataSourceConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_resource_quota.testacc_ds_resource_quota", "name", name),
@@ -31,8 +33,8 @@ func TestAccIBMResourceQuotaDataSource_basic(t *testing.T) {
 func TestAccIBMResourceQuotaDataSource_invalid_name(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMResourceQuotaDataSourceConfig("abc"),

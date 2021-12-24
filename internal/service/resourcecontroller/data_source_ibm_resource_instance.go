@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package resourcecontroller
 
 import (
 	"fmt"
@@ -11,11 +11,13 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
-func dataSourceIBMResourceInstance() *schema.Resource {
+func DataSourceIBMResourceInstance() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMResourceInstanceRead,
+		Read: DataSourceIBMResourceInstanceRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -75,30 +77,30 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 				Description: "Guid of resource instance",
 			},
 
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
 
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
 
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 
-			ResourceGroupName: {
+			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group name in which resource is provisioned",
+				Description: "The resource group name in which resource is provisioned",
 			},
-			ResourceControllerURL: {
+			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
@@ -113,8 +115,8 @@ func dataSourceIBMResourceInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerAPIV2()
+func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) error {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerAPIV2()
 	if err != nil {
 		return err
 	}
@@ -128,14 +130,14 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rsInstQuery.ResourceGroupID = rsGrpID.(string)
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
 		rsInstQuery.ResourceGroupID = defaultRg
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -145,7 +147,7 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 
 		serviceOff, err := rsCatRepo.FindByName(service.(string), true)
 		if err != nil {
-			return fmt.Errorf("Error retrieving service offering: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 
 		rsInstQuery.ServiceID = serviceOff[0].ID
@@ -172,14 +174,13 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if len(filteredInstances) == 0 {
-		return fmt.Errorf("No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 
 	var instance models.ServiceInstanceV2
 
 	if len(filteredInstances) > 1 {
-		return fmt.Errorf(
-			"More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
+		return fmt.Errorf("[ERROR] More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or service", name)
 	}
 	instance = filteredInstances[0]
 
@@ -189,35 +190,35 @@ func dataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("location", instance.RegionID)
 	serviceOff, err := rsCatRepo.GetServiceName(instance.ServiceID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving service offering: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 	}
 
 	d.Set("service", serviceOff)
 
-	d.Set(ResourceName, instance.Name)
-	d.Set(ResourceCRN, instance.Crn.String())
-	d.Set(ResourceStatus, instance.State)
-	d.Set(ResourceGroupName, instance.ResourceGroupName)
+	d.Set(flex.ResourceName, instance.Name)
+	d.Set(flex.ResourceCRN, instance.Crn.String())
+	d.Set(flex.ResourceStatus, instance.State)
+	d.Set(flex.ResourceGroupName, instance.ResourceGroupName)
 	d.Set("guid", instance.Guid)
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
-		d.Set("extensions", Flatten(instance.Extensions))
+		d.Set("extensions", flex.Flatten(instance.Extensions))
 	}
 
-	rcontroller, err := getBaseController(meta)
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/")
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(instance.ResourcePlanID)
 	if err != nil {
-		return fmt.Errorf("Error retrieving plan: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
 	}
 	d.Set("plan", servicePlan)
 	d.Set("crn", instance.Crn.String())
-	tags, err := GetTagsUsingCRN(meta, instance.Crn.String())
+	tags, err := flex.GetTagsUsingCRN(meta, instance.Crn.String())
 	if err != nil {
 		log.Printf(
 			"Error on get of resource instance tags (%s) tags: %s", d.Id(), err)
