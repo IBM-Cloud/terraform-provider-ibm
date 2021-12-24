@@ -1,12 +1,15 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,15 +20,15 @@ func TestAccIBMCloudantDataSource_basic(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMCloudantDataSourceConfig(serviceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(dataSourceName, "service", "cloudantnosqldb"),
-					resource.TestMatchResourceAttr(dataSourceName, ResourceControllerURL, regexp.MustCompile("services/cloudantnosqldb/crn%3A.+")),
+					resource.TestMatchResourceAttr(dataSourceName, flex.ResourceControllerURL, regexp.MustCompile("services/cloudantnosqldb/crn%3A.+")),
 					resource.TestCheckResourceAttr(dataSourceName, "include_data_events", "false"),
 					resource.TestCheckResourceAttr(dataSourceName, "capacity", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "throughput.read", "20"),

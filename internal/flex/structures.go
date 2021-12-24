@@ -66,7 +66,7 @@ const (
 //HashInt ...
 func HashInt(v interface{}) int { return v.(int) }
 
-func expandStringList(input []interface{}) []string {
+func ExpandStringList(input []interface{}) []string {
 	vs := make([]string, len(input))
 	for i, v := range input {
 		vs[i] = v.(string)
@@ -903,7 +903,7 @@ func expandExec(execs []interface{}) *whisk.Exec {
 			Code:       PtrToString(code),
 			Kind:       e["kind"].(string),
 			Main:       e["main"].(string),
-			Components: expandStringList(e["components"].([]interface{})),
+			Components: ExpandStringList(e["components"].([]interface{})),
 		}
 		return obj
 	}
@@ -2832,7 +2832,7 @@ func MapRoleListToPolicyRoles(roleList iampolicymanagementv1.RoleList) []iampoli
 // 	}
 
 // 	roles := MapRoleListToPolicyRoles(*roleList)
-// 	policyRoles, err := getRolesFromRoleNames(expandStringList(d.Get("roles").([]interface{})), roles)
+// 	policyRoles, err := getRolesFromRoleNames(ExpandStringList(d.Get("roles").([]interface{})), roles)
 // 	if err != nil {
 // 		return iampolicymanagementv1.CreatePolicyOptions{}, err
 // 	}

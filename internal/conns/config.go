@@ -1236,9 +1236,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.hpcsEndpointAPI = hpcsAPI
 
-	kpurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	kpurl := ContructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		kpurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+		kpurl = ContructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		kpurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kpurl)
@@ -1269,9 +1269,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	iamURL := iamidentity.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamURL = ContructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -1279,9 +1279,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// KEY MANAGEMENT Service
-	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
+	kmsurl := ContructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		kmsurl = contructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
+		kmsurl = ContructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		kmsurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kmsurl)
@@ -1507,9 +1507,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	schematicsEndpoint := "https://schematics.cloud.ibm.com"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			schematicsEndpoint = contructEndpoint("private-us.schematics", cloudEndpoint)
+			schematicsEndpoint = ContructEndpoint("private-us.schematics", cloudEndpoint)
 		} else if c.Region == "eu-gb" || c.Region == "eu-de" {
-			schematicsEndpoint = contructEndpoint("private-eu.schematics", cloudEndpoint)
+			schematicsEndpoint = ContructEndpoint("private-eu.schematics", cloudEndpoint)
 		} else {
 			schematicsEndpoint = "https://schematics.cloud.ibm.com"
 		}
@@ -1536,19 +1536,19 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.schematicsClient = schematicsClient
 
 	// VPC Service
-	vpcurl := contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	vpcurl := ContructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+			vpcurl = ContructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
 			session.vpcErr = fmt.Errorf("[ERROR] VPC supports private endpoints only in us-south and us-east")
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcurl = contructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+			vpcurl = ContructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		}
-		vpcurl = contructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+		vpcurl = ContructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		vpcurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IS_NG_API_ENDPOINT", c.Region, vpcurl)
@@ -1705,7 +1705,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		} else {
 			globalTaggingRegion = c.Region
 		}
-		globalTaggingEndpoint = contructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+		globalTaggingEndpoint = ContructEndpoint(fmt.Sprintf("tags.private.%s", globalTaggingRegion), fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		globalTaggingEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GT_API_ENDPOINT", c.Region, globalTaggingEndpoint)
@@ -1775,9 +1775,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.functionIAMNamespaceAPI = namespaceFunction
 
 	//  API GATEWAY service
-	apicurl := contructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+	apicurl := ContructEndpoint(fmt.Sprintf("api.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		apicurl = contructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
+		apicurl = ContructEndpoint(fmt.Sprintf("api.private.%s.apigw", c.Region), fmt.Sprintf("%s/controller", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		apicurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_API_GATEWAY_ENDPOINT", c.Region, apicurl)
@@ -1803,7 +1803,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// PRIVATE DNS Service
 	pdnsURL := dns.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		pdnsURL = contructEndpoint("api.private.dns-svcs", fmt.Sprintf("%s/v1", cloudEndpoint))
+		pdnsURL = ContructEndpoint("api.private.dns-svcs", fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		pdnsURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PRIVATE_DNS_API_ENDPOINT", c.Region, pdnsURL)
@@ -1827,7 +1827,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	ver := time.Now().Format("2006-01-02")
 	dlURL := dl.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		dlURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
+		dlURL = ContructEndpoint("private.directlink", fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		dlURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_API_ENDPOINT", c.Region, dlURL)
@@ -1851,7 +1851,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// DIRECT LINK PROVIDER Service
 	dlproviderURL := dlProviderV2.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		dlproviderURL = contructEndpoint("private.directlink", fmt.Sprintf("%s/provider/v2", cloudEndpoint))
+		dlproviderURL = ContructEndpoint("private.directlink", fmt.Sprintf("%s/provider/v2", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		dlproviderURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_PROVIDER_API_ENDPOINT", c.Region, dlproviderURL)
@@ -1875,7 +1875,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// TRANSIT GATEWAY Service
 	tgURL := tg.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		tgURL = contructEndpoint("private.transit", fmt.Sprintf("%s/v1", cloudEndpoint))
+		tgURL = ContructEndpoint("private.transit", fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		tgURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TG_API_ENDPOINT", c.Region, tgURL)
@@ -1897,9 +1897,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// CIS Service instances starts here.
-	cisURL := contructEndpoint("api.cis", cloudEndpoint)
+	cisURL := ContructEndpoint("api.cis", cloudEndpoint)
 	if c.Visibility == "private" {
-		// cisURL = contructEndpoint("api.private.cis", cloudEndpoint)
+		// cisURL = ContructEndpoint("api.private.cis", cloudEndpoint)
 		session.cisZonesErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisDNSBulkErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisGLBPoolErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
@@ -2417,9 +2417,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	iamIdenityURL := iamidentity.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamIdenityURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamIdenityURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamIdenityURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamIdenityURL = ContructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -2445,9 +2445,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	iamPolicyManagementURL := iampolicymanagement.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamPolicyManagementURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamPolicyManagementURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamPolicyManagementURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamPolicyManagementURL = ContructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -2473,9 +2473,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 	iamAccessGroupsURL := iamaccessgroups.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamAccessGroupsURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamAccessGroupsURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamAccessGroupsURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamAccessGroupsURL = ContructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -2501,15 +2501,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	rmURL := resourcemanager.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+			rmURL = ContructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rmURL = contructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s", cloudEndpoint))
+			rmURL = ContructEndpoint("private.us-south.resource-controller", fmt.Sprintf("%s", cloudEndpoint))
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rmURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
+			rmURL = ContructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), fmt.Sprintf("%s", cloudEndpoint))
 		} else {
 			rmURL = resourcemanager.DefaultServiceURL
 		}
@@ -2557,15 +2557,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	enterpriseURL := enterprisemanagementv1.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
-			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+			enterpriseURL = ContructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			enterpriseURL = contructEndpoint("private.us-south.enterprise", fmt.Sprintf("%s/v1", cloudEndpoint))
+			enterpriseURL = ContructEndpoint("private.us-south.enterprise", fmt.Sprintf("%s/v1", cloudEndpoint))
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" || c.Region == "eu-fr" {
-			enterpriseURL = contructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region),
+			enterpriseURL = ContructEndpoint(fmt.Sprintf("private.%s.enterprise", c.Region),
 				fmt.Sprintf("%s/v1", cloudEndpoint))
 		} else {
 			enterpriseURL = enterprisemanagementv1.DefaultServiceURL
@@ -2594,15 +2594,15 @@ func (c *Config) ClientSession() (interface{}, error) {
 	rcURL := resourcecontroller.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+			rcURL = ContructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
 		} else {
 			fmt.Println("Private Endpint supports only us-south and us-east region specific endpoint")
-			rcURL = contructEndpoint("private.us-south.resource-controller", cloudEndpoint)
+			rcURL = ContructEndpoint("private.us-south.resource-controller", cloudEndpoint)
 		}
 	}
 	if c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			rcURL = contructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
+			rcURL = ContructEndpoint(fmt.Sprintf("private.%s.resource-controller", c.Region), cloudEndpoint)
 		} else {
 			rcURL = resourcecontroller.DefaultServiceURL
 		}
@@ -2647,7 +2647,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// SATELLITE Service
 	containerEndpoint := kubernetesserviceapiv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		containerEndpoint = contructEndpoint(fmt.Sprintf("private.%s.containers", c.Region), fmt.Sprintf("%s/global", cloudEndpoint))
+		containerEndpoint = ContructEndpoint(fmt.Sprintf("private.%s.containers", c.Region), fmt.Sprintf("%s/global", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		containerEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_API_ENDPOINT", c.Region, containerEndpoint)
@@ -2673,7 +2673,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct an "options" struct for creating the service client.
 	satelliteLinkEndpoint := satellitelinkv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		satelliteLinkEndpoint = contructEndpoint("private.api.link.satellite", cloudEndpoint)
+		satelliteLinkEndpoint = ContructEndpoint("private.api.link.satellite", cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		satelliteLinkEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_LINK_API_ENDPOINT", c.Region, satelliteLinkEndpoint)
@@ -2983,7 +2983,7 @@ func isRetryable(err error) bool {
 	return false
 }
 
-func contructEndpoint(subdomain, domain string) string {
+func ContructEndpoint(subdomain, domain string) string {
 	endpoint := fmt.Sprintf("https://%s.%s", subdomain, domain)
 	return endpoint
 }

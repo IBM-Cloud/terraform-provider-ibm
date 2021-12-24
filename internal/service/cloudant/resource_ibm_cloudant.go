@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant
 
 import (
 	"context"
@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -22,8 +25,8 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func resourceIBMCloudant() *schema.Resource {
-	riSchema := resourceIBMResourceInstance().Schema
+func ResourceIBMCloudant() *schema.Resource {
+	riSchema := resourcecontroller.ResourceIBMResourceInstance().Schema
 
 	riSchema["service"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -87,13 +90,13 @@ func resourceIBMCloudant() *schema.Resource {
 		Description: "Configuration for CORS.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"allow_credentials": &schema.Schema{
+				"allow_credentials": {
 					Type:        schema.TypeBool,
 					Optional:    true,
 					Default:     true,
 					Description: "Boolean value to allow authentication credentials. If set to true, browser requests must be done by using withCredentials = true.",
 				},
-				"origins": &schema.Schema{
+				"origins": {
 					Type:        schema.TypeList,
 					Required:    true,
 					Description: "An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.",
@@ -111,8 +114,8 @@ func resourceIBMCloudant() *schema.Resource {
 		Create:   resourceIBMCloudantCreate,
 		Read:     resourceIBMCloudantRead,
 		Update:   resourceIBMCloudantUpdate,
-		Delete:   resourceIBMResourceInstanceDelete,
-		Exists:   resourceIBMResourceInstanceExists,
+		Delete:   resourcecontroller.ResourceIBMResourceInstanceDelete,
+		Exists:   resourcecontroller.ResourceIBMResourceInstanceExists,
 		Importer: &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -123,7 +126,7 @@ func resourceIBMCloudant() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
+				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
 
@@ -171,7 +174,7 @@ func resourceIBMCloudantCreate(d *schema.ResourceData, meta interface{}) error {
 		d.Set("parameters", params)
 	}
 
-	err = resourceIBMResourceInstanceCreate(d, meta)
+	err = resourcecontroller.ResourceIBMResourceInstanceCreate(d, meta)
 	if err != nil {
 		return err
 	}
@@ -188,7 +191,7 @@ func resourceIBMCloudantCreate(d *schema.ResourceData, meta interface{}) error {
 	if d.Get("include_data_events").(bool) {
 		err := updateCloudantActivityTrackerEvents(client, d)
 		if err != nil {
-			return fmt.Errorf("Error updating activity tracker events: %s", err)
+			return fmt.Errorf("[ERROR] Error updating activity tracker events: %s", err)
 		}
 	}
 
@@ -196,20 +199,20 @@ func resourceIBMCloudantCreate(d *schema.ResourceData, meta interface{}) error {
 	if d.Get("capacity").(int) > 1 {
 		err := updateCloudantInstanceCapacity(client, d)
 		if err != nil {
-			return fmt.Errorf("Error retrieving capacity throughput information: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving capacity throughput information: %s", err)
 		}
 	}
 
 	err = updateCloudantInstanceCors(client, d)
 	if err != nil {
-		return fmt.Errorf("Error updating CORS settings: %s", err)
+		return fmt.Errorf("[ERROR] Error updating CORS settings: %s", err)
 	}
 
 	return resourceIBMCloudantRead(d, meta)
 }
 
 func resourceIBMCloudantRead(d *schema.ResourceData, meta interface{}) error {
-	err := resourceIBMResourceInstanceRead(d, meta)
+	err := resourcecontroller.ResourceIBMResourceInstanceRead(d, meta)
 	if err != nil {
 		return err
 	}
@@ -260,7 +263,7 @@ func resourceIBMCloudantUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	err = resourceIBMResourceInstanceUpdate(d, meta)
+	err = resourcecontroller.ResourceIBMResourceInstanceUpdate(d, meta)
 	if err != nil {
 		return err
 	}
@@ -273,21 +276,21 @@ func resourceIBMCloudantUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("include_data_events") {
 		err := updateCloudantActivityTrackerEvents(client, d)
 		if err != nil {
-			return fmt.Errorf("Error updating activity tracker events: %s", err)
+			return fmt.Errorf("[ERROR] Error updating activity tracker events: %s", err)
 		}
 	}
 
 	if d.HasChange("capacity") {
 		err := updateCloudantInstanceCapacity(client, d)
 		if err != nil {
-			return fmt.Errorf("Error retrieving capacity throughput information: %s", err)
+			return fmt.Errorf("[ERROR] Error retrieving capacity throughput information: %s", err)
 		}
 	}
 
 	if d.HasChange("enable_cors") {
 		err := updateCloudantInstanceCors(client, d)
 		if err != nil {
-			return fmt.Errorf("Error updating CORS settings: %s", err)
+			return fmt.Errorf("[ERROR] Error updating CORS settings: %s", err)
 		}
 	}
 
@@ -295,7 +298,7 @@ func resourceIBMCloudantUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func setCloudantLegacyCredentials(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -333,19 +336,19 @@ func setCloudantLegacyCredentials(d *schema.ResourceData, meta interface{}) erro
 }
 
 func setCloudantResourceControllerURL(d *schema.ResourceData, meta interface{}) error {
-	crn := d.Get(ResourceCRN).(string)
-	rcontroller, err := getBaseController(meta)
+	crn := d.Get(flex.ResourceCRN).(string)
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/cloudantnosqldb/"+url.QueryEscape(crn))
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/cloudantnosqldb/"+url.QueryEscape(crn))
 
 	return nil
 }
 
 func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.CloudantV1, error) {
 
-	session, err := meta.(ClientSession).BluemixSession()
+	session, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +363,7 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 	case "private":
 		_, ok := extensions["endpoints.private"]
 		if !ok {
-			return nil, fmt.Errorf("Missing endpoints.private in extensions")
+			return nil, fmt.Errorf("[ERROR] Missing endpoints.private in extensions")
 		}
 		endpoint = "https://" + extensions["endpoints.private"].(string)
 	case "public-and-private":
@@ -369,9 +372,9 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 		}
 	}
 
-	endpoint = envFallBack([]string{"IBMCLOUD_CLOUDANT_ENDPOINT"}, endpoint)
+	endpoint = conns.EnvFallBack([]string{"IBMCLOUD_CLOUDANT_ENDPOINT"}, endpoint)
 	if endpoint == "" {
-		return nil, fmt.Errorf("Missing endpoints.public in extensions")
+		return nil, fmt.Errorf("[ERROR] Missing endpoints.public in extensions")
 	}
 
 	var authenticator core.Authenticator
@@ -389,14 +392,14 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 		iamURL := iamidentity.DefaultServiceURL
 		if visibility == "private" || visibility == "public-and-private" {
 			if region == "us-south" || region == "us-east" {
-				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", region), cloudEndpoint)
+				iamURL = conns.ContructEndpoint(fmt.Sprintf("private.%s.iam", region), "cloud.ibm.com")
 			} else {
-				iamURL = contructEndpoint("private.iam", cloudEndpoint)
+				iamURL = conns.ContructEndpoint("private.iam", "cloud.ibm.com")
 			}
 		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: apiKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+			URL:    conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	}
 
@@ -405,7 +408,7 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 		URL:           endpoint,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error occured while configuring Cloudant service: %q", err)
+		return nil, fmt.Errorf("[ERROR] Error occured while configuring Cloudant service: %q", err)
 	}
 
 	return client, nil
@@ -414,7 +417,7 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 func setCloudantActivityTrackerEvents(client *cloudantv1.CloudantV1, d *schema.ResourceData) error {
 	activityTrackerEvents, err := readCloudantActivityTrackerEvents(client)
 	if err != nil {
-		return fmt.Errorf("Error retrieving activity tracker events: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving activity tracker events: %s", err)
 	}
 	if activityTrackerEvents.Types != nil {
 		includeDataEvents := false
@@ -457,7 +460,7 @@ func validateCloudantInstanceCapacity(d *schema.ResourceData) error {
 	plan := d.Get("plan").(string)
 	capacity := d.Get("capacity").(int)
 	if capacity > 1 && plan == "lite" {
-		return fmt.Errorf("Setting capacity is not supported for your instance's plan.")
+		return fmt.Errorf("[ERROR] Setting capacity is not supported for your instance's plan")
 	}
 	return nil
 }
@@ -465,7 +468,7 @@ func validateCloudantInstanceCapacity(d *schema.ResourceData) error {
 func setCloudantInstanceCapacity(client *cloudantv1.CloudantV1, d *schema.ResourceData) error {
 	capacityThroughputInformation, err := readCloudantInstanceCapacity(client)
 	if err != nil {
-		return fmt.Errorf("Error retrieving capacity throughput information: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving capacity throughput information: %s", err)
 	}
 
 	if capacityThroughputInformation.Current != nil && capacityThroughputInformation.Current.Throughput != nil {
@@ -548,7 +551,7 @@ func validateCloudantInstanceCors(d *schema.ResourceData) error {
 		allowCredentials := corsConfig["allow_credentials"].(bool)
 		origins := corsConfig["origins"].([]interface{})
 		if !allowCredentials || len(origins) > 0 {
-			return fmt.Errorf("Setting \"cors_config\" conflicts with enable_cors set to false")
+			return fmt.Errorf("[ERROR] Setting \"cors_config\" conflicts with enable_cors set to false")
 		}
 	}
 	return nil
@@ -557,7 +560,7 @@ func validateCloudantInstanceCors(d *schema.ResourceData) error {
 func setCloudantInstanceCors(client *cloudantv1.CloudantV1, d *schema.ResourceData) error {
 	corsInformation, err := readCloudantInstanceCors(client)
 	if err != nil {
-		return fmt.Errorf("Error retrieving CORS config: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving CORS config: %s", err)
 	}
 	if corsInformation != nil {
 		d.Set("enable_cors", corsInformation.EnableCors)
@@ -593,7 +596,7 @@ func updateCloudantInstanceCors(client *cloudantv1.CloudantV1, d *schema.Resourc
 	if enableCors && len(corsConfigRaw) > 0 {
 		corsConfig := corsConfigRaw[0].(map[string]interface{})
 		allowCredentials = corsConfig["allow_credentials"].(bool)
-		origins = expandStringList(corsConfig["origins"].([]interface{}))
+		origins = flex.ExpandStringList(corsConfig["origins"].([]interface{}))
 	}
 
 	opts := client.NewPutCorsConfigurationOptions(origins)

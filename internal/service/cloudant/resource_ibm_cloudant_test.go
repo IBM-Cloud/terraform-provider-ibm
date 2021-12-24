@@ -1,13 +1,16 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant_test
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -23,8 +26,8 @@ func TestAccIBMCloudant_basic(t *testing.T) {
 	updateName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCloudantDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -65,8 +68,8 @@ func TestAccIBMCloudant_import(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform-test-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCloudantDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -94,7 +97,7 @@ func TestAccIBMCloudant_import(t *testing.T) {
 }
 
 func testAccCheckIBMCloudantDestroy(s *terraform.State) error {
-	rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPI()
 	if err != nil {
 		return err
 	}
@@ -130,7 +133,7 @@ func testAccCheckIBMCloudantExists(resourceName string, obj models.ServiceInstan
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).ResourceControllerAPI()
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerAPI()
 		if err != nil {
 			return err
 		}
