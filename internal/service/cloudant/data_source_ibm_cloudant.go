@@ -1,19 +1,20 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant
 
 import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 )
 
-func dataSourceIBMCloudant() *schema.Resource {
-	riSchema := dataSourceIBMResourceInstance().Schema
+func DataSourceIBMCloudant() *schema.Resource {
+	riSchema := resourcecontroller.DataSourceIBMResourceInstance().Schema
 
 	riSchema["service"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -78,12 +79,12 @@ func dataSourceIBMCloudant() *schema.Resource {
 		Description: "Configuration for CORS.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"allow_credentials": &schema.Schema{
+				"allow_credentials": {
 					Type:        schema.TypeBool,
 					Computed:    true,
 					Description: "Boolean value to allow authentication credentials. If set to true, browser requests must be done by using withCredentials = true.",
 				},
-				"origins": &schema.Schema{
+				"origins": {
 					Type:        schema.TypeList,
 					Computed:    true,
 					Description: "An array of strings that contain allowed origin domains. You have to specify the full URL including the protocol. It is recommended that only the HTTPS protocol is used. Subdomains count as separate domains, so you have to specify all subdomains used.",
@@ -102,7 +103,7 @@ func dataSourceIBMCloudant() *schema.Resource {
 }
 
 func dataSourceIBMCloudantRead(d *schema.ResourceData, meta interface{}) error {
-	err := dataSourceIBMResourceInstanceRead(d, meta)
+	err := resourcecontroller.DataSourceIBMResourceInstanceRead(d, meta)
 	if err != nil {
 		return err
 	}
@@ -143,7 +144,7 @@ func dataSourceIBMCloudantRead(d *schema.ResourceData, meta interface{}) error {
 func setCloudantServerInformation(client *cloudantv1.CloudantV1, d *schema.ResourceData) error {
 	serverInformation, err := readCloudantServerInformation(client)
 	if err != nil {
-		return fmt.Errorf("Error retrieving server information: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving server information: %s", err)
 	}
 
 	if serverInformation.Vendor != nil && serverInformation.Vendor.Version != nil {

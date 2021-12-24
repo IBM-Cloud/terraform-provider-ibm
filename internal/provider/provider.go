@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
@@ -246,7 +247,7 @@ func Provider() *schema.Provider {
 			// "ibm_cis_waf_rules":                      dataSourceIBMCISWAFRules(),
 			// "ibm_cis_filters":                        dataSourceIBMCISFilters(),
 			// "ibm_cis_firewall_rules":                 dataSourceIBMCISFirewallRules(),
-			// "ibm_cloudant":                           dataSourceIBMCloudant(),
+			"ibm_cloudant": cloudant.DataSourceIBMCloudant(),
 			// "ibm_database":                           dataSourceIBMDatabaseInstance(),
 			// "ibm_compute_bare_metal":                 dataSourceIBMComputeBareMetal(),
 			// "ibm_compute_image_template":             dataSourceIBMComputeImageTemplate(),
@@ -595,7 +596,7 @@ func Provider() *schema.Provider {
 			// "ibm_cis_certificate_order":                          resourceIBMCISCertificateOrder(),
 			// "ibm_cis_filter":                                     resourceIBMCISFilter(),
 			// "ibm_cis_firewall_rule":                              resourceIBMCISFirewallrules(),
-			// "ibm_cloudant":                                       resourceIBMCloudant(),
+			"ibm_cloudant": cloudant.ResourceIBMCloudant(),
 			// "ibm_cloud_shell_account_settings":                   resourceIBMCloudShellAccountSettings(),
 			// "ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
 			// "ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
