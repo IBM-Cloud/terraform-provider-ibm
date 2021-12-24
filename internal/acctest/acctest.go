@@ -78,7 +78,7 @@ var repoURL string
 var repoBranch string
 var imageName string
 var functionNamespace string
-var hpcsInstanceID string
+var HpcsInstanceID string
 var secretsManagerInstanceID string
 var secretsManagerSecretType string
 var secretsManagerSecretID string
@@ -615,9 +615,9 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_FUNCTION_NAMESPACE for testing ibm_function_package, ibm_function_action, ibm_function_rule, ibm_function_trigger resource else  tests will fail if this is not set correctly")
 	}
 
-	hpcsInstanceID = os.Getenv("HPCS_INSTANCE_ID")
-	if hpcsInstanceID == "" {
-		hpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
+	HpcsInstanceID = os.Getenv("HPCS_INSTANCE_ID")
+	if HpcsInstanceID == "" {
+		HpcsInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
 
@@ -723,12 +723,12 @@ func init() {
 	}
 }
 
-var testAccProviders map[string]*schema.Provider
+var TestAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 
 func init() {
 	testAccProvider = provider.Provider()
-	testAccProviders = map[string]*schema.Provider{
+	TestAccProviders = map[string]*schema.Provider{
 		"ibm": testAccProvider,
 	}
 }
@@ -743,7 +743,7 @@ func TestProvider_impl(t *testing.T) {
 	var _ *schema.Provider = provider.Provider()
 }
 
-func testAccPreCheck(t *testing.T) {
+func TestAccPreCheck(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
@@ -772,7 +772,7 @@ func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
 
 }
 func testAccPreCheckCis(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if cisInstance == "" {
 		t.Fatal("IBM_CIS_INSTANCE must be set for acceptance tests")
 	}
@@ -788,14 +788,14 @@ func testAccPreCheckCis(t *testing.T) {
 }
 
 func testAccPreCheckCloudShell(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if cloudShellAccountID == "" {
 		t.Fatal("IBM_CLOUD_SHELL_ACCOUNT_ID must be set for acceptance tests")
 	}
 }
 
 func testAccPreCheckHPCS(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if hpcsAdmin1 == "" {
 		t.Fatal("IBM_HPCS_ADMIN1 must be set for acceptance tests")
 	}
@@ -810,7 +810,7 @@ func testAccPreCheckHPCS(t *testing.T) {
 	}
 }
 func testAccPreCheckIAMTrustedProfile(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if realmName == "" {
 		t.Fatal("IBM_IAM_REALM_NAME must be set for acceptance tests")
 	}
@@ -820,14 +820,14 @@ func testAccPreCheckIAMTrustedProfile(t *testing.T) {
 }
 
 func testAccPreCheckCOS(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if cosCRN == "" {
 		t.Fatal("IBM_COS_CRN must be set for acceptance tests")
 	}
 }
 
 func testAccPreCheckImage(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if image_cos_url == "" {
 		t.Fatal("IMAGE_COS_URL must be set for acceptance tests")
 	}
@@ -836,7 +836,7 @@ func testAccPreCheckImage(t *testing.T) {
 	}
 }
 func testAccPreCheckEncryptedImage(t *testing.T) {
-	testAccPreCheck(t)
+	TestAccPreCheck(t)
 	if image_cos_url_encrypted == "" {
 		t.Fatal("IMAGE_COS_URL_ENCRYPTED must be set for acceptance tests")
 	}

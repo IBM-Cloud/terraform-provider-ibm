@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package kms
 
 import (
 	"context"
@@ -9,12 +9,15 @@ import (
 	"log"
 	"strings"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMKMSkey() *schema.Resource {
+func DataSourceIBMKMSkey() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMKMSKeyRead,
 
@@ -49,7 +52,7 @@ func dataSourceIBMKMSkey() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -174,7 +177,7 @@ func dataSourceIBMKMSkey() *schema.Resource {
 }
 
 func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
-	api, err := meta.(ClientSession).keyManagementAPI()
+	api, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -186,7 +189,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	endpointType := d.Get("endpoint_type").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -220,8 +223,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		if limitVal == 0 {
 			keys, err := api.GetKeys(context.Background(), 0, offset)
 			if err != nil {
-				return fmt.Errorf(
-					"Get Keys failed with error: %s", err)
+				return fmt.Errorf("[ERROR] Get Keys failed with error: %s", err)
 			}
 			retreivedKeys := keys.Keys
 			totalKeys = append(totalKeys, retreivedKeys...)
@@ -232,8 +234,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 					if (limitVal - offset) < pageSize {
 						keys, err := api.GetKeys(context.Background(), (limitVal - offset), offset)
 						if err != nil {
-							return fmt.Errorf(
-								"Get Keys failed with error: %s", err)
+							return fmt.Errorf("[ERROR] Get Keys failed with error: %s", err)
 						}
 						retreivedKeys := keys.Keys
 						totalKeys = append(totalKeys, retreivedKeys...)
@@ -241,8 +242,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 					} else {
 						keys, err := api.GetKeys(context.Background(), pageSize, offset)
 						if err != nil {
-							return fmt.Errorf(
-								"Get Keys failed with error: %s", err)
+							return fmt.Errorf("[ERROR] Get Keys failed with error: %s", err)
 						}
 						numOfKeysFetched := keys.Metadata.NumberOfKeys
 						retreivedKeys := keys.Keys
@@ -258,7 +258,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if len(totalKeys) == 0 {
-			return fmt.Errorf("No keys in instance  %s", instanceID)
+			return fmt.Errorf("[ERROR] No keys in instance  %s", instanceID)
 		}
 		var keyName string
 		var matchKeys []kp.Key
@@ -273,7 +273,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 			matchKeys = totalKeys
 		}
 		if len(matchKeys) == 0 {
-			return fmt.Errorf("No keys with name %s in instance  %s", keyName, instanceID)
+			return fmt.Errorf("[ERROR] No keys with name %s in instance  %s", keyName, instanceID)
 		}
 
 		keyMap := make([]map[string]interface{}, 0, len(matchKeys))
@@ -288,12 +288,12 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 			keyInstance["key_ring_id"] = key.KeyRingID
 			policies, err := api.GetPolicies(context.Background(), key.ID)
 			if err != nil {
-				return fmt.Errorf("Failed to read policies: %s", err)
+				return fmt.Errorf("[ERROR] Failed to read policies: %s", err)
 			}
 			if len(policies) == 0 {
 				log.Printf("No Policy Configurations read\n")
 			} else {
-				keyInstance["policies"] = flattenKeyPolicies(policies)
+				keyInstance["policies"] = flex.FlattenKeyPolicies(policies)
 			}
 			keyMap = append(keyMap, keyInstance)
 
@@ -304,8 +304,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 	} else if v, ok := d.GetOk("key_id"); ok {
 		key, err := api.GetKey(context.Background(), v.(string))
 		if err != nil {
-			return fmt.Errorf(
-				"Get Keys failed with error: %s", err)
+			return fmt.Errorf("[ERROR] Get Keys failed with error: %s", err)
 		}
 		keyMap := make([]map[string]interface{}, 0, 1)
 		keyInstance := make(map[string]interface{})
@@ -317,12 +316,12 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["key_ring_id"] = key.KeyRingID
 		policies, err := api.GetPolicies(context.Background(), key.ID)
 		if err != nil {
-			return fmt.Errorf("Failed to read policies: %s", err)
+			return fmt.Errorf("[ERROR] Failed to read policies: %s", err)
 		}
 		if len(policies) == 0 {
 			log.Printf("No Policy Configurations read\n")
 		} else {
-			keyInstance["policies"] = flattenKeyPolicies(policies)
+			keyInstance["policies"] = flex.FlattenKeyPolicies(policies)
 		}
 		keyMap = append(keyMap, keyInstance)
 
@@ -333,8 +332,7 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		aliasName := d.Get("alias").(string)
 		key, err := api.GetKey(context.Background(), aliasName)
 		if err != nil {
-			return fmt.Errorf(
-				"Get Keys failed with error: %s", err)
+			return fmt.Errorf("[ERROR] Get Keys failed with error: %s", err)
 		}
 		keyMap := make([]map[string]interface{}, 0, 1)
 		keyInstance := make(map[string]interface{})
@@ -346,12 +344,12 @@ func dataSourceIBMKMSKeyRead(d *schema.ResourceData, meta interface{}) error {
 		keyInstance["key_ring_id"] = key.KeyRingID
 		policies, err := api.GetPolicies(context.Background(), key.ID)
 		if err != nil {
-			return fmt.Errorf("Failed to read policies: %s", err)
+			return fmt.Errorf("[ERROR] Failed to read policies: %s", err)
 		}
 		if len(policies) == 0 {
 			log.Printf("No Policy Configurations read\n")
 		} else {
-			keyInstance["policies"] = flattenKeyPolicies(policies)
+			keyInstance["policies"] = flex.FlattenKeyPolicies(policies)
 		}
 		keyMap = append(keyMap, keyInstance)
 

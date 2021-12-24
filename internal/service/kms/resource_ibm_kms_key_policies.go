@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package kms
 
 import (
 	"context"
@@ -12,13 +12,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMKmskeyPolicies() *schema.Resource {
+func ResourceIBMKmskeyPolicies() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMKmsKeyPolicyCreate,
 		ReadContext:   resourceIBMKmsKeyPolicyRead,
@@ -46,7 +49,7 @@ func resourceIBMKmskeyPolicies() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				ForceNew:     true,
 				Default:      "public",
@@ -92,7 +95,7 @@ func resourceIBMKmskeyPolicies() *schema.Resource {
 						"interval_month": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(1, 12),
+							ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
 							Description:  "Specifies the key rotation time interval in months",
 						},
 					},
@@ -144,26 +147,26 @@ func resourceIBMKmskeyPolicies() *schema.Resource {
 					},
 				},
 			},
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 		},
 	}
 }
 func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,7 +178,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 	endpointType := d.Get("endpoint_type").(string)
 	key_id := d.Get("key_id").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -208,7 +211,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -218,7 +221,7 @@ func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -257,18 +260,18 @@ func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData
 	} else {
 		d.Set("endpoint_type", "public")
 	}
-	d.Set(ResourceName, key.Name)
-	d.Set(ResourceCRN, key.CRN)
+	d.Set(flex.ResourceName, key.Name)
+	d.Set(flex.ResourceCRN, key.CRN)
 	state := key.State
-	d.Set(ResourceStatus, strconv.Itoa(state))
-	rcontroller, err := getBaseController(meta)
+	d.Set(flex.ResourceStatus, strconv.Itoa(state))
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	id := key.ID
 	crn1 := strings.TrimSuffix(key.CRN, ":key:"+id)
 
-	d.Set(ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
 
 	policies, err := kpAPI.GetPolicies(context, keyid)
 
@@ -278,8 +281,8 @@ func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData
 	if len(policies) == 0 {
 		log.Printf("No Policy Configurations read\n")
 	} else {
-		d.Set("rotation", flattenKeyIndividualPolicy("rotation", policies))
-		d.Set("dual_auth_delete", flattenKeyIndividualPolicy("dual_auth_delete", policies))
+		d.Set("rotation", flex.FlattenKeyIndividualPolicy("rotation", policies))
+		d.Set("dual_auth_delete", flex.FlattenKeyIndividualPolicy("dual_auth_delete", policies))
 	}
 
 	return nil
@@ -290,7 +293,7 @@ func resourceIBMKmsKeyPolicyUpdate(context context.Context, d *schema.ResourceDa
 
 	if d.HasChange("rotation") || d.HasChange("dual_auth_delete") {
 
-		kpAPI, err := meta.(ClientSession).keyManagementAPI()
+		kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -302,7 +305,7 @@ func resourceIBMKmsKeyPolicyUpdate(context context.Context, d *schema.ResourceDa
 		}
 		endpointType := d.Get("endpoint_type").(string)
 
-		rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+		rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -363,7 +366,7 @@ func resourceHandlePolicies(context context.Context, d *schema.ResourceData, kpA
 	}
 	_, err := kpAPI.SetPolicies(context, key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable)
 	if err != nil {
-		return fmt.Errorf("Error while creating policies: %s", err)
+		return fmt.Errorf("[ERROR] Error while creating policies: %s", err)
 	}
 	return nil
 }

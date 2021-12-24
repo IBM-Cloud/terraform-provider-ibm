@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
@@ -379,15 +380,16 @@ func Provider() *schema.Provider {
 			// "ibm_org":                                dataSourceIBMOrg(),
 			// "ibm_org_quota":                          dataSourceIBMOrgQuota(),
 			// "ibm_kp_key":                             dataSourceIBMkey(),
-			// "ibm_kms_key_rings":                      dataSourceIBMKMSkeyRings(),
-			// "ibm_kms_key_policies":                   dataSourceIBMKMSkeyPolicies(),
-			// "ibm_kms_keys":                           dataSourceIBMKMSkeys(),
+			"ibm_kms_key_rings":    kms.DataSourceIBMKMSkeyRings(),
+			"ibm_kms_key_policies": kms.DataSourceIBMKMSkeyPolicies(),
+			"ibm_kms_keys":         kms.DataSourceIBMKMSkeys(),
+			"ibm_kms_key":          kms.DataSourceIBMKMSkey(),
 			// "ibm_pn_application_chrome":              dataSourceIBMPNApplicationChrome(),
 			// "ibm_app_config_environment":             dataSourceIbmAppConfigEnvironment(),
 			// "ibm_app_config_environments":            dataSourceIbmAppConfigEnvironments(),
 			// "ibm_app_config_feature":                 dataSourceIbmAppConfigFeature(),
 			// "ibm_app_config_features":                dataSourceIbmAppConfigFeatures(),
-			// "ibm_kms_key":                            dataSourceIBMKMSkey(),
+
 			// "ibm_resource_quota":                     dataSourceIBMResourceQuota(),
 			// "ibm_resource_group":                     dataSourceIBMResourceGroup(),
 			// "ibm_resource_instance":                  dataSourceIBMResourceInstance(),
@@ -725,11 +727,11 @@ func Provider() *schema.Provider {
 			// "ibm_pn_application_chrome":                          resourceIBMPNApplicationChrome(),
 			// "ibm_app_config_environment":                         resourceIbmAppConfigEnvironment(),
 			// "ibm_app_config_feature":                             resourceIbmIbmAppConfigFeature(),
-			// "ibm_kms_key":                                        resourceIBMKmskey(),
-			// "ibm_kms_key_alias":                                  resourceIBMKmskeyAlias(),
-			// "ibm_kms_key_rings":                                  resourceIBMKmskeyRings(),
-			// "ibm_kms_key_policies":                               resourceIBMKmskeyPolicies(),
-			// "ibm_kp_key":                                         resourceIBMkey(),
+			"ibm_kms_key":          kms.ResourceIBMKmskey(),
+			"ibm_kms_key_alias":    kms.ResourceIBMKmskeyAlias(),
+			"ibm_kms_key_rings":    kms.ResourceIBMKmskeyRings(),
+			"ibm_kms_key_policies": kms.ResourceIBMKmskeyPolicies(),
+			// "ibm_kp_key":           kms.ResourceIBMkey(),
 			// "ibm_resource_group":                                 resourceIBMResourceGroup(),
 			// "ibm_resource_instance":                              resourceIBMResourceInstance(),
 			// "ibm_resource_key":                                   resourceIBMResourceKey(),
@@ -935,7 +937,7 @@ func Validator() validate.ValidatorDict {
 				// "ibm_is_vpc_routing_table_route":          resourceIBMISVPCRoutingTableRouteValidator(),
 				// "ibm_is_vpn_gateway_connection":           resourceIBMISVPNGatewayConnectionValidator(),
 				// "ibm_is_vpn_gateway":                      resourceIBMISVPNGatewayValidator(),
-				// "ibm_kms_key_rings":                       resourceIBMKeyRingValidator(),
+				"ibm_kms_key_rings": kms.ResourceIBMKeyRingValidator(),
 				// "ibm_dns_glb_monitor":                     resourceIBMPrivateDNSGLBMonitorValidator(),
 				// "ibm_dns_glb_pool":                        resourceIBMPrivateDNSGLBPoolValidator(),
 				// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRuleValidator(),

@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package kms
 
 import (
 	"context"
@@ -12,6 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +30,7 @@ func suppressKMSInstanceIDDiff(k, old, new string, d *schema.ResourceData) bool 
 	return false
 }
 
-func resourceIBMKmskey() *schema.Resource {
+func ResourceIBMKmskey() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMKmsKeyCreate,
 		Read:     resourceIBMKmsKeyRead,
@@ -75,7 +78,7 @@ func resourceIBMKmskey() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				ForceNew:     true,
 			},
@@ -173,7 +176,7 @@ func resourceIBMKmskey() *schema.Resource {
 									"interval_month": {
 										Type:         schema.TypeInt,
 										Required:     true,
-										ValidateFunc: validateAllowedRangeInt(1, 12),
+										ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
 										Description:  "Specifies the key rotation time interval in months",
 									},
 								},
@@ -233,30 +236,30 @@ func resourceIBMKmskey() *schema.Resource {
 				Computed:    true,
 				Description: "Key protect or hpcs instance CRN",
 			},
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the resource",
 			},
 
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the resource",
 			},
 
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the resource",
 			},
 
-			ResourceGroupName: {
+			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
-			ResourceControllerURL: {
+			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
@@ -266,7 +269,7 @@ func resourceIBMKmskey() *schema.Resource {
 }
 
 func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -279,7 +282,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	endpointType := d.Get("endpoint_type").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -311,7 +314,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		// parse string to required time format
 		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
 		if err != nil {
-			return fmt.Errorf("Invalid time format (the date format follows RFC 3339): %s", err)
+			return fmt.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
 		}
 		expiration = &expiration_time
 	} else {
@@ -325,8 +328,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			payload := v.(string)
 			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, expiration, payload)
 			if err != nil {
-				return fmt.Errorf(
-					"Error while creating standard key with payload: %s", err)
+				return fmt.Errorf("[ERROR] Error while creating standard key with payload: %s", err)
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
@@ -335,8 +337,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			//create standard key
 			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, expiration)
 			if err != nil {
-				return fmt.Errorf(
-					"Error while creating standard key: %s", err)
+				return fmt.Errorf("[ERROR] Error while creating standard key: %s", err)
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
@@ -349,8 +350,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 			iv := d.Get("iv_value").(string)
 			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, expiration, payload, encryptedNonce, iv)
 			if err != nil {
-				return fmt.Errorf(
-					"Error while creating Root key with payload: %s", err)
+				return fmt.Errorf("[ERROR] Error while creating Root key with payload: %s", err)
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
@@ -358,8 +358,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		} else {
 			stkey, err := kpAPI.CreateRootKey(context.Background(), name, expiration)
 			if err != nil {
-				return fmt.Errorf(
-					"Error while creating Root key: %s", err)
+				return fmt.Errorf("[ERROR] Error while creating Root key: %s", err)
 			}
 			keyCRN = stkey.CRN
 			d.SetId(keyCRN)
@@ -369,7 +368,7 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -380,7 +379,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -409,7 +408,7 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Get Key failed with error while reading policies: %s", err)
+		return fmt.Errorf("[ERROR] Get Key failed with error while reading policies: %s", err)
 	} else if key.State == 5 { //Refers to Deleted state of the Key
 		d.SetId("")
 		return nil
@@ -417,12 +416,12 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 	policies, err := kpAPI.GetPolicies(context.Background(), keyid)
 	if err != nil && !strings.Contains(fmt.Sprint(err), "Unauthorized: The user does not have access to the specified resource") {
-		return fmt.Errorf("Failed to read policies: %s", err)
+		return fmt.Errorf("[ERROR] Failed to read policies: %s", err)
 	}
 	if len(policies) == 0 {
 		log.Printf("No Policy Configurations read\n")
 	} else {
-		d.Set("policies", flattenKeyPolicies(policies))
+		d.Set("policies", flex.FlattenKeyPolicies(policies))
 	}
 	d.Set("instance_id", instanceID)
 	d.Set("instance_crn", instanceCRN)
@@ -449,18 +448,18 @@ func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		d.Set("expiration_date", "")
 	}
-	d.Set(ResourceName, key.Name)
-	d.Set(ResourceCRN, key.CRN)
+	d.Set(flex.ResourceName, key.Name)
+	d.Set(flex.ResourceCRN, key.CRN)
 	state := key.State
-	d.Set(ResourceStatus, strconv.Itoa(state))
-	rcontroller, err := getBaseController(meta)
+	d.Set(flex.ResourceStatus, strconv.Itoa(state))
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
 	id := key.ID
 	crn1 := strings.TrimSuffix(key.CRN, ":key:"+id)
 
-	d.Set(ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/kms/"+url.QueryEscape(crn1)+"%3A%3A")
 
 	return nil
 
@@ -473,7 +472,7 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if d.HasChange("policies") {
 
-		kpAPI, err := meta.(ClientSession).keyManagementAPI()
+		kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 		if err != nil {
 			return err
 		}
@@ -484,7 +483,7 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		instanceID := crnData[len(crnData)-3]
 		key_id := crnData[len(crnData)-1]
 
-		rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+		rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 		if err != nil {
 			return err
 		}
@@ -506,7 +505,7 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		err = handlePolicies(d, kpAPI, meta, key_id)
 		if err != nil {
-			return fmt.Errorf("Could not update policies: %s", err)
+			return fmt.Errorf("[ERROR] Could not update policies: %s", err)
 		}
 	}
 	return resourceIBMKmsKeyRead(d, meta)
@@ -514,7 +513,7 @@ func resourceIBMKmsKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -524,7 +523,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -551,8 +550,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, err1 := kpAPI.DeleteKey(context.Background(), keyid, kp.ReturnRepresentation, f)
 	if err1 != nil {
-		return fmt.Errorf(
-			"Error while deleting: %s", err1)
+		return fmt.Errorf("[ERROR] Error while deleting: %s", err1)
 	}
 	d.SetId("")
 	return nil
@@ -560,7 +558,7 @@ func resourceIBMKmsKeyDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return false, err
 	}
@@ -571,7 +569,7 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -629,7 +627,7 @@ func handlePolicies(d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, 
 
 		_, err := kpAPI.SetPolicies(context.Background(), key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable)
 		if err != nil {
-			return fmt.Errorf("Error while creating policies: %s", err)
+			return fmt.Errorf("[ERROR] Error while creating policies: %s", err)
 		}
 	}
 	return nil
@@ -644,7 +642,7 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 	}
 	endpointURL := fmt.Sprintf("%s/api/v2/keys", exturl.(string))
 
-	url1 := envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, endpointURL)
+	url1 := conns.EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, endpointURL)
 	u, err := url.Parse(url1)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
