@@ -121,7 +121,7 @@ type UserConfig struct {
 	userID      string
 	userEmail   string
 	userAccount string
-	cloudName   string `default:"bluemix"`
+	CloudName   string `default:"bluemix"`
 	cloudType   string `default:"public"`
 	generation  int    `default:"2"`
 }
@@ -223,7 +223,7 @@ type ClientSession interface {
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
 	keyProtectAPI() (*kp.Client, error)
-	keyManagementAPI() (*kp.Client, error)
+	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
@@ -703,19 +703,19 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
 
-func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
+func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 	if sess.kmsErr == nil {
 		var clientConfig *kp.ClientConfig
 		if sess.kmsAPI.Config.APIKey != "" {
 			clientConfig = &kp.ClientConfig{
-				BaseURL:  envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				BaseURL:  EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
 				APIKey:   sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
 				Verbose:  kp.VerboseFailOnly,
 				TokenURL: sess.kmsAPI.Config.TokenURL,
 			}
 		} else {
 			clientConfig = &kp.ClientConfig{
-				BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				BaseURL:       EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
 				Authorization: sess.session.BluemixSession.Config.IAMAccessToken, //pragma: allowlist secret
 				Verbose:       kp.VerboseFailOnly,
 				TokenURL:      sess.kmsAPI.Config.TokenURL,
@@ -1185,7 +1185,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	BluemixRegion = sess.BluemixSession.Config.Region
 	var fileMap map[string]interface{}
-	if f := envFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
+	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
 		jsonFile, err := os.Open(f)
 		if err != nil {
 			log.Fatalf("Unable to open Endpoints File %s", err)
@@ -1246,7 +1246,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var options kp.ClientConfig
 	if c.BluemixAPIKey != "" {
 		options = kp.ClientConfig{
-			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
+			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
 			// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
 			Verbose: kp.VerboseFailOnly,
@@ -1254,7 +1254,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	} else {
 		options = kp.ClientConfig{
-			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
+			BaseURL:       EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 			Authorization: sess.BluemixSession.Config.IAMAccessToken,
 			// InstanceID:    "42fET57nnadurKXzXAedFLOhGqETfIGYxOmQXkFgkJV9",
 			Verbose: kp.VerboseFailOnly,
@@ -1289,20 +1289,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var kmsOptions kp.ClientConfig
 	if c.BluemixAPIKey != "" {
 		kmsOptions = kp.ClientConfig{
-			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
+			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
 			Verbose:  kp.VerboseFailOnly,
-			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+			TokenURL: EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 
 	} else {
 		kmsOptions = kp.ClientConfig{
-			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
+			BaseURL:       EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			Authorization: sess.BluemixSession.Config.IAMAccessToken,
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
 			Verbose:  kp.VerboseFailOnly,
-			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+			TokenURL: EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	}
 	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
@@ -1316,7 +1316,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.BluemixAPIKey != "" {
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
-			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+			URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
@@ -1338,7 +1338,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	appIDClientOptions := &appid.AppIDManagementV4Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT"}, appIDEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT"}, appIDEndpoint),
 	}
 	appIDClient, err := appid.NewAppIDManagementV4(appIDClientOptions)
 	if err != nil {
@@ -1362,7 +1362,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
 	}
 
 	// Construct the service client.
@@ -1387,7 +1387,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT", c.Region, catalogManagementURL)
 	}
 	catalogManagementClientOptions := &catalogmanagementv1.CatalogManagementV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT"}, catalogManagementURL),
 		Authenticator: authenticator,
 	}
 	// Construct the service client.
@@ -1424,7 +1424,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
 	}
 	// Construct the service client.
 	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
@@ -1455,7 +1455,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	findingsClientOptions := &findingsv1.FindingsV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
 		AccountID:     core.StringPtr(userConfig.userAccount),
 	}
 	// Construct the service client.
@@ -1487,7 +1487,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
 	}
 
 	// Construct the service client.
@@ -1519,7 +1519,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	schematicsClientOptions := &schematicsv1.SchematicsV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
 	}
 	// Construct the service client.
 	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
@@ -1554,7 +1554,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		vpcurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IS_NG_API_ENDPOINT", c.Region, vpcurl)
 	}
 	vpcoptions := &vpc.VpcV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
 		Authenticator: authenticator,
 	}
 	vpcclient, err := vpc.NewVpcV1(vpcoptions)
@@ -1578,7 +1578,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		pnurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PUSH_API_ENDPOINT", c.Region, pnurl)
 	}
 	pushNotificationOptions := &pushservicev1.PushServiceV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_PUSH_API_ENDPOINT"}, pnurl),
 		Authenticator: authenticator,
 	}
 	pnclient, err := pushservicev1.NewPushServiceV1(pushNotificationOptions)
@@ -1603,7 +1603,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	enClientOptions := &eventnotificationsv1.EventNotificationsV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT"}, enurl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT"}, enurl),
 	}
 	// Construct the service client.
 	session.eventNotificationsApiClient, err = eventnotificationsv1.NewEventNotificationsV1(enClientOptions)
@@ -1652,7 +1652,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	containerRegistryClientOptions := &containerregistryv1.ContainerRegistryV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_CR_API_ENDPOINT"}, containerRegistryClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_CR_API_ENDPOINT"}, containerRegistryClientURL),
 		Account:       core.StringPtr(userConfig.userAccount),
 	}
 	// Construct the service client.
@@ -1676,7 +1676,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	cosconfigoptions := &cosconfig.ResourceConfigurationV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosconfigurl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_COS_CONFIG_ENDPOINT"}, cosconfigurl),
 	}
 	cosconfigclient, err := cosconfig.NewResourceConfigurationV1(cosconfigoptions)
 	if err != nil {
@@ -1711,7 +1711,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		globalTaggingEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GT_API_ENDPOINT", c.Region, globalTaggingEndpoint)
 	}
 	globalTaggingV1Options := &globaltaggingv1.GlobalTaggingV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_GT_API_ENDPOINT"}, globalTaggingEndpoint),
 		Authenticator: authenticator,
 	}
 	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
@@ -1783,7 +1783,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		apicurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_API_GATEWAY_ENDPOINT", c.Region, apicurl)
 	}
 	APIGatewayControllerAPIV1Options := &apigateway.ApiGatewayControllerApiV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_API_GATEWAY_ENDPOINT"}, apicurl),
 		Authenticator: &core.NoAuthAuthenticator{},
 	}
 	apigatewayAPI, err := apigateway.NewApiGatewayControllerApiV1(APIGatewayControllerAPIV1Options)
@@ -1809,7 +1809,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		pdnsURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_PRIVATE_DNS_API_ENDPOINT", c.Region, pdnsURL)
 	}
 	dnsOptions := &dns.DnsSvcsV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_PRIVATE_DNS_API_ENDPOINT"}, pdnsURL),
 		Authenticator: authenticator,
 	}
 	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
@@ -1833,7 +1833,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		dlURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_API_ENDPOINT", c.Region, dlURL)
 	}
 	directlinkOptions := &dl.DirectLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
@@ -1857,7 +1857,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		dlproviderURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_DL_PROVIDER_API_ENDPOINT", c.Region, dlproviderURL)
 	}
 	directLinkProviderV2Options := &dlProviderV2.DirectLinkProviderV2Options{
-		URL:           envFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, dlproviderURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_DL_PROVIDER_API_ENDPOINT"}, dlproviderURL),
 		Authenticator: authenticator,
 		Version:       &ver,
 	}
@@ -1881,7 +1881,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		tgURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TG_API_ENDPOINT", c.Region, tgURL)
 	}
 	transitgatewayOptions := &tg.TransitGatewayApisV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, tgURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_TG_API_ENDPOINT"}, tgURL),
 		Authenticator: authenticator,
 		Version:       CreateVersionDate(),
 	}
@@ -1926,7 +1926,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cisURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CIS_API_ENDPOINT", c.Region, cisURL)
 	}
-	cisEndPoint := envFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
+	cisEndPoint := EnvFallBack([]string{"IBMCLOUD_CIS_API_ENDPOINT"}, cisURL)
 
 	// IBM Network CIS Zones service
 	cisZonesV1Opt := &ciszonesv1.ZonesV1Options{
@@ -2427,7 +2427,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamIdenityURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamIdenityURL),
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
@@ -2455,7 +2455,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamPolicyManagementOptions := &iampolicymanagement.IamPolicyManagementV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamPolicyManagementURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamPolicyManagementURL),
 	}
 	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
 	if err != nil {
@@ -2483,7 +2483,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamAccessGroupsOptions := &iamaccessgroups.IamAccessGroupsV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamAccessGroupsURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamAccessGroupsURL),
 	}
 	iamAccessGroupsClient, err := iamaccessgroups.NewIamAccessGroupsV2(iamAccessGroupsOptions)
 	if err != nil {
@@ -2519,7 +2519,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	resourceManagerOptions := &resourcemanager.ResourceManagerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT"}, rmURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_RESOURCE_MANAGEMENT_API_ENDPOINT"}, rmURL),
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
@@ -2540,7 +2540,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	ibmCloudShellClientOptions := &ibmcloudshellv1.IBMCloudShellV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, cloudShellUrl),
+		URL:           EnvFallBack([]string{"IBMCLOUD_CLOUD_SHELL_API_ENDPOINT"}, cloudShellUrl),
 	}
 	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
 	if err != nil {
@@ -2576,7 +2576,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	enterpriseManagementClientOptions := &enterprisemanagementv1.EnterpriseManagementV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_ENTERPRISE_API_ENDPOINT"}, enterpriseURL),
 	}
 	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
 	if err != nil {
@@ -2612,7 +2612,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	resourceControllerOptions := &resourcecontroller.ResourceControllerV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, rcURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_RESOURCE_CONTROLLER_API_ENDPOINT"}, rcURL),
 	}
 	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
 	if err != nil {
@@ -2653,7 +2653,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		containerEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_API_ENDPOINT", c.Region, containerEndpoint)
 	}
 	kubernetesServiceV1Options := &kubernetesserviceapiv1.KubernetesServiceApiV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_API_ENDPOINT"}, containerEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_SATELLITE_API_ENDPOINT"}, containerEndpoint),
 		Authenticator: authenticator,
 	}
 	session.satelliteClient, err = kubernetesserviceapiv1.NewKubernetesServiceApiV1(kubernetesServiceV1Options)
@@ -2679,7 +2679,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		satelliteLinkEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SATELLITE_LINK_API_ENDPOINT", c.Region, satelliteLinkEndpoint)
 	}
 	satelliteLinkClientOptions := &satellitelinkv1.SatelliteLinkV1Options{
-		URL:           envFallBack([]string{"IBMCLOUD_SATELLITE_LINK_API_ENDPOINT"}, satelliteLinkEndpoint),
+		URL:           EnvFallBack([]string{"IBMCLOUD_SATELLITE_LINK_API_ENDPOINT"}, satelliteLinkEndpoint),
 		Authenticator: authenticator,
 	}
 	session.satelliteLinkClient, err = satellitelinkv1.NewSatelliteLinkV1(satelliteLinkClientOptions)
@@ -2725,7 +2725,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
 		AccountID:     core.StringPtr(userConfig.userAccount),
 	}
 
@@ -2903,9 +2903,9 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	user.userAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	iss := claims["iss"].(string)
 	if strings.Contains(iss, "https://iam.cloud.ibm.com") {
-		user.cloudName = "bluemix"
+		user.CloudName = "bluemix"
 	} else {
-		user.cloudName = "staging"
+		user.CloudName = "staging"
 	}
 	user.cloudType = "public"
 
@@ -2928,7 +2928,7 @@ func refreshToken(sess *bxsession.Session) error {
 	return err
 }
 
-func envFallBack(envs []string, defaultValue string) string {
+func EnvFallBack(envs []string, defaultValue string) string {
 	for _, k := range envs {
 		if v := os.Getenv(k); v != "" {
 			return v

@@ -1,9 +1,11 @@
-package ibm
+package kms_test
 
 import (
 	"fmt"
 	"regexp"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -17,10 +19,10 @@ func TestAccIBMKMSResource_Key_Alias_Name(t *testing.T) {
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasConfig(instanceName, keyName, aliasName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName),
@@ -39,10 +41,10 @@ func TestAccIBMKMSResource_Key_Alias_Key(t *testing.T) {
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, keyName, aliasName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
@@ -61,10 +63,10 @@ func TestAccIBMKMSResource_Key_Alias_Key_Duplicacy(t *testing.T) {
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, keyName, aliasName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
@@ -85,24 +87,24 @@ func TestAccIBMKMSResource_Key_Alias_Key_Check(t *testing.T) {
 	keyName2 := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasTwo(instanceName, keyName, aliasName, aliasName2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasOne(instanceName, keyName, aliasName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMKmsResourceAliasOne(instanceName, keyName2, aliasName2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName2),
@@ -126,10 +128,10 @@ func TestAccIBMKMSResource_Key_Alias_Key_Limit(t *testing.T) {
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config:      testAccCheckIBMKmsResourceAliasLimitConfig(instanceName, keyName, aliasName, aliasName2, aliasName3, aliasName4, aliasName5, aliasName6),
 				ExpectError: regexp.MustCompile("(KEY_ALIAS_QUOTA_ERR)"),
 			},

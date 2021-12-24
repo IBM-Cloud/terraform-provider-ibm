@@ -950,7 +950,7 @@ func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []
 	return
 }
 
-func validateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
+func ValidateAllowedRangeInt(start, end int) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
 		if value < start || value > end {

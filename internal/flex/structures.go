@@ -2043,16 +2043,16 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 	return nil
 }
 
-// func getBaseController(meta interface{}) (string, error) {
-// 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	if userDetails != nil && userDetails.cloudName == "staging" {
-// 		return stageBaseController, nil
-// 	}
-// 	return prodBaseController, nil
-// }
+func GetBaseController(meta interface{}) (string, error) {
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return "", err
+	}
+	if userDetails != nil && userDetails.CloudName == "staging" {
+		return stageBaseController, nil
+	}
+	return prodBaseController, nil
+}
 
 func flattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set {
 	c := make([]string, len(ciphers))
@@ -2418,7 +2418,7 @@ func defaultResourceGroup(meta interface{}) (string, error) {
 	return *grpList.Resources[0].ID, nil
 }
 
-func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
+func FlattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	policyMap := make([]map[string]interface{}, 0, 1)
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
@@ -2449,7 +2449,7 @@ func flattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 	return policyMap
 }
 
-func flattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[string]interface{} {
+func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[string]interface{} {
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {

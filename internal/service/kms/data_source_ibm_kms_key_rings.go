@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package kms
 
 import (
 	"context"
@@ -9,11 +9,13 @@ import (
 	"strings"
 
 	//kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMKMSkeyRings() *schema.Resource {
+func DataSourceIBMKMSkeyRings() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMKMSKeyRingsRead,
 
@@ -27,7 +29,7 @@ func dataSourceIBMKMSkeyRings() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -57,7 +59,7 @@ func dataSourceIBMKMSkeyRings() *schema.Resource {
 }
 
 func dataSourceIBMKMSKeyRingsRead(d *schema.ResourceData, meta interface{}) error {
-	api, err := meta.(ClientSession).keyManagementAPI()
+	api, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -69,7 +71,7 @@ func dataSourceIBMKMSKeyRingsRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	endpointType := d.Get("endpoint_type").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -90,23 +92,16 @@ func dataSourceIBMKMSKeyRingsRead(d *schema.ResourceData, meta interface{}) erro
 
 	api.Config.InstanceID = instanceID
 	keys, err := api.GetKeyRings(context.Background())
-	if err != nil {
-		return fmt.Errorf(
-			"Get Key Rings failed with error: %s", err)
+	if err != nil || keys == nil {
+		return fmt.Errorf("[ERROR] Get Key Rings failed with error: %s", err)
 	}
-	retreivedKeyRings := keys.KeyRings
-	if keys == nil || len(retreivedKeyRings) == 0 {
-		return fmt.Errorf("No key Rings in instance  %s", instanceID)
-	}
-	var keyRingName string
-
-	if len(retreivedKeyRings) == 0 {
-		return fmt.Errorf("No key Ring with name %s in instance  %s", keyRingName, instanceID)
+	if keys == nil || keys.KeyRings == nil || len(keys.KeyRings) == 0 {
+		return fmt.Errorf("[ERROR] No key Rings in instance  %s", instanceID)
 	}
 
-	keyRingMap := make([]map[string]interface{}, 0, len(retreivedKeyRings))
+	keyRingMap := make([]map[string]interface{}, 0, len(keys.KeyRings))
 
-	for _, keyRing := range retreivedKeyRings {
+	for _, keyRing := range keys.KeyRings {
 		keyInstance := make(map[string]interface{})
 
 		keyInstance["id"] = keyRing.ID

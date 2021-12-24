@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package kms
 
 import (
 	"context"
@@ -9,12 +9,15 @@ import (
 	"strings"
 
 	//kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMKMSkeyPolicies() *schema.Resource {
+func DataSourceIBMKMSkeyPolicies() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMKMSKeyPoliciesRead,
 
@@ -27,7 +30,7 @@ func dataSourceIBMKMSkeyPolicies() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -86,7 +89,7 @@ func dataSourceIBMKMSkeyPolicies() *schema.Resource {
 									"interval_month": {
 										Type:         schema.TypeInt,
 										Required:     true,
-										ValidateFunc: validateAllowedRangeInt(1, 12),
+										ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
 										Description:  "Specifies the key rotation time interval in months",
 									},
 								},
@@ -146,7 +149,7 @@ func dataSourceIBMKMSkeyPolicies() *schema.Resource {
 }
 
 func dataSourceIBMKMSKeyPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, err := meta.(ClientSession).keyManagementAPI()
+	api, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,7 +162,7 @@ func dataSourceIBMKMSKeyPoliciesRead(context context.Context, d *schema.Resource
 	endpointType := d.Get("endpoint_type").(string)
 	key_id := d.Get("key_id").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,7 +190,7 @@ func dataSourceIBMKMSKeyPoliciesRead(context context.Context, d *schema.Resource
 	if len(policies) == 0 {
 		log.Printf("No Policy Configurations read\n")
 	} else {
-		d.Set("policies", flattenKeyPolicies(policies))
+		d.Set("policies", flex.FlattenKeyPolicies(policies))
 	}
 
 	d.SetId(instanceID)

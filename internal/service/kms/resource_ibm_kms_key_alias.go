@@ -1,16 +1,18 @@
-package ibm
+package kms
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	kp "github.com/IBM/keyprotect-go-client"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMKmskeyAlias() *schema.Resource {
+func ResourceIBMKmskeyAlias() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMKmsKeyAliasCreate,
 		Delete:   resourceIBMKmsKeyAliasDelete,
@@ -41,7 +43,7 @@ func resourceIBMKmskeyAlias() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
 				Description:  "public or private",
 				ForceNew:     true,
 			},
@@ -50,7 +52,7 @@ func resourceIBMKmskeyAlias() *schema.Resource {
 }
 
 func resourceIBMKmsKeyAliasCreate(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func resourceIBMKmsKeyAliasCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	endpointType := d.Get("endpoint_type").(string)
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -86,12 +88,11 @@ func resourceIBMKmsKeyAliasCreate(d *schema.ResourceData, meta interface{}) erro
 	keyID := d.Get("key_id").(string)
 	stkey, err := kpAPI.CreateKeyAlias(context.Background(), aliasName, keyID)
 	if err != nil {
-		return fmt.Errorf(
-			"Error while creating alias name for the key: %s", err)
+		return fmt.Errorf("[ERROR] Error while creating alias name for the key: %s", err)
 	}
 	key, err := kpAPI.GetKey(context.Background(), stkey.KeyID)
 	if err != nil {
-		return fmt.Errorf("Get Key failed with error: %s", err)
+		return fmt.Errorf("[ERROR] Get Key failed with error: %s", err)
 	}
 	d.SetId(fmt.Sprintf("%s:alias:%s", stkey.Alias, key.CRN))
 
@@ -99,13 +100,13 @@ func resourceIBMKmsKeyAliasCreate(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
 	id := strings.Split(d.Id(), ":alias:")
 	if len(id) < 2 {
-		return fmt.Errorf("Incorrect ID %s: Id should be a combination of keyAlias:alias:keyCRN", d.Id())
+		return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of keyAlias:alias:keyCRN", d.Id())
 	}
 	crn := id[1]
 	crnData := strings.Split(crn, ":")
@@ -113,7 +114,7 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -139,7 +140,7 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Get Key failed with error while reading policies: %s", err)
+		return fmt.Errorf("[ERROR] Get Key failed with error while reading policies: %s", err)
 	} else if key.State == 5 { //Refers to Deleted state of the Key
 		d.SetId("")
 		return nil
@@ -157,7 +158,7 @@ func resourceIBMKmsKeyAliasRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMKmsKeyAliasDelete(d *schema.ResourceData, meta interface{}) error {
-	kpAPI, err := meta.(ClientSession).keyManagementAPI()
+	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
 	if err != nil {
 		return err
 	}
@@ -168,7 +169,7 @@ func resourceIBMKmsKeyAliasDelete(d *schema.ResourceData, meta interface{}) erro
 	instanceID := crnData[len(crnData)-3]
 	keyid := crnData[len(crnData)-1]
 
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
