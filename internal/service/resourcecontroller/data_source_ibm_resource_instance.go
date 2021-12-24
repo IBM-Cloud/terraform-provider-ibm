@@ -165,7 +165,7 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	if loc, ok := d.GetOk("location"); ok {
 		location = loc.(string)
 		for _, instance := range instances {
-			if getLocation(instance) == location {
+			if flex.GetLocation(instance) == location {
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
@@ -226,14 +226,4 @@ func DataSourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("tags", tags)
 
 	return nil
-}
-
-func getLocation(instance models.ServiceInstanceV2) string {
-	region := instance.Crn.Region
-	cName := instance.Crn.CName
-	if cName == "bluemix" || cName == "staging" {
-		return region
-	} else {
-		return cName + "-" + region
-	}
 }

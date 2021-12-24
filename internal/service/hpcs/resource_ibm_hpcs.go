@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package hpcs
 
 import (
 	"bytes"
@@ -22,10 +22,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/models"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/internal/hashcode"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
-func resourceIBMHPCS() *schema.Resource {
+func ResourceIBMHPCS() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMHPCSCreate,
 		ReadContext:   resourceIBMHPCSRead,
@@ -41,10 +44,10 @@ func resourceIBMHPCS() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return immutableResourceCustomizeDiff([]string{"units", "failover_units", "location", "resource_group_id", "service"}, diff)
+				return flex.ImmutableResourceCustomizeDiff([]string{"units", "failover_units", "location", "resource_group_id", "service"}, diff)
 			},
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return resourceTagsCustomizeDiff(diff)
+				return flex.ResourceTagsCustomizeDiff(diff)
 			},
 		),
 
@@ -91,14 +94,14 @@ func resourceIBMHPCS() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public-and-private", "private-only"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public-and-private", "private-only"}),
 			},
 			"tags": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_hpcs", "tag")},
-				Set:      resourceIBMVPCHash,
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_hpcs", "tag")},
+				Set:      flex.ResourceIBMVPCHash,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -311,24 +314,24 @@ type HPCSParams struct {
 	ServiceEndpoints string `json:"allowed_network,omitempty"`
 }
 
-func resourceIBMHPCSValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 0)
+func ResourceIBMHPCSValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "tag",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmResourceInstanceResourceValidator := ResourceValidator{ResourceName: "ibm_hpcs", Schema: validateSchema}
+	ibmResourceInstanceResourceValidator := validate.ResourceValidator{ResourceName: "ibm_hpcs", Schema: validateSchema}
 	return &ibmResourceInstanceResourceValidator
 }
 
 func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -342,7 +345,7 @@ func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta
 		Name: &name,
 	}
 	// Fetch Service Plan ID using Global Catalog APIs
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -375,7 +378,7 @@ func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta
 	if len(deployments) == 0 {
 		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))
 	}
-	deployments, supportedLocations := filterDeployments(deployments, location)
+	deployments, supportedLocations := resourcecontroller.FilterDeployments(deployments, location)
 	if len(deployments) == 0 {
 		locationList := make([]string, 0, len(supportedLocations))
 		for l := range supportedLocations {
@@ -390,7 +393,7 @@ func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta
 		rg := rsGrpID.(string)
 		rsInst.ResourceGroup = &rg
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -430,7 +433,7 @@ func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on create of HPCS instance (%s) tags: %s", d.Id(), err)
@@ -440,7 +443,7 @@ func resourceIBMHPCSCreate(context context.Context, d *schema.ResourceData, meta
 	return resourceIBMHPCSUpdate(context, d, meta)
 }
 func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -457,7 +460,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving HPCS instance: %s with resp code: %s", err, resp))
 	}
-	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, rsInstanceReclamation)) {
+	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, resourcecontroller.RsInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")
 		d.SetId("")
 		return nil
@@ -475,7 +478,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 	d.Set("state", instance.State)
 	d.Set("service", strings.Split(instanceID, ":")[4])
 	//Set tags
-	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of HPCS instance tags (%s) tags: %s", d.Id(), err)
@@ -489,7 +492,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 		}
 	}
 	// Set Service Plan
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -502,7 +505,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 	d.Set("plan", servicePlan)
 	// Set Instance parameters
 	if instance.Parameters != nil {
-		instanceParameters := Flatten(instance.Parameters)
+		instanceParameters := flex.Flatten(instance.Parameters)
 
 		if endpoint, ok := instanceParameters["allowed_network"]; ok {
 			if endpoint != "private-only" {
@@ -531,7 +534,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 	if len(instance.Extensions) == 0 {
 		d.Set("extensions", instance.Extensions)
 	} else {
-		d.Set("extensions", Flatten(instance.Extensions))
+		d.Set("extensions", flex.Flatten(instance.Extensions))
 	}
 	d.Set("restored_by", instance.RestoredBy)
 	d.Set("scheduled_reclaim_by", instance.ScheduledReclaimBy)
@@ -576,7 +579,7 @@ func resourceIBMHPCSRead(context context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceIBMHPCSUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -594,7 +597,7 @@ func resourceIBMHPCSUpdate(context context.Context, d *schema.ResourceData, meta
 	if d.HasChange("plan") {
 		plan := d.Get("plan").(string)
 		service := d.Get("service").(string)
-		rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -615,7 +618,7 @@ func resourceIBMHPCSUpdate(context context.Context, d *schema.ResourceData, meta
 
 	}
 	if d.HasChange("service_endpoints") {
-		params := Params{}
+		params := HPCSParams{}
 		params.ServiceEndpoints = d.Get("service_endpoints").(string)
 		parameters, _ := json.Marshal(params)
 		var raw map[string]interface{}
@@ -631,8 +634,8 @@ func resourceIBMHPCSUpdate(context context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(fmt.Errorf("[ERROR] Error Getting HPCS instance: %s with resp code: %s", err, resp))
 	}
 	if d.HasChange("tags") {
-		oldList, newList := d.GetChange(isVPCTags)
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on update of HPCS instance (%s) tags: %s", d.Id(), err)
@@ -712,7 +715,7 @@ func expandHSMConfig(d *schema.ResourceData, meta interface{}) tkesdk.HsmConfig 
 	return hsmConfig
 }
 func resourceIBMHPCSDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -765,7 +768,7 @@ func resourceIBMHPCSDelete(context context.Context, d *schema.ResourceData, meta
 	return nil
 }
 func waitForHPCSInstanceCreate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -775,8 +778,8 @@ func waitForHPCSInstanceCreate(d *schema.ResourceData, meta interface{}) (interf
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceProvisioningStatus},
-		Target:  []string{rsInstanceSuccessStatus},
+		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus, resourcecontroller.RsInstanceProvisioningStatus},
+		Target:  []string{resourcecontroller.RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
@@ -785,7 +788,7 @@ func waitForHPCSInstanceCreate(d *schema.ResourceData, meta interface{}) (interf
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get on HPCS instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == resourcecontroller.RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] The status of HPCS instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -799,7 +802,7 @@ func waitForHPCSInstanceCreate(d *schema.ResourceData, meta interface{}) (interf
 }
 
 func waitForHPCSInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -809,8 +812,8 @@ func waitForHPCSInstanceUpdate(d *schema.ResourceData, meta interface{}) (interf
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus},
-		Target:  []string{rsInstanceSuccessStatus},
+		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus},
+		Target:  []string{resourcecontroller.RsInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
@@ -819,7 +822,7 @@ func waitForHPCSInstanceUpdate(d *schema.ResourceData, meta interface{}) (interf
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get the HPCS instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == resourcecontroller.RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] The status of HPCS instance %s failed: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -833,7 +836,7 @@ func waitForHPCSInstanceUpdate(d *schema.ResourceData, meta interface{}) (interf
 }
 
 func waitForHPCSInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -842,17 +845,17 @@ func waitForHPCSInstanceDelete(d *schema.ResourceData, meta interface{}) (interf
 		ID: &instanceID,
 	}
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{rsInstanceProgressStatus, rsInstanceInactiveStatus, rsInstanceSuccessStatus},
-		Target:  []string{rsInstanceRemovedStatus, rsInstanceReclamation},
+		Pending: []string{resourcecontroller.RsInstanceProgressStatus, resourcecontroller.RsInstanceInactiveStatus, resourcecontroller.RsInstanceSuccessStatus},
+		Target:  []string{resourcecontroller.RsInstanceRemovedStatus, resourcecontroller.RsInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {
 			instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					return instance, rsInstanceSuccessStatus, nil
+					return instance, resourcecontroller.RsInstanceSuccessStatus, nil
 				}
 				return nil, "", fmt.Errorf("[ERROR] Get on HPCS instance %s failed with resp code: %s, err: %v", d.Id(), resp, err)
 			}
-			if *instance.State == rsInstanceFailStatus {
+			if *instance.State == resourcecontroller.RsInstanceFailStatus {
 				return instance, *instance.State, fmt.Errorf("[ERROR] HPCS instance %s failed to delete: %v", d.Id(), err)
 			}
 			return instance, *instance.State, nil
@@ -871,7 +874,7 @@ func resourceIBMHPCSAdminHash(v interface{}) int {
 	buf.WriteString(fmt.Sprintf("%s-", a["key"].(string)))
 	buf.WriteString(fmt.Sprintf("%s-", a["token"].(string)))
 
-	return hashcode.String(buf.String())
+	return conns.String(buf.String())
 }
 func validateHSM(hsmInfo []tkesdk.HsmInfo) bool {
 	update := false
@@ -888,11 +891,11 @@ func validateHSM(hsmInfo []tkesdk.HsmInfo) bool {
 func hsmClient(d *schema.ResourceData, meta interface{}) (tkesdk.CommonInputs, error) {
 	ci := tkesdk.CommonInputs{}
 	// Bluemix Session to get Oauth tokens
-	bluemixSession, err := meta.(ClientSession).BluemixSession()
+	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return ci, err
 	}
-	err = refreshToken(bluemixSession)
+	err = conns.RefreshToken(bluemixSession)
 	if err != nil {
 		return ci, fmt.Errorf("[ERROR] Error Refreshing Authentication Token: %s", err)
 	}
@@ -901,9 +904,9 @@ func hsmClient(d *schema.ResourceData, meta interface{}) (tkesdk.CommonInputs, e
 		serviceEndpoint = e.(string)
 	}
 	ci.Region = d.Get("location").(string)
-	ci.ApiEndpoint = envFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "cloud.ibm.com")
+	ci.ApiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "cloud.ibm.com")
 	if bluemixSession.Config.Visibility == "private" || bluemixSession.Config.Visibility == "public-and-private" || serviceEndpoint == "private-only" {
-		ci.ApiEndpoint = envFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "private.cloud.ibm.com")
+		ci.ApiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_HPCS_TKE_ENDPOINT"}, "private.cloud.ibm.com")
 	}
 
 	ci.AuthToken = bluemixSession.Config.IAMAccessToken

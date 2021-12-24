@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package database
 
 import (
 	"context"
@@ -23,6 +23,9 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
 const (
@@ -40,25 +43,6 @@ const (
 	databaseTaskProgressStatus = "running"
 	databaseTaskFailStatus     = "failed"
 )
-
-type CsEntry struct {
-	Name       string
-	Password   string
-	String     string
-	Composed   string
-	CertName   string
-	CertBase64 string
-	Hosts      []struct {
-		HostName string `json:"hostname"`
-		Port     int    `json:"port"`
-	}
-	Scheme       string
-	QueryOptions map[string]interface{}
-	Path         string
-	Database     string
-	BundleName   string
-	BundleBase64 string
-}
 
 func retry(f func() error) (err error) {
 	attempts := 3
@@ -99,7 +83,7 @@ func retryTask(f func() (icdv4.Task, error)) (task icdv4.Task, err error) {
 	}
 }
 
-func resourceIBMDatabaseInstance() *schema.Resource {
+func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		Create:        resourceIBMDatabaseInstanceCreate,
 		Read:          resourceIBMDatabaseInstanceRead,
@@ -140,13 +124,13 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Description:  "The name of the Cloud Internet database service",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra", "databases-for-enterprisedb"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra", "databases-for-enterprisedb"}),
 			},
 			"plan": {
 				Description:  "The plan type of the Database instance",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"standard", "enterprise"}),
 				ForceNew:     true,
 			},
 
@@ -181,7 +165,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				StateFunc: func(v interface{}) string {
-					json, err := normalizeJSONString(v)
+					json, err := flex.NormalizeJSONString(v)
 					if err != nil {
 						return fmt.Sprintf("%q", err.Error())
 					}
@@ -268,7 +252,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "public",
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "public-and-private"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -279,7 +263,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Description:      "The CRN of leader database",
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -303,20 +287,20 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: InvokeValidator("ibm_database", "tag")},
-				Set:      resourceIBMVPCHash,
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_database", "tag")},
+				Set:      flex.ResourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
 				Description:      "The CRN of source instance",
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"point_in_time_recovery_time": {
 				Description:      "The point in time recovery time stamp of the deployed instance",
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"users": {
 				Type:     schema.TypeSet,
@@ -429,7 +413,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 							Description:  "Whitelist IP address in CIDR notation",
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validateCIDR,
+							ValidateFunc: validate.ValidateCIDR,
 						},
 						"description": {
 							Description:  "Unique white list description",
@@ -738,30 +722,30 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
-			ResourceName: {
+			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of the resource",
+				Description: "The name of the resource",
 			},
 
-			ResourceCRN: {
+			flex.ResourceCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The crn of the resource",
+				Description: "The crn of the resource",
 			},
 
-			ResourceStatus: {
+			flex.ResourceStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The status of the resource",
+				Description: "The status of the resource",
 			},
 
-			ResourceGroupName: {
+			flex.ResourceGroupName: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The resource group name in which resource is provisioned",
+				Description: "The resource group name in which resource is provisioned",
 			},
-			ResourceControllerURL: {
+			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
@@ -769,21 +753,21 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 		},
 	}
 }
-func resourceIBMICDValidator() *ResourceValidator {
+func ResourceIBMICDValidator() *validate.ResourceValidator {
 
-	validateSchema := make([]ValidateSchema, 0)
+	validateSchema := make([]validate.ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "tag",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
 
-	ibmICDResourceValidator := ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
+	ibmICDResourceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
 	return &ibmICDResourceValidator
 }
 
@@ -803,7 +787,7 @@ type Params struct {
 }
 
 func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group, error) {
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
@@ -921,7 +905,7 @@ func checkMbValue(name string, limits MbLimit, divider int, diff *schema.Resourc
 
 func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 
-	err := resourceTagsCustomizeDiff(diff)
+	err := flex.ResourceTagsCustomizeDiff(diff)
 	if err != nil {
 		return err
 	}
@@ -992,7 +976,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -1006,7 +990,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		Name: &name,
 	}
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -1046,7 +1030,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 		rgID := rsGrpID.(string)
 		rsInst.ResourceGroup = &rgID
 	} else {
-		defaultRg, err := defaultResourceGroup(meta)
+		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
 			return err
 		}
@@ -1123,7 +1107,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 
 	if node_count, ok := d.GetOk("node_count"); ok {
 		if initialNodeCount != node_count {
-			icdClient, err := meta.(ClientSession).ICDAPI()
+			icdClient, err := meta.(conns.ClientSession).ICDAPI()
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 			}
@@ -1137,15 +1121,15 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
 		if err != nil {
 			log.Printf(
 				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	icdId := EscapeUrlParm(*instance.ID)
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdId := flex.EscapeUrlParm(*instance.ID)
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
@@ -1177,7 +1161,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	if wl, ok := d.GetOk("whitelist"); ok {
-		whitelist := expandWhitelist(wl.(*schema.Set))
+		whitelist := flex.ExpandWhitelist(wl.(*schema.Set))
 		for _, wlEntry := range whitelist {
 			whitelistReq := icdv4.WhitelistReq{
 				WhitelistEntry: icdv4.WhitelistEntry{
@@ -1252,7 +1236,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	if userlist, ok := d.GetOk("users"); ok {
-		users := expandUsers(userlist.(*schema.Set))
+		users := flex.ExpandUsers(userlist.(*schema.Set))
 		for _, user := range users {
 			userReq := icdv4.UserReq{
 				User: icdv4.User{
@@ -1276,7 +1260,7 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -1302,7 +1286,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	tags, err := GetTagsUsingCRN(meta, *instance.CRN)
+	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
 		log.Printf(
 			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
@@ -1329,18 +1313,18 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	}
 
-	d.Set(ResourceName, *instance.Name)
-	d.Set(ResourceCRN, *instance.CRN)
-	d.Set(ResourceStatus, *instance.State)
-	d.Set(ResourceGroupName, *instance.ResourceGroupCRN)
+	d.Set(flex.ResourceName, *instance.Name)
+	d.Set(flex.ResourceCRN, *instance.CRN)
+	d.Set(flex.ResourceStatus, *instance.State)
+	d.Set(flex.ResourceGroupName, *instance.ResourceGroupCRN)
 
-	rcontroller, err := getBaseController(meta)
+	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
 	}
-	d.Set(ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
-	rsCatClient, err := meta.(ClientSession).ResourceCatalogAPI()
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
 		return err
 	}
@@ -1359,12 +1343,12 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set("plan", servicePlan)
 
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	icdId := EscapeUrlParm(instanceID)
+	icdId := flex.EscapeUrlParm(instanceID)
 	cdb, err := icdClient.Cdbs().GetCdb(icdId)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
@@ -1379,7 +1363,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
 	}
-	d.Set("groups", flattenIcdGroups(groupList))
+	d.Set("groups", flex.FlattenIcdGroups(groupList))
 	d.Set("node_count", groupList.Groups[0].Members.AllocationCount)
 
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
@@ -1401,12 +1385,12 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
 	}
-	d.Set("whitelist", flattenWhitelist(whitelist))
+	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
 
-	var connectionStrings []CsEntry
+	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
 	tfusers := d.Get("users").(*schema.Set)
-	users := expandUsers(tfusers)
+	users := flex.ExpandUsers(tfusers)
 	user := icdv4.User{
 		UserName: cdb.AdminUser,
 	}
@@ -1419,7 +1403,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 		}
 		connectionStrings = append(connectionStrings, csEntry)
 	}
-	d.Set("connectionstrings", flattenConnectionStrings(connectionStrings))
+	d.Set("connectionstrings", flex.FlattenConnectionStrings(connectionStrings))
 
 	if serviceOff == "databases-for-postgresql" || serviceOff == "databases-for-redis" || serviceOff == "databases-for-enterprisedb" {
 		configSchema, err := icdClient.Configurations().GetConfiguration(icdId)
@@ -1439,7 +1423,7 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -1481,18 +1465,18 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 	if d.HasChange("tags") {
 
 		oldList, newList := d.GetChange("tags")
-		err = UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on update of Database (%s) tags: %s", d.Id(), err)
 		}
 	}
 
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
-	icdId := EscapeUrlParm(instanceID)
+	icdId := flex.EscapeUrlParm(instanceID)
 
 	if d.HasChange("node_count") {
 		err = horizontalScale(d, meta, icdClient)
@@ -1787,7 +1771,7 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.ICDServiceAPI) error {
 	params := icdv4.GroupReq{}
 
-	icdId := EscapeUrlParm(d.Id())
+	icdId := flex.EscapeUrlParm(d.Id())
 
 	members := d.Get("node_count").(int)
 	membersReq := icdv4.MembersReq{AllocationCount: members}
@@ -1809,9 +1793,9 @@ func horizontalScale(d *schema.ResourceData, meta interface{}, icdClient icdv4.I
 	return nil
 }
 
-func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (CsEntry, error) {
-	csEntry := CsEntry{}
-	icdClient, err := meta.(ClientSession).ICDAPI()
+func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint string, meta interface{}) (flex.CsEntry, error) {
+	csEntry := flex.CsEntry{}
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return csEntry, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
@@ -1850,14 +1834,14 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 	}
 
 	if !reflect.DeepEqual(cassandraConnection, icdv4.CassandraUri{}) {
-		csEntry = CsEntry{
+		csEntry = flex.CsEntry{
 			Name:         userName,
 			Hosts:        cassandraConnection.Hosts,
 			BundleName:   cassandraConnection.Bundle.Name,
 			BundleBase64: cassandraConnection.Bundle.BundleBase64,
 		}
 	} else {
-		csEntry = CsEntry{
+		csEntry = flex.CsEntry{
 			Name:     userName,
 			Password: "",
 			// Populate only first 'composed' connection string as an example
@@ -1889,7 +1873,7 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 }
 
 func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) error {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return err
 	}
@@ -1923,7 +1907,7 @@ func resourceIBMDatabaseInstanceDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -1950,10 +1934,10 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 }
 
 func waitForICDReady(meta interface{}, instanceID string) error {
-	icdId := EscapeUrlParm(instanceID)
-	icdClient, clientErr := meta.(ClientSession).ICDAPI()
+	icdId := flex.EscapeUrlParm(instanceID)
+	icdClient, clientErr := meta.(conns.ClientSession).ICDAPI()
 	if clientErr != nil {
-		return fmt.Errorf("Error getting database client settings: %s", clientErr)
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", clientErr)
 	}
 
 	// Wait for ICD Interface
@@ -1963,7 +1947,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 				return fmt.Errorf("The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
 			}
-			return fmt.Errorf("Error getting database config for: %s with error %s\n", icdId, err)
+			return fmt.Errorf("[ERROR] Error getting database config for: %s with error %s\n", icdId, err)
 		}
 		return nil
 	})
@@ -1974,7 +1958,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 }
 
 func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -2005,7 +1989,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 
 	waitErr := waitForICDReady(meta, instanceID)
 	if waitErr != nil {
-		return false, fmt.Errorf("Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
 
 	}
 
@@ -2013,7 +1997,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 }
 
 func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}
@@ -2045,7 +2029,7 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 
 	waitErr := waitForICDReady(meta, instanceID)
 	if waitErr != nil {
-		return false, fmt.Errorf("Error ICD interface not ready after update: %s with error %s\n", instanceID, waitErr)
+		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after update: %s with error %s\n", instanceID, waitErr)
 
 	}
 
@@ -2053,7 +2037,7 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 }
 
 func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta interface{}, t time.Duration) (bool, error) {
-	icdClient, err := meta.(ClientSession).ICDAPI()
+	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return false, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
@@ -2068,7 +2052,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 		case <-timeout:
 			return false, fmt.Errorf("[Error] Time out waiting for database task to complete")
 		case <-delay:
-			innerTask, err = icdClient.Tasks().GetTask(EscapeUrlParm(taskId))
+			innerTask, err = icdClient.Tasks().GetTask(flex.EscapeUrlParm(taskId))
 			if err != nil {
 				return false, fmt.Errorf("[ERROR] The ICD Get task on database update errored: %v", err)
 			}
@@ -2085,7 +2069,7 @@ func waitForDatabaseTaskComplete(taskId string, d *schema.ResourceData, meta int
 }
 
 func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
 	}

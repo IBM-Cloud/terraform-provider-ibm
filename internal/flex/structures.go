@@ -15,9 +15,11 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -538,7 +540,7 @@ func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	return vlans
 }
 
-func flattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
+func FlattenIcdGroups(grouplist icdv4.GroupList) []map[string]interface{} {
 	groups := make([]map[string]interface{}, len(grouplist.Groups))
 	for i, group := range grouplist.Groups {
 		memorys := make([]map[string]interface{}, 1)
@@ -1445,7 +1447,7 @@ func flattenUserIds(accountID string, users []string, meta interface{}) ([]strin
 // 	return serviceids, nil
 // }
 
-func expandUsers(userList *schema.Set) (users []icdv4.User) {
+func ExpandUsers(userList *schema.Set) (users []icdv4.User) {
 	for _, iface := range userList.List() {
 		userEl := iface.(map[string]interface{})
 		user := icdv4.User{
@@ -1457,53 +1459,72 @@ func expandUsers(userList *schema.Set) (users []icdv4.User) {
 	return
 }
 
-// IBM Cloud Databases
-// func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
-// 	entries := make([]map[string]interface{}, len(cs), len(cs))
-// 	for i, csEntry := range cs {
-// 		l := map[string]interface{}{
-// 			"name":         csEntry.Name,
-// 			"password":     csEntry.Password,
-// 			"composed":     csEntry.Composed,
-// 			"certname":     csEntry.CertName,
-// 			"certbase64":   csEntry.CertBase64,
-// 			"queryoptions": csEntry.QueryOptions,
-// 			"scheme":       csEntry.Scheme,
-// 			"path":         csEntry.Path,
-// 			"database":     csEntry.Database,
-// 			"bundlename":   csEntry.BundleName,
-// 			"bundlebase64": csEntry.BundleBase64,
-// 		}
-// 		hosts := csEntry.Hosts
-// 		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
-// 		for j, host := range hosts {
-// 			z := map[string]interface{}{
-// 				"hostname": host.HostName,
-// 				"port":     strconv.Itoa(host.Port),
-// 			}
-// 			hostsList[j] = z
-// 		}
-// 		l["hosts"] = hostsList
-// 		var queryOpts string
-// 		if len(csEntry.QueryOptions) != 0 {
-// 			queryOpts = "?"
-// 			count := 0
-// 			for k, v := range csEntry.QueryOptions {
-// 				if count >= 1 {
-// 					queryOpts = queryOpts + "&"
-// 				}
-// 				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
-// 				count++
-// 			}
-// 		} else {
-// 			queryOpts = ""
-// 		}
-// 		l["queryoptions"] = queryOpts
-// 		entries[i] = l
-// 	}
+type CsEntry struct {
+	Name       string
+	Password   string
+	String     string
+	Composed   string
+	CertName   string
+	CertBase64 string
+	Hosts      []struct {
+		HostName string `json:"hostname"`
+		Port     int    `json:"port"`
+	}
+	Scheme       string
+	QueryOptions map[string]interface{}
+	Path         string
+	Database     string
+	BundleName   string
+	BundleBase64 string
+}
 
-// 	return entries
-// }
+// IBM Cloud Databases
+func FlattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(cs), len(cs))
+	for i, csEntry := range cs {
+		l := map[string]interface{}{
+			"name":         csEntry.Name,
+			"password":     csEntry.Password,
+			"composed":     csEntry.Composed,
+			"certname":     csEntry.CertName,
+			"certbase64":   csEntry.CertBase64,
+			"queryoptions": csEntry.QueryOptions,
+			"scheme":       csEntry.Scheme,
+			"path":         csEntry.Path,
+			"database":     csEntry.Database,
+			"bundlename":   csEntry.BundleName,
+			"bundlebase64": csEntry.BundleBase64,
+		}
+		hosts := csEntry.Hosts
+		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
+		for j, host := range hosts {
+			z := map[string]interface{}{
+				"hostname": host.HostName,
+				"port":     strconv.Itoa(host.Port),
+			}
+			hostsList[j] = z
+		}
+		l["hosts"] = hostsList
+		var queryOpts string
+		if len(csEntry.QueryOptions) != 0 {
+			queryOpts = "?"
+			count := 0
+			for k, v := range csEntry.QueryOptions {
+				if count >= 1 {
+					queryOpts = queryOpts + "&"
+				}
+				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
+				count++
+			}
+		} else {
+			queryOpts = ""
+		}
+		l["queryoptions"] = queryOpts
+		entries[i] = l
+	}
+
+	return entries
+}
 
 func flattenPhaseOneAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
 	phaseoneAttributesMap := make([]map[string]interface{}, 0, 1)
@@ -1554,7 +1575,7 @@ func flattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[str
 }
 
 // IBM Cloud Databases
-func expandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
+func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
 	for _, iface := range whiteList.List() {
 		wlItem := iface.(map[string]interface{})
 		wlEntry := icdv4.WhitelistEntry{
@@ -1567,7 +1588,7 @@ func expandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
 }
 
 // Cloud Internet Services
-func flattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
+func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
 	for i, whitelistEntry := range whitelist.WhitelistEntrys {
 		l := map[string]interface{}{
@@ -1669,7 +1690,7 @@ func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 }
 
 // Cloud Internet Services
-func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
+func ConvertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	g := strings.SplitN(tfId, ":", 2)
 	Id = g[0]
 	if len(g) > 1 {
@@ -1726,7 +1747,7 @@ func rcInstanceExists(resourceId string, resourceType string, meta interface{}) 
 			strings.Contains(err.Error(), "status code: 404") {
 			exists = false
 		} else {
-			return true, fmt.Errorf("Error checking resource instance exists: %s", err)
+			return true, fmt.Errorf("[ERROR] Error checking resource instance exists: %s", err)
 		}
 	} else {
 		if strings.Contains(instance.State, "removed") {
@@ -1775,30 +1796,39 @@ func EscapeUrlParm(urlParm string) string {
 	}
 	return urlParm
 }
+func GetLocation(instance models.ServiceInstanceV2) string {
+	region := instance.Crn.Region
+	cName := instance.Crn.CName
+	if cName == "bluemix" || cName == "staging" {
+		return region
+	} else {
+		return cName + "-" + region
+	}
+}
 
-// func GetTags(d *schema.ResourceData, meta interface{}) error {
-// 	resourceID := d.Id()
-// 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
-// 	if err != nil {
-// 		return fmt.Errorf("Error getting global tagging client settings: %s", err)
-// 	}
-// 	taggingResult, err := gtClient.Tags().GetTags(resourceID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	var taglist []string
-// 	for _, item := range taggingResult.Items {
-// 		taglist = append(taglist, item.Name)
-// 	}
-// 	d.Set("tags", flattenStringList(taglist))
-// 	return nil
-// }
+func GetTags(d *schema.ResourceData, meta interface{}) error {
+	resourceID := d.Id()
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
+	}
+	taggingResult, err := gtClient.Tags().GetTags(resourceID)
+	if err != nil {
+		return err
+	}
+	var taglist []string
+	for _, item := range taggingResult.Items {
+		taglist = append(taglist, item.Name)
+	}
+	d.Set("tags", flattenStringList(taglist))
+	return nil
+}
 
 // func UpdateTags(d *schema.ResourceData, meta interface{}) error {
 // 	resourceID := d.Id()
 // 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
 // 	if err != nil {
-// 		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+// 		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 // 	}
 // 	oldList, newList := d.GetChange("tags")
 // 	if oldList == nil {
@@ -1823,18 +1853,18 @@ func EscapeUrlParm(urlParm string) string {
 // 	if len(add) > 0 {
 // 		_, err := gtClient.Tags().AttachTags(resourceID, add)
 // 		if err != nil {
-// 			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+// 			return fmt.Errorf("[ERROR] Error updating database tags %v : %s", add, err)
 // 		}
 // 	}
 // 	if len(remove) > 0 {
 // 		_, err := gtClient.Tags().DetachTags(resourceID, remove)
 // 		if err != nil {
-// 			return fmt.Errorf("Error detaching database tags %v: %s", remove, err)
+// 			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
 // 		}
 // 		for _, v := range remove {
 // 			_, err := gtClient.Tags().DeleteTag(v)
 // 			if err != nil {
-// 				return fmt.Errorf("Error deleting database tag %v: %s", v, err)
+// 				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s", v, err)
 // 			}
 // 		}
 // 	}
@@ -1845,7 +1875,7 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
@@ -1886,7 +1916,7 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
@@ -1940,7 +1970,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 
 		_, resp, err := gtClient.DetachTag(detachTagOptions)
 		if err != nil {
-			return fmt.Errorf("Error detaching database tags %v: %s\n%s", remove, err, resp)
+			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s\n%s", remove, err, resp)
 		}
 		for _, v := range remove {
 			delTagOptions := &globaltaggingv1.DeleteTagOptions{
@@ -1948,7 +1978,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 			}
 			_, resp, err := gtClient.DeleteTag(delTagOptions)
 			if err != nil {
-				return fmt.Errorf("Error deleting database tag %v: %s\n%s", v, err, resp)
+				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s\n%s", v, err, resp)
 			}
 		}
 	}
@@ -1966,7 +1996,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 
 		_, resp, err := gtClient.AttachTag(AttachTagOptions)
 		if err != nil {
-			return fmt.Errorf("Error updating database tags %v : %s\n%s", add, err, resp)
+			return fmt.Errorf("[ERROR] Error updating database tags %v : %s\n%s", add, err, resp)
 		}
 	}
 
@@ -1991,7 +2021,7 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
 	if err != nil {
@@ -2008,7 +2038,7 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
 	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPI()
 	if err != nil {
-		return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
 	if oldList == nil {
 		oldList = new(schema.Set)
@@ -2039,12 +2069,12 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 	if len(remove) > 0 {
 		_, err := gtClient.Tags().DetachTags(resourceCRN, remove)
 		if err != nil {
-			return fmt.Errorf("Error detaching database tags %v: %s", remove, err)
+			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s", remove, err)
 		}
 		for _, v := range remove {
 			_, err := gtClient.Tags().DeleteTag(v)
 			if err != nil {
-				return fmt.Errorf("Error deleting database tag %v: %s", v, err)
+				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s", v, err)
 			}
 		}
 	}
@@ -2052,7 +2082,7 @@ func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resource
 	if len(add) > 0 {
 		_, err := gtClient.Tags().AttachTags(resourceCRN, add)
 		if err != nil {
-			return fmt.Errorf("Error updating database tags %v : %s", add, err)
+			return fmt.Errorf("[ERROR] Error updating database tags %v : %s", add, err)
 		}
 	}
 
@@ -2859,25 +2889,25 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
 }
 
-// func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
+func ImmutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
 
-// 	for _, rName := range resourceList {
-// 		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
-// 			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
-// 		}
-// 		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
-// 			o, n := diff.GetChange(rName)
-// 			old := o.(string)
-// 			new := n.(string)
-// 			if len(old) > 0 && old != new {
-// 				if !(rName == sateLocZone && strings.Contains(old, new)) {
-// 					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
+	for _, rName := range resourceList {
+		if diff.Id() != "" && diff.HasChange(rName) && rName != "managed_from" {
+			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
+		}
+		if diff.Id() != "" && diff.HasChange(rName) && rName == "managed_from" {
+			o, n := diff.GetChange(rName)
+			old := o.(string)
+			new := n.(string)
+			if len(old) > 0 && old != new {
+				if !(rName == "managed_from" && strings.Contains(old, new)) {
+					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
+				}
+			}
+		}
+	}
+	return nil
+}
 
 func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
 	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())
@@ -2958,7 +2988,7 @@ func updatePrivateURL(kpURL string) (string, error) {
 			kmsEndpointURL = kmsEndpURL[0] + "private." + kmsEndpURL[1] + "/api/v2/"
 
 		} else {
-			return "", fmt.Errorf("Error in Kms EndPoint URL ")
+			return "", fmt.Errorf("[ERROR] Error in Kms EndPoint URL ")
 		}
 	}
 	return kmsEndpointURL, nil

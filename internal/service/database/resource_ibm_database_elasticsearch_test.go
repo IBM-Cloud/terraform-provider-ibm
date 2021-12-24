@@ -1,17 +1,19 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package database_test
 
 import (
 	"fmt"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
+func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -20,38 +22,39 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "36864"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "15360"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.0.database", ""),
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "38400"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -59,25 +62,30 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "36864"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "18432"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
+			// {
+			// 	ResourceName:      name,
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// },
 		},
 	})
 }
 
-func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
+func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -86,23 +94,23 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "12288"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
+					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
+					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "5120"),
+					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
@@ -113,17 +121,17 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "12416"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
+					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
+					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
@@ -131,34 +139,34 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "12288"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
+					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
+					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(name, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
 					resource.TestCheckResourceAttr(name, "node_count", "4"),
-					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "12288"),
-					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
-					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
+					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
+					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "6144"),
+					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "3"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
@@ -175,7 +183,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 
 // TestAccIBMDatabaseInstance_CreateAfterManualDestroy not required as tested by resource_instance tests
 
-func TestAccIBMDatabaseInstanceCassandraImport(t *testing.T) {
+func TestAccIBMDatabaseInstanceElasticsearchImport(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
@@ -184,17 +192,17 @@ func TestAccIBMDatabaseInstanceCassandraImport(t *testing.T) {
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup, serviceName),
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
-					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-cassandra"),
-					resource.TestCheckResourceAttr(resourceName, "plan", "enterprise"),
+					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
 					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
 				),
 			},
@@ -211,7 +219,7 @@ func TestAccIBMDatabaseInstanceCassandraImport(t *testing.T) {
 
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
-func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -221,12 +229,12 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 36864
-		members_disk_allocation_mb   = 61440
+		members_memory_allocation_mb = 3072
+		members_disk_allocation_mb   = 15360
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -237,15 +245,15 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 		}
 
 		timeouts {
-			create = "480m"
-			update = "480m"
+			create = "120m"
+			update = "120m"
 			delete = "15m"
 		}
 	}
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -255,121 +263,12 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 38400
-		members_disk_allocation_mb   = 61440
-		users {
-		  name     = "user123"
-		  password = "password12"
-		}
-		users {
-		  name     = "user124"
-		  password = "password12"
-		}
-		whitelist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
-		}
-		whitelist {
-		  address     = "172.168.1.1/32"
-		  description = "desc"
-		}
-
-		timeouts {
-			create = "480m"
-			update = "480m"
-			delete = "15m"
-		}
-	}
-	  
-				`, databaseResourceGroup, name)
-}
-
-func testAccCheckIBMDatabaseInstanceCassandraReduced(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		is_default = true
-		# name = "%[1]s"
-	}
-	  
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
-		location                     = "us-south"
-		adminpassword                = "password12"
-		members_memory_allocation_mb = 36864
-		members_disk_allocation_mb   = 61440
-
-		timeouts {
-			create = "480m"
-			update = "480m"
-			delete = "15m"
-		}
-	}
-				`, databaseResourceGroup, name)
-}
-
-func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		is_default = true
-		# name = "%[1]s"
-	}
-	  
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
-		location                     = "us-south"
-		adminpassword                = "password12"
-		node_count					 = 3
-		node_memory_allocation_mb    = 12288
-		node_disk_allocation_mb      = 20480
-        node_cpu_allocation_count    = 6
-
-		users {
-		  name     = "user123"
-		  password = "password12"
-		}
-		whitelist {
-		  address     = "172.168.1.2/32"
-		  description = "desc1"
-		}
-
-		timeouts {
-			create = "480m"
-			update = "480m"
-			delete = "15m"
-		}
-	}
-				`, databaseResourceGroup, name)
-}
-
-func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResourceGroup string, name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		is_default = true
-		# name = "%[1]s"
-	}
-	  
-	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
-		location                     = "us-south"
-		adminpassword                = "password12"
-		node_count					 = 3
-		node_memory_allocation_mb    = 12416
-		node_disk_allocation_mb      = 20480
-        node_cpu_allocation_count    = 6
-
+		members_memory_allocation_mb = 6144
+		members_disk_allocation_mb   = 18432
 		users {
 		  name     = "user123"
 		  password = "password12"
@@ -388,8 +287,8 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 		}
 
 		timeouts {
-			create = "480m"
-			update = "480m"
+			create = "120m"
+			update = "120m"
 			delete = "15m"
 		}
 	}
@@ -397,7 +296,7 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -407,25 +306,60 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeReduced(databaseResourceGroup s
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		members_memory_allocation_mb = 3072
+		members_disk_allocation_mb   = 18432
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name)
+}
+
+func testAccCheckIBMDatabaseInstanceElasticsearchNodeBasic(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
 		node_count					 = 3
-		node_memory_allocation_mb    = 12288
-		node_disk_allocation_mb      = 20480
-        node_cpu_allocation_count    = 6
+		node_memory_allocation_mb    = 1024
+		node_disk_allocation_mb      = 5120
+        node_cpu_allocation_count    = 3
+
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
 
 		timeouts {
-			create = "480m"
-			update = "480m"
+			create = "120m"
+			update = "120m"
 			delete = "15m"
 		}
 	}
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchNodeFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -435,25 +369,98 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeScaleOut(databaseResourceGroup 
 	resource "ibm_database" "%[2]s" {
 		resource_group_id            = data.ibm_resource_group.test_acc.id
 		name                         = "%[2]s"
-		service                      = "databases-for-cassandra"
-		plan                         = "enterprise"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		node_count					 = 3
+		node_memory_allocation_mb    = 1024
+		node_disk_allocation_mb      = 6144
+        node_cpu_allocation_count    = 3
+		users {
+		  name     = "user123"
+		  password = "password12"
+		}
+		users {
+		  name     = "user124"
+		  password = "password12"
+		}
+		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
+	}
+	  
+				`, databaseResourceGroup, name)
+}
+
+func testAccCheckIBMDatabaseInstanceElasticsearchNodeReduced(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
+		location                     = "us-south"
+		adminpassword                = "password12"
+		node_count					 = 3
+		node_memory_allocation_mb    = 1024
+		node_disk_allocation_mb      = 6144
+        node_cpu_allocation_count    = 3
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name)
+}
+
+func testAccCheckIBMDatabaseInstanceElasticsearchNodeScaleOut(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+	  
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-elasticsearch"
+		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
         node_count                   = 4
-		node_memory_allocation_mb    = 12288
-		node_disk_allocation_mb      = 20480
-        node_cpu_allocation_count    = 6
+		node_memory_allocation_mb    = 1024
+		node_disk_allocation_mb      = 6144
+        node_cpu_allocation_count    = 3
 
 		timeouts {
-			create = "480m"
-			update = "480m"
+			create = "120m"
+			update = "120m"
 			delete = "15m"
 		}
 	}
 				`, databaseResourceGroup, name)
 }
 
-func testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -463,19 +470,16 @@ func testAccCheckIBMDatabaseInstanceCassandraImport(databaseResourceGroup string
 	resource "ibm_database" "%[2]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
 		name              = "%[2]s"
-		service           = "databases-for-cassandra"
-		plan              = "enterprise"
+		service           = "databases-for-elasticsearch"
+		plan              = "standard"
 		location          = "us-south"
 
 		timeouts {
-			create = "480m"
-			update = "480m"
+			create = "120m"
+			update = "120m"
 			delete = "15m"
 		}
-
 	}
-
-
 
 				`, databaseResourceGroup, name)
 }

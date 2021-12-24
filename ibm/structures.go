@@ -38,6 +38,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -1456,53 +1457,53 @@ func expandUsers(userList *schema.Set) (users []icdv4.User) {
 	return
 }
 
-// IBM Cloud Databases
-func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(cs), len(cs))
-	for i, csEntry := range cs {
-		l := map[string]interface{}{
-			"name":         csEntry.Name,
-			"password":     csEntry.Password,
-			"composed":     csEntry.Composed,
-			"certname":     csEntry.CertName,
-			"certbase64":   csEntry.CertBase64,
-			"queryoptions": csEntry.QueryOptions,
-			"scheme":       csEntry.Scheme,
-			"path":         csEntry.Path,
-			"database":     csEntry.Database,
-			"bundlename":   csEntry.BundleName,
-			"bundlebase64": csEntry.BundleBase64,
-		}
-		hosts := csEntry.Hosts
-		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
-		for j, host := range hosts {
-			z := map[string]interface{}{
-				"hostname": host.HostName,
-				"port":     strconv.Itoa(host.Port),
-			}
-			hostsList[j] = z
-		}
-		l["hosts"] = hostsList
-		var queryOpts string
-		if len(csEntry.QueryOptions) != 0 {
-			queryOpts = "?"
-			count := 0
-			for k, v := range csEntry.QueryOptions {
-				if count >= 1 {
-					queryOpts = queryOpts + "&"
-				}
-				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
-				count++
-			}
-		} else {
-			queryOpts = ""
-		}
-		l["queryoptions"] = queryOpts
-		entries[i] = l
-	}
+// // IBM Cloud Databases
+// func flattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
+// 	entries := make([]map[string]interface{}, len(cs), len(cs))
+// 	for i, csEntry := range cs {
+// 		l := map[string]interface{}{
+// 			"name":         csEntry.Name,
+// 			"password":     csEntry.Password,
+// 			"composed":     csEntry.Composed,
+// 			"certname":     csEntry.CertName,
+// 			"certbase64":   csEntry.CertBase64,
+// 			"queryoptions": csEntry.QueryOptions,
+// 			"scheme":       csEntry.Scheme,
+// 			"path":         csEntry.Path,
+// 			"database":     csEntry.Database,
+// 			"bundlename":   csEntry.BundleName,
+// 			"bundlebase64": csEntry.BundleBase64,
+// 		}
+// 		hosts := csEntry.Hosts
+// 		hostsList := make([]map[string]interface{}, len(hosts), len(hosts))
+// 		for j, host := range hosts {
+// 			z := map[string]interface{}{
+// 				"hostname": host.HostName,
+// 				"port":     strconv.Itoa(host.Port),
+// 			}
+// 			hostsList[j] = z
+// 		}
+// 		l["hosts"] = hostsList
+// 		var queryOpts string
+// 		if len(csEntry.QueryOptions) != 0 {
+// 			queryOpts = "?"
+// 			count := 0
+// 			for k, v := range csEntry.QueryOptions {
+// 				if count >= 1 {
+// 					queryOpts = queryOpts + "&"
+// 				}
+// 				queryOpts = queryOpts + fmt.Sprintf("%v", k) + "=" + fmt.Sprintf("%v", v)
+// 				count++
+// 			}
+// 		} else {
+// 			queryOpts = ""
+// 		}
+// 		l["queryoptions"] = queryOpts
+// 		entries[i] = l
+// 	}
 
-	return entries
-}
+// 	return entries
+// }
 
 func flattenPhaseOneAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
 	phaseoneAttributesMap := make([]map[string]interface{}, 0, 1)
@@ -1866,7 +1867,7 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	if len(tagType) > 0 {
 		ListTagsOptions.TagType = ptrToString(tagType)
 
-		if tagType == service {
+		if tagType == "service" {
 			ListTagsOptions.AccountID = ptrToString(accountID)
 		}
 	}
@@ -1932,7 +1933,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		detachTagOptions.TagNames = remove
 		if len(tagType) > 0 {
 			detachTagOptions.TagType = ptrToString(tagType)
-			if tagType == service {
+			if tagType == "service" {
 				detachTagOptions.AccountID = ptrToString(acctID)
 			}
 		}
@@ -1958,7 +1959,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 		AttachTagOptions.TagNames = add
 		if len(tagType) > 0 {
 			AttachTagOptions.TagType = ptrToString(tagType)
-			if tagType == service {
+			if tagType == "service" {
 				AttachTagOptions.AccountID = ptrToString(acctID)
 			}
 		}
@@ -2611,7 +2612,33 @@ func setResourceAttribute(name *string, value *string, r []iampolicymanagementv1
 	})
 	return r
 }
+func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
+	rolesStr := ""
+	for index, role := range supported {
+		if index != 0 {
+			rolesStr += ", "
+		}
+		if role.DisplayName != nil {
+			rolesStr += *role.DisplayName
+		}
+	}
+	return rolesStr
+}
 
+func findRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (iampolicymanagementv1.PolicyRole, error) {
+	for _, role := range supported {
+		if role.DisplayName != nil {
+			if *role.DisplayName == name {
+				role.DisplayName = nil
+				return role, nil
+			}
+		}
+	}
+	supportedRoles := getSupportedRolesStr(supported)
+	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
+		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
+
+}
 func getRolesFromRoleNames(roleNames []string, roles []iampolicymanagementv1.PolicyRole) ([]iampolicymanagementv1.PolicyRole, error) {
 
 	filteredRoles := []iampolicymanagementv1.PolicyRole{}
