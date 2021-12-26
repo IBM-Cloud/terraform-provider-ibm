@@ -342,7 +342,7 @@ func validateTimeout(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateURLPath(v interface{}, k string) (ws []string, errors []error) {
+func ValidateURLPath(v interface{}, k string) (ws []string, errors []error) {
 	urlPath := v.(string)
 	if len(urlPath) > 250 || !strings.HasPrefix(urlPath, "/") {
 		errors = append(errors, fmt.Errorf(

@@ -89,7 +89,7 @@ func testAccCheckIBMHPCSInstanceDestroy(s *terraform.State) error {
 			}
 			return fmt.Errorf("Instance still exists: %s", rs.Primary.ID)
 		} else if strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error checking if instance (%s) has been destroyed: %s %s", rs.Primary.ID, err, response)
+			return fmt.Errorf("[ERROR] Error checking if instance (%s) has been destroyed: %s %s", rs.Primary.ID, err, response)
 		}
 	}
 	return nil
@@ -118,7 +118,7 @@ func testAccCheckIBMHPCSInstanceExists(n string, tfHPCSID string) resource.TestC
 				tfHPCSID = ""
 				return nil
 			}
-			return fmt.Errorf("Error retrieving resource instance: %s %s", err, response)
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s %s", err, response)
 		}
 		if strings.Contains(*instance.State, "removed") {
 			tfHPCSID = ""

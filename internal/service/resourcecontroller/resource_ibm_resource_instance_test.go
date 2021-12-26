@@ -169,7 +169,7 @@ func testAccCheckIBMResourceInstanceDestroy(s *terraform.State) error {
 			}
 		} else {
 			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
+				return fmt.Errorf("[ERROR] Error checking if Resource Instance (%s) has been destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 			}
 		}
 	}

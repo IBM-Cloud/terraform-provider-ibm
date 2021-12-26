@@ -1681,28 +1681,28 @@ func convertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	return
 }
 
-// Cloud Internet Services
-func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
-	switch {
-	case id == "flags":
-		switch {
-		case strings.ToUpper(recordType) == "SRV",
-			strings.ToUpper(recordType) == "CAA",
-			strings.ToUpper(recordType) == "DNSKEY":
-			newValue, err = strconv.Atoi(value.(string))
-		case strings.ToUpper(recordType) == "NAPTR":
-			newValue, err = value.(string), nil
-		}
-	case stringInSlice(id, dnsTypeIntFields):
-		newValue, err = strconv.Atoi(value.(string))
-	case stringInSlice(id, dnsTypeFloatFields):
-		newValue, err = strconv.ParseFloat(value.(string), 32)
-	default:
-		newValue, err = value.(string), nil
-	}
+// // Cloud Internet Services
+// func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
+// 	switch {
+// 	case id == "flags":
+// 		switch {
+// 		case strings.ToUpper(recordType) == "SRV",
+// 			strings.ToUpper(recordType) == "CAA",
+// 			strings.ToUpper(recordType) == "DNSKEY":
+// 			newValue, err = strconv.Atoi(value.(string))
+// 		case strings.ToUpper(recordType) == "NAPTR":
+// 			newValue, err = value.(string), nil
+// 		}
+// 	case stringInSlice(id, dnsTypeIntFields):
+// 		newValue, err = strconv.Atoi(value.(string))
+// 	case stringInSlice(id, dnsTypeFloatFields):
+// 		newValue, err = strconv.ParseFloat(value.(string), 32)
+// 	default:
+// 		newValue, err = value.(string), nil
+// 	}
 
-	return
-}
+// 	return
+// }
 
 func indexOf(element string, data []string) int {
 	for k, v := range data {

@@ -17,10 +17,10 @@ var appIDTenantID string
 var appIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
-var CisDomainStaticstring
-var cisDomainTest string
-var cisInstance string
-var cisResourceGroup string
+var CisDomainStatic string
+var CisDomainTest string
+var CisInstance string
+var CisResourceGroup string
 var cloudShellAccountID string
 var cosCRN string
 var ibmid1 string
@@ -55,7 +55,7 @@ var err error
 var placementGroupName string
 var certCRN string
 var updatedCertCRN string
-var regionName string
+var RegionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
@@ -203,26 +203,26 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CONTAINER_REGION for testing ibm_container resources else it is set to default value 'eu-de'")
 	}
 
-	cisInstance = os.Getenv("IBM_CIS_INSTANCE")
-	if cisInstance == "" {
-		cisInstance = ""
+	CisInstance = os.Getenv("IBM_CIS_INSTANCE")
+	if CisInstance == "" {
+		CisInstance = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_INSTANCE with a VALID CIS Instance NAME for testing ibm_cis resources on staging/test")
 	}
-	CisDomainStatic= os.Getenv("IBM_CIS_DOMAIN_STATIC")
-	if CisDomainStatic== "" {
-		CisDomainStatic= ""
+	CisDomainStatic = os.Getenv("IBM_CIS_DOMAIN_STATIC")
+	if CisDomainStatic == "" {
+		CisDomainStatic = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN_STATIC with the Domain name registered with the CIS instance on test/staging. Domain must be predefined in CIS to avoid CIS billing costs due to domain delete/create")
 	}
 
-	cisDomainTest = os.Getenv("IBM_CIS_DOMAIN_TEST")
-	if cisDomainTest == "" {
-		cisDomainTest = ""
+	CisDomainTest = os.Getenv("IBM_CIS_DOMAIN_TEST")
+	if CisDomainTest == "" {
+		CisDomainTest = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_DOMAIN_TEST with a VALID Domain name for testing the one time create and delete of a domain in CIS. Note each create/delete will trigger a monthly billing instance. Only to be run in staging/test")
 	}
 
-	cisResourceGroup = os.Getenv("IBM_CIS_RESOURCE_GROUP")
-	if cisResourceGroup == "" {
-		cisResourceGroup = ""
+	CisResourceGroup = os.Getenv("IBM_CIS_RESOURCE_GROUP")
+	if CisResourceGroup == "" {
+		CisResourceGroup = ""
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
 	}
 
@@ -369,9 +369,9 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_PLACEMENT_GROUP_NAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-group'")
 	}
 
-	regionName = os.Getenv("SL_REGION")
-	if regionName == "" {
-		regionName = "us-south"
+	RegionName = os.Getenv("SL_REGION")
+	if RegionName == "" {
+		RegionName = "us-south"
 		fmt.Println("[INFO] Set the environment variable SL_REGION for testing ibm_is_region datasource else it is set to default value 'us-south'")
 	}
 
@@ -773,16 +773,16 @@ func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
 }
 func TestAccPreCheckCis(t *testing.T) {
 	TestAccPreCheck(t)
-	if cisInstance == "" {
+	if CisInstance == "" {
 		t.Fatal("IBM_CIS_INSTANCE must be set for acceptance tests")
 	}
-	if cisResourceGroup == "" {
+	if CisResourceGroup == "" {
 		t.Fatal("IBM_CIS_RESOURCE_GROUP must be set for acceptance tests")
 	}
-	if CisDomainStatic== "" {
+	if CisDomainStatic == "" {
 		t.Fatal("IBM_CIS_DOMAIN_STATIC must be set for acceptance tests")
 	}
-	if cisDomainTest == "" {
+	if CisDomainTest == "" {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
