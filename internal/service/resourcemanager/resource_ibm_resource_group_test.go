@@ -102,7 +102,7 @@ func testAccCheckIBMResourceGroupExists(n string, obj *string) resource.TestChec
 			if resp != nil && resp.StatusCode == 404 {
 				return nil
 			}
-			return fmt.Errorf("Error retrieving resource group: %s\n Response code is: %+v", err, resp)
+			return fmt.Errorf("[ERROR] Error retrieving resource group: %s\n Response code is: %+v", err, resp)
 		}
 
 		obj = resourceGroup.ID

@@ -219,7 +219,7 @@ func Provider() *schema.Provider {
 			"ibm_function_namespace":               dataSourceIBMFunctionNamespace(),
 			"ibm_certificate_manager_certificates": dataIBMCertificateManagerCertificates(),
 			"ibm_certificate_manager_certificate":  dataIBMCertificateManagerCertificate(),
-			"ibm_cis":                              dataSourceIBMCISInstance(),
+			/*"ibm_cis":                              dataSourceIBMCISInstance(),
 			"ibm_cis_dns_records":                  dataSourceIBMCISDNSRecords(),
 			"ibm_cis_certificates":                 dataIBMCISCertificates(),
 			"ibm_cis_global_load_balancers":        dataSourceIBMCISGlbs(),
@@ -240,7 +240,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_page_rules":                   dataSourceIBMCISPageRules(),
 			"ibm_cis_waf_rules":                    dataSourceIBMCISWAFRules(),
 			"ibm_cis_filters":                      dataSourceIBMCISFilters(),
-			"ibm_cis_firewall_rules":               dataSourceIBMCISFirewallRules(),
+			"ibm_cis_firewall_rules":               dataSourceIBMCISFirewallRules(),*/
 			// "ibm_cloudant":                           dataSourceIBMCloudant(),
 			// "ibm_database":                           dataSourceIBMDatabaseInstance(),
 			"ibm_compute_bare_metal":                dataSourceIBMComputeBareMetal(),
@@ -567,11 +567,11 @@ func Provider() *schema.Provider {
 			"ibm_function_rule":      resourceIBMFunctionRule(),
 			"ibm_function_trigger":   resourceIBMFunctionTrigger(),
 			"ibm_function_namespace": resourceIBMFunctionNamespace(),
-			"ibm_cis":                resourceIBMCISInstance(),
+			// "ibm_cis":                resourceIBMCISInstance(),
 			// "ibm_database":                                       resourceIBMDatabaseInstance(),
 			"ibm_certificate_manager_import": resourceIBMCertificateManagerImport(),
 			"ibm_certificate_manager_order":  resourceIBMCertificateManagerOrder(),
-			"ibm_cis_domain":                 resourceIBMCISDomain(),
+			/*"ibm_cis_domain":                 resourceIBMCISDomain(),
 			"ibm_cis_domain_settings":        resourceIBMCISSettings(),
 			"ibm_cis_firewall":               resourceIBMCISFirewallRecord(),
 			"ibm_cis_range_app":              resourceIBMCISRangeApp(),
@@ -595,6 +595,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_certificate_order":      resourceIBMCISCertificateOrder(),
 			"ibm_cis_filter":                 resourceIBMCISFilter(),
 			"ibm_cis_firewall_rule":          resourceIBMCISFirewallrules(),
+			*/
 			// "ibm_cloudant":                                       resourceIBMCloudant(),
 			"ibm_cloud_shell_account_settings":          resourceIBMCloudShellAccountSettings(),
 			"ibm_compute_autoscale_group":               resourceIBMComputeAutoScaleGroup(),
@@ -862,9 +863,9 @@ func Validator() ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = ValidatorDict{
 			ResourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_iam_account_settings":      resourceIBMIAMAccountSettingsValidator(),
-				"ibm_iam_custom_role":           resourceIBMIAMCustomRoleValidator(),
-				"ibm_cis_healthcheck":           resourceIBMCISHealthCheckValidator(),
+				"ibm_iam_account_settings": resourceIBMIAMAccountSettingsValidator(),
+				"ibm_iam_custom_role":      resourceIBMIAMCustomRoleValidator(),
+				/*"ibm_cis_healthcheck":           resourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":            resourceIBMCISRateLimitValidator(),
 				"ibm_cis":                       resourceIBMCISValidator(),
 				"ibm_cis_domain_settings":       resourceIBMCISDomainSettingValidator(),
@@ -881,7 +882,7 @@ func Validator() ValidatorDict {
 				"ibm_cis_waf_rule":              resourceIBMCISWAFRuleValidator(),
 				"ibm_cis_certificate_order":     resourceIBMCISCertificateOrderValidator(),
 				"ibm_cis_filter":                resourceIBMCISFilterValidator(),
-				"ibm_cis_firewall_rules":        resourceIBMCISFirewallrulesValidator(),
+				"ibm_cis_firewall_rules":        resourceIBMCISFirewallrulesValidator(),*/
 				"ibm_container_cluster":         resourceIBMContainerClusterValidator(),
 				"ibm_container_worker_pool":     resourceContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool": resourceContainerVPCWorkerPoolValidator(),

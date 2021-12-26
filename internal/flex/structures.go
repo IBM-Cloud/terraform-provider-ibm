@@ -76,7 +76,7 @@ func ExpandStringList(input []interface{}) []string {
 	return vs
 }
 
-func flattenStringList(list []string) []interface{} {
+func FlattenStringList(list []string) []interface{} {
 	vs := make([]interface{}, len(list))
 	for i, v := range list {
 		vs[i] = v
@@ -938,7 +938,7 @@ func flattenExec(in *whisk.Exec, d *schema.ResourceData) []interface{} {
 	}
 
 	if len(in.Components) > 0 {
-		att["components"] = flattenStringList(in.Components)
+		att["components"] = FlattenStringList(in.Components)
 	}
 
 	return []interface{}{att}
@@ -1613,7 +1613,7 @@ func expandStringMap(inVal interface{}) map[string]string {
 }
 
 // Cloud Internet Services
-func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId string, err error) {
+func ConvertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId string, err error) {
 	g := strings.SplitN(glbTfId, ":", 3)
 	glbId = g[0]
 	if len(g) > 2 {
@@ -1625,7 +1625,7 @@ func convertTfToCisThreeVar(glbTfId string) (glbId string, zoneId string, cisId 
 	}
 	return
 }
-func convertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID string) (buildID string) {
+func ConvertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID string) (buildID string) {
 	if ID != "" {
 		buildID = firewallType + ":" + ID + ":" + ID2 + ":" + cisID
 	} else {
@@ -1633,7 +1633,7 @@ func convertCisToTfFourVar(firewallType string, ID string, ID2 string, cisID str
 	}
 	return
 }
-func convertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID string, cisID string, err error) {
+func ConvertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID string, cisID string, err error) {
 	g := strings.SplitN(TfID, ":", 4)
 	firewallType = g[0]
 	if len(g) > 3 {
@@ -1648,7 +1648,7 @@ func convertTfToCisFourVar(TfID string) (firewallType string, ID string, zoneID 
 }
 
 // Cloud Internet Services
-func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
+func ConvertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + Id2 + ":" + cisId
 	} else {
@@ -1658,7 +1658,7 @@ func convertCisToTfThreeVar(Id string, Id2 string, cisId string) (buildId string
 }
 
 // Cloud Internet Services
-func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err error) {
+func ConvertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err error) {
 	for _, item := range tfIds {
 		Id := strings.SplitN(item, ":", 2)
 		if len(Id) < 2 {
@@ -1672,7 +1672,7 @@ func convertTfToCisTwoVarSlice(tfIds []string) (Ids []string, cisId string, err 
 }
 
 // Cloud Internet Services
-func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
+func ConvertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 	for _, Id := range Ids {
 		buildIds = append(buildIds, Id+":"+cisId)
 	}
@@ -1680,7 +1680,7 @@ func convertCisToTfTwoVarSlice(Ids []string, cisId string) (buildIds []string) {
 }
 
 // Cloud Internet Services
-func convertCisToTfTwoVar(Id string, cisId string) (buildId string) {
+func ConvertCisToTfTwoVar(Id string, cisId string) (buildId string) {
 	if Id != "" {
 		buildId = Id + ":" + cisId
 	} else {
@@ -1701,29 +1701,66 @@ func ConvertTftoCisTwoVar(tfId string) (Id string, cisId string, err error) {
 	}
 	return
 }
+func stringInSlice(str string, list []string) bool {
+	for _, v := range list {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
 
-// // Cloud Internet Services
-// func transformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
-// 	switch {
-// 	case id == "flags":
-// 		switch {
-// 		case strings.ToUpper(recordType) == "SRV",
-// 			strings.ToUpper(recordType) == "CAA",
-// 			strings.ToUpper(recordType) == "DNSKEY":
-// 			newValue, err = strconv.Atoi(value.(string))
-// 		case strings.ToUpper(recordType) == "NAPTR":
-// 			newValue, err = value.(string), nil
-// 		}
-// 	case stringInSlice(id, dnsTypeIntFields):
-// 		newValue, err = strconv.Atoi(value.(string))
-// 	case stringInSlice(id, dnsTypeFloatFields):
-// 		newValue, err = strconv.ParseFloat(value.(string), 32)
-// 	default:
-// 		newValue, err = value.(string), nil
-// 	}
+var dnsTypeIntFields = []string{
+	"algorithm",
+	"key_tag",
+	"type",
+	"usage",
+	"selector",
+	"matching_type",
+	"weight",
+	"priority",
+	"port",
+	"long_degrees",
+	"lat_degrees",
+	"long_minutes",
+	"lat_minutes",
+	"protocol",
+	"digest_type",
+	"order",
+	"preference",
+}
 
-// 	return
-// }
+var dnsTypeFloatFields = []string{
+	"size",
+	"altitude",
+	"precision_horz",
+	"precision_vert",
+	"long_seconds",
+	"lat_seconds",
+}
+
+// Cloud Internet Services
+func TransformToIBMCISDnsData(recordType string, id string, value interface{}) (newValue interface{}, err error) {
+	switch {
+	case id == "flags":
+		switch {
+		case strings.ToUpper(recordType) == "SRV",
+			strings.ToUpper(recordType) == "CAA",
+			strings.ToUpper(recordType) == "DNSKEY":
+			newValue, err = strconv.Atoi(value.(string))
+		case strings.ToUpper(recordType) == "NAPTR":
+			newValue, err = value.(string), nil
+		}
+	case stringInSlice(id, dnsTypeIntFields):
+		newValue, err = strconv.Atoi(value.(string))
+	case stringInSlice(id, dnsTypeFloatFields):
+		newValue, err = strconv.ParseFloat(value.(string), 32)
+	default:
+		newValue, err = value.(string), nil
+	}
+
+	return
+}
 
 func indexOf(element string, data []string) int {
 	for k, v := range data {
@@ -1820,7 +1857,7 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 	for _, item := range taggingResult.Items {
 		taglist = append(taglist, item.Name)
 	}
-	d.Set("tags", flattenStringList(taglist))
+	d.Set("tags", FlattenStringList(taglist))
 	return nil
 }
 

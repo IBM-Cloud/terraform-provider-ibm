@@ -282,7 +282,7 @@ func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) error {
 			}
 		} else {
 			if !strings.Contains(err.Error(), "404") {
-				return fmt.Errorf("Error checking if database (%s) has been destroyed: %s %s", rs.Primary.ID, err, response)
+				return fmt.Errorf("[ERROR] Error checking if database (%s) has been destroyed: %s %s", rs.Primary.ID, err, response)
 			}
 		}
 	}
@@ -315,7 +315,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 	}
 	response, err := rsConClient.DeleteResourceInstance(&deleteReq)
 	if err != nil {
-		return fmt.Errorf("Error deleting resource instance: %s %s", err, response)
+		return fmt.Errorf("[ERROR] Error deleting resource instance: %s %s", err, response)
 	}
 
 	_ = &resource.StateChangeConf{
@@ -372,7 +372,7 @@ func testAccCheckIBMDatabaseInstanceExists(n string, tfDatabaseID *string) resou
 				*tfDatabaseID = ""
 				return nil
 			}
-			return fmt.Errorf("Error retrieving resource instance: %s %s", err, response)
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s %s", err, response)
 		}
 		if strings.Contains(*instance.State, "removed") {
 			*tfDatabaseID = ""

@@ -4,7 +4,6 @@
 package resourcemanager_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -47,28 +46,28 @@ func TestAccIBMResourceGroupDataSource_Default_false(t *testing.T) {
 }
 
 func testAccCheckIBMResourceGroupDataSourceConfigDefault() string {
-	return fmt.Sprintf(`
+	return `
 	
 data "ibm_resource_group" "testacc_ds_resource_group" {
 	is_default = "true"
-}`)
+}`
 
 }
 
 func testAccCheckIBMResourceGroupDataSourceConfigWithName() string {
-	return fmt.Sprintf(`
+	return `
 
 data "ibm_resource_group" "testacc_ds_resource_group_name" {
 	name = "default"
-}`)
+}`
 
 }
 
 func testAccCheckIBMResourceGroupDataSourceDefaultFalse() string {
-	return fmt.Sprintf(`
+	return `
 	
 data "ibm_resource_group" "testacc_ds_resource_group" {
 	is_default = "false"
-}`)
+}`
 
 }

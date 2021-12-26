@@ -156,7 +156,7 @@ func resourceIBMSatelliteLocation() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the resource group.",
 			},
-			tags: {
+			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,

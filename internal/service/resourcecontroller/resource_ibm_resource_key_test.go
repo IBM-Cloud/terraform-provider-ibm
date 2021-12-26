@@ -173,7 +173,7 @@ func testAccCheckIBMResourceKeyDestroy(s *terraform.State) error {
 			}
 			return fmt.Errorf("Resource key still exists: %s with resp code: %s", rs.Primary.ID, resp)
 		} else if !strings.Contains(err.Error(), "404") {
-			return fmt.Errorf("Error waiting for resource key (%s) to be destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
+			return fmt.Errorf("[ERROR] Error waiting for resource key (%s) to be destroyed: %s with resp code: %s", rs.Primary.ID, err, resp)
 		}
 	}
 
