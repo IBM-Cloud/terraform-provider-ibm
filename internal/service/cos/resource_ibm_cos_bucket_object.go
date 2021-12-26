@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos
 
 import (
 	"bytes"
@@ -16,6 +16,8 @@ import (
 	"time"
 
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/awserr"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
@@ -26,7 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIBMCOSBucketObject() *schema.Resource {
+func ResourceIBMCOSBucketObject() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCOSBucketObjectCreate,
 		ReadContext:   resourceIBMCOSBucketObjectRead,
@@ -88,7 +90,7 @@ func resourceIBMCOSBucketObject() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "direct"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				Description:  "COS endpoint type: public, private, direct",
 				Default:      "public",
 			},
@@ -136,7 +138,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
 
-	bxSession, err := m.(ClientSession).BluemixSession()
+	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,7 +216,7 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("bucket_crn", bucketCRN)
 	d.Set("bucket_location", bucketLocation)
 
-	bxSession, err := m.(ClientSession).BluemixSession()
+	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -292,7 +294,7 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 		bucketLocation := d.Get("bucket_location").(string)
 		endpointType := d.Get("endpoint_type").(string)
 
-		bxSession, err := m.(ClientSession).BluemixSession()
+		bxSession, err := m.(conns.ClientSession).BluemixSession()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -357,7 +359,7 @@ func resourceIBMCOSBucketObjectDelete(ctx context.Context, d *schema.ResourceDat
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
 
-	bxSession, err := m.(ClientSession).BluemixSession()
+	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -400,7 +402,7 @@ func getS3Client(bxSession *bxsession.Session, bucketLocation string, endpointTy
 	var s3Conf *aws.Config
 
 	apiEndpoint := getCosEndpoint(bucketLocation, endpointType)
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return nil, fmt.Errorf("the endpoint doesn't exists for given location %s and endpoint type %s", bucketLocation, endpointType)
 	}

@@ -68,7 +68,7 @@ func ValidateAllowedStringValues(validValues []string) schema.SchemaValidateFunc
 	}
 }
 
-func validBucketLifecycleTimestamp(v interface{}, k string) (ws []string, errors []error) {
+func ValidBucketLifecycleTimestamp(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	_, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", value))
 	if err != nil {
@@ -522,7 +522,7 @@ func validateJSONString() schema.SchemaValidateFunc {
 	}
 }
 
-func validateRegexp(regex string) schema.SchemaValidateFunc {
+func ValidateRegexps(regex string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(string)
 
@@ -1246,7 +1246,7 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 	case ValidateRegexpLen:
 		return validateRegexpLen(schema.MinValueLength, schema.MaxValueLength, schema.Regexp)
 	case ValidateRegexp:
-		return validateRegexp(schema.Regexp)
+		return ValidateRegexps(schema.Regexp)
 	case ValidateNoZeroValues:
 		return validateNoZeroValues()
 	case ValidateJSONString:

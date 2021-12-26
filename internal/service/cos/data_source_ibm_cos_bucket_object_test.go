@@ -1,11 +1,13 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos_test
 
 import (
 	"fmt"
 	"testing"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -13,11 +15,11 @@ import (
 func TestAccIBMCOSBucketObjectDataSource_basic(t *testing.T) {
 	name := "tf-testacc-cos"
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckCOS(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIBMCOSBucketObjectDataSourceConfig_basic(name, cosCRN),
+				Config: testAccIBMCOSBucketObjectDataSourceConfig_basic(name, acc.CosCRN),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cos_bucket_object.testacc", "body"),
