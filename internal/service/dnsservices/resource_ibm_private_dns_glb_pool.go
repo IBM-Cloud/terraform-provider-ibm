@@ -369,7 +369,7 @@ func resourceIBMPrivateDNSGLBPoolExists(d *schema.ResourceData, meta interface{}
 
 	idset := strings.Split(d.Id(), "/")
 	if len(idset) < 2 {
-		return false, fmt.Errorf("Incorrect ID %s: Id should be a combination of InstanceID/poolID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/poolID", d.Id())
 	}
 
 	getPoolOptions := sess.NewGetPoolOptions(idset[0], idset[1])

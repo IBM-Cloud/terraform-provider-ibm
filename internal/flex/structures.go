@@ -1232,7 +1232,7 @@ func filterResourceKeyParameters(params map[string]interface{}) map[string]inter
 	return params
 }
 
-func idParts(id string) ([]string, error) {
+func IdParts(id string) ([]string, error) {
 	if strings.Contains(id, "/") {
 		parts := strings.Split(id, "/")
 		return parts, nil
