@@ -46,6 +46,10 @@ const (
 	keyAlgorithm = "AES256"
 )
 
+func caseDiffSuppress(_, old, new string, _ *schema.ResourceData) bool {
+	return strings.ToUpper(old) == strings.ToUpper(new)
+}
+
 func resourceIBMCOSBucket() *schema.Resource {
 	return &schema.Resource{
 		Read:          resourceIBMCOSBucketRead,

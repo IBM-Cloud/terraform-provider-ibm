@@ -17,6 +17,10 @@ import (
 //
 // The initial use case is to let aws_security_group_rule resources serialize
 // their access to individual security groups based on SG ID.
+
+// This is a global MutexKV for use within this plugin.
+var IbmMutexKV = NewMutexKV()
+
 type MutexKV struct {
 	lock  sync.Mutex
 	store map[string]*sync.Mutex

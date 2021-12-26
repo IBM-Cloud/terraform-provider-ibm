@@ -436,14 +436,14 @@ func Provider() *schema.Provider {
 
 			// Added for private dns zones
 
-			"ibm_dns_zones":                            dataSourceIBMPrivateDNSZones(),
-			"ibm_dns_permitted_networks":               dataSourceIBMPrivateDNSPermittedNetworks(),
-			"ibm_dns_resource_records":                 dataSourceIBMPrivateDNSResourceRecords(),
-			"ibm_dns_glb_monitors":                     dataSourceIBMPrivateDNSGLBMonitors(),
-			"ibm_dns_glb_pools":                        dataSourceIBMPrivateDNSGLBPools(),
-			"ibm_dns_glbs":                             dataSourceIBMPrivateDNSGLBs(),
-			"ibm_dns_custom_resolvers":                 dataSourceIBMDNSCustomResolver(),
-			"ibm_dns_custom_resolver_forwarding_rules": dataSourceIBMPrivateDNSForwardingRules(),
+			// "ibm_dns_zones":                            dataSourceIBMPrivateDNSZones(),
+			// "ibm_dns_permitted_networks":               dataSourceIBMPrivateDNSPermittedNetworks(),
+			// "ibm_dns_resource_records":                 dataSourceIBMPrivateDNSResourceRecords(),
+			// "ibm_dns_glb_monitors":                     dataSourceIBMPrivateDNSGLBMonitors(),
+			// "ibm_dns_glb_pools":                        dataSourceIBMPrivateDNSGLBPools(),
+			// "ibm_dns_glbs":                             dataSourceIBMPrivateDNSGLBs(),
+			// "ibm_dns_custom_resolvers":                 dataSourceIBMDNSCustomResolver(),
+			// "ibm_dns_custom_resolver_forwarding_rules": dataSourceIBMPrivateDNSForwardingRules(),
 
 			// Added for Direct Link
 
@@ -776,17 +776,17 @@ func Provider() *schema.Provider {
 			"ibm_pi_placement_group":     resourceIBMPIPlacementGroup(),
 
 			//Private DNS related resources
-			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),
-			"ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
-			"ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
-			"ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
-			"ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
-			"ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
+			// "ibm_dns_zone":              resourceIBMPrivateDNSZone(),
+			// "ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
+			// "ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
+			// "ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
+			// "ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
+			// "ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
 
-			//Added for Custom Resolver
-			"ibm_dns_custom_resolver":                 resouceIBMPrivateDNSCustomResolver(),
-			"ibm_dns_custom_resolver_location":        resourceIBMPrivateDNSCRLocation(),
-			"ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRule(),
+			// //Added for Custom Resolver
+			// "ibm_dns_custom_resolver":                 resouceIBMPrivateDNSCustomResolver(),
+			// "ibm_dns_custom_resolver_location":        resourceIBMPrivateDNSCRLocation(),
+			// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRule(),
 
 			//Direct Link related resources
 			"ibm_dl_gateway":            resourceIBMDLGateway(),
@@ -946,14 +946,14 @@ func Validator() ValidatorDict {
 				"ibm_is_vpn_gateway_connection":         resourceIBMISVPNGatewayConnectionValidator(),
 				"ibm_is_vpn_gateway":                    resourceIBMISVPNGatewayValidator(),
 				// "ibm_kms_key_rings":                       resourceIBMKeyRingValidator(),
-				"ibm_dns_glb_monitor":                     resourceIBMPrivateDNSGLBMonitorValidator(),
-				"ibm_dns_glb_pool":                        resourceIBMPrivateDNSGLBPoolValidator(),
-				"ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRuleValidator(),
-				"ibm_schematics_action":                   resourceIBMSchematicsActionValidator(),
-				"ibm_schematics_job":                      resourceIBMSchematicsJobValidator(),
-				"ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
-				"ibm_schematics_inventory":                resourceIBMSchematicsInventoryValidator(),
-				"ibm_schematics_resource_query":           resourceIBMSchematicsResourceQueryValidator(),
+				// "ibm_dns_glb_monitor":                     resourceIBMPrivateDNSGLBMonitorValidator(),
+				// "ibm_dns_glb_pool":                        resourceIBMPrivateDNSGLBPoolValidator(),
+				// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRuleValidator(),
+				"ibm_schematics_action":         resourceIBMSchematicsActionValidator(),
+				"ibm_schematics_job":            resourceIBMSchematicsJobValidator(),
+				"ibm_schematics_workspace":      resourceIBMSchematicsWorkspaceValidator(),
+				"ibm_schematics_inventory":      resourceIBMSchematicsInventoryValidator(),
+				"ibm_schematics_resource_query": resourceIBMSchematicsResourceQueryValidator(),
 				// "ibm_resource_instance":                   resourceIBMResourceInstanceValidator(),
 				"ibm_is_virtual_endpoint_gateway": resourceIBMISEndpointGatewayValidator(),
 				// "ibm_resource_tag":                        resourceIBMResourceTagValidator(),

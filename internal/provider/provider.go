@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/database"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/dnsservices"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/hpcs"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
@@ -21,9 +22,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
-
-// This is a global MutexKV for use within this plugin.
-var ibmMutexKV = conns.NewMutexKV()
 
 // Provider returns a *schema.Provider.
 func Provider() *schema.Provider {
@@ -444,14 +442,14 @@ func Provider() *schema.Provider {
 
 			// // Added for private dns zones
 
-			// "ibm_dns_zones":                            dataSourceIBMPrivateDNSZones(),
-			// "ibm_dns_permitted_networks":               dataSourceIBMPrivateDNSPermittedNetworks(),
-			// "ibm_dns_resource_records":                 dataSourceIBMPrivateDNSResourceRecords(),
-			// "ibm_dns_glb_monitors":                     dataSourceIBMPrivateDNSGLBMonitors(),
-			// "ibm_dns_glb_pools":                        dataSourceIBMPrivateDNSGLBPools(),
-			// "ibm_dns_glbs":                             dataSourceIBMPrivateDNSGLBs(),
-			// "ibm_dns_custom_resolvers":                 dataSourceIBMDNSCustomResolver(),
-			// "ibm_dns_custom_resolver_forwarding_rules": dataSourceIBMPrivateDNSForwardingRules(),
+			"ibm_dns_zones":                            dnsservices.DataSourceIBMPrivateDNSZones(),
+			"ibm_dns_permitted_networks":               dnsservices.DataSourceIBMPrivateDNSPermittedNetworks(),
+			"ibm_dns_resource_records":                 dnsservices.DataSourceIBMPrivateDNSResourceRecords(),
+			"ibm_dns_glb_monitors":                     dnsservices.DataSourceIBMPrivateDNSGLBMonitors(),
+			"ibm_dns_glb_pools":                        dnsservices.DataSourceIBMPrivateDNSGLBPools(),
+			"ibm_dns_glbs":                             dnsservices.DataSourceIBMPrivateDNSGLBs(),
+			"ibm_dns_custom_resolvers":                 dnsservices.DataSourceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_custom_resolver_forwarding_rules": dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
 
 			// // Added for Direct Link
 
@@ -777,17 +775,17 @@ func Provider() *schema.Provider {
 			// "ibm_pi_console_language":    resourceIBMPIInstanceConsoleLanguage(),
 
 			// //Private DNS related resources
-			// "ibm_dns_zone":              resourceIBMPrivateDNSZone(),
-			// "ibm_dns_permitted_network": resourceIBMPrivateDNSPermittedNetwork(),
-			// "ibm_dns_resource_record":   resourceIBMPrivateDNSResourceRecord(),
-			// "ibm_dns_glb_monitor":       resourceIBMPrivateDNSGLBMonitor(),
-			// "ibm_dns_glb_pool":          resourceIBMPrivateDNSGLBPool(),
-			// "ibm_dns_glb":               resourceIBMPrivateDNSGLB(),
+			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
+			"ibm_dns_permitted_network": dnsservices.ResourceIBMPrivateDNSPermittedNetwork(),
+			"ibm_dns_resource_record":   dnsservices.ResourceIBMPrivateDNSResourceRecord(),
+			"ibm_dns_glb_monitor":       dnsservices.ResourceIBMPrivateDNSGLBMonitor(),
+			"ibm_dns_glb_pool":          dnsservices.ResourceIBMPrivateDNSGLBPool(),
+			"ibm_dns_glb":               dnsservices.ResourceIBMPrivateDNSGLB(),
 
 			// //Added for Custom Resolver
-			// "ibm_dns_custom_resolver":                 resouceIBMPrivateDNSCustomResolver(),
-			// "ibm_dns_custom_resolver_location":        resourceIBMPrivateDNSCRLocation(),
-			// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRule(),
+			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
+			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
+			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
 
 			// //Direct Link related resources
 			// "ibm_dl_gateway":            resourceIBMDLGateway(),
@@ -944,10 +942,10 @@ func Validator() validate.ValidatorDict {
 				// "ibm_is_vpc_routing_table_route":          resourceIBMISVPCRoutingTableRouteValidator(),
 				// "ibm_is_vpn_gateway_connection":           resourceIBMISVPNGatewayConnectionValidator(),
 				// "ibm_is_vpn_gateway":                      resourceIBMISVPNGatewayValidator(),
-				"ibm_kms_key_rings": kms.ResourceIBMKeyRingValidator(),
-				// "ibm_dns_glb_monitor":                     resourceIBMPrivateDNSGLBMonitorValidator(),
-				// "ibm_dns_glb_pool":                        resourceIBMPrivateDNSGLBPoolValidator(),
-				// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRuleValidator(),
+				"ibm_kms_key_rings":                       kms.ResourceIBMKeyRingValidator(),
+				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
+				"ibm_dns_glb_pool":                        dnsservices.ResourceIBMPrivateDNSGLBPoolValidator(),
+				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
 				// "ibm_schematics_action":                   resourceIBMSchematicsActionValidator(),
 				// "ibm_schematics_job":                      resourceIBMSchematicsJobValidator(),
 				// "ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
