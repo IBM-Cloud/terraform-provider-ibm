@@ -447,21 +447,21 @@ func Provider() *schema.Provider {
 
 			// Added for Direct Link
 
-			"ibm_dl_gateways":          dataSourceIBMDLGateways(),
-			"ibm_dl_offering_speeds":   dataSourceIBMDLOfferingSpeeds(),
-			"ibm_dl_port":              dataSourceIBMDirectLinkPort(),
-			"ibm_dl_ports":             dataSourceIBMDirectLinkPorts(),
-			"ibm_dl_gateway":           dataSourceIBMDLGateway(),
-			"ibm_dl_locations":         dataSourceIBMDLLocations(),
-			"ibm_dl_routers":           dataSourceIBMDLRouters(),
-			"ibm_dl_provider_ports":    dataSourceIBMDirectLinkProviderPorts(),
-			"ibm_dl_provider_gateways": dataSourceIBMDirectLinkProviderGateways(),
+			// "ibm_dl_gateways":          dataSourceIBMDLGateways(),
+			// "ibm_dl_offering_speeds":   dataSourceIBMDLOfferingSpeeds(),
+			// "ibm_dl_port":              dataSourceIBMDirectLinkPort(),
+			// "ibm_dl_ports":             dataSourceIBMDirectLinkPorts(),
+			// "ibm_dl_gateway":           dataSourceIBMDLGateway(),
+			// "ibm_dl_locations":         dataSourceIBMDLLocations(),
+			// "ibm_dl_routers":           dataSourceIBMDLRouters(),
+			// "ibm_dl_provider_ports":    dataSourceIBMDirectLinkProviderPorts(),
+			// "ibm_dl_provider_gateways": dataSourceIBMDirectLinkProviderGateways(),
 
-			//Added for Transit Gateway
-			"ibm_tg_gateway":   dataSourceIBMTransitGateway(),
-			"ibm_tg_gateways":  dataSourceIBMTransitGateways(),
-			"ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
-			"ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
+			// //Added for Transit Gateway
+			// "ibm_tg_gateway":   dataSourceIBMTransitGateway(),
+			// "ibm_tg_gateways":  dataSourceIBMTransitGateways(),
+			// "ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
+			// "ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
 
 			//Added for BSS Enterprise
 			"ibm_enterprises":               dataSourceIbmEnterprises(),
@@ -789,12 +789,12 @@ func Provider() *schema.Provider {
 			// "ibm_dns_custom_resolver_forwarding_rule": resourceIBMPrivateDNSForwardingRule(),
 
 			//Direct Link related resources
-			"ibm_dl_gateway":            resourceIBMDLGateway(),
-			"ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
-			"ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
-			//Added for Transit Gateway
-			"ibm_tg_gateway":    resourceIBMTransitGateway(),
-			"ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+			// "ibm_dl_gateway":            resourceIBMDLGateway(),
+			// "ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
+			// "ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
+			// //Added for Transit Gateway
+			// "ibm_tg_gateway":    resourceIBMTransitGateway(),
+			// "ibm_tg_connection": resourceIBMTransitGatewayConnection(),
 
 			//Catalog related resources
 			"ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
@@ -888,12 +888,12 @@ func Validator() ValidatorDict {
 				"ibm_container_vpc_worker_pool": resourceContainerVPCWorkerPoolValidator(),
 				"ibm_container_vpc_cluster":     resourceIBMContainerVpcClusterValidator(),
 				"ibm_cr_namespace":              resourceIBMCrNamespaceValidator(),
-				"ibm_tg_gateway":                resourceIBMTGValidator(),
-				"ibm_app_config_feature":        resourceIbmAppConfigFeatureValidator(),
-				"ibm_tg_connection":             resourceIBMTransitGatewayConnectionValidator(),
-				"ibm_dl_virtual_connection":     resourceIBMdlGatewayVCValidator(),
-				"ibm_dl_gateway":                resourceIBMDLGatewayValidator(),
-				"ibm_dl_provider_gateway":       resourceIBMDLProviderGatewayValidator(),
+				// "ibm_tg_gateway":                resourceIBMTGValidator(),
+				"ibm_app_config_feature": resourceIbmAppConfigFeatureValidator(),
+				// "ibm_tg_connection":             resourceIBMTransitGatewayConnectionValidator(),
+				// "ibm_dl_virtual_connection":     resourceIBMdlGatewayVCValidator(),
+				// "ibm_dl_gateway":                resourceIBMDLGatewayValidator(),
+				// "ibm_dl_provider_gateway":       resourceIBMDLProviderGatewayValidator(),
 				// "ibm_database":                          resourceIBMICDValidator(),
 				"ibm_function_package":   resourceIBMFuncPackageValidator(),
 				"ibm_function_action":    resourceIBMFuncActionValidator(),
@@ -976,10 +976,10 @@ func Validator() ValidatorDict {
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*ResourceValidator{
-				"ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
-				"ibm_is_snapshot":             dataSourceIBMISSnapshotValidator(),
-				"ibm_dl_offering_speeds":      datasourceIBMDLOfferingSpeedsValidator(),
-				"ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
+				"ibm_is_subnet":   dataSourceIBMISSubnetValidator(),
+				"ibm_is_snapshot": dataSourceIBMISSnapshotValidator(),
+				// "ibm_dl_offering_speeds":      datasourceIBMDLOfferingSpeedsValidator(),
+				// "ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
 				"ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				"ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),

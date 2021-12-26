@@ -15,12 +15,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/database"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/dnsservices"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/hpcs"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcemanager"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
 
@@ -454,21 +456,21 @@ func Provider() *schema.Provider {
 
 			// // Added for Direct Link
 
-			// "ibm_dl_gateways":          dataSourceIBMDLGateways(),
-			// "ibm_dl_offering_speeds":   dataSourceIBMDLOfferingSpeeds(),
-			// "ibm_dl_port":              dataSourceIBMDirectLinkPort(),
-			// "ibm_dl_ports":             dataSourceIBMDirectLinkPorts(),
-			// "ibm_dl_gateway":           dataSourceIBMDLGateway(),
-			// "ibm_dl_locations":         dataSourceIBMDLLocations(),
-			// "ibm_dl_routers":           dataSourceIBMDLRouters(),
-			// "ibm_dl_provider_ports":    dataSourceIBMDirectLinkProviderPorts(),
-			// "ibm_dl_provider_gateways": dataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_gateways":          directlink.DataSourceIBMDLGateways(),
+			"ibm_dl_offering_speeds":   directlink.DataSourceIBMDLOfferingSpeeds(),
+			"ibm_dl_port":              directlink.DataSourceIBMDirectLinkPort(),
+			"ibm_dl_ports":             directlink.DataSourceIBMDirectLinkPorts(),
+			"ibm_dl_gateway":           directlink.DataSourceIBMDLGateway(),
+			"ibm_dl_locations":         directlink.DataSourceIBMDLLocations(),
+			"ibm_dl_routers":           directlink.DataSourceIBMDLRouters(),
+			"ibm_dl_provider_ports":    directlink.DataSourceIBMDirectLinkProviderPorts(),
+			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
 
 			// //Added for Transit Gateway
-			// "ibm_tg_gateway":   dataSourceIBMTransitGateway(),
-			// "ibm_tg_gateways":  dataSourceIBMTransitGateways(),
-			// "ibm_tg_locations": dataSourceIBMTransitGatewaysLocations(),
-			// "ibm_tg_location":  dataSourceIBMTransitGatewaysLocation(),
+			"ibm_tg_gateway":   transitgateway.DataSourceIBMTransitGateway(),
+			"ibm_tg_gateways":  transitgateway.DataSourceIBMTransitGateways(),
+			"ibm_tg_locations": transitgateway.DataSourceIBMTransitGatewaysLocations(),
+			"ibm_tg_location":  transitgateway.DataSourceIBMTransitGatewaysLocation(),
 
 			// //Added for BSS Enterprise
 			// "ibm_enterprises":               dataSourceIbmEnterprises(),
@@ -789,12 +791,12 @@ func Provider() *schema.Provider {
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
 
 			// //Direct Link related resources
-			// "ibm_dl_gateway":            resourceIBMDLGateway(),
-			// "ibm_dl_virtual_connection": resourceIBMDLGatewayVC(),
-			// "ibm_dl_provider_gateway":   resourceIBMDLProviderGateway(),
+			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
+			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
+			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			// //Added for Transit Gateway
-			// "ibm_tg_gateway":    resourceIBMTransitGateway(),
-			// "ibm_tg_connection": resourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":    transitgateway.ResourceIBMTransitGateway(),
+			"ibm_tg_connection": transitgateway.ResourceIBMTransitGatewayConnection(),
 
 			// //Catalog related resources
 			// "ibm_cm_offering_instance": resourceIBMCmOfferingInstance(),
@@ -886,13 +888,13 @@ func Validator() validate.ValidatorDict {
 				// "ibm_container_vpc_worker_pool":           resourceContainerVPCWorkerPoolValidator(),
 				// "ibm_container_vpc_cluster":               resourceIBMContainerVpcClusterValidator(),
 				// "ibm_cr_namespace":                        resourceIBMCrNamespaceValidator(),
-				// "ibm_tg_gateway":                          resourceIBMTGValidator(),
+				"ibm_tg_gateway": transitgateway.ResourceIBMTGValidator(),
 				// "ibm_app_config_feature":                  resourceIbmAppConfigFeatureValidator(),
-				// "ibm_tg_connection":                       resourceIBMTransitGatewayConnectionValidator(),
-				// "ibm_dl_virtual_connection":               resourceIBMdlGatewayVCValidator(),
-				// "ibm_dl_gateway":                          resourceIBMDLGatewayValidator(),
-				// "ibm_dl_provider_gateway":                 resourceIBMDLProviderGatewayValidator(),
-				"ibm_database": database.ResourceIBMICDValidator(),
+				"ibm_tg_connection":         transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
+				"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVCValidator(),
+				"ibm_dl_gateway":            directlink.ResourceIBMDLGatewayValidator(),
+				"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGatewayValidator(),
+				"ibm_database":              database.ResourceIBMICDValidator(),
 				// "ibm_function_package":                    resourceIBMFuncPackageValidator(),
 				// "ibm_function_action":                     resourceIBMFuncActionValidator(),
 				// "ibm_function_rule":                       resourceIBMFuncRuleValidator(),
@@ -973,8 +975,8 @@ func Validator() validate.ValidatorDict {
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				// "ibm_is_subnet":               dataSourceIBMISSubnetValidator(),
 				// "ibm_is_snapshot":             dataSourceIBMISSnapshotValidator(),
-				// "ibm_dl_offering_speeds":      datasourceIBMDLOfferingSpeedsValidator(),
-				// "ibm_dl_routers":              datasourceIBMDLRoutersValidator(),
+				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
+				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
 				// "ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				// "ibm_is_volume":               dataSourceIBMISVolumeValidator(),
 				// "ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),

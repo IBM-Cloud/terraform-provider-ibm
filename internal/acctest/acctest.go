@@ -118,8 +118,8 @@ var image_cos_url_encrypted string
 var image_operating_system string
 
 // Transit Gateway cross account
-var tg_cross_network_account_id string
-var tg_cross_network_id string
+var Tg_cross_network_account_id string
+var Tg_cross_network_id string
 
 //Enterprise Management
 var account_to_be_imported string
@@ -639,12 +639,12 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
-	tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
-	if tg_cross_network_account_id == "" {
+	Tg_cross_network_account_id = os.Getenv("IBM_TG_CROSS_ACCOUNT_ID")
+	if Tg_cross_network_account_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_ACCOUNT_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
-	tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
-	if tg_cross_network_id == "" {
+	Tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
+	if Tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
 	account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")

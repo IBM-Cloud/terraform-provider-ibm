@@ -18,6 +18,7 @@ const (
 	CreatedAt          = "created_at"
 	isLbProfile        = "profile"
 	ProvisioningStatus = "provisioning_status"
+	ID                 = "id"
 )
 
 func dataSourceIBMISLBS() *schema.Resource {
