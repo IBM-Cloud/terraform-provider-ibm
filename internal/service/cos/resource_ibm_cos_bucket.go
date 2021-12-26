@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos
 
 import (
 	"context"
@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
@@ -50,7 +53,7 @@ func caseDiffSuppress(_, old, new string, _ *schema.ResourceData) bool {
 	return strings.ToUpper(old) == strings.ToUpper(new)
 }
 
-func resourceIBMCOSBucket() *schema.Resource {
+func ResourceIBMCOSBucket() *schema.Resource {
 	return &schema.Resource{
 		Read:          resourceIBMCOSBucketRead,
 		Create:        resourceIBMCOSBucketCreate,
@@ -77,7 +80,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				Description:  "resource instance ID",
-				ValidateFunc: validateRegexp(`^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`),
+				ValidateFunc: validate.ValidateRegexps(`^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`),
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -93,7 +96,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"single_site_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validateAllowedStringValue(singleSiteLocation),
+				ValidateFunc:  validate.ValidateAllowedStringValues(singleSiteLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "cross_region_location"},
 				Description:   "single site location info",
@@ -101,7 +104,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"region_location": {
 				Type:     schema.TypeString,
 				Optional: true,
-				//ValidateFunc:  validateAllowedStringValue(regionLocation),
+				//ValidateFunc:  validate.ValidateAllowedStringValues(regionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location"},
 				Description:   "Region Location info.",
@@ -109,7 +112,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"cross_region_location": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ValidateFunc:  validateAllowedStringValue(crossRegionLocation),
+				ValidateFunc:  validate.ValidateAllowedStringValues(crossRegionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "single_site_location"},
 				Description:   "Cros region location info",
@@ -117,16 +120,16 @@ func resourceIBMCOSBucket() *schema.Resource {
 			"storage_class": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue(storageClass),
+				ValidateFunc: validate.ValidateAllowedStringValues(storageClass),
 				ForceNew:     true,
 				Description:  "Storage class info",
 			},
 			"endpoint_type": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ValidateFunc:     validateAllowedStringValue([]string{"public", "private", "direct"}),
+				ValidateFunc:     validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				Description:      "public or private",
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 				Default:          "public",
 			},
 			"s3_endpoint_public": {
@@ -232,7 +235,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 						"days_after_initiation": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateAllowedRangeInt(1, 3650),
+							ValidateFunc: validate.ValidateAllowedRangeInt(1, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 					},
@@ -259,13 +262,13 @@ func resourceIBMCOSBucket() *schema.Resource {
 						"days": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 3650),
+							ValidateFunc: validate.ValidateAllowedRangeInt(0, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 						"type": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ValidateFunc:     validateAllowedStringValue([]string{"GLACIER", "ACCELERATED", "Glacier", "Accelerated", "glacier", "accelerated"}),
+							ValidateFunc:     validate.ValidateAllowedStringValues([]string{"GLACIER", "ACCELERATED", "Glacier", "Accelerated", "glacier", "accelerated"}),
 							DiffSuppressFunc: caseDiffSuppress,
 							Description:      "Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated",
 						},
@@ -299,13 +302,13 @@ func resourceIBMCOSBucket() *schema.Resource {
 						"date": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validBucketLifecycleTimestamp,
+							ValidateFunc: validate.ValidBucketLifecycleTimestamp,
 							Description:  "Specify a rule to expire the current version of objects in bucket after a specific date.",
 						},
 						"days": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateAllowedRangeInt(1, 3650),
+							ValidateFunc: validate.ValidateAllowedRangeInt(1, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 						"expired_object_delete_marker": {
@@ -327,21 +330,21 @@ func resourceIBMCOSBucket() *schema.Resource {
 						"default": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							ValidateFunc: validate.ValidateAllowedRangeInt(0, 365243),
 							Description:  "If an object is stored in the bucket without specifying a custom retention period.",
 							ForceNew:     false,
 						},
 						"maximum": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							ValidateFunc: validate.ValidateAllowedRangeInt(0, 365243),
 							Description:  "Maximum duration of time an object can be kept unmodified in the bucket.",
 							ForceNew:     false,
 						},
 						"minimum": {
 							Type:         schema.TypeInt,
 							Required:     true,
-							ValidateFunc: validateAllowedRangeInt(0, 365243),
+							ValidateFunc: validate.ValidateAllowedRangeInt(0, 365243),
 							Description:  "Minimum duration of time an object must be kept unmodified in the bucket",
 							ForceNew:     false,
 						},
@@ -398,7 +401,7 @@ func resourceIBMCOSBucket() *schema.Resource {
 						"noncurrent_days": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ValidateFunc: validateAllowedRangeInt(1, 3650),
+							ValidateFunc: validate.ValidateAllowedRangeInt(1, 3650),
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 					},
@@ -639,14 +642,14 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 
 func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	rsConClient, err := meta.(ClientSession).BluemixSession()
+	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
@@ -660,7 +663,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
 	apiKey := rsConClient.Config.BluemixAPIKey
 	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
 	}
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 	if iamAccessToken != "" {
@@ -673,7 +676,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
 			}, nil
 		}
-		s3Conf = aws.NewConfig().WithEndpoint(envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		s3Conf = aws.NewConfig().WithEndpoint(conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -809,7 +812,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	sess, err := meta.(ClientSession).CosConfigV1API()
+	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
 	}
@@ -901,7 +904,7 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	if hasChanged {
 		response, err := sess.UpdateBucketConfig(updateBucketConfigOptions)
 		if err != nil {
-			return fmt.Errorf("Error Update COS Bucket: %s\n%s", err, response)
+			return fmt.Errorf("[ERROR] Error Update COS Bucket: %s\n%s", err, response)
 		}
 	}
 
@@ -910,21 +913,21 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	rsConClient, err := meta.(ClientSession).BluemixSession()
+	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
 	if endpointType == "direct" {
 		apiEndpoint = directApiEndpoint
 	}
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
 		return err
@@ -999,7 +1002,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		Bucket: &bucketName,
 	}
 
-	sess, err := meta.(ClientSession).CosConfigV1API()
+	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
 	}
@@ -1009,19 +1012,19 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 	if err != nil {
-		return fmt.Errorf("Error in getting bucket info rule: %s\n%s", err, response)
+		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
 
 	if bucketPtr != nil {
 
 		if bucketPtr.Firewall != nil {
-			d.Set("allowed_ip", flattenStringList(bucketPtr.Firewall.AllowedIp))
+			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
 		}
 		if bucketPtr.ActivityTracking != nil {
-			d.Set("activity_tracking", flattenActivityTrack(bucketPtr.ActivityTracking))
+			d.Set("activity_tracking", flex.FlattenActivityTrack(bucketPtr.ActivityTracking))
 		}
 		if bucketPtr.MetricsMonitoring != nil {
-			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
+			d.Set("metrics_monitoring", flex.FlattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 		if bucketPtr.HardQuota != nil {
 			d.Set("hard_quota", bucketPtr.HardQuota)
@@ -1039,10 +1042,10 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if lifecycleptr != nil {
-		archiveRules := archiveRuleGet(lifecycleptr.Rules)
-		expireRules := expireRuleGet(lifecycleptr.Rules)
-		nc_expRules := nc_exp_RuleGet(lifecycleptr.Rules)
-		abort_mpuRules := abort_mpu_RuleGet(lifecycleptr.Rules)
+		archiveRules := flex.ArchiveRuleGet(lifecycleptr.Rules)
+		expireRules := flex.ExpireRuleGet(lifecycleptr.Rules)
+		nc_expRules := flex.Nc_exp_RuleGet(lifecycleptr.Rules)
+		abort_mpuRules := flex.Abort_mpu_RuleGet(lifecycleptr.Rules)
 		if len(archiveRules) > 0 {
 			d.Set("archive_rule", archiveRules)
 		}
@@ -1068,7 +1071,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if retentionptr != nil {
-		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		retentionRules := flex.RetentionRuleGet(retentionptr.ProtectionConfiguration)
 		if len(retentionRules) > 0 {
 			d.Set("retention_rule", retentionRules)
 		}
@@ -1084,7 +1087,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if versionPtr != nil {
-		versioningData := flattenCosObejctVersioning(versionPtr)
+		versioningData := flex.FlattenCosObejctVersioning(versionPtr)
 		if len(versioningData) > 0 {
 			d.Set("object_versioning", versioningData)
 		} else {
@@ -1096,7 +1099,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	rsConClient, err := meta.(ClientSession).BluemixSession()
+	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
@@ -1123,16 +1126,16 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, privateApiEndpoint, directApiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, privateApiEndpoint, directApiEndpoint := SelectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = privateApiEndpoint
 	}
 	if endpointType == "direct" {
 		apiEndpoint = directApiEndpoint
 	}
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
-		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
+		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
 	}
 	create := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
@@ -1186,7 +1189,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	rsConClient, _ := meta.(ClientSession).BluemixSession()
+	rsConClient, _ := meta.(conns.ClientSession).BluemixSession()
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := d.Get("resource_instance_id").(string)
 	var bLocation string
@@ -1204,16 +1207,16 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		apiType = "ssl"
 	}
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(apiType, bLocation)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(apiType, bLocation)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
 	if endpointType == "direct" {
 		apiEndpoint = directApiEndpoint
 	}
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
-		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
+		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
 	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -1279,7 +1282,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	var s3Conf *aws.Config
-	rsConClient, err := meta.(ClientSession).BluemixSession()
+	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return false, err
 	}
@@ -1287,16 +1290,16 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")
 	endpointType := parseBucketId(d.Id(), "endpointType")
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(parseBucketId(d.Id(), "apiType"), parseBucketId(d.Id(), "bLocation"))
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
 	if endpointType == "direct" {
 		apiEndpoint = directApiEndpoint
 	}
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
-		return false, fmt.Errorf("The endpoint doesn't exists for given endpoint type %s", endpointType)
+		return false, fmt.Errorf("[ERROR] The endpoint doesn't exists for given endpoint type %s", endpointType)
 	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -1337,7 +1340,7 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	return false, nil
 }
 
-func selectCosApi(apiType string, bLocation string) (string, string, string) {
+func SelectCosApi(apiType string, bLocation string) (string, string, string) {
 	if apiType == "crl" {
 		return fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.private.%s.cloud-object-storage.appdomain.cloud", bLocation), fmt.Sprintf("s3.direct.%s.cloud-object-storage.appdomain.cloud", bLocation)
 	}
@@ -1393,7 +1396,7 @@ func resourceExpiryValidate(_ context.Context, diff *schema.ResourceDiff, meta i
 				ctr++
 			}
 			if ctr > 1 {
-				return fmt.Errorf("The expiry 3 action elements (Days, Date, ExpiredObjectDeleteMarker) are all mutually exclusive. These can not be used with each other. Please set one expiry element on the same rule of expiration.")
+				return fmt.Errorf("[ERROR] The expiry 3 action elements (Days, Date, ExpiredObjectDeleteMarker) are all mutually exclusive. These can not be used with each other. Please set one expiry element on the same rule of expiration.")
 			}
 		}
 	}

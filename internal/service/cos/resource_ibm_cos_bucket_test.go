@@ -1,13 +1,19 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos_test
 
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
+
 	"time"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cos"
 
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
@@ -20,6 +26,28 @@ import (
 	"gotest.tools/assert"
 )
 
+var singleSiteLocation = []string{
+	"ams03", "che01", "hkg02", "mel01", "mex01",
+	"mil01", "mon01", "osl01", "par01", "sjc04", "sao01",
+	"seo01", "sng01", "tor01",
+}
+
+var regionLocation = []string{
+	"au-syd", "ca-tor", "eu-de", "eu-gb", "jp-tok", "jp-osa", "us-east", "us-south", "br-sao",
+}
+
+var crossRegionLocation = []string{
+	"us", "eu", "ap",
+}
+
+var storageClass = []string{
+	"standard", "vault", "cold", "smart",
+}
+
+var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
+var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,8}$")
+var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{4,8}$")
+
 func TestAccIBMCosBucket_Basic(t *testing.T) {
 
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -29,11 +57,11 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 	bucketRegionType := "cross_region_location"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -42,7 +70,7 @@ func TestAccIBMCosBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_updateWithSameName(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -64,11 +92,11 @@ func TestAccIBMCosBucket_Direct(t *testing.T) {
 	bucketRegionType := "cross_region_location"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_direct(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -91,11 +119,11 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 	bucketRegionType := "single_site_location"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
@@ -106,7 +134,7 @@ func TestAccIBMCosBucket_ActivityTracker_Monitor(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket2", "metrics_monitoring.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_activityTracker_monitor(cosServiceName, activityServiceName, monitorServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance2", "ibm_cos_bucket.bucket2", bucketRegionType, bucketRegion, bucketName),
@@ -140,11 +168,11 @@ func TestAccIBMCosBucket_Archive_Expiration(t *testing.T) {
 	expDaysUpdate := 2
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_archive_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archiveDays, ruleType, exp_ruleId, exp_enable, expireDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -155,7 +183,7 @@ func TestAccIBMCosBucket_Archive_Expiration(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_archive_expire_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archDaysUpdate, ruleType, exp_ruleId, exp_enable, expDaysUpdate, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -166,7 +194,7 @@ func TestAccIBMCosBucket_Archive_Expiration(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.days", fmt.Sprintf("%d", expDaysUpdate)),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_archive_expire(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, arch_ruleId, arch_enable, archiveDays, ruleType, exp_ruleId, exp_enable, expireDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -195,11 +223,11 @@ func TestAccIBMCosBucket_Archive(t *testing.T) {
 	archiveDaysUpdate := 3
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -209,7 +237,7 @@ func TestAccIBMCosBucket_Archive(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_archive_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDaysUpdate, ruleType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -219,7 +247,7 @@ func TestAccIBMCosBucket_Archive(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "archive_rule.0.days", fmt.Sprintf("%d", archiveDaysUpdate)),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_archive(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, archiveDays, ruleType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -247,11 +275,11 @@ func TestAccIBMCosBucket_Expiredays(t *testing.T) {
 	expireDaysUpdate := 3
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_expiredays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -261,7 +289,7 @@ func TestAccIBMCosBucket_Expiredays(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_expire_updateDays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDaysUpdate, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -271,7 +299,7 @@ func TestAccIBMCosBucket_Expiredays(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.days", fmt.Sprintf("%d", expireDaysUpdate)),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_expiredays(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -299,11 +327,11 @@ func TestAccIBMCosBucket_Expiredate(t *testing.T) {
 	expireDateUpdate := "2021-11-30"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_expiredate(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDate, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -313,7 +341,7 @@ func TestAccIBMCosBucket_Expiredate(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_expire_updateDate(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDateUpdate, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -323,7 +351,7 @@ func TestAccIBMCosBucket_Expiredate(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.date", expireDateUpdate),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_expiredate(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expireDate, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -350,11 +378,11 @@ func TestAccIBMCosBucket_Expireddeletemarker(t *testing.T) {
 	expiredObjectDeleteMarker := false
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_expiredeletemarker(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, expiredObjectDeleteMarker, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -381,11 +409,11 @@ func TestAccIBMCosBucket_AbortIncompeleteMPU(t *testing.T) {
 	daysAfterInitiation := 1
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_abortincompletempu(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, daysAfterInitiation, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -395,7 +423,7 @@ func TestAccIBMCosBucket_AbortIncompeleteMPU(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "abort_incomplete_multipart_upload_days.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_abortincompletempu(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, daysAfterInitiation, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -422,11 +450,11 @@ func TestAccIBMCosBucket_noncurrentversion(t *testing.T) {
 	noncurrentDays := 1
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_noncurrentversion(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, noncurrentDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -436,7 +464,7 @@ func TestAccIBMCosBucket_noncurrentversion(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "noncurrent_version_expiration.#", "1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_update_noncurrentversion(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, ruleId, enable, noncurrentDays, prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -462,11 +490,11 @@ func TestAccIBMCosBucket_Retention(t *testing.T) {
 	minimum_retention := 0
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_retention(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, default_retention, maximum_retention, minimum_retention),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -490,11 +518,11 @@ func TestAccIBMCosBucket_Object_Versioning(t *testing.T) {
 	enable := true
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_object_versioning(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, enable),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -518,11 +546,11 @@ func TestAccIBMCosBucket_Hard_Quota(t *testing.T) {
 	hardQuota := 1024
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_hard_quota(cosServiceName, bucketName, bucketRegionType, bucketRegion, bucketClass, hardQuota),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -544,11 +572,11 @@ func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 	bucketRegionType := "cross_region_location"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -557,7 +585,7 @@ func TestAccIBMCosBucket_Smart_Type(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_updateWithSameName(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -578,11 +606,11 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 	bucketRegionType := "cross_region_location"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMCosBucket_basic(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
@@ -591,7 +619,7 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_cos_bucket.bucket",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -617,7 +645,7 @@ func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 		}
 	}
 
-	rsContClient, err := testAccProvider.Meta().(ClientSession).BluemixSession()
+	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
@@ -680,9 +708,9 @@ func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype s
 			rt = "crl"
 		}
 
-		apiEndpoint, _, _ := selectCosApi(rt, region)
+		apiEndpoint, _, _ := cos.SelectCosApi(rt, region)
 
-		rsContClient, err := testAccProvider.Meta().(ClientSession).BluemixSession()
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixSession()
 		if err != nil {
 			return err
 		}

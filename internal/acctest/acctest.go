@@ -22,7 +22,7 @@ var CisDomainTest string
 var CisInstance string
 var CisResourceGroup string
 var cloudShellAccountID string
-var cosCRN string
+var CosCRN string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
@@ -226,9 +226,9 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CIS_RESOURCE_GROUP with the resource group for the CIS Instance ")
 	}
 
-	cosCRN = os.Getenv("IBM_COS_CRN")
-	if cosCRN == "" {
-		cosCRN = ""
+	CosCRN = os.Getenv("IBM_COS_CRN")
+	if CosCRN == "" {
+		CosCRN = ""
 		fmt.Println("[WARN] Set the environment variable IBM_COS_CRN with a VALID COS instance CRN for testing ibm_cos_* resources")
 	}
 
@@ -819,9 +819,9 @@ func testAccPreCheckIAMTrustedProfile(t *testing.T) {
 	}
 }
 
-func testAccPreCheckCOS(t *testing.T) {
+func TestAccPreCheckCOS(t *testing.T) {
 	TestAccPreCheck(t)
-	if cosCRN == "" {
+	if CosCRN == "" {
 		t.Fatal("IBM_COS_CRN must be set for acceptance tests")
 	}
 }

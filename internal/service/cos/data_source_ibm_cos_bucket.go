@@ -1,13 +1,16 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
@@ -19,7 +22,7 @@ import (
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
 
-func dataSourceIBMCosBucket() *schema.Resource {
+func DataSourceIBMCosBucket() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMCosBucketRead,
 
@@ -30,7 +33,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			},
 			"bucket_type": {
 				Type:         schema.TypeString,
-				ValidateFunc: validateAllowedStringValue(bucketTypes),
+				ValidateFunc: validate.ValidateAllowedStringValues(bucketTypes),
 				Required:     true,
 			},
 			"bucket_region": {
@@ -44,7 +47,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "direct"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				Description:  "public or private",
 				Default:      "public",
 			},
@@ -316,7 +319,7 @@ func dataSourceIBMCosBucket() *schema.Resource {
 
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	rsConClient, err := meta.(ClientSession).BluemixSession()
+	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
 	}
@@ -325,16 +328,16 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := selectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
 	if endpointType == "private" {
 		apiEndpoint = apiEndpointPrivate
 	}
 	if endpointType == "direct" {
 		apiEndpoint = directApiEndpoint
 	}
-	apiEndpoint = envFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
+	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
-		return fmt.Errorf("The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
+		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
 	}
 	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
 	if err != nil {
@@ -409,7 +412,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		Bucket: &bucketName,
 	}
 
-	sess, err := meta.(ClientSession).CosConfigV1API()
+	sess, err := meta.(conns.ClientSession).CosConfigV1API()
 	if err != nil {
 		return err
 	}
@@ -420,19 +423,19 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 
 	if err != nil {
-		return fmt.Errorf("Error in getting bucket info rule: %s\n%s", err, response)
+		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
 
 	if bucketPtr != nil {
 
 		if bucketPtr.Firewall != nil {
-			d.Set("allowed_ip", flattenStringList(bucketPtr.Firewall.AllowedIp))
+			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
 		}
 		if bucketPtr.ActivityTracking != nil {
-			d.Set("activity_tracking", flattenActivityTrack(bucketPtr.ActivityTracking))
+			d.Set("activity_tracking", flex.FlattenActivityTrack(bucketPtr.ActivityTracking))
 		}
 		if bucketPtr.MetricsMonitoring != nil {
-			d.Set("metrics_monitoring", flattenMetricsMonitor(bucketPtr.MetricsMonitoring))
+			d.Set("metrics_monitoring", flex.FlattenMetricsMonitor(bucketPtr.MetricsMonitoring))
 		}
 		if bucketPtr.HardQuota != nil {
 			d.Set("hard_quota", bucketPtr.HardQuota)
@@ -454,10 +457,10 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	if lifecycleptr != nil {
 		if len(lifecycleptr.Rules) > 0 {
-			archiveRules := archiveRuleGet(lifecycleptr.Rules)
-			expireRules := expireRuleGet(lifecycleptr.Rules)
-			nc_expRules := nc_exp_RuleGet(lifecycleptr.Rules)
-			abort_mpuRules := abort_mpu_RuleGet(lifecycleptr.Rules)
+			archiveRules := flex.ArchiveRuleGet(lifecycleptr.Rules)
+			expireRules := flex.ExpireRuleGet(lifecycleptr.Rules)
+			nc_expRules := flex.Nc_exp_RuleGet(lifecycleptr.Rules)
+			abort_mpuRules := flex.Abort_mpu_RuleGet(lifecycleptr.Rules)
 			if len(archiveRules) > 0 {
 				d.Set("archive_rule", archiveRules)
 			}
@@ -484,7 +487,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if retentionptr != nil {
-		retentionRules := retentionRuleGet(retentionptr.ProtectionConfiguration)
+		retentionRules := flex.RetentionRuleGet(retentionptr.ProtectionConfiguration)
 		if len(retentionRules) > 0 {
 			d.Set("retention_rule", retentionRules)
 		}
@@ -500,7 +503,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 	if versionPtr != nil {
-		versioningData := flattenCosObejctVersioning(versionPtr)
+		versioningData := flex.FlattenCosObejctVersioning(versionPtr)
 		if len(versioningData) > 0 {
 			d.Set("object_versioning", versioningData)
 		}

@@ -647,7 +647,7 @@ func expandLimits(l []interface{}) *whisk.Limits {
 	return obj
 }
 
-func flattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interface{} {
+func FlattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interface{} {
 
 	att := make(map[string]interface{})
 	if in != nil {
@@ -664,7 +664,7 @@ func flattenActivityTrack(in *resourceconfigurationv1.ActivityTracking) []interf
 	return []interface{}{att}
 }
 
-func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []interface{} {
+func FlattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []interface{} {
 	att := make(map[string]interface{})
 	if in != nil {
 		if in.UsageMetricsEnabled != nil {
@@ -680,7 +680,7 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 	return []interface{}{att}
 }
 
-func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
+func ArchiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
 		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire or non current version or abort incomplete multipart upload
@@ -715,7 +715,7 @@ func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	return rules
 }
 
-func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
+func ExpireRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
 		if r.Expiration != nil && r.Transitions == nil {
@@ -762,7 +762,7 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 
 }
 
-func nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
+func Nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
 		if r.Expiration == nil && r.AbortIncompleteMultipartUpload == nil && r.Transitions == nil {
@@ -791,7 +791,7 @@ func nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
 	return rules
 }
 
-func abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
+func Abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
 		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.Transitions == nil {
@@ -820,7 +820,7 @@ func abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
 	return rules
 }
 
-func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
+func RetentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	rules := make([]interface{}, 0, 1)
 	if in != nil && in.Status != nil && *in.Status == "COMPLIANCE" {
 		protectConfig := make(map[string]interface{})
@@ -841,7 +841,7 @@ func retentionRuleGet(in *s3.ProtectionConfiguration) []interface{} {
 	return rules
 }
 
-func flattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
+func FlattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} {
 	versioning := make([]interface{}, 0, 1)
 	if in != nil {
 		if in.Status != nil {

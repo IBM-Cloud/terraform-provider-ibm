@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos
 
 import (
 	"bytes"
@@ -11,13 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMCosBucketObject() *schema.Resource {
+func DataSourceIBMCosBucketObject() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMCosBucketObjectRead,
 
@@ -50,7 +52,7 @@ func dataSourceIBMCosBucketObject() *schema.Resource {
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"public", "private", "direct"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
 				Description:  "COS endpoint type: public, private, direct",
 				Default:      "public",
 			},
@@ -89,7 +91,7 @@ func dataSourceIBMCosBucketObjectRead(ctx context.Context, d *schema.ResourceDat
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
 
-	bxSession, err := m.(ClientSession).BluemixSession()
+	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/database"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/dnsservices"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/globaltagging"
@@ -275,8 +276,8 @@ func Provider() *schema.Provider {
 			// "ibm_container_storage_attachment":       dataSourceIBMContainerVpcWorkerVolumeAttachment(),
 			// "ibm_cr_namespaces":                      dataIBMContainerRegistryNamespaces(),
 			// "ibm_cloud_shell_account_settings":       dataSourceIBMCloudShellAccountSettings(),
-			// "ibm_cos_bucket":                         dataSourceIBMCosBucket(),
-			// "ibm_cos_bucket_object":                  dataSourceIBMCosBucketObject(),
+			"ibm_cos_bucket":        cos.DataSourceIBMCosBucket(),
+			"ibm_cos_bucket_object": cos.DataSourceIBMCosBucketObject(),
 			// "ibm_dns_domain_registration":            dataSourceIBMDNSDomainRegistration(),
 			// "ibm_dns_domain":                         dataSourceIBMDNSDomain(),
 			// "ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
@@ -631,8 +632,8 @@ func Provider() *schema.Provider {
 			// "ibm_cr_retention_policy":                            resourceIBMCrRetentionPolicy(),
 			// "ibm_ob_logging":                                     resourceIBMObLogging(),
 			// "ibm_ob_monitoring":                                  resourceIBMObMonitoring(),
-			// "ibm_cos_bucket":                                     resourceIBMCOSBucket(),
-			// "ibm_cos_bucket_object":                              resourceIBMCOSBucketObject(),
+			"ibm_cos_bucket":        cos.ResourceIBMCOSBucket(),
+			"ibm_cos_bucket_object": cos.ResourceIBMCOSBucketObject(),
 			// "ibm_dns_domain":                                     resourceIBMDNSDomain(),
 			// "ibm_dns_domain_registration_nameservers":            resourceIBMDNSDomainRegistrationNameservers(),
 			// "ibm_dns_secondary":                                  resourceIBMDNSSecondary(),

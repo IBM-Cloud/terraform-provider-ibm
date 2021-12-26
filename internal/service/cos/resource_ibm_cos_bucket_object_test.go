@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cos_test
 
 import (
 	"encoding/base64"
@@ -9,19 +9,21 @@ import (
 	"io/ioutil"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMCOSBucketObject_basic(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
-	instanceCRN := cosCRN
+	instanceCRN := acc.CosCRN
 	objectBody := "Acceptance Testing"
 	objectFile := "test-fixtures/cosObject.json"
 	objectFileBody, _ := ioutil.ReadFile(objectFile)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckCOS(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIBMCOSBucketObjectConfig_plaintext(name, instanceCRN, objectBody),
