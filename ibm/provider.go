@@ -284,6 +284,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_users":                          dataSourceIBMIAMUsers(),
 			"ibm_iam_roles":                          datasourceIBMIAMRole(),
 			"ibm_iam_user_policy":                    dataSourceIBMIAMUserPolicy(),
+			"ibm_iam_authorization_policies":         dataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                   dataSourceIBMIAMUserProfile(),
 			"ibm_iam_service_id":                     dataSourceIBMIAMServiceID(),
 			"ibm_iam_service_policy":                 dataSourceIBMIAMServicePolicy(),
@@ -429,6 +430,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_cloud_connections":  dataSourceIBMPICloudConnections(),
 			"ibm_pi_sap_profiles":       dataSourceIBMPISAPProfiles(),
 			"ibm_pi_sap_profile":        dataSourceIBMPISAPProfile(),
+			"ibm_pi_console_languages":  dataSourceIBMPIInstanceConsoleLanguages(),
 
 			// Added for private dns zones
 
@@ -762,6 +764,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_ike_policy":          resourceIBMPIIKEPolicy(),
 			"ibm_pi_ipsec_policy":        resourceIBMPIIPSecPolicy(),
 			"ibm_pi_vpn_connection":      resourceIBMPIVPNConnection(),
+			"ibm_pi_console_language":    resourceIBMPIInstanceConsoleLanguage(),
 
 			//Private DNS related resources
 			"ibm_dns_zone":              resourceIBMPrivateDNSZone(),

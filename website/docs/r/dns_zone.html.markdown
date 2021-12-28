@@ -27,7 +27,7 @@ resource "ibm_dns_zone" "pdns-1-zone" {
 Review the argument reference that you can specify for your resource. 
 
 - `description` - (Optional, String) The description of the DNS zone.
-- `instance_id` - (Required, String) The ID of the IBM Cloud DNS service instance where you want to create a DNS zone.
+- `instance_id` - (Required, String) The GUID of the IBM Cloud DNS service instance where you want to create a DNS zone.
 - `name` - (Required, String) The name of the DNS zone that you want to create. 
 - `label` - (Optional, String) The label of the DNS zone. 
 
