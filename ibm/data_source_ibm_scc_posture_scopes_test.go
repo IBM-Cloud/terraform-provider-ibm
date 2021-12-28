@@ -10,22 +10,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMSccPostureScopesDataSourceBasic(t *testing.T) {
+func TestAccIBMSccPostureListScopesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopesDataSourceConfigBasic(),
+				Config: testAccCheckIBMSccPostureListScopesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "offset"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "limit"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "total_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "first.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "last.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "scopes.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMSccPostureScopesDataSourceConfigBasic() string {
+func testAccCheckIBMSccPostureListScopesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_scopes" "list_scopes" {
 		}

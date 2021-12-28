@@ -504,11 +504,14 @@ func Provider() *schema.Provider {
 			"ibm_scc_si_occurrences":    dataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
-			"ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
-			"ibm_scc_posture_latest_scans":   dataSourceIBMSccPostureLatestScans(),
-			"ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
-			"ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
-			"ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+			"ibm_scc_posture_scopes":            dataSourceIBMSccPostureScopes(),
+			"ibm_scc_posture_latest_scans":      dataSourceIBMSccPostureLatestScans(),
+			"ibm_scc_posture_profiles":          dataSourceIBMSccPostureProfiles(),
+			"ibm_scc_posture_scan_summary":      dataSourceIBMSccPostureScansSummary(),
+			"ibm_scc_posture_scan_summaries":    dataSourceIBMSccPostureScanSummaries(),
+			"ibm_scc_posture_profile":           dataSourceIBMSccPostureProfileDetails(),
+			"ibm_scc_posture_group_profile":     dataSourceIBMSccPostureGroupProfileDetails(),
+			"ibm_scc_posture_scope_correlation": dataSourceIBMSccPostureScopeCorrelation(),
 
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": dataSourceIBMCbrZone(),
@@ -826,6 +829,11 @@ func Provider() *schema.Provider {
 			"ibm_scc_account_settings": resourceIBMSccAccountSettings(),
 			"ibm_scc_si_occurrence":    resourceIBMSccSiOccurrence(),
 
+			//Security and Compliance Center - PostureManagement
+			"ibm_scc_posture_collector":  resourceIBMSccPostureCollectors(),
+			"ibm_scc_posture_scope":      resourceIBMSccPostureScopes(),
+			"ibm_scc_posture_credential": resourceIBMSccPostureCredentials(),
+
 			// Added for Context Based Restrictions
 			"ibm_cbr_zone": resourceIBMCbrZone(),
 			"ibm_cbr_rule": resourceIBMCbrRule(),
@@ -953,6 +961,9 @@ func Validator() ValidatorDict {
 				"ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
 				"ibm_cbr_zone":                            resourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            resourceIBMCbrRuleValidator(),
+				"ibm_scc_posture_collector":               resourceIBMSccPostureCollectorsValidator(),
+				"ibm_scc_posture_scope":                   resourceIBMSccPostureScopesValidator(),
+				"ibm_scc_posture_credential":              resourceIBMSccPostureCredentialsValidator(),
 
 				// Added for Event Notifications
 				"ibm_en_destination": resourceIBMEnDestinationValidator(),
