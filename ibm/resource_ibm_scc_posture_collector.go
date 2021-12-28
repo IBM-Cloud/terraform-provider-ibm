@@ -113,7 +113,7 @@ func resourceIBMSccPostureCollectorsCreate(context context.Context, d *schema.Re
 	}
 
 	createCollectorOptions := &posturemanagementv2.CreateCollectorOptions{}
-	createCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	createCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	createCollectorOptions.SetName(d.Get("name").(string))
 	createCollectorOptions.SetIsPublic(d.Get("is_public").(bool))
@@ -146,7 +146,7 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 	}
 
 	listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-	listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	collectorList, response, err := postureManagementClient.ListCollectorsWithContext(context, listCollectorsOptions)
 	if err != nil {
@@ -168,7 +168,7 @@ func resourceIBMSccPostureCollectorsUpdate(context context.Context, d *schema.Re
 	}
 
 	updateCollectorOptions := &posturemanagementv2.UpdateCollectorOptions{}
-	updateCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	updateCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	updateCollectorOptions.SetID(d.Id())
 
@@ -193,7 +193,7 @@ func resourceIBMSccPostureCollectorsDelete(context context.Context, d *schema.Re
 	}
 
 	deleteCollectorOptions := &posturemanagementv2.DeleteCollectorOptions{}
-	deleteCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	deleteCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	deleteCollectorOptions.SetID(d.Id())
 

@@ -101,7 +101,7 @@ func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schem
 	}
 
 	getProfileOptions := &posturemanagementv2.GetProfileOptions{}
-	getProfileOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	getProfileOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	getProfileOptions.SetID(d.Get("id").(string))
 	getProfileOptions.SetProfileType(d.Get("profile_type").(string))

@@ -202,7 +202,7 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	}
 
 	scansSummaryOptions := &posturemanagementv2.ScansSummaryOptions{}
-	scansSummaryOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	scansSummaryOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	scansSummaryOptions.SetScanID(d.Get("scan_id").(string))
 	scansSummaryOptions.SetProfileID(d.Get("profile_id").(string))

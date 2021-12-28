@@ -225,7 +225,7 @@ func dataSourceIBMSccPostureListLatestScansRead(context context.Context, d *sche
 	}
 
 	listLatestScansOptions := &posturemanagementv2.ListLatestScansOptions{}
-	listLatestScansOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listLatestScansOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	var scanList *posturemanagementv2.ScanList
 	var offset int64

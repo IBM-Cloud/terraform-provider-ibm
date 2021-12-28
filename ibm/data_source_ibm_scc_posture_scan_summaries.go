@@ -298,7 +298,7 @@ func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema
 	}
 
 	scanSummariesOptions := &posturemanagementv2.ScanSummariesOptions{}
-	scanSummariesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	scanSummariesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	scanSummariesOptions.SetReportSettingID(d.Get("report_setting_id").(string))
 

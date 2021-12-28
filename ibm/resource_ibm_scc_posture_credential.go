@@ -146,7 +146,7 @@ func resourceIBMSccPostureCredentialsCreate(context context.Context, d *schema.R
 	}
 
 	createCredentialOptions := &posturemanagementv2.CreateCredentialOptions{}
-	createCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	createCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	createCredentialOptions.SetEnabled(d.Get("enabled").(bool))
 	createCredentialOptions.SetType(d.Get("type").(string))
@@ -205,7 +205,7 @@ func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.Res
 	}
 
 	listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-	listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	credentialList, response, err := postureManagementClient.ListCredentialsWithContext(context, listCredentialsOptions)
 	if err != nil {
@@ -246,7 +246,7 @@ func resourceIBMSccPostureCredentialsUpdate(context context.Context, d *schema.R
 	}
 
 	updateCredentialOptions := &posturemanagementv2.UpdateCredentialOptions{}
-	updateCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	updateCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	updateCredentialOptions.SetID(d.Id())
 
@@ -282,7 +282,7 @@ func resourceIBMSccPostureCredentialsDelete(context context.Context, d *schema.R
 	}
 
 	deleteCredentialOptions := &posturemanagementv2.DeleteCredentialOptions{}
-	deleteCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	deleteCredentialOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	deleteCredentialOptions.SetID(d.Id())
 

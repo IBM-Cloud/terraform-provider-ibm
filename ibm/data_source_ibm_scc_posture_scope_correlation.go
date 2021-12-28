@@ -52,7 +52,7 @@ func dataSourceIBMSccPostureScopeCorrelationRead(context context.Context, d *sch
 	}
 
 	getCorrelationIDOptions := &posturemanagementv2.GetCorrelationIDOptions{}
-	getCorrelationIDOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	getCorrelationIDOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	getCorrelationIDOptions.SetCorrelationID(d.Get("correlation_id").(string))
 

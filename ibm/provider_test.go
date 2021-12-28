@@ -130,20 +130,15 @@ var scc_si_account string
 var scc_posture_scope_id string
 var scc_posture_scan_id string
 var scc_posture_profile_id string
-
-//Security and Compliance Center, Posture Management v2
-var scc_posture_v2_scope_id string
-var scc_posture_v2_scan_id string
-var scc_posture_v2_group_profile_id string
-var scc_posture_v2_profile_id string
-var scc_posture_v2_correlation_id string
-var scc_posture_v2_report_setting_id string
-var scc_posture_v2_profile_id_scansummary string
-var scc_posture_v2_scan_id_scansummary string
-var scc_posture_v2_credential_id_scope string
-var scc_posture_v2_credential_id_scope_update string
-var scc_posture_v2_collector_id_scope []string
-var scc_posture_v2_collector_id_scope_update []string
+var scc_posture_group_profile_id string
+var scc_posture_correlation_id string
+var scc_posture_report_setting_id string
+var scc_posture_profile_id_scansummary string
+var scc_posture_scan_id_scansummary string
+var scc_posture_credential_id_scope string
+var scc_posture_credential_id_scope_update string
+var scc_posture_collector_id_scope []string
+var scc_posture_collector_id_scope_update []string
 
 //ROKS Cluster
 var clusterName string
@@ -710,6 +705,51 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
+	scc_posture_group_profile_id = os.Getenv("SCC_POSTURE_GROUP_PROFILE_ID")
+	if scc_posture_group_profile_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_GROUP_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_correlation_id = os.Getenv("SCC_POSTURE_CORRELATION_ID")
+	if scc_posture_correlation_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CORRELATION_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_report_setting_id = os.Getenv("SCC_POSTURE_REPORT_SETTING_ID")
+	if scc_posture_report_setting_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_REPORT_SETTING_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_profile_id_scansummary = os.Getenv("SCC_POSTURE_PROFILE_ID_SCANSUMMARY")
+	if scc_posture_profile_id_scansummary == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_scan_id_scansummary = os.Getenv("SCC_POSTURE_SCAN_ID_SCANSUMMARY")
+	if scc_posture_scan_id_scansummary == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_credential_id_scope = os.Getenv("SCC_POSTURE_CREDENTIAL_ID_SCOPE")
+	if scc_posture_credential_id_scope == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_credential_id_scope_update = os.Getenv("SCC_POSTURE_CREDENTIAL_ID_SCOPE_UPDATE")
+	if scc_posture_credential_id_scope_update == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_collector_id_scope = []string{os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE")}
+	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE") == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	scc_posture_collector_id_scope_update = []string{os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE")}
+	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE") == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
 	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
 	if cloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
@@ -735,65 +775,6 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 
-	scc_posture_v2_scope_id = os.Getenv("SCC_POSTURE_V2_SCOPE_ID")
-	if scc_posture_v2_scope_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_scan_id = os.Getenv("SCC_POSTURE_V2_SCAN_ID")
-	if scc_posture_v2_scan_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_group_profile_id = os.Getenv("SCC_POSTURE_V2_GROUP_PROFILE_ID")
-	if scc_posture_v2_group_profile_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_GROUP_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_profile_id = os.Getenv("SCC_POSTURE_V2_PROFILE_ID")
-	if scc_posture_v2_profile_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_correlation_id = os.Getenv("SCC_POSTURE_V2_CORRELATION_ID")
-	if scc_posture_v2_correlation_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_CORRELATION_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_report_setting_id = os.Getenv("SCC_POSTURE_V2_REPORT_SETTING_ID")
-	if scc_posture_v2_report_setting_id == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_REPORT_SETTING_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_profile_id_scansummary = os.Getenv("SCC_POSTURE_V2_PROFILE_ID_SCANSUMMARY")
-	if scc_posture_v2_profile_id_scansummary == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_PROFILE_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_scan_id_scansummary = os.Getenv("SCC_POSTURE_V2_SCAN_ID_SCANSUMMARY")
-	if scc_posture_v2_scan_id_scansummary == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_SCAN_ID_SCANSUMMARY for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_credential_id_scope = os.Getenv("SCC_POSTURE_V2_CREDENTIAL_ID_SCOPE")
-	if scc_posture_v2_credential_id_scope == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_CREDENTIAL_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_credential_id_scope_update = os.Getenv("SCC_POSTURE_V2_CREDENTIAL_ID_SCOPE_UPDATE")
-	if scc_posture_v2_credential_id_scope_update == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_CREDENTIAL_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_collector_id_scope = []string{os.Getenv("SCC_POSTURE_V2_COLLECTOR_ID_SCOPE")}
-	if os.Getenv("SCC_POSTURE_V2_COLLECTOR_ID_SCOPE") == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_COLLECTOR_ID_SCOPE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
-
-	scc_posture_v2_collector_id_scope_update = []string{os.Getenv("SCC_POSTURE_V2_COLLECTOR_ID_SCOPE_UPDATE")}
-	if os.Getenv("SCC_POSTURE_V2_COLLECTOR_ID_SCOPE_UPDATE") == "" {
-		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_V2_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
-	}
 }
 
 var testAccProviders map[string]*schema.Provider

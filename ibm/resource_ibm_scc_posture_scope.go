@@ -108,7 +108,7 @@ func resourceIBMSccPostureScopesCreate(context context.Context, d *schema.Resour
 	}
 
 	createScopeOptions := &posturemanagementv2.CreateScopeOptions{}
-	createScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	createScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	createScopeOptions.SetName(d.Get("name").(string))
 	createScopeOptions.SetDescription(d.Get("description").(string))
@@ -134,7 +134,7 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 	}
 
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
 	if err != nil {
@@ -157,7 +157,7 @@ func resourceIBMSccPostureScopesUpdate(context context.Context, d *schema.Resour
 	}
 
 	updateScopeDetailsOptions := &posturemanagementv2.UpdateScopeDetailsOptions{}
-	updateScopeDetailsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	updateScopeDetailsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	hasChange := false
 
@@ -190,7 +190,7 @@ func resourceIBMSccPostureScopesDelete(context context.Context, d *schema.Resour
 	}
 
 	deleteScopeOptions := &posturemanagementv2.DeleteScopeOptions{}
-	deleteScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	deleteScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	deleteScopeOptions.SetID(d.Id())
 

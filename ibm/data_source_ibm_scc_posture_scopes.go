@@ -331,7 +331,7 @@ func dataSourceIBMSccPostureListScopesRead(context context.Context, d *schema.Re
 	}
 
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
 	if err != nil {

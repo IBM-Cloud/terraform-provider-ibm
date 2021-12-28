@@ -16,7 +16,7 @@ func TestAccIBMSccPostureScopeCorrelationDataSourceBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopeCorrelationDataSourceConfigBasic(scc_posture_v2_correlation_id),
+				Config: testAccCheckIBMSccPostureScopeCorrelationDataSourceConfigBasic(scc_posture_correlation_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scope_correlation.scope_correlation", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scope_correlation.scope_correlation", "correlation_id"),

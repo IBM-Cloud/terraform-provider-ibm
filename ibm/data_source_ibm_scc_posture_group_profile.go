@@ -158,7 +158,7 @@ func dataSourceIBMSccPostureGroupProfileDetailsRead(context context.Context, d *
 	getProfileControlsOptions := &posturemanagementv2.GetProfileControlsOptions{}
 
 	getProfileControlsOptions.SetProfileID(d.Get("profile_id").(string))
-	getProfileControlsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	getProfileControlsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	var controlList *posturemanagementv2.ControlList
 	var offset int64

@@ -141,7 +141,7 @@ func testAccCheckIBMSccPostureCollectorsExists(n string, obj posturemanagementv2
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 		newCollector, _, err := postureManagementClient.ListCollectors(listCollectorsOptions)
 		if err != nil {
@@ -164,7 +164,7 @@ func testAccCheckIBMSccPostureCollectorsDestroy(s *terraform.State) error {
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListCollectors(listCollectorsOptions)

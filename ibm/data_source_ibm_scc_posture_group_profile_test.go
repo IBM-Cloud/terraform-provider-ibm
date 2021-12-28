@@ -16,7 +16,7 @@ func TestAccIBMSccPostureGroupProfileDetailsDataSourceBasic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureGroupProfileDetailsDataSourceConfigBasic(scc_posture_v2_group_profile_id),
+				Config: testAccCheckIBMSccPostureGroupProfileDetailsDataSourceConfigBasic(scc_posture_group_profile_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_group_profile.group_profile_details", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_group_profile.group_profile_details", "profile_id"),

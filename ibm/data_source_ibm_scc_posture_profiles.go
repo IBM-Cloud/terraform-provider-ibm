@@ -152,7 +152,7 @@ func dataSourceIBMSccPostureListProfilesRead(context context.Context, d *schema.
 	}
 
 	listProfilesOptions := &posturemanagementv2.ListProfilesOptions{}
-	listProfilesOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+	listProfilesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 	var profileList *posturemanagementv2.ProfileList
 	var offset int64

@@ -99,7 +99,7 @@ func testAccCheckIBMSccPostureCredentialsExists(n string, obj posturemanagementv
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 		newCredential, _, err := postureManagementClient.ListCredentials(listCredentialsOptions)
 		if err != nil {
@@ -122,7 +122,7 @@ func testAccCheckIBMSccPostureCredentialsDestroy(s *terraform.State) error {
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_V2_ACCOUNT_ID"))
+		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListCredentials(listCredentialsOptions)
