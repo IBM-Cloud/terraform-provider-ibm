@@ -5,24 +5,27 @@ package ibm
 
 import (
 	"context"
+
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images"
 	"github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIBMPICapture() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceIBMPICaptureCreate,
-		Read:   resourceIBMPICaptureRead,
-		Update: resourceIBMPICaptureUpdate,
-		Delete: resourceIBMPICaptureDelete,
-		//Exists:   resourceIBMPICaptureExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMPICaptureCreate,
+		ReadContext:   resourceIBMPICaptureRead,
+		UpdateContext: resourceIBMPICaptureUpdate,
+		DeleteContext: resourceIBMPICaptureDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -57,9 +60,12 @@ func resourceIBMPICapture() *schema.Resource {
 			},
 
 			helpers.PIInstanceCaptureVolumeIds: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "List of volume names that need to be passed in the input",
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Elem:             &schema.Schema{Type: schema.TypeString},
+				Set:              schema.HashString,
+				DiffSuppressFunc: applyOnce,
+				Description:      "List of PI volumes",
 			},
 
 			helpers.PIInstanceCaptureCloudStorageRegion: {
@@ -82,117 +88,132 @@ func resourceIBMPICapture() *schema.Resource {
 			helpers.PIInstanceCaptureCloudStorageImagePath: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Name of the Image Path",
+				Description: "Cloud Object Storage bucket name; bucket-name[/optional/folder]",
+			},
+			// Computed Attribute
+			"image_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Capture ID",
 			},
 		},
 	}
 }
 
-func resourceIBMPICaptureCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	name := d.Get(helpers.PIInstanceName).(string)
 	capturename := d.Get(helpers.PIInstanceCaptureName).(string)
 	capturedestination := d.Get(helpers.PIInstanceCaptureDestination).(string)
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	cloudstorageImagePath := d.Get(helpers.PIInstanceCaptureCloudStorageImagePath).(string)
-	if cloudstorageImagePath == "" {
-		log.Printf("CloudImagePath is not provided")
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 
+	captureBody := &models.PVMInstanceCapture{
+		CaptureDestination: &capturedestination,
+		CaptureName:        &capturename,
+	}
+	if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageRegion); ok {
+		CloudStorageRegion := v.(string)
+		captureBody.CloudStorageRegion = CloudStorageRegion
 	}
 
-	cloudstorageregion := d.Get(helpers.PIInstanceCaptureCloudStorageRegion).(string)
-	if cloudstorageregion == "" {
-		log.Printf("CloudStorageRegion is not provided")
+	if v, ok := d.GetOk(helpers.PIInstanceCaptureVolumeIds); ok {
+		volids := expandStringList((v.(*schema.Set)).List())
+		if len(volids) > 0 {
+			captureBody.CaptureVolumeIds = volids
+		}
 	}
 
-	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
-
-	body := &models.PVMInstanceCapture{
-		CaptureDestination:    ptrToString(capturedestination),
-		CaptureName:           ptrToString(capturename),
-		CaptureVolumeIds:      nil,
-		CloudStorageAccessKey: "",
-		CloudStorageImagePath: cloudstorageImagePath,
-		//CloudStorageRegion:   ptrToString(cloudstorageregion),
-		CloudStorageSecretKey: "",
+	if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageAccessKey); ok {
+		captureBody.CloudStorageAccessKey = v.(string)
+	}
+	if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageImagePath); ok {
+		captureBody.CloudStorageImagePath = v.(string)
+	}
+	if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageSecretKey); ok {
+		captureBody.CloudStorageSecretKey = v.(string)
 	}
 
-	err = client.CaptureInstanceToImageCatalog(name, body)
+	captureResponse, err := client.CaptureInstanceToImageCatalogV2(name, captureBody)
 
 	if err != nil {
-		return errors.New("the capture cannot be performed")
+		return diag.FromErr(err)
 	}
 
-	// If this is an image catalog then we need to check what the status is
-
-	imageClient := st.NewIBMPIImageClient(context.Background(), sess, powerinstanceid)
-	imagedata, err := imageClient.Get(d.Get(helpers.PIInstanceCaptureName).(string))
-
+	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
+	_, err = waitForIBMPIJobCompleted(ctx, jobClient, *captureResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	log.Printf("Printing the data %s - %s", *imagedata.ImageID, imagedata.State)
-
-	_, err = isWaitForImageCaptureAvailable(client, *imagedata.ImageID, powerinstanceid, d.Timeout(schema.TimeoutCreate))
-
-	//_, err = isWaitForIBMPIVolumeAvailable(client, d.Id(), powerinstanceid, d.Timeout(schema.TimeoutCreate))
-	//if err != nil {
-	//	return err
-	//}
-	return nil
-	//return resourceIBMPIVolumeAttachRead(d, meta)
-
-}
-
-func resourceIBMPICaptureRead(d *schema.ResourceData, meta interface{}) error {
-
+	if capturedestination == "image-catalog" {
+		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+		image, err := imageClient.Get(capturename)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *image.ImageID))
+		return resourceIBMPICaptureRead(ctx, d, meta)
+	}
 	return nil
 }
 
-func resourceIBMPICaptureUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
-
-	name := ""
-	if d.HasChange(helpers.PIVolumeAttachName) {
-		name = d.Get(helpers.PIVolumeAttachName).(string)
-	}
-
-	size := float64(d.Get(helpers.PIVolumeSize).(float64))
-	shareable := bool(d.Get(helpers.PIVolumeShareable).(bool))
-
-	volrequest, err := client.UpdateVolume(d.Id(), &models.UpdateVolume{Name: &name, Size: size, Shareable: &shareable})
+func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	_, err = isWaitForIBMPIVolumeAvailable(context.Background(), client, *volrequest.VolumeID, d.Timeout(schema.TimeoutCreate))
+	cloudInstanceID, captureID, err := splitID(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+	imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	imagedata, err := imageClient.Get(captureID)
+	if err != nil {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
+		case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
+			log.Printf("[DEBUG] image does not exist %v", err)
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] get image failed %v", err)
+		return diag.FromErr(err)
+	}
+	imageid := *imagedata.ImageID
+	d.Set("image_id", imageid)
+	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 
-	return resourceIBMPICaptureRead(d, meta)
+	return nil
 }
 
-func resourceIBMPICaptureDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMPICaptureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	sess, _ := meta.(ClientSession).IBMPISession()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIVolumeClient(context.Background(), sess, powerinstanceid)
+	return nil
+}
 
-	err := client.DeleteVolume(d.Id())
+func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	// wait for power volume states to be back as available. if it's attached it will be in-use
+	cloudInstanceID, captureID, err := splitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	err = imageClient.Delete(captureID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId("")
 	return nil
 }

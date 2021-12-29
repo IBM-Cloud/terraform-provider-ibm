@@ -105,6 +105,11 @@ var pi_dhcp_id string
 var piCloudConnectionName string
 var piSAPProfileID string
 
+var pi_capture_destination string
+var pi_capture_storage_image_path string
+var pi_capture_cloud_storage_access_key string
+var pi_capture_cloud_storage_secret_key string
+
 // For Image
 
 var IsImageName string
@@ -578,6 +583,31 @@ func init() {
 	if image_cos_url == "" {
 		image_cos_url = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-20140930.0.x86_64.qcow2"
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
+	}
+
+	//Added for capture instance testing
+	pi_capture_destination = os.Getenv("PI_CAPTURE_DESTINATION")
+	if pi_capture_destination == "" {
+		pi_capture_destination = "image-catalog"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_DESTINATION for testing pi_capture_destination resource else it is set to default value 'terraform-test-power'")
+	}
+
+	pi_capture_storage_image_path = os.Getenv("PI_CAPTURE_STORAGE_IMAGE_PATH")
+	if pi_capture_storage_image_path == "" {
+		pi_capture_storage_image_path = "bucket-test"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_STORAGE_IMAGE_PATH for testing pi_capture_storage_image_path resource else it is set to default value 'terraform-test-power'")
+	}
+
+	pi_capture_cloud_storage_access_key = os.Getenv("PI_CAPTURE_CLOUD_STORAGE_ACCESS_KEY")
+	if pi_capture_cloud_storage_access_key == "" {
+		pi_capture_cloud_storage_access_key = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_ACCESS_KEY for testing pi_capture_cloud_storage_access_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	pi_capture_cloud_storage_secret_key = os.Getenv("PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY")
+	if pi_capture_cloud_storage_secret_key == "" {
+		pi_capture_cloud_storage_secret_key = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY for testing pi_capture_cloud_storage_secret_key resource else it is set to default value 'terraform-test-power'")
 	}
 
 	// Added for resource image testing
