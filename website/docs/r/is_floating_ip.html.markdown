@@ -10,6 +10,17 @@ description: |-
 # ibm_is_floating_ip
 Create a floating IP address that you can associate with a Virtual Servers for VPC instance. You can use the floating IP address to access your instance from the public network, independent of whether the subnet is attached to a public gateway. For more information, see [about floating IP](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-rest-apis#create-floating-ip-api-tutorial).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example shows how to create a Virtual Servers for VPC instance and associate a floating IP address to the primary network interface of the virtual server instance.
 

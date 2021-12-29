@@ -10,21 +10,21 @@ subcategory: "Activity Tracker"
 
 Provides a read-only data source for atracker_routes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_atracker_routes" "atracker_routes" {
 	name = "my-route"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `name` - (Optional, String) The name of the route.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

@@ -3,15 +3,25 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : network_acls"
 description: |-
+<<<<<<< HEAD
   Get information about IBM Network ACL collection.
+=======
+  Get information about IBM Cloud network ACL.
+>>>>>>> doc fix: TF issues fixed
 ---
 
 # ibm_is_network_acls
+Retrieve information of an network ACL collection. For more information, about network ACLs, see [about network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls.
 
+<<<<<<< HEAD
 Retrieve information about an existing Network ACL collection. For more information, about Network ACLs, see [About network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
 ## Example usage
 
+=======
+## Example usage
+
+>>>>>>> doc fix: TF issues fixed
 ```terraform
 resource "ibm_is_vpc" "example" {
   name = "vpctest"
@@ -27,8 +37,11 @@ data "ibm_is_network_acls" "example" {
 ```
 
 ## Argument reference
+<<<<<<< HEAD
 
 Review the argument reference that you can specify for your resource.
+=======
+>>>>>>> doc fix: TF issues fixed
 
 - `resource_group` - (Optional, String) Filters the collection to resources within one of the resource groups identified in a comma-separated list of resource group identifiers.
 

@@ -10,8 +10,18 @@ description: |-
 
 Create, update, or delete a snapshot. For more information, about subnet, see [creating snapshots](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-create).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-## Example Usage
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "testacc_vpc" {

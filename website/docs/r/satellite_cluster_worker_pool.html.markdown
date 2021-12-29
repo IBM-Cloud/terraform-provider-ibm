@@ -32,7 +32,7 @@ resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 
 ###  Create satellite cluster worker pool without workers
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 	name               = var.worker_pool_name
 	cluster	           = data.ibm_satellite_cluster.read_cluster.id
@@ -56,8 +56,11 @@ The `ibm_satellite_cluster_worker_pool` provides the following [Timeouts](https:
 
 
 ## Argument reference
+<<<<<<< HEAD
 
 Review the argument references that you can specify for your resource. 
+=======
+>>>>>>> doc fix: TF issues fixed
 
 * `name` - (Required, Forces new resource, String) The name of the worker pool.
 * `cluster` - (Required, Forces new resource, String) The name or id of the cluster.
@@ -74,6 +77,10 @@ Review the argument references that you can specify for your resource.
 * `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group.  You can retrieve the value from data source 
 * `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
 
+<<<<<<< HEAD
+=======
+ 
+>>>>>>> doc fix: TF issues fixed
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

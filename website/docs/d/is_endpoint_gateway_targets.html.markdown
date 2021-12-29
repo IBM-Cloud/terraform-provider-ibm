@@ -9,6 +9,17 @@ description: |-
 # ibm_is_endpoint_gateway_targets
 Retrieve an information of an endpoint gateway targets on IBM Cloud as a read-only data source. For more information, about VPC endpoint gateway target, see [creating an endpoint gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-endpoint-gateway).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform

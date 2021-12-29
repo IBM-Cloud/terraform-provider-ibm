@@ -7,8 +7,18 @@ description: |-
 ---
 
 # ibm_is_lb_profiles
-Retrieve information of an existing IBM Cloud Infrastructure load balancer profiles as a read-only data source. For more information, about infrastructure load balance profiles, see [managing security and compliance with load balancers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-security-compliance-lb).
+Retrieve information of an existing IBM Cloud infrastructure load balancer profiles as a read-only data source. For more information, about infrastructure load balance profiles, see [managing security and compliance with load balancers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-security-compliance-lb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 

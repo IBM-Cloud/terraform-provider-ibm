@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_network
 Create, update, or delete a network connection for your Power Systems Virtual Server instance. For more information, about power virtual server instance network, see [setting up an IBM i network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-preparing-install-server).
 
-## Example Usage
+## Example usage
 The following example creates a network connection for your Power Systems Virtual Server instance.
 
 ```terraform
