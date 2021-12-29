@@ -7,12 +7,22 @@ description: |-
 ---
 
 # ibm_is_network_acl
+Retrieve information of an network ACL data source. For more information, about managing network ACL, see [create a network acl](hhttps://cloud.ibm.com/docs/vpc?topic=vpc-acl-create-ui&interface=ui).
 
-Provides a read-only data source for NetworkACL. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-## Example Usage
+**provider.tf**
 
-```hcl
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
+
+```terraform
 resource "ibm_is_vpc" "example" {
   name = "vpctest"
 }
@@ -32,7 +42,7 @@ data "ibm_is_network_acl" "is_network_acl1" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
@@ -41,7 +51,7 @@ Review the argument reference that you can specify for your data source.
 - `vpc_name` - (Optional, String) The name of the VPC.
   **Note** Provide `network_acl` or the combination of `vpc_name` and `name`
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

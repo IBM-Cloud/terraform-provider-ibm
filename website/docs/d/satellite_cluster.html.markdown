@@ -6,20 +6,20 @@ description: |-
   Get information about an IBM Cloud satellite cluster.
 ---
 
-# ibm\_satellite_cluster
+# ibm_satellite_cluster
 
 Import the details of an existing satellite cluster as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_satellite_cluster" "cluster" {
   name  = var.cluster
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 

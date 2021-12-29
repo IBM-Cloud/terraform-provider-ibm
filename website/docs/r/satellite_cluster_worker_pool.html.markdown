@@ -6,15 +6,15 @@ description: |-
   Manages IBM Cloud satellite cluster worker pool.
 ---
 
-# ibm\_satellite\_cluster\_worker\_pool
+# ibm_satellite\_cluster\_worker\_pool
 
  Create or delete a worker pool. The worker pool will be attached to the specified cluster[IBM Cloud Satellite Cluster Worker Pool](https://cloud.ibm.com/docs/satellite?topic=openshift-satellite-clusters#satcluster-worker-pools).
 
-## Example Usage
+## Example usage
 
 ###  Create satellite cluster worker pool
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 	name               = var.worker_pool_name
 	cluster	           = var.cluster
@@ -32,7 +32,7 @@ resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 
 ###  Create satellite cluster worker pool without workers
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 	name               = var.worker_pool_name
 	cluster	           = data.ibm_satellite_cluster.read_cluster.id
@@ -55,7 +55,7 @@ ibm_satellite_cluster_worker_pool provides the following [Timeouts](https://www.
 * `delete` - (Default 90 minutes) Used for deleting Instance.
 
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -73,7 +73,7 @@ The following arguments are supported:
 * `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
 
  
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

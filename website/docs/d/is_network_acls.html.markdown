@@ -3,16 +3,15 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : network_acls"
 description: |-
-  Get information about IBM NetworkACLCollection.
+  Get information about IBM Cloud network ACL.
 ---
 
 # ibm_is_network_acls
+Retrieve information of an network ACL collection. For more information, about network ACLs, see [about network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls.
 
-Provides a read-only data source for NetworkACLCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+## Example usage
 
-## Example Usage
-
-```hcl
+```terraform
 resource "ibm_is_vpc" "example" {
   name = "vpctest"
 }
@@ -26,11 +25,11 @@ data "ibm_is_network_acls" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 - `resource_group` - (Optional, String) Filters the collection to resources within one of the resource groups identified in a comma-separated list of resource group identifiers
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

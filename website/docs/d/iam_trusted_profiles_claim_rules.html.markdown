@@ -10,7 +10,7 @@ subcategory: "Identity & Access Management (IAM)"
 
 Retrieve list of IAM trusted profile claim rule as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about trusted profile claim rules, see [list claim rule for a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#list-claim-rule)
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_trusted_profiles_claim_rules" "iam_trusted_profiles_claim_rules" {
@@ -18,13 +18,13 @@ data "ibm_iam_trusted_profiles_claim_rules" "iam_trusted_profiles_claim_rules" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `profile_id` - (Required, Forces new resource, String) ID of the trusted profile.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

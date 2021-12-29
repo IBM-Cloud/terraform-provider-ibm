@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_instance_ip
 Retrieve information about a Power Systems Virtual Server instance IP address. For more information, about Power Systems Virtual Server instance IP address, see [configuring and adding a private network subnet](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
@@ -24,7 +24,7 @@ data "ibm_pi_instance_ip" "ds_instance_ip" {
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+  Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"

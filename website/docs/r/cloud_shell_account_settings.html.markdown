@@ -6,13 +6,13 @@ description: |-
 subcategory: "IBM Cloud Shell"
 ---
 
-# ibm\_cloud_shell_account_settings
+# ibm_cloud_shell_account_settings
 
 Provides a resource for cloud_shell_account_settings. This allows cloud_shell_account_settings to be updated.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings" {
   account_id = "12345678-abcd-1a2b-a1b2-1234567890ab"
   rev = "130-1bc9ec83d7b9b049890c6d4b74dddb2a"
@@ -42,7 +42,7 @@ resource "ibm_cloud_shell_account_settings" "cloud_shell_account_settings" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -58,7 +58,7 @@ The following arguments are supported:
   * `key` - (Optional, string) Name of the region.
 * `rev` - (Optional, string) Unique revision number for the settings object.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

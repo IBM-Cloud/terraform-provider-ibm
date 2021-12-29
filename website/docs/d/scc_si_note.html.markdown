@@ -10,16 +10,16 @@ description: |-
 
 Provides a read-only data source for scc_si_note. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_si_note" "scc_si_note" {
 	note_id = "note_id"
 	provider_id = "provider_id"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
@@ -27,7 +27,7 @@ Review the argument reference that you can specify for your data source.
 * `note_id` - (Required, Forces new resource, String) Second part of note `name`: providers/{provider_id}/notes/{note_id}.
 * `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

@@ -10,9 +10,9 @@ description: |-
 
 Provides a read-only data source for `feature flag`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
   feature_id = "feature_id"
@@ -21,7 +21,7 @@ data "ibm_app_config_feature" "app_config_feature" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -30,7 +30,7 @@ The following arguments are supported:
 - `environment_id` - (Required, string) Environment Id.
 - `includes` - (Optional, string) Include the associated collections in the response.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

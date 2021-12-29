@@ -6,21 +6,21 @@ description: |-
   Get information about an IBM Cloud satellite cluster worker pool.
 ---
 
-# ibm\_satellite_cluster
+# ibm_satellite_cluster
 
 Import the details of an existing satellite cluster worker pool as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_satellite_cluster_worker_pool" "worker_pool" {
   name     = var.worker_pool_name
   cluster  = var.cluster
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 

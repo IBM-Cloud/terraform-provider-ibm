@@ -9,7 +9,7 @@ description: |-
 # ibm_container_alb_cert
 Retrieve information about all the Kubernetes cluster ALB certificate on IBM Cloud as a read-only data source.
 
-## Example Usage
+## Example usage
 The following example retrieves information of an ALB certificate.
 
 ```terraform

@@ -12,7 +12,7 @@ description: |-
 Creates or updates network port in the Power Virtual Server Cloud. For more information, about network in IBM power virutal server, see [adding or removing a public network
 ](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network)..
 
-## Example Usage
+## Example usage
 
 In the following example, you can create an network_port:
 

@@ -11,14 +11,14 @@ description: |-
 
 Provides a resource for schematics_resource_query. This allows schematics_resource_query to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_schematics_resource_query" "schematics_resource_query" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -36,7 +36,7 @@ Nested scheme for **queries**:
 * `type` - (Optional, String) Resource type (cluster, vsi, icd, vpc).
   * Constraints: Allowable values are: vsi
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

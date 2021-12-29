@@ -46,7 +46,7 @@ Review the argument reference that you can specify for your resource.
 - `collections` - (Optional, List) The list of collection ID representing the collections that are associated with the specified feature flag.
   - `collection_id` - (Required, String) Collection ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

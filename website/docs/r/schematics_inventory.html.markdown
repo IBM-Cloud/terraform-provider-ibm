@@ -11,14 +11,14 @@ description: |-
 
 Provides a resource for schematics_inventory. This allows schematics_inventory to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_schematics_inventory" "schematics_inventory" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your resource.
 * `resource_group` - (Optional, String) Resource-group name for the Inventory definition.   By default, Inventory definition will be created in Default Resource Group.
 * `resource_queries` - (Optional, List) Input resource query definitions that is used to dynamically generate the inventory of host and host group for the playbook.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

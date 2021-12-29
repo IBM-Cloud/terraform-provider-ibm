@@ -41,7 +41,7 @@ Review the argument references that you can specify for your resource.
 - `zone` - (String) The name of the zone.
 
 
-## Attribute Reference
+## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `alb_id` - (String) The unique identifier of the application load balancer.

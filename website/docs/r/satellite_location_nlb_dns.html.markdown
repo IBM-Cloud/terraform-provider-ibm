@@ -6,27 +6,27 @@ description: |-
   Managed satellite location nlb dns.
 ---
 
-# ibm\_satellite\_location\_nlb\_dns
+# ibm_satellite\_location\_nlb\_dns
 
 Provides a resource to register public ip address to satellite dns records. This allows satellite dns register to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_satellite_location_nlb_dns" "satellite_dns" {
   location = "satellite-ibm"
   ips      = ["52.116.125.50","169.62.17.178","169.63.178.155"]
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 * `ips` - (Required, Forces new resource, List) Public IP address of satellite location DNS records.
 * `location` - (Required, Forces new resource, string) The name or ID of the Satellite location.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

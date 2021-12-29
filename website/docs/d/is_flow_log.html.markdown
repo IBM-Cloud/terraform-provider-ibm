@@ -7,11 +7,21 @@ description: |-
 ---
 
 # ibm_is_flow_log
+Retrieve an information of VPC flow log. For more information, about VPC flow log, see [about IBM Cloud flow logs for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-flow-logs).
 
-Provides a read-only data source for FlowLogCollector. 
-[creating a flow log collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
 
-## Example Usage
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
 
 ```terraform
 
@@ -20,13 +30,13 @@ data "ibm_is_flow_log" "is_flow_log" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 - `identifier` - (Optional, String) The ID of the subnet, This is required when name is not specified.
 - `name` - (Optional, String) The name of the subnet,  This is required when identifier is not specified.
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

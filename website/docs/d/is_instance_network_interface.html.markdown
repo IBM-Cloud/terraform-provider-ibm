@@ -8,11 +8,23 @@ description: |-
 
 # ibm_is_instance_network_interface
 
-Provides a read-only data source for NetworkInterface. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information of an exisitng network interface. For more information, about instance network interface, see [managing an network interfaces](https://cloud.ibm.com/docs/vpc?topic=vpc-using-instance-vnics).
 
-## Example Usage
 
-```hcl
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
+
+```terraform
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
@@ -62,14 +74,14 @@ data "ibm_is_instance_network_interface" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 - `instance_name` - (Required, string) The name of the instance.
 - `network_interface_name` - (Required, string) The name of the network interface.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

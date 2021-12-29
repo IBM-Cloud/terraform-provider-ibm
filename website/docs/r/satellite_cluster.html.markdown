@@ -6,16 +6,16 @@ description: |-
   Manages IBM Cloud satellite cluster.
 ---
 
-# ibm\_satellite_cluster
+# ibm_satellite_cluster
 
 Create, update, or delete [IBM Cloud Satellite Cluster](https://cloud.ibm.com/docs/openshift?topic=openshift-satellite-clusters). Set up an Red Hat® OpenShift® on IBM Cloud™ clusters in an IBM Cloud™ Satellite location, and use the hosts of your own infrastructure that you added to your location as the worker nodes for the cluster.
 
 
-## Example Usage
+## Example usage
 
 ###  Create satellite cluster
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster" "create_cluster" {
 	name                   = "%s"  
 	location               = var.location
@@ -42,7 +42,7 @@ ibm_satellite_cluster provides the following [Timeouts](https://www.terraform.io
 * `update` - (Default 120 minutes) Used for updating Instance.
 * `delete` - (Default 30 minutes) Used for deleting Instance.
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 

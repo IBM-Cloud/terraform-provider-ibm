@@ -10,9 +10,9 @@ description: |-
 
 Provides a read-only data source for `environments`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_app_config_environments" "app_config_environments" {
   guid = "guid"
   tags = "tags"
@@ -22,7 +22,7 @@ data "ibm_app_config_environments" "app_config_environments" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -32,7 +32,7 @@ The following arguments are supported:
 - `limit` - (optional, int) The number of records to retrieve. By default, the list operation return the first 10 records. To retrieve different set of records, use `limit` with `offset` to page through the available records.
 - `offset` - (optional, int) The number of records to skip. By specifying `offset`, you retrieve a subset of items that starts with the `offset` value. Use `offset` with `limit` to page through the available records.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

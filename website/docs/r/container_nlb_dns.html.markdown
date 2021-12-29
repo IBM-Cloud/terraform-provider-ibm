@@ -10,9 +10,9 @@ description: |-
 
 Provides a resource for container_nlb_dns. This allows to add an NLB IP's to an existing host name that you created with 'ibmcloud ks nlb-dns create'.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_container_nlb_dns" "dns" {
   cluster = var.cluster
 }
@@ -24,7 +24,7 @@ resource "ibm_container_nlb_dns" "container_nlb_dns" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your resource.
 * `nlb_host` - (Required, Forces new resource, String) Host Name of load Balancer.
 * `nlb_ips` - (Required, Set)  NLB IPs.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

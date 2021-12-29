@@ -10,9 +10,9 @@ description: |-
 
 Provides a read-only data source for `environment`. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_app_config_environment" "app_config_environment" {
 	guid = "guid"
 	expand = "expand"
@@ -20,7 +20,7 @@ data "ibm_app_config_environment" "app_config_environment" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -28,7 +28,7 @@ The following arguments are supported:
 - `environment_id` - (Required, string) Environment Id.
 - `expand` - (optional, bool) If set to `true`, returns expanded view of the resource details.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

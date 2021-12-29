@@ -9,6 +9,16 @@ description: |-
 # ibm_is_subnet
 Retrieve information of an existing VPC Generation 2 compute subnet as a read only data source. For more information, about the IBM Cloud subnet, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 Example to retrieve the subnet information by using subnet name.

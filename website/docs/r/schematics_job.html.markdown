@@ -22,7 +22,7 @@ resource "ibm_schematics_job" "schematics_job" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -599,7 +599,7 @@ Nested scheme for **status**:
 		* `updated_at` - (Optional, String) Job status updation timestamp.
 * `tags` - (Optional, List) User defined tags, while running the job.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

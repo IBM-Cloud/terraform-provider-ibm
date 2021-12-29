@@ -10,11 +10,11 @@ description: |-
 
 Provides a resource for scc_si_occurrence. This allows scc_si_occurrence to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
 #### FINDING
 
-```hcl
+```terraform
 resource "ibm_scc_si_occurrence" "finding-occurrence" {
   provider_id   = var.provider_id
   note_name     = var.note_name
@@ -35,7 +35,7 @@ resource "ibm_scc_si_occurrence" "finding-occurrence" {
 
 #### KPI
 
-```hcl
+```terraform
 resource "ibm_scc_si_occurrence" "kpi-occurrence" {
   provider_id   = var.provider_id
   note_name     = var.note_name
@@ -50,7 +50,7 @@ resource "ibm_scc_si_occurrence" "kpi-occurrence" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -108,7 +108,7 @@ Nested scheme for **kpi**:
 * `replace_if_exists` - (Optional, Boolean) When set to true, an existing occurrence is replaced rather than duplicated.
 * `resource_url` - (Optional, String) The unique URL of the resource, image or the container, for which the `Occurrence` applies. For example, https://gcr.io/provider/image@sha256:foo. This field can be used as a filter in list requests.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

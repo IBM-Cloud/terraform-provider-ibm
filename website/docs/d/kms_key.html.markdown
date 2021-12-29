@@ -107,7 +107,7 @@ Review the argument references that you can specify for your data source.
 - `key_name` - (Optional, String) The name of the key. If you want to retrieve the key by using the key alias, use the `alias` option. You must provide either the `key_name` or `alias`.
 
 
-## Attribute Reference
+## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `keys` - (String) Lists the Keys of HPCS or Key-protect instance.

@@ -11,7 +11,7 @@ description: |-
 
 Provides a read-only data source for schematics_inventory. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_schematics_inventory" "schematics_inventory" {
@@ -19,13 +19,13 @@ data "ibm_schematics_inventory" "schematics_inventory" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `inventory_id` - (Required, String) Resource Inventory Id.  Use `GET /v2/inventories` API to look up the Resource Inventory definition Ids  in your IBM Cloud account.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
