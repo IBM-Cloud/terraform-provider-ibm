@@ -10,13 +10,6 @@ description: |-
 # ibm_is_instance_network_interfaces
 Retrieve information of an exisitng network interfaces collection. For more information, about instance network interfaces collection, see [managing an network interfaces](https://cloud.ibm.com/docs/vpc?topic=vpc-using-instance-vnics).
 
-<<<<<<< HEAD
-Retrieve information about a network interface collection. For more information, about network interace collection, see [Network interface configurations](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-nic-for-bare-metal-servers#nic-configs).
-
-## Example usage
-
-```terraform
-=======
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
@@ -31,7 +24,6 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
->>>>>>> doc fix: TF issues fixed
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }

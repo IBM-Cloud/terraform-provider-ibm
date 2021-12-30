@@ -10,7 +10,6 @@ description: |-
 
 Retrieve information about an existing Satellite cluster. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about Satellite cluster, see [Setting up clusters to use with Satellite Config](https://cloud.ibm.com/docs/satellite?topic=satellite-setup-clusters-satconfig).
 
-
 ## Example usage
 
 ```terraform

@@ -21,19 +21,19 @@ resource "ibm_schematics_resource_query" "schematics_resource_query" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Resource query name.
-* `queries` - (Optional, List) 
+- `name` - (Optional, String) Resource query name.
+- `queries` - (Optional, List) 
 Nested scheme for **queries**:
-	* `query_type` - (Optional, String) Type of the query(workspaces).
-	  * Constraints: Allowable values are: workspaces
-	* `query_condition` - (Optional, List)
+	- `query_type` - (Optional, String) Type of the query(workspaces).
+	  - Constraints: Allowable values are: workspaces
+	- `query_condition` - (Optional, List)
 	Nested scheme for **query_condition**:
-		* `name` - (Optional, String) Name of the resource query param.
-		* `value` - (Optional, String) Value of the resource query param.
-		* `description` - (Optional, String) Description of resource query param variable.
-	* `query_select` - (Optional, List) List of query selection parameters.
-* `type` - (Optional, String) Resource type (cluster, vsi, icd, vpc).
-  * Constraints: Allowable values are: vsi
+		- `name` - (Optional, String) Name of the resource query param.
+		- `value` - (Optional, String) Value of the resource query param.
+		- `description` - (Optional, String) Description of resource query param variable.
+	- `query_select` - (Optional, List) List of query selection parameters.
+- `type` - (Optional, String) Resource type (cluster, vsi, icd, vpc).
+  - Constraints: Allowable values are: vsi
 
 ## Attribute reference
 

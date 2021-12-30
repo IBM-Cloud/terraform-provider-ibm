@@ -106,7 +106,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-`ibm_satellite_cluster` can be imported using the location id or name.
+The `ibm_satellite_cluster` can be imported using the location id or name.
 
 Example:
 

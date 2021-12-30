@@ -9,7 +9,18 @@ description: |-
 
 # ibm_is_instance_action
 
-Start, Stop, or Reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
+Start, stop, or reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
@@ -78,7 +89,11 @@ resource "ibm_is_instance_action" "example" {
 
 Review the argument references that you can specify for your resource. 
 
+<<<<<<< HEAD
 - `action` - (Required, String) The type of action to perform on the instance. Supported values are `stop`, `start`, or `reboot`.
+=======
+- `action` - (Required, String) The type of action to perfrom on the instance. Supported values are `stop`, `start`, or `reboot`.
+>>>>>>> a1365fd62119d501b7c8984d03ccb7f4ff0725fb
 - `force_action` - (Optional, Boolean)  If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action. The Default value is `false`.
 - `instance` - (Required, String) Instance identifier.
 
