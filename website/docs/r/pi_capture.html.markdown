@@ -8,10 +8,14 @@ description: |-
 ---
 
 # ibm_pi_capture
-Create, or delete for a Power Systems Virtual Server Capture instance. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+Create or delete for a Power Systems Virtual Server Capture instance using Capture Destination as `image-catalog`.
+
+Create for a Power Systems Virtual Server Capture instance using Capture Destination as `cloud-storage`
+
+For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
-The following example creates a 20 GB volume.
+The following example creates capture instance.
 
 ```terraform
 resource "ibm_pi_capture" "test_capture  "{
@@ -76,13 +80,13 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the capture instance. The ID is composed of `<power_instance_id>/<image_id>`.
+- `id` - (String) The unique identifier of the capture instance. The ID is composed of `<pi_cloud_instance_id>/<image_id>`.
 - `image_id` - (String) The unique identifier of the  capture instance.
 
 
 ## Import
 
-The `ibm_pi_capture` resource can be imported by using `power_instance_id` and `image_id`.
+The `ibm_pi_capture` resource can be imported by using `pi_cloud_instance_id` and `image_id`.
 
 **Example**
 ```

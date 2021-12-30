@@ -115,8 +115,8 @@ func testAccCheckIBMPICaptureDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		imageC := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
-		_, err = imageC.Get(captureID)
+		imageClient := st.NewIBMPIImageClient(context.Background(), sess, cloudInstanceID)
+		_, err = imageClient.Get(captureID)
 		if err == nil {
 			return fmt.Errorf("PI Image still exists: %s", rs.Primary.ID)
 		}

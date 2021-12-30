@@ -19,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const captDestination string = "image-catalog"
+
 func resourceIBMPICapture() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPICaptureCreate,
@@ -150,7 +152,7 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if capturedestination == "image-catalog" {
+	if capturedestination == captDestination {
 		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		image, err := imageClient.Get(capturename)
 		if err != nil {
@@ -159,6 +161,7 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *image.ImageID))
 		return resourceIBMPICaptureRead(ctx, d, meta)
 	}
+	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, capturename))
 	return nil
 }
 
@@ -167,28 +170,29 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	cloudInstanceID, captureID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
-	imagedata, err := imageClient.Get(captureID)
-	if err != nil {
-		uErr := errors.Unwrap(err)
-		switch uErr.(type) {
-		case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
-			log.Printf("[DEBUG] image does not exist %v", err)
-			d.SetId("")
-			return nil
+	capturedestination := d.Get(helpers.PIInstanceCaptureDestination).(string)
+	if capturedestination == captDestination {
+		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+		imagedata, err := imageClient.Get(captureID)
+		if err != nil {
+			uErr := errors.Unwrap(err)
+			switch uErr.(type) {
+			case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
+				log.Printf("[DEBUG] image does not exist %v", err)
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] get image failed %v", err)
+			return diag.FromErr(err)
 		}
-		log.Printf("[DEBUG] get image failed %v", err)
-		return diag.FromErr(err)
+		imageid := *imagedata.ImageID
+		d.Set("image_id", imageid)
+		d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 	}
-	imageid := *imagedata.ImageID
-	d.Set("image_id", imageid)
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
-
 	return nil
 }
 
@@ -207,13 +211,14 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
-	err = imageClient.Delete(captureID)
-	if err != nil {
-		return diag.FromErr(err)
+	capturedestination := d.Get(helpers.PIInstanceCaptureDestination).(string)
+	if capturedestination == captDestination {
+		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+		err = imageClient.Delete(captureID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
-
 	d.SetId("")
 	return nil
 }
