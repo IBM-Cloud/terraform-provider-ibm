@@ -65,6 +65,10 @@ func dataSourceIBMPISnapshots() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"volume_snapshots": {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -105,6 +109,7 @@ func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{}
 			"action":            i.Action,
 			"percent_complete":  i.PercentComplete,
 			"status":            i.Status,
+			"volume_snapshots":  i.VolumeSnapshots,
 		}
 
 		result = append(result, l)
