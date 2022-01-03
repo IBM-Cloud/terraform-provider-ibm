@@ -10,15 +10,15 @@ description: |-
 
 Provides a read-only data source for scc_si_notes. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_si_notes" "notes" {
   provider_id = "tf-test"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
@@ -27,7 +27,7 @@ Review the argument reference that you can specify for your data source.
 * `pages_size` - (Optional, String) Number of notes to return in the list.
 * `page_token` - (Optional, String) Token to provide to skip to a particular spot in the list.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_instance
 Retrieve information about a Power Systems Virtual Server instance. For more information, about Power Virtual Server instance, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {

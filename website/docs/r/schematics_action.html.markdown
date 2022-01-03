@@ -21,7 +21,7 @@ resource "ibm_schematics_action" "schematics_action" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -204,7 +204,7 @@ Nested scheme for **user_state**:
 	* `set_at` - (Optional, String) When the User who set the state of the Object.
 * `x_github_token` - (Optional, String) The personal access token to authenticate with your private GitHub or GitLab repository and access your Terraform template.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

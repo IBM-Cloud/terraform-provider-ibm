@@ -10,9 +10,9 @@ description: |-
 
 Create, update, or delete a subscription by using IBM Cloud™ Event Notifications.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_en_subscription" "en_subscription" {
   instance_guid    = "instance_guid"
   name           = "name"
@@ -26,7 +26,7 @@ resource "ibm_en_subscription" "en_subscription" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -53,7 +53,7 @@ Review the argument reference that you can specify for your resource.
 
   - `to` - (Optional, List) The phone number to send the SMS to.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

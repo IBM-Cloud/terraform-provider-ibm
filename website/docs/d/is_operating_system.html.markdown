@@ -9,13 +9,23 @@ description: |-
 # ibm_is_operating_system
 Retrieve information of an existing Operating System as a read only data source. For more information, about supported Operating System, see [Images](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
 data "ibm_is_operating_system" "testacc_dsos"{
   name = "red-8-amd64"
 }
-
 ```
 
 ## Argument reference

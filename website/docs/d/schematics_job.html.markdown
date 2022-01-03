@@ -17,13 +17,13 @@ data "ibm_schematics_job" "schematics_job" {
 	job_id = "job_id"
 }
 ```
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `job_id` - (String) Job Id. Use `GET /v2/jobs` API to look up the Job Ids in your IBM Cloud account.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
