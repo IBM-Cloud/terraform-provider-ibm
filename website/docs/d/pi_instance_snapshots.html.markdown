@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_instance_snapshots
 Retrieve information about a Power Systems Virtual Server instance snapshots. For more information, about Power Virtual Server instance snapshots, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_instance_snapshots" "ds_instance_snapshots" {
@@ -41,15 +41,15 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `instance_snapshots` - List of snapshots within the given cloud instance.
+- `instance_snapshots` - The list of Power Virtual Machine instance snapshots within the given cloud instance.
   
   Nested scheme for `instance_snapshots`:
   - `action` - (String) Action performed on the instance snapshot.
-  - `creation_date` - (String) Creation Date.
-  - `description` - (String) Description of the snapshot.
-  - `id` - (String) The unique identifier of the PVM instance snapshot.
-  - `last_updated_date` - (String) Last Update Date.
-  - `name` - (String) Name of the PVM instance snapshot.
-  - `percent_complete` - (Integer) Snapshot completion percentage.
-  - `status` - (String) Status of the PVM instance snapshot.
-  - `volume_snapshots` - (Map) A map of volume snapshots included in the PVM instance snapshot.
+  - `creation_date` - (String) The creation date.
+  - `description` - (String) The description of the snapshot.
+  - `id` - (String) The unique identifier of the Power Systems Virtual Machine instance snapshot.
+  - `last_updated_date` - (String) The last Update Date.
+  - `name` - (String) The name of the Power Systems Virtual Machine instance snapshot.
+  - `percent_complete` - (Integer) The snapshot completion percentage.
+  - `status` - (String) The status of the Power Virtual Machine instance snapshot.
+  - `volume_snapshots` - (Map) A map of volume snapshots included in the Power Virtual Machine instance snapshot.
