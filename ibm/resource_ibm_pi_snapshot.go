@@ -119,7 +119,7 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 		description = v.(string)
 	}
 
-	client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
 	snapshotBody := &models.SnapshotCreate{Name: &name, Description: description}
 

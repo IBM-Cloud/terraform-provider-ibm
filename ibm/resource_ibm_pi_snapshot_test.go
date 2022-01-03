@@ -14,22 +14,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 
 	name := fmt.Sprintf("tf-pi-instance-snapshot-%d", acctest.RandIntRange(10, 100))
+	snapshotRes := "ibm_pi_snapshot.power_snapshot"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotConfig(name),
+				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, helpers.PIInstanceHealthOk),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceSnapshotExists("ibm_pi_snapshot.power_snapshot"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_snapshot.power_snapshot", "pi_snap_shot_name", name),
+					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
+					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
+					resource.TestCheckResourceAttr(snapshotRes, "status", "available"),
+					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
 				),
 			},
 		},
@@ -49,8 +52,8 @@ func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
 		if err != nil {
 			return err
 		}
-		networkC := st.NewIBMPISnapshotClient(context.Background(), sess, cloudInstanceID)
-		_, err = networkC.Get(snapshotID)
+		snapshotC := st.NewIBMPISnapshotClient(context.Background(), sess, cloudInstanceID)
+		_, err = snapshotC.Get(snapshotID)
 		if err == nil {
 			return fmt.Errorf("PI Instance Snapshot still exists: %s", rs.Primary.ID)
 		}
@@ -89,9 +92,9 @@ func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMPIInstanceSnapshotConfig(name string) string {
-	return testAccCheckIBMPIInstanceConfig(name) + fmt.Sprintf(`
-	  resource "ibm_pi_snapshot" "power_snapshot"{
+func testAccCheckIBMPIInstanceSnapshotConfig(name, healthStatus string) string {
+	return testAccCheckIBMPIInstanceConfig(name, healthStatus) + fmt.Sprintf(`
+	resource "ibm_pi_snapshot" "power_snapshot"{
 		depends_on=[ibm_pi_instance.power_instance]
 		pi_instance_name       = ibm_pi_instance.power_instance.pi_instance_name
 		pi_cloud_instance_id = "%s"
