@@ -600,7 +600,7 @@ func normalizeJSONString(jsonString interface{}) (string, error) {
 	return string(bytes[:]), nil
 }
 
-func expandAnnotations(annotations string) (whisk.KeyValueArr, error) {
+func ExpandAnnotations(annotations string) (whisk.KeyValueArr, error) {
 	var result whisk.KeyValueArr
 	dc := json.NewDecoder(strings.NewReader(annotations))
 	dc.UseNumber()
@@ -632,7 +632,7 @@ func flattenParameters(in whisk.KeyValueArr) (string, error) {
 	return string(b[:]), nil
 }
 
-func expandLimits(l []interface{}) *whisk.Limits {
+func ExpandLimits(l []interface{}) *whisk.Limits {
 	if len(l) == 0 || l[0] == nil {
 		return &whisk.Limits{}
 	}
@@ -869,7 +869,7 @@ func flattenLimits(in *whisk.Limits) []interface{} {
 	return []interface{}{att}
 }
 
-func expandExec(execs []interface{}) *whisk.Exec {
+func ExpandExec(execs []interface{}) *whisk.Exec {
 	var code string
 	var document []byte
 	for _, exec := range execs {
@@ -2871,25 +2871,25 @@ func getIBMUniqueId(accountID, userEmail string, meta interface{}) (string, erro
 	return "", fmt.Errorf("User %s is not found under account %s", userEmail, accountID)
 }
 
-func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
+// func immutableResourceCustomizeDiff(resourceList []string, diff *schema.ResourceDiff) error {
 
-	for _, rName := range resourceList {
-		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
-			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
-		}
-		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
-			o, n := diff.GetChange(rName)
-			old := o.(string)
-			new := n.(string)
-			if len(old) > 0 && old != new {
-				if !(rName == sateLocZone && strings.Contains(old, new)) {
-					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
-				}
-			}
-		}
-	}
-	return nil
-}
+// 	for _, rName := range resourceList {
+// 		if diff.Id() != "" && diff.HasChange(rName) && rName != sateLocZone {
+// 			return fmt.Errorf("'%s' attribute is immutable and can't be changed", rName)
+// 		}
+// 		if diff.Id() != "" && diff.HasChange(rName) && rName == sateLocZone {
+// 			o, n := diff.GetChange(rName)
+// 			old := o.(string)
+// 			new := n.(string)
+// 			if len(old) > 0 && old != new {
+// 				if !(rName == sateLocZone && strings.Contains(old, new)) {
+// 					return fmt.Errorf("'%s' attribute is immutable and can't be changed from %s to %s", rName, old, new)
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
 
 func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
 	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())

@@ -243,7 +243,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 	}
 	if err != nil {
 		d.SetId(fmt.Sprintf("%s/%s", userEmail, *userPolicy.ID))
-		return fmt.Errorf("error fetching user policy: %w", err)
+		return fmt.Errorf("[ERROR] Error fetching user policy: %w", err)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", userEmail, *userPolicy.ID))
 

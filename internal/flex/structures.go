@@ -329,7 +329,7 @@ func flattenServerInstances(list []datatypes.Network_LBaaS_Member) []map[string]
 // 	return result
 // }
 
-func flattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
+func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
@@ -372,7 +372,7 @@ func flattenVpcZones(list []containerv2.ZoneResp) []map[string]interface{} {
 	for i, zone := range list {
 		l := map[string]interface{}{
 			"id":           zone.ID,
-			"subnet_id":    flattenSubnets(zone.Subnets),
+			"subnet_id":    FlattenSubnets(zone.Subnets),
 			"worker_count": zone.WorkerCount,
 		}
 		zones[i] = l
@@ -405,7 +405,7 @@ func FlattenAccessGroupRules(list *iamaccessgroupsv2.RulesList) []map[string]int
 	return rules
 }
 
-func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
+func FlattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
 	subs := make([]map[string]interface{}, len(list))
 	for i, sub := range list {
 		l := map[string]interface{}{
@@ -417,7 +417,7 @@ func flattenSubnets(list []containerv2.Subnet) []map[string]interface{} {
 	return subs
 }
 
-func flattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interface{} {
+func FlattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interface{} {
 	zones := make([]map[string]interface{}, len(list))
 	for i, zone := range list {
 		l := map[string]interface{}{
@@ -431,7 +431,7 @@ func flattenZones(list []containerv1.WorkerPoolZoneResponse) []map[string]interf
 	return zones
 }
 
-func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]interface{} {
+func FlattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
@@ -461,7 +461,7 @@ func flattenWorkerPools(list []containerv1.WorkerPoolResponse) []map[string]inte
 	return workerPools
 }
 
-func flattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]interface{} {
+func FlattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]interface{} {
 	albs := make([]map[string]interface{}, 0)
 	for _, alb := range list {
 		if alb.ALBType == filterType || filterType == "all" {
@@ -482,7 +482,7 @@ func flattenAlbs(list []containerv1.ALBConfig, filterType string) []map[string]i
 	return albs
 }
 
-func flattenVpcAlbs(list []containerv2.AlbConfig, filterType string) []map[string]interface{} {
+func FlattenVpcAlbs(list []containerv2.AlbConfig, filterType string) []map[string]interface{} {
 	albs := make([]map[string]interface{}, 0)
 	for _, alb := range list {
 		if alb.AlbType == filterType || filterType == "all" {
@@ -502,7 +502,7 @@ func flattenVpcAlbs(list []containerv2.AlbConfig, filterType string) []map[strin
 	return albs
 }
 
-func flattenNetworkInterfaces(list []containerv2.Network) []map[string]interface{} {
+func FlattenNetworkInterfaces(list []containerv2.Network) []map[string]interface{} {
 	nwInterfaces := make([]map[string]interface{}, len(list))
 	for i, nw := range list {
 		l := map[string]interface{}{
@@ -515,7 +515,7 @@ func flattenNetworkInterfaces(list []containerv2.Network) []map[string]interface
 	return nwInterfaces
 }
 
-func flattenVlans(list []containerv1.Vlan) []map[string]interface{} {
+func FlattenVlans(list []containerv1.Vlan) []map[string]interface{} {
 	vlans := make([]map[string]interface{}, len(list))
 	for i, vlanR := range list {
 		subnets := make([]map[string]interface{}, len(vlanR.Subnets))
@@ -603,7 +603,7 @@ func NormalizeJSONString(jsonString interface{}) (string, error) {
 	return string(bytes[:]), nil
 }
 
-func expandAnnotations(annotations string) (whisk.KeyValueArr, error) {
+func ExpandAnnotations(annotations string) (whisk.KeyValueArr, error) {
 	var result whisk.KeyValueArr
 	dc := json.NewDecoder(strings.NewReader(annotations))
 	dc.UseNumber()
@@ -611,7 +611,7 @@ func expandAnnotations(annotations string) (whisk.KeyValueArr, error) {
 	return result, err
 }
 
-func flattenAnnotations(in whisk.KeyValueArr) (string, error) {
+func FlattenAnnotations(in whisk.KeyValueArr) (string, error) {
 	b, err := json.Marshal(in)
 	if err != nil {
 		return "", err
@@ -619,7 +619,7 @@ func flattenAnnotations(in whisk.KeyValueArr) (string, error) {
 	return string(b[:]), nil
 }
 
-func expandParameters(annotations string) (whisk.KeyValueArr, error) {
+func ExpandParameters(annotations string) (whisk.KeyValueArr, error) {
 	var result whisk.KeyValueArr
 	dc := json.NewDecoder(strings.NewReader(annotations))
 	dc.UseNumber()
@@ -627,7 +627,7 @@ func expandParameters(annotations string) (whisk.KeyValueArr, error) {
 	return result, err
 }
 
-func flattenParameters(in whisk.KeyValueArr) (string, error) {
+func FlattenParameters(in whisk.KeyValueArr) (string, error) {
 	b, err := json.Marshal(in)
 	if err != nil {
 		return "", err
@@ -635,7 +635,7 @@ func flattenParameters(in whisk.KeyValueArr) (string, error) {
 	return string(b[:]), nil
 }
 
-func expandLimits(l []interface{}) *whisk.Limits {
+func ExpandLimits(l []interface{}) *whisk.Limits {
 	if len(l) == 0 || l[0] == nil {
 		return &whisk.Limits{}
 	}
@@ -858,7 +858,7 @@ func FlattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} 
 	return versioning
 }
 
-func flattenLimits(in *whisk.Limits) []interface{} {
+func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
 		att["timeout"] = *in.Timeout
@@ -872,7 +872,7 @@ func flattenLimits(in *whisk.Limits) []interface{} {
 	return []interface{}{att}
 }
 
-func expandExec(execs []interface{}) *whisk.Exec {
+func ExpandExec(execs []interface{}) *whisk.Exec {
 	var code string
 	var document []byte
 	for _, exec := range execs {
@@ -914,7 +914,7 @@ func expandExec(execs []interface{}) *whisk.Exec {
 	return &whisk.Exec{}
 }
 
-func flattenExec(in *whisk.Exec, d *schema.ResourceData) []interface{} {
+func FlattenExec(in *whisk.Exec, d *schema.ResourceData) []interface{} {
 	code_data := 4194304 // length of 'code' parameter should be always <= 4MB data
 	att := make(map[string]interface{})
 	// open-whisk SDK will not return the value for code_path
@@ -981,7 +981,7 @@ func DateTimeToString(dt *strfmt.DateTime) (s string) {
 	return
 }
 
-func filterActionAnnotations(in whisk.KeyValueArr) (string, error) {
+func FilterActionAnnotations(in whisk.KeyValueArr) (string, error) {
 	noExec := make(whisk.KeyValueArr, 0, len(in))
 	for _, v := range in {
 		if v.Key == "exec" {
@@ -990,10 +990,10 @@ func filterActionAnnotations(in whisk.KeyValueArr) (string, error) {
 		noExec = append(noExec, v)
 	}
 
-	return flattenAnnotations(noExec)
+	return FlattenAnnotations(noExec)
 }
 
-func filterActionParameters(in whisk.KeyValueArr) (string, error) {
+func FilterActionParameters(in whisk.KeyValueArr) (string, error) {
 	noAction := make(whisk.KeyValueArr, 0, len(in))
 	for _, v := range in {
 		if v.Key == "_actions" {
@@ -1001,10 +1001,10 @@ func filterActionParameters(in whisk.KeyValueArr) (string, error) {
 		}
 		noAction = append(noAction, v)
 	}
-	return flattenParameters(noAction)
+	return FlattenParameters(noAction)
 }
 
-func filterInheritedAnnotations(inheritedAnnotations, annotations whisk.KeyValueArr) whisk.KeyValueArr {
+func FilterInheritedAnnotations(inheritedAnnotations, annotations whisk.KeyValueArr) whisk.KeyValueArr {
 	userDefinedAnnotations := make(whisk.KeyValueArr, 0)
 	for _, a := range annotations {
 		insert := false
@@ -1026,7 +1026,7 @@ func filterInheritedAnnotations(inheritedAnnotations, annotations whisk.KeyValue
 	return userDefinedAnnotations
 }
 
-func filterInheritedParameters(inheritedParameters, parameters whisk.KeyValueArr) whisk.KeyValueArr {
+func FilterInheritedParameters(inheritedParameters, parameters whisk.KeyValueArr) whisk.KeyValueArr {
 	userDefinedParameters := make(whisk.KeyValueArr, 0)
 	for _, p := range parameters {
 		insert := false
@@ -1049,7 +1049,7 @@ func filterInheritedParameters(inheritedParameters, parameters whisk.KeyValueArr
 	return userDefinedParameters
 }
 
-func isEmpty(object interface{}) bool {
+func IsEmpty(object interface{}) bool {
 	//First check normal definitions of empty
 	if object == nil {
 		return true
@@ -1070,7 +1070,7 @@ func isEmpty(object interface{}) bool {
 	return false
 }
 
-func filterTriggerAnnotations(in whisk.KeyValueArr) (string, error) {
+func FilterTriggerAnnotations(in whisk.KeyValueArr) (string, error) {
 	noFeed := make(whisk.KeyValueArr, 0, len(in))
 	for _, v := range in {
 		if v.Key == "feed" {
@@ -1078,10 +1078,10 @@ func filterTriggerAnnotations(in whisk.KeyValueArr) (string, error) {
 		}
 		noFeed = append(noFeed, v)
 	}
-	return flattenParameters(noFeed)
+	return FlattenParameters(noFeed)
 }
 
-func flattenFeed(feedName string) []interface{} {
+func FlattenFeed(feedName string) []interface{} {
 	att := make(map[string]interface{})
 	att["name"] = feedName
 	att["parameters"] = "[]"
@@ -1254,7 +1254,7 @@ func VmIdParts(id string) ([]string, error) {
 	return parts, nil
 }
 
-func cfIdParts(id string) ([]string, error) {
+func CfIdParts(id string) ([]string, error) {
 	parts := strings.Split(id, ":")
 	return parts, nil
 }
@@ -1751,7 +1751,7 @@ func TransformToIBMCISDnsData(recordType string, id string, value interface{}) (
 	return
 }
 
-func indexOf(element string, data []string) int {
+func IndexOf(element string, data []string) int {
 	for k, v := range data {
 		if element == v {
 			return k
@@ -2569,8 +2569,8 @@ func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	return result
 }
 
-// expandCosConfig ..
-func expandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
+// ExpandCosConfig ..
+func ExpandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
 	if len(cos) == 0 || cos[0] == nil {
 		return &kubernetesserviceapiv1.COSBucket{}
 	}
@@ -2584,7 +2584,7 @@ func expandCosConfig(cos []interface{}) *kubernetesserviceapiv1.COSBucket {
 }
 
 // expandCosCredentials ..
-func expandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthorization {
+func ExpandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthorization {
 	if len(cos) == 0 || cos[0] == nil {
 		return &kubernetesserviceapiv1.COSAuthorization{}
 	}
@@ -2595,9 +2595,28 @@ func expandCosCredentials(cos []interface{}) *kubernetesserviceapiv1.COSAuthoriz
 	}
 	return obj
 }
+func FlattenNlbConfigs(nlbData []containerv2.NlbVPCListConfig) []map[string]interface{} {
+	nlbConfigList := make([]map[string]interface{}, 0)
+	for _, n := range nlbData {
+		nlbConfig := make(map[string]interface{})
+		nlbConfig["secret_name"] = n.SecretName
+		nlbConfig["secret_status"] = n.SecretStatus
+		c := n.Nlb
+		nlbConfig["cluster"] = c.Cluster
+		nlbConfig["dns_type"] = c.DnsType
+		nlbConfig["lb_hostname"] = c.LbHostname
+		nlbConfig["nlb_ips"] = c.NlbIPArray
+		nlbConfig["nlb_sub_domain"] = c.NlbSubdomain
+		nlbConfig["secret_namespace"] = c.SecretNamespace
+		nlbConfig["type"] = c.Type
+		nlbConfigList = append(nlbConfigList, nlbConfig)
+	}
+
+	return nlbConfigList
+}
 
 // flattenHostLabels ..
-func flattenHostLabels(hostLabels []interface{}) map[string]string {
+func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)
 	for _, v := range hostLabels {
 		parts := strings.Split(v.(string), ":")
@@ -2609,7 +2628,7 @@ func flattenHostLabels(hostLabels []interface{}) map[string]string {
 	return labels
 }
 
-func flatterSatelliteZones(zones *schema.Set) []string {
+func FlattenSatelliteZones(zones *schema.Set) []string {
 	zoneList := make([]string, zones.Len())
 	for i, v := range zones.List() {
 		zoneList[i] = fmt.Sprint(v)
@@ -2962,7 +2981,7 @@ func ImmutableResourceCustomizeDiff(resourceList []string, diff *schema.Resource
 	return nil
 }
 
-func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
+func FlattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone {
 	zoneList := make([]kubernetesserviceapiv1.SatelliteCreateWorkerPoolZone, zones.Len())
 	for i, v := range zones.List() {
 		data := v.(map[string]interface{})
@@ -2974,7 +2993,7 @@ func flattenSatelliteWorkerPoolZones(zones *schema.Set) []kubernetesserviceapiv1
 	return zoneList
 }
 
-func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResponse) []map[string]interface{} {
+func FlattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
@@ -3003,7 +3022,7 @@ func flattenSatelliteWorkerPools(list []kubernetesserviceapiv1.GetWorkerPoolResp
 	return workerPools
 }
 
-func flattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode) []map[string]interface{} {
+func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode) []map[string]interface{} {
 	hosts := make([]map[string]interface{}, len(hostList))
 	for i, host := range hostList {
 		l := map[string]interface{}{
@@ -3021,7 +3040,7 @@ func flattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 	return hosts
 }
 
-func flattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
+func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
 	mapped := make([]string, len(hostLabels))
 	idx := 0
 	for k, v := range hostLabels {

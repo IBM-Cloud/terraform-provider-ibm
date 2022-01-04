@@ -204,8 +204,7 @@ func testAccCisInstanceManuallyDeleteUnwrapped(s *terraform.State, tfCisId *stri
 		MinTimeout: 10 * time.Second,
 	}
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for resource instance (%s) to be deleted: %s", instanceId, err)
+		return fmt.Errorf("[ERROR] Error waiting for resource instance (%s) to be deleted: %s", instanceId, err)
 	}
 	return nil
 }
