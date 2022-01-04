@@ -1433,17 +1433,17 @@ func flattenUserIds(accountID string, users []string, meta interface{}) ([]strin
 	return userids, nil
 }
 
-func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
-	serviceids := make([]string, len(services))
-	for i, id := range services {
-		serviceID, err := getServiceID(id, meta)
-		if err != nil {
-			return nil, err
-		}
-		serviceids[i] = *serviceID.IamID
-	}
-	return serviceids, nil
-}
+// func flattenServiceIds(services []string, meta interface{}) ([]string, error) {
+// 	serviceids := make([]string, len(services))
+// 	for i, id := range services {
+// 		serviceID, err := getServiceID(id, meta)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		serviceids[i] = *serviceID.IamID
+// 	}
+// 	return serviceids, nil
+// }
 
 func expandUsers(userList *schema.Set) (users []icdv4.User) {
 	for _, iface := range userList.List() {

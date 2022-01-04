@@ -10,7 +10,7 @@ import (
 )
 
 // Used for retry logic on resource timeout.
-func isResourceTimeoutError(err error) bool {
+func IsResourceTimeoutError(err error) bool {
 	timeoutErr, ok := err.(*resource.TimeoutError)
 	return ok && timeoutErr.LastError == nil
 }

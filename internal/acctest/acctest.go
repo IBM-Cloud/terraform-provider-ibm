@@ -86,8 +86,8 @@ var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
 var HpcsToken2 string
-var realmName string
-var iksSa string
+var RealmName string
+var IksSa string
 var iksClusterVpcID string
 var iksClusterSubnetID string
 var iksClusterResourceGroupID string
@@ -663,13 +663,13 @@ func init() {
 	if HpcsAdmin2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ADMIN2 with a VALID HPCS Admin Key2 Path")
 	}
-	realmName = os.Getenv("IBM_IAM_REALM_NAME")
-	if realmName == "" {
+	RealmName = os.Getenv("IBM_IAM_REALM_NAME")
+	if RealmName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAM_REALM_NAME with a VALID realm name for iam trusted profile claim rule")
 	}
 
-	iksSa = os.Getenv("IBM_IAM_IKS_SA")
-	if iksSa == "" {
+	IksSa = os.Getenv("IBM_IAM_IKS_SA")
+	if IksSa == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAM_IKS_SA with a VALID realm name for iam trusted profile link")
 	}
 
@@ -809,12 +809,12 @@ func TestAccPreCheckHPCS(t *testing.T) {
 		t.Fatal("IBM_HPCS_TOKEN2 must be set for acceptance tests")
 	}
 }
-func testAccPreCheckIAMTrustedProfile(t *testing.T) {
+func TestAccPreCheckIAMTrustedProfile(t *testing.T) {
 	TestAccPreCheck(t)
-	if realmName == "" {
+	if RealmName == "" {
 		t.Fatal("IBM_IAM_REALM_NAME must be set for acceptance tests")
 	}
-	if iksSa == "" {
+	if IksSa == "" {
 		t.Fatal("IBM_IAM_IKS_SA must be set for acceptance tests")
 	}
 }
