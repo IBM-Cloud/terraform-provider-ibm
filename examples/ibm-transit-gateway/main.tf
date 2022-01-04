@@ -78,7 +78,7 @@ data "ibm_tg_route_reports" "tg_route_reports" {
 # Retrieve specified Transit Gateway Route report
 data "ibm_tg_route_report" "tg_route_report" {
 	gateway = ibm_tg_gateway.new_tg_gw.
-	id = ibm_tg_route_report_test_tg_route_report.route_report_id
+	route_report = ibm_tg_route_report_test_tg_route_report.route_report_id
 }
 
 */
