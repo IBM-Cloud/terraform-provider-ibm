@@ -118,7 +118,7 @@ var (
 
 //UserConfig ...
 type UserConfig struct {
-	userID      string
+	UserID      string
 	userEmail   string
 	UserAccount string
 	CloudName   string `default:"bluemix"`
@@ -2899,7 +2899,7 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	if email, ok := claims["email"]; ok {
 		user.userEmail = email.(string)
 	}
-	user.userID = claims["id"].(string)
+	user.UserID = claims["id"].(string)
 	user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)
 	iss := claims["iss"].(string)
 	if strings.Contains(iss, "https://iam.cloud.ibm.com") {

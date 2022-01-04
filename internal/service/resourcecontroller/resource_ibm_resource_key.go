@@ -14,7 +14,6 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
@@ -480,38 +479,10 @@ func getRoleFromName(roleName, serviceName string, meta interface{}) (iampolicym
 
 	roles := flex.MapRoleListToPolicyRoles(*roleList)
 
-	role, err = findRoleByName(roles, roleName)
+	role, err = flex.FindRoleByName(roles, roleName)
 	if err != nil {
 		return iampolicymanagementv1.PolicyRole{}, err
 	}
 	return role, nil
 
-}
-
-func findRoleByName(supported []iampolicymanagementv1.PolicyRole, name string) (iampolicymanagementv1.PolicyRole, error) {
-	for _, role := range supported {
-		if role.DisplayName != nil {
-			if *role.DisplayName == name {
-				role.DisplayName = nil
-				return role, nil
-			}
-		}
-	}
-	supportedRoles := getSupportedRolesStr(supported)
-	return iampolicymanagementv1.PolicyRole{}, bmxerror.New("RoleDoesnotExist",
-		fmt.Sprintf("%s was not found. Valid roles are %s", name, supportedRoles))
-
-}
-
-func getSupportedRolesStr(supported []iampolicymanagementv1.PolicyRole) string {
-	rolesStr := ""
-	for index, role := range supported {
-		if index != 0 {
-			rolesStr += ", "
-		}
-		if role.DisplayName != nil {
-			rolesStr += *role.DisplayName
-		}
-	}
-	return rolesStr
 }

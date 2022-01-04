@@ -157,11 +157,11 @@ func validateRoutePath(v interface{}, k string) (ws []string, errors []error) {
 }
 
 func validateRoutePort(v interface{}, k string) (ws []string, errors []error) {
-	return validatePortRange(1024, 65535)(v, k)
+	return ValidatePortRange(1024, 65535)(v, k)
 }
 
 func validateAppPort(v interface{}, k string) (ws []string, errors []error) {
-	return validatePortRange(1024, 65535)(v, k)
+	return ValidatePortRange(1024, 65535)(v, k)
 }
 func validateLBListenerPolicyPriority(v interface{}, k string) (ws []string, errors []error) {
 	interval := v.(int)
@@ -183,7 +183,7 @@ func validateStringLength(v interface{}, k string) (ws []string, errors []error)
 	return
 }
 
-func validatePortRange(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
+func ValidatePortRange(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
 	f := func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
 		if (value < start) || (value > end) {
@@ -983,7 +983,7 @@ func validatekeylife(v interface{}, k string) (ws []string, errors []error) {
 }
 
 func validateLBListenerPort(v interface{}, k string) (ws []string, errors []error) {
-	return validatePortRange(1, 65535)(v, k)
+	return ValidatePortRange(1, 65535)(v, k)
 }
 
 func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, errors []error) {
