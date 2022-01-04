@@ -15,7 +15,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func DataSourceIbmIamApiKey() *schema.Resource {
+func DataSourceIBMIamApiKey() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIbmIamApiKeyRead,
 

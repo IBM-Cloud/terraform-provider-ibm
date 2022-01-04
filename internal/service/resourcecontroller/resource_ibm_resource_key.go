@@ -291,10 +291,10 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 
 	creds, err := json.Marshal(resourceKey.Credentials)
 	if err != nil {
-		return fmt.Errorf("error marshalling resource key credentials: %s", err)
+		return fmt.Errorf("[ERROR] Error marshalling resource key credentials: %s", err)
 	}
 	if err = d.Set("credentials_json", string(creds)); err != nil {
-		return fmt.Errorf("error setting the credentials json: %s", err)
+		return fmt.Errorf("[ERROR] Error setting the credentials json: %s", err)
 	}
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)

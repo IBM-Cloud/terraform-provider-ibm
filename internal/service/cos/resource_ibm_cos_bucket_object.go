@@ -157,7 +157,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	if exists {
-		return diag.FromErr(fmt.Errorf("error COS bucket (%s) object (%s) already exists", bucketName, objectKey))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error COS bucket (%s) object (%s) already exists", bucketName, objectKey))
 	}
 
 	var body io.ReadSeeker
@@ -169,14 +169,14 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 		content := v.(string)
 		contentRaw, err := base64.StdEncoding.DecodeString(content)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error decoding content_base64: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error decoding content_base64: %s", err))
 		}
 		body = bytes.NewReader(contentRaw)
 	} else if v, ok := d.GetOk("content_file"); ok {
 		path := v.(string)
 		file, err := os.Open(path)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error opening COS object file (%s): %s", path, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error opening COS object file (%s): %s", path, err))
 		}
 
 		body = file
@@ -195,7 +195,7 @@ func resourceIBMCOSBucketObjectCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if _, err := s3Client.PutObject(putInput); err != nil {
-		return diag.FromErr(fmt.Errorf("error putting object (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error putting object (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 	}
 
 	objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
@@ -313,14 +313,14 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 			content := v.(string)
 			contentRaw, err := base64.StdEncoding.DecodeString(content)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error decoding content_base64: %s", err))
+				return diag.FromErr(fmt.Errorf("[ERROR] Error decoding content_base64: %s", err))
 			}
 			body = bytes.NewReader(contentRaw)
 		} else if v, ok := d.GetOk("content_file"); ok {
 			path := v.(string)
 			file, err := os.Open(path)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error opening COS object file (%s): %s", path, err))
+				return diag.FromErr(fmt.Errorf("[ERROR] Error opening COS object file (%s): %s", path, err))
 			}
 
 			body = file
@@ -341,7 +341,7 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 
 		if _, err := s3Client.PutObject(putInput); err != nil {
-			return diag.FromErr(fmt.Errorf("error putting object (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error putting object (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
 		}
 
 		objectID := getObjectId(bucketCRN, objectKey, bucketLocation)
@@ -560,7 +560,7 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 
 	if lastErr != nil {
 		if !ignoreObjectErrors {
-			return fmt.Errorf("error deleting at least one object version, last error: %s", lastErr)
+			return fmt.Errorf("[ERROR] Error deleting at least one object version, last error: %s", lastErr)
 		}
 
 		lastErr = nil
@@ -596,7 +596,7 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 
 	if lastErr != nil {
 		if !ignoreObjectErrors {
-			return fmt.Errorf("error deleting at least one object delete marker, last error: %s", lastErr)
+			return fmt.Errorf("[ERROR] Error deleting at least one object delete marker, last error: %s", lastErr)
 		}
 
 		lastErr = nil

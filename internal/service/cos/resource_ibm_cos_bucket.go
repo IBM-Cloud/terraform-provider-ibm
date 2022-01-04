@@ -1265,7 +1265,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 				err = deleteAllCOSObjectVersions(s3Client, bucketName, "", false, false)
 
 				if err != nil {
-					return fmt.Errorf("error COS Bucket force_delete: %s", err)
+					return fmt.Errorf("[ERROR] Error COS Bucket force_delete: %s", err)
 				}
 
 				// this line recurses until all objects are deleted or an error is returned
@@ -1274,7 +1274,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("error deleting COS Bucket (%s): %s", d.Id(), err)
+		return fmt.Errorf("[ERROR] Error deleting COS Bucket (%s): %s", d.Id(), err)
 	}
 
 	return nil

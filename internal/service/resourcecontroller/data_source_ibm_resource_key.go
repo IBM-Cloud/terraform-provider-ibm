@@ -144,10 +144,10 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("credentials", flex.Flatten(key.Credentials))
 	creds, err := json.Marshal(key.Credentials)
 	if err != nil {
-		return fmt.Errorf("error marshalling resource key credentials: %s", err)
+		return fmt.Errorf("[ERROR] Error marshalling resource key credentials: %s", err)
 	}
 	if err = d.Set("credentials_json", string(creds)); err != nil {
-		return fmt.Errorf("error setting the credentials json: %s", err)
+		return fmt.Errorf("[ERROR] Error setting the credentials json: %s", err)
 	}
 	d.Set("status", key.State)
 	d.Set("crn", key.Crn.String())

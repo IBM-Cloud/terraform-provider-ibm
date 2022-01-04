@@ -100,7 +100,7 @@ func validateRegexpLen(min, max int, regex string) schema.SchemaValidateFunc {
 	}
 }
 
-func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
+func ValidateAllowedIntValues(is []int) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
 		existed := false
@@ -120,7 +120,7 @@ func validateAllowedIntValue(is []int) schema.SchemaValidateFunc {
 	}
 }
 
-func validateAllowedEnterpriseNameValue() schema.SchemaValidateFunc {
+func ValidateAllowedEnterpriseNameValue() schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(string)
 
@@ -216,7 +216,7 @@ func validateAppInstance(v interface{}, k string) (ws []string, errors []error) 
 
 }
 
-func validateWorkerNum(v interface{}, k string) (ws []string, errors []error) {
+func ValidateWorkerNum(v interface{}, k string) (ws []string, errors []error) {
 	workerNum := v.(int)
 	if workerNum <= 0 {
 		errors = append(errors, fmt.Errorf(
@@ -302,7 +302,7 @@ func validateWeight(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateSizePerZone(v interface{}, k string) (ws []string, errors []error) {
+func ValidateSizePerZone(v interface{}, k string) (ws []string, errors []error) {
 	sizePerZone := v.(int)
 	if sizePerZone <= 0 {
 		errors = append(errors, fmt.Errorf(
@@ -1118,7 +1118,7 @@ type ValidateSchema struct {
 	Type ValueType
 
 	// The actual validation function that needs to be invoked.
-	// Ex: IntBetween, validateAllowedIntValue, ValidateAllowedStringValues
+	// Ex: IntBetween, ValidateAllowedIntValues, ValidateAllowedStringValues
 	ValidateFunctionIdentifier FunctionIdentifier
 
 	MinValue       string
@@ -1242,7 +1242,7 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 		return validateCIDRAddress()
 	case ValidateAllowedIntValue:
 		allowedValues := schema.GetValue(AllowedValues)
-		return validateAllowedIntValue(allowedValues.([]int))
+		return ValidateAllowedIntValues(allowedValues.([]int))
 	case ValidateRegexpLen:
 		return validateRegexpLen(schema.MinValueLength, schema.MaxValueLength, schema.Regexp)
 	case ValidateRegexp:

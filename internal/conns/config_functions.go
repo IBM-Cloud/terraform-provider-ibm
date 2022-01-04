@@ -52,7 +52,7 @@ func getBaseURL(region string) string {
  * iam-based namespace don't have an auth key and needs only iam token for authorization.
  *
  */
-func setupOpenWhiskClientConfig(namespace string, sess *bxsession.Session, functionNamespace functions.FunctionServiceAPI) (*whisk.Client, error) {
+func SetupOpenWhiskClientConfig(namespace string, sess *bxsession.Session, functionNamespace functions.FunctionServiceAPI) (*whisk.Client, error) {
 	u, _ := url.Parse(fmt.Sprintf("https://%s.functions.cloud.ibm.com/api", sess.Config.Region))
 	wskClient, _ := whisk.NewClient(http.DefaultClient, &whisk.Config{
 		Host:    u.Host,

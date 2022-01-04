@@ -752,11 +752,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		}
 		s, err := json.Marshal(configSchema)
 		if err != nil {
-			return fmt.Errorf("error marshalling the database configuration schema: %s", err)
+			return fmt.Errorf("[ERROR] Error marshalling the database configuration schema: %s", err)
 		}
 
 		if err = d.Set("configuration_schema", string(s)); err != nil {
-			return fmt.Errorf("error setting the database configuration schema: %s", err)
+			return fmt.Errorf("[ERROR] Error setting the database configuration schema: %s", err)
 		}
 	}
 

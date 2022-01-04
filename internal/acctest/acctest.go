@@ -26,13 +26,13 @@ var CosCRN string
 var ibmid1 string
 var ibmid2 string
 var IAMUser string
-var datacenter string
-var machineType string
+var Datacenter string
+var MachineType string
 var trustedMachineType string
-var publicVlanID string
-var privateVlanID string
-var privateSubnetID string
-var publicSubnetID string
+var PublicVlanID string
+var PrivateVlanID string
+var PrivateSubnetID string
+var PublicSubnetID string
 var subnetID string
 var lbaasDatacenter string
 var lbaasSubnetId string
@@ -42,19 +42,19 @@ var customersubnetid string
 var customerpeerip string
 var dedicatedHostName string
 var dedicatedHostID string
-var kubeVersion string
-var kubeUpdateVersion string
-var zone string
-var zonePrivateVlan string
-var zonePublicVlan string
-var zoneUpdatePrivateVlan string
-var zoneUpdatePublicVlan string
-var csRegion string
+var KubeVersion string
+var KubeUpdateVersion string
+var Zone string
+var ZonePrivateVlan string
+var ZonePublicVlan string
+var ZoneUpdatePrivateVlan string
+var ZoneUpdatePublicVlan string
+var CsRegion string
 var extendedHardwareTesting bool
 var err error
 var placementGroupName string
-var certCRN string
-var updatedCertCRN string
+var CertCRN string
+var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
 var ISCIDR string
@@ -88,23 +88,23 @@ var HpcsAdmin2 string
 var HpcsToken2 string
 var RealmName string
 var IksSa string
-var iksClusterVpcID string
-var iksClusterSubnetID string
-var iksClusterResourceGroupID string
+var IksClusterVpcID string
+var IksClusterSubnetID string
+var IksClusterResourceGroupID string
 
 // For Power Colo
 
-var pi_image string
-var pi_image_bucket_name string
-var pi_image_bucket_file_name string
-var pi_key_name string
-var pi_volume_name string
-var pi_network_name string
-var pi_cloud_instance_id string
-var pi_instance_name string
-var pi_dhcp_id string
-var piCloudConnectionName string
-var piSAPProfileID string
+var Pi_image string
+var Pi_image_bucket_name string
+var Pi_image_bucket_file_name string
+var Pi_key_name string
+var Pi_volume_name string
+var Pi_network_name string
+var Pi_cloud_instance_id string
+var Pi_instance_name string
+var Pi_dhcp_id string
+var PiCloudConnectionName string
+var PiSAPProfileID string
 
 // For Image
 
@@ -122,7 +122,7 @@ var Tg_cross_network_account_id string
 var Tg_cross_network_id string
 
 //Enterprise Management
-var account_to_be_imported string
+var Account_to_be_imported string
 
 //Security and Compliance Center, SI
 var scc_si_account string
@@ -133,7 +133,7 @@ var scc_posture_scan_id string
 var scc_posture_profile_id string
 
 //ROKS Cluster
-var clusterName string
+var ClusterName string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -174,32 +174,32 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
 	}
 
-	datacenter = os.Getenv("IBM_DATACENTER")
-	if datacenter == "" {
-		datacenter = "par01"
+	Datacenter = os.Getenv("IBM_DATACENTER")
+	if Datacenter == "" {
+		Datacenter = "par01"
 		fmt.Println("[WARN] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
-	machineType = os.Getenv("IBM_MACHINE_TYPE")
-	if machineType == "" {
-		machineType = "b3c.4x16"
+	MachineType = os.Getenv("IBM_MACHINE_TYPE")
+	if MachineType == "" {
+		MachineType = "b3c.4x16"
 		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'b3c.4x16'")
 	}
 
-	certCRN = os.Getenv("IBM_CERT_CRN")
-	if certCRN == "" {
-		certCRN = "crn:v1:bluemix:public:cloudcerts:us-south:a/52b2e14f385aca5da781baa1b9c28e53:6efac0c2-b955-49ca-939d-d7bc0cb8132f:certificate:e786b0ea2af8b5435603803ec2ff8118"
+	CertCRN = os.Getenv("IBM_CERT_CRN")
+	if CertCRN == "" {
+		CertCRN = "crn:v1:bluemix:public:cloudcerts:us-south:a/52b2e14f385aca5da781baa1b9c28e53:6efac0c2-b955-49ca-939d-d7bc0cb8132f:certificate:e786b0ea2af8b5435603803ec2ff8118"
 		fmt.Println("[WARN] Set the environment variable IBM_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
 	}
 
-	updatedCertCRN = os.Getenv("IBM_UPDATE_CERT_CRN")
-	if updatedCertCRN == "" {
-		updatedCertCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:1bf3d0c2b7764402dde25744218e6cba"
+	UpdatedCertCRN = os.Getenv("IBM_UPDATE_CERT_CRN")
+	if UpdatedCertCRN == "" {
+		UpdatedCertCRN = "crn:v1:bluemix:public:cloudcerts:eu-de:a/e9021a4d06e9b108b4a221a3cec47e3d:77e527aa-65b2-4cb3-969b-7e8714174346:certificate:1bf3d0c2b7764402dde25744218e6cba"
 		fmt.Println("[WARN] Set the environment variable IBM_UPDATE_CERT_CRN for testing ibm_container_alb_cert resource else it is set to default value")
 	}
 
-	csRegion = os.Getenv("IBM_CONTAINER_REGION")
-	if csRegion == "" {
-		csRegion = "eu-de"
+	CsRegion = os.Getenv("IBM_CONTAINER_REGION")
+	if CsRegion == "" {
+		CsRegion = "eu-de"
 		fmt.Println("[WARN] Set the environment variable IBM_CONTAINER_REGION for testing ibm_container resources else it is set to default value 'eu-de'")
 	}
 
@@ -244,39 +244,39 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_BM_EXTENDED_HW_TESTING to true/false for testing ibm_compute_bare_metal resource else it is set to default value 'false'")
 	}
 
-	publicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
-	if publicVlanID == "" {
-		publicVlanID = "2393319"
+	PublicVlanID = os.Getenv("IBM_PUBLIC_VLAN_ID")
+	if PublicVlanID == "" {
+		PublicVlanID = "2393319"
 		fmt.Println("[WARN] Set the environment variable IBM_PUBLIC_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2393319'")
 	}
 
-	privateVlanID = os.Getenv("IBM_PRIVATE_VLAN_ID")
-	if privateVlanID == "" {
-		privateVlanID = "2393321"
+	PrivateVlanID = os.Getenv("IBM_PRIVATE_VLAN_ID")
+	if PrivateVlanID == "" {
+		PrivateVlanID = "2393321"
 		fmt.Println("[WARN] Set the environment variable IBM_PRIVATE_VLAN_ID for testing ibm_container_cluster resource else it is set to default value '2393321'")
 	}
 
-	kubeVersion = os.Getenv("IBM_KUBE_VERSION")
-	if kubeVersion == "" {
-		kubeVersion = "1.18"
+	KubeVersion = os.Getenv("IBM_KUBE_VERSION")
+	if KubeVersion == "" {
+		KubeVersion = "1.18"
 		fmt.Println("[WARN] Set the environment variable IBM_KUBE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.18.14'")
 	}
 
-	kubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
-	if kubeUpdateVersion == "" {
-		kubeUpdateVersion = "1.19"
+	KubeUpdateVersion = os.Getenv("IBM_KUBE_UPDATE_VERSION")
+	if KubeUpdateVersion == "" {
+		KubeUpdateVersion = "1.19"
 		fmt.Println("[WARN] Set the environment variable IBM_KUBE_UPDATE_VERSION for testing ibm_container_cluster resource else it is set to default value '1.19.6'")
 	}
 
-	privateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
-	if privateSubnetID == "" {
-		privateSubnetID = "1636107"
+	PrivateSubnetID = os.Getenv("IBM_PRIVATE_SUBNET_ID")
+	if PrivateSubnetID == "" {
+		PrivateSubnetID = "1636107"
 		fmt.Println("[WARN] Set the environment variable IBM_PRIVATE_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1636107'")
 	}
 
-	publicSubnetID = os.Getenv("IBM_PUBLIC_SUBNET_ID")
-	if publicSubnetID == "" {
-		publicSubnetID = "1165645"
+	PublicSubnetID = os.Getenv("IBM_PUBLIC_SUBNET_ID")
+	if PublicSubnetID == "" {
+		PublicSubnetID = "1165645"
 		fmt.Println("[WARN] Set the environment variable IBM_PUBLIC_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1165645'")
 	}
 
@@ -333,33 +333,33 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_DEDICATED_HOST_ID for testing ibm_compute_vm_instance resource else it is set to default value '30301'")
 	}
 
-	zone = os.Getenv("IBM_WORKER_POOL_ZONE")
-	if zone == "" {
-		zone = "ams03"
+	Zone = os.Getenv("IBM_WORKER_POOL_ZONE")
+	if Zone == "" {
+		Zone = "ams03"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value 'ams03'")
 	}
 
-	zonePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PRIVATE_VLAN")
-	if zonePrivateVlan == "" {
-		zonePrivateVlan = "2538975"
+	ZonePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PRIVATE_VLAN")
+	if ZonePrivateVlan == "" {
+		ZonePrivateVlan = "2538975"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_PRIVATE_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2538975'")
 	}
 
-	zonePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PUBLIC_VLAN")
-	if zonePublicVlan == "" {
-		zonePublicVlan = "2538967"
+	ZonePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_PUBLIC_VLAN")
+	if ZonePublicVlan == "" {
+		ZonePublicVlan = "2538967"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2538967'")
 	}
 
-	zoneUpdatePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PRIVATE_VLAN")
-	if zoneUpdatePrivateVlan == "" {
-		zoneUpdatePrivateVlan = "2388377"
+	ZoneUpdatePrivateVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PRIVATE_VLAN")
+	if ZoneUpdatePrivateVlan == "" {
+		ZoneUpdatePrivateVlan = "2388377"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PRIVATE_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388377'")
 	}
 
-	zoneUpdatePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN")
-	if zoneUpdatePublicVlan == "" {
-		zoneUpdatePublicVlan = "2388375"
+	ZoneUpdatePublicVlan = os.Getenv("IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN")
+	if ZoneUpdatePublicVlan == "" {
+		ZoneUpdatePublicVlan = "2388375"
 		fmt.Println("[WARN] Set the environment variable IBM_WORKER_POOL_ZONE_UPDATE_PUBLIC_VLAN for testing ibm_container_worker_pool_zone_attachment resource else it is set to default value '2388375'")
 	}
 
@@ -482,67 +482,67 @@ func init() {
 	}
 
 	// Added for Power Colo Testing
-	pi_image = os.Getenv("PI_IMAGE")
-	if pi_image == "" {
-		pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
+	Pi_image = os.Getenv("PI_IMAGE")
+	if Pi_image == "" {
+		Pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
 	}
-	pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
-	if pi_image_bucket_name == "" {
-		pi_image_bucket_name = "images-public-bucket"
+	Pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
+	if Pi_image_bucket_name == "" {
+		Pi_image_bucket_name = "images-public-bucket"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_NAME for testing ibm_pi_image resource else it is set to default value 'images-public-bucket'")
 	}
-	pi_image_bucket_file_name = os.Getenv("PI_IMAGE_BUCKET_FILE_NAME")
-	if pi_image_bucket_file_name == "" {
-		pi_image_bucket_file_name = "rhel.ova.gz"
+	Pi_image_bucket_file_name = os.Getenv("PI_IMAGE_BUCKET_FILE_NAME")
+	if Pi_image_bucket_file_name == "" {
+		Pi_image_bucket_file_name = "rhel.ova.gz"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
 	}
 
-	pi_key_name = os.Getenv("PI_KEY_NAME")
-	if pi_key_name == "" {
-		pi_key_name = "terraform-test-power"
+	Pi_key_name = os.Getenv("PI_KEY_NAME")
+	if Pi_key_name == "" {
+		Pi_key_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key_name resource else it is set to default value 'terraform-test-power'")
 	}
 
-	pi_network_name = os.Getenv("PI_NETWORK_NAME")
-	if pi_network_name == "" {
-		pi_network_name = "terraform-test-power"
+	Pi_network_name = os.Getenv("PI_NETWORK_NAME")
+	if Pi_network_name == "" {
+		Pi_network_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_NETWORK_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
 	}
 
-	pi_volume_name = os.Getenv("PI_VOLUME_NAME")
-	if pi_volume_name == "" {
-		pi_volume_name = "terraform-test-power"
+	Pi_volume_name = os.Getenv("PI_VOLUME_NAME")
+	if Pi_volume_name == "" {
+		Pi_volume_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
 	}
 
-	pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
-	if pi_cloud_instance_id == "" {
-		pi_cloud_instance_id = "fd3454a3-14d8-4eb0-b075-acf3da5cd324"
+	Pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")
+	if Pi_cloud_instance_id == "" {
+		Pi_cloud_instance_id = "fd3454a3-14d8-4eb0-b075-acf3da5cd324"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUDINSTANCE_ID for testing ibm_pi_image resource else it is set to default value 'd16705bd-7f1a-48c9-9e0e-1c17b71e7331'")
 	}
 
-	pi_instance_name = os.Getenv("PI_PVM_INSTANCE_NAME")
-	if pi_instance_name == "" {
-		pi_instance_name = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing pi_instance_name resource else it is set to default value 'terraform-test-power'")
+	Pi_instance_name = os.Getenv("PI_PVM_INSTANCE_NAME")
+	if Pi_instance_name == "" {
+		Pi_instance_name = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing Pi_instance_name resource else it is set to default value 'terraform-test-power'")
 	}
 
-	pi_dhcp_id = os.Getenv("PI_DHCP_ID")
-	if pi_dhcp_id == "" {
-		pi_dhcp_id = "terraform-test-power"
+	Pi_dhcp_id = os.Getenv("PI_DHCP_ID")
+	if Pi_dhcp_id == "" {
+		Pi_dhcp_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_DHCP_ID for testing ibm_pi_dhcp resource else it is set to default value 'terraform-test-power'")
 	}
 
-	piCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
-	if piCloudConnectionName == "" {
-		piCloudConnectionName = "terraform-test-power"
+	PiCloudConnectionName = os.Getenv("PI_CLOUD_CONNECTION_NAME")
+	if PiCloudConnectionName == "" {
+		PiCloudConnectionName = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
 	}
 
-	piSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
-	if piSAPProfileID == "" {
-		piSAPProfileID = "terraform-test-power"
+	PiSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
+	if PiSAPProfileID == "" {
+		PiSAPProfileID = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
@@ -647,8 +647,8 @@ func init() {
 	if Tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
 	}
-	account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
-	if account_to_be_imported == "" {
+	Account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
+	if Account_to_be_imported == "" {
 		fmt.Println("[INFO] Set the environment variable ACCOUNT_TO_BE_IMPORTED for testing import enterprise account resource else  tests will fail if this is not set correctly")
 	}
 	HpcsAdmin1 = os.Getenv("IBM_HPCS_ADMIN1")
@@ -702,23 +702,23 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
 	}
 
-	iksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
-	if iksClusterVpcID == "" {
+	IksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
+	if IksClusterVpcID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_create tests will fail if this is not set")
 	}
 
-	iksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
-	if iksClusterSubnetID == "" {
+	IksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
+	if IksClusterSubnetID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
 	}
 
-	iksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
-	if iksClusterSubnetID == "" {
+	IksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
+	if IksClusterResourceGroupID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
 	}
 
-	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
-	if clusterName == "" {
+	ClusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
+	if ClusterName == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 }
@@ -755,18 +755,18 @@ func TestAccPreCheck(t *testing.T) {
 	}
 }
 
-func testAccPreCheckEnterprise(t *testing.T) {
+func TestAccPreCheckEnterprise(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
 
 }
 
-func testAccPreCheckEnterpriseAccountImport(t *testing.T) {
+func TestAccPreCheckEnterpriseAccountImport(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
 	}
-	if account_to_be_imported == "" {
+	if Account_to_be_imported == "" {
 		t.Fatal("ACCOUNT_TO_BE_IMPORTED must be set for acceptance tests")
 	}
 
