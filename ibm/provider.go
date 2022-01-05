@@ -756,6 +756,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_attach":       resourceIBMPIVolumeAttach(),
 			"ibm_pi_capture":             resourceIBMPICapture(),
 			"ibm_pi_image":               resourceIBMPIImage(),
+			"ibm_pi_image_export":        resourceIBMPIImageExport(),
 			"ibm_pi_network_port":        resourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":            resourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": resourceIBMPINetworkPortAttach(),
