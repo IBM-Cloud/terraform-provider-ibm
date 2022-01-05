@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudant"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/contextbasedrestrictions"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/database"
@@ -36,10 +37,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/power"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/pushnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/resourcemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/satellite"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/scc"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/schematics"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 )
@@ -295,9 +300,9 @@ func Provider() *schema.Provider {
 			"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPool(),
 			"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_cr_namespaces":                     registry.DataIBMContainerRegistryNamespaces(),
-			// "ibm_cloud_shell_account_settings":       dataSourceIBMCloudShellAccountSettings(),
-			"ibm_cos_bucket":        cos.DataSourceIBMCosBucket(),
-			"ibm_cos_bucket_object": cos.DataSourceIBMCosBucketObject(),
+			"ibm_cloud_shell_account_settings":      cloudshell.DataSourceIBMCloudShellAccountSettings(),
+			"ibm_cos_bucket":                        cos.DataSourceIBMCosBucket(),
+			"ibm_cos_bucket_object":                 cos.DataSourceIBMCosBucketObject(),
 			// "ibm_dns_domain_registration":            dataSourceIBMDNSDomainRegistration(),
 			// "ibm_dns_domain":                         dataSourceIBMDNSDomain(),
 			// "ibm_dns_secondary":                      dataSourceIBMDNSSecondary(),
@@ -406,11 +411,11 @@ func Provider() *schema.Provider {
 			// "ibm_org":                                dataSourceIBMOrg(),
 			// "ibm_org_quota":                          dataSourceIBMOrgQuota(),
 			// "ibm_kp_key":                             dataSourceIBMkey(),
-			"ibm_kms_key_rings":    kms.DataSourceIBMKMSkeyRings(),
-			"ibm_kms_key_policies": kms.DataSourceIBMKMSkeyPolicies(),
-			"ibm_kms_keys":         kms.DataSourceIBMKMSkeys(),
-			"ibm_kms_key":          kms.DataSourceIBMKMSkey(),
-			// "ibm_pn_application_chrome":              dataSourceIBMPNApplicationChrome(),
+			"ibm_kms_key_rings":           kms.DataSourceIBMKMSkeyRings(),
+			"ibm_kms_key_policies":        kms.DataSourceIBMKMSkeyPolicies(),
+			"ibm_kms_keys":                kms.DataSourceIBMKMSkeys(),
+			"ibm_kms_key":                 kms.DataSourceIBMKMSkey(),
+			"ibm_pn_application_chrome":   pushnotification.DataSourceIBMPNApplicationChrome(),
 			"ibm_app_config_environment":  appconfiguration.DataSourceIBMAppConfigEnvironment(),
 			"ibm_app_config_environments": appconfiguration.DataSourceIBMAppConfigEnvironments(),
 			"ibm_app_config_feature":      appconfiguration.DataSourceIBMAppConfigFeature(),
@@ -426,14 +431,14 @@ func Provider() *schema.Provider {
 			// "ibm_service_plan":                       dataSourceIBMServicePlan(),
 			// "ibm_space":                              dataSourceIBMSpace(),
 
-			// // Added for Schematics
-			// "ibm_schematics_workspace":      dataSourceIBMSchematicsWorkspace(),
-			// "ibm_schematics_output":         dataSourceIBMSchematicsOutput(),
-			// "ibm_schematics_state":          dataSourceIBMSchematicsState(),
-			// "ibm_schematics_action":         dataSourceIBMSchematicsAction(),
-			// "ibm_schematics_job":            dataSourceIBMSchematicsJob(),
-			// "ibm_schematics_inventory":      dataSourceIBMSchematicsInventory(),
-			// "ibm_schematics_resource_query": dataSourceIBMSchematicsResourceQuery(),
+			// Added for Schematics
+			"ibm_schematics_workspace":      schematics.DataSourceIBMSchematicsWorkspace(),
+			"ibm_schematics_output":         schematics.DataSourceIBMSchematicsOutput(),
+			"ibm_schematics_state":          schematics.DataSourceIBMSchematicsState(),
+			"ibm_schematics_action":         schematics.DataSourceIBMSchematicsAction(),
+			"ibm_schematics_job":            schematics.DataSourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
 
 			// // Added for Power Resources
 
@@ -496,8 +501,8 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
 			// //Added for Secrets Manager
-			// "ibm_secrets_manager_secrets": dataSourceIBMSecretsManagerSecrets(),
-			// "ibm_secrets_manager_secret":  dataSourceIBMSecretsManagerSecret(),
+			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
+			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
 
 			// //Added for Satellite
 			"ibm_satellite_location":            satellite.DataSourceIBMSatelliteLocation(),
@@ -522,22 +527,22 @@ func Provider() *schema.Provider {
 			"ibm_atracker_routes":    atracker.DataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
-			// //Security and Compliance Center
-			// "ibm_scc_si_providers":      dataSourceIBMSccSiProviders(),
-			// "ibm_scc_si_note":           dataSourceIBMSccSiNote(),
-			// "ibm_scc_si_notes":          dataSourceIBMSccSiNotes(),
-			// "ibm_scc_account_location":  dataSourceIbmSccAccountLocation(),
-			// "ibm_scc_account_locations": dataSourceIbmSccAccountLocations(),
-			// "ibm_scc_account_settings":  dataSourceIbmSccAccountLocationSettings(),
-			// "ibm_scc_si_occurrence":     dataSourceIBMSccSiOccurrence(),
-			// "ibm_scc_si_occurrences":    dataSourceIBMSccSiOccurrences(),
+			//Security and Compliance Center
+			"ibm_scc_si_providers":      scc.DataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":           scc.DataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":          scc.DataSourceIBMSccSiNotes(),
+			"ibm_scc_account_location":  scc.DataSourceIBMSccAccountLocation(),
+			"ibm_scc_account_locations": scc.DataSourceIBMSccAccountLocations(),
+			"ibm_scc_account_settings":  scc.DataSourceIBMSccAccountLocationSettings(),
+			"ibm_scc_si_occurrence":     scc.DataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences":    scc.DataSourceIBMSccSiOccurrences(),
 
-			// // Compliance Posture Management
-			// "ibm_scc_posture_scopes":         dataSourceIBMSccPostureScopes(),
-			// "ibm_scc_posture_latest_scans":   dataSourceIBMSccPostureLatestScans(),
-			// "ibm_scc_posture_profiles":       dataSourceIBMSccPostureProfiles(),
-			// "ibm_scc_posture_scan_summary":   dataSourceIBMSccPostureScansSummary(),
-			// "ibm_scc_posture_scan_summaries": dataSourceIBMSccPostureScanSummaries(),
+			// Compliance Posture Management
+			"ibm_scc_posture_scopes":         scc.DataSourceIBMSccPostureScopes(),
+			"ibm_scc_posture_latest_scans":   scc.DataSourceIBMSccPostureLatestScans(),
+			"ibm_scc_posture_profiles":       scc.DataSourceIBMSccPostureProfiles(),
+			"ibm_scc_posture_scan_summary":   scc.DataSourceIBMSccPostureScansSummary(),
+			"ibm_scc_posture_scan_summaries": scc.DataSourceIBMSccPostureScanSummaries(),
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
@@ -585,41 +590,41 @@ func Provider() *schema.Provider {
 			"ibm_appid_theme_text":               appid.ResourceIBMAppIDThemeText(),
 			"ibm_appid_user_roles":               appid.ResourceIBMAppIDUserRoles(),
 
-			"ibm_function_action":            functions.ResourceIBMFunctionAction(),
-			"ibm_function_package":           functions.ResourceIBMFunctionPackage(),
-			"ibm_function_rule":              functions.ResourceIBMFunctionRule(),
-			"ibm_function_trigger":           functions.ResourceIBMFunctionTrigger(),
-			"ibm_function_namespace":         functions.ResourceIBMFunctionNamespace(),
-			"ibm_cis":                        cis.ResourceIBMCISInstance(),
-			"ibm_database":                   database.ResourceIBMDatabaseInstance(),
-			"ibm_certificate_manager_import": certificatemanager.ResourceIBMCertificateManagerImport(),
-			"ibm_certificate_manager_order":  certificatemanager.ResourceIBMCertificateManagerOrder(),
-			"ibm_cis_domain":                 cis.ResourceIBMCISDomain(),
-			"ibm_cis_domain_settings":        cis.ResourceIBMCISSettings(),
-			"ibm_cis_firewall":               cis.ResourceIBMCISFirewallRecord(),
-			"ibm_cis_range_app":              cis.ResourceIBMCISRangeApp(),
-			"ibm_cis_healthcheck":            cis.ResourceIBMCISHealthCheck(),
-			"ibm_cis_origin_pool":            cis.ResourceIBMCISPool(),
-			"ibm_cis_global_load_balancer":   cis.ResourceIBMCISGlb(),
-			"ibm_cis_certificate_upload":     cis.ResourceIBMCISCertificateUpload(),
-			"ibm_cis_dns_record":             cis.ResourceIBMCISDnsRecord(),
-			"ibm_cis_dns_records_import":     cis.ResourceIBMCISDNSRecordsImport(),
-			"ibm_cis_rate_limit":             cis.ResourceIBMCISRateLimit(),
-			"ibm_cis_page_rule":              cis.ResourceIBMCISPageRule(),
-			"ibm_cis_edge_functions_action":  cis.ResourceIBMCISEdgeFunctionsAction(),
-			"ibm_cis_edge_functions_trigger": cis.ResourceIBMCISEdgeFunctionsTrigger(),
-			"ibm_cis_tls_settings":           cis.ResourceIBMCISTLSSettings(),
-			"ibm_cis_waf_package":            cis.ResourceIBMCISWAFPackage(),
-			"ibm_cis_routing":                cis.ResourceIBMCISRouting(),
-			"ibm_cis_waf_group":              cis.ResourceIBMCISWAFGroup(),
-			"ibm_cis_cache_settings":         cis.ResourceIBMCISCacheSettings(),
-			"ibm_cis_custom_page":            cis.ResourceIBMCISCustomPage(),
-			"ibm_cis_waf_rule":               cis.ResourceIBMCISWAFRule(),
-			"ibm_cis_certificate_order":      cis.ResourceIBMCISCertificateOrder(),
-			"ibm_cis_filter":                 cis.ResourceIBMCISFilter(),
-			"ibm_cis_firewall_rule":          cis.ResourceIBMCISFirewallrules(),
-			"ibm_cloudant":                   cloudant.ResourceIBMCloudant(),
-			// "ibm_cloud_shell_account_settings":                   resourceIBMCloudShellAccountSettings(),
+			"ibm_function_action":              functions.ResourceIBMFunctionAction(),
+			"ibm_function_package":             functions.ResourceIBMFunctionPackage(),
+			"ibm_function_rule":                functions.ResourceIBMFunctionRule(),
+			"ibm_function_trigger":             functions.ResourceIBMFunctionTrigger(),
+			"ibm_function_namespace":           functions.ResourceIBMFunctionNamespace(),
+			"ibm_cis":                          cis.ResourceIBMCISInstance(),
+			"ibm_database":                     database.ResourceIBMDatabaseInstance(),
+			"ibm_certificate_manager_import":   certificatemanager.ResourceIBMCertificateManagerImport(),
+			"ibm_certificate_manager_order":    certificatemanager.ResourceIBMCertificateManagerOrder(),
+			"ibm_cis_domain":                   cis.ResourceIBMCISDomain(),
+			"ibm_cis_domain_settings":          cis.ResourceIBMCISSettings(),
+			"ibm_cis_firewall":                 cis.ResourceIBMCISFirewallRecord(),
+			"ibm_cis_range_app":                cis.ResourceIBMCISRangeApp(),
+			"ibm_cis_healthcheck":              cis.ResourceIBMCISHealthCheck(),
+			"ibm_cis_origin_pool":              cis.ResourceIBMCISPool(),
+			"ibm_cis_global_load_balancer":     cis.ResourceIBMCISGlb(),
+			"ibm_cis_certificate_upload":       cis.ResourceIBMCISCertificateUpload(),
+			"ibm_cis_dns_record":               cis.ResourceIBMCISDnsRecord(),
+			"ibm_cis_dns_records_import":       cis.ResourceIBMCISDNSRecordsImport(),
+			"ibm_cis_rate_limit":               cis.ResourceIBMCISRateLimit(),
+			"ibm_cis_page_rule":                cis.ResourceIBMCISPageRule(),
+			"ibm_cis_edge_functions_action":    cis.ResourceIBMCISEdgeFunctionsAction(),
+			"ibm_cis_edge_functions_trigger":   cis.ResourceIBMCISEdgeFunctionsTrigger(),
+			"ibm_cis_tls_settings":             cis.ResourceIBMCISTLSSettings(),
+			"ibm_cis_waf_package":              cis.ResourceIBMCISWAFPackage(),
+			"ibm_cis_routing":                  cis.ResourceIBMCISRouting(),
+			"ibm_cis_waf_group":                cis.ResourceIBMCISWAFGroup(),
+			"ibm_cis_cache_settings":           cis.ResourceIBMCISCacheSettings(),
+			"ibm_cis_custom_page":              cis.ResourceIBMCISCustomPage(),
+			"ibm_cis_waf_rule":                 cis.ResourceIBMCISWAFRule(),
+			"ibm_cis_certificate_order":        cis.ResourceIBMCISCertificateOrder(),
+			"ibm_cis_filter":                   cis.ResourceIBMCISFilter(),
+			"ibm_cis_firewall_rule":            cis.ResourceIBMCISFirewallrules(),
+			"ibm_cloudant":                     cloudant.ResourceIBMCloudant(),
+			"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettings(),
 			// "ibm_compute_autoscale_group":                        resourceIBMComputeAutoScaleGroup(),
 			// "ibm_compute_autoscale_policy":                       resourceIBMComputeAutoScalePolicy(),
 			// "ibm_compute_bare_metal":                             resourceIBMComputeBareMetal(),
@@ -750,7 +755,7 @@ func Provider() *schema.Provider {
 			// "ibm_network_vlan_spanning":                          resourceIBMNetworkVlanSpan(),
 			// "ibm_object_storage_account":                         resourceIBMObjectStorageAccount(),
 			// "ibm_org":                                            resourceIBMOrg(),
-			// "ibm_pn_application_chrome":                          resourceIBMPNApplicationChrome(),
+			"ibm_pn_application_chrome":  pushnotification.ResourceIBMPNApplicationChrome(),
 			"ibm_app_config_environment": appconfiguration.ResourceIBMAppConfigEnvironment(),
 			"ibm_app_config_feature":     appconfiguration.ResourceIBMIbmAppConfigFeature(),
 			"ibm_kms_key":                kms.ResourceIBMKmskey(),
@@ -827,12 +832,12 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_account_group": enterprise.ResourceIBMEnterpriseAccountGroup(),
 			"ibm_enterprise_account":       enterprise.ResourceIBMEnterpriseAccount(),
 
-			// //Added for Schematics
-			// "ibm_schematics_workspace":      resourceIBMSchematicsWorkspace(),
-			// "ibm_schematics_action":         resourceIBMSchematicsAction(),
-			// "ibm_schematics_job":            resourceIBMSchematicsJob(),
-			// "ibm_schematics_inventory":      resourceIBMSchematicsInventory(),
-			// "ibm_schematics_resource_query": resourceIBMSchematicsResourceQuery(),
+			//Added for Schematics
+			"ibm_schematics_workspace":      schematics.ResourceIBMSchematicsWorkspace(),
+			"ibm_schematics_action":         schematics.ResourceIBMSchematicsAction(),
+			"ibm_schematics_job":            schematics.ResourceIBMSchematicsJob(),
+			"ibm_schematics_inventory":      schematics.ResourceIBMSchematicsInventory(),
+			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
 
 			// //satellite  resources
 			"ibm_satellite_location":            satellite.ResourceIBMSatelliteLocation(),
@@ -851,9 +856,9 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":  atracker.ResourceIBMAtrackerRoute(),
 
 			// //Security and Compliance Center
-			// "ibm_scc_si_note":          resourceIBMSccSiNote(),
-			// "ibm_scc_account_settings": resourceIBMSccAccountSettings(),
-			// "ibm_scc_si_occurrence":    resourceIBMSccSiOccurrence(),
+			"ibm_scc_si_note":          scc.ResourceIBMSccSiNote(),
+			"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettings(),
+			"ibm_scc_si_occurrence":    scc.ResourceIBMSccSiOccurrence(),
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
@@ -967,25 +972,25 @@ func Validator() validate.ValidatorDict {
 				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_glb_pool":                        dnsservices.ResourceIBMPrivateDNSGLBPoolValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
-				// "ibm_schematics_action":                   resourceIBMSchematicsActionValidator(),
-				// "ibm_schematics_job":                      resourceIBMSchematicsJobValidator(),
-				// "ibm_schematics_workspace":                resourceIBMSchematicsWorkspaceValidator(),
-				// "ibm_schematics_inventory":                resourceIBMSchematicsInventoryValidator(),
-				// "ibm_schematics_resource_query":           resourceIBMSchematicsResourceQueryValidator(),
-				"ibm_resource_instance": resourcecontroller.ResourceIBMResourceInstanceValidator(),
+				"ibm_schematics_action":                   schematics.ResourceIBMSchematicsActionValidator(),
+				"ibm_schematics_job":                      schematics.ResourceIBMSchematicsJobValidator(),
+				"ibm_schematics_workspace":                schematics.ResourceIBMSchematicsWorkspaceValidator(),
+				"ibm_schematics_inventory":                schematics.ResourceIBMSchematicsInventoryValidator(),
+				"ibm_schematics_resource_query":           schematics.ResourceIBMSchematicsResourceQueryValidator(),
+				"ibm_resource_instance":                   resourcecontroller.ResourceIBMResourceInstanceValidator(),
 				// "ibm_is_virtual_endpoint_gateway":         resourceIBMISEndpointGatewayValidator(),
-				"ibm_resource_tag":       globaltagging.ResourceIBMResourceTagValidator(),
-				"ibm_satellite_location": satellite.ResourceIBMSatelliteLocationValidator(),
-				"ibm_satellite_cluster":  satellite.ResourceIBMSatelliteClusterValidator(),
-				"ibm_pi_volume":          power.ResourceIBMPIVolumeValidator(),
-				"ibm_atracker_target":    atracker.ResourceIBMAtrackerTargetValidator(),
-				"ibm_atracker_route":     atracker.ResourceIBMAtrackerRouteValidator(),
-				"ibm_satellite_endpoint": satellite.ResourceIBMSatelliteEndpointValidator(),
-				// "ibm_scc_si_note":                         resourceIBMSccSiNoteValidator(),
-				// "ibm_scc_account_settings":                resourceIBMSccAccountSettingsValidator(),
-				// "ibm_scc_si_occurrence":                   resourceIBMSccSiOccurrenceValidator(),
-				"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
-				"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
+				"ibm_resource_tag":         globaltagging.ResourceIBMResourceTagValidator(),
+				"ibm_satellite_location":   satellite.ResourceIBMSatelliteLocationValidator(),
+				"ibm_satellite_cluster":    satellite.ResourceIBMSatelliteClusterValidator(),
+				"ibm_pi_volume":            power.ResourceIBMPIVolumeValidator(),
+				"ibm_atracker_target":      atracker.ResourceIBMAtrackerTargetValidator(),
+				"ibm_atracker_route":       atracker.ResourceIBMAtrackerRouteValidator(),
+				"ibm_satellite_endpoint":   satellite.ResourceIBMSatelliteEndpointValidator(),
+				"ibm_scc_si_note":          scc.ResourceIBMSccSiNoteValidator(),
+				"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettingsValidator(),
+				"ibm_scc_si_occurrence":    scc.ResourceIBMSccSiOccurrenceValidator(),
+				"ibm_cbr_zone":             contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
+				"ibm_cbr_rule":             contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
@@ -997,10 +1002,10 @@ func Validator() validate.ValidatorDict {
 				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
 				// "ibm_is_vpc":                  dataSourceIBMISVpcValidator(),
 				// "ibm_is_volume":               dataSourceIBMISVolumeValidator(),
-				// "ibm_scc_si_notes":            dataSourceIBMSccSiNotesValidator(),
-				// "ibm_scc_si_occurrences":      dataSourceIBMSccSiOccurrencesValidator(),
-				// "ibm_secrets_manager_secret":  datasourceIBMSecretsManagerSecretValidator(),
-				// "ibm_secrets_manager_secrets": datasourceIBMSecretsManagerSecretsValidator(),
+				"ibm_scc_si_notes":            scc.DataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_si_occurrences":      scc.DataSourceIBMSccSiOccurrencesValidator(),
+				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
+				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 			},
 		}
 	})

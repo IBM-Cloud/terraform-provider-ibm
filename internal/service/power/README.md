@@ -4,7 +4,7 @@ This area is primarily for IBM provider contributors and maintainers. For inform
 
 
 ## Handy Links
-* [Find out about contributing](../../../.github/CONTRIBUTING.md) to the IBM provider!
+* [Find out about contributing](../../../CONTRIBUTING.md) to the IBM provider!
 * IBM Provider Docs: [Home](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
 * IBM Provider Docs: [One of the Power Systems resources](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_cloud_connection)
 * IBM API Docs: [IBM API Docs for Power Systems](https://cloud.ibm.com/apidocs/power-cloud)
