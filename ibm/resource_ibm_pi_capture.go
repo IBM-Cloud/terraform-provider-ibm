@@ -75,11 +75,10 @@ func resourceIBMPICapture() *schema.Resource {
 			},
 
 			helpers.PIInstanceCaptureCloudStorageRegion: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Description:  "List of Regions to use",
-				ValidateFunc: validateAllowedStringValue([]string{"us-south", "us-east", "us-de"}),
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "List of Regions to use",
 			},
 
 			helpers.PIInstanceCaptureCloudStorageAccessKey: {
@@ -131,22 +130,22 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageRegion); ok {
 			captureBody.CloudStorageRegion = v.(string)
 		} else {
-			return diag.Errorf("%s  is required when capture destination is %s", helpers.PIInstanceCaptureCloudStorageRegion, cloudStorageDestination)
+			return diag.Errorf("%s  is required when capture destination is %s", helpers.PIInstanceCaptureCloudStorageRegion, capturedestination)
 		}
 		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageAccessKey); ok {
 			captureBody.CloudStorageAccessKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageAccessKey, cloudStorageDestination)
+			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageAccessKey, capturedestination)
 		}
 		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageImagePath); ok {
 			captureBody.CloudStorageImagePath = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageImagePath, cloudStorageDestination)
+			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageImagePath, capturedestination)
 		}
 		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageSecretKey); ok {
 			captureBody.CloudStorageSecretKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageSecretKey, cloudStorageDestination)
+			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageSecretKey, capturedestination)
 		}
 	}
 
@@ -168,7 +167,7 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, capturename))
+	d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, capturename, capturedestination))
 	return resourceIBMPICaptureRead(ctx, d, meta)
 }
 
@@ -208,7 +207,6 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	cloudInstanceID, captureID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -81,16 +81,17 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the capture instance. The ID is composed of `<pi_cloud_instance_id>/<capture_name>`.
+- `id` - (String) The unique identifier of the capture instance. The ID is composed of `<pi_cloud_instance_id>/<capture_name>/<capture_destination>`.
 - `image_id` - (String) The unique identifier of the capture instance.
 
 
 ## Import
 
-The `ibm_pi_capture` resource can be imported by using `pi_cloud_instance_id` and `capture_name`.
+The `ibm_pi_capture` resource can be imported by using `pi_cloud_instance_id` `capture_name` and `capture_destination`.
 
 **Example**
 ```
-$ terraform import ibm_pi_capture.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+$ terraform import ibm_pi_capture.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb/image-catalog
+
 ```
 
