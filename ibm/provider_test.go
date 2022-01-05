@@ -96,6 +96,9 @@ var iksClusterResourceGroupID string
 var pi_image string
 var pi_image_bucket_name string
 var pi_image_bucket_file_name string
+var pi_image_bucket_access_key string
+var pi_image_bucket_secret_key string
+var pi_image_bucket_region string
 var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
@@ -495,6 +498,24 @@ func init() {
 	if pi_image_bucket_file_name == "" {
 		pi_image_bucket_file_name = "rhel.ova.gz"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
+	}
+
+	pi_image_bucket_access_key = os.Getenv("PI_IMAGE_BUCKET_ACCESS_KEY")
+	if pi_image_bucket_access_key == "" {
+		pi_image_bucket_access_key = "images-bucket-access-key"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_ACCESS_KEY for testing ibm_pi_image_export resource else it is set to default value 'images-bucket-access-key'")
+	}
+
+	pi_image_bucket_secret_key = os.Getenv("PI_IMAGE_BUCKET_SECRET_KEY")
+	if pi_image_bucket_secret_key == "" {
+		pi_image_bucket_secret_key = "images-bucket-secret-key"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_SECRET_KEY for testing ibm_pi_image_export resource else it is set to default value 'PI_IMAGE_BUCKET_SECRET_KEY'")
+	}
+
+	pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
+	if pi_image_bucket_region == "" {
+		pi_image_bucket_region = "us-east"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
 	}
 
 	pi_key_name = os.Getenv("PI_KEY_NAME")
