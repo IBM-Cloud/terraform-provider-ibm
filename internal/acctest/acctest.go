@@ -21,7 +21,7 @@ var CisDomainStatic string
 var CisDomainTest string
 var CisInstance string
 var CisResourceGroup string
-var cloudShellAccountID string
+var CloudShellAccountID string
 var CosCRN string
 var ibmid1 string
 var ibmid2 string
@@ -70,18 +70,18 @@ var dedicatedHostGroupClass string
 var volumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
-var workspaceID string
-var templateID string
-var actionID string
-var jobID string
-var repoURL string
-var repoBranch string
+var WorkspaceID string
+var TemplateID string
+var ActionID string
+var JobID string
+var RepoURL string
+var RepoBranch string
 var imageName string
 var functionNamespace string
 var HpcsInstanceID string
-var secretsManagerInstanceID string
-var secretsManagerSecretType string
-var secretsManagerSecretID string
+var SecretsManagerInstanceID string
+var SecretsManagerSecretType string
+var SecretsManagerSecretID string
 var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
@@ -125,12 +125,12 @@ var Tg_cross_network_id string
 var Account_to_be_imported string
 
 //Security and Compliance Center, SI
-var scc_si_account string
+var Scc_si_account string
 
 //Security and Compliance Center, Posture Management
-var scc_posture_scope_id string
-var scc_posture_scan_id string
-var scc_posture_profile_id string
+var Scc_posture_scope_id string
+var Scc_posture_scan_id string
+var Scc_posture_profile_id string
 
 //ROKS Cluster
 var ClusterName string
@@ -546,32 +546,32 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
-	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
-	if workspaceID == "" {
-		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
+	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
+	if WorkspaceID == "" {
+		WorkspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_WORKSPACE_ID for testing schematics resources else it is set to default value")
 	}
-	templateID = os.Getenv("SCHEMATICS_TEMPLATE_ID")
-	if templateID == "" {
-		templateID = "c8d52331-056f-40"
+	TemplateID = os.Getenv("SCHEMATICS_TEMPLATE_ID")
+	if TemplateID == "" {
+		TemplateID = "c8d52331-056f-40"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_TEMPLATE_ID for testing schematics resources else it is set to default value")
 	}
-	actionID = os.Getenv("SCHEMATICS_ACTION_ID")
-	if actionID == "" {
-		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+	ActionID = os.Getenv("SCHEMATICS_ACTION_ID")
+	if ActionID == "" {
+		ActionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_ACTION_ID for testing schematics resources else it is set to default value")
 	}
-	jobID = os.Getenv("SCHEMATICS_JOB_ID")
-	if actionID == "" {
-		actionID = "us-east.ACTION.action_pm.a4ffeec3"
+	JobID = os.Getenv("SCHEMATICS_JOB_ID")
+	if JobID == "" {
+		JobID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
 	}
-	repoURL = os.Getenv("SCHEMATICS_REPO_URL")
-	if repoURL == "" {
+	RepoURL = os.Getenv("SCHEMATICS_REPO_URL")
+	if RepoURL == "" {
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_URL for testing schematics resources else tests will fail if this is not set correctly")
 	}
-	repoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
-	if repoBranch == "" {
+	RepoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
+	if RepoBranch == "" {
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
@@ -621,21 +621,21 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable HPCS_INSTANCE_ID for testing data_source_ibm_kms_key_test else it is set to default value")
 	}
 
-	secretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
-	if secretsManagerInstanceID == "" {
-		// secretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
+	SecretsManagerInstanceID = os.Getenv("SECRETS_MANAGER_INSTANCE_ID")
+	if SecretsManagerInstanceID == "" {
+		// SecretsManagerInstanceID = "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8"
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_INSTANCE_ID for testing data_source_ibm_secrets_manager_secrets_test else tests will fail if this is not set correctly")
 	}
 
-	secretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
-	if secretsManagerSecretType == "" {
-		secretsManagerSecretType = "username_password"
+	SecretsManagerSecretType = os.Getenv("SECRETS_MANAGER_SECRET_TYPE")
+	if SecretsManagerSecretType == "" {
+		SecretsManagerSecretType = "username_password"
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SECRET_TYPE for testing data_source_ibm_secrets_manager_secrets_test, else it is set to default value. For data_source_ibm_secrets_manager_secret_test, tests will fail if this is not set correctly")
 	}
 
-	secretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
-	if secretsManagerSecretID == "" {
-		// secretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
+	SecretsManagerSecretID = os.Getenv("SECRETS_MANAGER_SECRET_ID")
+	if SecretsManagerSecretID == "" {
+		// SecretsManagerSecretID = "644f4a69-0d17-198f-3b58-23f2746c706d"
 		fmt.Println("[WARN] Set the environment variable SECRETS_MANAGER_SECRET_ID for testing data_source_ibm_secrets_manager_secret_test else tests will fail if this is not set correctly")
 	}
 
@@ -677,28 +677,28 @@ func init() {
 	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
-	scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
-	if scc_si_account == "" {
+	Scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
+	if Scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")
 	}
 
-	scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
-	if scc_posture_scope_id == "" {
+	Scc_posture_scope_id = os.Getenv("SCC_POSTURE_SCOPE_ID")
+	if Scc_posture_scope_id == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCOPE_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
 	}
 
-	scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
-	if scc_posture_scan_id == "" {
+	Scc_posture_scan_id = os.Getenv("SCC_POSTURE_SCAN_ID")
+	if Scc_posture_scan_id == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_SCAN_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
-	scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
-	if scc_posture_profile_id == "" {
+	Scc_posture_profile_id = os.Getenv("SCC_POSTURE_PROFILE_ID")
+	if Scc_posture_profile_id == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_PROFILE_ID for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
-	cloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
-	if cloudShellAccountID == "" {
+	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
+	if CloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
 	}
 
@@ -787,9 +787,9 @@ func TestAccPreCheckCis(t *testing.T) {
 	}
 }
 
-func testAccPreCheckCloudShell(t *testing.T) {
+func TestAccPreCheckCloudShell(t *testing.T) {
 	TestAccPreCheck(t)
-	if cloudShellAccountID == "" {
+	if CloudShellAccountID == "" {
 		t.Fatal("IBM_CLOUD_SHELL_ACCOUNT_ID must be set for acceptance tests")
 	}
 }
