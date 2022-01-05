@@ -101,7 +101,7 @@ func ResourceIBMResourceInstance() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"parameters"},
 				StateFunc: func(v interface{}) string {
-					json, err := normalizeJSONString(v)
+					json, err := flex.NormalizeJSONString(v)
 					if err != nil {
 						return fmt.Sprintf("%q", err.Error())
 					}

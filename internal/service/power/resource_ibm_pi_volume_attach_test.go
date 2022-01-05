@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power_test
 
 import (
 	"context"
@@ -15,13 +15,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
 func TestAccIBMPIVolumeAttachbasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-volume-attach-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIVolumeAttachDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -38,8 +41,8 @@ func TestAccIBMPIVolumeAttachbasic(t *testing.T) {
 func TestAccIBMPIShareableVolumeAttachbasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-shareable-volume-attach-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIVolumeAttachDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -54,7 +57,7 @@ func TestAccIBMPIShareableVolumeAttachbasic(t *testing.T) {
 	})
 }
 func testAccCheckIBMPIVolumeAttachDestroy(s *terraform.State) error {
-	sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
@@ -63,7 +66,7 @@ func testAccCheckIBMPIVolumeAttachDestroy(s *terraform.State) error {
 			continue
 		}
 
-		ids, err := idParts(rs.Primary.ID)
+		ids, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -91,12 +94,12 @@ func testAccCheckIBMPIVolumeAttachExists(n string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
 
-		ids, err := idParts(rs.Primary.ID)
+		ids, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -137,7 +140,7 @@ func testAccCheckIBMPIVolumeAttachConfig(name string) string {
 		pi_volume_id			= ibm_pi_volume.power_volume.volume_id
 		pi_instance_id 			= ibm_pi_instance.power_instance.instance_id
 	  }
-	`, pi_cloud_instance_id, name, pi_image, pi_network_name)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
 }
 
 func testAccCheckIBMPIShareableVolumeAttachConfig(name string) string {
@@ -169,5 +172,5 @@ func testAccCheckIBMPIShareableVolumeAttachConfig(name string) string {
 		pi_volume_id 			= ibm_pi_volume.power_volume.volume_id
 		pi_instance_id 			= ibm_pi_instance.power_instance[1].instance_id
 	  }
-	`, pi_cloud_instance_id, name, pi_image, pi_network_name)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name)
 }
