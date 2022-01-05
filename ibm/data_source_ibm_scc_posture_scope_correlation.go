@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -52,7 +51,13 @@ func dataSourceIBMSccPostureScopeCorrelationRead(context context.Context, d *sch
 	}
 
 	getCorrelationIDOptions := &posturemanagementv2.GetCorrelationIDOptions{}
-	getCorrelationIDOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	getCorrelationIDOptions.SetAccountID(accountID)
 
 	getCorrelationIDOptions.SetCorrelationID(d.Get("correlation_id").(string))
 

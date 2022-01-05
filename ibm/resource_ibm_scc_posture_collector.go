@@ -146,7 +146,13 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 	}
 
 	listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-	listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	listCollectorsOptions.SetAccountID(accountID)
 
 	collectorList, response, err := postureManagementClient.ListCollectorsWithContext(context, listCollectorsOptions)
 	if err != nil {
@@ -157,7 +163,7 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 		log.Printf("[DEBUG] ListCollectorsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListCollectorsWithContext failed %s\n%s", err, response))
 	}
-	log.Printf("%s", *(collectorList.Collectors[0].DisplayName))
+	d.SetId(*(collectorList.Collectors[0].ID))
 	return nil
 }
 

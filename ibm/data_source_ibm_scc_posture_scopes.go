@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -331,13 +330,21 @@ func dataSourceIBMSccPostureListScopesRead(context context.Context, d *schema.Re
 	}
 
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
 
-	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
+	accountID := userDetails.userAccount
+	listScopesOptions.SetAccountID(accountID)
+
+	finalList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListScopesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListScopesWithContext failed %s\n%s", err, response))
 	}
+
+	scopeList := finalList
 
 	d.SetId(dataSourceIBMSccPostureListScopesID(d))
 	if err = d.Set("offset", intValue(scopeList.Offset)); err != nil {

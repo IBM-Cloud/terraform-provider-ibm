@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_scan_summary"
 description: |-
   Get information about scans_summary
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_scan_summary
@@ -25,7 +25,7 @@ Review the argument reference that you can specify for your data source.
 
 * `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.
   * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
-* `scan_id` - (Required, Forces new resource, String) Your Scan ID.
+* `scan_id` - (Required, String) Your Scan ID.
   * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 
 ## Attribute Reference
@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the scans_summary.
-* `controls` - (Required, List) The list of controls on the scan summary.
+* `controls` - (Optional, List) The list of controls on the scan summary.
 Nested scheme for **controls**:
 	* `desciption` - (Optional, String) The scan profile name.
 	* `external_control_id` - (Optional, String) The external control ID.
@@ -66,11 +66,11 @@ Nested scheme for **controls**:
 	* `status` - (Optional, String) The control status.
 	  * Constraints: Allowable values are: `pass`, `unable_to_perform`.
 
-* `discover_id` - (Required, String) The scan discovery ID.
+* `discover_id` - (Optional, String) The scan discovery ID.
 
-* `id` - (Required, String) The scan ID.
+* `id` - (Optional, String) The scan ID.
 
-* `profile_name` - (Required, String) The scan profile name.
+* `profile_name` - (Optional, String) The scan profile name.
 
-* `scope_id` - (Required, String) The scan summary scope ID.
+* `scope_id` - (Optional, String) The scan summary scope ID.
 

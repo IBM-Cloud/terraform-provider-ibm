@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_group_profile"
 description: |-
   Get information about group_profile_details
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_group_profile
@@ -30,31 +30,31 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the group_profile_details.
-* `controls` - (Required, List) Profiles array.
+* `controls` - (Optional, List) Profiles array.
 Nested scheme for **controls**:
-	* `description` - (Required, String) The description of the control.
-	* `external_control_id` - (Required, String) The external identifier number of the control.
-	* `goals` - (Required, List) Mapped goals aganist the control identifier.
+	* `description` - (Optional, String) The description of the control.
+	* `external_control_id` - (Optional, String) The external identifier number of the control.
+	* `goals` - (Optional, List) Mapped goals aganist the control identifier.
 	Nested scheme for **goals**:
-		* `description` - (Required, String) The description of the goal.
-		* `id` - (Required, String) The goal ID.
-		* `is_auto_remediable` - (Required, Boolean) The goal is autoremediable or not.
-		* `is_automatable` - (Required, Boolean) The goal is automatable or not.
-		* `is_manual` - (Required, Boolean) The goal is manual check.
-		* `is_remediable` - (Required, Boolean) The goal is remediable or not.
-		* `is_reversible` - (Required, Boolean) The goal is reversible or not.
-		* `severity` - (Required, String) The severity of the goal.
-	* `id` - (Required, String) The identifier number of the control.
+		* `description` - (Optional, String) The description of the goal.
+		* `id` - (Optional, String) The goal ID.
+		* `is_auto_remediable` - (Optional, Boolean) The goal is autoremediable or not.
+		* `is_automatable` - (Optional, Boolean) The goal is automatable or not.
+		* `is_manual` - (Optional, Boolean) The goal is manual check.
+		* `is_remediable` - (Optional, Boolean) The goal is remediable or not.
+		* `is_reversible` - (Optional, Boolean) The goal is reversible or not.
+		* `severity` - (Optional, String) The severity of the goal.
+	* `id` - (Optional, String) The identifier number of the control.
 
-* `first` - (Required, List) The URL of a page.
+* `first` - (Optional, List) The URL of a page.
 Nested scheme for **first**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 
-* `last` - (Required, List) The URL of a page.
+* `last` - (Optional, List) The URL of a page.
 Nested scheme for **last**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 
 * `previous` - (Optional, List) The URL of a page.
 Nested scheme for **previous**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 

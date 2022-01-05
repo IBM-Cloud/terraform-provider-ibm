@@ -18,8 +18,6 @@ func TestAccIBMSccPostureProfileDetailsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMSccPostureProfileDetailsDataSourceConfigBasic(scc_posture_profile_id),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "profile_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "description"),
@@ -41,7 +39,7 @@ func TestAccIBMSccPostureProfileDetailsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMSccPostureProfileDetailsDataSourceConfigBasic(profileId string) string {
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_profile" "profile_details" {
-			id = "%s"
+			profile_id = "%s"
 			profile_type = "4"
 		}
 	`, profileId)

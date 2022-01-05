@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -298,7 +297,13 @@ func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema
 	}
 
 	scanSummariesOptions := &posturemanagementv2.ScanSummariesOptions{}
-	scanSummariesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	scanSummariesOptions.SetAccountID(accountID)
 
 	scanSummariesOptions.SetReportSettingID(d.Get("report_setting_id").(string))
 

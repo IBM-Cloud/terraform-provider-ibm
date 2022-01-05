@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -158,7 +157,13 @@ func dataSourceIBMSccPostureGroupProfileDetailsRead(context context.Context, d *
 	getProfileControlsOptions := &posturemanagementv2.GetProfileControlsOptions{}
 
 	getProfileControlsOptions.SetProfileID(d.Get("profile_id").(string))
-	getProfileControlsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	getProfileControlsOptions.SetAccountID(accountID)
 
 	var controlList *posturemanagementv2.ControlList
 	var offset int64

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -225,7 +224,13 @@ func dataSourceIBMSccPostureListLatestScansRead(context context.Context, d *sche
 	}
 
 	listLatestScansOptions := &posturemanagementv2.ListLatestScansOptions{}
-	listLatestScansOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	listLatestScansOptions.SetAccountID(accountID)
 
 	var scanList *posturemanagementv2.ScanList
 	var offset int64

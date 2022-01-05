@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +19,7 @@ func dataSourceIBMSccPostureProfileDetails() *schema.Resource {
 		ReadContext: dataSourceIBMSccPostureProfileDetailsRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"profile_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The id for the given API.",
@@ -101,9 +100,15 @@ func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schem
 	}
 
 	getProfileOptions := &posturemanagementv2.GetProfileOptions{}
-	getProfileOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
 
-	getProfileOptions.SetID(d.Get("id").(string))
+	accountID := userDetails.userAccount
+	getProfileOptions.SetAccountID(accountID)
+
+	getProfileOptions.SetID(d.Get("profile_id").(string))
 	getProfileOptions.SetProfileType(d.Get("profile_type").(string))
 
 	profile, response, err := postureManagementClient.GetProfileWithContext(context, getProfileOptions)

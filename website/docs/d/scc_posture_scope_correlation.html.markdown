@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_scope_correlation"
 description: |-
   Get information about scope_correlation
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_scope_correlation
@@ -30,9 +30,9 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the scope_correlation.
-* `last_heartbeat` - (Required, String) Returns the time that the scope was last updated. This value exists when collector is installed and running.
+* `last_heartbeat` - (Optional, String) Returns the time that the scope was last updated. This value exists when collector is installed and running.
 
-* `start_time` - (Required, String) Returns the time that task started.
+* `start_time` - (Optional, String) Returns the time that task started.
 
-* `status` - (Required, String) Returns the current status of a task.
+* `status` - (Optional, String) Returns the current status of a task.
 

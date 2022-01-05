@@ -134,9 +134,16 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 	}
 
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-	listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	listScopesOptions.SetAccountID(accountID)
 
 	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
+	d.SetId(*(scopeList.Scopes[0].ID))
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -146,7 +153,6 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("ListScopesWithContext failed %s\n%s", err, response))
 	}
 
-	log.Printf("scopeList ID %s", *(scopeList.Scopes[0].ID))
 	return nil
 }
 

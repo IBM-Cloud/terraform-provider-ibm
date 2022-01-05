@@ -2770,11 +2770,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientErrv2 = fmt.Errorf("Error occurred while configuring Security Posture Management API service:  `%s` region not supported", c.Region)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_V2_API_ENDPOINT", c.Region, postureManagementClientURLv2)
+		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_API_ENDPOINT", c.Region, postureManagementClientURLv2)
 	}
 	postureManagementClientOptionsv2 := &posturemanagementv2.PostureManagementV2Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_V2_API_ENDPOINT"}, postureManagementClientURLv2),
+		URL:           envFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURLv2),
 	}
 
 	// Construct the service client.

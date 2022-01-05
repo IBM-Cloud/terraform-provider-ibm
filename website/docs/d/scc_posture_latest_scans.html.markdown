@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_latest_scans"
 description: |-
   Get information about list_latest_scans
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_latest_scans
@@ -29,47 +29,47 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the list_latest_scans.
-* `first` - (Required, List) The URL of a page.
+* `first` - (Optional, List) The URL of a page.
 Nested scheme for **first**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 
-* `last` - (Required, List) The URL of a page.
+* `last` - (Optional, List) The URL of a page.
 Nested scheme for **last**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 
-* `latest_scans` - (Required, List) The details of a scan.
+* `latest_scans` - (Optional, List) The details of a scan.
 Nested scheme for **latest_scans**:
-	* `end_time` - (Required, String) The date and time the scan completed.
-	* `group_profile_id` - (Required, String) The group ID of profile.
-	* `group_profile_name` - (Required, String) The group name of the profile.
+	* `end_time` - (Optional, String) The date and time the scan completed.
+	* `group_profile_id` - (Optional, String) The group ID of profile.
+	* `group_profile_name` - (Optional, String) The group name of the profile.
 	* `profiles` - (Optional, List) Profiles array.
 	Nested scheme for **profiles**:
-		* `id` - (Required, String) An auto-generated unique identifier for the scope.
-		* `name` - (Required, String) The name of the profile.
+		* `id` - (Optional, String) An auto-generated unique identifier for the scope.
+		* `name` - (Optional, String) The name of the profile.
 		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
-		* `type` - (Required, String) The type of profile.
+		* `type` - (Optional, String) The type of profile.
 		  * Constraints: Allowable values are: `predefined`, `custom`, `template_group`.
-	* `report_run_by` - (Required, String) The entity that ran the report.
+	* `report_run_by` - (Optional, String) The entity that ran the report.
 	* `report_setting_id` - (Optional, String) The unique ID for Scan that is created.
-	* `result` - (Required, List) The result of a scan.The above values will not be avaialble if no scopes are available.
+	* `result` - (Optional, List) The result of a scan.The above values will not be avaialble if no scopes are available.
 	Nested scheme for **result**:
-		* `controls_fail_count` - (Required, Integer) The number of controls that failed the scan.
-		* `controls_not_applicable_count` - (Required, Integer) The number of controls that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
-		* `controls_pass_count` - (Required, Integer) The number of controls that passed the scan.
-		* `controls_total_count` - (Required, Integer) The total number of controls that were included in the scan.
-		* `controls_unable_to_perform_count` - (Required, Integer) The number of controls that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
-		* `goals_fail_count` - (Required, Integer) The number of goals that failed the scan.
-		* `goals_not_applicable_count` - (Required, Integer) The number of goals that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
-		* `goals_pass_count` - (Required, Integer) The number of goals that passed the scan.
-		* `goals_total_count` - (Required, Integer) The total number of goals that were included in the scan.
-		* `goals_unable_to_perform_count` - (Required, Integer) The number of goals that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
-	* `scan_id` - (Required, String) The ID of the scan.
-	* `scan_name` - (Required, String) A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.
-	* `scope_id` - (Required, String) The scope ID of the scan.
-	* `scope_name` - (Required, String) The name of the scope.
-	* `start_time` - (Required, String) The date and time the scan was run.
+		* `controls_fail_count` - (Optional, Integer) The number of controls that failed the scan.
+		* `controls_not_applicable_count` - (Optional, Integer) The number of controls that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
+		* `controls_pass_count` - (Optional, Integer) The number of controls that passed the scan.
+		* `controls_total_count` - (Optional, Integer) The total number of controls that were included in the scan.
+		* `controls_unable_to_perform_count` - (Optional, Integer) The number of controls that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
+		* `goals_fail_count` - (Optional, Integer) The number of goals that failed the scan.
+		* `goals_not_applicable_count` - (Optional, Integer) The number of goals that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
+		* `goals_pass_count` - (Optional, Integer) The number of goals that passed the scan.
+		* `goals_total_count` - (Optional, Integer) The total number of goals that were included in the scan.
+		* `goals_unable_to_perform_count` - (Optional, Integer) The number of goals that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
+	* `scan_id` - (Optional, String) The ID of the scan.
+	* `scan_name` - (Optional, String) A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.
+	* `scope_id` - (Optional, String) The scope ID of the scan.
+	* `scope_name` - (Optional, String) The name of the scope.
+	* `start_time` - (Optional, String) The date and time the scan was run.
 
 * `previous` - (Optional, List) The URL of a page.
 Nested scheme for **previous**:
-	* `href` - (Required, String) The URL of a page.
+	* `href` - (Optional, String) The URL of a page.
 

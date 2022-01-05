@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,11 +28,6 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.",
-			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The scan ID.",
 			},
 			"discover_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -202,7 +196,13 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	}
 
 	scansSummaryOptions := &posturemanagementv2.ScansSummaryOptions{}
-	scansSummaryOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	scansSummaryOptions.SetAccountID(accountID)
 
 	scansSummaryOptions.SetScanID(d.Get("scan_id").(string))
 	scansSummaryOptions.SetProfileID(d.Get("profile_id").(string))
@@ -214,9 +214,7 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	}
 
 	d.SetId(*summary.ID)
-	if err = d.Set("id", summary.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
+
 	if err = d.Set("discover_id", summary.DiscoverID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting discover_id: %s", err))
 	}

@@ -205,7 +205,13 @@ func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.Res
 	}
 
 	listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-	listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	listCredentialsOptions.SetAccountID(accountID)
 
 	credentialList, response, err := postureManagementClient.ListCredentialsWithContext(context, listCredentialsOptions)
 	if err != nil {
@@ -216,7 +222,7 @@ func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.Res
 		log.Printf("[DEBUG] ListCredentialsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListCredentialsWithContext failed %s\n%s", err, response))
 	}
-	log.Printf("credentialList %s ", *(credentialList.Credentials[0].ID))
+	d.SetId(*(credentialList.Credentials[0].ID))
 	return nil
 }
 
