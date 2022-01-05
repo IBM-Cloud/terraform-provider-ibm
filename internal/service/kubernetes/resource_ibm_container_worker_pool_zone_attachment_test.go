@@ -110,7 +110,7 @@ func testAccCheckIBMLbaasDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("load balancer (%s) to be destroyed still exists", rs.Primary.ID)
 		} else if apiErr, ok := err.(sl.Error); ok && apiErr.Exception != NOT_FOUND {
-			return fmt.Errorf("Error waiting for load balancer (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error waiting for load balancer (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 
 	}

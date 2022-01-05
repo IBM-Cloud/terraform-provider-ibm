@@ -638,7 +638,7 @@ func resourceIBMISVPNGatewayConnectionExists(d *schema.ResourceData, meta interf
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of gID/gConnID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of gID/gConnID", d.Id())
 	}
 
 	gID := parts[0]

@@ -299,7 +299,7 @@ func resourceIBMISSecurityGroupNetworkInterfaceAttachmentExists(d *schema.Resour
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of sgID/nicID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of sgID/nicID", d.Id())
 	}
 	sgID := parts[0]
 	nicID := parts[1]

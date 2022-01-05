@@ -650,7 +650,7 @@ func resourceIBMISLBPoolExists(d *schema.ResourceData, meta interface{}) (bool, 
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbPoolID", d.Id())
 	}
 
 	lbID := parts[0]

@@ -689,7 +689,7 @@ func resourceIBMISLBListenerExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/lbListenerID", d.Id())
 	}
 	lbID := parts[0]
 	lbListenerID := parts[1]
