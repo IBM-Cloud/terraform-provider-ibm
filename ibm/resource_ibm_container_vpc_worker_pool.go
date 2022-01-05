@@ -213,14 +213,15 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		}
 		workerPoolConfig.Labels = labels
 	}
-	params := v2.WorkerPoolRequest{
-		WorkerPoolConfig: workerPoolConfig,
-		Cluster:          clusterNameorID,
-	}
 
 	// Update workerpoolConfig with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		workerPoolConfig.Entitlement = v.(string)
+	}
+
+	params := v2.WorkerPoolRequest{
+		WorkerPoolConfig: workerPoolConfig,
+		Cluster:          clusterNameorID,
 	}
 
 	workerPoolsAPI := wpClient.WorkerPools()

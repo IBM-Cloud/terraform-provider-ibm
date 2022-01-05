@@ -10,7 +10,7 @@ description: |-
 
 Import the details of existing keyprotect keys as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of keys from the key protect instance. Configuration of an key protect key data source requires that the region parameter is set for the IBM provider in the `provider.tf` to be the same as the target key protect instance location or region. If not specified, it defaults to `us-south`. A Terraform apply will fail if the key protect instance location is set differently. For more information, about key protect keys, see [Key Protect CLI Command Reference](https://cloud.ibm.com/docs/key-protect?topic=key-protect-cli-plugin-key-protect-cli-reference).
 
-## Example Usage
+## Example usage
 The following example creates a read-only copy of the `mydatabase` instance in `us-east`.
 
 ```terraform

@@ -28,7 +28,7 @@ Review the argument references that you can specify for your resource.
 - `images_per_repo` - (Required, Integer) Determines how many images are retained in each repository when the retention policy is processed. The value `-1` denotes `Unlimited` (all images are retained).
 - `retain_untagged` - (Optional, Bool) Determines whether untagged images are retained when the retention policy is processed. Default value is **false**, means untagged images can be deleted when the policy runs.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

@@ -18,7 +18,7 @@ func TestAccIBMPISnapshotDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPISnapshotDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_pvm_snapshots.testacc_pi_snapshots", "pi_instance_name", pi_instance_name),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_pvm_snapshots.testacc_pi_snapshots", "id"),
 				),
 			},
 		},

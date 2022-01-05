@@ -6,25 +6,25 @@ description: |-
   Get information about ibm_satellite_link
 ---
 
-# ibm\_satellite_link
+# ibm_satellite_link
 
 Provides a read-only data source for ibm_satellite_link. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_satellite_link" "satellite_link" {
 	location = "location_id"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 * `location` - (Required, string) The Location ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

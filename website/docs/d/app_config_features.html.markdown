@@ -12,7 +12,7 @@ Retrieve information about an existing IBM Cloud App Configuration features flag
 
 ## Example usage
 
-```hcl
+```terraform
 data "ibm_app_config_features" "app_config_features" {
   guid = "guid"
   tags = "tags"

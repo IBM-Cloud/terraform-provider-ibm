@@ -11,8 +11,7 @@ import (
 )
 
 func TestAccIBMPISnapshotsDataSource_basic(t *testing.T) {
-	t.Skip()
-	//name := "Trial "
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -20,7 +19,7 @@ func TestAccIBMPISnapshotsDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPISnapshotsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.ibm_pi_pvminstance_snapshots.testacc_ds_snapshots", "pi_cloud_instance_id", pi_cloud_instance_id),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_instance_snapshots.testacc_ds_snapshots", "id"),
 				),
 			},
 		},

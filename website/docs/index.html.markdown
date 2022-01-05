@@ -12,7 +12,7 @@ The IBM Cloud provider is used to manage IBM Cloud resources. The provider must 
 
 Use the navigation menu on the left to read about the available data sources and resources.
 
-## Example Usage of Provider
+## Example usage of provider
 
 Terraform 0.13 and later:
 ```terraform
@@ -64,7 +64,7 @@ resource "ibm_is_vpc" "testacc_vpc" {
   name = "test-vpc"
 }
 ```
-## Example Usage of Resources:
+## Example usage of resources:
 
 ```terraform
 
@@ -197,7 +197,7 @@ terraform plan
   * Find user name in the `VPN password` section under `User Details` tab
 
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported in the `provider` block:
 

@@ -14,9 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
-func testAccCheckIBMPIInstanceConfig(name string) string {
+func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_key" "key" {
 		pi_cloud_instance_id = "%[1]s"
@@ -48,13 +49,13 @@ func testAccCheckIBMPIInstanceConfig(name string) string {
 		pi_sys_type           = "s922"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
-		pi_health_status      = "WARNING"
+		pi_health_status      = "%[5]s"
 		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}
 	  }
-	`, pi_cloud_instance_id, name, pi_image, pi_network_name)
+	`, pi_cloud_instance_id, name, pi_image, pi_network_name, instanceHealthStatus)
 }
 
 func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {
@@ -177,7 +178,7 @@ func TestAccIBMPIInstanceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceConfig(name),
+				Config: testAccCheckIBMPIInstanceConfig(name, helpers.PIInstanceHealthWarning),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),

@@ -6,13 +6,22 @@ description: |-
   Manages IBM Network Acl Rules.
 ---
 
-# ibm\_is_network_acl_rules
+# ibm_is_network_acl_rules
 
 Import the details of an existing IBM Cloud Infrastructure Network ACL Rules as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
+**provider.tf**
 
-## Example Usage
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
 
 ```terraform
 data "ibm_is_network_acl_rules" "testacc_dsrulelist"{
@@ -20,14 +29,14 @@ data "ibm_is_network_acl_rules" "testacc_dsrulelist"{
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument references that you can specify for your resource.
 
 - `network_acl` - (Required, String) The network ACL identifier.
 
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
