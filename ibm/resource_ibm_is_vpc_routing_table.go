@@ -309,7 +309,7 @@ func resourceIBMISVPCRoutingTableExists(d *schema.ResourceData, meta interface{}
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of vpcID/routingTableID", d.Id())
 	}
 	getVpcRoutingTableOptions := sess.NewGetVPCRoutingTableOptions(idSet[0], idSet[1])
 	_, response, err := sess.GetVPCRoutingTable(getVpcRoutingTableOptions)

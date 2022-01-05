@@ -183,7 +183,7 @@ func resourceIBMisVirtualEndpointGatewayIPExists(d *schema.ResourceData, meta in
 		return false, err
 	}
 	if len(parts) != 2 {
-		return false, fmt.Errorf("Incorrect ID %s: ID should be a combination of gatewayID/ipID", d.Id())
+		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of gatewayID/ipID", d.Id())
 	}
 	gatewayID := parts[0]
 	ipID := parts[1]

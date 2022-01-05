@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var appIDTenantID string
-var appIDTestUserEmail string
+var AppIDTenantID string
+var AppIDTestUserEmail string
 var cfOrganization string
 var cfSpace string
 var CisDomainStatic string
@@ -141,13 +141,13 @@ func init() {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
 	}
 
-	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
-	if appIDTenantID == "" {
+	AppIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
+	if AppIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
 	}
 
-	appIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
-	if appIDTestUserEmail == "" {
+	AppIDTestUserEmail = os.Getenv("IBM_APPID_TEST_USER_EMAIL")
+	if AppIDTestUserEmail == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
