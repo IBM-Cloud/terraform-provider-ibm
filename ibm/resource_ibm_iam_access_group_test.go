@@ -95,8 +95,7 @@ func testAccCheckIBMIAMAccessGroupDestroy(s *terraform.State) error {
 		getAccessGroupOptions := &iamaccessgroupsv2.GetAccessGroupOptions{
 			AccessGroupID: &agID,
 		}
-		_, detailResponse, _ := accClient.GetAccessGroup(getAccessGroupOptions)
-
+		_, detailResponse, err := accClient.GetAccessGroup(getAccessGroupOptions)
 		if err == nil {
 			return fmt.Errorf("Access group still exists: %s", rs.Primary.ID)
 		} else if detailResponse.StatusCode != 404 {

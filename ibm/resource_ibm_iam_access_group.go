@@ -83,6 +83,7 @@ func resourceIBMIAMAccessGroupRead(context context.Context, d *schema.ResourceDa
 	agrp, detailedResponse, err := iamAccessGroupsClient.GetAccessGroup(getAccessGroupOptions)
 	if err != nil || agrp == nil {
 		if detailedResponse != nil && detailedResponse.StatusCode == 404 {
+			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(fmt.Errorf("Error retrieving access group: %s. API Response: %s", err, detailedResponse))
