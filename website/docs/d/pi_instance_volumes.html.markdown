@@ -48,12 +48,12 @@ In addition to all argument reference list, you can access the following attribu
 - `instance_volumes` - List of volumes - List of volumes attached to instance.
 
   Nested scheme for `instance_volumes`:
-    - `bootable`- (Bool) Indicates if the volume is bootable (**true**) or not (**false**).
-	- `href` - (String) The hyper link of the volume.
-	- `id` - (String) The unique identifier of the volume.
-	- `name` - (String) The name of the volume.
-	- `pool` - (String) Volume pool, name of storage pool where the volume is located.
-	- `shareable` -  (Bool) If set to **true**, the volume can be shared across multiple Power Systems Virtual Server instances. If set to **false**, the volume can be mounted to one instance only.
-	- `size` - (Integer) The size of this volume in gigabytes.
-	- `state` - (String) The state of the volume.
-	- `type` - (String) The disk type that is used for this volume.
+  - `bootable`- (Bool) Indicates if the volume is boot capable.
+  - `href` - (String) The hyper link of the volume.
+  - `id` - (String) The unique identifier of the volume.
+  - `name` - (String) The name of the volume.
+  - `pool` - (String) Volume pool, name of storage pool where the volume is located.
+  - `shareable` - (Bool) Indicates if the volume is shareable between VMs.
+  - `size` - (Integer) The size of this volume in gigabytes.
+  - `state` - (String) The state of the volume.
+  - `type` - (String) The disk type that is used for this volume.

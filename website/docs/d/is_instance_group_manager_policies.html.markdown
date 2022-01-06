@@ -9,6 +9,17 @@ description: |-
 # ibm_is_instance_group_manager_policies
 Retrieve all the policies information of an instance group manager. For more information, about instance group manager policies information, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 In the following example, you can retrieve a policy info of an instance group manager.
 

@@ -1,5 +1,5 @@
 ---
-subcategory: "AppID Management"
+subcategory: "App ID Management"
 layout: "ibm"
 page_title: "IBM: AppID Token Configuration"
 description: |-
@@ -47,7 +47,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `access_token_claim`:
     - `destination_claim` - (Optional, String) Defines the custom attribute that can override the current claim in token
-    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
+    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`,`ibmid`, `roles` and `attributes`
     - `source_claim` - (Optional, String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
 
 - `access_token_expires_in` - (Optional, Number) The length of time for which access tokens are valid in seconds
@@ -57,7 +57,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `id_token_claim`:
     - `destination_claim` - (Optional, String) Defines the custom attribute that can override the current claim in token
-    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`, and `attributes`
+    - `source` - (Required, String) Defines the source of the claim. Options include: `saml`, `cloud_directory`, `facebook`, `google`, `appid_custom`,`ibmid`, `roles` and `attributes`
     - `source_claim` - (Optional, String) Defines the claim as provided by the source. It can refer to the identity provider's user information or the user's App ID custom attributes
 
 - `refresh_token_enabled` - (Optional, Bool) Enable refresh token

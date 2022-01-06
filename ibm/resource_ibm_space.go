@@ -251,7 +251,7 @@ func resourceIBMSpaceExists(d *schema.ResourceData, meta interface{}) (bool, err
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting space: %s", err)
 	}
 
 	return space.Metadata.GUID == id, nil

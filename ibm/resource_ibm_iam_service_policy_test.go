@@ -76,6 +76,28 @@ func TestAccIBMIAMServicePolicy_With_Service(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicy_With_ServiceType(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyServiceType(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resources.0.service_type", "service"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMServicePolicy_With_ResourceInstance(t *testing.T) {
 	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -357,6 +379,25 @@ func testAccCheckIBMIAMServicePolicyService(name string) string {
 	  
 			resources {
 		 	 service = "cloudantnosqldb"
+			}
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyServiceType(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+	  
+			resources {
+				service_type = "service"
+				region = "us-south"
 			}
 	  	}
 	`, name)

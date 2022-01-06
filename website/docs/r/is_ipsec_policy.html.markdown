@@ -10,6 +10,16 @@ description: |-
 # ibm_is_ipsec_policy
 Create, update, or delete an ipsec policy resource. For more information, about ipsec policy, see [creating an IPsec policy](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-ipsec-policy).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 In the following example, you can create a IPsec policy:

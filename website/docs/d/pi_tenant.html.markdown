@@ -44,11 +44,11 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `creation_date` - (Timestamp) The timestamp when the tenant was created.
-- `cloudinstances` - (List) A list with the regions and Power Systems Virtual Server instance IDs that the tenant owns.
+- `cloud_instances` - (List) A list with the regions and Power Systems Virtual Server instance IDs that the tenant owns.
 
-  Nested scheme for `cloudinstances`:
+  Nested scheme for `cloud_instances`:
 	- `cloud_instance_id` - (String) The unique identifier of the cloud instance.
 	- `region` - (String) The region of the cloud instance.
-- `enabled` -  (Bool) If set to **true**, the tenant is enabled for the Power Systems Virtual Server instance ID. If set to **false**, the tenant is not enabled for the instance.
+- `enabled` - (Bool) Indicates if the tenant is enabled for the Power Systems Virtual Server instance ID.
 - `id` - (String) The ID of the tenant.
-- `tenantname` -  (String) The name of the tenant.
+- `tenant_name` -  (String) The name of the tenant.

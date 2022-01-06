@@ -9,6 +9,17 @@ description: |-
 # ibm_is_subnet_reserved_ip
 Create, update, or delete a subnet. For more information, about associated reserved IP subnet, see [reserved IP subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-troubleshoot-reserved-ip).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 Sample to create a reserved IP:
 

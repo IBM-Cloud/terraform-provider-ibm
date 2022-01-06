@@ -43,15 +43,15 @@ resource "ibm_pi_snapshot" "testacc_snapshot"{
 The `ibm_pi_snapshot` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for Creating snapshot.
-- **delete** - (Default 60 minutes) Used for Deleting snapshot.
 - **update** - (Default 60 minutes) Used for Updating snapshot.
+- **delete** - (Default 10 minutes) Used for Deleting snapshot.
 
 ## Argument reference
 Review the argument references that you can specify for your resource.
  
 - `pi_instance_name` - (Required, String) The name of the instance you want to take a snapshot of.
 - `pi_snapshot_name` - (Required, String) The unique name of the snapshot.
-- `description` - (Optional, String) The description for the snapshot.
+- `pi_description` - (Optional, String) Description of the PVM instance snapshot.
 - `pi_volume_ids` - (Optional, String) The volume ID, if none provided then all volumes of the instance will be part of the snapshot.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
@@ -59,7 +59,11 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the snapshot. The ID is composed of <power_instance_id>/<pi_snap_shot_id>.
-- `volume_snapshots` - (String) A map of the source and target volumes.
+- `snapshot_id` - (String) ID of the PVM instance snapshot.
+- `status` - (String) Status of the PVM instance snapshot.
+- `creation_date` - (String) Creation Date.
+- `last_update_date` - (String) Last Update Date.
+- `volume_snapshots` - (String) A map of volume snapshots included in the PVM instance snapshot.
 
 ## Import
 

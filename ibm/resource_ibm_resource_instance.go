@@ -5,6 +5,7 @@ package ibm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -87,9 +88,23 @@ func resourceIBMResourceInstance() *schema.Resource {
 			},
 
 			"parameters": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Arbitrary parameters to pass. Must be a JSON object",
+				Type:          schema.TypeMap,
+				Optional:      true,
+				Description:   "Arbitrary parameters to pass. Must be a JSON object",
+				ConflictsWith: []string{"parameters_json"},
+			},
+			"parameters_json": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"parameters"},
+				StateFunc: func(v interface{}) string {
+					json, err := normalizeJSONString(v)
+					if err != nil {
+						return fmt.Sprintf("%q", err.Error())
+					}
+					return json
+				},
+				Description: "Arbitrary parameters to pass in Json string format",
 			},
 
 			"tags": {
@@ -447,6 +462,9 @@ func resourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		}
 
 	}
+	if s, ok := d.GetOk("parameters_json"); ok {
+		json.Unmarshal([]byte(s.(string)), &params)
+	}
 
 	rsInst.Parameters = params
 
@@ -682,10 +700,16 @@ func resourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		}
 
 	}
+
 	if d.HasChange("service_endpoints") || d.HasChange("parameters") {
 		resourceInstanceUpdate.Parameters = params
 	}
-
+	if d.HasChange("parameters_json") {
+		if s, ok := d.GetOk("parameters_json"); ok {
+			json.Unmarshal([]byte(s.(string)), &params)
+			resourceInstanceUpdate.Parameters = params
+		}
+	}
 	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
 	if err != nil {
 		return fmt.Errorf("Error Getting resource instance: %s with resp code: %s", err, resp)
@@ -759,7 +783,7 @@ func resourceIBMResourceInstanceExists(d *schema.ResourceData, meta interface{})
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s with resp code: %s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting resource instance: %s with resp code: %s", err, resp)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, rsInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")

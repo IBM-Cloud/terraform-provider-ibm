@@ -10,6 +10,17 @@ description: |-
 # ibm_is_virtual_endpoint_gateway_ip
 Create, update, or delete a VPC endpoint gateway IP by using virtual endpoint gateway resource. For more information, about the VPC endpoint gateway, see [about VPC gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example creates a Virtual Private Endpoint gateway IP.
 

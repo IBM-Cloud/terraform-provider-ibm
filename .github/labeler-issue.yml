@@ -1,0 +1,102 @@
+bug:
+  # General:
+  #   panic:
+  # IBM SDK Go:
+  #   ValidationException:.*failed to satisfy constraint: Member must not be null
+  # Terraform CLI:
+  #   Provider produced inconsistent final plan
+  #   Provider produced inconsistent result after apply
+  #   produced an invalid new value
+  #   produced an unexpected new value
+  # Terraform Plugin SDK:
+  #   doesn't support update
+  #   Invalid address to set
+  - "(doesn't support update|failed to satisfy constraint: Member must not be null|Invalid address to set|panic:|produced an (invalid|unexpected) new value|Provider produced inconsistent (final plan|result after apply))"
+crash:
+  - 'panic:'
+sweeper:
+  - 'sweeper'
+#
+# IBM Per-Service Labeling
+#
+# Catch the following in issues to prevent false positives:
+# *ibm_XXX
+# * ibm_XXX
+# * `ibm_XXX`
+# -ibm_XXX
+# - ibm_XXX
+# - `ibm_XXX`
+# data ibm_XXX
+# data "ibm_XXX"
+# resource ibm_XXX
+# resource "ibm_XXX"
+service/API Gateway:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_api_gateway'
+service/Activity Tracker:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_atracker'
+service/App Configuration:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_app_config'
+service/APPID Management:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_appid'
+service/Catalog Management:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cm_'
+service/Certificate Manager:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_certificate_manager_'
+service/Classic Infrastructure:
+  - '((\*|-) ?`?|(data|resource) "?)(ibm_compute|ibm_cdn|ibm_firewall|ibm_lb|ibm_lbaas|ibm_network|ibm_storage|ibm_security|ibm_subnet|ibm_hardware|ibm_ipsec)'
+service/Cloud Databases:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_(cloudant|database)'
+service/Cloud Foundary:
+  - '((\*|-) ?`?|(data|resource) "?)(ibm_account|ibm_org|ibm_space|ibm_service|ibm_app_domain_private|ibm_app_domain_shared|ibm_app_route)'
+service/CBR:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cbr'
+service/Container Registry:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cr_'
+service/DNS Services:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_dns_'
+service/Direct Link Gateway:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_dl_'
+service/Enterprise Managent:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_enterprise'
+service/Event Notificateion:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_en_'
+service/Event Streams:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_event_streams'
+service/Functions:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_function_'
+service/Global Tagging:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_resource_tag'
+service/HPCS:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_hpcs'
+service/IBM Cloud Shell:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cloud_shell'
+service/IAM:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_iam_'
+service/IAMPAP:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_iam*_policy'
+service/Internet Services:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cis'
+service/Key Management Services:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_(kms_|kp_)'
+service/Kubernetes Service:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_(container_|ob_)'
+service/Object Storage:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_cos_'
+service/Power Systems:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_pi_'
+service/Push notifications:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_pn_'
+service/Resource Management:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_resource_'
+service/Satellite:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_satellite_'
+service/Schematics:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_schematics_'
+service/Secrets Manager:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_secrets_manager_'
+service/SCC:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_scc_'
+service/Transit Gateway:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_tg_'
+service/VPC Infrastructure:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_is_'

@@ -42,11 +42,11 @@ Review the argument reference that you can specify for your resource.
   - `rules` - (Required, []interface{}) The rules array.
     - `segments` - (Required, Array of Strings) The list of segment IDs that are used for targeting using the rule.
   - `value` - (Required, String) The value to be used for evaluation for this rule. The value can be Boolean, String or a Numeric value as per the `type` attribute.
-  - `order` - (Required, int) The order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
+  - `order` - (Required, Integer) The order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
 - `collections` - (Optional, List) The list of collection ID representing the collections that are associated with the specified feature flag.
   - `collection_id` - (Required, String) Collection ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 

@@ -42,7 +42,35 @@ variable "expire_days" {
   default = 1
 }
 
+variable "expire_date" {
+  default = ""
+}
+
 variable "expire_prefix" {
+  default = ""
+}
+
+variable "nc_exp_ruleid" {
+  default = "test-obj-ver-exp-3"
+}
+
+variable "nc_exp_days" {
+  default = 1
+}
+
+variable "nc_exp_prefix" {
+  default = ""
+}
+
+variable "abort_mpu_ruleid" {
+  default = "test-abort_mpu-5"
+}
+
+variable "abort_mpu_days_init" {
+  default = 1
+}
+
+variable "abort_mpu_prefix" {
   default = ""
 }
 

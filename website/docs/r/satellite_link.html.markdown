@@ -6,27 +6,27 @@ description: |-
   Manages satellite link.
 ---
 
-# ibm\_satellite_link
+# ibm_satellite_link
 
 Provides a resource for ibm_satellite_link. This allows ibm_satellite_link to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_satellite_link" "satellite_link" {
   crn = "crn:v1:staging:public:satellite:us-south:a/1ae4eb57181a46ceade4846519678888::location:brbats7009sqna3dtest"
   location_id = "brbats7009sqna3dtest"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 * `crn` - (Required, string) CRN of the Location.
 * `location` - (Required, string) Location ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

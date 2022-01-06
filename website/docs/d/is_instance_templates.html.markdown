@@ -9,6 +9,17 @@ description: |-
 # ibm_is_instance_templates
 Retrieve information of an existing IBM VPC instance templates. For more information, about VPC instance templates, see [creating an instance template](https://cloud.ibm.com/docs/vpc?topic=vpc-create-instance-template).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 In the following example, you can get information of list of instance templates of VPC Generation-2 infrastructure.
 

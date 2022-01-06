@@ -658,7 +658,7 @@ func resourceIBMComputeAutoScaleGroupExists(d *schema.ResourceData, meta interfa
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting compute autoscale group: %s", err)
 	}
 	return result.Id != nil && *result.Id == groupId, nil
 }

@@ -24,7 +24,7 @@ data "ibm_pi_catalog_images" "ds_images" {
   * `region` - `lon`
   * `zone` - `lon04`
   
-  Example Usage:
+  Example usage:
   
   ```terraform
     provider "ibm" {
@@ -37,8 +37,8 @@ data "ibm_pi_catalog_images" "ds_images" {
 Review the argument reference that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `sap` - (Required, Bool) Include SAP images with available stock images.
-- `vtl` - (Required, Bool) Include VTL images with available stock images.
+- `sap` - (Optional, Bool) Set `true` to include SAP images. The default value is `false`.
+- `vtl` - (Optional, Bool) Set `true` to include VTL images. The default value is `false`.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.

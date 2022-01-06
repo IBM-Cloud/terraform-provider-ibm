@@ -10,11 +10,11 @@ description: |-
 
 Provides a resource for scc_si_note. This allows scc_si_note to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
 #### FINDING
 
-```hcl
+```terraform
 resource "ibm_scc_si_note" "finding" {
   provider_id       = "scc"
   short_description = "Security Threat"
@@ -38,7 +38,7 @@ resource "ibm_scc_si_note" "finding" {
 
 #### KPI
 
-```hcl
+```terraform
 resource "ibm_scc_si_note" "kpi" {
   provider_id       = "scc"
   short_description = "Security Threat"
@@ -58,7 +58,7 @@ resource "ibm_scc_si_note" "kpi" {
 
 #### CARD
 
-```hcl
+```terraform
 resource "ibm_scc_si_note" "ts-card-finding" {
   provider_id       = "scc"
   short_description = "Security Threat"
@@ -89,7 +89,7 @@ resource "ibm_scc_si_note" "ts-card-finding" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -169,7 +169,7 @@ Nested scheme for **section**:
   * Constraints: The default value is `true`.
 * `short_description` - (Required, String) A one sentence description of your note.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
@@ -191,5 +191,5 @@ The `note_id` property can be formed from `account_id`, `provider_id`, and `note
 
 # Syntax
 ```
-$ terraform import ibm_scc_si_note.scc_si_note <provider_id>/<note_id>
+$ terraform import ibm_scc_si_note.scc_si_note <account_id>/<provider_id>/<note_id>
 ```

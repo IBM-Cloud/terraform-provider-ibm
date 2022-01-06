@@ -4,11 +4,11 @@
 package ibm
 
 import (
+	"context"
 	"fmt"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_p_vm_instances"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -129,17 +129,14 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 
 	body := &models.PVMInstanceAction{Action: ptrToString(operation)}
 	log.Printf("Calling the IBM PI Operations [ %s ] with on the instance with name [ %s ]", operation, name)
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
 	/*
 		TODO
 		To add a check if the action performed is applicable on the current state of the instance
 	*/
 
-	pvmoperation, err := client.Action(&p_cloud_p_vm_instances.PcloudPvminstancesActionPostParams{
-		Body: body,
-	}, name, powerinstanceid, 30*time.Second)
-
+	err = client.Action(name, body)
 	if err != nil {
 		log.Printf("[DEBUG]  err %s", err)
 		return fmt.Errorf("Failed to perform the operation on  the instance %v", err)
@@ -147,8 +144,6 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 	} else {
 		log.Printf("Executed the stop operation on the lpar")
 	}
-
-	log.Printf("Printing the instance info %+v", &pvmoperation)
 
 	if operation == "stop" || operation == "immediate-shutdown" {
 		var targetStatus = "SHUTOFF"
@@ -185,8 +180,8 @@ func resourceIBMPIOperationsRead(d *schema.ResourceData, meta interface{}) error
 	}
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
 	name := d.Get(helpers.PIInstanceOperationServerName).(string)
-	powerC := st.NewIBMPIInstanceClient(sess, powerinstanceid)
-	powervmdata, err := powerC.Get(name, powerinstanceid, getTimeOut)
+	powerC := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
+	powervmdata, err := powerC.Get(name)
 
 	if err != nil {
 		return err
@@ -227,9 +222,9 @@ func resourceIBMPIOperationsExists(d *schema.ResourceData, meta interface{}) (bo
 	}
 	id := d.Id()
 	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	client := st.NewIBMPIInstanceClient(sess, powerinstanceid)
+	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
-	instance, err := client.Get(d.Id(), powerinstanceid, getTimeOut)
+	instance, err := client.Get(d.Id())
 	if err != nil {
 
 		return false, err
@@ -258,7 +253,7 @@ func isPIOperationsRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstance
 	return func() (interface{}, string, error) {
 
 		log.Printf("Waiting for the target status to be [ %s ]", targetstatus)
-		pvm, err := client.Get(id, powerinstanceid, getTimeOut)
+		pvm, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}

@@ -4,7 +4,10 @@
 package ibm
 
 import (
+	"context"
+
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	//"fmt"
@@ -15,7 +18,7 @@ import (
 func dataSourceIBMPIImage() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPIImagesRead,
+		ReadContext: dataSourceIBMPIImagesRead,
 		Schema: map[string]*schema.Schema{
 
 			helpers.PIImageName: {
@@ -58,25 +61,26 @@ func dataSourceIBMPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"image_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
-
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
-	imageC := instance.NewIBMPIImageClient(sess, powerinstanceid)
-	imagedata, err := imageC.Get(d.Get(helpers.PIImageName).(string), powerinstanceid)
-
+	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	imagedata, err := imageC.Get(d.Get(helpers.PIImageName).(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(*imagedata.ImageID)
@@ -87,6 +91,7 @@ func dataSourceIBMPIImagesRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("operatingsystem", imagedata.Specifications.OperatingSystem)
 	d.Set("storage_type", imagedata.StorageType)
 	d.Set("storage_pool", imagedata.StoragePool)
+	d.Set("image_type", imagedata.Specifications.ImageType)
 
 	return nil
 

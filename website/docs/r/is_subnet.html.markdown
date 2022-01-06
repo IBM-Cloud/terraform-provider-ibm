@@ -10,6 +10,17 @@ description: |-
 # ibm_is_subnet
 Create, update, or delete a subnet. For more information, about subnet, see [configuring ACLs and security groups for use with VPN](https://cloud.ibm.com/docs/vpc?topic=vpc-acls-security-groups-vpn).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 
 ## Example usage
 
@@ -87,7 +98,7 @@ Review the argument references that you can specify for your resource.
 - `public_gateway` - (Optional, String) The ID of the public gateway for the subnet that you want to attach to the subnet. You create the public gateway with the [`ibm_is_public_gateway` resource](#provider-public-gateway).
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the subnet.
 - `routing_table` - (Optional, String) The routing table ID associated with the subnet.
-- `tags`  - (Optional, List of Strings) The tags associated with an instance.
+- `tags`  - (Optional, List of Strings) The tags associated with the subnet.
 - `total_ipv4_address_count` - (Optional, Forces new resource, String) The total number of IPv4 addresses. Either `ipv4_cidr_block` or `total_pv4_address_count` input parameters must be provided in the resource.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String) The subnet zone name.

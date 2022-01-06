@@ -213,14 +213,15 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		}
 		workerPoolConfig.Labels = labels
 	}
-	params := v2.WorkerPoolRequest{
-		WorkerPoolConfig: workerPoolConfig,
-		Cluster:          clusterNameorID,
-	}
 
 	// Update workerpoolConfig with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		workerPoolConfig.Entitlement = v.(string)
+	}
+
+	params := v2.WorkerPoolRequest{
+		WorkerPoolConfig: workerPoolConfig,
+		Cluster:          clusterNameorID,
 	}
 
 	workerPoolsAPI := wpClient.WorkerPools()
@@ -531,7 +532,7 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting container vpc workerpool: %s", err)
 	}
 
 	return workerPool.ID == workerPoolID, nil

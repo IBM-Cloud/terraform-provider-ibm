@@ -14,6 +14,18 @@ This request adds a resource to an existing security group. The supplied target 
   - An application load balancer identifier.
 When a target is added to a security group, the security group rules are applied to the target. A request body is not required, and if supplied, is ignored. For more information, about security group target, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
+**Note**
+- IBM Cloud terraform provider currently provides both a standalone `ibm_is_security_group_target` resource and a `security_groups` block defined in-line in the `ibm_is_instance_network_interface` resource to attach security group to a network interface target. At this time you cannot use the `security_groups` block inline with `ibm_is_instance_network_interface` in conjunction with the standalone resource `ibm_is_security_group_target`. Doing so will create a conflict of security groups attaching to the network interface and will overwrite it.
+- VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+  **provider.tf**
+
+  ```terraform
+  provider "ibm" {
+    region = "eu-gb"
+  }
+  ```
+
 ## Example usage
 Sample to create a security group target.
 

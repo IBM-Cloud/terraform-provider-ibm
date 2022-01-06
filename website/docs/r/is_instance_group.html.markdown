@@ -11,6 +11,17 @@ description: |-
 
 Create, update or delete a instance group on VPC. For more information, about instance group, see [managing an instance group](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-group).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 In the following example, you can create a instance group on VPC Generation-2 infrastructure.
 

@@ -10,6 +10,17 @@ description: |-
 # ibm_is_floating_ip
 Create a floating IP address that you can associate with a Virtual Servers for VPC instance. You can use the floating IP address to access your instance from the public network, independent of whether the subnet is attached to a public gateway. For more information, see [about floating IP](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-rest-apis#create-floating-ip-api-tutorial).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example shows how to create a Virtual Servers for VPC instance and associate a floating IP address to the primary network interface of the virtual server instance.
 
@@ -53,6 +64,8 @@ Review the argument references that you can specify for your resource.
 - `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
 - `zone` - (Optional, Force New Resource, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. ~>**Note:** Conflicts with `target` and one of `target`, or `zone` is mandatory.
 
+~> **Note**
+  - `target` cannot be used in conjunction with the `floating_ip` argument of `ibm_is_instance_network_interface` resource and might cause cyclic dependency/unexpected issues if used used both ways.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

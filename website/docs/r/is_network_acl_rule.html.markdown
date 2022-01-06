@@ -11,6 +11,17 @@ description: |-
 
 Provides a network ACL rule resource with `icmp`, `tcp`, `udp` or `all` protocol. This allows Network ACL rule to create, update, and delete an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage (all)
 
 ```terraform

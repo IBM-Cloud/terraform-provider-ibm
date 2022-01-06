@@ -10,6 +10,17 @@ description: |-
 # ibm_is_volume
 Create, update, or delete a VPC block storage volume. For more information, about the VPC block storage volume, see [getting started with VPC](https://cloud.ibm.com/docs/vpc).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example creates a volume with 10 IOPs tier.
 

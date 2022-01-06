@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_instance
 Retrieve information about a Power Systems Virtual Server instance. For more information, about Power Virtual Server instance, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {
@@ -54,6 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum cores assigned to an instance.
 - `addresses` - List of objects - The address associated with this instance.
+- `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
 
   Nested scheme for `addresses`:
   - `ip` - (String) The IP address of the instance.

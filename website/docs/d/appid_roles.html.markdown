@@ -1,5 +1,5 @@
 ---
-subcategory: "AppID Management"
+subcategory: "App ID Management"
 layout: "ibm"
 page_title: "IBM: AppID Roles"
 description: |-

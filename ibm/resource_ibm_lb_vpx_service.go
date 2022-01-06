@@ -671,7 +671,7 @@ func resourceIBMLbVpxServiceExists101(d *schema.ResourceData, meta interface{}) 
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting lb vpx service: %s", err)
 	}
 	return *lbService.Name == serviceName, nil
 }

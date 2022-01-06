@@ -12,7 +12,7 @@ description: |-
 Create or delete a worker pool. The worker pool will be attached to the specified cluster. For more information, about VPC worker pool, see [creating clusters](https://cloud.ibm.com/docs/containers?topic=containers-clusters).
 
 
-## Example Usage
+## Example usage
 In the following example, you can create a worker pool for a vpc cluster:
 
 ```terraform

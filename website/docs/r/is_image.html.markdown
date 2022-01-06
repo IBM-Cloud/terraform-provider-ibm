@@ -11,6 +11,16 @@ description: |-
 
 Provide an image resource. This allows images to be created, retrieved, and deleted. For more information, about VPC custom images, see [IBM Cloud Docs: Virtual Private Cloud - IBM Cloud Importing and managing custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-images).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Timeouts
 
@@ -19,8 +29,6 @@ The `ibm_is_image` provides the following [Timeouts](https://www.terraform.io/do
 - **create** - (Default 10 minutes) Used for creating image.
 - **update** - (Default 10 minutes) Used for updating image.
 - **delete** - (Default 10 minutes) Used for deleting image.
-
-
 
 ## Example usage
 

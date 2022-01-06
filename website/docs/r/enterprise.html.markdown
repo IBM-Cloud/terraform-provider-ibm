@@ -11,7 +11,7 @@ description: |-
 
 Create and update an enterprise. Delete operation is not supported. For more information, about enterprise management, refer to [setting up an enterprise](https://cloud.ibm.com/docs/account?topic=account-create-enterprise).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_enterprise" "enterprise" {

@@ -3,16 +3,16 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_target"
 description: |-
   Manages Activity Tracker Target.
-subcategory: "Activity Tracker API"
+subcategory: "Activity Tracker"
 ---
 
 # ibm_atracker_target
 
 Provides a resource for Activity Tracker Target. This allows Activity Tracker Target to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_atracker_target" "atracker_target" {
   cos_endpoint { 
      endpoint = "endpoint" 
@@ -25,7 +25,7 @@ resource "ibm_atracker_target" "atracker_target" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -40,7 +40,7 @@ Nested scheme for **cos_endpoint**:
 * `target_type` - (Required, Forces new resource, String) The type of the target.
   * Constraints: Allowable values are: cloud_object_storage
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

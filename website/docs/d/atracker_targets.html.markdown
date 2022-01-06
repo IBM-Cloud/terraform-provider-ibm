@@ -3,28 +3,28 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_targets"
 description: |-
   Get information about atracker_targets
-subcategory: "Activity Tracker API"
+subcategory: "Activity Tracker"
 ---
 
 # ibm_atracker_targets
 
 Provides a read-only data source for atracker_targets. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_atracker_targets" "atracker_targets" {
 	name = "a-cos-target-us-south"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `name` - (Optional, String) The name of the target resource.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

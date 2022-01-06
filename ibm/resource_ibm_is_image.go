@@ -620,7 +620,7 @@ func isWaitForImageDeleted(imageC *vpcv1.VpcV1, id string, timeout time.Duration
 
 func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is image delete function here")
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,
 		}

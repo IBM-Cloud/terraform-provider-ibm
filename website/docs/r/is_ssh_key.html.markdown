@@ -10,6 +10,17 @@ description: |-
 # ibm_is_ssh_key
 Create, update, or delete an SSH key. The SSH key is used to access a Generation 2 virtual server instance. For more information, about SSH key, see [managing SSH Keys](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform

@@ -90,6 +90,12 @@ func resourceIBMIAMAccessGroupPolicy() *schema.Resource {
 							Description: "ID of the resource group.",
 						},
 
+						"service_type": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Service type of the policy definition",
+						},
+
 						"attributes": {
 							Type:        schema.TypeMap,
 							Optional:    true,
@@ -408,7 +414,7 @@ func resourceIBMIAMAccessGroupPolicyExists(d *schema.ResourceData, meta interfac
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s\n%s", err, resp)
+		return false, fmt.Errorf("[ERROR] Error getting access group policy: %s\n%s", err, resp)
 	}
 
 	if accessGroupPolicy != nil && accessGroupPolicy.State != nil && *accessGroupPolicy.State == "deleted" {

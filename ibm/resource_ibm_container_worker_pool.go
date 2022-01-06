@@ -432,7 +432,7 @@ func resourceIBMContainerWorkerPoolExists(d *schema.ResourceData, meta interface
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("Error communicating with the API: %s", err)
+		return false, fmt.Errorf("[ERROR] Error getting container workerpool: %s", err)
 	}
 
 	return workerPool.ID == workerPoolID, nil

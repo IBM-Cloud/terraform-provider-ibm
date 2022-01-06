@@ -46,73 +46,11 @@ In addition to all argument reference list, you can access the following attribu
 	- `actions` - (String)   The actions to be performed on the URL.
 
 	  Nested scheme for `actions`:
-		- `id` - (String) The action ID. Valid values are `page rule action field map from console` to `API CF-UI map API`).
-
-		  Nested scheme for `id`:
-		  - `automatic_https_rewrites` - (String) The automatic HTTPS rewrites.
-		  - `always_use_https` - (String) The action conflicts with all other settings.
-		  - `always_online` - (String) The action conflicts with all other settings.
-		  - `browser_cache_ttl` - (String) The browser cache TTL.
-		  - `bypass_cache_on_cookie` - (String) The bypass cache on cookie.
-		  - `browser_check` - (String) The browser integrity check.
-		  - `cache_deception_armor` - (String) The cache deception armor.
-		  - `cache_level` - (String) The cache level.
-		  - `cache_on_cookie` - (String) The cache on cookie.
-		  - `disable_apps` - (String) The disable apps.
-		  - `disable_performance` - (String) The disable
-		  - `disable_security` - (String) The action conflicts with `email_obfuscation`, `server_side_exclude`, `waf`.
-		  - `edge_cache_ttl` - (String) The edge cache TTL.
-		  - `email_obfuscation` - (String) The Email obfuscation.
-		  - `explicit_cache_control` - (String) The origin cache control.
-		  - `forwarding_url` - (String) The action conflicts with all other settings.
-		  - `host_header_override` - (String) The host header override.
-		  - `image_load_optimization` - (String) The image load optimization.
-		  - `image_size_optimization` - (String) The image size optimization.
-		  - `ip_geolocation` - (String) The IP geography location header.
-		  - `origin_error_page_pass_thru` - (String) The origin error page pass-through.
-		  - `opportunistic_encryption` - (String) The opportunistic encryption.
-		  - `resolve_override` - (String) The resolve override.
-			 performance.
-		  - `response_buffering` - (String) The response buffering.
-		  - `script_load_optimization` - (String) The script load optimization.
-	   	  - `ssl` - (String) The TLS settings.
-		  - `security_level` - (String) The security level.
-		  - `server_side_exclude` - (String) The server side excludes.
-		  - `server_stale_content` - (String) The server stale content.
-		  - `sort_query_string_for_cache` - (String) The sort query string.
-		  - `true_client_ip_header` - (String) The true client IP header.
-		  - `waf` - (String) The Web Application Firewall.
+		- `id` - (String) The action ID. Valid values are `page rule action field map from console` to `API CF-UI map API`.
 		- `value` - (String) The values for corresponding actions.
-
-		  Nested scheme for `value`:
-		  - `always_online` - (String) The valid values are `on`, `off`.
-		  - `automatic_https_rewrites` - (String) The valid values are `on`, `off`.
-		  - `browser_cache_ttl`- (Integer) The valid values are `0, 1800, 3600, 7200, 10800, 14400, 18000, 28800, 43200, 57600, 72000, 86400, 172800, 259200, 345600, 432000, 691200, 1382400, 2073600, 2678400, 5356800, 16070400, 31536000`.
-		  - `browser_check` - (String) The valid values are `on`, `off`.
-		  - `bypass_cache_on_cookie` - (String) The valid values are `cookie tags`.
-		  - `cache_deception_armor` - (String) The valid values are `on`, `off`.
-		  - `cache_on_cookie` - (String) The cookie value.
-		  - `cache_level` - (String) The valid values are `bypass`, `aggressive`, `basic`, `simplified`, `cache_everything`.
-		  - `edge_cache_ttl` - (String) The valid values are `0, 30, 60, 300, 600, 1200, 1800, 3600, 7200, 10800, 14400, 18000, 28800, 43200, 57600, 72000, 86400, 172800, 259200, 345600, 432000, 518400, 604800, 1209600, 2419200`.
-		  - `disable_apps` - (String) The value is not required.
-		  - `disable_performance` - (String) The value is not required.
-		  - `email_obfuscation` - (String) The valid values are `on`, `off`.
-		  - `explicit_cache_control` - (String) The valid values are `on`, `off`.
-		  - `host_header_override` - (String) The header value.
-		  - `ip_geolocation` - (String) The valid values are `on`, `off`.
-		  - `image_load_optimization` - (String) The valid values are `on`, `off`.
-		  - `image_size_optimization` - (String) The valid values are `on`, `off`.
-		  - `opportunistic_encryption` - (String) The valid values are `on`, `off`.
-		  - `origin_error_page_pass_thru` - (String) The valid values are `on`, `off`.
-		  - `resolve_override` - (String) The value for resolving URL override.
-		  - `response_buffering` - (String) The valid values are `on`, `off`.
-		  - `script_load_optimization` - (String) The valid values are `off`, `lossless`, `lossy`.
-		  - `ssl` - (String) The valid values are `off`, `flexible`, `full`, `strict`, `origin_pull`.
-		  - `security_level` - (String) The valid values are `disable_security`, `always_use_https`.
-		  - `server_side_exclude` - (String) The valid values are `on`, `off`.
-		  - `server_stale_content` - (String) The valid values are `on`, `off`.
-		  - `sort_query_string_for_cache` - (String) The valid values are `on`, `off`.
-		  - `true_client_ip_header` - (String) The valid values are `on`, `off`.
-		  - `waf` - (String) The valid values are `on`, `off`.
+		Please refer table in `ibm_cis_page_rule` resource document for corresponding valid values of `id` and `value`.
 	- `status_code` - (String) The status code to check for URL forwarding. The required attribute for `forwarding_url` action. Valid values are `301` and `302`. It returns `0` for all other actions.
 	- `url` - (String) The forward rule URL, a required attribute for `forwarding_url` action.
+	- `css` - (String) The required attribute for `minify` action. CSS supported values are `on` and `off`.
+    - `html` - (String) The required attribute for `minify` action. HTML supported values are `on` and `off`.
+    - `js` - (String) The required attribute for `minify` action. JS supported values are `on` and `off`.

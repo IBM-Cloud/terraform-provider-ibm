@@ -6,27 +6,27 @@ description: |-
   Get information about ibm_satellite_endpoint
 ---
 
-# ibm\_satellite_endpoint
+# ibm_satellite_endpoint
 
 Provides a read-only data source for ibm_satellite_endpoint. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_satellite_endpoint" "satellite_endpoint" {
 	location = "location_id"
 	endpoint_id = "endpoint_id"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 * `location` - (Required, string) The Location ID.
 * `endpoint_id` - (Required, string) The Endpoint ID.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

@@ -58,6 +58,7 @@ var regionName string
 var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
+var InstanceName string
 var instanceProfileName string
 var instanceProfileNameUpdate string
 var dedicatedHostProfileName string
@@ -72,6 +73,8 @@ var workspaceID string
 var templateID string
 var actionID string
 var jobID string
+var repoURL string
+var repoBranch string
 var imageName string
 var functionNamespace string
 var hpcsInstanceID string
@@ -84,12 +87,18 @@ var hpcsAdmin2 string
 var hpcsToken2 string
 var realmName string
 var iksSa string
+var iksClusterVpcID string
+var iksClusterSubnetID string
+var iksClusterResourceGroupID string
 
 // For Power Colo
 
 var pi_image string
 var pi_image_bucket_name string
 var pi_image_bucket_file_name string
+var pi_image_bucket_access_key string
+var pi_image_bucket_secret_key string
+var pi_image_bucket_region string
 var pi_key_name string
 var pi_volume_name string
 var pi_network_name string
@@ -97,6 +106,7 @@ var pi_cloud_instance_id string
 var pi_instance_name string
 var pi_dhcp_id string
 var piCloudConnectionName string
+var piSAPProfileID string
 
 // For Image
 
@@ -124,7 +134,15 @@ var scc_posture_scope_id string
 var scc_posture_scan_id string
 var scc_posture_profile_id string
 
+//ROKS Cluster
+var clusterName string
+
 func init() {
+	testlogger := os.Getenv("TF_LOG")
+	if testlogger != "" {
+		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
 	appIDTenantID = os.Getenv("IBM_APPID_TENANT_ID")
 	if appIDTenantID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TENANT_ID for testing AppID resources, AppID tests will fail if this is not set")
@@ -163,11 +181,10 @@ func init() {
 		datacenter = "par01"
 		fmt.Println("[WARN] Set the environment variable IBM_DATACENTER for testing ibm_container_cluster resource else it is set to default value 'par01'")
 	}
-
 	machineType = os.Getenv("IBM_MACHINE_TYPE")
 	if machineType == "" {
 		machineType = "b3c.4x16"
-		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'u2c.2x4'")
+		fmt.Println("[WARN] Set the environment variable IBM_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'b3c.4x16'")
 	}
 
 	certCRN = os.Getenv("IBM_CERT_CRN")
@@ -392,6 +409,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
 	}
 
+	InstanceName = os.Getenv("IS_INSTANCE_NAME")
+	if InstanceName == "" {
+		InstanceName = "placement-check-ins" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
+	}
+
 	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
 	if instanceProfileName == "" {
 		//instanceProfileName = "bc1-2x8" // for classic infrastructure
@@ -477,6 +500,24 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_FILE_NAME for testing ibm_pi_image resource else it is set to default value 'rhel.ova.gz'")
 	}
 
+	pi_image_bucket_access_key = os.Getenv("PI_IMAGE_BUCKET_ACCESS_KEY")
+	if pi_image_bucket_access_key == "" {
+		pi_image_bucket_access_key = "images-bucket-access-key"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_ACCESS_KEY for testing ibm_pi_image_export resource else it is set to default value 'images-bucket-access-key'")
+	}
+
+	pi_image_bucket_secret_key = os.Getenv("PI_IMAGE_BUCKET_SECRET_KEY")
+	if pi_image_bucket_secret_key == "" {
+		pi_image_bucket_secret_key = "images-bucket-secret-key"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_SECRET_KEY for testing ibm_pi_image_export resource else it is set to default value 'PI_IMAGE_BUCKET_SECRET_KEY'")
+	}
+
+	pi_image_bucket_region = os.Getenv("PI_IMAGE_BUCKET_REGION")
+	if pi_image_bucket_region == "" {
+		pi_image_bucket_region = "us-east"
+		fmt.Println("[INFO] Set the environment variable PI_IMAGE_BUCKET_REGION for testing ibm_pi_image_export resource else it is set to default value 'us-east'")
+	}
+
 	pi_key_name = os.Getenv("PI_KEY_NAME")
 	if pi_key_name == "" {
 		pi_key_name = "terraform-test-power"
@@ -519,6 +560,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_CLOUD_CONNECTION_NAME for testing ibm_pi_cloud_connection resource else it is set to default value 'terraform-test-power'")
 	}
 
+	piSAPProfileID = os.Getenv("PI_SAP_PROFILE_ID")
+	if piSAPProfileID == "" {
+		piSAPProfileID = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
+	}
+
 	workspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
 	if workspaceID == "" {
 		workspaceID = "us-south.workspace.tf-acc-test-schematics-state-test.392cd99f"
@@ -538,6 +585,14 @@ func init() {
 	if actionID == "" {
 		actionID = "us-east.ACTION.action_pm.a4ffeec3"
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_JOB_ID for testing schematics resources else it is set to default value")
+	}
+	repoURL = os.Getenv("SCHEMATICS_REPO_URL")
+	if repoURL == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_URL for testing schematics resources else tests will fail if this is not set correctly")
+	}
+	repoBranch = os.Getenv("SCHEMATICS_REPO_BRANCH")
+	if repoBranch == "" {
+		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
 	image_cos_url = os.Getenv("IMAGE_COS_URL")
@@ -667,6 +722,25 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	iksClusterVpcID = os.Getenv("IBM_CLUSTER_VPC_ID")
+	if iksClusterVpcID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_create tests will fail if this is not set")
+	}
+
+	iksClusterSubnetID = os.Getenv("IBM_CLUSTER_VPC_SUBNET_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_SUBNET_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+
+	iksClusterResourceGroupID = os.Getenv("IBM_CLUSTER_VPC_RESOURCE_GROUP_ID")
+	if iksClusterSubnetID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CLUSTER_VPC_RESOURCE_GROUP_ID for testing ibm_container_vpc_alb_create resources, ibm_container_vpc_alb_creates tests will fail if this is not set")
+	}
+
+	clusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
+	if clusterName == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
+	}
 }
 
 var testAccProviders map[string]*schema.Provider

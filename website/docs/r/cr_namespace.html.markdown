@@ -10,7 +10,7 @@ subcategory: "Container Registry"
 
 Create or delete a Container Registry namespace. For more information about Container Registry, see [About IBM Cloud Container Registry](https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview).
 
-## Example Usage
+## Example usage
 
 The following example shows how you can configure a `namespace`.
 
@@ -28,7 +28,7 @@ resource "ibm_cr_namespace" "rg_namespace" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 - `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group to which you want to add the namespace. If you don't set this option, the default resource group for the account is used.
 - `tags` - (Optional, array of strings) The tags that are associated with the `ibm_cr_namespace`. **Note*- `Tags` are managed locally and not stored on the IBM Cloud service endpoint.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to the attributes in the argument reference list, you can access the following attribute reference after your resource is created.
 

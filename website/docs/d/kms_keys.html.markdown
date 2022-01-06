@@ -17,11 +17,11 @@ data "ibm_kms_keys" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
   limit = 100
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = data.ibm_kms_keys.test.keys.0.crn
 }
 ```

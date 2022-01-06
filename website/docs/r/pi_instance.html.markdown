@@ -50,8 +50,9 @@ resource "ibm_pi_instance" "test-instance" {
 
 The `ibm_pi_instance` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - The creation of the instance is considered failed if no response is received for 60 minutes. 
-- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes. 
+- **create** - The creation of the instance is considered failed if no response is received for 120 minutes.
+- **Update** The updation of the instance is considered failed if no response is received for 60 minutes.
+- **delete** - The deletion of the instance is considered failed if no response is received for 60 minutes.
 
 
 ## Argument reference
@@ -64,26 +65,32 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`.
-- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
+- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command. To provision a VTL instance you must use a VTL image. To list available catalog VTL images, run the `ibmcloud pi image-list-catalog` command.
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance. 
-- `pi_key_pair_name` - (Required, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
-- `pi_memory` - (Required, Float) The amount of memory that you want to assign to your instance in gigabytes.
+- `pi_key_pair_name` - (Optional, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
+- `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
+- `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in gigabytes.
+  - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_migratable`- (Optional, Bool) Indicates the VM is migrated or not.
-- `pi_network_ids` - (Required, List of String) The list of network IDs that you want to assign to the instance. This attribute is **Deprecated** use `pi_network` instead.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance. The `pi_network` object structure is documented below.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`. 
-- `pi_processors` - (Required, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System. 
-- `pi_proc_type` - (Required, String) The type of processor mode in which the VM will run with `shared` or `dedicated`.
-- `pi_replicants` - (Optional, Float) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
+- `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
+  - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
+- `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
+  - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
+- `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
 - `pi_replication_policy` - (Optional, String) The replication policy that you want to use. If this parameter is not set, `none` is used by default. 
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
+- `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
+  - Required only when creating SAP instances.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` and `pi_storage_type` will be ignored.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment. Only valid when you deploy one of the IBM supplied stock images. Storage type for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage type the image was created in
 - `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Only supported value is `vSCSI`.
-- `pi_sys_type` - (Required, String) The type of system on which to create the VM (s922/e880/any). 
+- `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e880/e980).
+  - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_user_data` - (Optional, String) The base64 encoded form of the user data `cloud-init` to pass to the instance during creation. 
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.
-- `pi_volume_ids` - (Required, List of String) The list of volume IDs that you want to attach to the instance during creation.
+- `pi_volume_ids` - (Optional, List of String) The list of volume IDs that you want to attach to the instance during creation.
 
 The `pi_network` block supports:
   - `network_id` - (String) The network ID to assign to the instance.
@@ -92,21 +99,11 @@ The `pi_network` block supports:
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `addresses` - Map of strings - A list of addresses that are assigned to the instance. This attribute is **Deprecated** use `pi_network` instead.
-
-  Nested scheme for `addresses`:
-  - `ip` - (String) The IP address of the instance.
-  - `macaddress` - (String) The MAC address of the instance.
-  - `networkid` - (String) The network ID of the instance.
-  - `network_name` - (String) The network name of the instance.
-  - `type` - (String) The type of network.
-  - `external_ip` - (String) The external IP address of the instance.
 - `health_status` - (String) The health status of the VM.
 - `id` - (String) The unique identifier of the instance. The ID is composed of `<power_instance_id>/<instance_id>`.
 - `instance_id` - (String) The unique identifier of the instance. 
 - `max_processors`- (Float) The maximum number of processors that can be allocated to the instance with shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores.
-- `migratable` - (Bool) Indicates the VM is migrated or not.This attribute is Deprecated use `pi_migratable` instead
 - `min_processors` - (Float) The minimum number of processors that the instance can have. 
 - `min_memory` - (Float) The minimum memory that was allocated to the instance.
 - `max_memory`- (Float) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.

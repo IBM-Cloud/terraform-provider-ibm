@@ -147,6 +147,7 @@ func resourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"standard", "enterprise"}),
+				ForceNew:     true,
 			},
 
 			"status": {
@@ -1832,8 +1833,8 @@ func getConnectionString(d *schema.ResourceData, userName, connectionEndpoint st
 		dbConnection = connection.Rediss
 	case "databases-for-mongodb":
 		dbConnection = connection.Mongo
-	// case "databases-for-mysql":
-	// 	dbConnection = connection.Mysql
+	case "databases-for-mysql":
+		dbConnection = connection.Mysql
 	case "databases-for-elasticsearch":
 		dbConnection = connection.Https
 	case "databases-for-cassandra":
@@ -1937,7 +1938,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 				return false, nil
 			}
 		}
-		return false, fmt.Errorf("[ERROR] Error communicating with the API: %s %s", err, response)
+		return false, fmt.Errorf("[ERROR] Error getting database: %s %s", err, response)
 	}
 	if instance != nil && (strings.Contains(*instance.State, "removed") || strings.Contains(*instance.State, databaseInstanceReclamation)) {
 		log.Printf("[WARN] Removing instance from state because it's in removed or pending_reclamation state")

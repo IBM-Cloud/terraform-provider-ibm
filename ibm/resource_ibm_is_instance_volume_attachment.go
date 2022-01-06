@@ -116,8 +116,10 @@ func resourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{isInstanceVolAttVol},
 				Computed:      true,
+				ValidateFunc:  InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolProfile),
 				Description:   "The  globally unique name for the volume profile to use for this volume.",
 			},
+
 			isInstanceVolCapacity: {
 				Type:          schema.TypeInt,
 				Optional:      true,
@@ -222,6 +224,15 @@ func resourceIBMISInstanceVolumeAttachmentValidator() *ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             63})
 
+	validateSchema = append(validateSchema,
+		ValidateSchema{
+			Identifier:                 isInstanceVolProfile,
+			ValidateFunctionIdentifier: ValidateAllowedStringValue,
+			Type:                       TypeString,
+			Optional:                   true,
+			AllowedValues:              "general-purpose, 5iops-tier, 10iops-tier, custom",
+		})
+
 	ibmISInstanceVolumeAttachmentValidator := ResourceValidator{ResourceName: "ibm_is_instance_volume_attachment", Schema: validateSchema}
 	return &ibmISInstanceVolumeAttachmentValidator
 }
@@ -250,17 +261,6 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			volProtoVol.Name = &volnamestr
 		}
 
-		volProfileStr := "general-purpose"
-		if volProfile, ok := d.GetOk(isInstanceVolProfile); ok {
-			volProfileStr = volProfile.(string)
-			volProtoVol.Profile = &vpcv1.VolumeProfileIdentity{
-				Name: &volProfileStr,
-			}
-		} else {
-			volProtoVol.Profile = &vpcv1.VolumeProfileIdentity{
-				Name: &volProfileStr,
-			}
-		}
 		volSnapshotStr := ""
 		if volSnapshot, ok := d.GetOk(isInstanceVolumeSnapshot); ok {
 			volSnapshotStr = volSnapshot.(string)
@@ -298,7 +298,24 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			if iops != 0 {
 				volProtoVol.Iops = &iops
 			}
+			volProfileStr := "custom"
+			volProtoVol.Profile = &vpcv1.VolumeProfileIdentity{
+				Name: &volProfileStr,
+			}
+		} else {
+			volProfileStr := "general-purpose"
+			if volProfile, ok := d.GetOk(isInstanceVolProfile); ok {
+				volProfileStr = volProfile.(string)
+				volProtoVol.Profile = &vpcv1.VolumeProfileIdentity{
+					Name: &volProfileStr,
+				}
+			} else {
+				volProtoVol.Profile = &vpcv1.VolumeProfileIdentity{
+					Name: &volProfileStr,
+				}
+			}
 		}
+
 		instanceVolAttproto.Volume = volProtoVol
 	}
 

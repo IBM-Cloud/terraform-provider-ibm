@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -54,10 +55,12 @@ func testAccCheckIBMPIVolumeDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_volume" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
-		powerinstanceid := parts[0]
-		volumeC := st.NewIBMPIVolumeClient(sess, powerinstanceid)
-		volume, err := volumeC.Get(parts[1], powerinstanceid, volGetTimeOut)
+		cloudInstanceID, volumeID, err := splitID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		volumeC := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
+		volume, err := volumeC.Get(volumeID)
 		if err == nil {
 			log.Println("volume*****", volume.State)
 			return fmt.Errorf("PI Volume still exists: %s", rs.Primary.ID)
@@ -83,18 +86,16 @@ func testAccCheckIBMPIVolumeExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		cloudInstanceID, volumeID, err := splitID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		powerinstanceid := parts[0]
-		client := st.NewIBMPIVolumeClient(sess, powerinstanceid)
+		client := st.NewIBMPIVolumeClient(context.Background(), sess, cloudInstanceID)
 
-		volume, err := client.Get(parts[1], powerinstanceid, volGetTimeOut)
+		_, err = client.Get(volumeID)
 		if err != nil {
 			return err
 		}
-		parts[1] = *volume.VolumeID
 		return nil
 
 	}

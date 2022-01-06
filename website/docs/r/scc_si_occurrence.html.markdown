@@ -1,20 +1,20 @@
 ---
 layout: "ibm"
 subcategory: "Security and Compliance Center"
-page_title: "IBM : ibm_scc_si_occurence"
+page_title: "IBM : ibm_scc_si_occurrence"
 description: |-
-  Manages scc_si_occurence.
+  Manages Security and Compliance Center occurrence.
 ---
 
-# ibm_scc_si_occurence
+# ibm_scc_si_occurrence
 
-Provides a resource for scc_si_occurence. This allows scc_si_occurence to be created, updated and deleted.
+Create, update, or delete for a Security and Compliance Center occurrence. For more information, about Security and Compliance Center, see [getting started with Security and Compliance Center](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-getting-started).
 
-## Example Usage
+## Example usage
 
 #### FINDING
 
-```hcl
+```terraform
 resource "ibm_scc_si_occurrence" "finding-occurrence" {
   provider_id   = var.provider_id
   note_name     = var.note_name
@@ -35,7 +35,7 @@ resource "ibm_scc_si_occurrence" "finding-occurrence" {
 
 #### KPI
 
-```hcl
+```terraform
 resource "ibm_scc_si_occurrence" "kpi-occurrence" {
   provider_id   = var.provider_id
   note_name     = var.note_name
@@ -50,33 +50,37 @@ resource "ibm_scc_si_occurrence" "kpi-occurrence" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
-* `context` - (Optional, List) 
-Nested scheme for **context**:
-	* `component_name` - (Optional, String) The name of the component the occurrence applies to.
-	* `environment_name` - (Optional, String) The name of the environment the occurrence applies to.
-	* `region` - (Optional, String) The IBM Cloud region.
-	* `resource_crn` - (Optional, String) The resource CRN (e.g. certificate CRN, image CRN).
-	* `resource_id` - (Optional, String) The resource ID, in case the CRN is not available.
-	* `resource_name` - (Optional, String) The user-friendly resource name.
-	* `resource_type` - (Optional, String) The resource type name (e.g. Pod, Cluster, Certificate, Image).
-	* `service_crn` - (Optional, String) The service CRN (e.g. CertMgr Instance CRN).
-	* `service_name` - (Optional, String) The service name (e.g. CertMgr).
-	* `toolchain_id` - (Optional, String) The id of the toolchain the occurrence applies to.
-* `finding` - (Optional, List) Finding provides details about a finding occurrence.
-Nested scheme for **finding**:
-	* `certainty` - (Optional, String) Note provider-assigned confidence on the validity of an occurrence- LOW&#58; Low Certainty- MEDIUM&#58; Medium Certainty- HIGH&#58; High Certainty.
-	  * Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`.
-	* `data_transferred` - (Optional, List) It provides details about data transferred between clients and servers.
-	Nested scheme for **data_transferred**:
-		* `client_bytes` - (Optional, Integer) The number of client bytes transferred.
-		* `client_packets` - (Optional, Integer) The number of client packets transferred.
-		* `server_bytes` - (Optional, Integer) The number of server bytes transferred.
-		* `server_packets` - (Optional, Integer) The number of server packets transferred.
-	* `network_connection` - (Optional, List) It provides details about a network connection.
+- `context` - (Optional, List) 
+
+  Nested scheme for **context**:
+  - `component_name` - (Optional, String) The name of the component the occurrence applies to.
+  - `environment_name` - (Optional, String) The name of the environment the occurrence applies to.
+  - `region` - (Optional, String) The IBM Cloud region.
+  - `resource_crn` - (Optional, String) The resource CRN (e.g. certificate CRN, image CRN).
+  - `resource_id` - (Optional, String) The resource ID, in case the CRN is not available.
+  - `resource_name` - (Optional, String) The user-friendly resource name.
+  - `resource_type` - (Optional, String) The resource type name (e.g. Pod, Cluster, Certificate, Image).
+  - `service_crn` - (Optional, String) The service CRN (e.g. CertMgr Instance CRN).
+  - `service_name` - (Optional, String) The service name (e.g. CertMgr).
+  - `toolchain_id` - (Optional, String) The id of the toolchain the occurrence applies to.
+- `finding` - (Optional, List) Finding provides details about a finding occurrence.
+
+   Nested scheme for **finding**:
+	- `certainty` - (Optional, String) Note provider-assigned confidence on the validity of an occurrence- LOW&#58; Low Certainty- MEDIUM&#58; Medium Certainty- HIGH&#58; High Certainty.
+	  - Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`.
+	- `data_transferred` - (Optional, List) It provides details about data transferred between clients and servers.
+	  
+	  Nested scheme for **data_transferred**:
+	  - `client_bytes` - (Optional, Integer) The number of client bytes transferred.
+	  - `client_packets` - (Optional, Integer) The number of client packets transferred.
+	  - `server_bytes` - (Optional, Integer) The number of server bytes transferred.
+	  - `server_packets` - (Optional, Integer) The number of server packets transferred.
+	- `network_connection` - (Optional, List) It provides details about a network connection.
+	
 	Nested scheme for **network_connection**:
 		* `client` - (Optional, List) It provides details about a socket address.
 		Nested scheme for **client**:
@@ -94,7 +98,7 @@ Nested scheme for **finding**:
 		* `url` - (Optional, String) The URL associated to this next steps.
 	* `severity` - (Optional, String) Note provider-assigned severity/impact ranking- LOW&#58; Low Impact- MEDIUM&#58; Medium Impact- HIGH&#58; High Impact- CRITICAL&#58; Critical Impact.
 	  * Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-* `kind` - (Required, String) The type of note. Use this field to filter notes and occurences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
+* `kind` - (Required, String) The type of note. Use this field to filter notes and occurrences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
   * Constraints: Allowable values are: `FINDING`, `KPI`, `CARD`, `CARD_CONFIGURED`, `SECTION`.
 * `kpi` - (Optional, List) Kpi provides details about a KPI occurrence.
 Nested scheme for **kpi**:
@@ -108,27 +112,28 @@ Nested scheme for **kpi**:
 * `replace_if_exists` - (Optional, Boolean) When set to true, an existing occurrence is replaced rather than duplicated.
 * `resource_url` - (Optional, String) The unique URL of the resource, image or the container, for which the `Occurrence` applies. For example, https://gcr.io/provider/image@sha256:foo. This field can be used as a filter in list requests.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the scc_si_occurence.
-* `create_time` - (Optional, String) Output only. The time this `Occurrence` was created.
-* `update_time` - (Optional, String) Output only. The time this `Occurrence` was last updated.
+- `id` - The unique identifier of the scc_si_occurrence.
+- `create_time` - (Optional, String) Output only. The time this `Occurrence` was created.
+- `update_time` - (Optional, String) Output only. The time this `Occurrence` was last updated.
 
 ## Import
 
-You can import the `ibm_scc_si_occurence` resource by using `id`.
+You can import the `ibm_scc_si_occurrence` resource by using `id`.
 The `id` property can be formed from `provider_id`, and `occurrence_id` in the following format:
 
-```
+```sh
 <account_id>/<provider_id>/<occurrence_id>
 ```
-* `account_id` - A string. AccountID from the resource has to be imported.
-* `provider_id`: A string. Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
-* `occurrence_id`: A string. Second part of occurrence `name`: providers/{provider_id}/occurrences/{occurrence_id}.
+- `account_id` - A string. AccountID from the resource has to be imported.
+- `provider_id`: A string. Part of the parent. This field contains the provider ID. For example: **providers/{provider_id}**.
+- `occurrence_id`: A string. Second part of occurrence `name`: **providers/{provider_id}/occurrences/{occurrence_id}**.
 
 # Syntax
-```
-$ terraform import ibm_scc_si_occurence.scc_si_occurence <provider_id>/<occurrence_id>
+
+```sh
+$ terraform import ibm_scc_si_occurrence.scc_si_occurrence <account_id>/<provider_id>/<occurrence_id>
 ```

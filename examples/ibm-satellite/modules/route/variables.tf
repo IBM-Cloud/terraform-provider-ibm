@@ -1,6 +1,6 @@
 variable "ibmcloud_api_key" {
   description = "IBM Cloud api key"
-  type         = string
+  type        = string
 }
 
 variable "is_endpoint_provision" {
@@ -10,8 +10,8 @@ variable "is_endpoint_provision" {
 
 variable "cluster_master_url" {
   description = "Satellite Cluster URL"
-  type         = string
-  default      = "test.com"
+  type        = string
+  default     = "test.com"
 }
 
 variable "route_name" {

@@ -4,6 +4,7 @@
 package ibm
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -32,6 +33,10 @@ const (
 	cisPageRuleActionsIDBrowserCacheTTL  = "browser_cache_ttl"
 	cisPageRuleActionsIDDisableSecurity  = "disable_security"
 	cisPageRuleActionsIDAlwaysUseHTTPS   = "always_use_https"
+	cisPageRuleActionsIDMinify           = "minify"
+	cisPageRuleActionsMinifyCSS          = "css"
+	cisPageRuleActionsMinifyHTML         = "html"
+	cisPageRuleActionsMinifyJS           = "js"
 )
 
 func resourceIBMCISPageRule() *schema.Resource {
@@ -134,6 +139,21 @@ func resourceIBMCISPageRule() *schema.Resource {
 							Optional:    true,
 							Description: "Page rule actions status code",
 						},
+						cisPageRuleActionsMinifyCSS: {
+							Type:        schema.TypeString,
+							Description: "Minify CSS value",
+							Optional:    true,
+						},
+						cisPageRuleActionsMinifyHTML: {
+							Type:        schema.TypeString,
+							Description: "Minify HTML value",
+							Optional:    true,
+						},
+						cisPageRuleActionsMinifyJS: {
+							Type:        schema.TypeString,
+							Description: "Minify JS value",
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -150,7 +170,7 @@ func resourceCISPageRuleValidator() *ResourceValidator {
 		"host_header_override, resolve_override, cache_on_cookie, disable_apps, " +
 		"disable_performance, image_load_optimization, origin_error_page_pass_thru, " +
 		"response_buffering, image_size_optimization, script_load_optimization, " +
-		"true_client_ip_header, sort_query_string_for_cache, respect_strong_etag"
+		"true_client_ip_header, sort_query_string_for_cache, respect_strong_etag,minify"
 	status := "active, disabled"
 	validateSchema := make([]ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -348,6 +368,7 @@ func expandCISPageRuleActions(actions interface{}) []cispagerulev1.PageRulesBody
 			}
 			actionsOutput = append(actionsOutput, actionItem)
 			break
+
 		case cisPageRuleActionsIDBrowserCacheTTL,
 			cisPageRuleActionsIDEdgeCacheTTL:
 			valueStr := instance[cisPageRuleActionsValue].(string)
@@ -368,6 +389,17 @@ func expandCISPageRuleActions(actions interface{}) []cispagerulev1.PageRulesBody
 			actionItem := &cispagerulev1.PageRulesBodyActionsItem{
 				ID:    &id,
 				Value: &value,
+			}
+			actionsOutput = append(actionsOutput, actionItem)
+			break
+		case cisPageRuleActionsIDMinify:
+			Value := make(map[string]interface{})
+			Value["css"] = instance[cisPageRuleActionsMinifyCSS].(string)
+			Value["html"] = instance[cisPageRuleActionsMinifyHTML].(string)
+			Value["js"] = instance[cisPageRuleActionsMinifyJS].(string)
+			actionItem := &cispagerulev1.PageRulesBodyActionsItem{
+				ID:    &id,
+				Value: &Value,
 			}
 			actionsOutput = append(actionsOutput, actionItem)
 			break
@@ -405,20 +437,34 @@ func flattenCISPageRuleTargets(targets []cispagerulev1.TargetsItem) interface{} 
 }
 
 func flattenCISPageRuleActions(actions []cispagerulev1.PageRulesBodyActionsItemIntf) interface{} {
+
 	actionsOutput := make([]interface{}, 0)
 
 	for _, instance := range actions {
 		actionItemOutput := map[string]interface{}{}
 		item := instance.(*cispagerulev1.PageRulesBodyActionsItem)
 		actionItemOutput[cisPageRuleActionsID] = *item.ID
+
 		if *item.ID == cisPageRuleActionsIDForwardingURL {
 			value := item.Value.(map[string]interface{})
 			actionItemOutput[cisPageRuleActionsValueURL] = value[cisPageRuleActionsValueURL]
 			actionItemOutput[cisPageRuleActionsValueStatusCode] = value[cisPageRuleActionsValueStatusCode]
+
+		} else if *item.ID == cisPageRuleActionsIDMinify {
+			value := item.Value.(map[string]interface{})
+			actionItemOutput[cisPageRuleActionsMinifyCSS] = value[cisPageRuleActionsMinifyCSS]
+			actionItemOutput[cisPageRuleActionsMinifyHTML] = value[cisPageRuleActionsMinifyHTML]
+			actionItemOutput[cisPageRuleActionsMinifyJS] = value[cisPageRuleActionsMinifyJS]
+
+		} else if *item.ID == cisPageRuleActionsIDBrowserCacheTTL || *item.ID == cisPageRuleActionsIDEdgeCacheTTL {
+			value := fmt.Sprintf("%v", item.Value)
+			actionItemOutput[cisPageRuleActionsValue] = value
+
 		} else {
 			actionItemOutput[cisPageRuleActionsValue] = item.Value
 		}
 		actionsOutput = append(actionsOutput, actionItemOutput)
 	}
+
 	return actionsOutput
 }

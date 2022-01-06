@@ -134,11 +134,17 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	imageName := d.Get(helpers.PIImageName).(string)
 
-	client := st.NewIBMPIImageClient(sess, cloudInstanceID)
+	client := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	// image copy
 	if v, ok := d.GetOk(helpers.PIImageId); ok {
 		imageid := v.(string)
-		imageResponse, err := client.Create(imageName, imageid, cloudInstanceID)
+		source := "root-project"
+		var body = &models.CreateImage{
+			ImageName: imageName,
+			ImageID:   imageid,
+			Source:    &source,
+		}
+		imageResponse, err := client.Create(body)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -146,7 +152,7 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		IBMPIImageID := imageResponse.ImageID
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *IBMPIImageID))
 
-		_, err = isWaitForIBMPIImageAvailable(ctx, client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate), cloudInstanceID)
+		_, err = isWaitForIBMPIImageAvailable(ctx, client, *IBMPIImageID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			log.Printf("[DEBUG]  err %s", err)
 			return diag.FromErr(err)
@@ -177,19 +183,19 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			body.SecretKey = v.(string)
 		}
 
-		imageResponse, err := client.CreateCosImageWithContext(ctx, body, cloudInstanceID)
+		imageResponse, err := client.CreateCosImage(body)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		jobClient := st.NewIBMPIJobClient(sess, cloudInstanceID)
-		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, cloudInstanceID, d.Timeout(schema.TimeoutCreate))
+		jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
+		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.Errorf(errors.CreateImageOperationFailed, cloudInstanceID, err)
+			return diag.FromErr(err)
 		}
 
 		// Once the job is completed find by name
-		image, err := client.GetWithContext(ctx, imageName, cloudInstanceID)
+		image, err := client.Get(imageName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -205,25 +211,23 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, imageID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	imageID := parts[1]
-
-	imageC := st.NewIBMPIImageClient(sess, cloudInstanceID)
-	imagedata, err := imageC.GetWithContext(ctx, imageID, cloudInstanceID)
+	imageC := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	imagedata, err := imageC.Get(imageID)
 	if err != nil {
-		switch err.(type) {
+		uErr := errors.Unwrap(err)
+		switch uErr.(type) {
 		case *p_cloud_images.PcloudCloudinstancesImagesGetNotFound:
 			log.Printf("[DEBUG] image does not exist %v", err)
 			d.SetId("")
 			return nil
 		}
 		log.Printf("[DEBUG] get image failed %v", err)
-		return diag.Errorf(errors.GetImageOperationFailed, imageID, err)
+		return diag.FromErr(err)
 	}
 
 	imageid := *imagedata.ImageID
@@ -243,30 +247,28 @@ func resourceIBMPIImageDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	cloudInstanceID, imageID, err := splitID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := parts[0]
-	imageID := parts[1]
-	imageC := st.NewIBMPIImageClient(sess, cloudInstanceID)
-	_, err = imageC.DeleteWithContext(ctx, imageID, cloudInstanceID)
+	imageC := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
+	err = imageC.Delete(imageID)
 	if err != nil {
-		return diag.Errorf("Failed to Delete PI Image %s :%v", imageID, err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func isWaitForIBMPIImageAvailable(ctx context.Context, client *st.IBMPIImageClient, id string, timeout time.Duration, powerinstanceid string) (interface{}, error) {
+func isWaitForIBMPIImageAvailable(ctx context.Context, client *st.IBMPIImageClient, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Power Image (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", helpers.PIImageQueStatus},
 		Target:     []string{helpers.PIImageActiveStatus},
-		Refresh:    isIBMPIImageRefreshFunc(ctx, client, id, powerinstanceid),
+		Refresh:    isIBMPIImageRefreshFunc(ctx, client, id),
 		Timeout:    timeout,
 		Delay:      20 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -275,11 +277,11 @@ func isWaitForIBMPIImageAvailable(ctx context.Context, client *st.IBMPIImageClie
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, id, powerinstanceid string) resource.StateRefreshFunc {
+func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, id string) resource.StateRefreshFunc {
 
 	log.Printf("Calling the isIBMPIImageRefreshFunc Refresh Function....")
 	return func() (interface{}, string, error) {
-		image, err := client.GetWithContext(ctx, id, powerinstanceid)
+		image, err := client.Get(id)
 		if err != nil {
 			return nil, "", err
 		}
@@ -292,12 +294,12 @@ func isIBMPIImageRefreshFunc(ctx context.Context, client *st.IBMPIImageClient, i
 	}
 }
 
-func waitForIBMPIJobCompleted(ctx context.Context, client *st.IBMPIJobClient, jobID, cloudInstanceID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIJobCompleted(ctx context.Context, client *st.IBMPIJobClient, jobID string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{helpers.JobStatusQueued, helpers.JobStatusReadyForProcessing, helpers.JobStatusInProgress, helpers.JobStatusRunning, helpers.JobStatusWaiting},
 		Target:  []string{helpers.JobStatusCompleted, helpers.JobStatusFailed},
 		Refresh: func() (interface{}, string, error) {
-			job, err := client.GetWithContext(ctx, jobID, cloudInstanceID)
+			job, err := client.Get(jobID)
 			if err != nil {
 				log.Printf("[DEBUG] get job failed %v", err)
 				return nil, "", fmt.Errorf(errors.GetJobOperationFailed, jobID, err)

@@ -10,6 +10,17 @@ description: |-
 # ibm_is_instance
 Create, update, or delete a Virtual Servers for VPC instance. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
+**Note**
+- IBM Cloud terraform provider currently provides both a standalone `ibm_is_instance_network_interface` resource and a `network_interfaces` block defined in-line in the `ibm_is_instance` resource. At this time you cannot use the `network_interfaces` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_instance_network_interface`. Doing so will create a conflict of network interfaces and will overwrite it.
+- VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+  **provider.tf**
+
+  ```terraform
+  provider "ibm" {
+    region = "eu-gb"
+  }
+  ```
 
 ## Example usage
 
@@ -64,7 +75,6 @@ resource "ibm_is_instance" "example" {
     delete = "15m"
   }
 }
-
 ```
 
 ### Sample for creating an instance with custom security group rules.
@@ -254,9 +264,10 @@ The `ibm_is_instance` resource provides the following [[Timeouts](https://www.te
 ## Argument reference
 Review the argument references that you can specify for your resource.
 - `action` - (Optional, String) Action to be taken on the instance. Supported values are `stop`, `start`, or `reboot`.
-  ~> **Note:** 
-  - `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
-- `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. ~>**Note:** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+  
+  ~> **Note** 
+    `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
+- `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
@@ -302,7 +313,12 @@ Review the argument references that you can specify for your resource.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
-- `profile` - (Optional, Forces new resource, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+- `profile` - (Optional, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
+
+  ~>**NOTE:**
+      When the `profile` is changed, the VSI is restarted. The new profile must:                                                                                                                                          
+          1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
+          2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the source template.
   ~> **Note:** 

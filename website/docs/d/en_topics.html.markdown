@@ -10,15 +10,15 @@ description: |-
 
 Provides a read-only data source for topics. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_en_topics" "en_topics" {
   instance_guid = "instance_guid"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
@@ -26,7 +26,7 @@ Review the argument reference that you can specify for your data source.
 
 - `search_key` - (Optional, String) Filter the topic by name.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

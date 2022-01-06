@@ -57,6 +57,7 @@ import (
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
+	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
@@ -66,6 +67,7 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
+	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
@@ -167,6 +169,9 @@ type Config struct {
 	//IAM Token
 	IAMToken string
 
+	//TrustedProfileToken Token
+	IAMTrustedProfileID string
+
 	//IAM Refresh Token
 	IAMRefreshToken string
 
@@ -265,7 +270,9 @@ type ClientSession interface {
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
+	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
+	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 }
 
 type clientSession struct {
@@ -528,9 +535,17 @@ type clientSession struct {
 	findingsClient    *findingsv1.FindingsV1
 	findingsClientErr error
 
+	// Security and Compliance Center (SCC) Admin
+	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
+	adminServiceApiClientErr error
+
 	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr error
 	postureManagementClient    *posturemanagementv1.PostureManagementV1
+
+	// context Based Restrictions (CBR)
+	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
+	contextBasedRestrictionsClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -689,6 +704,30 @@ func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
 }
 
 func (sess clientSession) keyManagementAPI() (*kp.Client, error) {
+	if sess.kmsErr == nil {
+		var clientConfig *kp.ClientConfig
+		if sess.kmsAPI.Config.APIKey != "" {
+			clientConfig = &kp.ClientConfig{
+				BaseURL:  envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				APIKey:   sess.kmsAPI.Config.APIKey, //pragma: allowlist secret
+				Verbose:  kp.VerboseFailOnly,
+				TokenURL: sess.kmsAPI.Config.TokenURL,
+			}
+		} else {
+			clientConfig = &kp.ClientConfig{
+				BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, sess.kmsAPI.Config.BaseURL),
+				Authorization: sess.session.BluemixSession.Config.IAMAccessToken, //pragma: allowlist secret
+				Verbose:       kp.VerboseFailOnly,
+				TokenURL:      sess.kmsAPI.Config.TokenURL,
+			}
+		}
+
+		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
+		if err != nil {
+			sess.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+		}
+		return kpClient, nil
+	}
 	return sess.kmsAPI, sess.kmsErr
 }
 
@@ -973,12 +1012,22 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 	return session.findingsClient.Clone(), nil
 }
 
+//Security and Compliance center Admin API
+func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
+	return session.adminServiceApiClient, session.adminServiceApiClientErr
+}
+
 // Security and Compliance center Posture Management
 func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
 	if session.postureManagementClientErr != nil {
 		return session.postureManagementClient, session.postureManagementClientErr
 	}
 	return session.postureManagementClient.Clone(), nil
+}
+
+// Context Based Restrictions
+func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
+	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1065,6 +1114,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
+		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1103,7 +1153,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
-	if sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
+	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.BluemixAPIKey == "" {
 		err := refreshToken(sess.BluemixSession)
 		if err != nil {
 			for count := c.RetryCount; count >= 0; count-- {
@@ -1216,6 +1266,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
+	iamURL := iamidentity.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+	}
+
 	// KEY MANAGEMENT Service
 	kmsurl := contructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
@@ -1230,7 +1292,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 			BaseURL: envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, //pragma: allowlist secret
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
-			Verbose: kp.VerboseFailOnly,
+			Verbose:  kp.VerboseFailOnly,
+			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 
 	} else {
@@ -1238,7 +1301,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 			BaseURL:       envFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			Authorization: sess.BluemixSession.Config.IAMAccessToken,
 			// InstanceID:    "5af62d5d-5d90-4b84-bbcd-90d2123ae6c8",
-			Verbose: kp.VerboseFailOnly,
+			Verbose:  kp.VerboseFailOnly,
+			TokenURL: envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
 		}
 	}
 	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
@@ -1250,17 +1314,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var authenticator core.Authenticator
 
 	if c.BluemixAPIKey != "" {
-		iamURL := iamidentity.DefaultServiceURL
-		if c.Visibility == "private" || c.Visibility == "public-and-private" {
-			if c.Region == "us-south" || c.Region == "us-east" {
-				iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
-			} else {
-				iamURL = contructEndpoint("private.iam", cloudEndpoint)
-			}
-		}
-		if fileMap != nil && c.Visibility != "public-and-private" {
-			iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
-		}
 		authenticator = &core.IamAuthenticator{
 			ApiKey: c.BluemixAPIKey,
 			URL:    envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
@@ -1298,6 +1351,32 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.appidAPI = appIDClient
+
+	// Construct an "options" struct for creating Context Based Restrictions service client.
+	cbrURL := contextbasedrestrictionsv1.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Context Based Restrictions Service API does not support private endpoints") //return this error if private endpoints are not supported
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
+	}
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
+	}
+
+	// Construct the service client.
+	session.contextBasedRestrictionsClient, err = contextbasedrestrictionsv1.NewContextBasedRestrictionsV1(contextBasedRestrictionsClientOptions)
+	if err == nil && session.contextBasedRestrictionsClient != nil {
+		// Enable retries for API calls
+		session.contextBasedRestrictionsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.contextBasedRestrictionsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("Error occurred while configuring Context Based Restrictions service: %q", err)
+	}
 
 	// CATALOG MANAGEMENT Service
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
@@ -1391,6 +1470,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.findingsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// SCC ADMIN Service
+	var adminServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		adminServiceApiClientURL = adminserviceapiv1.DefaultServiceURL
+	}
+	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
+		Authenticator: authenticator,
+		URL:           envFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
+	}
+
+	// Construct the service client.
+	session.adminServiceApiClient, err = adminserviceapiv1.NewAdminServiceApiV1(adminServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.adminServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.adminServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.adminServiceApiClientErr = fmt.Errorf("Error occurred while configuring Admin Service API service: %q", err)
 	}
 
 	// SCHEMATICS Service
@@ -1534,7 +1644,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
 		if err != nil {
-			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("us-south")
+			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("global")
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -1683,7 +1793,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.apigatewayAPI = apigatewayAPI
 
 	// POWER SYSTEMS Service
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, 90000000000, session.bmxUserDetails.userAccount, c.Zone)
+	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, session.bmxUserDetails.userAccount, c.Zone)
 	if err != nil {
 		session.ibmpiConfigErr = err
 		return nil, err
@@ -2304,20 +2414,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// IAM IDENTITY Service
 	// iamIdenityURL := fmt.Sprintf("https://%s.iam.cloud.ibm.com/v1", c.Region)
-	iamURL := iamidentity.DefaultServiceURL
+	iamIdenityURL := iamidentity.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
-			iamURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+			iamIdenityURL = contructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
 		} else {
-			iamURL = contructEndpoint("private.iam", cloudEndpoint)
+			iamIdenityURL = contructEndpoint("private.iam", cloudEndpoint)
 		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+		iamIdenityURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamIdenityURL)
 	}
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+		URL:           envFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamIdenityURL),
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
@@ -2632,6 +2742,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
+	if os.Getenv("TF_LOG") != "" {
+		logDestination := log.Writer()
+		goLogger := log.New(logDestination, "", log.LstdFlags)
+		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
+	}
 	return session, nil
 }
 
@@ -2667,18 +2782,21 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	if (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
+	if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
 		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
 	}
+	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
+		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
+	}
 
-	if c.IAMToken != "" && c.IAMRefreshToken != "" {
+	if c.IAMToken != "" {
 		log.Println("Configuring IBM Cloud Session with token")
 		var sess *bxsession.Session
 		bmxConfig := &bluemix.Config{
 			IAMAccessToken:  c.IAMToken,
 			IAMRefreshToken: c.IAMRefreshToken,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,
@@ -2701,7 +2819,7 @@ func newSession(c *Config) (*Session, error) {
 		bmxConfig := &bluemix.Config{
 			BluemixAPIKey: c.BluemixAPIKey,
 			//Comment out debug mode for v0.12
-			//Debug:         os.Getenv("TF_LOG") != "",
+			Debug:         os.Getenv("TF_LOG") != "",
 			HTTPTimeout:   c.BluemixTimeout,
 			Region:        c.Region,
 			ResourceGroup: c.ResourceGroup,

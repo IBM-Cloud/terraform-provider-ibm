@@ -4,21 +4,23 @@
 package ibm
 
 import (
+	"context"
+	"log"
+
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
 )
 
 func dataSourceIBMPISnapshots() *schema.Resource {
 
 	return &schema.Resource{
-		Read: dataSourceIBMPISnapshotsRead,
+		ReadContext: dataSourceIBMPISnapshotsRead,
 		Schema: map[string]*schema.Schema{
-
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -26,7 +28,6 @@ func dataSourceIBMPISnapshots() *schema.Resource {
 			},
 
 			//Computed Attributes
-
 			"instance_snapshots": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -44,7 +45,6 @@ func dataSourceIBMPISnapshots() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-
 						"description": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -65,6 +65,10 @@ func dataSourceIBMPISnapshots() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"volume_snapshots": {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -72,19 +76,17 @@ func dataSourceIBMPISnapshots() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPISnapshotsRead(d *schema.ResourceData, meta interface{}) error {
-
+func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(ClientSession).IBMPISession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	snapshot := instance.NewIBMPISnapshotClient(sess, powerinstanceid)
-	snapshotData, err := snapshot.GetAll("", powerinstanceid, getTimeOut)
-
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
+	snapshotData, err := snapshot.GetAll()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -92,7 +94,6 @@ func dataSourceIBMPISnapshotsRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("instance_snapshots", flattenSnapshotsInstances(snapshotData.Snapshots))
 
 	return nil
-
 }
 
 func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{} {
@@ -108,6 +109,7 @@ func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{}
 			"action":            i.Action,
 			"percent_complete":  i.PercentComplete,
 			"status":            i.Status,
+			"volume_snapshots":  i.VolumeSnapshots,
 		}
 
 		result = append(result, l)

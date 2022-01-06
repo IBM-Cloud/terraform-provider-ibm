@@ -16,12 +16,12 @@ Create, update, or delete an IAM trusted profile policy. For more information, a
 ### Trusted Profile Policy for all Identity and Access enabled services 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id  = ibm_iam_trusted_profile.profileID.id
+  profile_id  = ibm_iam_trusted_profile.profile_id.id
   roles       = ["Viewer"]
   description = "IAM Trusted Profile Policy"
 }
@@ -31,16 +31,17 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy using service with region
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
-  roles      = ["Viewer"]
+  profile_id = ibm_iam_trusted_profile.profile_id.id
+  roles      = ["Viewer", "Manager"]
 
   resources {
-    service = "cloud-object-storage"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
 
@@ -48,7 +49,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource instance 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -60,7 +61,7 @@ resource "ibm_resource_instance" "instance" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Manager", "Viewer", "Administrator"]
 
   resources {
@@ -74,7 +75,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource group 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -83,7 +84,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Viewer"]
 
   resources {
@@ -97,7 +98,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource and resource type 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -106,7 +107,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Administrator"]
 
   resources {
@@ -120,7 +121,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using attributes 
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 
@@ -129,7 +130,7 @@ data "ibm_resource_group" "group" {
 }
 
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Administrator"]
 
   resources {
@@ -146,11 +147,11 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 ### Trusted Profile Policy by using resource_attributes
 
 ```terraform
-resource "ibm_iam_trusted_profile" "profileID" {
+resource "ibm_iam_trusted_profile" "profile_id" {
   name = "test"
 }
 resource "ibm_iam_trusted_profile_policy" "policy" {
-  profile_id = ibm_iam_trusted_profile.profileID.id
+  profile_id = ibm_iam_trusted_profile.profile_id.id
   roles      = ["Viewer"]
   resource_attributes {
     name     = "resource"
@@ -164,6 +165,25 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 }
 ```
 
+### Trusted Profile Policy using service_type with region
+
+```terraform
+resource "ibm_iam_trusted_profile" "profile_id" {
+  name = "test"
+}
+
+resource "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile.profile_id.id
+  roles      = ["Viewer"]
+
+  resources {
+    service_type = "service"
+    region = "us-south"
+  }
+}
+
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -174,7 +194,8 @@ Review the argument references that you can specify for your resource.
 - `resources` - (List of Objects) Optional- A nested block describes the resource of this policy.**Note** Conflicts with `account_management` and `resource_attributes`.
 
   Nested scheme for `resources`:
-  - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`.
+  - `service`  (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`. Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
   - `resource_instance_id` - (Optional, String) The ID of the resource instance of the policy definition.
   - `region` - (Optional, String) The region of the policy definition.
   - `resource_type` - (Optional, String) The resource type of the policy definition.

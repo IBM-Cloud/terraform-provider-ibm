@@ -16,6 +16,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -679,8 +680,8 @@ func flattenMetricsMonitor(in *resourceconfigurationv1.MetricsMonitoring) []inte
 func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire
-		if r.Expiration == nil {
+		// Checking this is not an expire_rule.  LifeCycle rules are either archive or expire or non current version or abort incomplete multipart upload
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.AbortIncompleteMultipartUpload == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -714,7 +715,7 @@ func archiveRuleGet(in []*s3.LifecycleRule) []interface{} {
 func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 	rules := make([]interface{}, 0, len(in))
 	for _, r := range in {
-		if r.Expiration != nil {
+		if r.Expiration != nil && r.Transitions == nil {
 			rule := make(map[string]interface{})
 
 			if r.Status != nil {
@@ -730,12 +731,86 @@ func expireRuleGet(in []*s3.LifecycleRule) []interface{} {
 			}
 
 			if r.Expiration != nil {
-				rule["days"] = int(*(r.Expiration).Days)
+				if r.Expiration.Days != nil {
+					days := int(*(r.Expiration).Days)
+					if days > 0 {
+						rule["days"] = days
+					}
+				}
+				if r.Expiration.Date != nil {
+					expirationTime := *(r.Expiration).Date
+					d := strings.Split(expirationTime.Format(time.RFC3339), "T")
+					rule["date"] = d[0]
+				}
+
+				if r.Expiration.ExpiredObjectDeleteMarker != nil {
+					rule["expired_object_delete_marker"] = *(r.Expiration).ExpiredObjectDeleteMarker
+				}
 			}
 			if r.Filter != nil && r.Filter.Prefix != nil {
 				rule["prefix"] = *(r.Filter).Prefix
 			}
 
+			rules = append(rules, rule)
+		}
+	}
+
+	return rules
+
+}
+
+func nc_exp_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.AbortIncompleteMultipartUpload == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.NoncurrentVersionExpiration != nil {
+				rule["noncurrent_days"] = int(*(r.NoncurrentVersionExpiration).NoncurrentDays)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
+			rules = append(rules, rule)
+		}
+	}
+	return rules
+}
+
+func abort_mpu_RuleGet(in []*s3.LifecycleRule) []interface{} {
+	rules := make([]interface{}, 0, len(in))
+	for _, r := range in {
+		if r.Expiration == nil && r.NoncurrentVersionExpiration == nil && r.Transitions == nil {
+			rule := make(map[string]interface{})
+			if r.Status != nil {
+				if *r.Status == "Enabled" {
+					rule["enable"] = true
+
+				} else {
+					rule["enable"] = false
+				}
+
+			}
+			if r.ID != nil {
+				rule["rule_id"] = *r.ID
+			}
+			if r.AbortIncompleteMultipartUpload != nil {
+				rule["days_after_initiation"] = int(*(r.AbortIncompleteMultipartUpload).DaysAfterInitiation)
+			}
+			if r.Filter != nil && r.Filter.Prefix != nil {
+				rule["prefix"] = *(r.Filter).Prefix
+			}
 			rules = append(rules, rule)
 		}
 	}
@@ -1213,6 +1288,7 @@ func flattenPolicyResource(list []iampolicymanagementv1.PolicyResource) []map[st
 			"resource_type":        getResourceAttribute("resourceType", i),
 			"resource":             getResourceAttribute("resource", i),
 			"resource_group_id":    getResourceAttribute("resourceGroupId", i),
+			"service_type":         getResourceAttribute("serviceType", i),
 		}
 		customAttributes := getCustomAttributes(i)
 		if len(customAttributes) > 0 {
@@ -1783,7 +1859,9 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	}
 
 	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
-	ListTagsOptions.AttachedTo = &resourceID
+	if resourceID != "" {
+		ListTagsOptions.AttachedTo = &resourceID
+	}
 	ListTagsOptions.Providers = providers
 	if len(tagType) > 0 {
 		ListTagsOptions.TagType = ptrToString(tagType)
@@ -2645,6 +2723,17 @@ func generatePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("resourceGroupId"),
+						Value:    core.StringPtr(r.(string)),
+						Operator: core.StringPtr("stringEquals"),
+					}
+					resourceAttributes = append(resourceAttributes, resourceAttr)
+				}
+			}
+
+			if r, ok := r["service_type"]; ok && r != nil {
+				if r.(string) != "" {
+					resourceAttr := iampolicymanagementv1.ResourceAttribute{
+						Name:     core.StringPtr("serviceType"),
 						Value:    core.StringPtr(r.(string)),
 						Operator: core.StringPtr("stringEquals"),
 					}

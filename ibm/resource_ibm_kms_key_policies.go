@@ -204,7 +204,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 		return diag.Errorf("Could not create policies: %s", err)
 	}
 	d.SetId(key.CRN)
-	return resourceIBMKmsKeyPolicyUpdate(context, d, meta)
+	return resourceIBMKmsKeyPolicyRead(context, d, meta)
 }
 
 func resourceIBMKmsKeyPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -296,6 +296,10 @@ func resourceIBMKmsKeyPolicyUpdate(context context.Context, d *schema.ResourceDa
 		}
 
 		instanceID := d.Get("instance_id").(string)
+		CrnInstanceID := strings.Split(instanceID, ":")
+		if len(CrnInstanceID) > 3 {
+			instanceID = CrnInstanceID[len(CrnInstanceID)-3]
+		}
 		endpointType := d.Get("endpoint_type").(string)
 
 		rsConClient, err := meta.(ClientSession).ResourceControllerV2API()

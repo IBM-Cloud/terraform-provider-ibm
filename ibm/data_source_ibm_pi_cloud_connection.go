@@ -17,6 +17,8 @@ import (
 )
 
 const (
+	PICloudConnectionId               = "cloud_connection_id"
+	PICloudConnectionName             = "name"
 	PICloudConnectionSpeed            = "speed"
 	PICloudConnectionGlobalRouting    = "global_routing"
 	PICloudConnectionMetered          = "metered"
@@ -121,7 +123,7 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	cloudConnectionName := d.Get(helpers.PICloudConnectionName).(string)
-	client := instance.NewIBMPICloudConnectionClient(sess, cloudInstanceID)
+	client := instance.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 
 	// Get API does not work with name for Cloud Connection hence using GetAll (max 2)
 	// TODO: Uncomment Get call below when avaiable and remove GetAll
@@ -130,10 +132,10 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 	// 	log.Printf("[DEBUG] get cloud connection failed %v", err)
 	// 	return diag.Errorf(errors.GetCloudConnectionOperationFailed, cloudConnectionName, err)
 	// }
-	cloudConnections, err := client.GetAllWithContext(ctx, cloudInstanceID)
+	cloudConnections, err := client.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] get cloud connections failed %v", err)
-		return diag.Errorf("failed to perform get cloud connections operation with error %v", err)
+		return diag.FromErr(err)
 	}
 	var cloudConnection *models.CloudConnection
 	if cloudConnections != nil {

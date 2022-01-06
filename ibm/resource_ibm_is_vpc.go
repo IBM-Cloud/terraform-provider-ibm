@@ -914,7 +914,7 @@ func isWaitForVPCDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (in
 
 func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		log.Printf("[DEBUG] delete function here")
+		log.Printf("[DEBUG] is vpc delete function here")
 		getvpcOptions := &vpcv1.GetVPCOptions{
 			ID: &id,
 		}

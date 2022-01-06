@@ -3,16 +3,16 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_route"
 description: |-
   Manages Activity Tracker Route.
-subcategory: "Activity Tracker API"
+subcategory: "Activity Tracker"
 ---
 
 # ibm_atracker_route
 
 Provides a resource for Activity Tracker Route. This allows Activity Tracker Route to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_atracker_route" "atracker_route" {
   name = "my-route"
   receive_global_events = false
@@ -22,7 +22,7 @@ resource "ibm_atracker_route" "atracker_route" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **rules**:
 	* `target_ids` - (Required, List) The target ID List. Only 1 target id is supported.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

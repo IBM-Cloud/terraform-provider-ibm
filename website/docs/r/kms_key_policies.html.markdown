@@ -27,7 +27,7 @@ resource "ibm_kms_key" "key" {
   standard_key   = false
 }
 
-resource "ibm_kms_key_policies" "keyPolicy" {
+resource "ibm_kms_key_policies" "key_policy" {
   instance_id = ibm_resource_instance.kms_instance.guid
   key_id = ibm_kms_key.key.key_id
   rotation {
@@ -42,7 +42,7 @@ resource "ibm_kms_key_policies" "keyPolicy" {
 **NOTE**
 1) `terraform destroy` does not remove the policies of the Key but only clears the state file. Key Policies get deleted when the associated key resource is destroyed.
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -58,7 +58,7 @@ The following arguments are supported:
     Nested scheme for `dual_auth_delete`:
     - `enabled`- (Required, Bool) If set to **true**, Key Protect enables a dual authorization policy on a single key. **Note:** Once the dual authorization policy is set on the key, it cannot be reverted. A key with dual authorization policy enabled cannot be destroyed by using  Terraform.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
