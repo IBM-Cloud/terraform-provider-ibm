@@ -85,6 +85,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` and `pi_storage_type` will be ignored.
+- `pi_storage_pool_affinity` - (Optional, Bool) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment. Only valid when you deploy one of the IBM supplied stock images. Storage type for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage type the image was created in
 - `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Only supported value is `vSCSI`.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e880/e980).
