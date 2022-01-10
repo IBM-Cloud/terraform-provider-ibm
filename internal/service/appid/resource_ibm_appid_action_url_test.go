@@ -66,7 +66,7 @@ func testAccCheckIBMAppIDActionURLDestroy(s *terraform.State) error {
 
 		// when action URL is deleted it is returned as an empty string e.g. `{ actionUrl: "" }`
 		if err != nil || (cfg.ActionURL != nil && *cfg.ActionURL != "") {
-			return fmt.Errorf("error checking if AppID action URL (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID action URL (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 

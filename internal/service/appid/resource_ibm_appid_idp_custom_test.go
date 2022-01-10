@@ -62,7 +62,7 @@ func testAccCheckIBMAppIDIDPCustomDestroy(s *terraform.State) error {
 		})
 
 		if err != nil || (cfg.IsActive != nil && *cfg.IsActive != false) {
-			return fmt.Errorf("error checking if AppID custom IDP configuration (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID custom IDP configuration (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 

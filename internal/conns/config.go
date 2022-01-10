@@ -119,7 +119,7 @@ var (
 //UserConfig ...
 type UserConfig struct {
 	UserID      string
-	userEmail   string
+	UserEmail   string
 	UserAccount string
 	CloudName   string `default:"bluemix"`
 	cloudType   string `default:"public"`
@@ -222,7 +222,7 @@ type ClientSession interface {
 	EventNotificationsApiV1() (*eventnotificationsv1.EventNotificationsV1, error)
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	CertificateManagerAPI() (certificatemanager.CertificateManagerServiceAPI, error)
-	keyProtectAPI() (*kp.Client, error)
+	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
@@ -699,7 +699,7 @@ func (session clientSession) AppConfigurationV1() (*appconfigurationv1.AppConfig
 	return session.appConfigurationClient, session.appConfigurationClientErr
 }
 
-func (sess clientSession) keyProtectAPI() (*kp.Client, error) {
+func (sess clientSession) KeyProtectAPI() (*kp.Client, error) {
 	return sess.kpAPI, sess.kpErr
 }
 
@@ -2897,7 +2897,7 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	}
 	claims := token.Claims.(jwt.MapClaims)
 	if email, ok := claims["email"]; ok {
-		user.userEmail = email.(string)
+		user.UserEmail = email.(string)
 	}
 	user.UserID = claims["id"].(string)
 	user.UserAccount = claims["account"].(map[string]interface{})["bss"].(string)

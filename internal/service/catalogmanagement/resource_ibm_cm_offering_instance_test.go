@@ -94,7 +94,7 @@ func testAccCheckIBMCmOfferingInstanceDestroy(s *terraform.State) error {
 		_, response, err := catalogManagementClient.GetOfferingInstance(getOfferingInstanceOptions)
 
 		if err == nil {
-			return fmt.Errorf("A offering instance resource (provision instance of a catalog offering). still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] A offering instance resource (provision instance of a catalog offering). still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("[ERROR] Error checking for A offering instance resource (provision instance of a catalog offering). (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

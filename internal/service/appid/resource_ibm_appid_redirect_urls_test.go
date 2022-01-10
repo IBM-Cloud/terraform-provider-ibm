@@ -63,7 +63,7 @@ func testAccCheckIBMAppIDRedirectURLsDestroy(s *terraform.State) error {
 		})
 
 		if err != nil || len(urls.RedirectUris) != 0 {
-			return fmt.Errorf("error checking if AppID redirect URLs resource (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID redirect URLs resource (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 

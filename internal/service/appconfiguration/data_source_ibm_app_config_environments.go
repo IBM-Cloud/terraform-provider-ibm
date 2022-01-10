@@ -219,48 +219,48 @@ func dataSourceIbmAppConfigEnvironmentsRead(d *schema.ResourceData, meta interfa
 	if environmentList.Environments != nil {
 		err = d.Set("environments", dataSourceEnvironmentListFlattenEnvironments(environmentList.Environments))
 		if err != nil {
-			return fmt.Errorf("error setting environments %s", err)
+			return fmt.Errorf("[ERROR] Error setting environments %s", err)
 		}
 	}
 	if environmentList.TotalCount != nil {
 		if err = d.Set("total_count", environmentList.TotalCount); err != nil {
-			return fmt.Errorf("error setting total_count: %s", err)
+			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
 		}
 	}
 	if environmentList.Limit != nil {
 		if err = d.Set("limit", environmentList.Limit); err != nil {
-			return fmt.Errorf("error setting limit: %s", err)
+			return fmt.Errorf("[ERROR] Error setting limit: %s", err)
 		}
 	}
 	if environmentList.Offset != nil {
 		if err = d.Set("offset", environmentList.Offset); err != nil {
-			return fmt.Errorf("error setting offset: %s", err)
+			return fmt.Errorf("[ERROR] Error setting offset: %s", err)
 		}
 	}
 	if environmentList.First != nil {
 		err = d.Set("first", dataSourceEnvironmentListFlattenPagination(*environmentList.First))
 		if err != nil {
-			return fmt.Errorf("error setting first %s", err)
+			return fmt.Errorf("[ERROR] Error setting first %s", err)
 		}
 	}
 
 	if environmentList.Previous != nil {
 		err = d.Set("previous", dataSourceEnvironmentListFlattenPagination(*environmentList.Previous))
 		if err != nil {
-			return fmt.Errorf("error setting previous %s", err)
+			return fmt.Errorf("[ERROR] Error setting previous %s", err)
 		}
 	}
 
 	if environmentList.Last != nil {
 		err = d.Set("last", dataSourceEnvironmentListFlattenPagination(*environmentList.Last))
 		if err != nil {
-			return fmt.Errorf("error setting last %s", err)
+			return fmt.Errorf("[ERROR] Error setting last %s", err)
 		}
 	}
 	if environmentList.Next != nil {
 		err = d.Set("next", dataSourceEnvironmentListFlattenPagination(*environmentList.Next))
 		if err != nil {
-			return fmt.Errorf("error setting next %s", err)
+			return fmt.Errorf("[ERROR] Error setting next %s", err)
 		}
 	}
 

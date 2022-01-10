@@ -51,7 +51,7 @@ func testAccIBMClusterVlansCheck(n string) resource.TestCheckFunc {
 			return err
 		}
 		if vlansSize < 1 {
-			return fmt.Errorf("No subnets found")
+			return fmt.Errorf("[ERROR] No subnets found")
 		}
 		return nil
 	}

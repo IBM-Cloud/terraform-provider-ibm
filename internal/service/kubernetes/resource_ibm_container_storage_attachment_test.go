@@ -122,7 +122,7 @@ func testAccCheckIBMContainerVpcWorkerStorageDestroy(s *terraform.State) error {
 		_, attchmentErr := workersAPI.GetStorageAttachment(clusterNameorID, workerID, volumeAttachmentID, targetEnv)
 
 		if attchmentErr == nil {
-			return fmt.Errorf("Volume attachment still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Volume attachment still exists: %s", rs.Primary.ID)
 		} else if !strings.Contains(attchmentErr.Error(), "404") {
 			return fmt.Errorf("[ERROR] Error waiting for volume attachment (%s) to be destroyed: %s", rs.Primary.ID, attchmentErr)
 		}

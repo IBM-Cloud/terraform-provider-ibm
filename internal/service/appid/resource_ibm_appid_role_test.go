@@ -92,7 +92,7 @@ func testAccCheckIBMAppIDRoleDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			return fmt.Errorf("error checking if AppID role (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID role (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 

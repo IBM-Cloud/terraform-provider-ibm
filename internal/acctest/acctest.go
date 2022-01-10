@@ -15,16 +15,16 @@ import (
 
 var AppIDTenantID string
 var AppIDTestUserEmail string
-var cfOrganization string
-var cfSpace string
+var CfOrganization string
+var CfSpace string
 var CisDomainStatic string
 var CisDomainTest string
 var CisInstance string
 var CisResourceGroup string
 var CloudShellAccountID string
 var CosCRN string
-var ibmid1 string
-var ibmid2 string
+var Ibmid1 string
+var Ibmid2 string
 var IAMUser string
 var Datacenter string
 var MachineType string
@@ -33,15 +33,15 @@ var PublicVlanID string
 var PrivateVlanID string
 var PrivateSubnetID string
 var PublicSubnetID string
-var subnetID string
-var lbaasDatacenter string
-var lbaasSubnetId string
-var lbListerenerCertificateInstance string
-var ipsecDatacenter string
-var customersubnetid string
-var customerpeerip string
-var dedicatedHostName string
-var dedicatedHostID string
+var SubnetID string
+var LbaasDatacenter string
+var LbaasSubnetId string
+var LbListerenerCertificateInstance string
+var IpsecDatacenter string
+var Customersubnetid string
+var Customerpeerip string
+var DedicatedHostName string
+var DedicatedHostID string
 var KubeVersion string
 var KubeUpdateVersion string
 var Zone string
@@ -50,7 +50,7 @@ var ZonePublicVlan string
 var ZoneUpdatePrivateVlan string
 var ZoneUpdatePublicVlan string
 var CsRegion string
-var extendedHardwareTesting bool
+var ExtendedHardwareTesting bool
 var err error
 var placementGroupName string
 var CertCRN string
@@ -60,14 +60,14 @@ var ISZoneName string
 var ISCIDR string
 var ISAddressPrefixCIDR string
 var InstanceName string
-var instanceProfileName string
-var instanceProfileNameUpdate string
-var dedicatedHostProfileName string
-var dedicatedHostGroupID string
-var instanceDiskProfileName string
-var dedicatedHostGroupFamily string
-var dedicatedHostGroupClass string
-var volumeProfileName string
+var InstanceProfileName string
+var InstanceProfileNameUpdate string
+var DedicatedHostProfileName string
+var DedicatedHostGroupID string
+var InstanceDiskProfileName string
+var DedicatedHostGroupFamily string
+var DedicatedHostGroupClass string
+var VolumeProfileName string
 var ISRouteDestination string
 var ISRouteNextHop string
 var WorkspaceID string
@@ -109,13 +109,13 @@ var PiSAPProfileID string
 // For Image
 
 var IsImageName string
-var isImage string
+var IsImage string
 var IsImageEncryptedDataKey string
 var IsImageEncryptionKey string
-var isWinImage string
-var image_cos_url string
-var image_cos_url_encrypted string
-var image_operating_system string
+var IsWinImage string
+var Image_cos_url string
+var Image_cos_url_encrypted string
+var Image_operating_system string
 
 // Transit Gateway cross account
 var Tg_cross_network_account_id string
@@ -151,21 +151,21 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_APPID_TEST_USER_EMAIL for testing AppID user resources, the tests will fail if this is not set")
 	}
 
-	cfOrganization = os.Getenv("IBM_ORG")
-	if cfOrganization == "" {
+	CfOrganization = os.Getenv("IBM_ORG")
+	if CfOrganization == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_ORG for testing ibm_org  resource Some tests for that resource will fail if this is not set correctly")
 	}
-	cfSpace = os.Getenv("IBM_SPACE")
-	if cfSpace == "" {
+	CfSpace = os.Getenv("IBM_SPACE")
+	if CfSpace == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SPACE for testing ibm_space  resource Some tests for that resource will fail if this is not set correctly")
 	}
-	ibmid1 = os.Getenv("IBM_ID1")
-	if ibmid1 == "" {
+	Ibmid1 = os.Getenv("IBM_ID1")
+	if Ibmid1 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_ID1 for testing ibm_space resource Some tests for that resource will fail if this is not set correctly")
 	}
 
-	ibmid2 = os.Getenv("IBM_ID2")
-	if ibmid2 == "" {
+	Ibmid2 = os.Getenv("IBM_ID2")
+	if Ibmid2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_ID2 for testing ibm_space resource Some tests for that resource will fail if this is not set correctly")
 	}
 
@@ -238,9 +238,9 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_TRUSTED_MACHINE_TYPE for testing ibm_container_cluster resource else it is set to default value 'mb1c.16x64'")
 	}
 
-	extendedHardwareTesting, err = strconv.ParseBool(os.Getenv("IBM_BM_EXTENDED_HW_TESTING"))
+	ExtendedHardwareTesting, err = strconv.ParseBool(os.Getenv("IBM_BM_EXTENDED_HW_TESTING"))
 	if err != nil {
-		extendedHardwareTesting = false
+		ExtendedHardwareTesting = false
 		fmt.Println("[WARN] Set the environment variable IBM_BM_EXTENDED_HW_TESTING to true/false for testing ibm_compute_bare_metal resource else it is set to default value 'false'")
 	}
 
@@ -280,56 +280,56 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_PUBLIC_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1165645'")
 	}
 
-	subnetID = os.Getenv("IBM_SUBNET_ID")
-	if subnetID == "" {
-		subnetID = "1165645"
+	SubnetID = os.Getenv("IBM_SUBNET_ID")
+	if SubnetID == "" {
+		SubnetID = "1165645"
 		fmt.Println("[WARN] Set the environment variable IBM_SUBNET_ID for testing ibm_container_cluster resource else it is set to default value '1165645'")
 	}
 
-	ipsecDatacenter = os.Getenv("IBM_IPSEC_DATACENTER")
-	if ipsecDatacenter == "" {
-		ipsecDatacenter = "tok02"
+	IpsecDatacenter = os.Getenv("IBM_IPSEC_DATACENTER")
+	if IpsecDatacenter == "" {
+		IpsecDatacenter = "tok02"
 		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_DATACENTER for testing ibm_ipsec_vpn resource else it is set to default value 'tok02'")
 	}
 
-	customersubnetid = os.Getenv("IBM_IPSEC_CUSTOMER_SUBNET_ID")
-	if customersubnetid == "" {
-		customersubnetid = "123456"
+	Customersubnetid = os.Getenv("IBM_IPSEC_CUSTOMER_SUBNET_ID")
+	if Customersubnetid == "" {
+		Customersubnetid = "123456"
 		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_CUSTOMER_SUBNET_ID for testing ibm_ipsec_vpn resource else it is set to default value '123456'")
 	}
 
-	customerpeerip = os.Getenv("IBM_IPSEC_CUSTOMER_PEER_IP")
-	if customerpeerip == "" {
-		customerpeerip = "192.168.0.1"
+	Customerpeerip = os.Getenv("IBM_IPSEC_CUSTOMER_PEER_IP")
+	if Customerpeerip == "" {
+		Customerpeerip = "192.168.0.1"
 		fmt.Println("[INFO] Set the environment variable IBM_IPSEC_CUSTOMER_PEER_IP for testing ibm_ipsec_vpn resource else it is set to default value '192.168.0.1'")
 	}
 
-	lbaasDatacenter = os.Getenv("IBM_LBAAS_DATACENTER")
-	if lbaasDatacenter == "" {
-		lbaasDatacenter = "dal13"
+	LbaasDatacenter = os.Getenv("IBM_LBAAS_DATACENTER")
+	if LbaasDatacenter == "" {
+		LbaasDatacenter = "dal13"
 		fmt.Println("[WARN] Set the environment variable IBM_LBAAS_DATACENTER for testing ibm_lbaas resource else it is set to default value 'dal13'")
 	}
 
-	lbaasSubnetId = os.Getenv("IBM_LBAAS_SUBNETID")
-	if lbaasSubnetId == "" {
-		lbaasSubnetId = "2144241"
+	LbaasSubnetId = os.Getenv("IBM_LBAAS_SUBNETID")
+	if LbaasSubnetId == "" {
+		LbaasSubnetId = "2144241"
 		fmt.Println("[WARN] Set the environment variable IBM_LBAAS_SUBNETID for testing ibm_lbaas resource else it is set to default value '2144241'")
 	}
-	lbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
-	if lbListerenerCertificateInstance == "" {
-		lbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+	LbListerenerCertificateInstance = os.Getenv("IBM_LB_LISTENER_CERTIFICATE_INSTANCE")
+	if LbListerenerCertificateInstance == "" {
+		LbListerenerCertificateInstance = "crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 		fmt.Println("[WARN] Set the environment variable IBM_LB_LISTENER_CERTIFICATE_INSTANCE for testing ibm_is_lb_listener resource for https redirect else it is set to default value 'crn:v1:staging:public:cloudcerts:us-south:a/2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed'")
 	}
 
-	dedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")
-	if dedicatedHostName == "" {
-		dedicatedHostName = "terraform-dedicatedhost"
+	DedicatedHostName = os.Getenv("IBM_DEDICATED_HOSTNAME")
+	if DedicatedHostName == "" {
+		DedicatedHostName = "terraform-dedicatedhost"
 		fmt.Println("[WARN] Set the environment variable IBM_DEDICATED_HOSTNAME for testing ibm_compute_vm_instance resource else it is set to default value 'terraform-dedicatedhost'")
 	}
 
-	dedicatedHostID = os.Getenv("IBM_DEDICATED_HOST_ID")
-	if dedicatedHostID == "" {
-		dedicatedHostID = "30301"
+	DedicatedHostID = os.Getenv("IBM_DEDICATED_HOST_ID")
+	if DedicatedHostID == "" {
+		DedicatedHostID = "30301"
 		fmt.Println("[WARN] Set the environment variable IBM_DEDICATED_HOST_ID for testing ibm_compute_vm_instance resource else it is set to default value '30301'")
 	}
 
@@ -393,17 +393,17 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_ADDRESS_PREFIX_CIDR for testing ibm_is_vpc_address_prefix else it is set to default value '10.120.0.0/24'")
 	}
 
-	isImage = os.Getenv("IS_IMAGE")
-	if isImage == "" {
-		//isImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
-		isImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
+	IsImage = os.Getenv("IS_IMAGE")
+	if IsImage == "" {
+		//IsImage = "fc538f61-7dd6-4408-978c-c6b85b69fe76" // for classic infrastructure
+		IsImage = "r006-13938c0a-89e4-4370-b59b-55cd1402562d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_IMAGE for testing ibm_is_instance, ibm_is_floating_ip else it is set to default value 'r006-ed3f775f-ad7e-4e37-ae62-7199b4988b00'")
 	}
 
-	isWinImage = os.Getenv("IS_WIN_IMAGE")
-	if isWinImage == "" {
-		//isWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
-		isWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
+	IsWinImage = os.Getenv("IS_WIN_IMAGE")
+	if IsWinImage == "" {
+		//IsWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
+		IsWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
 	}
 
@@ -413,59 +413,59 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_NAME for testing ibm_is_instance resource else it is set to default value 'instance-01'")
 	}
 
-	instanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
-	if instanceProfileName == "" {
-		//instanceProfileName = "bc1-2x8" // for classic infrastructure
-		instanceProfileName = "cx2-2x4" // for next gen infrastructure
+	InstanceProfileName = os.Getenv("SL_INSTANCE_PROFILE")
+	if InstanceProfileName == "" {
+		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
+		InstanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
 	}
 
-	instanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
-	if instanceProfileNameUpdate == "" {
-		instanceProfileNameUpdate = "cx2-4x8"
+	InstanceProfileNameUpdate = os.Getenv("SL_INSTANCE_PROFILE_UPDATE")
+	if InstanceProfileNameUpdate == "" {
+		InstanceProfileNameUpdate = "cx2-4x8"
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
-	dedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")
-	if dedicatedHostName == "" {
-		dedicatedHostName = "tf-dhost-01" // for next gen infrastructure
+	DedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")
+	if DedicatedHostName == "" {
+		DedicatedHostName = "tf-dhost-01" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_NAME for testing ibm_is_instance resource else it is set to default value 'tf-dhost-01'")
 	}
 
-	dedicatedHostGroupID = os.Getenv("IS_DEDICATED_HOST_GROUP_ID")
-	if dedicatedHostGroupID == "" {
-		dedicatedHostGroupID = "0717-9104e7b5-77ad-44ad-9eaa-091e6b6efce1" // for next gen infrastructure
+	DedicatedHostGroupID = os.Getenv("IS_DEDICATED_HOST_GROUP_ID")
+	if DedicatedHostGroupID == "" {
+		DedicatedHostGroupID = "0717-9104e7b5-77ad-44ad-9eaa-091e6b6efce1" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_ID for testing ibm_is_instance resource else it is set to default value '0717-9104e7b5-77ad-44ad-9eaa-091e6b6efce1'")
 	}
 
-	dedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
-	if dedicatedHostProfileName == "" {
-		dedicatedHostProfileName = "bx2d-host-152x608" // for next gen infrastructure
+	DedicatedHostProfileName = os.Getenv("IS_DEDICATED_HOST_PROFILE")
+	if DedicatedHostProfileName == "" {
+		DedicatedHostProfileName = "bx2d-host-152x608" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-host-152x608'")
 	}
 
-	dedicatedHostGroupClass = os.Getenv("IS_DEDICATED_HOST_GROUP_CLASS")
-	if dedicatedHostGroupClass == "" {
-		dedicatedHostGroupClass = "bx2d" // for next gen infrastructure
+	DedicatedHostGroupClass = os.Getenv("IS_DEDICATED_HOST_GROUP_CLASS")
+	if DedicatedHostGroupClass == "" {
+		DedicatedHostGroupClass = "bx2d" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_CLASS for testing ibm_is_instance resource else it is set to default value 'bx2d'")
 	}
 
-	dedicatedHostGroupFamily = os.Getenv("IS_DEDICATED_HOST_GROUP_FAMILY")
-	if dedicatedHostGroupFamily == "" {
-		dedicatedHostGroupFamily = "balanced" // for next gen infrastructure
+	DedicatedHostGroupFamily = os.Getenv("IS_DEDICATED_HOST_GROUP_FAMILY")
+	if DedicatedHostGroupFamily == "" {
+		DedicatedHostGroupFamily = "balanced" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable IS_DEDICATED_HOST_GROUP_FAMILY for testing ibm_is_instance resource else it is set to default value 'balanced'")
 	}
 
-	instanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")
-	if instanceDiskProfileName == "" {
-		//instanceProfileName = "bc1-2x8" // for classic infrastructure
-		instanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
+	InstanceDiskProfileName = os.Getenv("IS_INSTANCE_DISK_PROFILE")
+	if InstanceDiskProfileName == "" {
+		//InstanceProfileName = "bc1-2x8" // for classic infrastructure
+		InstanceDiskProfileName = "bx2d-16x64" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'bx2d-16x64'")
 	}
 
-	volumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
-	if volumeProfileName == "" {
-		volumeProfileName = "general-purpose"
+	VolumeProfileName = os.Getenv("IS_VOLUME_PROFILE")
+	if VolumeProfileName == "" {
+		VolumeProfileName = "general-purpose"
 		fmt.Println("[INFO] Set the environment variable IS_VOLUME_PROFILE for testing ibm_is_volume_profile else it is set to default value 'general-purpose'")
 	}
 
@@ -575,21 +575,21 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SCHEMATICS_REPO_BRANCH for testing schematics resources else tests will fail if this is not set correctly")
 	}
 	// Added for resource image testing
-	image_cos_url = os.Getenv("IMAGE_COS_URL")
-	if image_cos_url == "" {
-		image_cos_url = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-20140930.0.x86_64.qcow2"
+	Image_cos_url = os.Getenv("IMAGE_COS_URL")
+	if Image_cos_url == "" {
+		Image_cos_url = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-20140930.0.x86_64.qcow2"
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
 
 	// Added for resource image testing
-	image_cos_url_encrypted = os.Getenv("IMAGE_COS_URL_ENCRYPTED")
-	if image_cos_url_encrypted == "" {
-		image_cos_url_encrypted = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-encrypted.qcow2"
+	Image_cos_url_encrypted = os.Getenv("IMAGE_COS_URL_ENCRYPTED")
+	if Image_cos_url_encrypted == "" {
+		Image_cos_url_encrypted = "cos://us-south/cosbucket-vpc-image-gen2/rhel-guest-image-7.0-encrypted.qcow2"
 		fmt.Println("[WARN] Set the environment variable IMAGE_COS_URL_ENCRYPTED with a VALID COS Image SQL URL for testing ibm_is_image resources on staging/test")
 	}
-	image_operating_system = os.Getenv("IMAGE_OPERATING_SYSTEM")
-	if image_operating_system == "" {
-		image_operating_system = "red-7-amd64"
+	Image_operating_system = os.Getenv("IMAGE_OPERATING_SYSTEM")
+	if Image_operating_system == "" {
+		Image_operating_system = "red-7-amd64"
 		fmt.Println("[WARN] Set the environment variable IMAGE_OPERATING_SYSTEM with a VALID Operating system for testing ibm_is_image resources on staging/test")
 	}
 
@@ -826,21 +826,21 @@ func TestAccPreCheckCOS(t *testing.T) {
 	}
 }
 
-func testAccPreCheckImage(t *testing.T) {
+func TestAccPreCheckImage(t *testing.T) {
 	TestAccPreCheck(t)
-	if image_cos_url == "" {
+	if Image_cos_url == "" {
 		t.Fatal("IMAGE_COS_URL must be set for acceptance tests")
 	}
-	if image_operating_system == "" {
+	if Image_operating_system == "" {
 		t.Fatal("IMAGE_OPERATING_SYSTEM must be set for acceptance tests")
 	}
 }
-func testAccPreCheckEncryptedImage(t *testing.T) {
+func TestAccPreCheckEncryptedImage(t *testing.T) {
 	TestAccPreCheck(t)
-	if image_cos_url_encrypted == "" {
+	if Image_cos_url_encrypted == "" {
 		t.Fatal("IMAGE_COS_URL_ENCRYPTED must be set for acceptance tests")
 	}
-	if image_operating_system == "" {
+	if Image_operating_system == "" {
 		t.Fatal("IMAGE_OPERATING_SYSTEM must be set for acceptance tests")
 	}
 	if IsImageEncryptedDataKey == "" {

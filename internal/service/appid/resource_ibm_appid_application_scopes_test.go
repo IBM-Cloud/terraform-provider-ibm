@@ -74,7 +74,7 @@ func testAccCheckIBMAppIDApplicationScopesDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			return fmt.Errorf("error checking if AppID application scopes resource (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID application scopes resource (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 

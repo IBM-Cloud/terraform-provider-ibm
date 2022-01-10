@@ -58,7 +58,7 @@ func testAccCheckIBMAppIDThemeColorDestroy(s *terraform.State) error {
 
 		// AppID default default #EEF2F5
 		if err != nil || (cfg.HeaderColor != nil && *cfg.HeaderColor != "#EEF2F5") {
-			return fmt.Errorf("error checking if AppID theme color configuration (%s) has been reset", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID theme color configuration (%s) has been reset", rs.Primary.ID)
 		}
 	}
 

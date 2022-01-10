@@ -60,10 +60,21 @@ const (
 	//ResourceGroupName ...
 	ResourceGroupName = "resource_group_name"
 	//RelatedCRN ...
-	RelatedCRN            = "related_crn"
-	SystemIBMLabelPrefix  = "ibm-cloud.kubernetes.io/"
-	KubernetesLabelPrefix = "kubernetes.io/"
-	K8sLabelPrefix        = "k8s.io/"
+	RelatedCRN                                = "related_crn"
+	SystemIBMLabelPrefix                      = "ibm-cloud.kubernetes.io/"
+	KubernetesLabelPrefix                     = "kubernetes.io/"
+	K8sLabelPrefix                            = "k8s.io/"
+	isLBListenerPolicyAction                  = "action"
+	isLBListenerPolicyTargetID                = "target_id"
+	isLBListenerPolicyTargetURL               = "target_url"
+	isLBListenerPolicyHTTPSRedirectStatusCode = "target_https_redirect_status_code"
+	isLBListenerPolicyHTTPSRedirectURI        = "target_https_redirect_uri"
+	isLBListenerPolicyHTTPSRedirectListener   = "target_https_redirect_listener"
+	isLBPoolSessPersistenceType               = "session_persistence_type"
+	isLBPoolSessPersistenceAppCookieName      = "session_persistence_app_cookie_name"
+	isLBProfile                               = "profile"
+	isLBRouteMode                             = "route_mode"
+	isLBType                                  = "type"
 )
 
 //HashInt ...
@@ -85,7 +96,7 @@ func FlattenStringList(list []string) []interface{} {
 	return vs
 }
 
-func expandIntList(input []interface{}) []int {
+func ExpandIntList(input []interface{}) []int {
 	vs := make([]int, len(input))
 	for i, v := range input {
 		vs[i] = v.(int)
@@ -93,7 +104,7 @@ func expandIntList(input []interface{}) []int {
 	return vs
 }
 
-func flattenIntList(list []int) []interface{} {
+func FlattenIntList(list []int) []interface{} {
 	vs := make([]interface{}, len(list))
 	for i, v := range list {
 		vs[i] = v
@@ -101,7 +112,7 @@ func flattenIntList(list []int) []interface{} {
 	return vs
 }
 
-func newStringSet(f schema.SchemaSetFunc, in []string) *schema.Set {
+func NewStringSet(f schema.SchemaSetFunc, in []string) *schema.Set {
 	var out = make([]interface{}, len(in), len(in))
 	for i, v := range in {
 		out[i] = v
@@ -109,12 +120,12 @@ func newStringSet(f schema.SchemaSetFunc, in []string) *schema.Set {
 	return schema.NewSet(f, out)
 }
 
-func flattenRoute(in []mccpv2.Route) *schema.Set {
+func FlattenRoute(in []mccpv2.Route) *schema.Set {
 	vs := make([]string, len(in))
 	for i, v := range in {
 		vs[i] = v.GUID
 	}
-	return newStringSet(schema.HashString, vs)
+	return NewStringSet(schema.HashString, vs)
 }
 
 func stringSliceToSet(in []string) *schema.Set {
@@ -122,15 +133,15 @@ func stringSliceToSet(in []string) *schema.Set {
 	for i, v := range in {
 		vs[i] = v
 	}
-	return newStringSet(schema.HashString, vs)
+	return NewStringSet(schema.HashString, vs)
 }
 
-func flattenServiceBindings(in []mccpv2.ServiceBinding) *schema.Set {
+func FlattenServiceBindings(in []mccpv2.ServiceBinding) *schema.Set {
 	vs := make([]string, len(in))
 	for i, v := range in {
 		vs[i] = v.ServiceInstanceGUID
 	}
-	return newStringSet(schema.HashString, vs)
+	return NewStringSet(schema.HashString, vs)
 }
 
 func flattenPort(in []int) *schema.Set {
@@ -141,7 +152,7 @@ func flattenPort(in []int) *schema.Set {
 	return schema.NewSet(HashInt, out)
 }
 
-func flattenFileStorageID(in []datatypes.Network_Storage) *schema.Set {
+func FlattenFileStorageID(in []datatypes.Network_Storage) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {
 		if *v.NasType == "NAS" {
@@ -151,7 +162,7 @@ func flattenFileStorageID(in []datatypes.Network_Storage) *schema.Set {
 	return schema.NewSet(HashInt, out)
 }
 
-func flattenBlockStorageID(in []datatypes.Network_Storage) *schema.Set {
+func FlattenBlockStorageID(in []datatypes.Network_Storage) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {
 		if *v.NasType == "ISCSI" {
@@ -161,7 +172,7 @@ func flattenBlockStorageID(in []datatypes.Network_Storage) *schema.Set {
 	return schema.NewSet(HashInt, out)
 }
 
-func flattenSSHKeyIDs(in []datatypes.Security_Ssh_Key) *schema.Set {
+func FlattenSSHKeyIDs(in []datatypes.Security_Ssh_Key) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {
 		out = append(out, *v.Id)
@@ -169,7 +180,7 @@ func flattenSSHKeyIDs(in []datatypes.Security_Ssh_Key) *schema.Set {
 	return schema.NewSet(HashInt, out)
 }
 
-func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
+func FlattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {
 		out = append(out, v.UserName)
@@ -177,7 +188,7 @@ func flattenSpaceRoleUsers(in []mccpv2.SpaceRole) *schema.Set {
 	return schema.NewSet(schema.HashString, out)
 }
 
-func flattenOrgRole(in []mccpv2.OrgRole, excludeUsername string) *schema.Set {
+func FlattenOrgRole(in []mccpv2.OrgRole, excludeUsername string) *schema.Set {
 	var out = []interface{}{}
 	for _, v := range in {
 		if excludeUsername == "" {
@@ -207,7 +218,7 @@ func flattenServiceKeyCredentials(creds map[string]interface{}) map[string]strin
 	return flattenCredentials(creds)
 }
 
-func flattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interface{} {
+func FlattenServiceInstanceCredentials(keys []mccpv2.ServiceKeyFields) []interface{} {
 	var out = make([]interface{}, len(keys), len(keys))
 	for i, k := range keys {
 		m := make(map[string]interface{})
@@ -226,53 +237,54 @@ func FlattenUsersSet(userList *schema.Set) []string {
 	return users
 }
 
-// func expandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
-// 	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
-// 	for _, lRaw := range configured {
-// 		data := lRaw.(map[string]interface{})
-// 		p := &datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration{
-// 			FrontendProtocol: sl.String(data["frontend_protocol"].(string)),
-// 			BackendProtocol:  sl.String(data["backend_protocol"].(string)),
-// 			FrontendPort:     sl.Int(data["frontend_port"].(int)),
-// 			BackendPort:      sl.Int(data["backend_port"].(int)),
-// 		}
-// 		if v, ok := data["session_stickiness"]; ok && v.(string) != "" {
-// 			p.SessionType = sl.String(v.(string))
-// 		}
-// 		if v, ok := data["max_conn"]; ok && v.(int) != 0 {
-// 			p.MaxConn = sl.Int(v.(int))
-// 		}
-// 		if v, ok := data["tls_certificate_id"]; ok && v.(int) != 0 {
-// 			p.TlsCertificateId = sl.Int(v.(int))
-// 		}
-// 		if v, ok := data["load_balancing_method"]; ok {
-// 			p.LoadBalancingMethod = sl.String(lbMethodToId[v.(string)])
-// 		}
-// 		if v, ok := data["protocol_id"]; ok && v.(string) != "" {
-// 			p.ListenerUuid = sl.String(v.(string))
-// 		}
+func ExpandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
+	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
+	var lbMethodToId = make(map[string]string)
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+		p := &datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration{
+			FrontendProtocol: sl.String(data["frontend_protocol"].(string)),
+			BackendProtocol:  sl.String(data["backend_protocol"].(string)),
+			FrontendPort:     sl.Int(data["frontend_port"].(int)),
+			BackendPort:      sl.Int(data["backend_port"].(int)),
+		}
+		if v, ok := data["session_stickiness"]; ok && v.(string) != "" {
+			p.SessionType = sl.String(v.(string))
+		}
+		if v, ok := data["max_conn"]; ok && v.(int) != 0 {
+			p.MaxConn = sl.Int(v.(int))
+		}
+		if v, ok := data["tls_certificate_id"]; ok && v.(int) != 0 {
+			p.TlsCertificateId = sl.Int(v.(int))
+		}
+		if v, ok := data["load_balancing_method"]; ok {
+			p.LoadBalancingMethod = sl.String(lbMethodToId[v.(string)])
+		}
+		if v, ok := data["protocol_id"]; ok && v.(string) != "" {
+			p.ListenerUuid = sl.String(v.(string))
+		}
 
-// 		var isValid bool
-// 		if p.TlsCertificateId != nil && *p.TlsCertificateId != 0 {
-// 			// validate the protocol is correct
-// 			if *p.FrontendProtocol == "HTTPS" {
-// 				isValid = true
-// 			}
-// 		} else {
-// 			isValid = true
-// 		}
+		var isValid bool
+		if p.TlsCertificateId != nil && *p.TlsCertificateId != 0 {
+			// validate the protocol is correct
+			if *p.FrontendProtocol == "HTTPS" {
+				isValid = true
+			}
+		} else {
+			isValid = true
+		}
 
-// 		if isValid {
-// 			protocols = append(protocols, *p)
-// 		} else {
-// 			return protocols, fmt.Errorf("tls_certificate_id may be set only when frontend protocol is 'HTTPS'")
-// 		}
+		if isValid {
+			protocols = append(protocols, *p)
+		} else {
+			return protocols, fmt.Errorf("tls_certificate_id may be set only when frontend protocol is 'HTTPS'")
+		}
 
-// 	}
-// 	return protocols, nil
-// }
+	}
+	return protocols, nil
+}
 
-func expandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
+func ExpandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
 	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, len(configured))
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
@@ -289,7 +301,7 @@ func expandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalan
 	return members
 }
 
-func flattenServerInstances(list []datatypes.Network_LBaaS_Member) []map[string]interface{} {
+func FlattenServerInstances(list []datatypes.Network_LBaaS_Member) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
@@ -304,30 +316,31 @@ func flattenServerInstances(list []datatypes.Network_LBaaS_Member) []map[string]
 	return result
 }
 
-// func flattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
-// 	result := make([]map[string]interface{}, 0, len(list))
-// 	for _, i := range list {
-// 		l := map[string]interface{}{
-// 			"frontend_protocol":     *i.Protocol,
-// 			"frontend_port":         *i.ProtocolPort,
-// 			"backend_protocol":      *i.DefaultPool.Protocol,
-// 			"backend_port":          *i.DefaultPool.ProtocolPort,
-// 			"load_balancing_method": lbIdToMethod[*i.DefaultPool.LoadBalancingAlgorithm],
-// 			"protocol_id":           *i.Uuid,
-// 		}
-// 		if i.DefaultPool.SessionAffinity != nil && i.DefaultPool.SessionAffinity.Type != nil && *i.DefaultPool.SessionAffinity.Type != "" {
-// 			l["session_stickiness"] = *i.DefaultPool.SessionAffinity.Type
-// 		}
-// 		if i.ConnectionLimit != nil && *i.ConnectionLimit != 0 {
-// 			l["max_conn"] = *i.ConnectionLimit
-// 		}
-// 		if i.TlsCertificateId != nil && *i.TlsCertificateId != 0 {
-// 			l["tls_certificate_id"] = *i.TlsCertificateId
-// 		}
-// 		result = append(result, l)
-// 	}
-// 	return result
-// }
+func FlattenProtocols(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
+	var lbIdToMethod = make(map[string]string)
+	result := make([]map[string]interface{}, 0, len(list))
+	for _, i := range list {
+		l := map[string]interface{}{
+			"frontend_protocol":     *i.Protocol,
+			"frontend_port":         *i.ProtocolPort,
+			"backend_protocol":      *i.DefaultPool.Protocol,
+			"backend_port":          *i.DefaultPool.ProtocolPort,
+			"load_balancing_method": lbIdToMethod[*i.DefaultPool.LoadBalancingAlgorithm],
+			"protocol_id":           *i.Uuid,
+		}
+		if i.DefaultPool.SessionAffinity != nil && i.DefaultPool.SessionAffinity.Type != nil && *i.DefaultPool.SessionAffinity.Type != "" {
+			l["session_stickiness"] = *i.DefaultPool.SessionAffinity.Type
+		}
+		if i.ConnectionLimit != nil && *i.ConnectionLimit != 0 {
+			l["max_conn"] = *i.ConnectionLimit
+		}
+		if i.TlsCertificateId != nil && *i.TlsCertificateId != 0 {
+			l["tls_certificate_id"] = *i.TlsCertificateId
+		}
+		result = append(result, l)
+	}
+	return result
+}
 
 func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[string]interface{} {
 	workerPools := make([]map[string]interface{}, len(list))
@@ -1088,7 +1101,7 @@ func FlattenFeed(feedName string) []interface{} {
 	return []interface{}{att}
 }
 
-func flattenGatewayVlans(list []datatypes.Network_Gateway_Vlan) []map[string]interface{} {
+func FlattenGatewayVlans(list []datatypes.Network_Gateway_Vlan) []map[string]interface{} {
 	vlans := make([]map[string]interface{}, len(list))
 	for i, ele := range list {
 		vlan := make(map[string]interface{})
@@ -1100,7 +1113,7 @@ func flattenGatewayVlans(list []datatypes.Network_Gateway_Vlan) []map[string]int
 	return vlans
 }
 
-func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gateway_Member) []map[string]interface{} {
+func FlattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gateway_Member) []map[string]interface{} {
 	members := make([]map[string]interface{}, len(list))
 	for i, ele := range list {
 		hardware := *ele.Hardware
@@ -1171,7 +1184,7 @@ func flattenGatewayMembers(d *schema.ResourceData, list []datatypes.Network_Gate
 	return members
 }
 
-func flattenDisks(result datatypes.Virtual_Guest) []int {
+func FlattenDisks(result datatypes.Virtual_Guest) []int {
 	var out = make([]int, 0)
 
 	for _, v := range result.BlockDevices {
@@ -1200,7 +1213,7 @@ func flattenDisks(result datatypes.Virtual_Guest) []int {
 	return out
 }
 
-func flattenDisksForWindows(result datatypes.Virtual_Guest) []int {
+func FlattenDisksForWindows(result datatypes.Virtual_Guest) []int {
 	var out = make([]int, 0)
 
 	for _, v := range result.BlockDevices {
@@ -1325,7 +1338,7 @@ func FlattenPolicyResourceAttributes(list []iampolicymanagementv1.PolicyResource
 }
 
 // Cloud Internet Services
-func flattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
+func FlattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 	ports := make([]int, 0, 0)
 	for _, i := range list {
@@ -1515,7 +1528,7 @@ func FlattenConnectionStrings(cs []CsEntry) []map[string]interface{} {
 	return entries
 }
 
-func flattenPhaseOneAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
+func FlattenPhaseOneAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
 	phaseoneAttributesMap := make([]map[string]interface{}, 0, 1)
 	phaseoneAttributes := make(map[string]interface{})
 	phaseoneAttributes["authentication"] = *vpn.PhaseOneAuthentication
@@ -1526,7 +1539,7 @@ func flattenPhaseOneAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []m
 	return phaseoneAttributesMap
 }
 
-func flattenPhaseTwoAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
+func FlattenPhaseTwoAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
 	phasetwoAttributesMap := make([]map[string]interface{}, 0, 1)
 	phasetwoAttributes := make(map[string]interface{})
 	phasetwoAttributes["authentication"] = *vpn.PhaseTwoAuthentication
@@ -1537,7 +1550,7 @@ func flattenPhaseTwoAttributes(vpn *datatypes.Network_Tunnel_Module_Context) []m
 	return phasetwoAttributesMap
 }
 
-func flattenaddressTranslation(vpn *datatypes.Network_Tunnel_Module_Context, fwID int) []map[string]interface{} {
+func FlattenaddressTranslation(vpn *datatypes.Network_Tunnel_Module_Context, fwID int) []map[string]interface{} {
 	addressTranslationMap := make([]map[string]interface{}, 0, 1)
 	addressTranslationAttributes := make(map[string]interface{})
 	for _, networkAddressTranslation := range vpn.AddressTranslations {
@@ -1551,7 +1564,7 @@ func flattenaddressTranslation(vpn *datatypes.Network_Tunnel_Module_Context, fwI
 	return addressTranslationMap
 }
 
-func flattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
+func FlattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[string]interface{} {
 	remoteSubnetMap := make([]map[string]interface{}, 0, 1)
 	remoteSubnetAttributes := make(map[string]interface{})
 	for _, customerSubnet := range vpn.CustomerSubnets {
@@ -1936,7 +1949,7 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 		taglist = append(taglist, *item.Name)
 	}
 	log.Println("tagList: ", taglist)
-	return newStringSet(ResourceIBMVPCHash, taglist), nil
+	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
 func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceID, resourceType, tagType string) error {
@@ -2058,7 +2071,7 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 		taglist = append(taglist, item.Name)
 	}
 	log.Println("tagList: ", taglist)
-	return newStringSet(ResourceIBMVPCHash, taglist), nil
+	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
 func UpdateTagsUsingCRN(oldList, newList interface{}, meta interface{}, resourceCRN string) error {
@@ -2126,12 +2139,12 @@ func GetBaseController(meta interface{}) (string, error) {
 	return prodBaseController, nil
 }
 
-func flattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set {
+func FlattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set {
 	c := make([]string, len(ciphers))
 	for i, v := range ciphers {
 		c[i] = *v.Name
 	}
-	return newStringSet(schema.HashString, c)
+	return NewStringSet(schema.HashString, c)
 }
 
 func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
@@ -2153,236 +2166,236 @@ func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
-// func resourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
-// 	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
-// 	policyAction := policyActionIntf.(string)
+func ResourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
+	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
+	policyAction := policyActionIntf.(string)
 
-// 	if policyAction == "forward" {
-// 		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
+	if policyAction == "forward" {
+		_, policyTargetIDSet := diff.GetOk(isLBListenerPolicyTargetID)
 
-// 		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
-// 			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
-// 		}
-// 	} else if policyAction == "redirect" {
-// 		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
-// 		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
+		if !policyTargetIDSet && diff.NewValueKnown(isLBListenerPolicyTargetID) {
+			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
+		}
+	} else if policyAction == "redirect" {
+		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
 
-// 		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
-// 			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
-// 		}
+		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
+		}
 
-// 		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
-// 			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
-// 		}
-// 	} else if policyAction == "https_redirect" {
-// 		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
-// 		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		if !targetURLSet && diff.NewValueKnown(isLBListenerPolicyTargetURL) {
+			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_url")
+		}
+	} else if policyAction == "https_redirect" {
+		_, listenerSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectListener)
+		_, httpsStatusSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
 
-// 		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
-// 			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
-// 		}
+		if !listenerSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectListener) {
+			return fmt.Errorf("Load balancer listener policy: When action is https_redirect please specify target_https_redirect_listener")
+		}
 
-// 		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
-// 			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
-// 		}
-// 	}
+		if !httpsStatusSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+			return fmt.Errorf("When action is https_redirect please specify target_https_redirect_status_code")
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func resourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
-// 	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
-// 	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
-// 	sessionPersistenceType := sessionPersistenceTypeIntf.(string)
-// 	sessionPersistenceCookieName := sessionPersistenceCookieNameIntf.(string)
+func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
+	_, sessionPersistenceTypeIntf := diff.GetChange(isLBPoolSessPersistenceType)
+	_, sessionPersistenceCookieNameIntf := diff.GetChange(isLBPoolSessPersistenceAppCookieName)
+	sessionPersistenceType := sessionPersistenceTypeIntf.(string)
+	sessionPersistenceCookieName := sessionPersistenceCookieNameIntf.(string)
 
-// 	if sessionPersistenceType == "app_cookie" {
-// 		if sessionPersistenceCookieName == "" {
-// 			return fmt.Errorf("Load Balancer Pool: %s is required for %s 'app_cookie'", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
-// 		}
-// 		if strings.HasPrefix(sessionPersistenceCookieName, "IBM") {
-// 			return fmt.Errorf("Load Balancer Pool: %s starting with IBM are not allowed", isLBPoolSessPersistenceAppCookieName)
-// 		}
-// 	}
+	if sessionPersistenceType == "app_cookie" {
+		if sessionPersistenceCookieName == "" {
+			return fmt.Errorf("Load Balancer Pool: %s is required for %s 'app_cookie'", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+		}
+		if strings.HasPrefix(sessionPersistenceCookieName, "IBM") {
+			return fmt.Errorf("Load Balancer Pool: %s starting with IBM are not allowed", isLBPoolSessPersistenceAppCookieName)
+		}
+	}
 
-// 	if sessionPersistenceCookieName != "" && sessionPersistenceType != "app_cookie" {
-// 		return fmt.Errorf("Load Balancer Pool: %s is only applicable for %s 'app_cookie'.", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
-// 	}
-// 	return nil
-// }
+	if sessionPersistenceCookieName != "" && sessionPersistenceType != "app_cookie" {
+		return fmt.Errorf("Load Balancer Pool: %s is only applicable for %s 'app_cookie'.", isLBPoolSessPersistenceAppCookieName, isLBPoolSessPersistenceType)
+	}
+	return nil
+}
 
-// func resourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
+func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 
-// 	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
-// 		vols := volsintf.([]interface{})
-// 		for volAttIdx := range vols {
-// 			volumeid := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVol
-// 			volumePrototype := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + isInstanceTemplateVolAttVolPrototype
-// 			var volIdnterpolated = false
-// 			var volumeIdFound = false
-// 			if _, volumeIdFound = diff.GetOk(volumeid); !volumeIdFound {
-// 				if !diff.NewValueKnown(volumeid) {
-// 					volIdnterpolated = true
-// 				}
-// 			}
-// 			_, volPrototypeFound := diff.GetOk(volumePrototype)
+	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
+		vols := volsintf.([]interface{})
+		for volAttIdx := range vols {
+			volumeid := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + "volume"
+			volumePrototype := "volume_attachments." + strconv.Itoa(volAttIdx) + "." + "volume_prototype"
+			var volIdnterpolated = false
+			var volumeIdFound = false
+			if _, volumeIdFound = diff.GetOk(volumeid); !volumeIdFound {
+				if !diff.NewValueKnown(volumeid) {
+					volIdnterpolated = true
+				}
+			}
+			_, volPrototypeFound := diff.GetOk(volumePrototype)
 
-// 			if volPrototypeFound && (volumeIdFound || volIdnterpolated) {
-// 				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Cannot provide both 'volume' and 'volume_prototype' together.", volAttIdx)
-// 			}
-// 			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
-// 				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
-// 			}
-// 		}
-// 	}
+			if volPrototypeFound && (volumeIdFound || volIdnterpolated) {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Cannot provide both 'volume' and 'volume_prototype' together.", volAttIdx)
+			}
+			if !volPrototypeFound && !volumeIdFound && !volIdnterpolated {
+				return fmt.Errorf("InstanceTemplate - volume_attachments[%d]: Volume details missing. Provide either 'volume' or 'volume_prototype'.", volAttIdx)
+			}
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func resourceVolumeValidate(diff *schema.ResourceDiff) error {
+func ResourceVolumeValidate(diff *schema.ResourceDiff) error {
 
-// 	if diff.Id() != "" && diff.HasChange(isVolumeCapacity) {
-// 		o, n := diff.GetChange(isVolumeCapacity)
-// 		old := int64(o.(int))
-// 		new := int64(n.(int))
-// 		if new < old {
-// 			return fmt.Errorf("'%s' attribute has a constraint, it supports only expansion and can't be changed from %d to %d.", isVolumeCapacity, old, new)
-// 		}
-// 	}
+	if diff.Id() != "" && diff.HasChange("capacity") {
+		o, n := diff.GetChange("capacity")
+		old := int64(o.(int))
+		new := int64(n.(int))
+		if new < old {
+			return fmt.Errorf("'%s' attribute has a constraint, it supports only expansion and can't be changed from %d to %d.", "capacity", old, new)
+		}
+	}
 
-// 	profile := ""
-// 	var capacity, iops int64
-// 	if profileOk, ok := diff.GetOk(isVolumeProfileName); ok {
-// 		profile = profileOk.(string)
-// 	}
-// 	if capacityOk, ok := diff.GetOk(isVolumeCapacity); ok {
-// 		capacity = int64(capacityOk.(int))
-// 	}
+	profile := ""
+	var capacity, iops int64
+	if profileOk, ok := diff.GetOk("profile"); ok {
+		profile = profileOk.(string)
+	}
+	if capacityOk, ok := diff.GetOk("capacity"); ok {
+		capacity = int64(capacityOk.(int))
+	}
 
-// 	if capacity == int64(0) {
-// 		capacity = int64(100)
-// 	}
-// 	if profile == "5iops-tier" && capacity > 9600 {
-// 		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
-// 	} else if profile == "10iops-tier" && capacity > 4800 {
-// 		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
-// 	}
+	if capacity == int64(0) {
+		capacity = int64(100)
+	}
+	if profile == "5iops-tier" && capacity > 9600 {
+		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 9600)
+	} else if profile == "10iops-tier" && capacity > 4800 {
+		return fmt.Errorf("'%s' storage block supports capacity up to %d.", profile, 4800)
+	}
 
-// 	if iopsOk, ok := diff.GetOk(isVolumeIops); ok {
-// 		iops = int64(iopsOk.(int))
-// 	}
+	if iopsOk, ok := diff.GetOk("iops"); ok {
+		iops = int64(iopsOk.(int))
+	}
 
-// 	if diff.HasChange(isVolumeProfileName) {
-// 		oldProfile, newProfile := diff.GetChange(isVolumeProfileName)
-// 		if oldProfile.(string) == "custom" || newProfile.(string) == "custom" {
-// 			diff.ForceNew(isVolumeProfileName)
-// 		}
-// 	}
+	if diff.HasChange("profile") {
+		oldProfile, newProfile := diff.GetChange("profile")
+		if oldProfile.(string) == "custom" || newProfile.(string) == "custom" {
+			diff.ForceNew("profile")
+		}
+	}
 
-// 	if profile != "custom" {
-// 		if iops != 0 && diff.NewValueKnown(isVolumeIops) && diff.HasChange(isVolumeIops) {
-// 			return fmt.Errorf("VolumeError : iops is applicable for only custom volume profiles")
-// 		}
-// 	} else {
-// 		if capacity == 0 {
-// 			capacity = int64(100)
-// 		}
-// 		if capacity >= 10 && capacity <= 39 {
-// 			min := int64(100)
-// 			max := int64(1000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 40 && capacity <= 79 {
-// 			min := int64(100)
-// 			max := int64(2000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 80 && capacity <= 99 {
-// 			min := int64(100)
-// 			max := int64(4000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 100 && capacity <= 499 {
-// 			min := int64(100)
-// 			max := int64(6000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 500 && capacity <= 999 {
-// 			min := int64(100)
-// 			max := int64(10000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 1000 && capacity <= 1999 {
-// 			min := int64(100)
-// 			max := int64(20000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 2000 && capacity <= 3999 {
-// 			min := int64(200)
-// 			max := int64(40000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 4000 && capacity <= 7999 {
-// 			min := int64(300)
-// 			max := int64(40000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 8000 && capacity <= 9999 {
-// 			min := int64(500)
-// 			max := int64(48000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 		if capacity >= 10000 && capacity <= 16000 {
-// 			min := int64(1000)
-// 			max := int64(48000)
-// 			if !(iops >= min && iops <= max) {
-// 				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
+	if profile != "custom" {
+		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
+			return fmt.Errorf("VolumeError : iops is applicable for only custom volume profiles")
+		}
+	} else {
+		if capacity == 0 {
+			capacity = int64(100)
+		}
+		if capacity >= 10 && capacity <= 39 {
+			min := int64(100)
+			max := int64(1000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 40 && capacity <= 79 {
+			min := int64(100)
+			max := int64(2000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 80 && capacity <= 99 {
+			min := int64(100)
+			max := int64(4000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 100 && capacity <= 499 {
+			min := int64(100)
+			max := int64(6000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 500 && capacity <= 999 {
+			min := int64(100)
+			max := int64(10000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 1000 && capacity <= 1999 {
+			min := int64(100)
+			max := int64(20000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 2000 && capacity <= 3999 {
+			min := int64(200)
+			max := int64(40000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 4000 && capacity <= 7999 {
+			min := int64(300)
+			max := int64(40000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 8000 && capacity <= 9999 {
+			min := int64(500)
+			max := int64(48000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+		if capacity >= 10000 && capacity <= 16000 {
+			min := int64(1000)
+			max := int64(48000)
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("VolumeError : allowed iops value for capacity(%d) is [%d-%d] ", capacity, min, max)
+			}
+		}
+	}
+	return nil
+}
 
-// func resourceRouteModeValidate(diff *schema.ResourceDiff) error {
+func ResourceRouteModeValidate(diff *schema.ResourceDiff) error {
 
-// 	var lbtype, lbprofile string
-// 	if typeOk, ok := diff.GetOk(isLBType); ok {
-// 		lbtype = typeOk.(string)
-// 	}
-// 	if profileOk, ok := diff.GetOk(isLBProfile); ok {
-// 		lbprofile = profileOk.(string)
-// 	}
-// 	if rmOk, ok := diff.GetOk(isLBRouteMode); ok {
-// 		routeMode := rmOk.(bool)
+	var lbtype, lbprofile string
+	if typeOk, ok := diff.GetOk(isLBType); ok {
+		lbtype = typeOk.(string)
+	}
+	if profileOk, ok := diff.GetOk(isLBProfile); ok {
+		lbprofile = profileOk.(string)
+	}
+	if rmOk, ok := diff.GetOk(isLBRouteMode); ok {
+		routeMode := rmOk.(bool)
 
-// 		if routeMode && lbtype != "private" {
-// 			return fmt.Errorf("'type' must be 'private', at present public load balancers are not supported with route mode enabled.")
-// 		}
-// 		if routeMode && lbprofile != "network-fixed" {
-// 			return fmt.Errorf("'profile' must be 'network-fixed', route mode is supported by private network load balancer.")
-// 		}
-// 	}
+		if routeMode && lbtype != "private" {
+			return fmt.Errorf("'type' must be 'private', at present public load balancers are not supported with route mode enabled.")
+		}
+		if routeMode && lbprofile != "network-fixed" {
+			return fmt.Errorf("'profile' must be 'network-fixed', route mode is supported by private network load balancer.")
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 func FlattenRoleData(object []iampolicymanagementv1.Role, roleType string) []map[string]string {
 	var roles []map[string]string
@@ -2644,7 +2657,7 @@ type ServiceErrorResponse struct {
 	Result     interface{}
 }
 
-func beautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
+func BeautifyError(err error, response *core.DetailedResponse) *ServiceErrorResponse {
 	var (
 		statusCode int
 		result     interface{}
@@ -3048,7 +3061,7 @@ func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
 		idx++
 	}
 
-	return newStringSet(schema.HashString, mapped)
+	return NewStringSet(schema.HashString, mapped)
 }
 
 // KMS Private Endpoint

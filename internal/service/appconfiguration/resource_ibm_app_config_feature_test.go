@@ -136,7 +136,7 @@ func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("Feature still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("error checking for Feature (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for Feature (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

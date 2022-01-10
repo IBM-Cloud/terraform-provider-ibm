@@ -195,7 +195,7 @@ func testAccCisInstanceManuallyDeleteUnwrapped(s *terraform.State, tfCisId *stri
 				return nil, "", err
 			}
 			if *instance.State == CisInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v %s", instanceId, err, response)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v %s", instanceId, err, response)
 			}
 			return instance, *instance.State, nil
 		},

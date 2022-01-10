@@ -175,7 +175,7 @@ func testAccCheckIBMEventStreamsSchemaExists(n string, obj map[string]interface{
 		}
 		if schemaID != "" {
 			if !strings.HasSuffix(id, schemaID) {
-				return fmt.Errorf("Invalid id: %s and schemaID %s", id, schemaID)
+				return fmt.Errorf("[ERROR] Invalid id: %s and schemaID %s", id, schemaID)
 			}
 		}
 

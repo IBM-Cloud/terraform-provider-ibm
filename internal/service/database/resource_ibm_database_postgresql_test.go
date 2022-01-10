@@ -333,7 +333,7 @@ func testAccDatabaseInstanceManuallyDeleteUnwrapped(s *terraform.State, tfDataba
 				return nil, "", err
 			}
 			if *instance.State == databaseInstanceFailStatus {
-				return instance, *instance.State, fmt.Errorf("The resource instance %s failed to delete: %v %s", instanceID, err, response)
+				return instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed to delete: %v %s", instanceID, err, response)
 			}
 			return instance, *instance.State, nil
 		},
