@@ -30,31 +30,31 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the group_profile_details.
-* `controls` - (Optional, List) Profiles array.
+* `controls` - (List) Profiles array.
 Nested scheme for **controls**:
-	* `description` - (Optional, String) The description of the control.
-	* `external_control_id` - (Optional, String) The external identifier number of the control.
-	* `goals` - (Optional, List) Mapped goals aganist the control identifier.
+	* `description` - (String) The description of the control.
+	* `external_control_id` - (String) The external identifier number of the control.
+	* `goals` - (List) Mapped goals aganist the control identifier.
 	Nested scheme for **goals**:
-		* `description` - (Optional, String) The description of the goal.
-		* `id` - (Optional, String) The goal ID.
-		* `is_auto_remediable` - (Optional, Boolean) The goal is autoremediable or not.
-		* `is_automatable` - (Optional, Boolean) The goal is automatable or not.
-		* `is_manual` - (Optional, Boolean) The goal is manual check.
-		* `is_remediable` - (Optional, Boolean) The goal is remediable or not.
-		* `is_reversible` - (Optional, Boolean) The goal is reversible or not.
-		* `severity` - (Optional, String) The severity of the goal.
-	* `id` - (Optional, String) The identifier number of the control.
+		* `description` - (String) The description of the goal.
+		* `id` - (String) The goal ID.
+		* `is_auto_remediable` - (Boolean) The goal is autoremediable or not.
+		* `is_automatable` - (Boolean) The goal is automatable or not.
+		* `is_manual` - (Boolean) The goal is manual check.
+		* `is_remediable` - (Boolean) The goal is remediable or not.
+		* `is_reversible` - (Boolean) The goal is reversible or not.
+		* `severity` - (String) The severity of the goal.
+	* `id` - (String) The identifier number of the control.
 
-* `first` - (Optional, List) The URL of a page.
+* `first` - (List) The URL of a page.
 Nested scheme for **first**:
-	* `href` - (Optional, String) The URL of a page.
+	* `href` - (String) The URL of a page.
 
-* `last` - (Optional, List) The URL of a page.
+* `last` - (List) The URL of a page.
 Nested scheme for **last**:
-	* `href` - (Optional, String) The URL of a page.
+	* `href` - (String) The URL of a page.
 
-* `previous` - (Optional, List) The URL of a page.
+* `previous` - (List) The URL of a page.
 Nested scheme for **previous**:
-	* `href` - (Optional, String) The URL of a page.
+	* `href` - (String) The URL of a page.
 
