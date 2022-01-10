@@ -30,7 +30,7 @@ func init() {
 	validHRef = regexp.MustCompile(`^http(s)?:\/\/([^\/?#]*)([^?#]*)(\?([^#]*))?(#(.*))?$`)
 }
 
-func validateSecondaryIPCount(v interface{}, k string) (ws []string, errors []error) {
+func ValidateSecondaryIPCount(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(int)
 	if value != 4 && value != 8 {
 		errors = append(errors, fmt.Errorf(
@@ -132,7 +132,7 @@ func ValidateAllowedEnterpriseNameValue() schema.SchemaValidateFunc {
 
 	}
 }
-func validateRoutePath(v interface{}, k string) (ws []string, errors []error) {
+func ValidateRoutePath(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	//Somehow API allows this
 	if value == "" {
@@ -156,14 +156,14 @@ func validateRoutePath(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateRoutePort(v interface{}, k string) (ws []string, errors []error) {
+func ValidateRoutePort(v interface{}, k string) (ws []string, errors []error) {
 	return ValidatePortRange(1024, 65535)(v, k)
 }
 
 func validateAppPort(v interface{}, k string) (ws []string, errors []error) {
 	return ValidatePortRange(1024, 65535)(v, k)
 }
-func validateLBListenerPolicyPriority(v interface{}, k string) (ws []string, errors []error) {
+func ValidateLBListenerPolicyPriority(v interface{}, k string) (ws []string, errors []error) {
 	interval := v.(int)
 	if interval < 1 || interval > 10 {
 		errors = append(errors, fmt.Errorf(
@@ -173,7 +173,7 @@ func validateLBListenerPolicyPriority(v interface{}, k string) (ws []string, err
 	return
 }
 
-func validateStringLength(v interface{}, k string) (ws []string, errors []error) {
+func ValidateStringLength(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 
 	if (len(value) < 1) || (len(value) > 128) {
@@ -195,7 +195,7 @@ func ValidatePortRange(start, end int) func(v interface{}, k string) (ws []strin
 	return f
 }
 
-func validateDomainName(v interface{}, k string) (ws []string, errors []error) {
+func ValidateDomainName(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 
 	if !(strings.Contains(value, ".")) {
@@ -242,7 +242,7 @@ func validateAppZipPath(v interface{}, k string) (ws []string, errors []error) {
 
 }
 
-func validateNotes(v interface{}, k string) (ws []string, errors []error) {
+func ValidateNotes(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	if len(value) > 1000 {
 		errors = append(errors, fmt.Errorf(
@@ -251,7 +251,7 @@ func validateNotes(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validatePublicBandwidth(v interface{}, k string) (ws []string, errors []error) {
+func ValidatePublicBandwidth(v interface{}, k string) (ws []string, errors []error) {
 	bandwidth := v.(int)
 	if bandwidth < 0 {
 		errors = append(errors, fmt.Errorf(
@@ -270,7 +270,7 @@ func validatePublicBandwidth(v interface{}, k string) (ws []string, errors []err
 
 }
 
-func validateMaxConn(v interface{}, k string) (ws []string, errors []error) {
+func ValidateMaxConn(v interface{}, k string) (ws []string, errors []error) {
 	maxConn := v.(int)
 	if maxConn < 1 || maxConn > 64000 {
 		errors = append(errors, fmt.Errorf(
@@ -281,7 +281,7 @@ func validateMaxConn(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateKeyLifeTime(v interface{}, k string) (ws []string, errors []error) {
+func ValidateKeyLifeTime(v interface{}, k string) (ws []string, errors []error) {
 	secs := v.(int)
 	if secs < 1800 || secs > 86400 {
 		errors = append(errors, fmt.Errorf(
@@ -292,7 +292,7 @@ func validateKeyLifeTime(v interface{}, k string) (ws []string, errors []error) 
 	return
 }
 
-func validateWeight(v interface{}, k string) (ws []string, errors []error) {
+func ValidateWeight(v interface{}, k string) (ws []string, errors []error) {
 	weight := v.(int)
 	if weight < 0 || weight > 100 {
 		errors = append(errors, fmt.Errorf(
@@ -312,7 +312,7 @@ func ValidateSizePerZone(v interface{}, k string) (ws []string, errors []error) 
 	return
 }
 
-func validateInterval(v interface{}, k string) (ws []string, errors []error) {
+func ValidateInterval(v interface{}, k string) (ws []string, errors []error) {
 	interval := v.(int)
 	if interval < 2 || interval > 60 {
 		errors = append(errors, fmt.Errorf(
@@ -322,7 +322,7 @@ func validateInterval(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateMaxRetries(v interface{}, k string) (ws []string, errors []error) {
+func ValidateMaxRetries(v interface{}, k string) (ws []string, errors []error) {
 	maxRetries := v.(int)
 	if maxRetries < 1 || maxRetries > 10 {
 		errors = append(errors, fmt.Errorf(
@@ -332,7 +332,7 @@ func validateMaxRetries(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateTimeout(v interface{}, k string) (ws []string, errors []error) {
+func ValidateTimeout(v interface{}, k string) (ws []string, errors []error) {
 	timeout := v.(int)
 	if timeout < 1 || timeout > 59 {
 		errors = append(errors, fmt.Errorf(
@@ -352,7 +352,7 @@ func ValidateURLPath(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
+func ValidateSecurityRuleDirection(v interface{}, k string) (ws []string, errors []error) {
 	validDirections := map[string]bool{
 		"ingress": true,
 		"egress":  true,
@@ -372,7 +372,7 @@ func validateSecurityRuleDirection(v interface{}, k string) (ws []string, errors
 	return
 }
 
-func validateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors []error) {
+func ValidateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors []error) {
 	validEtherTypes := map[string]bool{
 		"IPv4": true,
 		"IPv6": true,
@@ -392,8 +392,8 @@ func validateSecurityRuleEtherType(v interface{}, k string) (ws []string, errors
 	return
 }
 
-//validateIP...
-func validateIP(v interface{}, k string) (ws []string, errors []error) {
+//ValidateIP...
+func ValidateIP(v interface{}, k string) (ws []string, errors []error) {
 	address := v.(string)
 	if net.ParseIP(address) == nil {
 		errors = append(errors, fmt.Errorf(
@@ -451,10 +451,10 @@ func validateOverlappingAddress() schema.SchemaValidateFunc {
 	}
 }
 
-//validateRemoteIP...
-func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
+//ValidateRemoteIP...
+func ValidateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
 	_, err1 := ValidateCIDR(v, k)
-	_, err2 := validateIP(v, k)
+	_, err2 := ValidateIP(v, k)
 
 	if len(err1) != 0 && len(err2) != 0 {
 		errors = append(errors, fmt.Errorf(
@@ -468,7 +468,7 @@ func validateRemoteIP(v interface{}, k string) (ws []string, errors []error) {
 func validateIPorCIDR() schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		_, err1 := ValidateCIDR(v, k)
-		_, err2 := validateIP(v, k)
+		_, err2 := ValidateIP(v, k)
 
 		if len(err1) != 0 && len(err2) != 0 {
 			errors = append(errors, fmt.Errorf(
@@ -479,7 +479,7 @@ func validateIPorCIDR() schema.SchemaValidateFunc {
 	}
 }
 
-func validateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
+func ValidateSecurityRuleProtocol(v interface{}, k string) (ws []string, errors []error) {
 	validProtocols := map[string]bool{
 		"icmp": true,
 		"tcp":  true,
@@ -656,7 +656,7 @@ func validateFunctionName(v interface{}, k string) (ws []string, errors []error)
 	return
 }
 
-func validateStorageType(v interface{}, k string) (ws []string, errors []error) {
+func ValidateStorageType(v interface{}, k string) (ws []string, errors []error) {
 	validEtherTypes := map[string]bool{
 		"Endurance":   true,
 		"Performance": true,
@@ -701,7 +701,7 @@ func validateRole(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateDayOfWeek(v interface{}, k string) (ws []string, errors []error) {
+func ValidateDayOfWeek(v interface{}, k string) (ws []string, errors []error) {
 	validDayTypes := map[string]bool{
 		"SUNDAY":    true,
 		"MONDAY":    true,
@@ -726,7 +726,7 @@ func validateDayOfWeek(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateScheduleType(v interface{}, k string) (ws []string, errors []error) {
+func ValidateScheduleType(v interface{}, k string) (ws []string, errors []error) {
 	validSchdTypes := map[string]bool{
 		"HOURLY": true,
 		"DAILY":  true,
@@ -747,7 +747,7 @@ func validateScheduleType(v interface{}, k string) (ws []string, errors []error)
 	return
 }
 
-func validateHour(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
+func ValidateHour(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
 	f := func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
 		if (value < start) || (value > end) {
@@ -759,7 +759,7 @@ func validateHour(start, end int) func(v interface{}, k string) (ws []string, er
 	return f
 }
 
-func validateMinute(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
+func ValidateMinute(start, end int) func(v interface{}, k string) (ws []string, errors []error) {
 	f := func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(int)
 		if (value < start) || (value > end) {
@@ -771,7 +771,7 @@ func validateMinute(start, end int) func(v interface{}, k string) (ws []string, 
 	return f
 }
 
-func validateDatacenterOption(v []interface{}, allowedValues []string) error {
+func ValidateDatacenterOption(v []interface{}, allowedValues []string) error {
 	for _, option := range v {
 		if option == nil {
 			return fmt.Errorf("Provide a valid `datacenter_choice`")
@@ -788,7 +788,7 @@ func validateDatacenterOption(v []interface{}, allowedValues []string) error {
 	return nil
 }
 
-func validateLBTimeout(v interface{}, k string) (ws []string, errors []error) {
+func ValidateLBTimeout(v interface{}, k string) (ws []string, errors []error) {
 	timeout := v.(int)
 	if timeout <= 0 || timeout > 3600 {
 		errors = append(errors, fmt.Errorf(
@@ -844,7 +844,7 @@ func validateRecordName(t string, value string) error {
 	return nil
 }
 
-func validateVLANName(v interface{}, k string) (ws []string, errors []error) {
+func ValidateVLANName(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 	if len(value) > 20 {
 		errors = append(errors, fmt.Errorf(
@@ -853,7 +853,7 @@ func validateVLANName(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateAuthProtocol(v interface{}, k string) (ws []string, errors []error) {
+func ValidateAuthProtocol(v interface{}, k string) (ws []string, errors []error) {
 	authProtocol := v.(string)
 	if authProtocol != "MD5" && authProtocol != "SHA1" && authProtocol != "SHA256" {
 		errors = append(errors, fmt.Errorf(
@@ -863,7 +863,7 @@ func validateAuthProtocol(v interface{}, k string) (ws []string, errors []error)
 }
 
 //ValidateIPVersion
-func validateIPVersion(v interface{}, k string) (ws []string, errors []error) {
+func ValidateIPVersion(v interface{}, k string) (ws []string, errors []error) {
 	validVersions := map[string]bool{
 		"ipv4": true,
 		"ipv6": true,
@@ -883,11 +883,11 @@ func validateIPVersion(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func isSecurityGroupAddress(s string) bool {
+func IsSecurityGroupAddress(s string) bool {
 	return net.ParseIP(s) != nil
 }
 
-func isSecurityGroupCIDR(s string) bool {
+func IsSecurityGroupCIDR(s string) bool {
 	_, _, err := net.ParseCIDR(s)
 	return err == nil
 }
@@ -921,7 +921,7 @@ func validateGeneration(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateEncyptionProtocol(v interface{}, k string) (ws []string, errors []error) {
+func ValidateEncyptionProtocol(v interface{}, k string) (ws []string, errors []error) {
 	encyptionProtocol := v.(string)
 	if encyptionProtocol != "DES" && encyptionProtocol != "3DES" && encyptionProtocol != "AES128" && encyptionProtocol != "AES192" && encyptionProtocol != "AES256" {
 		errors = append(errors, fmt.Errorf(
@@ -941,7 +941,7 @@ func validateDeadPeerDetectionInterval(v interface{}, k string) (ws []string, er
 	return
 }
 
-func validateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []error) {
+func ValidateDiffieHellmanGroup(v interface{}, k string) (ws []string, errors []error) {
 	diffieHellmanGroup := v.(int)
 	if diffieHellmanGroup != 0 && diffieHellmanGroup != 1 && diffieHellmanGroup != 2 && diffieHellmanGroup != 5 {
 		errors = append(errors, fmt.Errorf(
@@ -973,7 +973,7 @@ func validateDeadPeerDetectionTimeout(v interface{}, k string) (ws []string, err
 	return
 }
 
-func validatekeylife(v interface{}, k string) (ws []string, errors []error) {
+func Validatekeylife(v interface{}, k string) (ws []string, errors []error) {
 	keylife := v.(int)
 	if keylife < 120 || keylife > 172800 {
 		errors = append(errors, fmt.Errorf(
@@ -982,11 +982,11 @@ func validatekeylife(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
-func validateLBListenerPort(v interface{}, k string) (ws []string, errors []error) {
+func ValidateLBListenerPort(v interface{}, k string) (ws []string, errors []error) {
 	return ValidatePortRange(1, 65535)(v, k)
 }
 
-func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, errors []error) {
+func ValidateLBListenerConnectionLimit(v interface{}, k string) (ws []string, errors []error) {
 	conns := v.(int)
 	if conns < 1 || conns > 15000 {
 		errors = append(errors, fmt.Errorf(
@@ -998,7 +998,7 @@ func validateLBListenerConnectionLimit(v interface{}, k string) (ws []string, er
 }
 
 //ValidateISName
-func validateISName(v interface{}, k string) (ws []string, errors []error) {
+func ValidateISName(v interface{}, k string) (ws []string, errors []error) {
 	name := v.(string)
 	acceptedcharacters, _ := regexp.MatchString(`^[a-z][-a-z0-9]*$`, name)
 	endwithalphanumeric, _ := regexp.MatchString(`.*[a-z0-9]$`, name)

@@ -172,42 +172,42 @@ func resourceEnvironmentRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("guid", parts[0])
 	if result.Name != nil {
 		if err = d.Set("name", result.Name); err != nil {
-			return fmt.Errorf("error setting name: %s", err)
+			return fmt.Errorf("[ERROR] Error setting name: %s", err)
 		}
 	}
 	if result.EnvironmentID != nil {
 		if err = d.Set("environment_id", result.EnvironmentID); err != nil {
-			return fmt.Errorf("error setting environment_id: %s", err)
+			return fmt.Errorf("[ERROR] Error setting environment_id: %s", err)
 		}
 	}
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			return fmt.Errorf("error setting description: %s", err)
+			return fmt.Errorf("[ERROR] Error setting description: %s", err)
 		}
 	}
 	if result.Tags != nil {
 		if err = d.Set("tags", result.Tags); err != nil {
-			return fmt.Errorf("error setting tags: %s", err)
+			return fmt.Errorf("[ERROR] Error setting tags: %s", err)
 		}
 	}
 	if result.ColorCode != nil {
 		if err = d.Set("color_code", result.ColorCode); err != nil {
-			return fmt.Errorf("error setting color_code: %s", err)
+			return fmt.Errorf("[ERROR] Error setting color_code: %s", err)
 		}
 	}
 	if result.CreatedTime != nil {
 		if err = d.Set("created_time", result.CreatedTime.String()); err != nil {
-			return fmt.Errorf("error setting created_time: %s", err)
+			return fmt.Errorf("[ERROR] Error setting created_time: %s", err)
 		}
 	}
 	if result.UpdatedTime != nil {
 		if err = d.Set("updated_time", result.UpdatedTime.String()); err != nil {
-			return fmt.Errorf("error setting updated_time: %s", err)
+			return fmt.Errorf("[ERROR] Error setting updated_time: %s", err)
 		}
 	}
 	if result.Href != nil {
 		if err = d.Set("href", result.Href); err != nil {
-			return fmt.Errorf("error setting href: %s", err)
+			return fmt.Errorf("[ERROR] Error setting href: %s", err)
 		}
 	}
 	return nil

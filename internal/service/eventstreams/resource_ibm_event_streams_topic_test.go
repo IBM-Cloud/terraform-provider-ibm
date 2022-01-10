@@ -337,7 +337,7 @@ func testAccCheckIBMEventStreamsTopicExists(n, topicName string) resource.TestCh
 		}
 		topicID := rs.Primary.ID
 		if topicID == "" {
-			return fmt.Errorf("No topic ID is set")
+			return fmt.Errorf("[ERROR] No topic ID is set")
 		}
 		if strings.HasSuffix(topicID, topicName) {
 			return nil

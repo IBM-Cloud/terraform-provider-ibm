@@ -386,7 +386,7 @@ func waitForPDNSCustomResolverHealthy(d *schema.ResourceData, meta interface{}) 
 			res, detail, err := sess.GetCustomResolver(opt)
 			if err != nil {
 				if detail != nil && detail.StatusCode == 404 {
-					return nil, "", fmt.Errorf("The custom resolver %s does not exist anymore: %v", customResolverID, err)
+					return nil, "", fmt.Errorf("[ERROR] The custom resolver %s does not exist anymore: %v", customResolverID, err)
 				}
 				return nil, "", fmt.Errorf("Get the custom resolver %s failed with resp code: %s, err: %v", customResolverID, detail, err)
 			}

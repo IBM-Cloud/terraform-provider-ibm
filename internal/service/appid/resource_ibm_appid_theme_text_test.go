@@ -59,7 +59,7 @@ func testAccCheckIBMAppIDThemeTextDestroy(s *terraform.State) error {
 		})
 
 		if err != nil || (cfg.TabTitle != nil && *cfg.TabTitle != "Login") || (cfg.Footnote != nil && *cfg.Footnote != "Powered by App ID") {
-			return fmt.Errorf("error checking if AppID theme text configuration (%s) has been reset", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID theme text configuration (%s) has been reset", rs.Primary.ID)
 		}
 	}
 

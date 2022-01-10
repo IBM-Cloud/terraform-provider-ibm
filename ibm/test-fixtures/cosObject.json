@@ -1,4 +1,0 @@
-{
-  "test": true,
-  "resource": "ibm_cos_bucket_object"
-}

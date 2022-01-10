@@ -281,28 +281,28 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	d.Set("environment_id", parts[1])
 	if result.Name != nil {
 		if err = d.Set("name", result.Name); err != nil {
-			return fmt.Errorf("error setting name: %s", err)
+			return fmt.Errorf("[ERROR] Error setting name: %s", err)
 		}
 	}
 	if result.FeatureID != nil {
 		if err = d.Set("feature_id", result.FeatureID); err != nil {
-			return fmt.Errorf("error setting feature_id: %s", err)
+			return fmt.Errorf("[ERROR] Error setting feature_id: %s", err)
 		}
 	}
 	if result.Type != nil {
 		if err = d.Set("type", result.Type); err != nil {
-			return fmt.Errorf("error setting type: %s", err)
+			return fmt.Errorf("[ERROR] Error setting type: %s", err)
 		}
 	}
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
-			return fmt.Errorf("error setting description: %s", err)
+			return fmt.Errorf("[ERROR] Error setting description: %s", err)
 		}
 
 	}
 	if result.Tags != nil {
 		if err = d.Set("tags", result.Tags); err != nil {
-			return fmt.Errorf("error setting tags: %s", err)
+			return fmt.Errorf("[ERROR] Error setting tags: %s", err)
 		}
 	}
 
@@ -313,7 +313,7 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 			segmentRules = append(segmentRules, segmentRulesItemMap)
 		}
 		if err = d.Set("segment_rules", segmentRules); err != nil {
-			return fmt.Errorf("error setting segment_rules: %s", err)
+			return fmt.Errorf("[ERROR] Error setting segment_rules: %s", err)
 		}
 	}
 	if result.Collections != nil {
@@ -323,32 +323,32 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 			collections = append(collections, collectionsItemMap)
 		}
 		if err = d.Set("collections", collections); err != nil {
-			return fmt.Errorf("error setting collections: %s", err)
+			return fmt.Errorf("[ERROR] Error setting collections: %s", err)
 		}
 	}
 	if result.SegmentExists != nil {
 		if err = d.Set("segment_exists", result.SegmentExists); err != nil {
-			return fmt.Errorf("error setting segment_exists: %s", err)
+			return fmt.Errorf("[ERROR] Error setting segment_exists: %s", err)
 		}
 	}
 	if result.CreatedTime != nil {
 		if err = d.Set("created_time", result.CreatedTime.String()); err != nil {
-			return fmt.Errorf("error setting created_time: %s", err)
+			return fmt.Errorf("[ERROR] Error setting created_time: %s", err)
 		}
 	}
 	if result.UpdatedTime != nil {
 		if err = d.Set("updated_time", result.UpdatedTime.String()); err != nil {
-			return fmt.Errorf("error setting updated_time: %s", err)
+			return fmt.Errorf("[ERROR] Error setting updated_time: %s", err)
 		}
 	}
 	if result.Href != nil {
 		if err = d.Set("href", result.Href); err != nil {
-			return fmt.Errorf("error setting href: %s", err)
+			return fmt.Errorf("[ERROR] Error setting href: %s", err)
 		}
 	}
 	if result.Enabled != nil {
 		if err = d.Set("enabled", result.Enabled); err != nil {
-			return fmt.Errorf("error setting enabled: %s", err)
+			return fmt.Errorf("[ERROR] Error setting enabled: %s", err)
 		}
 	}
 

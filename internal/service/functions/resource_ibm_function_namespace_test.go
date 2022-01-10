@@ -88,7 +88,7 @@ func testAccCheckFunctionNamespaceExists(n string, instance string) resource.Tes
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Record ID is set")
+			return fmt.Errorf("[ERROR] No Record ID is set")
 		}
 
 		ID := rs.Primary.ID

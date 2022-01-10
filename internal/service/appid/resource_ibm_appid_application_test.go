@@ -68,7 +68,7 @@ func testAccCheckIBMAppIDApplicationDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			return fmt.Errorf("error checking if AppID application (%s) has been destroyed", rs.Primary.ID)
+			return fmt.Errorf("[ERROR] Error checking if AppID application (%s) has been destroyed", rs.Primary.ID)
 		}
 	}
 
