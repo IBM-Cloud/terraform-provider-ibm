@@ -4,8 +4,8 @@ This example illustrates how to use the Cloudant database resources
 
 These types of resources are supported:
 
+* ibm_cloudant
 * ibm_cloudant_database
-* ibm_cloudant_replication
 
 ## Usage
 
@@ -20,60 +20,33 @@ $ terraform apply
 Run `terraform destroy` when you don't need these resources.
 
 
-## Cloudant replication resources
+## Cloudant instance and database
 
 ```hcl
+module "cloudant-instance" {
+  //Uncomment the following line to point the source to registry level
+  //source = "terraform-ibm-modules/cloudant/ibm//modules/instance"
+
+  source        = "./modules/instance"
+  instance_name = var.instance_name
+  plan          = var.plan
+  region        = var.region
+}
+
 module "cloudant-database" {
   //Uncomment the following line to point the source to registry level
   //source = "terraform-ibm-modules/cloudant/ibm//modules/config-database"
 
   source                        = "./modules/config-database"
-  cloudant_guid                 = var.cloudant_guid
+  instance_crn                  = module.cloudant-instance.cloudant_instance_crn
   cloudant_database_partitioned = var.is_partitioned
   db_name                       = var.db_name
-  cloudant_database_q           = var.cloudant_database_q
+  cloudant_database_shards      = var.cloudant_database_shards
 
-  depends_on = [module.cloudant-instance-dr]
+  depends_on = [module.cloudant-instance]
 }
 
-module "cloudant-replication" {
-  //Uncomment the following line to point the source to registry level
-  //source = "terraform-ibm-modules/cloudant/ibm//modules/config-replication"
-
-  source = "./modules/config-replication"
-  ######################
-  # Replication Database
-  ######################
-  cloudant_guid                 = var.cloudant_guid
-  cloudant_database_partitioned = var.is_partitioned
-  db_name                       = var.db_name
-  cloudant_database_q           = var.cloudant_database_q
-
-  #######################
-  # Replication Document
-  #######################
-  cloudant_replication_doc_id = var.cloudant_replication_doc_id
-  source_api_key              = var.source_api_key
-  target_api_key              = var.target_api_key
-  source_host                 = var.source_host
-  target_host                 = var.target_host
-  create_target               = var.create_target
-  continuous                  = var.continuous
-
-  depends_on = [module.cloudant-database-pr]
-}
 ```
-
-## CloudantV1 Data sources
-
-
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
 
 ## Requirements
 
@@ -85,7 +58,7 @@ module "cloudant-replication" {
 
 | Name | Version |
 |------|---------|
-| ibm | 1.30+ |
+| ibm | 1.38+ |
 
 ## Inputs
 
@@ -93,15 +66,10 @@ module "cloudant-replication" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | provision | Enable this to bind key to cloudant instance (true/false) | `bool` | true |
-| is_dr_provision | Would you like to provision a DR cloudant instance (true/false) | `bool` | true |
-| pri_rg_name | Enter resource group name for primary instance | `string` | true |
-| dr_rg_name | Enter resource group name for disaster recovery | `string` | true |
-| pri_region | Provisioning Region for primary instance | `string` | true |
-| dr_region | Provisioning Region for DR instance | `string` | true |
-| pri_instance_name | Name of the cloudant instance for primary | `string` | true |
-| dr_instance_name | Name of the cloudant instance for DR | `string` | true |
-| pri_resource_key | Name of the resource key of the primary instance | `string` | true |
-| dr_resource_key | Name of the resource key of the DR | `string` | true |
+| rg_name | Enter resource group name for the instance | `string` | true |
+| region | Provisioning Region for the instance | `string` | true |
+| instance_name | Name of the cloudant instance | `string` | true |
+| resource_key | Name of the resource key of the instance | `string` | true |
 | legacy_credentials | Legacy authentication method for cloudant | `bool` | false |
 | plan | plan type (standard and lite) | `string` | false |
 | service_endpoints | Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private' | `string` | false |
@@ -111,8 +79,5 @@ module "cloudant-replication" {
 | description | Description to service ID | `string` | false |
 | roles | service policy roles | `list` | false |
 | db_name | Database name | `string` | true |
-| is_partitioned | To set whether the database is partitioned | `string` | false |
-| cloudant_database_q | The number of shards in the database. Each shard is a partition of the hash value range. Default is 8, unless overridden in the `cluster config` | `number` | false |
-| cloudant_replication_doc_id | Path parameter to specify the document ID | `string` | true |
-| create_target | Creates the target database. Requires administrator privileges on target server | `bool` | false |
-| continuous | Configure the replication to be continuous | `bool` | false |
+| is_partitioned | To set whether the database is partitioned | `bool` | false |
+| cloudant_database_shards | The number of shards in the database. Each shard is a partition of the hash value range. Default set by server. | `number` | false |

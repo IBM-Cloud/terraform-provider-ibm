@@ -5,17 +5,17 @@
 
 output "cloudant_id" {
   description = "The ID of the cloudant instance"
-  value       = var.provision ? concat(ibm_resource_instance.cloudant_instance.*.id, [""])[0] : concat(data.ibm_resource_instance.cloudant.*.id, [""])[0]
+  value       = var.provision ? concat(ibm_cloudant.cloudant_instance.*.id, [""])[0] : concat(data.ibm_cloudant.cloudant.*.id, [""])[0]
 }
 
 output "cloudant_instance_name" {
   description = "The name of the cloudant instance"
-  value       = var.provision ? concat(ibm_resource_instance.cloudant_instance.*.name, [""])[0] : concat(data.ibm_resource_instance.cloudant.*.name, [""])[0]
+  value       = var.provision ? concat(ibm_cloudant.cloudant_instance.*.name, [""])[0] : concat(data.ibm_cloudant.cloudant.*.name, [""])[0]
 }
 
-output "cloudant_guid" {
-  description = "The GUID of the cloudant instance"
-  value       = var.provision ? concat(ibm_resource_instance.cloudant_instance.*.guid, [""])[0] : concat(data.ibm_resource_instance.cloudant.*.guid, [""])[0]
+output "cloudant_instance_crn" {
+  description = "The CRN of the cloudant instance"
+  value       = var.provision ? concat(ibm_cloudant.cloudant_instance.*.crn, [""])[0] : concat(data.ibm_cloudant.cloudant.*.crn, [""])[0]
 }
 
 output "cloudant_key_id" {

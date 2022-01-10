@@ -20,52 +20,31 @@ variable "provision_resource_key" {
   default     = true
 }
 
-variable "pri_region" {
-  description = "Provisioning Region for primary instance"
+variable "region" {
+  description = "Provisioning Region for the instance"
   type        = string
-  default     = "us-east"
+  default     = "us-south"
 }
 
-variable "dr_region" {
-  description = "Provisioning Region for DR instance"
-  type        = string
-  default     = "us-east"
-}
-
-variable "pri_instance_name" {
-  description = "Name of the cloudant instance for primary"
+variable "instance_name" {
+  description = "Name of the cloudant instance"
   type        = string
 }
 
-variable "dr_instance_name" {
-  description = "Name of the cloudant instance for DR"
+variable "resource_key" {
+  description = "Name of the resource key of the instance"
   type        = string
 }
 
-variable "pri_resource_key" {
-  description = "Name of the resource key of the primary instance"
+variable "rg_name" {
   type        = string
-}
-
-variable "dr_resource_key" {
-  description = "Name of the resource key of the DR"
-  type        = string
-}
-
-variable "pri_rg_name" {
-  type        = string
-  description = "Enter resource group name for primary instance"
-}
-
-variable "dr_rg_name" {
-  type        = string
-  description = "Enter resource group name for disaster recovery"
+  description = "Enter resource group name for the cloudant instance"
 }
 
 variable "legacy_credentials" {
   description = "Legacy authentication method for cloudant"
   type        = bool
-  default     = null
+  default     = false
 }
 
 variable "plan" {
@@ -129,12 +108,6 @@ variable "roles" {
 # IBMCLOUD Cloudant Database Variables
 #####################################################
 
-variable "is_dr_provision" {
-  type        = bool
-  description = "Would you like to provision a DR cloudant instance (true/false)"
-  default     = true
-}
-
 variable "db_name" {
   type        = string
   description = "Database name"
@@ -145,30 +118,8 @@ variable "is_partitioned" {
   default     = false
 }
 
-variable "cloudant_database_q" {
-  description = "The number of shards in the database. Each shard is a partition of the hash value range. Default is 8, unless overridden in the `cluster config`."
+variable "cloudant_database_shards" {
+  description = "The number of shards in the database. Each shard is a partition of the hash value range. When omitted the default is set by the server."
   type        = number
-  default     = 0
-}
-
-#####################################################
-# IBMCLOUD Cloudant Database Variables
-#####################################################
-
-variable "cloudant_replication_doc_id" {
-  description = "Path parameter to specify the document ID."
-  type        = string
-  default     = "doc_id"
-}
-
-variable "create_target" {
-  description = "Creates the target database. Requires administrator privileges on target server."
-  type        = bool
-  default     = false
-}
-
-variable "continuous" {
-  description = "Configure the replication to be continuous."
-  type        = bool
-  default     = true
+  default     = null
 }

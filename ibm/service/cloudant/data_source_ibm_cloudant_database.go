@@ -1,7 +1,7 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant
 
 import (
 	"context"
@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 )
 
-func dataSourceIbmCloudantDatabase() *schema.Resource {
+func DataSourceIBMCloudantDatabase() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmCloudantDatabaseRead,
+		ReadContext: dataSourceIBMCloudantDatabaseRead,
 
 		Schema: map[string]*schema.Schema{
 			"db": &schema.Schema{
@@ -25,33 +25,33 @@ func dataSourceIbmCloudantDatabase() *schema.Resource {
 				Required:    true,
 				Description: "Path parameter to specify the database name.",
 			},
-			"cloudant_guid": &schema.Schema{
+			"instance_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Cloudant Instance GUID.",
+				Description: "Cloudant Instance CRN.",
 			},
 			"cluster": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Schema for database cluster information.",
+				Description: "Database cluster information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"n": &schema.Schema{
+						"replicas": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Schema for the number of replicas of a database in a cluster.",
+							Description: "The number of replicas of a database in a cluster.",
 						},
-						"q": &schema.Schema{
+						"shards": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Schema for the number of shards in a database. Each shard is a partition of the hash value range.",
+							Description: "The number of shards in a database. Each shard is a partition of the hash value range.",
 						},
-						"r": &schema.Schema{
+						"read_quorum": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "Read quorum. The number of consistent copies of a document that need to be read before a successful reply.",
 						},
-						"w": &schema.Schema{
+						"write_quorum": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "Write quorum. The number of copies of a document that need to be written before a successful reply.",
@@ -73,11 +73,6 @@ func dataSourceIbmCloudantDatabase() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "An opaque string that describes the compaction state of the database.",
-			},
-			"db_name": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the database.",
 			},
 			"disk_format_version": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -102,7 +97,7 @@ func dataSourceIbmCloudantDatabase() *schema.Resource {
 			"props": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Schema for database properties.",
+				Description: "The database properties.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"partitioned": &schema.Schema{
@@ -116,23 +111,23 @@ func dataSourceIbmCloudantDatabase() *schema.Resource {
 			"sizes": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Schema for size information of content.",
+				Description: "Database size information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"active": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The active size of the content, in bytes.",
+							Description: "The active size of the data in the database, in bytes.",
 						},
 						"external": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The total uncompressed size of the content, in bytes.",
+							Description: "The total uncompressed size of the data in the database, in bytes.",
 						},
 						"file": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The total size of the content as stored on disk, in bytes.",
+							Description: "The total size of the database as stored on disk, in bytes.",
 						},
 					},
 				},
@@ -151,22 +146,20 @@ func dataSourceIbmCloudantDatabase() *schema.Resource {
 	}
 }
 
-func dataSourceIbmCloudantDatabaseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cloudantClient, err := meta.(ClientSession).CloudantV1()
+func dataSourceIBMCloudantDatabaseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceCRN := d.Get("instance_crn").(string)
+	cUrl, err := GetCloudantInstanceUrl(instanceCRN, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudantInstId := d.Get("cloudant_guid").(string)
-	cUrl, err := getCloudantInstanceUrl(cloudantInstId, meta)
+	cloudantClient, err := GetCloudantClientForUrl(cUrl, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	cloudantClient.Service.Options.URL = cUrl
 
-	getDatabaseInformationOptions := &cloudantv1.GetDatabaseInformationOptions{}
-
-	getDatabaseInformationOptions.SetDb(d.Get("db").(string))
+	dbName := d.Get("db").(string)
+	getDatabaseInformationOptions := cloudantClient.NewGetDatabaseInformationOptions(dbName)
 
 	databaseInformation, response, err := cloudantClient.GetDatabaseInformationWithContext(context, getDatabaseInformationOptions)
 	if err != nil {
@@ -174,7 +167,7 @@ func dataSourceIbmCloudantDatabaseRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("GetDatabaseInformationWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIbmCloudantDatabaseID(d))
+	d.SetId(dataSourceIBMCloudantDatabaseID(d))
 
 	if databaseInformation.Cluster != nil {
 		err = d.Set("cluster", dataSourceDatabaseInformationFlattenCluster(*databaseInformation.Cluster))
@@ -191,9 +184,6 @@ func dataSourceIbmCloudantDatabaseRead(context context.Context, d *schema.Resour
 	}
 	if databaseInformation.CompactedSeq != nil {
 		d.Set("compacted_seq", *databaseInformation.CompactedSeq)
-	}
-	if databaseInformation.DbName != nil {
-		d.Set("db_name", *databaseInformation.DbName)
 	}
 	if databaseInformation.DiskFormatVersion != nil {
 		d.Set("disk_format_version", *databaseInformation.DiskFormatVersion)
@@ -223,8 +213,8 @@ func dataSourceIbmCloudantDatabaseRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-// dataSourceIbmCloudantDatabaseID returns a reasonable ID for the list.
-func dataSourceIbmCloudantDatabaseID(d *schema.ResourceData) string {
+// dataSourceIBMCloudantDatabaseID returns a reasonable ID for the list.
+func dataSourceIBMCloudantDatabaseID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
@@ -240,16 +230,16 @@ func dataSourceDatabaseInformationClusterToMap(clusterItem cloudantv1.DatabaseIn
 	clusterMap = map[string]interface{}{}
 
 	if clusterItem.N != nil {
-		clusterMap["n"] = *clusterItem.N
+		clusterMap["replicas"] = *clusterItem.N
 	}
 	if clusterItem.Q != nil {
-		clusterMap["q"] = *clusterItem.Q
+		clusterMap["shards"] = *clusterItem.Q
 	}
 	if clusterItem.R != nil {
-		clusterMap["r"] = *clusterItem.R
+		clusterMap["read_quorum"] = *clusterItem.R
 	}
 	if clusterItem.W != nil {
-		clusterMap["w"] = *clusterItem.W
+		clusterMap["write_quorum"] = *clusterItem.W
 	}
 
 	return clusterMap
@@ -268,6 +258,8 @@ func dataSourceDatabaseInformationPropsToMap(propsItem cloudantv1.DatabaseInform
 
 	if propsItem.Partitioned != nil {
 		propsMap["partitioned"] = *propsItem.Partitioned
+	} else {
+		propsMap["partitioned"] = false
 	}
 
 	return propsMap

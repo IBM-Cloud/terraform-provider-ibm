@@ -1,33 +1,36 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package cloudant
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
-func resourceIbmCloudantDatabase() *schema.Resource {
+func ResourceIBMCloudantDatabase() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmCloudantDatabaseCreate,
-		ReadContext:   resourceIbmCloudantDatabaseRead,
-		DeleteContext: resourceIbmCloudantDatabaseDelete,
+		CreateContext: resourceIBMCloudantDatabaseCreate,
+		ReadContext:   resourceIBMCloudantDatabaseRead,
+		DeleteContext: resourceIBMCloudantDatabaseDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"cloudant_guid": &schema.Schema{
+			"instance_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Cloudant Instance ID.",
+				Description: "Cloudant Instance CRN.",
 			},
 			"db": &schema.Schema{
 				Type:        schema.TypeString,
@@ -42,38 +45,36 @@ func resourceIbmCloudantDatabase() *schema.Resource {
 				Computed:    true,
 				Description: "Query parameter to specify whether to enable database partitions when creating a database.",
 			},
-			"q": &schema.Schema{
+			"shards": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "The number of shards in the database. Each shard is a partition of the hash value range. Default is 8, unless overridden in the `cluster config`.",
+				Description: "The number of shards in the database. Each shard is a partition of the hash value range. You are encouraged to talk to support about appropriate values before changing this.",
 			},
 		},
 	}
 }
 
-func resourceIbmCloudantDatabaseCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cloudantClient, err := meta.(ClientSession).CloudantV1()
+func resourceIBMCloudantDatabaseCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceCRN := d.Get("instance_crn").(string)
+	cUrl, err := GetCloudantInstanceUrl(instanceCRN, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceId := d.Get("cloudant_guid").(string)
-	cUrl, err := getCloudantInstanceUrl(instanceId, meta)
+	cloudantClient, err := GetCloudantClientForUrl(cUrl, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	cloudantClient.Service.Options.URL = cUrl
 
 	dbName := d.Get("db").(string)
-	putDatabaseOptions := &cloudantv1.PutDatabaseOptions{}
-	putDatabaseOptions.SetDb(dbName)
+	putDatabaseOptions := cloudantClient.NewPutDatabaseOptions(dbName)
 	if _, ok := d.GetOk("partitioned"); ok {
 		putDatabaseOptions.SetPartitioned(d.Get("partitioned").(bool))
 	}
-	if _, ok := d.GetOk("q"); ok {
-		putDatabaseOptions.SetQ(int64(d.Get("q").(int)))
+	if _, ok := d.GetOk("shards"); ok {
+		putDatabaseOptions.SetQ(int64(d.Get("shards").(int)))
 	}
 
 	_, response, err := cloudantClient.PutDatabaseWithContext(context, putDatabaseOptions)
@@ -82,30 +83,29 @@ func resourceIbmCloudantDatabaseCreate(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("PutDatabaseWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", instanceId, dbName))
+	d.SetId(fmt.Sprintf("%s/%s", instanceCRN, dbName))
 
-	return resourceIbmCloudantDatabaseRead(context, d, meta)
+	return resourceIBMCloudantDatabaseRead(context, d, meta)
 }
 
-func resourceIbmCloudantDatabaseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cloudantClient, err := meta.(ClientSession).CloudantV1()
+func resourceIBMCloudantDatabaseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	instanceCRN, dbName := strings.Join(parts[:len(parts)-1], "/"), parts[len(parts)-1]
+	cUrl, err := GetCloudantInstanceUrl(instanceCRN, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cUrl, err := getCloudantInstanceUrl(parts[0], meta)
+	cloudantClient, err := GetCloudantClientForUrl(cUrl, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	cloudantClient.Service.Options.URL = cUrl
 
-	getDatabaseInformationOptions := &cloudantv1.GetDatabaseInformationOptions{}
-	getDatabaseInformationOptions.SetDb(parts[1])
+	getDatabaseInformationOptions := cloudantClient.NewGetDatabaseInformationOptions(dbName)
 
 	databaseInformation, response, err := cloudantClient.GetDatabaseInformationWithContext(context, getDatabaseInformationOptions)
 	if err != nil {
@@ -117,42 +117,41 @@ func resourceIbmCloudantDatabaseRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("GetDatabaseInformationWithContext failed %s\n%s", err, response))
 	}
 
-	d.Set("cloudant_guid", parts[0])
+	d.Set("instance_crn", instanceCRN)
 
 	if err = d.Set("db", *databaseInformation.DbName); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting db: %s", err))
 	}
 
-	if _, ok := d.GetOk("partitioned"); ok {
-		d.Set("partitioned", true)
+	if err = d.Set("partitioned", databaseInformation.Props.Partitioned != nil); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting partitioned: %s", err))
 	}
 
-	if qData, ok := d.GetOk("q"); ok {
-		d.Set("q", qData.(int))
+	if err = d.Set("shards", int(*databaseInformation.Cluster.Q)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting shards: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIbmCloudantDatabaseDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cloudantClient, err := meta.(ClientSession).CloudantV1()
+func resourceIBMCloudantDatabaseDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	parts, err := idParts(d.Id())
+	instanceCRN, dbName := strings.Join(parts[:len(parts)-1], "/"), parts[len(parts)-1]
+	cUrl, err := GetCloudantInstanceUrl(instanceCRN, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cUrl, err := getCloudantInstanceUrl(parts[0], meta)
+	cloudantClient, err := GetCloudantClientForUrl(cUrl, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	cloudantClient.Service.Options.URL = cUrl
 
-	deleteDatabaseOptions := &cloudantv1.DeleteDatabaseOptions{}
-	deleteDatabaseOptions.SetDb(parts[1])
+	deleteDatabaseOptions := cloudantClient.NewDeleteDatabaseOptions(dbName)
 
 	_, response, err := cloudantClient.DeleteDatabaseWithContext(context, deleteDatabaseOptions)
 	if err != nil {
@@ -165,14 +164,14 @@ func resourceIbmCloudantDatabaseDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func getCloudantInstanceUrl(instanceId string, meta interface{}) (string, error) {
-	rsConClient, err := meta.(ClientSession).ResourceControllerV2API()
+func GetCloudantInstanceUrl(instanceCRN string, meta interface{}) (string, error) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return "", err
 	}
 
 	resourceInstanceGet := rc.GetResourceInstanceOptions{
-		ID: ptrToString(instanceId),
+		ID: flex.PtrToString(instanceCRN),
 	}
 
 	instance, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
@@ -181,10 +180,10 @@ func getCloudantInstanceUrl(instanceId string, meta interface{}) (string, error)
 	}
 
 	if instance.Extensions != nil {
-		instanceExtensionMap := Flatten(instance.Extensions)
+		instanceExtensionMap := flex.Flatten(instance.Extensions)
 		if instanceExtensionMap != nil {
 			cloudantInstanceUrl := "https://" + instanceExtensionMap["endpoints.public"]
-			cloudantInstanceUrl = envFallBack([]string{"IBMCLOUD_CLOUDANT_API_ENDPOINT"}, cloudantInstanceUrl)
+			cloudantInstanceUrl = conns.EnvFallBack([]string{"IBMCLOUD_CLOUDANT_API_ENDPOINT"}, cloudantInstanceUrl)
 			return cloudantInstanceUrl, nil
 		}
 	}

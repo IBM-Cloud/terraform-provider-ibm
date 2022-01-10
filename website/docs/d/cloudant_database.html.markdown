@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : cloudant_database"
 description: |-
   Get information about cloudant_database
-subcategory: "Cloudant"
+subcategory: "Cloudant Databases"
 ---
 
 # ibm\_cloudant_database
@@ -14,8 +14,8 @@ Provides a read-only data source for cloudant_database. You can then reference t
 
 ```hcl
 data "ibm_cloudant_database" "cloudant_database" {
-	cloudant_guid = var.cloudant_guid
-  	db            = var.db_name
+	db            = var.db_name
+	instance_crn  = ibm_cloudant.cloudant.crn
 }
 ```
 
@@ -23,19 +23,18 @@ data "ibm_cloudant_database" "cloudant_database" {
 
 The following arguments are supported:
 
-* `cloudant_guid` - (Required, string) Path parameter to specify the cloudant instance GUID.
 * `db` - (Required, string) Path parameter to specify the database name.
+* `instance_crn` - (Required, string) Path parameter to specify the cloudant instance CRN.
 
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The unique identifier of the cloudant_database.
 * `cluster` - Schema for database cluster information. Nested `cluster` blocks have the following structure:
-	* `n` - Schema for the number of replicas of a database in a cluster.
-	* `q` - Schema for the number of shards in a database. Each shard is a partition of the hash value range.
-	* `r` - Read quorum. The number of consistent copies of a document that need to be read before a successful reply.
-	* `w` - Write quorum. The number of copies of a document that need to be written before a successful reply.
+	* `read_quorum` - Read quorum. The number of consistent copies of a document that need to be read before a successful reply.
+	* `replicas` - Schema for the number of replicas of a database in a cluster.
+	* `shards` - Schema for the number of shards in a database. Each shard is a partition of the hash value range.
+	* `write_quorum` - Write quorum. The number of copies of a document that need to be written before a successful reply.
 
 * `committed_update_seq` - An opaque string that describes the committed state of the database.
 
@@ -52,6 +51,8 @@ In addition to all arguments above, the following attributes are exported:
 * `doc_del_count` - Number of deleted documents.
 
 * `engine` - The engine used for the database.
+
+* `id` - The unique identifier of the cloudant_database.
 
 * `props` - Schema for database properties. Nested `props` blocks have the following structure:
 	* `partitioned` - The value is `true` for a partitioned database.

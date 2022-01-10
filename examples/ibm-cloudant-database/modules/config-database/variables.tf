@@ -1,7 +1,7 @@
 
 
-variable "cloudant_guid" {
-  description = "The cloudant instance GUID"
+variable "cloudant_instance_crn" {
+  description = "The cloudant instance CRN"
   type        = string
 }
 
@@ -16,8 +16,8 @@ variable "cloudant_database_partitioned" {
   default     = false
 }
 
-variable "cloudant_database_q" {
-  description = "The number of shards in the database. Each shard is a partition of the hash value range. Default is 8, unless overridden in the `cluster config`."
+variable "cloudant_database_shards" {
+  description = "The number of shards in the database. Each shard is a partition of the hash value range. When omitted the default is set by the server."
   type        = number
-  default     = 0
+  default     = null
 }

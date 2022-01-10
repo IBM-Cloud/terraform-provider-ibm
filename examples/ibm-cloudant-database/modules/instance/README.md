@@ -1,6 +1,6 @@
 # IBM Cloud Cloudant - Terraform Module
 
-This is a collection of modules that make it easier to provision cloudant instance and assign service prolicy , create primary & disaster recovery database:
+This is a collection of modules that make it easier to provision cloudant instance and assign service prolicy, create a database:
 * [instance](modules/instance)
 * [service-policy](modules/service-policy)
 * [database](modules/database)
@@ -11,7 +11,7 @@ This module is meant for use with Terraform 0.13 (and higher).
 
 ## Usage
 
-Full examples are in the [examples](./examples/) folder, but basic usage is as follows for creation of logdna instance & key:
+Full examples are in the [examples](./examples/) folder, but basic usage is as follows for creation of a Cloudant instance & key:
 
 ```hcl
 provider "ibm" {
@@ -34,7 +34,7 @@ module "cloudant-instance" {
   plan                    = var.plan
   region                  = var.region
   service_endpoints       = var.service_endpoints
-  parameters              = local.parameters
+  legacy_credentials      = var.legacy_credentials
   tags                    = var.tags
   create_timeout          = var.create_timeout
   update_timeout          = var.update_timeout

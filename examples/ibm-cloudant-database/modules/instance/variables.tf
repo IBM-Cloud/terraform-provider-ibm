@@ -71,10 +71,10 @@ variable "tags" {
   default     = null
 }
 
-variable "parameters" {
-  type        = map(string)
-  description = "Arbitrary parameters to pass"
-  default     = null
+variable "legacy_credentials" {
+  description = "Legacy authentication method for cloudant"
+  type        = bool
+  default     = false
 }
 
 variable "role" {

@@ -2,17 +2,16 @@
 # Cloudant Instance
 # Copyright 2021 IBM
 #####################################################
-resource "ibm_resource_instance" "cloudant_instance" {
+resource "ibm_cloudant" "cloudant_instance" {
   count = var.provision ? 1 : 0
 
-  name              = var.instance_name
-  service           = "cloudantnosqldb"
-  plan              = var.plan
-  location          = var.region
-  resource_group_id = var.resource_group_id
-  parameters        = (var.parameters != null ? var.parameters : null)
-  tags              = (var.tags != null ? var.tags : [])
-  service_endpoints = (var.service_endpoints != "" ? var.service_endpoints : null)
+  name               = var.instance_name
+  plan               = var.plan
+  location           = var.region
+  resource_group_id  = var.resource_group_id
+  legacy_credentials = var.legacy_credentials
+  tags               = (var.tags != null ? var.tags : [])
+  service_endpoints  = (var.service_endpoints != "" ? var.service_endpoints : null)
 
 
   //User can increase timeouts
@@ -23,13 +22,12 @@ resource "ibm_resource_instance" "cloudant_instance" {
   }
 }
 
-data "ibm_resource_instance" "cloudant" {
+data "ibm_cloudant" "cloudant" {
   count = var.provision ? 0 : 1
 
   name              = var.instance_name
   location          = var.region
   resource_group_id = var.resource_group_id
-  service           = "cloudantnosqldb"
 }
 
 
@@ -39,7 +37,7 @@ resource "ibm_resource_key" "resource_key" {
 
   name                 = var.resource_key_name
   role                 = var.role
-  resource_instance_id = var.provision == true ? ibm_resource_instance.cloudant_instance.0.id : data.ibm_resource_instance.cloudant.0.id
+  resource_instance_id = var.provision == true ? ibm_cloudant.cloudant_instance.0.id : data.ibm_cloudant.cloudant.0.id
   tags                 = (var.resource_key_tags != null ? var.resource_key_tags : [])
 }
 
@@ -47,7 +45,7 @@ data "ibm_resource_key" "cloudant_resource_key" {
   count = var.provision_resource_key ? 0 : 1
 
   name                 = var.resource_key_name
-  resource_instance_id = var.provision == true ? ibm_resource_instance.cloudant_instance.0.id : data.ibm_resource_instance.cloudant.0.id
+  resource_instance_id = var.provision == true ? ibm_cloudant.cloudant_instance.0.id : data.ibm_cloudant.cloudant.0.id
 }
 
 
@@ -63,7 +61,7 @@ resource "ibm_iam_service_id" "serviceID" {
   description = (var.description != null ? var.description : null)
 }
 
-data "ibm_iam_service_id" "ds_serviceID" {
+data "ibm_iam_service_id" "data_serviceID" {
   count = var.service_policy_provision ? 0 : 1
   name  = var.service_name
 }
@@ -74,6 +72,6 @@ resource "ibm_iam_service_policy" "policy" {
 
   resources {
     service              = "cloudantnosqldb"
-    resource_instance_id = var.provision == true ? ibm_resource_instance.cloudant_instance.0.id : data.ibm_resource_instance.cloudant.0.id
+    resource_instance_id = var.provision == true ? ibm_cloudant.cloudant_instance.0.id : data.ibm_cloudant.cloudant.0.id
   }
 }

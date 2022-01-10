@@ -377,6 +377,15 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 		return nil, fmt.Errorf("[ERROR] Missing endpoints.public in extensions")
 	}
 
+	return GetCloudantClientForUrl(endpoint, meta)
+}
+
+func GetCloudantClientForUrl(endpoint string, meta interface{}) (*cloudantv1.CloudantV1, error) {
+	session, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return nil, err
+	}
+
 	var authenticator core.Authenticator
 	token := session.Config.IAMAccessToken
 
