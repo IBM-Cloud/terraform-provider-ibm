@@ -12,18 +12,84 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 func dataSourceIBMSccPostureScopes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureScopesRead,
+		ReadContext: dataSourceIBMSccPostureListScopesRead,
 
 		Schema: map[string]*schema.Schema{
-			"scope_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "An auto-generated unique identifier for the scope.",
+			"offset": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The offset of the page.",
+			},
+			"limit": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of scopes displayed per page.",
+			},
+			"total_count": &schema.Schema{
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The total number of scopes. This value is 0 if no scopes are available and below fields will not be available in that case.",
+			},
+			"first": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The URL of a page.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of a page.",
+						},
+					},
+				},
+			},
+			"last": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The URL of a page.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of a page.",
+						},
+					},
+				},
+			},
+			"previous": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The URL of a page.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of a page.",
+						},
+					},
+				},
+			},
+			"next": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The URL of a page.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of a page.",
+						},
+					},
+				},
 			},
 			"scopes": &schema.Schema{
 				Type:        schema.TypeList,
@@ -46,10 +112,15 @@ func dataSourceIBMSccPostureScopes() *schema.Resource {
 							Computed:    true,
 							Description: "The user who most recently modified the scope.",
 						},
-						"scope_id": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An auto-generated unique identifier for the scope.",
+						},
+						"uuid": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Stores the value of scope_uuid .",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -61,69 +132,186 @@ func dataSourceIBMSccPostureScopes() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether scope is enabled/disabled.",
 						},
-						"environment_type": &schema.Schema{
+						"credential_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The environment that the scope is targeted to.",
 						},
-						"created_time": &schema.Schema{
+						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the scope was created in UTC.",
 						},
-						"modified_time": &schema.Schema{
+						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the scope was last modified in UTC.",
 						},
-						"last_scan_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The last type of scan that was run on the scope.",
-						},
-						"last_scan_type_description": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "A description of the last scan type.",
-						},
-						"last_scan_status_updated_time": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The last time that a scan status for a scope was updated in UTC.",
-						},
-						"collectors_id": &schema.Schema{
+						"collectors": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The unique IDs of the collectors that are attached to the scope.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"scans": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "A list of the scans that have been run on the scope.",
+							Description: "Stores the value of collectors .Will be displayed only when value exists.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"scan_id": &schema.Schema{
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "An auto-generated unique identifier for the scan.",
+										Description: "The id of the collector.",
 									},
-									"discover_id": &schema.Schema{
+									"display_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "An auto-generated unique identifier for discovery.",
+										Description: "The user-friendly name of the collector.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the collector.",
+									},
+									"public_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The public key of the collector.Will be used for ssl communciation between collector and orchestrator .This will be populated when collector is installed.",
+									},
+									"last_heartbeat": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Stores the heartbeat time of a controller . This value exists when collector is installed and running.",
 									},
 									"status": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The status of the collector as it completes a scan.",
+										Description: "The status of collector.",
 									},
-									"status_message": &schema.Schema{
+									"collector_version": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The current status of the collector.",
+										Description: "The collector version. This field is populated when collector is installed.",
+									},
+									"image_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The image version of the collector. This field is populated when collector is installed. \".",
+									},
+									"description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The description of the collector.",
+									},
+									"created_by": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The id of the user that created the collector.",
+									},
+									"created_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ISO Date/Time the collector was created.",
+									},
+									"updated_by": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The id of the user that modified the collector.",
+									},
+									"updated_at": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ISO Date/Time the collector was modified.",
+									},
+									"enabled": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Identifies whether the collector is enabled or not(deleted).",
+									},
+									"registration_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The registration code of the collector.This is will be used for initial authentication during installation of collector.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of the collector.",
+									},
+									"credential_public_key": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The credential public key.",
+									},
+									"failure_count": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The number of times the collector has failed.",
+									},
+									"approved_local_gateway_ip": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The approved local gateway ip of the collector. This field will be populated only when collector is installed.",
+									},
+									"approved_internet_gateway_ip": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The approved internet gateway ip of the collector. This field will be populated only when collector is installed.",
+									},
+									"last_failed_local_gateway_ip": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The failed local gateway ip. This field will be populated only when collector is installed.",
+									},
+									"reset_reason": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The reason for the collector reset .User resets the collector with a reason for reset. The reason entered by the user is saved in this field .",
+									},
+									"hostname": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The collector host name. This field will be populated when collector is installed.This will have fully qualified domain name.",
+									},
+									"install_path": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The installation path of the collector. This field will be populated when collector is installed.The value will be folder path.",
+									},
+									"use_private_endpoint": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Whether the collector should use a public or private endpoint. This value is generated based on is_public field value during collector creation. If is_public is set to true, this value will be false.",
+									},
+									"managed_by": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The entity that manages the collector.",
+									},
+									"trial_expiry": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The trial expiry. This holds the expiry date of registration_code. This field will be populated when collector is installed.",
+									},
+									"last_failed_internet_gateway_ip": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The failed internet gateway ip of the collector.",
+									},
+									"status_description": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The collector status.",
+									},
+									"reset_time": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ISO Date/Time of the collector reset. This value will be populated when a collector is reset. The data-time when the reset event is occured is captured in this field.",
+									},
+									"is_public": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Determines whether the collector endpoint is accessible on a public network.If set to `true`, the collector connects to resources in your account over a public network. If set to `false`, the collector connects to resources by using a private IP that is accessible only through the IBM Cloud private network.",
+									},
+									"is_ubi_image": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Determines whether the collector has a Ubi image.",
 									},
 								},
 							},
@@ -135,49 +323,70 @@ func dataSourceIBMSccPostureScopes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMSccPostureScopesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
+func dataSourceIBMSccPostureListScopesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listScopesOptions := &posturemanagementv1.ListScopesOptions{}
+	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
 
-	scopesList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
+	accountID := userDetails.userAccount
+	listScopesOptions.SetAccountID(accountID)
+
+	finalList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListScopesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListScopesWithContext failed %s\n%s", err, response))
 	}
 
-	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchScopes []posturemanagementv1.ScopeItem
-	var scopeID string
-	var suppliedFilter bool
+	scopeList := finalList
 
-	if v, ok := d.GetOk("scope_id"); ok {
-		scopeID = v.(string)
-		suppliedFilter = true
-		for _, data := range scopesList.Scopes {
-			if *data.ScopeID == scopeID {
-				matchScopes = append(matchScopes, data)
-			}
-		}
-	} else {
-		matchScopes = scopesList.Scopes
+	d.SetId(dataSourceIBMSccPostureListScopesID(d))
+	if err = d.Set("offset", intValue(scopeList.Offset)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting offset: %s", err))
 	}
-	scopesList.Scopes = matchScopes
-
-	if suppliedFilter {
-		if len(scopesList.Scopes) == 0 {
-			return diag.FromErr(fmt.Errorf("no Scopes found with scopeID %s", scopeID))
-		}
-		d.SetId(scopeID)
-	} else {
-		d.SetId(dataSourceIBMSccPostureScopesID(d))
+	if err = d.Set("limit", intValue(scopeList.Limit)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+	}
+	if err = d.Set("total_count", intValue(scopeList.TotalCount)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
-	if scopesList.Scopes != nil {
-		err = d.Set("scopes", dataSourceScopesListFlattenScopes(scopesList.Scopes))
+	if scopeList.First != nil {
+		err = d.Set("first", dataSourceScopeListFlattenFirst(*scopeList.First))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+		}
+	}
+
+	if scopeList.Last != nil {
+		err = d.Set("last", dataSourceScopeListFlattenLast(*scopeList.Last))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting last %s", err))
+		}
+	}
+
+	if scopeList.Previous != nil {
+		err = d.Set("previous", dataSourceScopeListFlattenPrevious(*scopeList.Previous))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting previous %s", err))
+		}
+	}
+
+	if scopeList.Next != nil {
+		err = d.Set("next", dataSourceScopeListFlattenNext(*scopeList.Next))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+		}
+	}
+
+	if scopeList.Scopes != nil {
+		err = d.Set("scopes", dataSourceScopeListFlattenScopes(scopeList.Scopes))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting scopes %s", err))
 		}
@@ -186,20 +395,92 @@ func dataSourceIBMSccPostureScopesRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-// dataSourceIBMSccPostureScopesID returns a reasonable ID for the list.
-func dataSourceIBMSccPostureScopesID(d *schema.ResourceData) string {
+// dataSourceIBMListScopesID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureListScopesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceScopesListFlattenScopes(result []posturemanagementv1.ScopeItem) (scopes []map[string]interface{}) {
+func dataSourceScopeListFlattenFirst(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceScopeListFirstToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceScopeListFirstToMap(firstItem posturemanagementv2.PageLink) (firstMap map[string]interface{}) {
+	firstMap = map[string]interface{}{}
+
+	if firstItem.Href != nil {
+		firstMap["href"] = firstItem.Href
+	}
+
+	return firstMap
+}
+
+func dataSourceScopeListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceScopeListLastToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceScopeListLastToMap(lastItem posturemanagementv2.PageLink) (lastMap map[string]interface{}) {
+	lastMap = map[string]interface{}{}
+
+	if lastItem.Href != nil {
+		lastMap["href"] = lastItem.Href
+	}
+
+	return lastMap
+}
+
+func dataSourceScopeListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceScopeListPreviousToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceScopeListPreviousToMap(previousItem posturemanagementv2.PageLink) (previousMap map[string]interface{}) {
+	previousMap = map[string]interface{}{}
+
+	if previousItem.Href != nil {
+		previousMap["href"] = previousItem.Href
+	}
+
+	return previousMap
+}
+
+func dataSourceScopeListFlattenNext(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceScopeListNextToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceScopeListNextToMap(nextItem posturemanagementv2.PageLink) (nextMap map[string]interface{}) {
+	nextMap = map[string]interface{}{}
+
+	if nextItem.Href != nil {
+		nextMap["href"] = nextItem.Href
+	}
+
+	return nextMap
+}
+
+func dataSourceScopeListFlattenScopes(result []posturemanagementv2.ScopeItem) (scopes []map[string]interface{}) {
 	for _, scopesItem := range result {
-		scopes = append(scopes, dataSourceScopesListScopesToMap(scopesItem))
+		scopes = append(scopes, dataSourceScopeListScopesToMap(scopesItem))
 	}
 
 	return scopes
 }
 
-func dataSourceScopesListScopesToMap(scopesItem posturemanagementv1.ScopeItem) (scopesMap map[string]interface{}) {
+func dataSourceScopeListScopesToMap(scopesItem posturemanagementv2.ScopeItem) (scopesMap map[string]interface{}) {
 	scopesMap = map[string]interface{}{}
 
 	if scopesItem.Description != nil {
@@ -211,8 +492,11 @@ func dataSourceScopesListScopesToMap(scopesItem posturemanagementv1.ScopeItem) (
 	if scopesItem.ModifiedBy != nil {
 		scopesMap["modified_by"] = scopesItem.ModifiedBy
 	}
-	if scopesItem.ScopeID != nil {
-		scopesMap["scope_id"] = scopesItem.ScopeID
+	if scopesItem.ID != nil {
+		scopesMap["id"] = scopesItem.ID
+	}
+	if scopesItem.UUID != nil {
+		scopesMap["uuid"] = scopesItem.UUID
 	}
 	if scopesItem.Name != nil {
 		scopesMap["name"] = scopesItem.Name
@@ -220,53 +504,125 @@ func dataSourceScopesListScopesToMap(scopesItem posturemanagementv1.ScopeItem) (
 	if scopesItem.Enabled != nil {
 		scopesMap["enabled"] = scopesItem.Enabled
 	}
-	if scopesItem.EnvironmentType != nil {
-		scopesMap["environment_type"] = scopesItem.EnvironmentType
+	if scopesItem.CredentialType != nil {
+		scopesMap["credential_type"] = scopesItem.CredentialType
 	}
-	if scopesItem.CreatedTime != nil {
-		scopesMap["created_time"] = scopesItem.CreatedTime.String()
+	if scopesItem.CreatedAt != nil {
+		scopesMap["created_at"] = scopesItem.CreatedAt.String()
 	}
-	if scopesItem.ModifiedTime != nil {
-		scopesMap["modified_time"] = scopesItem.ModifiedTime.String()
+	if scopesItem.UpdatedAt != nil {
+		scopesMap["updated_at"] = scopesItem.UpdatedAt.String()
 	}
-	if scopesItem.LastScanType != nil {
-		scopesMap["last_scan_type"] = scopesItem.LastScanType
-	}
-	if scopesItem.LastScanTypeDescription != nil {
-		scopesMap["last_scan_type_description"] = scopesItem.LastScanTypeDescription
-	}
-	if scopesItem.LastScanStatusUpdatedTime != nil {
-		scopesMap["last_scan_status_updated_time"] = scopesItem.LastScanStatusUpdatedTime.String()
-	}
-	if scopesItem.CollectorsID != nil {
-		scopesMap["collectors_id"] = scopesItem.CollectorsID
-	}
-	if scopesItem.Scans != nil {
-		scansList := []map[string]interface{}{}
-		for _, scansItem := range scopesItem.Scans {
-			scansList = append(scansList, dataSourceScopesListScopesScansToMap(scansItem))
+	if scopesItem.Collectors != nil {
+		collectorsList := []map[string]interface{}{}
+		for _, collectorsItem := range scopesItem.Collectors {
+			collectorsList = append(collectorsList, dataSourceScopeListScopesCollectorsToMap(collectorsItem))
 		}
-		scopesMap["scans"] = scansList
+		scopesMap["collectors"] = collectorsList
 	}
 
 	return scopesMap
 }
 
-func dataSourceScopesListScopesScansToMap(scansItem posturemanagementv1.Scan) (scansMap map[string]interface{}) {
-	scansMap = map[string]interface{}{}
+func dataSourceScopeListScopesCollectorsToMap(collectorsItem posturemanagementv2.Collector) (collectorsMap map[string]interface{}) {
+	collectorsMap = map[string]interface{}{}
 
-	if scansItem.ScanID != nil {
-		scansMap["scan_id"] = scansItem.ScanID
+	if collectorsItem.ID != nil {
+		collectorsMap["id"] = collectorsItem.ID
 	}
-	if scansItem.DiscoverID != nil {
-		scansMap["discover_id"] = scansItem.DiscoverID
+	if collectorsItem.DisplayName != nil {
+		collectorsMap["display_name"] = collectorsItem.DisplayName
 	}
-	if scansItem.Status != nil {
-		scansMap["status"] = scansItem.Status
+	if collectorsItem.Name != nil {
+		collectorsMap["name"] = collectorsItem.Name
 	}
-	if scansItem.StatusMessage != nil {
-		scansMap["status_message"] = scansItem.StatusMessage
+	if collectorsItem.PublicKey != nil {
+		collectorsMap["public_key"] = collectorsItem.PublicKey
+	}
+	if collectorsItem.LastHeartbeat != nil {
+		collectorsMap["last_heartbeat"] = collectorsItem.LastHeartbeat.String()
+	}
+	if collectorsItem.Status != nil {
+		collectorsMap["status"] = collectorsItem.Status
+	}
+	if collectorsItem.CollectorVersion != nil {
+		collectorsMap["collector_version"] = collectorsItem.CollectorVersion
+	}
+	if collectorsItem.ImageVersion != nil {
+		collectorsMap["image_version"] = collectorsItem.ImageVersion
+	}
+	if collectorsItem.Description != nil {
+		collectorsMap["description"] = collectorsItem.Description
+	}
+	if collectorsItem.CreatedBy != nil {
+		collectorsMap["created_by"] = collectorsItem.CreatedBy
+	}
+	if collectorsItem.CreatedAt != nil {
+		collectorsMap["created_at"] = collectorsItem.CreatedAt.String()
+	}
+	if collectorsItem.UpdatedBy != nil {
+		collectorsMap["updated_by"] = collectorsItem.UpdatedBy
+	}
+	if collectorsItem.UpdatedAt != nil {
+		collectorsMap["updated_at"] = collectorsItem.UpdatedAt.String()
+	}
+	if collectorsItem.Enabled != nil {
+		collectorsMap["enabled"] = collectorsItem.Enabled
+	}
+	if collectorsItem.RegistrationCode != nil {
+		collectorsMap["registration_code"] = collectorsItem.RegistrationCode
+	}
+	if collectorsItem.Type != nil {
+		collectorsMap["type"] = collectorsItem.Type
+	}
+	if collectorsItem.CredentialPublicKey != nil {
+		collectorsMap["credential_public_key"] = collectorsItem.CredentialPublicKey
+	}
+	if collectorsItem.FailureCount != nil {
+		collectorsMap["failure_count"] = collectorsItem.FailureCount
+	}
+	if collectorsItem.ApprovedLocalGatewayIP != nil {
+		collectorsMap["approved_local_gateway_ip"] = collectorsItem.ApprovedLocalGatewayIP
+	}
+	if collectorsItem.ApprovedInternetGatewayIP != nil {
+		collectorsMap["approved_internet_gateway_ip"] = collectorsItem.ApprovedInternetGatewayIP
+	}
+	if collectorsItem.LastFailedLocalGatewayIP != nil {
+		collectorsMap["last_failed_local_gateway_ip"] = collectorsItem.LastFailedLocalGatewayIP
+	}
+	if collectorsItem.ResetReason != nil {
+		collectorsMap["reset_reason"] = collectorsItem.ResetReason
+	}
+	if collectorsItem.Hostname != nil {
+		collectorsMap["hostname"] = collectorsItem.Hostname
+	}
+	if collectorsItem.InstallPath != nil {
+		collectorsMap["install_path"] = collectorsItem.InstallPath
+	}
+	if collectorsItem.UsePrivateEndpoint != nil {
+		collectorsMap["use_private_endpoint"] = collectorsItem.UsePrivateEndpoint
+	}
+	if collectorsItem.ManagedBy != nil {
+		collectorsMap["managed_by"] = collectorsItem.ManagedBy
+	}
+	if collectorsItem.TrialExpiry != nil {
+		collectorsMap["trial_expiry"] = collectorsItem.TrialExpiry.String()
+	}
+	if collectorsItem.LastFailedInternetGatewayIP != nil {
+		collectorsMap["last_failed_internet_gateway_ip"] = collectorsItem.LastFailedInternetGatewayIP
+	}
+	if collectorsItem.StatusDescription != nil {
+		collectorsMap["status_description"] = collectorsItem.StatusDescription
+	}
+	if collectorsItem.ResetTime != nil {
+		collectorsMap["reset_time"] = collectorsItem.ResetTime.String()
+	}
+	if collectorsItem.IsPublic != nil {
+		collectorsMap["is_public"] = collectorsItem.IsPublic
+	}
+	if collectorsItem.IsUbiImage != nil {
+		collectorsMap["is_ubi_image"] = collectorsItem.IsUbiImage
 	}
 
-	return scansMap
+	return collectorsMap
 }

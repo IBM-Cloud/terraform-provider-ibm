@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
@@ -24,31 +24,21 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 		ReadContext: dataSourceIBMSccPostureScanSummariesRead,
 
 		Schema: map[string]*schema.Schema{
-			"profile_id": &schema.Schema{
+			"report_setting_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.",
-			},
-			"scope_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The scope ID. This can be obtained from the Security and Compliance Center UI by clicking on the scope name. The URL contains the ID.",
-			},
-			"scan_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the scan.",
+				Description: "The report setting ID. This can be obtained from the /validations/latest_scans API call.",
 			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "he URL of the first scan summary.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the first scan summary.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -56,13 +46,13 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 			"last": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the last scan summary.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the last scan summary.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -70,13 +60,13 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 			"previous": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the previous scan summary.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the previous scan summary.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -87,12 +77,12 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 				Description: "Summaries.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"scan_id": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the scan.",
 						},
-						"scan_name": &schema.Schema{
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.",
@@ -100,7 +90,7 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 						"scope_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the scan.",
+							Description: "The ID of the scope.",
 						},
 						"scope_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -127,23 +117,23 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the collector as it completes a scan.",
 						},
-						"profile": &schema.Schema{
+						"profiles": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The result of a profile.",
+							Description: "The list of profiles.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"profile_id": &schema.Schema{
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the profile.",
 									},
-									"profile_name": &schema.Schema{
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of the profile.",
 									},
-									"profile_type": &schema.Schema{
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
@@ -151,7 +141,7 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 									"validation_result": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The result of a scan.",
+										Description: "The result of a scan.The above values will not be avaialble if no scopes are available.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"goals_pass_count": &schema.Schema{
@@ -213,20 +203,20 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 						"group_profiles": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The result of a group profile.",
+							Description: "The list of group profiles.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"group_profile_id": &schema.Schema{
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The group ID of profile.",
+										Description: "The ID of the profile.",
 									},
-									"group_profile_name": &schema.Schema{
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The group name of the profile.",
+										Description: "The name of the profile.",
 									},
-									"profile_type": &schema.Schema{
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
@@ -234,7 +224,7 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 									"validation_result": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The result of a scan.",
+										Description: "The result of a scan.The above values will not be avaialble if no scopes are available.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"goals_pass_count": &schema.Schema{
@@ -290,64 +280,6 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 											},
 										},
 									},
-									"profiles": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The result of a each profile in group profile.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"profile_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The ID of the profile.",
-												},
-												"profile_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The name of the profile.",
-												},
-												"profile_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
-												},
-												"validation_result": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The result of a scan.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"controls_pass_count": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "The number of controls that passed the scan.",
-															},
-															"controls_fail_count": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "The number of controls that failed the scan.",
-															},
-															"controls_not_applicable_count": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "The number of controls that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.",
-															},
-															"controls_unable_to_perform_count": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "The number of controls that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.",
-															},
-															"controls_total_count": &schema.Schema{
-																Type:        schema.TypeInt,
-																Computed:    true,
-																Description: "The total number of controls that were included in the scan.",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -359,86 +291,70 @@ func dataSourceIBMSccPostureScanSummaries() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
+	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	scanSummariesOptions := &posturemanagementv1.ScanSummariesOptions{}
-
-	scanSummariesOptions.SetProfileID(d.Get("profile_id").(string))
-	scanSummariesOptions.SetScopeID(d.Get("scope_id").(string))
-
-	var summariesList *posturemanagementv1.SummariesList
-	var offset int64
-	finalList := []posturemanagementv1.SummaryItem{}
-	var scanID string
-	var suppliedFilter bool
-
-	if v, ok := d.GetOk("scan_id"); ok {
-		scanID = v.(string)
-		suppliedFilter = true
+	scanSummariesOptions := &posturemanagementv2.ScanSummariesOptions{}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
 	}
+
+	accountID := userDetails.userAccount
+	scanSummariesOptions.SetAccountID(accountID)
+
+	scanSummariesOptions.SetReportSettingID(d.Get("report_setting_id").(string))
+
+	var summaryList *posturemanagementv2.SummaryList
+	var offset int64
+	finalList := []posturemanagementv2.SummaryItem{}
 
 	for {
 		scanSummariesOptions.Offset = &offset
 
 		scanSummariesOptions.Limit = core.Int64Ptr(int64(100))
 		result, response, err := postureManagementClient.ScanSummariesWithContext(context, scanSummariesOptions)
-		summariesList = result
+		summaryList = result
 		if err != nil {
 			log.Printf("[DEBUG] ScanSummariesWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ScanSummariesWithContext failed %s\n%s", err, response))
 		}
-		offset = dataSourceSummariesListGetNext(result.Next)
-		if suppliedFilter {
-			for _, data := range result.Summaries {
-				if *data.ScanID == scanID {
-					finalList = append(finalList, data)
-				}
-			}
-		} else {
-			finalList = append(finalList, result.Summaries...)
-		}
+		offset = dataSourceSummaryListGetNext(result.Next)
+		finalList = append(finalList, result.Summaries...)
 		if offset == 0 {
 			break
 		}
 	}
 
-	summariesList.Summaries = finalList
+	summaryList.Summaries = finalList
 
-	if suppliedFilter {
-		if len(summariesList.Summaries) == 0 {
-			return diag.FromErr(fmt.Errorf("no Summaries found with scanID %s", scanID))
-		}
-		d.SetId(scanID)
-	} else {
-		d.SetId(dataSourceIBMSccPostureScanSummariesID(d))
-	}
+	d.SetId(dataSourceIBMSccPostureScanSummariesID(d))
 
-	if summariesList.First != nil {
-		err = d.Set("first", dataSourceSummariesListFlattenFirst(*summariesList.First))
+	if summaryList.First != nil {
+		err = d.Set("first", dataSourceSummaryListFlattenFirst(*summaryList.First))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
 		}
 	}
 
-	if summariesList.Last != nil {
-		err = d.Set("last", dataSourceSummariesListFlattenLast(*summariesList.Last))
+	if summaryList.Last != nil {
+		err = d.Set("last", dataSourceSummaryListFlattenLast(*summaryList.Last))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting last %s", err))
 		}
 	}
 
-	if summariesList.Previous != nil {
-		err = d.Set("previous", dataSourceSummariesListFlattenPrevious(*summariesList.Previous))
+	if summaryList.Previous != nil {
+		err = d.Set("previous", dataSourceSummaryListFlattenPrevious(*summaryList.Previous))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting previous %s", err))
 		}
 	}
 
-	if summariesList.Summaries != nil {
-		err = d.Set("summaries", dataSourceSummariesListFlattenSummaries(summariesList.Summaries))
+	if summaryList.Summaries != nil {
+		err = d.Set("summaries", dataSourceSummaryListFlattenSummaries(summaryList.Summaries))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting summaries %s", err))
 		}
@@ -447,20 +363,20 @@ func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema
 	return nil
 }
 
-// dataSourceIBMSccPostureScanSummariesID returns a reasonable ID for the list.
+// dataSourceIBMScanSummariesID returns a reasonable ID for the list.
 func dataSourceIBMSccPostureScanSummariesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceSummariesListFlattenFirst(result posturemanagementv1.SummariesListFirst) (finalList []map[string]interface{}) {
+func dataSourceSummaryListFlattenFirst(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceSummariesListFirstToMap(result)
+	finalMap := dataSourceSummaryListFirstToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceSummariesListFirstToMap(firstItem posturemanagementv1.SummariesListFirst) (firstMap map[string]interface{}) {
+func dataSourceSummaryListFirstToMap(firstItem posturemanagementv2.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -470,15 +386,15 @@ func dataSourceSummariesListFirstToMap(firstItem posturemanagementv1.SummariesLi
 	return firstMap
 }
 
-func dataSourceSummariesListFlattenLast(result posturemanagementv1.SummariesListLast) (finalList []map[string]interface{}) {
+func dataSourceSummaryListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceSummariesListLastToMap(result)
+	finalMap := dataSourceSummaryListLastToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceSummariesListLastToMap(lastItem posturemanagementv1.SummariesListLast) (lastMap map[string]interface{}) {
+func dataSourceSummaryListLastToMap(lastItem posturemanagementv2.PageLink) (lastMap map[string]interface{}) {
 	lastMap = map[string]interface{}{}
 
 	if lastItem.Href != nil {
@@ -488,15 +404,15 @@ func dataSourceSummariesListLastToMap(lastItem posturemanagementv1.SummariesList
 	return lastMap
 }
 
-func dataSourceSummariesListFlattenPrevious(result posturemanagementv1.SummariesListPrevious) (finalList []map[string]interface{}) {
+func dataSourceSummaryListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceSummariesListPreviousToMap(result)
+	finalMap := dataSourceSummaryListPreviousToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceSummariesListPreviousToMap(previousItem posturemanagementv1.SummariesListPrevious) (previousMap map[string]interface{}) {
+func dataSourceSummaryListPreviousToMap(previousItem posturemanagementv2.PageLink) (previousMap map[string]interface{}) {
 	previousMap = map[string]interface{}{}
 
 	if previousItem.Href != nil {
@@ -506,22 +422,22 @@ func dataSourceSummariesListPreviousToMap(previousItem posturemanagementv1.Summa
 	return previousMap
 }
 
-func dataSourceSummariesListFlattenSummaries(result []posturemanagementv1.SummaryItem) (summaries []map[string]interface{}) {
+func dataSourceSummaryListFlattenSummaries(result []posturemanagementv2.SummaryItem) (summaries []map[string]interface{}) {
 	for _, summariesItem := range result {
-		summaries = append(summaries, dataSourceSummariesListSummariesToMap(summariesItem))
+		summaries = append(summaries, dataSourceSummaryListSummariesToMap(summariesItem))
 	}
 
 	return summaries
 }
 
-func dataSourceSummariesListSummariesToMap(summariesItem posturemanagementv1.SummaryItem) (summariesMap map[string]interface{}) {
+func dataSourceSummaryListSummariesToMap(summariesItem posturemanagementv2.SummaryItem) (summariesMap map[string]interface{}) {
 	summariesMap = map[string]interface{}{}
 
-	if summariesItem.ScanID != nil {
-		summariesMap["scan_id"] = summariesItem.ScanID
+	if summariesItem.ID != nil {
+		summariesMap["id"] = summariesItem.ID
 	}
-	if summariesItem.ScanName != nil {
-		summariesMap["scan_name"] = summariesItem.ScanName
+	if summariesItem.Name != nil {
+		summariesMap["name"] = summariesItem.Name
 	}
 	if summariesItem.ScopeID != nil {
 		summariesMap["scope_id"] = summariesItem.ScopeID
@@ -541,162 +457,39 @@ func dataSourceSummariesListSummariesToMap(summariesItem posturemanagementv1.Sum
 	if summariesItem.Status != nil {
 		summariesMap["status"] = summariesItem.Status
 	}
-	if summariesItem.Profile != nil {
-		profileList := []map[string]interface{}{}
-		profileMap := dataSourceSummariesListSummariesProfileToMap(*summariesItem.Profile)
-		profileList = append(profileList, profileMap)
-		summariesMap["profile"] = profileList
+	if summariesItem.Profiles != nil {
+		profilesList := []map[string]interface{}{}
+		for _, profilesItem := range summariesItem.Profiles {
+			profilesList = append(profilesList, dataSourceSummaryListSummariesProfilesToMap(profilesItem))
+		}
+		summariesMap["profiles"] = profilesList
 	}
 	if summariesItem.GroupProfiles != nil {
 		groupProfilesList := []map[string]interface{}{}
-		groupProfilesMap := dataSourceSummariesListSummariesGroupProfilesToMap(*summariesItem.GroupProfiles)
-		groupProfilesList = append(groupProfilesList, groupProfilesMap)
+		for _, groupProfilesItem := range summariesItem.GroupProfiles {
+			groupProfilesList = append(groupProfilesList, dataSourceSummaryListSummariesGroupProfilesToMap(groupProfilesItem))
+		}
 		summariesMap["group_profiles"] = groupProfilesList
 	}
 
 	return summariesMap
 }
 
-func dataSourceSummariesListSummariesProfileToMap(profileItem posturemanagementv1.ProfileResult) (profileMap map[string]interface{}) {
-	profileMap = map[string]interface{}{}
-
-	if profileItem.ProfileID != nil {
-		profileMap["profile_id"] = profileItem.ProfileID
-	}
-	if profileItem.ProfileName != nil {
-		profileMap["profile_name"] = profileItem.ProfileName
-	}
-	if profileItem.ProfileType != nil {
-		profileMap["profile_type"] = profileItem.ProfileType
-	}
-	if profileItem.ValidationResult != nil {
-		validationResultList := []map[string]interface{}{}
-		validationResultMap := dataSourceSummariesListProfileValidationResultToMap(*profileItem.ValidationResult)
-		validationResultList = append(validationResultList, validationResultMap)
-		profileMap["validation_result"] = validationResultList
-	}
-
-	return profileMap
-}
-
-func dataSourceSummariesListProfileValidationResultToMap(validationResultItem posturemanagementv1.ScanResult) (validationResultMap map[string]interface{}) {
-	validationResultMap = map[string]interface{}{}
-
-	if validationResultItem.GoalsPassCount != nil {
-		validationResultMap["goals_pass_count"] = validationResultItem.GoalsPassCount
-	}
-	if validationResultItem.GoalsUnableToPerformCount != nil {
-		validationResultMap["goals_unable_to_perform_count"] = validationResultItem.GoalsUnableToPerformCount
-	}
-	if validationResultItem.GoalsNotApplicableCount != nil {
-		validationResultMap["goals_not_applicable_count"] = validationResultItem.GoalsNotApplicableCount
-	}
-	if validationResultItem.GoalsFailCount != nil {
-		validationResultMap["goals_fail_count"] = validationResultItem.GoalsFailCount
-	}
-	if validationResultItem.GoalsTotalCount != nil {
-		validationResultMap["goals_total_count"] = validationResultItem.GoalsTotalCount
-	}
-	if validationResultItem.ControlsPassCount != nil {
-		validationResultMap["controls_pass_count"] = validationResultItem.ControlsPassCount
-	}
-	if validationResultItem.ControlsFailCount != nil {
-		validationResultMap["controls_fail_count"] = validationResultItem.ControlsFailCount
-	}
-	if validationResultItem.ControlsNotApplicableCount != nil {
-		validationResultMap["controls_not_applicable_count"] = validationResultItem.ControlsNotApplicableCount
-	}
-	if validationResultItem.ControlsUnableToPerformCount != nil {
-		validationResultMap["controls_unable_to_perform_count"] = validationResultItem.ControlsUnableToPerformCount
-	}
-	if validationResultItem.ControlsTotalCount != nil {
-		validationResultMap["controls_total_count"] = validationResultItem.ControlsTotalCount
-	}
-
-	return validationResultMap
-}
-
-func dataSourceSummariesListSummariesGroupProfilesToMap(groupProfilesItem posturemanagementv1.GroupProfileResult) (groupProfilesMap map[string]interface{}) {
-	groupProfilesMap = map[string]interface{}{}
-
-	if groupProfilesItem.GroupProfileID != nil {
-		groupProfilesMap["group_profile_id"] = groupProfilesItem.GroupProfileID
-	}
-	if groupProfilesItem.GroupProfileName != nil {
-		groupProfilesMap["group_profile_name"] = groupProfilesItem.GroupProfileName
-	}
-	if groupProfilesItem.ProfileType != nil {
-		groupProfilesMap["profile_type"] = groupProfilesItem.ProfileType
-	}
-	if groupProfilesItem.ValidationResult != nil {
-		validationResultList := []map[string]interface{}{}
-		validationResultMap := dataSourceSummariesListGroupProfilesValidationResultToMap(*groupProfilesItem.ValidationResult)
-		validationResultList = append(validationResultList, validationResultMap)
-		groupProfilesMap["validation_result"] = validationResultList
-	}
-	if groupProfilesItem.Profiles != nil {
-		profilesList := []map[string]interface{}{}
-		for _, profilesItem := range groupProfilesItem.Profiles {
-			profilesList = append(profilesList, dataSourceSummariesListGroupProfilesProfilesToMap(profilesItem))
-		}
-		groupProfilesMap["profiles"] = profilesList
-	}
-
-	return groupProfilesMap
-}
-
-func dataSourceSummariesListGroupProfilesValidationResultToMap(validationResultItem posturemanagementv1.ScanResult) (validationResultMap map[string]interface{}) {
-	validationResultMap = map[string]interface{}{}
-
-	if validationResultItem.GoalsPassCount != nil {
-		validationResultMap["goals_pass_count"] = validationResultItem.GoalsPassCount
-	}
-	if validationResultItem.GoalsUnableToPerformCount != nil {
-		validationResultMap["goals_unable_to_perform_count"] = validationResultItem.GoalsUnableToPerformCount
-	}
-	if validationResultItem.GoalsNotApplicableCount != nil {
-		validationResultMap["goals_not_applicable_count"] = validationResultItem.GoalsNotApplicableCount
-	}
-	if validationResultItem.GoalsFailCount != nil {
-		validationResultMap["goals_fail_count"] = validationResultItem.GoalsFailCount
-	}
-	if validationResultItem.GoalsTotalCount != nil {
-		validationResultMap["goals_total_count"] = validationResultItem.GoalsTotalCount
-	}
-	if validationResultItem.ControlsPassCount != nil {
-		validationResultMap["controls_pass_count"] = validationResultItem.ControlsPassCount
-	}
-	if validationResultItem.ControlsFailCount != nil {
-		validationResultMap["controls_fail_count"] = validationResultItem.ControlsFailCount
-	}
-	if validationResultItem.ControlsNotApplicableCount != nil {
-		validationResultMap["controls_not_applicable_count"] = validationResultItem.ControlsNotApplicableCount
-	}
-	if validationResultItem.ControlsUnableToPerformCount != nil {
-		validationResultMap["controls_unable_to_perform_count"] = validationResultItem.ControlsUnableToPerformCount
-	}
-	if validationResultItem.ControlsTotalCount != nil {
-		validationResultMap["controls_total_count"] = validationResultItem.ControlsTotalCount
-	}
-
-	return validationResultMap
-}
-
-func dataSourceSummariesListGroupProfilesProfilesToMap(profilesItem posturemanagementv1.ProfilesResult) (profilesMap map[string]interface{}) {
+func dataSourceSummaryListSummariesProfilesToMap(profilesItem posturemanagementv2.ProfileResult) (profilesMap map[string]interface{}) {
 	profilesMap = map[string]interface{}{}
 
-	if profilesItem.ProfileID != nil {
-		profilesMap["profile_id"] = profilesItem.ProfileID
+	if profilesItem.ID != nil {
+		profilesMap["id"] = profilesItem.ID
 	}
-	if profilesItem.ProfileName != nil {
-		profilesMap["profile_name"] = profilesItem.ProfileName
+	if profilesItem.Name != nil {
+		profilesMap["name"] = profilesItem.Name
 	}
-	if profilesItem.ProfileType != nil {
-		profilesMap["profile_type"] = profilesItem.ProfileType
+	if profilesItem.Type != nil {
+		profilesMap["type"] = profilesItem.Type
 	}
 	if profilesItem.ValidationResult != nil {
 		validationResultList := []map[string]interface{}{}
-		validationResultMap := dataSourceSummariesListProfilesValidationResultToMap(*profilesItem.ValidationResult)
+		validationResultMap := dataSourceSummaryListProfilesValidationResultToMap(*profilesItem.ValidationResult)
 		validationResultList = append(validationResultList, validationResultMap)
 		profilesMap["validation_result"] = validationResultList
 	}
@@ -704,9 +497,24 @@ func dataSourceSummariesListGroupProfilesProfilesToMap(profilesItem posturemanag
 	return profilesMap
 }
 
-func dataSourceSummariesListProfilesValidationResultToMap(validationResultItem posturemanagementv1.Results) (validationResultMap map[string]interface{}) {
+func dataSourceSummaryListProfilesValidationResultToMap(validationResultItem posturemanagementv2.ScanResult) (validationResultMap map[string]interface{}) {
 	validationResultMap = map[string]interface{}{}
 
+	if validationResultItem.GoalsPassCount != nil {
+		validationResultMap["goals_pass_count"] = validationResultItem.GoalsPassCount
+	}
+	if validationResultItem.GoalsUnableToPerformCount != nil {
+		validationResultMap["goals_unable_to_perform_count"] = validationResultItem.GoalsUnableToPerformCount
+	}
+	if validationResultItem.GoalsNotApplicableCount != nil {
+		validationResultMap["goals_not_applicable_count"] = validationResultItem.GoalsNotApplicableCount
+	}
+	if validationResultItem.GoalsFailCount != nil {
+		validationResultMap["goals_fail_count"] = validationResultItem.GoalsFailCount
+	}
+	if validationResultItem.GoalsTotalCount != nil {
+		validationResultMap["goals_total_count"] = validationResultItem.GoalsTotalCount
+	}
 	if validationResultItem.ControlsPassCount != nil {
 		validationResultMap["controls_pass_count"] = validationResultItem.ControlsPassCount
 	}
@@ -726,7 +534,66 @@ func dataSourceSummariesListProfilesValidationResultToMap(validationResultItem p
 	return validationResultMap
 }
 
-func dataSourceSummariesListGetNext(next interface{}) int64 {
+func dataSourceSummaryListSummariesGroupProfilesToMap(groupProfilesItem posturemanagementv2.ProfileResult) (groupProfilesMap map[string]interface{}) {
+	groupProfilesMap = map[string]interface{}{}
+
+	if groupProfilesItem.ID != nil {
+		groupProfilesMap["id"] = groupProfilesItem.ID
+	}
+	if groupProfilesItem.Name != nil {
+		groupProfilesMap["name"] = groupProfilesItem.Name
+	}
+	if groupProfilesItem.Type != nil {
+		groupProfilesMap["type"] = groupProfilesItem.Type
+	}
+	if groupProfilesItem.ValidationResult != nil {
+		validationResultList := []map[string]interface{}{}
+		validationResultMap := dataSourceSummaryListGroupProfilesValidationResultToMap(*groupProfilesItem.ValidationResult)
+		validationResultList = append(validationResultList, validationResultMap)
+		groupProfilesMap["validation_result"] = validationResultList
+	}
+
+	return groupProfilesMap
+}
+
+func dataSourceSummaryListGroupProfilesValidationResultToMap(validationResultItem posturemanagementv2.ScanResult) (validationResultMap map[string]interface{}) {
+	validationResultMap = map[string]interface{}{}
+
+	if validationResultItem.GoalsPassCount != nil {
+		validationResultMap["goals_pass_count"] = validationResultItem.GoalsPassCount
+	}
+	if validationResultItem.GoalsUnableToPerformCount != nil {
+		validationResultMap["goals_unable_to_perform_count"] = validationResultItem.GoalsUnableToPerformCount
+	}
+	if validationResultItem.GoalsNotApplicableCount != nil {
+		validationResultMap["goals_not_applicable_count"] = validationResultItem.GoalsNotApplicableCount
+	}
+	if validationResultItem.GoalsFailCount != nil {
+		validationResultMap["goals_fail_count"] = validationResultItem.GoalsFailCount
+	}
+	if validationResultItem.GoalsTotalCount != nil {
+		validationResultMap["goals_total_count"] = validationResultItem.GoalsTotalCount
+	}
+	if validationResultItem.ControlsPassCount != nil {
+		validationResultMap["controls_pass_count"] = validationResultItem.ControlsPassCount
+	}
+	if validationResultItem.ControlsFailCount != nil {
+		validationResultMap["controls_fail_count"] = validationResultItem.ControlsFailCount
+	}
+	if validationResultItem.ControlsNotApplicableCount != nil {
+		validationResultMap["controls_not_applicable_count"] = validationResultItem.ControlsNotApplicableCount
+	}
+	if validationResultItem.ControlsUnableToPerformCount != nil {
+		validationResultMap["controls_unable_to_perform_count"] = validationResultItem.ControlsUnableToPerformCount
+	}
+	if validationResultItem.ControlsTotalCount != nil {
+		validationResultMap["controls_total_count"] = validationResultItem.ControlsTotalCount
+	}
+
+	return validationResultMap
+}
+
+func dataSourceSummaryListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
 	}

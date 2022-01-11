@@ -137,8 +137,16 @@ func dataSourceIBMPIInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"storage_pool_affinity": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"license_repository_capacity": {
 				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			PIPlacementGroupID: {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
@@ -179,7 +187,11 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	d.Set("storage_type", powervmdata.StorageType)
 	d.Set("storage_pool", powervmdata.StoragePool)
+	d.Set("storage_pool_affinity", powervmdata.StoragePoolAffinity)
 	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
+	if *powervmdata.PlacementGroup != "none" {
+		d.Set(PIPlacementGroupID, powervmdata.PlacementGroup)
+	}
 
 	if powervmdata.Addresses != nil {
 		pvmaddress := make([]map[string]interface{}, len(powervmdata.Addresses))
@@ -205,5 +217,4 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	return nil
-
 }

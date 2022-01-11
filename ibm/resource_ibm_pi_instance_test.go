@@ -280,3 +280,65 @@ func testAccIBMPISAPInstanceConfig(name, sapProfile string) string {
 	}
 	`, pi_cloud_instance_id, name, sapProfile)
 }
+
+func TestAccIBMPIInstanceMixedStorage(t *testing.T) {
+	instanceRes := "ibm_pi_instance.instance"
+	name := fmt.Sprintf("tf-pi-mixedstorage-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceMixedStorage(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_storage_pool_affinity", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceMixedStorage(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_key" "key" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_key_name          = "%[2]s"
+		pi_ssh_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+	}
+	resource "ibm_pi_network" "power_network" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s"
+		pi_network_type      = "pub-vlan"
+	}
+	resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_size       = 20
+		pi_volume_name       = "%[2]s"
+		pi_volume_shareable  = true
+		pi_volume_type       = "tier3"
+	}
+	resource "ibm_pi_instance" "instance" {
+		pi_cloud_instance_id     = "%[1]s"
+		pi_memory                = "2"
+		pi_processors            = "0.25"
+		pi_instance_name         = "%[2]s"
+		pi_proc_type             = "shared"
+		pi_image_id              = "ca4ea55f-b329-4cf5-bdce-d2f38cfc6da3"
+		pi_key_pair_name         = ibm_pi_key.key.key_id
+		pi_sys_type              = "s922"
+		pi_storage_type          = "tier1"
+		pi_storage_pool_affinity = false
+		pi_network {
+			network_id = ibm_pi_network.power_network.network_id
+		}
+	}
+	resource "ibm_pi_volume_attach" "power_attach_volume"{
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_id         = ibm_pi_volume.power_volume.volume_id
+		pi_instance_id       = ibm_pi_instance.instance.instance_id
+	}
+	`, pi_cloud_instance_id, name)
+}

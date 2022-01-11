@@ -8,83 +8,67 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scan_summary
 
-Review information of Security and Compliance Center posture scan summary see [viewing evaluation results](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-results).
+Provides a read-only data source for scans_summary. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example usage
+## Example Usage
 
-```terraform
+```hcl
 data "ibm_scc_posture_scan_summary" "scans_summary" {
 	profile_id = "profile_id"
 	scan_id = "scan_id"
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument reference that you can specify for your data source.
 
-* `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center console by clicking on the profile name. The URL contains the ID.
-* `scan_id` - (Required, Forces new resource, String) The Scan ID.
+* `profile_id` - (Required, String) The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.
+  * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
+* `scan_id` - (Required, String) Your Scan ID.
+  * Constraints: The maximum length is `20` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the scans_summary.
-* `controls` - (Optional, List) The list of controls on the scan summary.
+* `controls` - (List) The list of controls on the scan summary.
 Nested scheme for **controls**:
-	* `control_id` - (Optional, String) The scan summary control ID.
-	* `status` - (Optional, String) The control status.
-	  * Constraints: Supported values are: **pass**, **unable_to_perform**
-	* `external_control_id` - (Optional, String) The external control ID.
-	* `control_desciption` - (Optional, String) The scan profile name.
-	* `goals` - (Optional, List) The list of goals on the control.
+	* `desciption` - (String) The scan profile name.
+	* `external_control_id` - (String) The external control ID.
+	* `goals` - (List) The list of goals on the control.
 	Nested scheme for **goals**:
-		* `goal_description` - (Optional, String) The description of the goal.
-		* `goal_id` - (Optional, String) The goal ID.
-		* `status` - (Optional, String) The goal status.
-		  * Constraints: Supported values are: **pass**, **fail**
-		* `severity` - (Optional, String) The severity of the goal.
-		* `completed_time` - (Optional, String) The report completed time.
-		* `error` - (Optional, String) The error on goal validation.
-		* `resource_result` - (Optional, List) The list of resource results.
+		* `completed_time` - (String) The report completed time.
+		* `description` - (String) The description of the goal.
+		* `error` - (String) The error on goal validation.
+		* `id` - (String) The goal ID.
+		* `resource_result` - (List) The list of resource results.
 		Nested scheme for **resource_result**:
-			* `resource_name` - (Optional, String) The resource name.
-			* `resource_types` - (Optional, String) The resource type.
-			* `resource_status` - (Optional, String) The resource control result status.
-			  * Constraints: Supported values are: **pass**, **unable_to_perform**
-			* `display_expected_value` - (Optional, String) The expected results of a resource.
-			* `actual_value` - (Optional, String) The actual results of a resource.
-			* `results_info` - (Optional, String) The results information.
-			* `not_applicable_reason` - (Optional, String) The reason for goal not applicable for a resource.
-		* `goal_applicability_criteria` - (Optional, List) The criteria that defines how a profile applies.
-		Nested scheme for **goal_applicability_criteria**:
-			* `environment` - (Optional, List) A list of environments that a profile can be applied to.
-			* `environment_category` - (Optional, List) The type of environment that a profile is able to be applied to.
-			* `resource` - (Optional, List) A list of resources that a profile can be used with.
-			* `resource_category` - (Optional, List) The type of resource that a profile is able to be applied to.
-			* `resource_type` - (Optional, List) The resource type that the profile applies to.
-			* `software_details` - (Optional, List) The software that the profile applies to.
-			Nested scheme for **software_details**:
-				* `name` - (Optional, String) The name of the Operating System software.
-				* `version` - (Optional, String) The version of the Operating System software.
-			* `os_details` - (Optional, List) The Operating System that the profile applies to.
-			Nested scheme for **os_details**:
-				* `name` - (Optional, String) The name of the Operating System.
-				* `version` - (Optional, String) The version of the Operating System.
-			* `additional_details` - (Optional, Map) Any additional details about the profile.
-			* `environment_category_description` - (Optional, Map) The type of environment that your scope is targeted to.
-			* `environment_description` - (Optional, Map) The environment that your scope is targeted to.
-			* `resource_category_description` - (Optional, Map) The type of resource that your scope is targeted to.
-			* `resource_type_description` - (Optional, Map) A further classification of the type of resource that your scope is targeted to.
-			* `resource_description` - (Optional, Map) The resource that is scanned as part of your scope.
-	* `resource_statistics` - (Optional, List) A scans summary controls.
+			* `actual_value` - (String) The actual results of a resource.
+			* `display_expected_value` - (String) The expected results of a resource.
+			* `name` - (String) The resource name.
+			* `not_applicable_reason` - (String) The reason for goal not applicable for a resource.
+			* `results_info` - (String) The results information.
+			* `status` - (String) The resource control result status.
+			  * Constraints: Allowable values are: `pass`, `unable_to_perform`.
+			* `types` - (String) The resource type.
+		* `severity` - (String) The severity of the goal.
+		* `status` - (String) The goal status.
+		  * Constraints: Allowable values are: `pass`, `fail`.
+	* `id` - (String) The scan summary control ID.
+	* `resource_statistics` - (List) A scans summary controls.
 	Nested scheme for **resource_statistics**:
-		* `resource_pass_count` - (Optional, Integer) The resource count of pass controls.
-		* `resource_fail_count` - (Optional, Integer) The resource count of fail controls.
-		* `resource_unable_to_perform_count` - (Optional, Integer) The number of resources that were unable to be scanned against a control.
-		* `resource_not_applicable_count` - (Optional, Integer) The resource count of not applicable(NA) controls.
-* `discover_id` - (Optional, String) The scan discovery ID.
-* `profile_name` - (Optional, String) The scan profile name.
-* `scope_id` - (Optional, String) The scan summary scope ID.
+		* `fail_count` - (Integer) The resource count of fail controls.
+		* `not_applicable_count` - (Integer) The resource count of not applicable(na) controls.
+		* `pass_count` - (Integer) The resource count of pass controls.
+		* `unable_to_perform_count` - (Integer) The number of resources that were unable to be scanned against a control.
+	* `status` - (String) The control status.
+	  * Constraints: Allowable values are: `pass`, `unable_to_perform`.
+
+* `discover_id` - (String) The scan discovery ID.
+
+* `profile_name` - (String) The scan profile name.
+
+* `scope_id` - (String) The scan summary scope ID.
 

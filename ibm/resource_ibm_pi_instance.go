@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -24,10 +25,11 @@ const (
 	warningTimeOut = 60 * time.Second
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
-	CUSTOM_VIRTUAL_CORES   = "custom-virtualcores"
-	PIInstanceNetwork      = "pi_network"
-	PIInstanceStoragePool  = "pi_storage_pool"
-	PISAPInstanceProfileID = "pi_sap_profile_id"
+	CUSTOM_VIRTUAL_CORES          = "custom-virtualcores"
+	PIInstanceNetwork             = "pi_network"
+	PIInstanceStoragePool         = "pi_storage_pool"
+	PISAPInstanceProfileID        = "pi_sap_profile_id"
+	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
 )
 
 func resourceIBMPIInstance() *schema.Resource {
@@ -91,7 +93,6 @@ func resourceIBMPIInstance() *schema.Resource {
 			helpers.PIInstanceVolumeIds: {
 				Type:             schema.TypeSet,
 				Optional:         true,
-				Computed:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				Set:              schema.HashString,
 				DiffSuppressFunc: applyOnce,
@@ -148,12 +149,17 @@ func resourceIBMPIInstance() *schema.Resource {
 				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
 				ConflictsWith: []string{PIAntiAffinityVolumes},
 			},
-
 			helpers.PIInstanceStorageConnection: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateAllowedStringValue([]string{"vSCSI"}),
 				Description:  "Storage Connectivity Group for server deployment",
+			},
+			PIInstanceStoragePoolAffinity: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Indicates if all volumes attached to the server must reside in the same storage pool",
 			},
 			PIInstanceNetwork: {
 				Type:             schema.TypeList,
@@ -190,7 +196,11 @@ func resourceIBMPIInstance() *schema.Resource {
 					},
 				},
 			},
-
+			helpers.PIPlacementGroupID: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Placement group ID",
+			},
 			"health_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -367,6 +377,23 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
+	// If Storage Pool Affinity is given as false we need to update the vm instance.
+	// Default value is true which indicates that all volumes attached to the server
+	// must reside in the same storage pool.
+	storagePoolAffinity := d.Get(PIInstanceStoragePoolAffinity).(bool)
+	if !storagePoolAffinity {
+		for _, s := range *pvmList {
+			body := &models.PVMInstanceUpdate{
+				StoragePoolAffinity: &storagePoolAffinity,
+			}
+			// This is a synchronous process hence no need to check for health status
+			_, err = client.Update(*s.PvmInstanceID, body)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return resourceIBMPIInstanceRead(ctx, d, meta)
 
 }
@@ -403,10 +430,14 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(helpers.PIInstanceStorageType, powervmdata.StorageType)
 	}
 	d.Set(PIInstanceStoragePool, powervmdata.StoragePool)
+	d.Set(PIInstanceStoragePoolAffinity, powervmdata.StoragePoolAffinity)
 	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 	d.Set("instance_id", powervmdata.PvmInstanceID)
 	d.Set(helpers.PIInstanceName, powervmdata.ServerName)
 	d.Set(helpers.PIInstanceImageId, powervmdata.ImageID)
+	if *powervmdata.PlacementGroup != "none" {
+		d.Set(helpers.PIPlacementGroupID, powervmdata.PlacementGroup)
+	}
 
 	networksMap := []map[string]interface{}{}
 	if powervmdata.Networks != nil {
@@ -426,9 +457,6 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.Set(PIInstanceNetwork, networksMap)
 
-	if powervmdata.VolumeIds != nil {
-		d.Set(helpers.PIInstanceVolumeIds, powervmdata.VolumeIds)
-	}
 	if powervmdata.SapProfile != nil && powervmdata.SapProfile.ProfileID != nil {
 		d.Set(PISAPInstanceProfileID, powervmdata.SapProfile.ProfileID)
 	}
@@ -653,6 +681,53 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		err := startLparAfterResourceChange(ctx, client, instanceID)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+	if d.HasChange(PIInstanceStoragePoolAffinity) {
+		storagePoolAffinity := d.Get(PIInstanceStoragePoolAffinity).(bool)
+		body := &models.PVMInstanceUpdate{
+			StoragePoolAffinity: &storagePoolAffinity,
+		}
+		// This is a synchronous process hence no need to check for health status
+		_, err = client.Update(instanceID, body)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(helpers.PIPlacementGroupID) {
+
+		pgClient := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
+
+		oldRaw, newRaw := d.GetChange(helpers.PIPlacementGroupID)
+		old := oldRaw.(string)
+		new := newRaw.(string)
+
+		if len(strings.TrimSpace(old)) > 0 {
+			placementGroupID := old
+			//remove server from old placement group
+			body := &models.PlacementGroupServer{
+				ID: &instanceID,
+			}
+			_, err := pgClient.DeleteMember(placementGroupID, body)
+			if err != nil {
+				// ignore delete member error where the server is already not in the PG
+				if !strings.Contains(err.Error(), "is not part of placement-group") {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		if len(strings.TrimSpace(new)) > 0 {
+			placementGroupID := new
+			// add server to a new placement group
+			body := &models.PlacementGroupServer{
+				ID: &instanceID,
+			}
+			_, err := pgClient.AddMember(placementGroupID, body)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1165,6 +1240,10 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 
 	if sc, ok := d.GetOk(helpers.PIInstanceStorageConnection); ok {
 		body.StorageConnection = sc.(string)
+	}
+
+	if pg, ok := d.GetOk(helpers.PIPlacementGroupID); ok {
+		body.PlacementGroup = pg.(string)
 	}
 
 	if lrc, ok := d.GetOk(helpers.PIInstanceLicenseRepositoryCapacity); ok {

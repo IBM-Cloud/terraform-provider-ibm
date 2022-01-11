@@ -7,12 +7,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 func dataSourceIBMSccPostureScansSummary() *schema.Resource {
@@ -51,7 +50,7 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 				Description: "The list of controls on the scan summary.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"control_id": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The scan summary control ID.",
@@ -66,7 +65,7 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Computed:    true,
 							Description: "The external control ID.",
 						},
-						"control_desciption": &schema.Schema{
+						"desciption": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The scan profile name.",
@@ -77,12 +76,12 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Description: "The list of goals on the control.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"goal_description": &schema.Schema{
+									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the goal.",
 									},
-									"goal_id": &schema.Schema{
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The goal ID.",
@@ -113,17 +112,17 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 										Description: "The list of resource results.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"resource_name": &schema.Schema{
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource name.",
 												},
-												"resource_types": &schema.Schema{
+												"types": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource type.",
 												},
-												"resource_status": &schema.Schema{
+												"status": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource control result status.",
@@ -151,137 +150,6 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 											},
 										},
 									},
-									"goal_applicability_criteria": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The criteria that defines how a profile applies.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"environment": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "A list of environments that a profile can be applied to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "A list of resources that a profile can be used with.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"environment_category": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The type of environment that a profile is able to be applied to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource_category": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The type of resource that a profile is able to be applied to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource_type": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The resource type that the profile applies to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"software_details": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The software that the profile applies to.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"name": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-															"version": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-														},
-													},
-												},
-												"os_details": &schema.Schema{
-													Type:        schema.TypeList,
-													Computed:    true,
-													Description: "The operating system that the profile applies to.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"name": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-															"version": &schema.Schema{
-																Type:     schema.TypeString,
-																Computed: true,
-															},
-														},
-													},
-												},
-												"additional_details": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "Any additional details about the profile.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"environment_category_description": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "The type of environment that your scope is targeted to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"environment_description": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "The environment that your scope is targeted to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource_category_description": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "The type of resource that your scope is targeted to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource_type_description": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "A further classification of the type of resource that your scope is targeted to.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-												"resource_description": &schema.Schema{
-													Type:        schema.TypeMap,
-													Computed:    true,
-													Description: "The resource that is scanned as part of your scope.",
-													Elem: &schema.Schema{
-														Type: schema.TypeString,
-													},
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -291,22 +159,22 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Description: "A scans summary controls.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"resource_pass_count": &schema.Schema{
+									"pass_count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of pass controls.",
 									},
-									"resource_fail_count": &schema.Schema{
+									"fail_count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of fail controls.",
 									},
-									"resource_unable_to_perform_count": &schema.Schema{
+									"unable_to_perform_count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of resources that were unable to be scanned against a control.",
 									},
-									"resource_not_applicable_count": &schema.Schema{
+									"not_applicable_count": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of not applicable(na) controls.",
@@ -322,12 +190,19 @@ func dataSourceIBMSccPostureScansSummary() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
+	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	scansSummaryOptions := &posturemanagementv1.ScansSummaryOptions{}
+	scansSummaryOptions := &posturemanagementv2.ScansSummaryOptions{}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
+
+	accountID := userDetails.userAccount
+	scansSummaryOptions.SetAccountID(accountID)
 
 	scansSummaryOptions.SetScanID(d.Get("scan_id").(string))
 	scansSummaryOptions.SetProfileID(d.Get("profile_id").(string))
@@ -338,7 +213,8 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("ScansSummaryWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMSccPostureScansSummaryID(d))
+	d.SetId(*summary.ID)
+
 	if err = d.Set("discover_id", summary.DiscoverID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting discover_id: %s", err))
 	}
@@ -350,7 +226,7 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	}
 
 	if summary.Controls != nil {
-		err = d.Set("controls", dataSourceSummaryFlattenControls(summary.Controls))
+		err = d.Set("controls", dataSourceSummaryFlattenControlsv2(summary.Controls))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting controls %s", err))
 		}
@@ -359,24 +235,19 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	return nil
 }
 
-// dataSourceIBMSccPostureScansSummaryID returns a reasonable ID for the list.
-func dataSourceIBMSccPostureScansSummaryID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
-}
-
-func dataSourceSummaryFlattenControls(result []posturemanagementv1.Control) (controls []map[string]interface{}) {
+func dataSourceSummaryFlattenControlsv2(result []posturemanagementv2.Control) (controls []map[string]interface{}) {
 	for _, controlsItem := range result {
-		controls = append(controls, dataSourceSummaryControlsToMap(controlsItem))
+		controls = append(controls, dataSourceSummaryControlsToMapv2(controlsItem))
 	}
 
 	return controls
 }
 
-func dataSourceSummaryControlsToMap(controlsItem posturemanagementv1.Control) (controlsMap map[string]interface{}) {
+func dataSourceSummaryControlsToMapv2(controlsItem posturemanagementv2.Control) (controlsMap map[string]interface{}) {
 	controlsMap = map[string]interface{}{}
 
-	if controlsItem.ControlID != nil {
-		controlsMap["control_id"] = controlsItem.ControlID
+	if controlsItem.ID != nil {
+		controlsMap["id"] = controlsItem.ID
 	}
 	if controlsItem.Status != nil {
 		controlsMap["status"] = controlsItem.Status
@@ -384,19 +255,19 @@ func dataSourceSummaryControlsToMap(controlsItem posturemanagementv1.Control) (c
 	if controlsItem.ExternalControlID != nil {
 		controlsMap["external_control_id"] = controlsItem.ExternalControlID
 	}
-	if controlsItem.ControlDesciption != nil {
-		controlsMap["control_desciption"] = controlsItem.ControlDesciption
+	if controlsItem.Desciption != nil {
+		controlsMap["desciption"] = controlsItem.Desciption
 	}
 	if controlsItem.Goals != nil {
 		goalsList := []map[string]interface{}{}
 		for _, goalsItem := range controlsItem.Goals {
-			goalsList = append(goalsList, dataSourceSummaryControlsGoalsToMap(goalsItem))
+			goalsList = append(goalsList, dataSourceSummaryControlsGoalsToMapv2(goalsItem))
 		}
 		controlsMap["goals"] = goalsList
 	}
 	if controlsItem.ResourceStatistics != nil {
 		resourceStatisticsList := []map[string]interface{}{}
-		resourceStatisticsMap := dataSourceSummaryControlsResourceStatisticsToMap(*controlsItem.ResourceStatistics)
+		resourceStatisticsMap := dataSourceSummaryControlsResourceStatisticsToMapv2(*controlsItem.ResourceStatistics)
 		resourceStatisticsList = append(resourceStatisticsList, resourceStatisticsMap)
 		controlsMap["resource_statistics"] = resourceStatisticsList
 	}
@@ -404,14 +275,14 @@ func dataSourceSummaryControlsToMap(controlsItem posturemanagementv1.Control) (c
 	return controlsMap
 }
 
-func dataSourceSummaryControlsGoalsToMap(goalsItem posturemanagementv1.Goal) (goalsMap map[string]interface{}) {
+func dataSourceSummaryControlsGoalsToMapv2(goalsItem posturemanagementv2.Goal) (goalsMap map[string]interface{}) {
 	goalsMap = map[string]interface{}{}
 
-	if goalsItem.GoalDescription != nil {
-		goalsMap["goal_description"] = goalsItem.GoalDescription
+	if goalsItem.Description != nil {
+		goalsMap["description"] = goalsItem.Description
 	}
-	if goalsItem.GoalID != nil {
-		goalsMap["goal_id"] = goalsItem.GoalID
+	if goalsItem.ID != nil {
+		goalsMap["id"] = goalsItem.ID
 	}
 	if goalsItem.Status != nil {
 		goalsMap["status"] = goalsItem.Status
@@ -428,31 +299,25 @@ func dataSourceSummaryControlsGoalsToMap(goalsItem posturemanagementv1.Goal) (go
 	if goalsItem.ResourceResult != nil {
 		resourceResultList := []map[string]interface{}{}
 		for _, resourceResultItem := range goalsItem.ResourceResult {
-			resourceResultList = append(resourceResultList, dataSourceSummaryGoalsResourceResultToMap(resourceResultItem))
+			resourceResultList = append(resourceResultList, dataSourceSummaryGoalsResourceResultToMapv2(resourceResultItem))
 		}
 		goalsMap["resource_result"] = resourceResultList
-	}
-	if goalsItem.GoalApplicabilityCriteria != nil {
-		goalApplicabilityCriteriaList := []map[string]interface{}{}
-		goalApplicabilityCriteriaMap := dataSourceSummaryGoalsGoalApplicabilityCriteriaToMap(*goalsItem.GoalApplicabilityCriteria)
-		goalApplicabilityCriteriaList = append(goalApplicabilityCriteriaList, goalApplicabilityCriteriaMap)
-		goalsMap["goal_applicability_criteria"] = goalApplicabilityCriteriaList
 	}
 
 	return goalsMap
 }
 
-func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagementv1.ResourceResult) (resourceResultMap map[string]interface{}) {
+func dataSourceSummaryGoalsResourceResultToMapv2(resourceResultItem posturemanagementv2.ResourceResult) (resourceResultMap map[string]interface{}) {
 	resourceResultMap = map[string]interface{}{}
 
-	if resourceResultItem.ResourceName != nil {
-		resourceResultMap["resource_name"] = resourceResultItem.ResourceName
+	if resourceResultItem.Name != nil {
+		resourceResultMap["name"] = resourceResultItem.Name
 	}
-	if resourceResultItem.ResourceTypes != nil {
-		resourceResultMap["resource_types"] = resourceResultItem.ResourceTypes
+	if resourceResultItem.Types != nil {
+		resourceResultMap["types"] = resourceResultItem.Types
 	}
-	if resourceResultItem.ResourceStatus != nil {
-		resourceResultMap["resource_status"] = resourceResultItem.ResourceStatus
+	if resourceResultItem.Status != nil {
+		resourceResultMap["status"] = resourceResultItem.Status
 	}
 	if resourceResultItem.DisplayExpectedValue != nil {
 		resourceResultMap["display_expected_value"] = resourceResultItem.DisplayExpectedValue
@@ -470,66 +335,20 @@ func dataSourceSummaryGoalsResourceResultToMap(resourceResultItem posturemanagem
 	return resourceResultMap
 }
 
-func dataSourceSummaryGoalsGoalApplicabilityCriteriaToMap(goalApplicabilityCriteriaItem posturemanagementv1.GoalApplicabilityCriteria) (goalApplicabilityCriteriaMap map[string]interface{}) {
-	goalApplicabilityCriteriaMap = map[string]interface{}{}
-
-	if goalApplicabilityCriteriaItem.Environment != nil {
-		goalApplicabilityCriteriaMap["environment"] = goalApplicabilityCriteriaItem.Environment
-	}
-	if goalApplicabilityCriteriaItem.Resource != nil {
-		goalApplicabilityCriteriaMap["resource"] = goalApplicabilityCriteriaItem.Resource
-	}
-	if goalApplicabilityCriteriaItem.EnvironmentCategory != nil {
-		goalApplicabilityCriteriaMap["environment_category"] = goalApplicabilityCriteriaItem.EnvironmentCategory
-	}
-	if goalApplicabilityCriteriaItem.ResourceCategory != nil {
-		goalApplicabilityCriteriaMap["resource_category"] = goalApplicabilityCriteriaItem.ResourceCategory
-	}
-	if goalApplicabilityCriteriaItem.ResourceType != nil {
-		goalApplicabilityCriteriaMap["resource_type"] = goalApplicabilityCriteriaItem.ResourceType
-	}
-	if goalApplicabilityCriteriaItem.SoftwareDetails != nil {
-		goalApplicabilityCriteriaMap["software_details"] = goalApplicabilityCriteriaItem.SoftwareDetails
-	}
-	if goalApplicabilityCriteriaItem.OsDetails != nil {
-		goalApplicabilityCriteriaMap["os_details"] = goalApplicabilityCriteriaItem.OsDetails
-	}
-	if goalApplicabilityCriteriaItem.AdditionalDetails != nil {
-		goalApplicabilityCriteriaMap["additional_details"] = goalApplicabilityCriteriaItem.AdditionalDetails
-	}
-	if goalApplicabilityCriteriaItem.EnvironmentCategoryDescription != nil {
-		goalApplicabilityCriteriaMap["environment_category_description"] = goalApplicabilityCriteriaItem.EnvironmentCategoryDescription
-	}
-	if goalApplicabilityCriteriaItem.EnvironmentDescription != nil {
-		goalApplicabilityCriteriaMap["environment_description"] = goalApplicabilityCriteriaItem.EnvironmentDescription
-	}
-	if goalApplicabilityCriteriaItem.ResourceCategoryDescription != nil {
-		goalApplicabilityCriteriaMap["resource_category_description"] = goalApplicabilityCriteriaItem.ResourceCategoryDescription
-	}
-	if goalApplicabilityCriteriaItem.ResourceTypeDescription != nil {
-		goalApplicabilityCriteriaMap["resource_type_description"] = goalApplicabilityCriteriaItem.ResourceTypeDescription
-	}
-	if goalApplicabilityCriteriaItem.ResourceDescription != nil {
-		goalApplicabilityCriteriaMap["resource_description"] = goalApplicabilityCriteriaItem.ResourceDescription
-	}
-
-	return goalApplicabilityCriteriaMap
-}
-
-func dataSourceSummaryControlsResourceStatisticsToMap(resourceStatisticsItem posturemanagementv1.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
+func dataSourceSummaryControlsResourceStatisticsToMapv2(resourceStatisticsItem posturemanagementv2.ResourceStatistics) (resourceStatisticsMap map[string]interface{}) {
 	resourceStatisticsMap = map[string]interface{}{}
 
-	if resourceStatisticsItem.ResourcePassCount != nil {
-		resourceStatisticsMap["resource_pass_count"] = resourceStatisticsItem.ResourcePassCount
+	if resourceStatisticsItem.PassCount != nil {
+		resourceStatisticsMap["pass_count"] = resourceStatisticsItem.PassCount
 	}
-	if resourceStatisticsItem.ResourceFailCount != nil {
-		resourceStatisticsMap["resource_fail_count"] = resourceStatisticsItem.ResourceFailCount
+	if resourceStatisticsItem.FailCount != nil {
+		resourceStatisticsMap["fail_count"] = resourceStatisticsItem.FailCount
 	}
-	if resourceStatisticsItem.ResourceUnableToPerformCount != nil {
-		resourceStatisticsMap["resource_unable_to_perform_count"] = resourceStatisticsItem.ResourceUnableToPerformCount
+	if resourceStatisticsItem.UnableToPerformCount != nil {
+		resourceStatisticsMap["unable_to_perform_count"] = resourceStatisticsItem.UnableToPerformCount
 	}
-	if resourceStatisticsItem.ResourceNotApplicableCount != nil {
-		resourceStatisticsMap["resource_not_applicable_count"] = resourceStatisticsItem.ResourceNotApplicableCount
+	if resourceStatisticsItem.NotApplicableCount != nil {
+		resourceStatisticsMap["not_applicable_count"] = resourceStatisticsItem.NotApplicableCount
 	}
 
 	return resourceStatisticsMap

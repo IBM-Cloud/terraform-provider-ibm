@@ -16,29 +16,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 func dataSourceIBMSccPostureProfiles() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureProfilesRead,
+		ReadContext: dataSourceIBMSccPostureListProfilesRead,
 
 		Schema: map[string]*schema.Schema{
-			"profile_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "An auto-generated unique identifying number of the profile.",
-			},
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the first page of profiles.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the first page of profiles.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -46,13 +41,13 @@ func dataSourceIBMSccPostureProfiles() *schema.Resource {
 			"last": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the last page of profiles.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the last page of profiles.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -60,13 +55,13 @@ func dataSourceIBMSccPostureProfiles() *schema.Resource {
 			"previous": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the previous page of profiles.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the previous page of profiles.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -107,138 +102,7 @@ func dataSourceIBMSccPostureProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "A reason that you want to delete a profile.",
 						},
-						"applicability_criteria": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The criteria that defines how a profile applies.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"environment": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "A list of environments that a profile can be applied to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "A list of resources that a profile can be used with.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"environment_category": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The type of environment that a profile is able to be applied to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource_category": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The type of resource that a profile is able to be applied to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource_type": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The resource type that the profile applies to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"software_details": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The software that the profile applies to.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"name": &schema.Schema{
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"version": &schema.Schema{
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"os_details": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The operatoring system that the profile applies to.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"name": &schema.Schema{
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"version": &schema.Schema{
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"additional_details": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "Any additional details about the profile.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"environment_category_description": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "The type of environment that your scope is targeted to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"environment_description": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "The environment that your scope is targeted to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource_category_description": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "The type of resource that your scope is targeted to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource_type_description": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "A further classification of the type of resource that your scope is targeted to.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"resource_description": &schema.Schema{
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "The resource that is scanned as part of your scope.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-								},
-							},
-						},
-						"profile_id": &schema.Schema{
+						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An auto-generated unique identifying number of the profile.",
@@ -248,17 +112,22 @@ func dataSourceIBMSccPostureProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The base profile that the controls are pulled from.",
 						},
-						"profile_type": &schema.Schema{
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of profile.",
 						},
-						"created_time": &schema.Schema{
+						"no_of_controls": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "no of Controls.",
+						},
+						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the profile was created in UTC.",
 						},
-						"modified_time": &schema.Schema{
+						"updated_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the profile was most recently modified in UTC.",
@@ -275,84 +144,69 @@ func dataSourceIBMSccPostureProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceIBMSccPostureProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
+func dataSourceIBMSccPostureListProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listProfilesOptions := &posturemanagementv1.ListProfilesOptions{}
-
-	var profilesList *posturemanagementv1.ProfilesList
-	var offset int64
-	finalList := []posturemanagementv1.ProfileItem{}
-	var profileID string
-	var suppliedFilter bool
-
-	if v, ok := d.GetOk("profile_id"); ok {
-		profileID = v.(string)
-		suppliedFilter = true
+	listProfilesOptions := &posturemanagementv2.ListProfilesOptions{}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
 	}
+
+	accountID := userDetails.userAccount
+	listProfilesOptions.SetAccountID(accountID)
+
+	var profileList *posturemanagementv2.ProfileList
+	var offset int64
+	finalList := []posturemanagementv2.Profile{}
 
 	for {
 		listProfilesOptions.Offset = &offset
 
 		listProfilesOptions.Limit = core.Int64Ptr(int64(100))
 		result, response, err := postureManagementClient.ListProfilesWithContext(context, listProfilesOptions)
-		profilesList = result
+		profileList = result
 		if err != nil {
 			log.Printf("[DEBUG] ListProfilesWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ListProfilesWithContext failed %s\n%s", err, response))
 		}
-		offset = dataSourceProfilesListGetNext(result.Next)
-		if suppliedFilter {
-			for _, data := range result.Profiles {
-				if *data.ProfileID == profileID {
-					finalList = append(finalList, data)
-				}
-			}
-		} else {
-			finalList = append(finalList, result.Profiles...)
-		}
+		offset = dataSourceProfileListGetNext(result.Next)
+		finalList = append(finalList, result.Profiles...)
 		if offset == 0 {
 			break
 		}
 	}
 
-	profilesList.Profiles = finalList
+	profileList.Profiles = finalList
 
-	if suppliedFilter {
-		if len(profilesList.Profiles) == 0 {
-			return diag.FromErr(fmt.Errorf("no Profiles found with profileID %s", profileID))
-		}
-		d.SetId(profileID)
-	} else {
-		d.SetId(dataSourceIBMSccPostureProfilesID(d))
-	}
+	d.SetId(dataSourceIBMSccPostureListProfilesID(d))
 
-	if profilesList.First != nil {
-		err = d.Set("first", dataSourceProfilesListFlattenFirst(*profilesList.First))
+	if profileList.First != nil {
+		err = d.Set("first", dataSourceProfileListFlattenFirst(*profileList.First))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
 		}
 	}
 
-	if profilesList.Last != nil {
-		err = d.Set("last", dataSourceProfilesListFlattenLast(*profilesList.Last))
+	if profileList.Last != nil {
+		err = d.Set("last", dataSourceProfileListFlattenLast(*profileList.Last))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting last %s", err))
 		}
 	}
 
-	if profilesList.Previous != nil {
-		err = d.Set("previous", dataSourceProfilesListFlattenPrevious(*profilesList.Previous))
+	if profileList.Previous != nil {
+		err = d.Set("previous", dataSourceProfileListFlattenPrevious(*profileList.Previous))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting previous %s", err))
 		}
 	}
 
-	if profilesList.Profiles != nil {
-		err = d.Set("profiles", dataSourceProfilesListFlattenProfiles(profilesList.Profiles))
+	if profileList.Profiles != nil {
+		err = d.Set("profiles", dataSourceProfileListFlattenProfiles(profileList.Profiles))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
 		}
@@ -361,20 +215,20 @@ func dataSourceIBMSccPostureProfilesRead(context context.Context, d *schema.Reso
 	return nil
 }
 
-// dataSourceIBMSccPostureProfilesID returns a reasonable ID for the list.
-func dataSourceIBMSccPostureProfilesID(d *schema.ResourceData) string {
+// dataSourceIBMListProfilesID returns a reasonable ID for the list.
+func dataSourceIBMSccPostureListProfilesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceProfilesListFlattenFirst(result posturemanagementv1.ProfilesListFirst) (finalList []map[string]interface{}) {
+func dataSourceProfileListFlattenFirst(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceProfilesListFirstToMap(result)
+	finalMap := dataSourceProfileListFirstToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceProfilesListFirstToMap(firstItem posturemanagementv1.ProfilesListFirst) (firstMap map[string]interface{}) {
+func dataSourceProfileListFirstToMap(firstItem posturemanagementv2.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -384,15 +238,15 @@ func dataSourceProfilesListFirstToMap(firstItem posturemanagementv1.ProfilesList
 	return firstMap
 }
 
-func dataSourceProfilesListFlattenLast(result posturemanagementv1.ProfilesListLast) (finalList []map[string]interface{}) {
+func dataSourceProfileListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceProfilesListLastToMap(result)
+	finalMap := dataSourceProfileListLastToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceProfilesListLastToMap(lastItem posturemanagementv1.ProfilesListLast) (lastMap map[string]interface{}) {
+func dataSourceProfileListLastToMap(lastItem posturemanagementv2.PageLink) (lastMap map[string]interface{}) {
 	lastMap = map[string]interface{}{}
 
 	if lastItem.Href != nil {
@@ -402,15 +256,15 @@ func dataSourceProfilesListLastToMap(lastItem posturemanagementv1.ProfilesListLa
 	return lastMap
 }
 
-func dataSourceProfilesListFlattenPrevious(result posturemanagementv1.ProfilesListPrevious) (finalList []map[string]interface{}) {
+func dataSourceProfileListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceProfilesListPreviousToMap(result)
+	finalMap := dataSourceProfileListPreviousToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceProfilesListPreviousToMap(previousItem posturemanagementv1.ProfilesListPrevious) (previousMap map[string]interface{}) {
+func dataSourceProfileListPreviousToMap(previousItem posturemanagementv2.PageLink) (previousMap map[string]interface{}) {
 	previousMap = map[string]interface{}{}
 
 	if previousItem.Href != nil {
@@ -420,15 +274,15 @@ func dataSourceProfilesListPreviousToMap(previousItem posturemanagementv1.Profil
 	return previousMap
 }
 
-func dataSourceProfilesListFlattenProfiles(result []posturemanagementv1.ProfileItem) (profiles []map[string]interface{}) {
+func dataSourceProfileListFlattenProfiles(result []posturemanagementv2.Profile) (profiles []map[string]interface{}) {
 	for _, profilesItem := range result {
-		profiles = append(profiles, dataSourceProfilesListProfilesToMap(profilesItem))
+		profiles = append(profiles, dataSourceProfileListProfilesToMap(profilesItem))
 	}
 
 	return profiles
 }
 
-func dataSourceProfilesListProfilesToMap(profilesItem posturemanagementv1.ProfileItem) (profilesMap map[string]interface{}) {
+func dataSourceProfileListProfilesToMap(profilesItem posturemanagementv2.Profile) (profilesMap map[string]interface{}) {
 	profilesMap = map[string]interface{}{}
 
 	if profilesItem.Name != nil {
@@ -449,26 +303,23 @@ func dataSourceProfilesListProfilesToMap(profilesItem posturemanagementv1.Profil
 	if profilesItem.ReasonForDelete != nil {
 		profilesMap["reason_for_delete"] = profilesItem.ReasonForDelete
 	}
-	if profilesItem.ApplicabilityCriteria != nil {
-		applicabilityCriteriaList := []map[string]interface{}{}
-		applicabilityCriteriaMap := dataSourceProfilesListProfilesApplicabilityCriteriaToMap(*profilesItem.ApplicabilityCriteria)
-		applicabilityCriteriaList = append(applicabilityCriteriaList, applicabilityCriteriaMap)
-		profilesMap["applicability_criteria"] = applicabilityCriteriaList
-	}
-	if profilesItem.ProfileID != nil {
-		profilesMap["profile_id"] = profilesItem.ProfileID
+	if profilesItem.ID != nil {
+		profilesMap["id"] = profilesItem.ID
 	}
 	if profilesItem.BaseProfile != nil {
 		profilesMap["base_profile"] = profilesItem.BaseProfile
 	}
-	if profilesItem.ProfileType != nil {
-		profilesMap["profile_type"] = profilesItem.ProfileType
+	if profilesItem.Type != nil {
+		profilesMap["type"] = profilesItem.Type
 	}
-	if profilesItem.CreatedTime != nil {
-		profilesMap["created_time"] = profilesItem.CreatedTime.String()
+	if profilesItem.NoOfControls != nil {
+		profilesMap["no_of_controls"] = profilesItem.NoOfControls
 	}
-	if profilesItem.ModifiedTime != nil {
-		profilesMap["modified_time"] = profilesItem.ModifiedTime.String()
+	if profilesItem.CreatedAt != nil {
+		profilesMap["created_at"] = profilesItem.CreatedAt.String()
+	}
+	if profilesItem.UpdatedAt != nil {
+		profilesMap["updated_at"] = profilesItem.UpdatedAt.String()
 	}
 	if profilesItem.Enabled != nil {
 		profilesMap["enabled"] = profilesItem.Enabled
@@ -477,53 +328,7 @@ func dataSourceProfilesListProfilesToMap(profilesItem posturemanagementv1.Profil
 	return profilesMap
 }
 
-func dataSourceProfilesListProfilesApplicabilityCriteriaToMap(applicabilityCriteriaItem posturemanagementv1.ApplicabilityCriteria) (applicabilityCriteriaMap map[string]interface{}) {
-	applicabilityCriteriaMap = map[string]interface{}{}
-
-	if applicabilityCriteriaItem.Environment != nil {
-		applicabilityCriteriaMap["environment"] = applicabilityCriteriaItem.Environment
-	}
-	if applicabilityCriteriaItem.Resource != nil {
-		applicabilityCriteriaMap["resource"] = applicabilityCriteriaItem.Resource
-	}
-	if applicabilityCriteriaItem.EnvironmentCategory != nil {
-		applicabilityCriteriaMap["environment_category"] = applicabilityCriteriaItem.EnvironmentCategory
-	}
-	if applicabilityCriteriaItem.ResourceCategory != nil {
-		applicabilityCriteriaMap["resource_category"] = applicabilityCriteriaItem.ResourceCategory
-	}
-	if applicabilityCriteriaItem.ResourceType != nil {
-		applicabilityCriteriaMap["resource_type"] = applicabilityCriteriaItem.ResourceType
-	}
-	if applicabilityCriteriaItem.SoftwareDetails != nil {
-		applicabilityCriteriaMap["software_details"] = applicabilityCriteriaItem.SoftwareDetails
-	}
-	if applicabilityCriteriaItem.OsDetails != nil {
-		applicabilityCriteriaMap["os_details"] = applicabilityCriteriaItem.OsDetails
-	}
-	if applicabilityCriteriaItem.AdditionalDetails != nil {
-		applicabilityCriteriaMap["additional_details"] = applicabilityCriteriaItem.AdditionalDetails
-	}
-	if applicabilityCriteriaItem.EnvironmentCategoryDescription != nil {
-		applicabilityCriteriaMap["environment_category_description"] = applicabilityCriteriaItem.EnvironmentCategoryDescription
-	}
-	if applicabilityCriteriaItem.EnvironmentDescription != nil {
-		applicabilityCriteriaMap["environment_description"] = applicabilityCriteriaItem.EnvironmentDescription
-	}
-	if applicabilityCriteriaItem.ResourceCategoryDescription != nil {
-		applicabilityCriteriaMap["resource_category_description"] = applicabilityCriteriaItem.ResourceCategoryDescription
-	}
-	if applicabilityCriteriaItem.ResourceTypeDescription != nil {
-		applicabilityCriteriaMap["resource_type_description"] = applicabilityCriteriaItem.ResourceTypeDescription
-	}
-	if applicabilityCriteriaItem.ResourceDescription != nil {
-		applicabilityCriteriaMap["resource_description"] = applicabilityCriteriaItem.ResourceDescription
-	}
-
-	return applicabilityCriteriaMap
-}
-
-func dataSourceProfilesListGetNext(next interface{}) int64 {
+func dataSourceProfileListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
 	}

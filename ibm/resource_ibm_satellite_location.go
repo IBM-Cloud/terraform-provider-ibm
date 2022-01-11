@@ -30,11 +30,31 @@ const (
 
 func resourceIBMSatelliteLocation() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMSatelliteLocationCreate,
-		Read:     resourceIBMSatelliteLocationRead,
-		Update:   resourceIBMSatelliteLocationUpdate,
-		Delete:   resourceIBMSatelliteLocationDelete,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMSatelliteLocationCreate,
+		Read:   resourceIBMSatelliteLocationRead,
+		Update: resourceIBMSatelliteLocationUpdate,
+		Delete: resourceIBMSatelliteLocationDelete,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				ID := d.Id()
+				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				if err != nil {
+					return nil, err
+				}
+
+				getSatLocOptions := &kubernetesserviceapiv1.GetSatelliteLocationOptions{
+					Controller: &ID,
+				}
+
+				instance, response, err := satClient.GetSatelliteLocation(getSatLocOptions)
+				if err != nil || instance == nil {
+					return nil, fmt.Errorf("Error reading satellite location: %s\n%s", err, response)
+				}
+
+				d.Set("zones", newStringSet(schema.HashString, instance.WorkerZones))
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -297,10 +317,6 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 
 	if instance.Datacenter != nil {
 		d.Set(sateLocZone, *instance.Datacenter)
-	}
-
-	if instance.WorkerZones != nil {
-		d.Set("zones", instance.WorkerZones)
 	}
 
 	if instance.ResourceGroup != nil {

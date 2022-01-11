@@ -16,12 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
 func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureLatestScansRead,
+		ReadContext: dataSourceIBMSccPostureListLatestScansRead,
 
 		Schema: map[string]*schema.Schema{
 			"scan_id": &schema.Schema{
@@ -32,13 +32,13 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 			"first": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the first page of scans.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the first page of scans.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -46,13 +46,13 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 			"last": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the last page of scans.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the last page of scans.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -60,13 +60,13 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 			"previous": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The URL of the previous page of scans.",
+				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of the previous page of scans.",
+							Description: "The URL of a page.",
 						},
 					},
 				},
@@ -90,27 +90,36 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 						"scope_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the scan.",
+							Description: "The scope ID of the scan.",
 						},
 						"scope_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the scope.",
 						},
-						"profile_id": &schema.Schema{
-							Type:        schema.TypeString,
+						"profiles": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The ID of the profile.",
-						},
-						"profile_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the profile.",
-						},
-						"profile_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
+							Description: "Profiles array.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the profile.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An auto-generated unique identifier for the scope.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of profile.",
+									},
+								},
+							},
 						},
 						"group_profile_id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -132,6 +141,11 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 							Computed:    true,
 							Description: "The date and time the scan was run.",
 						},
+						"report_setting_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique ID for Scan that is created.",
+						},
 						"end_time": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -140,7 +154,7 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 						"result": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The result of a scan.",
+							Description: "The result of a scan.The above values will not be avaialble if no scopes are available.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"goals_pass_count": &schema.Schema{
@@ -203,17 +217,24 @@ func dataSourceIBMSccPostureLatestScans() *schema.Resource {
 	}
 }
 
-func dataSourceIBMSccPostureLatestScansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV1()
+func dataSourceIBMSccPostureListLatestScansRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listLatestScansOptions := &posturemanagementv1.ListLatestScansOptions{}
+	listLatestScansOptions := &posturemanagementv2.ListLatestScansOptions{}
+	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+	}
 
-	var scansList *posturemanagementv1.ScansList
+	accountID := userDetails.userAccount
+	listLatestScansOptions.SetAccountID(accountID)
+
+	var scanList *posturemanagementv2.ScanList
 	var offset int64
-	finalList := []posturemanagementv1.ScanItem{}
+	finalList := []posturemanagementv2.ScanItem{}
 	var scanID string
 	var suppliedFilter bool
 
@@ -227,12 +248,12 @@ func dataSourceIBMSccPostureLatestScansRead(context context.Context, d *schema.R
 
 		listLatestScansOptions.Limit = core.Int64Ptr(int64(100))
 		result, response, err := postureManagementClient.ListLatestScansWithContext(context, listLatestScansOptions)
-		scansList = result
+		scanList = result
 		if err != nil {
 			log.Printf("[DEBUG] ListLatestScansWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ListLatestScansWithContext failed %s\n%s", err, response))
 		}
-		offset = dataSourceScansListGetNext(result.Next)
+		offset = dataSourceScanListGetNext(result.Next)
 		if suppliedFilter {
 			for _, data := range result.LatestScans {
 				if *data.ScanID == scanID {
@@ -247,40 +268,40 @@ func dataSourceIBMSccPostureLatestScansRead(context context.Context, d *schema.R
 		}
 	}
 
-	scansList.LatestScans = finalList
+	scanList.LatestScans = finalList
 
 	if suppliedFilter {
-		if len(scansList.LatestScans) == 0 {
+		if len(scanList.LatestScans) == 0 {
 			return diag.FromErr(fmt.Errorf("no LatestScans found with scanID %s", scanID))
 		}
 		d.SetId(scanID)
 	} else {
-		d.SetId(dataSourceIBMSccPostureLatestScansID(d))
+		d.SetId(dataSourceIBMListLatestScansID(d))
 	}
 
-	if scansList.First != nil {
-		err = d.Set("first", dataSourceScansListFlattenFirst(*scansList.First))
+	if scanList.First != nil {
+		err = d.Set("first", dataSourceScanListFlattenFirst(*scanList.First))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
 		}
 	}
 
-	if scansList.Last != nil {
-		err = d.Set("last", dataSourceScansListFlattenLast(*scansList.Last))
+	if scanList.Last != nil {
+		err = d.Set("last", dataSourceScanListFlattenLast(*scanList.Last))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting last %s", err))
 		}
 	}
 
-	if scansList.Previous != nil {
-		err = d.Set("previous", dataSourceScansListFlattenPrevious(*scansList.Previous))
+	if scanList.Previous != nil {
+		err = d.Set("previous", dataSourceScanListFlattenPrevious(*scanList.Previous))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting previous %s", err))
 		}
 	}
 
-	if scansList.LatestScans != nil {
-		err = d.Set("latest_scans", dataSourceScansListFlattenLatestScans(scansList.LatestScans))
+	if scanList.LatestScans != nil {
+		err = d.Set("latest_scans", dataSourceScanListFlattenLatestScans(scanList.LatestScans))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting latest_scans %s", err))
 		}
@@ -289,20 +310,20 @@ func dataSourceIBMSccPostureLatestScansRead(context context.Context, d *schema.R
 	return nil
 }
 
-// dataSourceIBMSccPostureLatestScansID returns a reasonable ID for the list.
-func dataSourceIBMSccPostureLatestScansID(d *schema.ResourceData) string {
+// dataSourceIBMListLatestScansID returns a reasonable ID for the list.
+func dataSourceIBMListLatestScansID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceScansListFlattenFirst(result posturemanagementv1.ScansListFirst) (finalList []map[string]interface{}) {
+func dataSourceScanListFlattenFirst(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceScansListFirstToMap(result)
+	finalMap := dataSourceScanListFirstToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceScansListFirstToMap(firstItem posturemanagementv1.ScansListFirst) (firstMap map[string]interface{}) {
+func dataSourceScanListFirstToMap(firstItem posturemanagementv2.PageLink) (firstMap map[string]interface{}) {
 	firstMap = map[string]interface{}{}
 
 	if firstItem.Href != nil {
@@ -312,15 +333,15 @@ func dataSourceScansListFirstToMap(firstItem posturemanagementv1.ScansListFirst)
 	return firstMap
 }
 
-func dataSourceScansListFlattenLast(result posturemanagementv1.ScansListLast) (finalList []map[string]interface{}) {
+func dataSourceScanListFlattenLast(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceScansListLastToMap(result)
+	finalMap := dataSourceScanListLastToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceScansListLastToMap(lastItem posturemanagementv1.ScansListLast) (lastMap map[string]interface{}) {
+func dataSourceScanListLastToMap(lastItem posturemanagementv2.PageLink) (lastMap map[string]interface{}) {
 	lastMap = map[string]interface{}{}
 
 	if lastItem.Href != nil {
@@ -330,15 +351,15 @@ func dataSourceScansListLastToMap(lastItem posturemanagementv1.ScansListLast) (l
 	return lastMap
 }
 
-func dataSourceScansListFlattenPrevious(result posturemanagementv1.ScansListPrevious) (finalList []map[string]interface{}) {
+func dataSourceScanListFlattenPrevious(result posturemanagementv2.PageLink) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := dataSourceScansListPreviousToMap(result)
+	finalMap := dataSourceScanListPreviousToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func dataSourceScansListPreviousToMap(previousItem posturemanagementv1.ScansListPrevious) (previousMap map[string]interface{}) {
+func dataSourceScanListPreviousToMap(previousItem posturemanagementv2.PageLink) (previousMap map[string]interface{}) {
 	previousMap = map[string]interface{}{}
 
 	if previousItem.Href != nil {
@@ -348,15 +369,15 @@ func dataSourceScansListPreviousToMap(previousItem posturemanagementv1.ScansList
 	return previousMap
 }
 
-func dataSourceScansListFlattenLatestScans(result []posturemanagementv1.ScanItem) (latestScans []map[string]interface{}) {
+func dataSourceScanListFlattenLatestScans(result []posturemanagementv2.ScanItem) (latestScans []map[string]interface{}) {
 	for _, latestScansItem := range result {
-		latestScans = append(latestScans, dataSourceScansListLatestScansToMap(latestScansItem))
+		latestScans = append(latestScans, dataSourceScanListLatestScansToMap(latestScansItem))
 	}
 
 	return latestScans
 }
 
-func dataSourceScansListLatestScansToMap(latestScansItem posturemanagementv1.ScanItem) (latestScansMap map[string]interface{}) {
+func dataSourceScanListLatestScansToMap(latestScansItem posturemanagementv2.ScanItem) (latestScansMap map[string]interface{}) {
 	latestScansMap = map[string]interface{}{}
 
 	if latestScansItem.ScanID != nil {
@@ -371,14 +392,12 @@ func dataSourceScansListLatestScansToMap(latestScansItem posturemanagementv1.Sca
 	if latestScansItem.ScopeName != nil {
 		latestScansMap["scope_name"] = latestScansItem.ScopeName
 	}
-	if latestScansItem.ProfileID != nil {
-		latestScansMap["profile_id"] = latestScansItem.ProfileID
-	}
-	if latestScansItem.ProfileName != nil {
-		latestScansMap["profile_name"] = latestScansItem.ProfileName
-	}
-	if latestScansItem.ProfileType != nil {
-		latestScansMap["profile_type"] = latestScansItem.ProfileType
+	if latestScansItem.Profiles != nil {
+		profilesList := []map[string]interface{}{}
+		for _, profilesItem := range latestScansItem.Profiles {
+			profilesList = append(profilesList, dataSourceScanListLatestScansProfilesToMap(profilesItem))
+		}
+		latestScansMap["profiles"] = profilesList
 	}
 	if latestScansItem.GroupProfileID != nil {
 		latestScansMap["group_profile_id"] = latestScansItem.GroupProfileID
@@ -392,12 +411,15 @@ func dataSourceScansListLatestScansToMap(latestScansItem posturemanagementv1.Sca
 	if latestScansItem.StartTime != nil {
 		latestScansMap["start_time"] = latestScansItem.StartTime.String()
 	}
+	if latestScansItem.ReportSettingID != nil {
+		latestScansMap["report_setting_id"] = latestScansItem.ReportSettingID
+	}
 	if latestScansItem.EndTime != nil {
 		latestScansMap["end_time"] = latestScansItem.EndTime.String()
 	}
 	if latestScansItem.Result != nil {
 		resultList := []map[string]interface{}{}
-		resultMap := dataSourceScansListLatestScansResultToMap(*latestScansItem.Result)
+		resultMap := dataSourceScanListLatestScansResultToMap(*latestScansItem.Result)
 		resultList = append(resultList, resultMap)
 		latestScansMap["result"] = resultList
 	}
@@ -405,7 +427,23 @@ func dataSourceScansListLatestScansToMap(latestScansItem posturemanagementv1.Sca
 	return latestScansMap
 }
 
-func dataSourceScansListLatestScansResultToMap(resultItem posturemanagementv1.ScanResult) (resultMap map[string]interface{}) {
+func dataSourceScanListLatestScansProfilesToMap(profilesItem posturemanagementv2.ProfileItem) (profilesMap map[string]interface{}) {
+	profilesMap = map[string]interface{}{}
+
+	if profilesItem.Name != nil {
+		profilesMap["name"] = profilesItem.Name
+	}
+	if profilesItem.ID != nil {
+		profilesMap["id"] = profilesItem.ID
+	}
+	if profilesItem.Type != nil {
+		profilesMap["type"] = profilesItem.Type
+	}
+
+	return profilesMap
+}
+
+func dataSourceScanListLatestScansResultToMap(resultItem posturemanagementv2.ScanResult) (resultMap map[string]interface{}) {
 	resultMap = map[string]interface{}{}
 
 	if resultItem.GoalsPassCount != nil {
@@ -442,7 +480,7 @@ func dataSourceScansListLatestScansResultToMap(resultItem posturemanagementv1.Sc
 	return resultMap
 }
 
-func dataSourceScansListGetNext(next interface{}) int64 {
+func dataSourceScanListGetNext(next interface{}) int64 {
 	if reflect.ValueOf(next).IsNil() {
 		return 0
 	}

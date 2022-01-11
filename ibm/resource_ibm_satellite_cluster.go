@@ -34,11 +34,33 @@ const (
 
 func resourceIBMSatelliteCluster() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMSatelliteClusterCreate,
-		Read:     resourceIBMSatelliteClusterRead,
-		Update:   resourceIBMSatelliteClusterUpdate,
-		Delete:   resourceIBMSatelliteClusterDelete,
-		Importer: &schema.ResourceImporter{},
+		Create: resourceIBMSatelliteClusterCreate,
+		Read:   resourceIBMSatelliteClusterRead,
+		Update: resourceIBMSatelliteClusterUpdate,
+		Delete: resourceIBMSatelliteClusterDelete,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				ID := d.Id()
+				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				if err != nil {
+					return nil, err
+				}
+				getSatClusterOptions := &kubernetesserviceapiv1.GetClusterOptions{
+					Cluster: &ID,
+				}
+
+				cluster, response, err := satClient.GetCluster(getSatClusterOptions)
+				if err != nil || cluster == nil {
+					if response != nil && response.StatusCode == 404 && strings.Contains(err.Error(), "The specified cluster could not be found") {
+						return nil, fmt.Errorf("Error reading satellite cluster: %s\n%s", err, response)
+					}
+					return nil, fmt.Errorf("Error reading satellite cluster: %s", err)
+				}
+
+				d.Set("zones", flattenSatelliteClusterZones(cluster.LocationZones))
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -511,15 +533,6 @@ func resourceIBMSatelliteClusterRead(d *schema.ResourceData, meta interface{}) e
 		log.Printf(
 			"An error occured while retrieving default workerpool : %s\n%s", err, response)
 	}
-
-	var zones = make([]map[string]interface{}, 0)
-	for _, zone := range workerPool.Zones {
-		zoneInfo := map[string]interface{}{
-			"id": *zone.ID,
-		}
-		zones = append(zones, zoneInfo)
-	}
-	d.Set("zones", zones)
 
 	tags, err := GetTagsUsingCRN(meta, *cluster.Crn)
 	if err != nil {
