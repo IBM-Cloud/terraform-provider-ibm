@@ -816,7 +816,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_inventory":      resourceIBMSchematicsInventory(),
 			"ibm_schematics_resource_query": resourceIBMSchematicsResourceQuery(),
 
-			//satellite  resources
+			//Satellite resources
 			"ibm_satellite_location":                            resourceIBMSatelliteLocation(),
 			"ibm_satellite_host":                                resourceIBMSatelliteHost(),
 			"ibm_satellite_cluster":                             resourceIBMSatelliteCluster(),
@@ -826,7 +826,7 @@ func Provider() *schema.Provider {
 			"ibm_satellite_location_nlb_dns":                    resourceIbmSatelliteLocationNlbDns(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": resourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
-			//sattelite config resources
+			//Satellite config resources
 			"ibm_satellite_config_clustergroup": resourceIBMSatconClusterGroup(),
 
 			//Added for Resource Tag
