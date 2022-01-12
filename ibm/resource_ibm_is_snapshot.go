@@ -5,8 +5,10 @@ package ibm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -172,13 +174,14 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
+	sv := ""
 	options := &vpcv1.CreateSnapshotOptions{}
 	if snapshotName, ok := d.GetOk(isSnapshotName); ok {
 		name := snapshotName.(string)
 		options.Name = &name
 	}
 	if sourceVolume, ok := d.GetOk(isSnapshotSourceVolume); ok {
-		sv := sourceVolume.(string)
+		sv = sourceVolume.(string)
 		options.SourceVolume = &vpcv1.VolumeIdentity{
 			ID: &sv,
 		}
@@ -194,7 +197,54 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 
 	snapshot, response, err := sess.CreateSnapshot(options)
 	if err != nil || snapshot == nil {
-		return fmt.Errorf("Error creating Snapshot %s\n%s", err, response)
+		if response.StatusCode == 409 {
+			restartError := "snapshots_attached_instance_not_running"
+			responseResultByte, errIns := json.Marshal(response)
+			if errIns == nil {
+				responseResultStr := string(responseResultByte)
+				if strings.Contains(responseResultStr, restartError) {
+					getVolumeOptions := &vpcv1.GetVolumeOptions{
+						ID: &sv,
+					}
+					vol, _, errIns := sess.GetVolume(getVolumeOptions)
+					if errIns != nil {
+						return fmt.Errorf("Error getting source volume %s\n%s", err, response)
+					}
+					if vol.VolumeAttachments != nil && len(vol.VolumeAttachments) > 0 {
+						instanceId := vol.VolumeAttachments[0].Instance.ID
+						getInsOptions := &vpcv1.GetInstanceOptions{
+							ID: instanceId,
+						}
+						ins, _, errIns := sess.GetInstance(getInsOptions)
+						if errIns != nil {
+							return fmt.Errorf("Error getting source volume instance %s\n%s", err, response)
+						}
+						if *ins.Status == "stopped" {
+							actiontype := "start"
+							createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+								InstanceID: instanceId,
+								Type:       &actiontype,
+							}
+							_, response, errIns = sess.CreateInstanceAction(createinsactoptions)
+							if errIns != nil {
+								return fmt.Errorf("Error starting Instance (%s) to which the volume (%s) is attached  : %s\n%s", *instanceId, sv, err, response)
+							}
+							_, errIns = isWaitForVolAttInstanceAvailable(sess, *instanceId, d.Timeout(schema.TimeoutCreate), d)
+							if errIns != nil {
+								return errIns
+							}
+						}
+					}
+				}
+			}
+			snapshot, response, err = sess.CreateSnapshot(options)
+			if err != nil || snapshot == nil {
+				return fmt.Errorf("Error creating Snapshot %s\n%s", err, response)
+			}
+
+		} else {
+			return fmt.Errorf("Error creating Snapshot %s\n%s", err, response)
+		}
 	}
 
 	d.SetId(*snapshot.ID)
