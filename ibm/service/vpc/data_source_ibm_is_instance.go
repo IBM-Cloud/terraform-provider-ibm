@@ -41,6 +41,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Description: "Instance name",
 			},
 
+			isInstanceMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+			},
+
 			isInstancePEM: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -552,6 +558,9 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			d.Set(isInstanceName, *instance.Name)
 			if instance.Profile != nil {
 				d.Set(isInstanceProfile, *instance.Profile.Name)
+			}
+			if instance.MetadataService != nil {
+				d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
 			}
 			cpuList := make([]map[string]interface{}, 0)
 			if instance.Vcpu != nil {
