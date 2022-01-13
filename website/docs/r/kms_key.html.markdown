@@ -73,6 +73,12 @@ resource "ibm_kms_key" "key" {
 
 Set policies for a key, as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys.
 
+**Deprecated** :
+
+The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been deprecated and it is scheduled to be removed soon in favor of a dedicated ibm_kms_key_policies resource. For more information, check out https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy and https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/kms_key_policies.
+
+Until the current behaviour of provisioning KMS key with key policies is deprecated, use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together. In case you have a need to use both the resources until deprecation, add lifecycle ignore block to "ibm_kms_key" resource to ignore any changes to the policies.
+
 ```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "test_kp"
@@ -95,12 +101,6 @@ resource "ibm_kms_key" "key" {
   }
 }
 ```
-
-**Deprecated** :
-1) Support for creating Policies along with the Key will be deprecated in future releases.
-2) A new resource for creating Key pollicies has been released which can be used to create policies for existing key.
-3) Use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together.
-4) If both the resources have been utilised to create policies then add licycle ignore block to "ibm_kms_key" resource to avoid any changes kms_key_policies resource to the policies.
 
 ## Lifecycle Ignore Block Example
 
