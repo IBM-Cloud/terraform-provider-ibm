@@ -1323,7 +1323,9 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 
 	bucketList, err := s3Client.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		return false, err
+		log.Printf("[ERROR] failed to get bucketlist : %+v", err)
+		d.SetId("")
+		return false, nil
 	}
 	for _, bucket := range bucketList.Buckets {
 		if *bucket.Name == bucketName {
