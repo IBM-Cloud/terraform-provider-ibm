@@ -41,7 +41,7 @@ func resourceIBMHPCS() *schema.Resource {
 
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				return immutableResourceCustomizeDiff([]string{"units", "failover_units", "location", "resource_group_id", "service"}, diff)
+				return immutableResourceCustomizeDiff([]string{"units", "location", "resource_group_id", "service"}, diff)
 			},
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return resourceTagsCustomizeDiff(diff)
@@ -652,7 +652,7 @@ func resourceIBMHPCSUpdate(context context.Context, d *schema.ResourceData, meta
 	}
 	// Initialise HPCS Crypto Units
 
-	if d.HasChange("signature_threshold") || d.HasChange("revocation_threshold") || d.HasChange("admins") || d.HasChange("signature_server_url") {
+	if d.HasChange("signature_threshold") || d.HasChange("failover_units") || d.HasChange("revocation_threshold") || d.HasChange("admins") || d.HasChange("signature_server_url") {
 		if url, ok := d.GetOk("signature_server_url"); ok {
 			serverURL := url.(string)
 			err := os.Setenv("TKE_SIGNSERV_URL", serverURL)
@@ -708,6 +708,9 @@ func expandHSMConfig(d *schema.ResourceData, meta interface{}) tkesdk.HsmConfig 
 			admins = append(admins, admin)
 		}
 		hsmConfig.Admins = admins
+	}
+	if f, ok := d.GetOk("failover_units"); ok {
+		hsmConfig.FailoverUnits = f.(int)
 	}
 	return hsmConfig
 }
