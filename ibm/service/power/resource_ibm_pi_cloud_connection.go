@@ -212,7 +212,7 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 	if cloudConnection != nil {
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
 	} else if cloudConnectionJob != nil {
-		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
+		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnectionJob.CloudConnectionID))
 
 		jobID := *cloudConnectionJob.JobRef.ID
 
