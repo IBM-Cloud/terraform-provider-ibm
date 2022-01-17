@@ -25,7 +25,7 @@ func DataSourceIBMSccPostureProfiles() *schema.Resource {
 		ReadContext: dataSourceIBMSccPostureListProfilesRead,
 
 		Schema: map[string]*schema.Schema{
-			"first": &schema.Schema{
+			"first": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
@@ -103,7 +103,7 @@ func DataSourceIBMSccPostureProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "A reason that you want to delete a profile.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An auto-generated unique identifying number of the profile.",
@@ -113,22 +113,22 @@ func DataSourceIBMSccPostureProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The base profile that the controls are pulled from.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of profile.",
 						},
-						"no_of_controls": &schema.Schema{
+						"no_of_controls": {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "no of Controls.",
 						},
-						"created_at": &schema.Schema{
+						"created_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the profile was created in UTC.",
 						},
-						"updated_at": &schema.Schema{
+						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the profile was most recently modified in UTC.",
@@ -154,7 +154,7 @@ func dataSourceIBMSccPostureListProfilesRead(context context.Context, d *schema.
 	listProfilesOptions := &posturemanagementv2.ListProfilesOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount

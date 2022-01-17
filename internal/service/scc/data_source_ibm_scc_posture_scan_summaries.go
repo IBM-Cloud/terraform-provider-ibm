@@ -25,7 +25,7 @@ func DataSourceIBMSccPostureScanSummaries() *schema.Resource {
 		ReadContext: dataSourceIBMSccPostureScanSummariesRead,
 
 		Schema: map[string]*schema.Schema{
-			"report_setting_id": &schema.Schema{
+			"report_setting_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The report setting ID. This can be obtained from the /validations/latest_scans API call.",
@@ -78,12 +78,12 @@ func DataSourceIBMSccPostureScanSummaries() *schema.Resource {
 				Description: "Summaries.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the scan.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.",
@@ -118,23 +118,23 @@ func DataSourceIBMSccPostureScanSummaries() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the collector as it completes a scan.",
 						},
-						"profiles": &schema.Schema{
+						"profiles": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The list of profiles.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the profile.",
 									},
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of the profile.",
 									},
-									"type": &schema.Schema{
+									"type": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
@@ -207,17 +207,17 @@ func DataSourceIBMSccPostureScanSummaries() *schema.Resource {
 							Description: "The list of group profiles.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the profile.",
 									},
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of the profile.",
 									},
-									"type": &schema.Schema{
+									"type": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
@@ -300,7 +300,7 @@ func dataSourceIBMSccPostureScanSummariesRead(context context.Context, d *schema
 	scanSummariesOptions := &posturemanagementv2.ScanSummariesOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount

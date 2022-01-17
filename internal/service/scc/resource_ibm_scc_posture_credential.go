@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -16,7 +18,7 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
-func resourceIBMSccPostureCredentials() *schema.Resource {
+func ResourceIBMSccPostureCredentials() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMSccPostureCredentialsCreate,
 		ReadContext:   resourceIBMSccPostureCredentialsRead,
@@ -25,30 +27,30 @@ func resourceIBMSccPostureCredentials() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
 				Description: "Credentials status enabled/disbaled.",
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_credential", "type"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_credential", "type"),
 				Description:  "Credentials type.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_credential", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_credential", "name"),
 				Description:  "Credentials name.",
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_credential", "description"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_credential", "description"),
 				Description:  "Credentials description.",
 			},
-			"display_fields": &schema.Schema{
+			"display_fields": {
 				Type:        schema.TypeList,
 				MinItems:    1,
 				MaxItems:    1,
@@ -56,7 +58,7 @@ func resourceIBMSccPostureCredentials() *schema.Resource {
 				Description: "Details the fields on the credential. This will change as per credential type selected.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ibm_api_key": &schema.Schema{
+						"ibm_api_key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The IBM Cloud API Key. This is mandatory for IBM Credential Type ie when type=ibm_cloud.",
@@ -64,7 +66,7 @@ func resourceIBMSccPostureCredentials() *schema.Resource {
 					},
 				},
 			},
-			"group": &schema.Schema{
+			"group": {
 				Type:        schema.TypeList,
 				MinItems:    1,
 				MaxItems:    1,
@@ -72,12 +74,12 @@ func resourceIBMSccPostureCredentials() *schema.Resource {
 				Description: "Credential group details.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "credential group id.",
 						},
-						"passphrase": &schema.Schema{
+						"passphrase": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "passphase of the credential.",
@@ -85,48 +87,48 @@ func resourceIBMSccPostureCredentials() *schema.Resource {
 					},
 				},
 			},
-			"purpose": &schema.Schema{
+			"purpose": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_credential", "purpose"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_credential", "purpose"),
 				Description:  "Purpose for which the credential is created.",
 			},
 		},
 	}
 }
 
-func resourceIBMSccPostureCredentialsValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+func ResourceIBMSccPostureCredentialsValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "type",
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "aws_cloud, azure_cloud, database, ibm_cloud, kerberos_windows, ms_365, openstack_cloud, username_password",
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "name",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "description",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "purpose",
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "discovery_collection, discovery_collection_remediation, discovery_fact_collection, discovery_fact_collection_remediation, remediation",
 			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
@@ -135,12 +137,12 @@ func resourceIBMSccPostureCredentialsValidator() *ResourceValidator {
 		},
 	)
 
-	resourceValidator := ResourceValidator{ResourceName: "ibm_scc_posture_credentials", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_scc_posture_credentials", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIBMSccPostureCredentialsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -199,18 +201,18 @@ func resourceIBMSccPostureCredentialsMapToCredentialGroup(credentialGroupMap map
 }
 
 func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	listCredentialsOptions.SetAccountID(accountID)
 
 	credentialList, response, err := postureManagementClient.ListCredentialsWithContext(context, listCredentialsOptions)
@@ -246,7 +248,7 @@ func resourceIBMCredentialsCredentialGroupToMap(credentialGroup posturemanagemen
 }
 
 func resourceIBMSccPostureCredentialsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,7 +284,7 @@ func resourceIBMSccPostureCredentialsUpdate(context context.Context, d *schema.R
 }
 
 func resourceIBMSccPostureCredentialsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}

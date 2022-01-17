@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package satellite
 
 import (
 	"context"
@@ -9,11 +9,13 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceIbmSatelliteClusterWorkerPoolZoneAttachment() *schema.Resource {
+func ResourceIbmSatelliteClusterWorkerPoolZoneAttachment() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmSatelliteClusterWorkerPoolZoneAttachmentCreate,
 		ReadContext:   resourceIbmSatelliteClusterWorkerPoolZoneAttachmentRead,
@@ -21,28 +23,28 @@ func resourceIbmSatelliteClusterWorkerPoolZoneAttachment() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"cluster": &schema.Schema{
+			"cluster": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"worker_pool": &schema.Schema{
+			"worker_pool": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"zone": &schema.Schema{
+			"zone": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"resource_group_id": &schema.Schema{
+			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "The ID of the resource group that the Satellite location is in. To list the resource group ID of the location, use the `GET /v2/satellite/getController` API method.",
 			},
-			"autobalance_enabled": &schema.Schema{
+			"autobalance_enabled": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
@@ -62,7 +64,7 @@ func resourceIbmSatelliteClusterWorkerPoolZoneAttachment() *schema.Resource {
 }
 
 func resourceIbmSatelliteClusterWorkerPoolZoneAttachmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,12 +93,12 @@ func resourceIbmSatelliteClusterWorkerPoolZoneAttachmentCreate(context context.C
 }
 
 func resourceIbmSatelliteClusterWorkerPoolZoneAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,12 +135,12 @@ func resourceIbmSatelliteClusterWorkerPoolZoneAttachmentRead(context context.Con
 }
 
 func resourceIbmSatelliteClusterWorkerPoolZoneAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}

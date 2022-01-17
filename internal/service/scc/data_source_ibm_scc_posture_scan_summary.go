@@ -51,7 +51,7 @@ func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 				Description: "The list of controls on the scan summary.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The scan summary control ID.",
@@ -66,7 +66,7 @@ func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Computed:    true,
 							Description: "The external control ID.",
 						},
-						"desciption": &schema.Schema{
+						"desciption": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The scan profile name.",
@@ -77,12 +77,12 @@ func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Description: "The list of goals on the control.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"description": &schema.Schema{
+									"description": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the goal.",
 									},
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The goal ID.",
@@ -113,17 +113,17 @@ func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 										Description: "The list of resource results.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": &schema.Schema{
+												"name": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource name.",
 												},
-												"types": &schema.Schema{
+												"types": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource type.",
 												},
-												"status": &schema.Schema{
+												"status": {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource control result status.",
@@ -160,22 +160,22 @@ func DataSourceIBMSccPostureScansSummary() *schema.Resource {
 							Description: "A scans summary controls.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"pass_count": &schema.Schema{
+									"pass_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of pass controls.",
 									},
-									"fail_count": &schema.Schema{
+									"fail_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of fail controls.",
 									},
-									"unable_to_perform_count": &schema.Schema{
+									"unable_to_perform_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of resources that were unable to be scanned against a control.",
 									},
-									"not_applicable_count": &schema.Schema{
+									"not_applicable_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The resource count of not applicable(na) controls.",
@@ -199,7 +199,7 @@ func dataSourceIBMSccPostureScansSummaryRead(context context.Context, d *schema.
 	scansSummaryOptions := &posturemanagementv2.ScansSummaryOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount

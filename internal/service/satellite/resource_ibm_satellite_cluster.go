@@ -44,7 +44,7 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				ID := d.Id()
-				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 				if err != nil {
 					return nil, err
 				}
@@ -60,7 +60,7 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 					return nil, fmt.Errorf("Error reading satellite cluster: %s", err)
 				}
 
-				d.Set("zones", flattenSatelliteClusterZones(cluster.LocationZones))
+				d.Set("zones", flex.FlattenSatelliteClusterZones(cluster.LocationZones))
 				return []*schema.ResourceData{d}, nil
 			},
 		},

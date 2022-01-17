@@ -730,7 +730,7 @@ func testAccCheckIAMFunctionActionNodeJS(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	
@@ -756,7 +756,7 @@ func testAccCheckIAMFunctionActionNodeJSWithParams(name, namespace string) strin
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
 							   [
@@ -791,7 +791,7 @@ func testAccCheckIAMFunctionActionNodeJSZip(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = base64encode("test-fixtures/nodeaction.zip")
+		  code = base64encode("../../test-fixtures/nodeaction.zip")
 		}
 	  }
 `, namespace, name)
@@ -815,7 +815,7 @@ func testAccCheckIAMFunctionActionPython(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "python:3"
-		  code = file("test-fixtures/helloPython.py")
+		  code = file("../../test-fixtures/helloPython.py")
 		}
 	  }
 `, namespace, name)
@@ -839,7 +839,7 @@ func testAccCheckIAMFunctionActionPythonZip(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "python:3"
-		  code_path = "test-fixtures/pythonaction.zip"
+		  code_path = "../../test-fixtures/pythonaction.zip"
 		}
 	  }
 `, namespace, name)
@@ -863,7 +863,7 @@ func testAccCheckIAMFunctionActionPHP(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "php:7.3"
-		  code = file("test-fixtures/hellophp.php")
+		  code = file("../../test-fixtures/hellophp.php")
 		}
 	  }
 `, namespace, name)
@@ -887,7 +887,7 @@ func testAccCheckIAMFunctionActionPHPZip(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind 		= "php:7.3"
-		  code_path = "test-fixtures/phpaction.zip"
+		  code_path = "../../test-fixtures/phpaction.zip"
 		}
 	  }
 `, namespace, name)
@@ -911,7 +911,7 @@ func testAccCheckIAMFunctionActionSwift(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "swift:4.2"
-		  code = file("test-fixtures/helloSwift.swift")
+		  code = file("../../test-fixtures/helloSwift.swift")
 		}
 	  }
 	
@@ -960,7 +960,7 @@ func testAccCheckIAMFunctionActionCreate(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 		limits {
 		}
@@ -991,7 +991,7 @@ func testAccCheckIAMFunctionActionUpdate(name, namespace string) string {
 		}
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		
 		user_defined_parameters = <<EOF
@@ -1027,7 +1027,7 @@ func testAccCheckIAMFunctionActionImport(name, namespace string) string {
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
 							  [
@@ -1062,7 +1062,7 @@ func testAccCheckCFFunctionAction(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	
@@ -1077,7 +1077,7 @@ func testAccCheckCFFunctionActionNodeJSWithParams(name, namespace string) string
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
 							   [
@@ -1102,7 +1102,7 @@ func testAccCheckCFFunctionActionNodeJSZip(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = base64encode("test-fixtures/nodeaction.zip")
+		  code = base64encode("../../test-fixtures/nodeaction.zip")
 		}
 	  }
 `, name, namespace)
@@ -1116,7 +1116,7 @@ func testAccCheckCFFunctionActionPython(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "python:3"
-		  code = file("test-fixtures/helloPython.py")
+		  code = file("../../test-fixtures/helloPython.py")
 		}
 	  }
 `, name, namespace)
@@ -1130,7 +1130,7 @@ func testAccCheckCFFunctionActionPythonZip(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "python:3"
-		  code = base64encode("test-fixtures/pythonaction.zip")
+		  code = base64encode("../../test-fixtures/pythonaction.zip")
 		}
 	  }
 `, name, namespace)
@@ -1144,7 +1144,7 @@ func testAccCheckCFFunctionActionPHP(name, namespace string) string {
 		namespace = "%s"	
 		exec {
 		  kind = "php:7.3"
-		  code = file("test-fixtures/hellophp.php")
+		  code = file("../../test-fixtures/hellophp.php")
 		}
 	  }
 `, name, namespace)
@@ -1158,7 +1158,7 @@ func testAccCheckCFFunctionActionPHPZip(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "php:7.3"
-		  code = base64encode("test-fixtures/phpaction.zip")
+		  code = base64encode("../../test-fixtures/phpaction.zip")
 		}
 	  }
 `, name, namespace)
@@ -1172,7 +1172,7 @@ func testAccCheckCFFunctionActionSwift(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "swift:4.2"
-		  code = file("test-fixtures/helloSwift.swift")
+		  code = file("../../test-fixtures/helloSwift.swift")
 		}
 	  }
 	
@@ -1202,7 +1202,7 @@ func testAccCheckCFFunctionActionCreate(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 		limits {
 		}
@@ -1223,7 +1223,7 @@ func testAccCheckCFFunctionActionUpdate(name, namespace string) string {
 		}
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		
 		user_defined_parameters = <<EOF
@@ -1249,7 +1249,7 @@ func testAccCheckCFFunctionActionImport(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonodewithparameter.js")
+		  code = file("../../test-fixtures/hellonodewithparameter.js")
 		}
 		user_defined_parameters = <<EOF
 							  [
@@ -1284,7 +1284,7 @@ func testAccCheckCFFunctionActionNodeJS(name, namespace string) string {
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	

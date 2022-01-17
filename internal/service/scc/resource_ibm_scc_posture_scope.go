@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
@@ -9,13 +9,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
-func resourceIBMSccPostureScopes() *schema.Resource {
+func ResourceIBMSccPostureScopes() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMSccPostureScopesCreate,
 		ReadContext:   resourceIBMSccPostureScopesRead,
@@ -24,85 +26,85 @@ func resourceIBMSccPostureScopes() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_scope", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scope", "name"),
 				Description:  "A unique name for your scope.",
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_scope", "description"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scope", "description"),
 				Description:  "A detailed description of the scope.",
 			},
-			"collector_ids": &schema.Schema{
+			"collector_ids": {
 				Type:        schema.TypeList,
 				Required:    true,
 				Description: "The unique IDs of the collectors that are attached to the scope.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"credential_id": &schema.Schema{
+			"credential_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_scope", "credential_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scope", "credential_id"),
 				Description:  "The unique identifier of the credential.",
 			},
-			"credential_type": &schema.Schema{
+			"credential_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_scope", "credential_type"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scope", "credential_type"),
 				Description:  "The environment that the scope is targeted to.",
 			},
 		},
 	}
 }
 
-func resourceIBMSccPostureScopesValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+func ResourceIBMSccPostureScopesValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "name",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             50,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "description",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "credential_id",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             50,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "credential_type",
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "aws, azure, gcp, hosted, ibm, on_premise, openstack, services",
 		},
 	)
 
-	resourceValidator := ResourceValidator{ResourceName: "ibm_scc_posture_scope", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_scc_posture_scope", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIBMSccPostureScopesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -128,18 +130,18 @@ func resourceIBMSccPostureScopesCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMSccPostureScopesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	listScopesOptions.SetAccountID(accountID)
 
 	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
@@ -157,7 +159,7 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 }
 
 func resourceIBMSccPostureScopesUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -190,7 +192,7 @@ func resourceIBMSccPostureScopesUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMSccPostureScopesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}

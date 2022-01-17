@@ -43,14 +43,14 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 		Delete: resourceIBMSatelliteClusterWorkerPoolDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				parts, err := idParts(d.Id())
+				parts, err := flex.IdParts(d.Id())
 				if err != nil {
 					return nil, err
 				}
 				clusterID := parts[0]
 				workerPoolID := parts[1]
 
-				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 				if err != nil {
 					return nil, err
 				}

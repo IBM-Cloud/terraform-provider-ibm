@@ -1,19 +1,20 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power_test
 
 import (
 	"fmt"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMPIImageEport(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPIImageExportConfig(),
@@ -39,5 +40,5 @@ func testAccCheckIBMPIImageExportConfig() string {
 		pi_image_secret_key = "%[4]s"
 		pi_image_bucket_region = "%[5]s"
 	  }
-	`, pi_cloud_instance_id, pi_image_bucket_name, pi_image_bucket_access_key, pi_image_bucket_secret_key, pi_image_bucket_region, pi_image)
+	`, acc.Pi_cloud_instance_id, acc.Pi_image_bucket_name, acc.Pi_image_bucket_access_key, acc.Pi_image_bucket_secret_key, acc.Pi_image_bucket_region, acc.Pi_image)
 }

@@ -98,23 +98,23 @@ func DataSourceIBMSccPostureLatestScans() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the scope.",
 						},
-						"profiles": &schema.Schema{
+						"profiles": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Profiles array.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of the profile.",
 									},
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "An auto-generated unique identifier for the scope.",
 									},
-									"type": &schema.Schema{
+									"type": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of profile.",
@@ -142,12 +142,12 @@ func DataSourceIBMSccPostureLatestScans() *schema.Resource {
 							Computed:    true,
 							Description: "The date and time the scan was run.",
 						},
-						"report_setting_id": &schema.Schema{
+						"report_setting_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique ID for Scan that is created.",
 						},
-						"end_time": &schema.Schema{
+						"end_time": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time the scan completed.",
@@ -227,7 +227,7 @@ func dataSourceIBMSccPostureListLatestScansRead(context context.Context, d *sche
 	listLatestScansOptions := &posturemanagementv2.ListLatestScansOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount

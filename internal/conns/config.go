@@ -69,6 +69,7 @@ import (
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
+	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -273,6 +274,7 @@ type ClientSession interface {
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
+	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
 }
 
 type clientSession struct {
@@ -543,6 +545,10 @@ type clientSession struct {
 	postureManagementClientErr error
 	postureManagementClient    *posturemanagementv1.PostureManagementV1
 
+	//Security and Compliance Center (SCC) Compliance posture v2
+	postureManagementClientv2    *posturemanagementv2.PostureManagementV2
+	postureManagementClientErrv2 error
+
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
@@ -724,7 +730,7 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 
 		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
 		if err != nil {
-			sess.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+			sess.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 		}
 		return kpClient, nil
 	}
@@ -1025,6 +1031,14 @@ func (session clientSession) PostureManagementV1() (*posturemanagementv1.Posture
 	return session.postureManagementClient.Clone(), nil
 }
 
+//Security and Compliance center Posture Management v2
+func (session clientSession) PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error) {
+	if session.postureManagementClientErrv2 != nil {
+		return session.postureManagementClientv2, session.postureManagementClientErrv2
+	}
+	return session.postureManagementClientv2.Clone(), nil
+}
+
 // Context Based Restrictions
 func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
@@ -1115,6 +1129,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
 		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
+		session.postureManagementClientErr = errEmptyBluemixCredentials
+		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1131,10 +1147,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 				err = authenticateAPIKey(sess.BluemixSession)
 			}
 			if err != nil {
-				session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching auth key for account user details: %q", err)
-				session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
-				session.powerConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
-				session.ibmpiConfigErr = fmt.Errorf("Error occured while fetching the auth key for power iaas: %q", err)
+				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
+				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
+				session.powerConfigErr = fmt.Errorf("[ERROR] Error occured while fetching the auth key for power iaas: %q", err)
+				session.ibmpiConfigErr = fmt.Errorf("[ERROR] Error occured while fetching the auth key for power iaas: %q", err)
 			}
 		}
 		err = authenticateCF(sess.BluemixSession)
@@ -1148,7 +1164,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 				err = authenticateCF(sess.BluemixSession)
 			}
 			if err != nil {
-				session.functionConfigErr = fmt.Errorf("Error occured while fetching auth key for function: %q", err)
+				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 			}
 		}
 	}
@@ -1165,14 +1181,14 @@ func (c *Config) ClientSession() (interface{}, error) {
 				err = RefreshToken(sess.BluemixSession)
 			}
 			if err != nil {
-				return nil, fmt.Errorf("Error occured while refreshing the token: %q", err)
+				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
 			}
 		}
 
 	}
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
-		session.bmxUserFetchErr = fmt.Errorf("Error occured while fetching account user details: %q", err)
+		session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching account user details: %q", err)
 	}
 	session.bmxUserDetails = userConfig
 
@@ -1202,37 +1218,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
-		session.accountV1ConfigErr = fmt.Errorf("Error occured while configuring Bluemix Accountv1 Service: %q", err)
+		session.accountV1ConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Bluemix Accountv1 Service: %q", err)
 	}
 	session.bmxAccountv1ServiceAPI = accv1API
 
 	accAPI, err := accountv2.New(sess.BluemixSession)
 	if err != nil {
-		session.accountConfigErr = fmt.Errorf("Error occured while configuring  Account Service: %q", err)
+		session.accountConfigErr = fmt.Errorf("[ERROR] Error occured while configuring  Account Service: %q", err)
 	}
 	session.bmxAccountServiceAPI = accAPI
 
 	cfAPI, err := mccpv2.New(sess.BluemixSession)
 	if err != nil {
-		session.cfConfigErr = fmt.Errorf("Error occured while configuring MCCP service: %q", err)
+		session.cfConfigErr = fmt.Errorf("[ERROR] Error occured while configuring MCCP service: %q", err)
 	}
 	session.cfServiceAPI = cfAPI
 
 	clusterAPI, err := containerv1.New(sess.BluemixSession)
 	if err != nil {
-		session.csConfigErr = fmt.Errorf("Error occured while configuring Container Service for K8s cluster: %q", err)
+		session.csConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Container Service for K8s cluster: %q", err)
 	}
 	session.csServiceAPI = clusterAPI
 
 	v2clusterAPI, err := containerv2.New(sess.BluemixSession)
 	if err != nil {
-		session.csv2ConfigErr = fmt.Errorf("Error occured while configuring vpc Container Service for K8s cluster: %q", err)
+		session.csv2ConfigErr = fmt.Errorf("[ERROR] Error occured while configuring vpc Container Service for K8s cluster: %q", err)
 	}
 	session.csv2ServiceAPI = v2clusterAPI
 
 	hpcsAPI, err := hpcs.New(sess.BluemixSession)
 	if err != nil {
-		session.hpcsEndpointErr = fmt.Errorf("Error occured while configuring hpcs Endpoint: %q", err)
+		session.hpcsEndpointErr = fmt.Errorf("[ERROR] Error occured while configuring hpcs Endpoint: %q", err)
 	}
 	session.hpcsEndpointAPI = hpcsAPI
 
@@ -1262,7 +1278,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
 	if err != nil {
-		session.kpErr = fmt.Errorf("Error occured while configuring Key Protect Service: %q", err)
+		session.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 	}
 	session.kpAPI = kpAPIclient
 
@@ -1307,7 +1323,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	kmsAPIclient, err := kp.New(kmsOptions, DefaultTransport())
 	if err != nil {
-		session.kmsErr = fmt.Errorf("Error occured while configuring key Service: %q", err)
+		session.kmsErr = fmt.Errorf("[ERROR] Error occured while configuring key Service: %q", err)
 	}
 	session.kmsAPI = kmsAPIclient
 
@@ -1375,7 +1391,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.contextBasedRestrictionsClientErr = fmt.Errorf("Error occurred while configuring Context Based Restrictions service: %q", err)
+		session.contextBasedRestrictionsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Context Based Restrictions service: %q", err)
 	}
 
 	// CATALOG MANAGEMENT Service
@@ -1393,7 +1409,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service client.
 	session.catalogManagementClient, err = catalogmanagementv1.NewCatalogManagementV1(catalogManagementClientOptions)
 	if err != nil {
-		session.catalogManagementClientErr = fmt.Errorf("Error occurred while configuring Catalog Management API service: %q", err)
+		session.catalogManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Catalog Management API service: %q", err)
 	}
 	if session.catalogManagementClient != nil && session.catalogManagementClient.Service != nil {
 		// Enable retries for API calls
@@ -1429,7 +1445,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service client.
 	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
 	if err != nil {
-		session.atrackerClientErr = fmt.Errorf("Error occurred while configuring Activity Tracker API service: %q", err)
+		session.atrackerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Activity Tracker API service: %q", err)
 	}
 	if session.atrackerClient != nil && session.atrackerClient.Service != nil {
 		// Enable retries for API calls
@@ -1445,10 +1461,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "public" || c.Visibility == "public-and-private" {
 		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
 		if err != nil {
-			session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
+			session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
 		}
 	} else {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
@@ -1461,7 +1477,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service client.
 	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
 	if err != nil {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: %q", err)
+		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: %q", err)
 	}
 	if session.findingsClient != nil && session.findingsClient.Service != nil {
 		// Enable retries for API calls
@@ -1500,7 +1516,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.adminServiceApiClientErr = fmt.Errorf("Error occurred while configuring Admin Service API service: %q", err)
+		session.adminServiceApiClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Admin Service API service: %q", err)
 	}
 
 	// SCHEMATICS Service
@@ -1609,7 +1625,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.eventNotificationsApiClient, err = eventnotificationsv1.NewEventNotificationsV1(enClientOptions)
 	if err != nil {
 		// Enable {
-		session.eventNotificationsApiClientErr = fmt.Errorf("Error occurred while configuring Event Notifications service: %q", err)
+		session.eventNotificationsApiClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Event Notifications service: %q", err)
 	}
 	if session.eventNotificationsApiClient != nil && session.eventNotificationsApiClient.Service != nil {
 		// Enable retries for API calls
@@ -1716,7 +1732,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	globalTaggingAPIV1, err := globaltaggingv1.NewGlobalTaggingV1(globalTaggingV1Options)
 	if err != nil {
-		session.globalTaggingConfigErrV1 = fmt.Errorf("Error occured while configuring Global Tagging: %q", err)
+		session.globalTaggingConfigErrV1 = fmt.Errorf("[ERROR] Error occured while configuring Global Tagging: %q", err)
 	}
 	if globalTaggingAPIV1 != nil && globalTaggingAPIV1.Service != nil {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
@@ -1728,49 +1744,49 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	icdAPI, err := icdv4.New(sess.BluemixSession)
 	if err != nil {
-		session.icdConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
+		session.icdConfigErr = fmt.Errorf("[ERROR] Error occured while configuring IBM Cloud Database Services: %q", err)
 	}
 	session.icdServiceAPI = icdAPI
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {
-		session.resourceCatalogConfigErr = fmt.Errorf("Error occured while configuring Resource Catalog service: %q", err)
+		session.resourceCatalogConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Resource Catalog service: %q", err)
 	}
 	session.resourceCatalogServiceAPI = resourceCatalogAPI
 
 	resourceManagementAPIv2, err := managementv2.New(sess.BluemixSession)
 	if err != nil {
-		session.resourceManagementConfigErrv2 = fmt.Errorf("Error occured while configuring Resource Management service: %q", err)
+		session.resourceManagementConfigErrv2 = fmt.Errorf("[ERROR] Error occured while configuring Resource Management service: %q", err)
 	}
 	session.resourceManagementServiceAPIv2 = resourceManagementAPIv2
 
 	resourceControllerAPI, err := controller.New(sess.BluemixSession)
 	if err != nil {
-		session.resourceControllerConfigErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+		session.resourceControllerConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Resource Controller service: %q", err)
 	}
 	session.resourceControllerServiceAPI = resourceControllerAPI
 
 	ResourceControllerAPIv2, err := controllerv2.New(sess.BluemixSession)
 	if err != nil {
-		session.resourceControllerConfigErrv2 = fmt.Errorf("Error occured while configuring Resource Controller v2 service: %q", err)
+		session.resourceControllerConfigErrv2 = fmt.Errorf("[ERROR] Error occured while configuring Resource Controller v2 service: %q", err)
 	}
 	session.resourceControllerServiceAPIv2 = ResourceControllerAPIv2
 
 	userManagementAPI, err := usermanagementv2.New(sess.BluemixSession)
 	if err != nil {
-		session.userManagementErr = fmt.Errorf("Error occured while configuring user management service: %q", err)
+		session.userManagementErr = fmt.Errorf("[ERROR] Error occured while configuring user management service: %q", err)
 	}
 	session.userManagementAPI = userManagementAPI
 
 	certManagementAPI, err := certificatemanager.New(sess.BluemixSession)
 	if err != nil {
-		session.certManagementErr = fmt.Errorf("Error occured while configuring Certificate manager service: %q", err)
+		session.certManagementErr = fmt.Errorf("[ERROR] Error occured while configuring Certificate manager service: %q", err)
 	}
 	session.certManagementAPI = certManagementAPI
 
 	namespaceFunction, err := functions.New(sess.BluemixSession)
 	if err != nil {
-		session.functionIAMNamespaceErr = fmt.Errorf("Error occured while configuring Cloud Funciton Service : %q", err)
+		session.functionIAMNamespaceErr = fmt.Errorf("[ERROR] Error occured while configuring Cloud Funciton Service : %q", err)
 	}
 	session.functionIAMNamespaceAPI = namespaceFunction
 
@@ -1788,7 +1804,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	apigatewayAPI, err := apigateway.NewApiGatewayControllerApiV1(APIGatewayControllerAPIV1Options)
 	if err != nil {
-		session.apigatewayErr = fmt.Errorf("Error occured while configuring  APIGateway service: %q", err)
+		session.apigatewayErr = fmt.Errorf("[ERROR] Error occured while configuring  APIGateway service: %q", err)
 	}
 	session.apigatewayAPI = apigatewayAPI
 
@@ -1814,7 +1830,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.pDNSClient, session.pDNSErr = dns.NewDnsSvcsV1(dnsOptions)
 	if session.pDNSErr != nil {
-		session.pDNSErr = fmt.Errorf("Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
+		session.pDNSErr = fmt.Errorf("[ERROR] Error occured while configuring PrivateDNS Service: %s", session.pDNSErr)
 	}
 	if session.pDNSClient != nil && session.pDNSClient.Service != nil {
 		session.pDNSClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1839,7 +1855,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.directlinkAPI, session.directlinkErr = dl.NewDirectLinkV1(directlinkOptions)
 	if session.directlinkErr != nil {
-		session.directlinkErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkErr)
+		session.directlinkErr = fmt.Errorf("[ERROR] Error occured while configuring Direct Link Service: %s", session.directlinkErr)
 	}
 	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
 		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1863,7 +1879,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.dlProviderAPI, session.dlProviderErr = dlProviderV2.NewDirectLinkProviderV2(directLinkProviderV2Options)
 	if session.dlProviderErr != nil {
-		session.dlProviderErr = fmt.Errorf("Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
+		session.dlProviderErr = fmt.Errorf("[ERROR] Error occured while configuring Direct Link Provider Service: %s", session.dlProviderErr)
 	}
 	if session.dlProviderAPI != nil && session.dlProviderAPI.Service != nil {
 		session.dlProviderAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1887,7 +1903,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.transitgatewayAPI, session.transitgatewayErr = tg.NewTransitGatewayApisV1(transitgatewayOptions)
 	if session.transitgatewayErr != nil {
-		session.transitgatewayErr = fmt.Errorf("Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
+		session.transitgatewayErr = fmt.Errorf("[ERROR] Error occured while configuring Transit Gateway Service: %s", session.transitgatewayErr)
 	}
 	if session.transitgatewayAPI != nil && session.transitgatewayAPI.Service != nil {
 		session.transitgatewayAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1956,7 +1972,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cisDNSRecordsClient, session.cisDNSErr = cisdnsrecordsv1.NewDnsRecordsV1(cisDNSRecordsOpt)
 	if session.cisDNSErr != nil {
-		session.cisDNSErr = fmt.Errorf("Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
+		session.cisDNSErr = fmt.Errorf("[ERROR] Error occured while configuring CIS DNS Service: %s", session.cisDNSErr)
 	}
 	if session.cisDNSRecordsClient != nil && session.cisDNSRecordsClient.Service != nil {
 		session.cisDNSRecordsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -1995,7 +2011,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisglbpoolv0.NewGlobalLoadBalancerPoolsV0(cisGLBPoolOpt)
 	if session.cisGLBPoolErr != nil {
 		session.cisGLBPoolErr =
-			fmt.Errorf("Error occured while configuring CIS GLB Pool service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS GLB Pool service: %s",
 				session.cisGLBPoolErr)
 	}
 	if session.cisGLBPoolClient != nil && session.cisGLBPoolClient.Service != nil {
@@ -2015,7 +2031,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisGLBClient, session.cisGLBErr = cisglbv1.NewGlobalLoadBalancerV1(cisGLBOpt)
 	if session.cisGLBErr != nil {
 		session.cisGLBErr =
-			fmt.Errorf("Error occured while configuring CIS GLB service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS GLB service: %s",
 				session.cisGLBErr)
 	}
 	if session.cisGLBClient != nil && session.cisGLBClient.Service != nil {
@@ -2035,7 +2051,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisglbhealthcheckv1.NewGlobalLoadBalancerMonitorV1(cisGLBHealthCheckOpt)
 	if session.cisGLBHealthCheckErr != nil {
 		session.cisGLBHealthCheckErr =
-			fmt.Errorf("Error occured while configuring CIS GLB Health Check service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS GLB Health Check service: %s",
 				session.cisGLBHealthCheckErr)
 	}
 	if session.cisGLBHealthCheckClient != nil && session.cisGLBHealthCheckClient.Service != nil {
@@ -2052,7 +2068,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.cisIPClient, session.cisIPErr = cisipv1.NewCisIpApiV1(cisIPOpt)
 	if session.cisIPErr != nil {
-		session.cisIPErr = fmt.Errorf("Error occured while configuring CIS IP service: %s",
+		session.cisIPErr = fmt.Errorf("[ERROR] Error occured while configuring CIS IP service: %s",
 			session.cisIPErr)
 	}
 	if session.cisIPClient != nil && session.cisIPClient.Service != nil {
@@ -2113,7 +2129,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisedgefunctionv1.NewEdgeFunctionsApiV1(cisEdgeFunctionOpt)
 	if session.cisEdgeFunctionErr != nil {
 		session.cisEdgeFunctionErr =
-			fmt.Errorf("Error occured while configuring CIS Edge Function service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Edge Function service: %s",
 				session.cisEdgeFunctionErr)
 	}
 	if session.cisEdgeFunctionClient != nil && session.cisEdgeFunctionClient.Service != nil {
@@ -2134,7 +2150,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisSSLClient, session.cisSSLErr = cissslv1.NewSslCertificateApiV1(cisSSLOpt)
 	if session.cisSSLErr != nil {
 		session.cisSSLErr =
-			fmt.Errorf("Error occured while configuring CIS SSL certificate service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS SSL certificate service: %s",
 				session.cisSSLErr)
 	}
 	if session.cisSSLClient != nil && session.cisSSLClient.Service != nil {
@@ -2155,7 +2171,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ciswafpackagev1.NewWafRulePackagesApiV1(cisWAFPackageOpt)
 	if session.cisWAFPackageErr != nil {
 		session.cisWAFPackageErr =
-			fmt.Errorf("Error occured while configuration CIS WAF Package service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuration CIS WAF Package service: %s",
 				session.cisWAFPackageErr)
 	}
 	if session.cisWAFPackageClient != nil && session.cisWAFPackageClient.Service != nil {
@@ -2218,7 +2234,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ciswafgroupv1.NewWafRuleGroupsApiV1(cisWAFGroupOpt)
 	if session.cisWAFGroupErr != nil {
 		session.cisWAFGroupErr =
-			fmt.Errorf("Error occured while configuring CIS WAF Group service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS WAF Group service: %s",
 				session.cisWAFGroupErr)
 	}
 	if session.cisWAFGroupClient != nil && session.cisWAFGroupClient.Service != nil {
@@ -2239,7 +2255,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ciscachev1.NewCachingApiV1(cisCacheOpt)
 	if session.cisCacheErr != nil {
 		session.cisCacheErr =
-			fmt.Errorf("Error occured while configuring CIS Caching service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Caching service: %s",
 				session.cisCacheErr)
 	}
 	if session.cisCacheClient != nil && session.cisCacheClient.Service != nil {
@@ -2261,7 +2277,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ciscustompagev1.NewCustomPagesV1(cisCustomPageOpt)
 	if session.cisCustomPageErr != nil {
 		session.cisCustomPageErr =
-			fmt.Errorf("Error occured while configuring CIS Custom Pages service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Custom Pages service: %s",
 				session.cisCustomPageErr)
 	}
 	if session.cisCustomPageClient != nil && session.cisCustomPageClient.Service != nil {
@@ -2282,7 +2298,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisaccessrulev1.NewZoneFirewallAccessRulesV1(cisAccessRuleOpt)
 	if session.cisAccessRuleErr != nil {
 		session.cisAccessRuleErr =
-			fmt.Errorf("Error occured while configuring CIS Firewall Access Rule service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Firewall Access Rule service: %s",
 				session.cisAccessRuleErr)
 	}
 	if session.cisAccessRuleClient != nil && session.cisAccessRuleClient.Service != nil {
@@ -2303,7 +2319,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisuarulev1.NewUserAgentBlockingRulesV1(cisUARuleOpt)
 	if session.cisUARuleErr != nil {
 		session.cisUARuleErr =
-			fmt.Errorf("Error occured while configuring CIS Firewall User Agent Blocking Rule service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Firewall User Agent Blocking Rule service: %s",
 				session.cisUARuleErr)
 	}
 	if session.cisUARuleClient != nil && session.cisUARuleClient.Service != nil {
@@ -2324,7 +2340,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cislockdownv1.NewZoneLockdownV1(cisLockdownOpt)
 	if session.cisLockdownErr != nil {
 		session.cisLockdownErr =
-			fmt.Errorf("Error occured while configuring CIS Firewall Lockdown Rule service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Firewall Lockdown Rule service: %s",
 				session.cisLockdownErr)
 	}
 	if session.cisLockdownClient != nil && session.cisLockdownClient.Service != nil {
@@ -2345,7 +2361,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cisrangeappv1.NewRangeApplicationsV1(cisRangeAppOpt)
 	if session.cisRangeAppErr != nil {
 		session.cisRangeAppErr =
-			fmt.Errorf("Error occured while configuring CIS Range Application rule service: %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Range Application rule service: %s",
 				session.cisRangeAppErr)
 	}
 	if session.cisRangeAppClient != nil && session.cisRangeAppClient.Service != nil {
@@ -2384,7 +2400,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisFiltersClient, session.cisFiltersErr = cisfiltersv1.NewFiltersV1(cisFiltersOpt)
 	if session.cisFiltersErr != nil {
 		session.cisFiltersErr =
-			fmt.Errorf("Error occured while configuring CIS Filters : %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Filters : %s",
 				session.cisFiltersErr)
 	}
 	if session.cisFiltersClient != nil && session.cisFiltersClient.Service != nil {
@@ -2402,7 +2418,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.cisFirewallRulesClient, session.cisFirewallRulesErr = cisfirewallrulesv1.NewFirewallRulesV1(cisFirewallrulesOpt)
 	if session.cisFirewallRulesErr != nil {
 		session.cisFirewallRulesErr =
-			fmt.Errorf("Error occured while configuring CIS Firewall rules : %s",
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Firewall rules : %s",
 				session.cisFirewallRulesErr)
 	}
 	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
@@ -2431,7 +2447,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamIdentityClient, err := iamidentity.NewIamIdentityV1(iamIdentityOptions)
 	if err != nil {
-		session.iamIdentityErr = fmt.Errorf("Error occured while configuring IAM Identity service: %q", err)
+		session.iamIdentityErr = fmt.Errorf("[ERROR] Error occured while configuring IAM Identity service: %q", err)
 	}
 	if iamIdentityClient != nil && iamIdentityClient.Service != nil {
 		iamIdentityClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2459,7 +2475,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamPolicyManagementClient, err := iampolicymanagement.NewIamPolicyManagementV1(iamPolicyManagementOptions)
 	if err != nil {
-		session.iamPolicyManagementErr = fmt.Errorf("Error occured while configuring IAM Policy Management service: %q", err)
+		session.iamPolicyManagementErr = fmt.Errorf("[ERROR] Error occured while configuring IAM Policy Management service: %q", err)
 	}
 	if iamPolicyManagementClient != nil && iamPolicyManagementClient.Service != nil {
 		iamPolicyManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2487,7 +2503,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	iamAccessGroupsClient, err := iamaccessgroups.NewIamAccessGroupsV2(iamAccessGroupsOptions)
 	if err != nil {
-		session.iamAccessGroupsErr = fmt.Errorf("Error occured while configuring IAM Access Group service: %q", err)
+		session.iamAccessGroupsErr = fmt.Errorf("[ERROR] Error occured while configuring IAM Access Group service: %q", err)
 	}
 	if iamAccessGroupsClient != nil && iamAccessGroupsClient.Service != nil {
 		iamAccessGroupsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2523,7 +2539,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	resourceManagerClient, err := resourcemanager.NewResourceManagerV2(resourceManagerOptions)
 	if err != nil {
-		session.resourceManagerErr = fmt.Errorf("Error occured while configuring Resource Manager service: %q", err)
+		session.resourceManagerErr = fmt.Errorf("[ERROR] Error occured while configuring Resource Manager service: %q", err)
 	}
 	if resourceManagerClient != nil && resourceManagerClient.Service != nil {
 		resourceManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2544,7 +2560,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.ibmCloudShellClient, err = ibmcloudshellv1.NewIBMCloudShellV1(ibmCloudShellClientOptions)
 	if err != nil {
-		session.ibmCloudShellClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Shell service: %q", err)
+		session.ibmCloudShellClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Shell service: %q", err)
 	}
 	if session.ibmCloudShellClient != nil && session.ibmCloudShellClient.Service != nil {
 		session.ibmCloudShellClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2580,7 +2596,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	enterpriseManagementClient, err := enterprisemanagementv1.NewEnterpriseManagementV1(enterpriseManagementClientOptions)
 	if err != nil {
-		session.enterpriseManagementClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
+		session.enterpriseManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Enterprise Management API service: %q", err)
 	}
 	if enterpriseManagementClient != nil && enterpriseManagementClient.Service != nil {
 		enterpriseManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2616,7 +2632,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	resourceControllerClient, err := resourcecontroller.NewResourceControllerV2(resourceControllerOptions)
 	if err != nil {
-		session.resourceControllerErr = fmt.Errorf("Error occured while configuring Resource Controller service: %q", err)
+		session.resourceControllerErr = fmt.Errorf("[ERROR] Error occured while configuring Resource Controller service: %q", err)
 	}
 	if resourceControllerClient != nil && resourceControllerClient.Service != nil {
 		resourceControllerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2633,7 +2649,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	/// Construct the service client.
 	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
 	if err != nil {
-		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
+		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
 	}
 	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
 		// Enable retries for API calls
@@ -2658,7 +2674,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.satelliteClient, err = kubernetesserviceapiv1.NewKubernetesServiceApiV1(kubernetesServiceV1Options)
 	if err != nil {
-		session.satelliteClientErr = fmt.Errorf("Error occured while configuring satellite client: %q", err)
+		session.satelliteClientErr = fmt.Errorf("[ERROR] Error occured while configuring satellite client: %q", err)
 	}
 
 	// Enable retries for API calls
@@ -2684,7 +2700,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.satelliteLinkClient, err = satellitelinkv1.NewSatelliteLinkV1(satelliteLinkClientOptions)
 	if err != nil {
-		session.satelliteLinkClientErr = fmt.Errorf("Error occurred while configuring Satellite Link service: %q", err)
+		session.satelliteLinkClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Satellite Link service: %q", err)
 	}
 	if session.satelliteLinkClient != nil && session.satelliteLinkClient.Service != nil {
 		// Enable retries for API calls
@@ -2700,7 +2716,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.esSchemaRegistryClient, err = schemaregistryv1.NewSchemaregistryV1(esSchemaRegistryV1Options)
 	if err != nil {
-		session.esSchemaRegistryErr = fmt.Errorf("Error occured while configuring Event Streams schema registry: %q", err)
+		session.esSchemaRegistryErr = fmt.Errorf("[ERROR] Error occured while configuring Event Streams schema registry: %q", err)
 	}
 	if session.esSchemaRegistryClient != nil && session.esSchemaRegistryClient.Service != nil {
 		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2715,7 +2731,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if c.Visibility == "public" || c.Visibility == "public-and-private" {
 		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
 	} else {
-		session.findingsClientErr = fmt.Errorf("Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
+		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
 	}
 	if err != nil {
 		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
@@ -2732,7 +2748,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service client.
 	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
 	if err != nil {
-		session.postureManagementClientErr = fmt.Errorf("Error occurred while configuring Posture Management service: %q", err)
+		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Posture Management service: %q", err)
 	}
 	if session.postureManagementClient != nil && session.postureManagementClient.Service != nil {
 		// Enable retries for API calls
@@ -2742,6 +2758,40 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
+
+	//COMPLIANCE Service v2 version
+	// Construct an "options" struct for creating the service client.
+	var postureManagementClientURLv2 string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		postureManagementClientURLv2, err = posturemanagementv2.GetServiceURLForRegion(c.Region)
+	} else {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security Compliance Centre API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security Posture Management API service:  `%s` region not supported", c.Region)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_API_ENDPOINT", c.Region, postureManagementClientURLv2)
+	}
+	postureManagementClientOptionsv2 := &posturemanagementv2.PostureManagementV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURLv2),
+	}
+
+	// Construct the service client.
+	session.postureManagementClientv2, err = posturemanagementv2.NewPostureManagementV2(postureManagementClientOptionsv2)
+	if err != nil {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Posture Management v2 service: %q", err)
+	}
+	if session.postureManagementClientv2 != nil && session.postureManagementClientv2.Service != nil {
+		// Enable retries for API calls
+		session.postureManagementClientv2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	if os.Getenv("TF_LOG") != "" {
 		logDestination := log.Writer()
 		goLogger := log.New(logDestination, "", log.LstdFlags)

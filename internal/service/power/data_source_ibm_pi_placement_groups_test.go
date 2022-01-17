@@ -1,19 +1,20 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power_test
 
 import (
 	"fmt"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMPIPlacementGrousDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPIPlacementGrousDataSourceConfig(),
@@ -30,5 +31,5 @@ func testAccCheckIBMPIPlacementGrousDataSourceConfig() string {
 		data "ibm_pi_placement_groups" "test" {
 			pi_cloud_instance_id = "%s"
 		}
-	`, pi_cloud_instance_id)
+	`, acc.Pi_cloud_instance_id)
 }

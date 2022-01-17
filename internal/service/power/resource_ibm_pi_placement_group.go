@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power
 
 import (
 	"context"
@@ -14,6 +14,9 @@ import (
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	models "github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
@@ -22,7 +25,7 @@ const (
 	PIPlacementGroupMembers = "members"
 )
 
-func resourceIBMPIPlacementGroup() *schema.Resource {
+func ResourceIBMPIPlacementGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIPlacementGroupCreate,
 		ReadContext:   resourceIBMPIPlacementGroupRead,
@@ -47,7 +50,7 @@ func resourceIBMPIPlacementGroup() *schema.Resource {
 			helpers.PIPlacementGroupPolicy: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateAllowedStringValue([]string{"affinity", "anti-affinity"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
 				Description:  "Policy of the placement group",
 			},
 
@@ -74,7 +77,7 @@ func resourceIBMPIPlacementGroup() *schema.Resource {
 }
 
 func resourceIBMPIPlacementGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := meta.(ClientSession).IBMPISession()
+	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,11 +105,11 @@ func resourceIBMPIPlacementGroupCreate(ctx context.Context, d *schema.ResourceDa
 
 func resourceIBMPIPlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	sess, err := meta.(ClientSession).IBMPISession()
+	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,11 +137,11 @@ func resourceIBMPIPlacementGroupUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMPIPlacementGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := meta.(ClientSession).IBMPISession()
+	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

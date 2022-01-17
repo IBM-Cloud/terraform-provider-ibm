@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
@@ -9,33 +9,35 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
-func dataSourceIBMSccPostureScopeCorrelation() *schema.Resource {
+func DataSourceIBMSccPostureScopeCorrelation() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSccPostureScopeCorrelationRead,
 
 		Schema: map[string]*schema.Schema{
-			"correlation_id": &schema.Schema{
+			"correlation_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "A correlation_Id is created when a scope is created and discovery task is triggered or when a validation is triggered on a Scope. This is used to get the status of the task(discovery or validation).",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Returns the current status of a task.",
 			},
-			"start_time": &schema.Schema{
+			"start_time": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Returns the time that task started.",
 			},
-			"last_heartbeat": &schema.Schema{
+			"last_heartbeat": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Returns the time that the scope was last updated. This value exists when collector is installed and running.",
@@ -45,18 +47,18 @@ func dataSourceIBMSccPostureScopeCorrelation() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureScopeCorrelationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getCorrelationIDOptions := &posturemanagementv2.GetCorrelationIDOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	getCorrelationIDOptions.SetAccountID(accountID)
 
 	getCorrelationIDOptions.SetCorrelationID(d.Get("correlation_id").(string))
@@ -69,13 +71,13 @@ func dataSourceIBMSccPostureScopeCorrelationRead(context context.Context, d *sch
 
 	d.SetId(dataSourceIBMSccPostureScopeCorrelationID(d))
 	if err = d.Set("status", scopeTaskStatus.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
 	}
 	if err = d.Set("start_time", scopeTaskStatus.StartTime); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting start_time: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting start_time: %s", err))
 	}
-	if err = d.Set("last_heartbeat", dateTimeToString(scopeTaskStatus.LastHeartbeat)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_heartbeat: %s", err))
+	if err = d.Set("last_heartbeat", flex.DateTimeToString(scopeTaskStatus.LastHeartbeat)); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting last_heartbeat: %s", err))
 	}
 
 	return nil

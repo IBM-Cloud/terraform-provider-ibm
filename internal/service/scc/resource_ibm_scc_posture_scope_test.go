@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc_test
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -25,26 +27,26 @@ func TestAccIBMSccPostureScopesBasic(t *testing.T) {
 	credentialTypeUpdate := "ibm"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccPostureScopesDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopesConfigBasic(name, description, scc_posture_credential_id_scope, credentialType, scc_posture_collector_id_scope),
+			{
+				Config: testAccCheckIBMSccPostureScopesConfigBasic(name, description, acc.Scc_posture_credential_id_scope, credentialType, acc.Scc_posture_collector_id_scope),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureScopesExists("ibm_scc_posture_scope.scopes", conf),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "name", name),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "description", description),
-					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", scc_posture_credential_id_scope),
+					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", acc.Scc_posture_credential_id_scope),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_type", credentialType),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopesConfigBasic(nameUpdate, descriptionUpdate, scc_posture_credential_id_scope_update, credentialTypeUpdate, scc_posture_collector_id_scope_update),
+			{
+				Config: testAccCheckIBMSccPostureScopesConfigBasic(nameUpdate, descriptionUpdate, acc.Scc_posture_credential_id_scope_update, credentialTypeUpdate, acc.Scc_posture_collector_id_scope_update),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", scc_posture_credential_id_scope_update),
+					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", acc.Scc_posture_credential_id_scope_update),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_type", credentialTypeUpdate),
 				),
 			},
@@ -62,30 +64,30 @@ func TestAccIBMScopesAllArgs(t *testing.T) {
 	credentialTypeUpdate := "ibm"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccPostureScopesDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopesConfig(name, description, scc_posture_credential_id_scope, credentialType, scc_posture_collector_id_scope),
+			{
+				Config: testAccCheckIBMSccPostureScopesConfig(name, description, acc.Scc_posture_credential_id_scope, credentialType, acc.Scc_posture_collector_id_scope),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureScopesExists("ibm_scc_posture_scope.scopes", conf),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "name", name),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "description", description),
-					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", scc_posture_credential_id_scope),
+					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", acc.Scc_posture_credential_id_scope),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_type", credentialType),
 				),
 			},
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScopesConfig(nameUpdate, descriptionUpdate, scc_posture_credential_id_scope_update, credentialTypeUpdate, scc_posture_collector_id_scope_update),
+			{
+				Config: testAccCheckIBMSccPostureScopesConfig(nameUpdate, descriptionUpdate, acc.Scc_posture_credential_id_scope_update, credentialTypeUpdate, acc.Scc_posture_collector_id_scope_update),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", scc_posture_credential_id_scope_update),
+					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_id", acc.Scc_posture_credential_id_scope_update),
 					resource.TestCheckResourceAttr("ibm_scc_posture_scope.scopes", "credential_type", credentialTypeUpdate),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_scc_posture_scope.scopes",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -128,7 +130,7 @@ func testAccCheckIBMSccPostureScopesExists(n string, obj posturemanagementv2.Sco
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+		postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 		if err != nil {
 			return err
 		}
@@ -147,7 +149,7 @@ func testAccCheckIBMSccPostureScopesExists(n string, obj posturemanagementv2.Sco
 }
 
 func testAccCheckIBMSccPostureScopesDestroy(s *terraform.State) error {
-	postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+	postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return err
 	}
@@ -165,7 +167,7 @@ func testAccCheckIBMSccPostureScopesDestroy(s *terraform.State) error {
 		if err == nil {
 			return err
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for scopes (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for scopes (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

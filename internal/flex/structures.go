@@ -3078,3 +3078,14 @@ func updatePrivateURL(kpURL string) (string, error) {
 	}
 	return kmsEndpointURL, nil
 }
+
+func FlattenSatelliteClusterZones(list []string) []map[string]interface{} {
+	zones := make([]map[string]interface{}, len(list))
+	for i, zone := range list {
+		l := map[string]interface{}{
+			"id": zone,
+		}
+		zones[i] = l
+	}
+	return zones
+}

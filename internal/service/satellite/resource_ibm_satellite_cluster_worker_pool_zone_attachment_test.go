@@ -1,13 +1,16 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package satellite_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -21,10 +24,10 @@ func TestAccIbmSatelliteClusterWorkerPoolZoneAttachmentBasic(t *testing.T) {
 	resource_prefix := fmt.Sprintf("tf-satellite-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSatelliteClusterWorkerPoolZoneAttachmentConfigBasic(locationName, clusterName, resource_prefix, zone),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSatelliteClusterWorkerPoolZoneAttachmentExists("ibm_satellite_cluster_worker_pool_zone_attachment.satellite_cluster_worker_pool_zone_attachment", conf),
@@ -42,10 +45,10 @@ func TestAccIbmSatelliteClusterWorkerPoolZoneAttachmentAllArgs(t *testing.T) {
 	resource_prefix := fmt.Sprintf("tf-satellite-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmSatelliteClusterWorkerPoolZoneAttachmentConfig(locationName, clusterName, resource_prefix, zone),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSatelliteClusterWorkerPoolZoneAttachmentExists("ibm_satellite_cluster_worker_pool_zone_attachment.satellite_cluster_worker_pool_zone_attachment", conf),
@@ -53,7 +56,7 @@ func TestAccIbmSatelliteClusterWorkerPoolZoneAttachmentAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_satellite_cluster_worker_pool_zone_attachment.satellite_cluster_worker_pool_zone_attachment", "zone", zone),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_satellite_cluster_worker_pool_zone_attachment.satellite_cluster_worker_pool_zone_attachment",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -292,12 +295,12 @@ func testAccCheckIbmSatelliteClusterWorkerPoolZoneAttachmentExists(n string, obj
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		satClient, err := testAccProvider.Meta().(ClientSession).SatelliteClientSession()
+		satClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).SatelliteClientSession()
 		if err != nil {
 			return err
 		}

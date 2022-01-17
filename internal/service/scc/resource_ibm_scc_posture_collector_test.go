@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc_test
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -25,11 +27,11 @@ func TestAccIBMSccPostureCollectorsBasic(t *testing.T) {
 	managedByUpdate := "customer"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccPostureCollectorsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCollectorsConfigBasic(name, isPublic, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureCollectorsExists("ibm_scc_posture_collector.collectors", conf),
@@ -38,7 +40,7 @@ func TestAccIBMSccPostureCollectorsBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_posture_collector.collectors", "managed_by", managedBy),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCollectorsConfigBasic(nameUpdate, isPublicUpdate, managedByUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_collector.collectors", "name", nameUpdate),
@@ -66,11 +68,11 @@ func TestAccIBMCollectorsAllArgs(t *testing.T) {
 	isUbiImageUpdate := "false"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccPostureCollectorsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCollectorsConfig(name, isPublic, managedBy, description, passphrase, isUbiImage),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureCollectorsExists("ibm_scc_posture_collector.collectors", conf),
@@ -82,7 +84,7 @@ func TestAccIBMCollectorsAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_posture_collector.collectors", "is_ubi_image", isUbiImage),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCollectorsConfig(nameUpdate, isPublicUpdate, managedByUpdate, descriptionUpdate, passphraseUpdate, isUbiImageUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_scc_posture_collector.collectors", "name", nameUpdate),
@@ -93,7 +95,7 @@ func TestAccIBMCollectorsAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_posture_collector.collectors", "is_ubi_image", isUbiImageUpdate),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_scc_posture_collector.collectors",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -135,7 +137,7 @@ func testAccCheckIBMSccPostureCollectorsExists(n string, obj posturemanagementv2
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+		postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 		if err != nil {
 			return err
 		}
@@ -154,7 +156,7 @@ func testAccCheckIBMSccPostureCollectorsExists(n string, obj posturemanagementv2
 }
 
 func testAccCheckIBMSccPostureCollectorsDestroy(s *terraform.State) error {
-	postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+	postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return err
 	}
@@ -172,7 +174,7 @@ func testAccCheckIBMSccPostureCollectorsDestroy(s *terraform.State) error {
 		if err == nil {
 			return err //fmt.Errorf("collectors still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for collectors (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for collectors (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

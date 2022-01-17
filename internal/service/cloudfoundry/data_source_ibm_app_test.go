@@ -78,7 +78,7 @@ func testAccCheckIBMAppDataSourceBasic(routeHost, serviceInstanceName, appName s
 	  resource "ibm_app" "app" {
 		name                  = "%s"
 		space_guid            = data.ibm_space.space.id
-		app_path              = "test-fixtures/app1.zip"
+		app_path              = "../../test-fixtures/app1.zip"
 		wait_time_minutes     = 20
 		buildpack             = "sdk-for-nodejs"
 		instances             = 1

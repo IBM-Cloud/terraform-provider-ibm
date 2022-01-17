@@ -22,28 +22,28 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 		ReadContext: dataSourceIBMSccPostureListScopesRead,
 
 		Schema: map[string]*schema.Schema{
-			"offset": &schema.Schema{
+			"offset": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The offset of the page.",
 			},
-			"limit": &schema.Schema{
+			"limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of scopes displayed per page.",
 			},
-			"total_count": &schema.Schema{
+			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total number of scopes. This value is 0 if no scopes are available and below fields will not be available in that case.",
 			},
-			"first": &schema.Schema{
+			"first": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -51,13 +51,13 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 					},
 				},
 			},
-			"last": &schema.Schema{
+			"last": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -65,13 +65,13 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 					},
 				},
 			},
-			"previous": &schema.Schema{
+			"previous": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -79,13 +79,13 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 					},
 				},
 			},
-			"next": &schema.Schema{
+			"next": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -114,17 +114,17 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 							Computed:    true,
 							Description: "The user who most recently modified the scope.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An auto-generated unique identifier for the scope.",
 						},
-						"uuid": &schema.Schema{
+						"uuid": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Stores the value of scope_uuid .",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A unique name for your scope.",
@@ -134,48 +134,48 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether scope is enabled/disabled.",
 						},
-						"credential_type": &schema.Schema{
+						"credential_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The environment that the scope is targeted to.",
 						},
-						"created_at": &schema.Schema{
+						"created_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the scope was created in UTC.",
 						},
-						"updated_at": &schema.Schema{
+						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The time that the scope was last modified in UTC.",
 						},
-						"collectors": &schema.Schema{
+						"collectors": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Stores the value of collectors .Will be displayed only when value exists.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The id of the collector.",
 									},
-									"display_name": &schema.Schema{
+									"display_name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The user-friendly name of the collector.",
 									},
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of the collector.",
 									},
-									"public_key": &schema.Schema{
+									"public_key": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The public key of the collector.Will be used for ssl communciation between collector and orchestrator .This will be populated when collector is installed.",
 									},
-									"last_heartbeat": &schema.Schema{
+									"last_heartbeat": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Stores the heartbeat time of a controller . This value exists when collector is installed and running.",
@@ -185,132 +185,132 @@ func DataSourceIBMSccPostureScopes() *schema.Resource {
 										Computed:    true,
 										Description: "The status of collector.",
 									},
-									"collector_version": &schema.Schema{
+									"collector_version": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The collector version. This field is populated when collector is installed.",
 									},
-									"image_version": &schema.Schema{
+									"image_version": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The image version of the collector. This field is populated when collector is installed. \".",
 									},
-									"description": &schema.Schema{
+									"description": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the collector.",
 									},
-									"created_by": &schema.Schema{
+									"created_by": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The id of the user that created the collector.",
 									},
-									"created_at": &schema.Schema{
+									"created_at": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ISO Date/Time the collector was created.",
 									},
-									"updated_by": &schema.Schema{
+									"updated_by": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The id of the user that modified the collector.",
 									},
-									"updated_at": &schema.Schema{
+									"updated_at": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ISO Date/Time the collector was modified.",
 									},
-									"enabled": &schema.Schema{
+									"enabled": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Identifies whether the collector is enabled or not(deleted).",
 									},
-									"registration_code": &schema.Schema{
+									"registration_code": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The registration code of the collector.This is will be used for initial authentication during installation of collector.",
 									},
-									"type": &schema.Schema{
+									"type": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The type of the collector.",
 									},
-									"credential_public_key": &schema.Schema{
+									"credential_public_key": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The credential public key.",
 									},
-									"failure_count": &schema.Schema{
+									"failure_count": {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "The number of times the collector has failed.",
 									},
-									"approved_local_gateway_ip": &schema.Schema{
+									"approved_local_gateway_ip": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The approved local gateway ip of the collector. This field will be populated only when collector is installed.",
 									},
-									"approved_internet_gateway_ip": &schema.Schema{
+									"approved_internet_gateway_ip": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The approved internet gateway ip of the collector. This field will be populated only when collector is installed.",
 									},
-									"last_failed_local_gateway_ip": &schema.Schema{
+									"last_failed_local_gateway_ip": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The failed local gateway ip. This field will be populated only when collector is installed.",
 									},
-									"reset_reason": &schema.Schema{
+									"reset_reason": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The reason for the collector reset .User resets the collector with a reason for reset. The reason entered by the user is saved in this field .",
 									},
-									"hostname": &schema.Schema{
+									"hostname": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The collector host name. This field will be populated when collector is installed.This will have fully qualified domain name.",
 									},
-									"install_path": &schema.Schema{
+									"install_path": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The installation path of the collector. This field will be populated when collector is installed.The value will be folder path.",
 									},
-									"use_private_endpoint": &schema.Schema{
+									"use_private_endpoint": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Whether the collector should use a public or private endpoint. This value is generated based on is_public field value during collector creation. If is_public is set to true, this value will be false.",
 									},
-									"managed_by": &schema.Schema{
+									"managed_by": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The entity that manages the collector.",
 									},
-									"trial_expiry": &schema.Schema{
+									"trial_expiry": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The trial expiry. This holds the expiry date of registration_code. This field will be populated when collector is installed.",
 									},
-									"last_failed_internet_gateway_ip": &schema.Schema{
+									"last_failed_internet_gateway_ip": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The failed internet gateway ip of the collector.",
 									},
-									"status_description": &schema.Schema{
+									"status_description": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The collector status.",
 									},
-									"reset_time": &schema.Schema{
+									"reset_time": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ISO Date/Time of the collector reset. This value will be populated when a collector is reset. The data-time when the reset event is occured is captured in this field.",
 									},
-									"is_public": &schema.Schema{
+									"is_public": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Determines whether the collector endpoint is accessible on a public network.If set to `true`, the collector connects to resources in your account over a public network. If set to `false`, the collector connects to resources by using a private IP that is accessible only through the IBM Cloud private network.",
 									},
-									"is_ubi_image": &schema.Schema{
+									"is_ubi_image": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "Determines whether the collector has a Ubi image.",
@@ -334,7 +334,7 @@ func dataSourceIBMSccPostureListScopesRead(context context.Context, d *schema.Re
 	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount
@@ -350,40 +350,40 @@ func dataSourceIBMSccPostureListScopesRead(context context.Context, d *schema.Re
 
 	d.SetId(dataSourceIBMSccPostureListScopesID(d))
 	if err = d.Set("offset", flex.IntValue(scopeList.Offset)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offset: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting offset: %s", err))
 	}
 	if err = d.Set("limit", flex.IntValue(scopeList.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting limit: %s", err))
 	}
 	if err = d.Set("total_count", flex.IntValue(scopeList.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
 	}
 
 	if scopeList.First != nil {
 		err = d.Set("first", dataSourceScopeListFlattenFirst(*scopeList.First))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting first %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting first %s", err))
 		}
 	}
 
 	if scopeList.Last != nil {
 		err = d.Set("last", dataSourceScopeListFlattenLast(*scopeList.Last))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting last %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting last %s", err))
 		}
 	}
 
 	if scopeList.Previous != nil {
 		err = d.Set("previous", dataSourceScopeListFlattenPrevious(*scopeList.Previous))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting previous %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting previous %s", err))
 		}
 	}
 
 	if scopeList.Next != nil {
 		err = d.Set("next", dataSourceScopeListFlattenNext(*scopeList.Next))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting next %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting next %s", err))
 		}
 	}
 

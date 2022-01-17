@@ -1,4 +1,4 @@
-package ibm
+package satellite
 
 import (
 	"context"
@@ -6,41 +6,42 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMSatelliteClusterWorkerPoolAttachment() *schema.Resource {
+func DataSourceIBMSatelliteClusterWorkerPoolAttachment() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSatelliteClusterWorkerPoolAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
-			"cluster": &schema.Schema{
+			"cluster": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name or id of the cluster",
 			},
-			"worker_pool": &schema.Schema{
+			"worker_pool": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "worker pool name",
 			},
-			"zone": &schema.Schema{
+			"zone": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "worker pool zone name",
 			},
-			"resource_group_id": &schema.Schema{
+			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The ID of the resource group that the Satellite location is in. To list the resource group ID of the location, use the `GET /v2/satellite/getController` API method.",
 			},
-			"worker_count": &schema.Schema{
+			"worker_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Number of workers",
 			},
-			"autobalance_enabled": &schema.Schema{
+			"autobalance_enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Auto enabled status",
@@ -56,7 +57,7 @@ func dataSourceIBMSatelliteClusterWorkerPoolAttachment() *schema.Resource {
 }
 
 func dataSourceIBMSatelliteClusterWorkerPoolAttachmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	satClient, err := meta.(ClientSession).SatelliteClientSession()
+	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {
 		return diag.FromErr(err)
 	}

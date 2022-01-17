@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power
 
 import (
 	"context"
@@ -15,9 +15,11 @@ import (
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
-func resourceIBMPIImageExport() *schema.Resource {
+func ResourceIBMPIImageExport() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIImageExportCreate,
 		ReadContext:   resourceIBMPIImageExportRead,
@@ -40,7 +42,7 @@ func resourceIBMPIImageExport() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				Description:      "Instance image id",
-				DiffSuppressFunc: applyOnce,
+				DiffSuppressFunc: flex.ApplyOnce,
 				ForceNew:         true,
 			},
 			helpers.PIImageBucketName: {
@@ -75,7 +77,7 @@ func resourceIBMPIImageExport() *schema.Resource {
 }
 
 func resourceIBMPIImageExportCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	sess, err := meta.(ClientSession).IBMPISession()
+	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		log.Printf("Failed to get the session")
 		return diag.FromErr(err)

@@ -18,7 +18,7 @@ import (
 
 func TestAccIBMCisDNSRecordsImport_Basic(t *testing.T) {
 	name := "ibm_cis_dns_records_import." + "test"
-	file := "test-fixtures/dns_records_import.txt"
+	file := "../../test-fixtures/dns_records_import.txt"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },

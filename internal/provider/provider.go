@@ -468,6 +468,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_sap_profiles":       power.DataSourceIBMPISAPProfiles(),
 			"ibm_pi_sap_profile":        power.DataSourceIBMPISAPProfile(),
 			"ibm_pi_console_languages":  power.DataSourceIBMPIInstanceConsoleLanguages(),
+			"ibm_pi_placement_group":    power.DataSourceIBMPIPlacementGroup(),
+			"ibm_pi_placement_groups":   power.DataSourceIBMPIPlacementGroups(),
 
 			// // Added for private dns zones
 
@@ -508,13 +510,14 @@ func Provider() *schema.Provider {
 			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
 
 			// //Added for Satellite
-			"ibm_satellite_location":            satellite.DataSourceIBMSatelliteLocation(),
-			"ibm_satellite_location_nlb_dns":    satellite.DataSourceIBMSatelliteLocationNLBDNS(),
-			"ibm_satellite_attach_host_script":  satellite.DataSourceIBMSatelliteAttachHostScript(),
-			"ibm_satellite_cluster":             satellite.DataSourceIBMSatelliteCluster(),
-			"ibm_satellite_cluster_worker_pool": satellite.DataSourceIBMSatelliteClusterWorkerPool(),
-			"ibm_satellite_link":                satellite.DataSourceIBMSatelliteLink(),
-			"ibm_satellite_endpoint":            satellite.DataSourceIBMSatelliteEndpoint(),
+			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
+			"ibm_satellite_location_nlb_dns":                    satellite.DataSourceIBMSatelliteLocationNLBDNS(),
+			"ibm_satellite_attach_host_script":                  satellite.DataSourceIBMSatelliteAttachHostScript(),
+			"ibm_satellite_cluster":                             satellite.DataSourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool":                 satellite.DataSourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                                satellite.DataSourceIBMSatelliteLink(),
+			"ibm_satellite_endpoint":                            satellite.DataSourceIBMSatelliteEndpoint(),
+			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.DataSourceIBMSatelliteClusterWorkerPoolAttachment(),
 
 			// // Catalog related resources
 			"ibm_cm_catalog":           catalogmanagement.DataSourceIBMCmCatalog(),
@@ -541,11 +544,14 @@ func Provider() *schema.Provider {
 			"ibm_scc_si_occurrences":    scc.DataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
-			"ibm_scc_posture_scopes":         scc.DataSourceIBMSccPostureScopes(),
-			"ibm_scc_posture_latest_scans":   scc.DataSourceIBMSccPostureLatestScans(),
-			"ibm_scc_posture_profiles":       scc.DataSourceIBMSccPostureProfiles(),
-			"ibm_scc_posture_scan_summary":   scc.DataSourceIBMSccPostureScansSummary(),
-			"ibm_scc_posture_scan_summaries": scc.DataSourceIBMSccPostureScanSummaries(),
+			"ibm_scc_posture_scopes":            scc.DataSourceIBMSccPostureScopes(),
+			"ibm_scc_posture_latest_scans":      scc.DataSourceIBMSccPostureLatestScans(),
+			"ibm_scc_posture_profiles":          scc.DataSourceIBMSccPostureProfiles(),
+			"ibm_scc_posture_scan_summary":      scc.DataSourceIBMSccPostureScansSummary(),
+			"ibm_scc_posture_scan_summaries":    scc.DataSourceIBMSccPostureScanSummaries(),
+			"ibm_scc_posture_profile":           scc.DataSourceIBMSccPostureProfileDetails(),
+			"ibm_scc_posture_group_profile":     scc.DataSourceIBMSccPostureGroupProfileDetails(),
+			"ibm_scc_posture_scope_correlation": scc.DataSourceIBMSccPostureScopeCorrelation(),
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
@@ -793,6 +799,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_attach":       power.ResourceIBMPIVolumeAttach(),
 			"ibm_pi_capture":             power.ResourceIBMPICapture(),
 			"ibm_pi_image":               power.ResourceIBMPIImage(),
+			"ibm_pi_image_export":        power.ResourceIBMPIImageExport(),
 			"ibm_pi_network_port":        power.ResourceIBMPINetworkPort(),
 			"ibm_pi_snapshot":            power.ResourceIBMPISnapshot(),
 			"ibm_pi_network_port_attach": power.ResourceIBMPINetworkPortAttach(),
@@ -802,6 +809,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_ipsec_policy":        power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_vpn_connection":      power.ResourceIBMPIVPNConnection(),
 			"ibm_pi_console_language":    power.ResourceIBMPIInstanceConsoleLanguage(),
+			"ibm_pi_placement_group":     power.ResourceIBMPIPlacementGroup(),
 
 			// //Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
@@ -843,13 +851,14 @@ func Provider() *schema.Provider {
 			"ibm_schematics_resource_query": schematics.ResourceIBMSchematicsResourceQuery(),
 
 			// //satellite  resources
-			"ibm_satellite_location":            satellite.ResourceIBMSatelliteLocation(),
-			"ibm_satellite_host":                satellite.ResourceIBMSatelliteHost(),
-			"ibm_satellite_cluster":             satellite.ResourceIBMSatelliteCluster(),
-			"ibm_satellite_cluster_worker_pool": satellite.ResourceIBMSatelliteClusterWorkerPool(),
-			"ibm_satellite_link":                satellite.ResourceIBMSatelliteLink(),
-			"ibm_satellite_endpoint":            satellite.ResourceIBMSatelliteEndpoint(),
-			"ibm_satellite_location_nlb_dns":    satellite.ResourceIBMSatelliteLocationNlbDns(),
+			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
+			"ibm_satellite_host":                                satellite.ResourceIBMSatelliteHost(),
+			"ibm_satellite_cluster":                             satellite.ResourceIBMSatelliteCluster(),
+			"ibm_satellite_cluster_worker_pool":                 satellite.ResourceIBMSatelliteClusterWorkerPool(),
+			"ibm_satellite_link":                                satellite.ResourceIBMSatelliteLink(),
+			"ibm_satellite_endpoint":                            satellite.ResourceIBMSatelliteEndpoint(),
+			"ibm_satellite_location_nlb_dns":                    satellite.ResourceIBMSatelliteLocationNlbDns(),
+			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
 
 			//Added for Resource Tag
 			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
@@ -862,6 +871,11 @@ func Provider() *schema.Provider {
 			"ibm_scc_si_note":          scc.ResourceIBMSccSiNote(),
 			"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettings(),
 			"ibm_scc_si_occurrence":    scc.ResourceIBMSccSiOccurrence(),
+
+			//Security and Compliance Center - PostureManagement
+			"ibm_scc_posture_collector":  scc.ResourceIBMSccPostureCollectors(),
+			"ibm_scc_posture_scope":      scc.ResourceIBMSccPostureScopes(),
+			"ibm_scc_posture_credential": scc.ResourceIBMSccPostureCredentials(),
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
@@ -992,6 +1006,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),
 				"ibm_scc_si_occurrence":                   scc.ResourceIBMSccSiOccurrenceValidator(),
+				"ibm_scc_posture_collector":               scc.ResourceIBMSccPostureCollectorsValidator(),
+				"ibm_scc_posture_scope":                   scc.ResourceIBMSccPostureScopesValidator(),
+				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 
