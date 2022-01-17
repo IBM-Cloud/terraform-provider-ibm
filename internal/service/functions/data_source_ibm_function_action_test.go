@@ -45,7 +45,7 @@ func testAccCheckFunctionActionDataSource(name, namespace string) string {
 		
 		exec {
 		  kind = "python:3"
-		  code = base64encode("test-fixtures/pythonaction.zip")
+		  code = base64encode("../../test-fixtures/pythonaction.zip")
 		}
 	  }
 	  

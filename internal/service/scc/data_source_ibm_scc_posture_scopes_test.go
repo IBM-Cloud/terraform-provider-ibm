@@ -16,7 +16,7 @@ func TestAccIBMSccPostureListScopesDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureListScopesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scopes.list_scopes", "id"),
@@ -33,7 +33,7 @@ func TestAccIBMSccPostureListScopesDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMSccPostureListScopesDataSourceConfigBasic() string {
-	return (`
+	return `
 		data "ibm_scc_posture_scopes" "list_scopes" {
 		}
 	`

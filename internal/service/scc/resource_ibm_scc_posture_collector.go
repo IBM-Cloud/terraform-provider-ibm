@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
@@ -9,13 +9,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
-func resourceIBMSccPostureCollectors() *schema.Resource {
+func ResourceIBMSccPostureCollectors() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMSccPostureCollectorsCreate,
 		ReadContext:   resourceIBMSccPostureCollectorsRead,
@@ -24,37 +26,37 @@ func resourceIBMSccPostureCollectors() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_collector", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_collector", "name"),
 				Description:  "A unique name for your collector.",
 			},
-			"is_public": &schema.Schema{
+			"is_public": {
 				Type:        schema.TypeBool,
 				Required:    true,
 				Description: "Determines whether the collector endpoint is accessible on a public network. If set to `true`, the collector connects to resources in your account over a public network. If set to `false`, the collector connects to resources by using a private IP that is accessible only through the IBM Cloud private network.",
 			},
-			"managed_by": &schema.Schema{
+			"managed_by": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_collector", "managed_by"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_collector", "managed_by"),
 				Description:  "Determines whether the collector is an IBM or customer-managed virtual machine. Use `ibm` to allow Security and Compliance Center to create, install, and manage the collector on your behalf. The collector is installed in an OpenShift cluster and approved automatically for use. Use `customer` if you would like to install the collector by using your own virtual machine. For more information, check out the [docs](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-collector).",
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "",
-				ValidateFunc: InvokeValidator("ibm_scc_posture_collector", "description"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_collector", "description"),
 				Description:  "A detailed description of the collector.",
 			},
-			"passphrase": &schema.Schema{
+			"passphrase": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: InvokeValidator("ibm_scc_posture_collector", "passphrase"),
+				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_collector", "passphrase"),
 				Description:  "To protect the credentials that you add to the service, a passphrase is used to generate a data encryption key. The key is used to securely store your credentials and prevent anyone from accessing them.",
 			},
-			"is_ubi_image": &schema.Schema{
+			"is_ubi_image": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Determines whether the collector has a Ubi image.",
@@ -63,38 +65,38 @@ func resourceIBMSccPostureCollectors() *schema.Resource {
 	}
 }
 
-func resourceIBMSccPostureCollectorsValidator() *ResourceValidator {
-	validateSchema := make([]ValidateSchema, 1)
+func ResourceIBMSccPostureCollectorsValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "name",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             32,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "managed_by",
-			ValidateFunctionIdentifier: ValidateAllowedStringValue,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "customer, ibm",
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "description",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             1000,
 		},
-		ValidateSchema{
+		validate.ValidateSchema{
 			Identifier:                 "passphrase",
-			ValidateFunctionIdentifier: ValidateRegexpLen,
-			Type:                       TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
 			Optional:                   true,
 			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
 			MinValueLength:             1,
@@ -102,12 +104,12 @@ func resourceIBMSccPostureCollectorsValidator() *ResourceValidator {
 		},
 	)
 
-	resourceValidator := ResourceValidator{ResourceName: "ibm_collectors", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_collectors", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIBMSccPostureCollectorsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,18 +142,18 @@ func resourceIBMSccPostureCollectorsCreate(context context.Context, d *schema.Re
 }
 
 func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	listCollectorsOptions.SetAccountID(accountID)
 
 	collectorList, response, err := postureManagementClient.ListCollectorsWithContext(context, listCollectorsOptions)
@@ -168,7 +170,7 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 }
 
 func resourceIBMSccPostureCollectorsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +195,7 @@ func resourceIBMSccPostureCollectorsUpdate(context context.Context, d *schema.Re
 }
 
 func resourceIBMSccPostureCollectorsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -19,23 +20,23 @@ import (
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 )
 
-func dataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
+func DataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSccPostureGroupProfileDetailsRead,
 
 		Schema: map[string]*schema.Schema{
-			"profile_id": &schema.Schema{
+			"profile_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The profile ID. This can be obtained from the Security and Compliance Center UI by clicking on the profile name. The URL contains the ID.",
 			},
-			"first": &schema.Schema{
+			"first": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -43,13 +44,13 @@ func dataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 					},
 				},
 			},
-			"last": &schema.Schema{
+			"last": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -57,13 +58,13 @@ func dataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 					},
 				},
 			},
-			"previous": &schema.Schema{
+			"previous": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The URL of a page.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
+						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL of a page.",
@@ -71,69 +72,69 @@ func dataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 					},
 				},
 			},
-			"controls": &schema.Schema{
+			"controls": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Profiles array.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The identifier number of the control.",
 						},
-						"description": &schema.Schema{
+						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The description of the control.",
 						},
-						"external_control_id": &schema.Schema{
+						"external_control_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The external identifier number of the control.",
 						},
-						"goals": &schema.Schema{
+						"goals": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Mapped goals aganist the control identifier.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"description": &schema.Schema{
+									"description": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The description of the goal.",
 									},
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The goal ID.",
 									},
-									"severity": &schema.Schema{
+									"severity": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The severity of the goal.",
 									},
-									"is_manual": &schema.Schema{
+									"is_manual": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "The goal is manual check.",
 									},
-									"is_remediable": &schema.Schema{
+									"is_remediable": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "The goal is remediable or not.",
 									},
-									"is_reversible": &schema.Schema{
+									"is_reversible": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "The goal is reversible or not.",
 									},
-									"is_automatable": &schema.Schema{
+									"is_automatable": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "The goal is automatable or not.",
 									},
-									"is_auto_remediable": &schema.Schema{
+									"is_auto_remediable": {
 										Type:        schema.TypeBool,
 										Computed:    true,
 										Description: "The goal is autoremediable or not.",
@@ -149,7 +150,7 @@ func dataSourceIBMSccPostureGroupProfileDetails() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureGroupProfileDetailsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,12 +158,12 @@ func dataSourceIBMSccPostureGroupProfileDetailsRead(context context.Context, d *
 	getProfileControlsOptions := &posturemanagementv2.GetProfileControlsOptions{}
 
 	getProfileControlsOptions.SetProfileID(d.Get("profile_id").(string))
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	getProfileControlsOptions.SetAccountID(accountID)
 
 	var controlList *posturemanagementv2.ControlList
@@ -191,7 +192,7 @@ func dataSourceIBMSccPostureGroupProfileDetailsRead(context context.Context, d *
 	if controlList.Controls != nil {
 		err = d.Set("controls", dataSourceControlListFlattenControls(controlList.Controls))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting controls %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting controls %s", err))
 		}
 	}
 

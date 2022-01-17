@@ -40,7 +40,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				ID := d.Id()
-				satClient, err := meta.(ClientSession).SatelliteClientSession()
+				satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 				if err != nil {
 					return nil, err
 				}
@@ -54,7 +54,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 					return nil, fmt.Errorf("Error reading satellite location: %s\n%s", err, response)
 				}
 
-				d.Set("zones", newStringSet(schema.HashString, instance.WorkerZones))
+				d.Set("zones", flex.NewStringSet(schema.HashString, instance.WorkerZones))
 				return []*schema.ResourceData{d}, nil
 			},
 		},

@@ -17,8 +17,8 @@ func TestAccIBMSccPostureScansSummaryDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureScansSummaryDataSourceConfigBasic(scc_posture_scan_id_scansummary, scc_posture_profile_id_scansummary),
+			{
+				Config: testAccCheckIBMSccPostureScansSummaryDataSourceConfigBasic(acc.Scc_posture_scan_id_scansummary, acc.Scc_posture_profile_id_scansummary),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summary.scans_summary", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_scan_summary.scans_summary", "scan_id"),

@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power
 
 import (
 	"context"
@@ -11,11 +11,12 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func dataSourceIBMPIPlacementGroup() *schema.Resource {
+func DataSourceIBMPIPlacementGroup() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIPlacementGroupRead,
@@ -47,7 +48,7 @@ func dataSourceIBMPIPlacementGroup() *schema.Resource {
 
 func dataSourceIBMPIPlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	sess, err := meta.(ClientSession).IBMPISession()
+	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}

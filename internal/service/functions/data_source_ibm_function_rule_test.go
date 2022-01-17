@@ -48,7 +48,7 @@ func testAccCheckFunctionRuleDataSource(actionName, triggerName, name, namespace
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	  

@@ -320,7 +320,7 @@ func testAccCheckIBMAppCreate(name string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 90
 		buildpack         = "sdk-for-nodejs"
 	  }
@@ -338,7 +338,7 @@ func testAccCheckIBMAppUpdate(name string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 20
 		buildpack         = "sdk-for-nodejs"
 		disk_quota        = 512
@@ -374,7 +374,7 @@ func testAccCheckIBMAppBindRoute(name, route1 string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 20
 		buildpack         = "sdk-for-nodejs"
 		instances         = 1
@@ -417,7 +417,7 @@ func testAccCheckIBMAppAddMultipleRoute(name, route1, route2 string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 20
 		buildpack         = "sdk-for-nodejs"
 		instances         = 1
@@ -461,7 +461,7 @@ func testAccCheckIBMAppUnBindRoute(name, route1, route2 string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 20
 		buildpack         = "sdk-for-nodejs"
 		instances         = 1
@@ -508,7 +508,7 @@ func testAccCheckIBMAppBindService(name, route1, serviceName string) string {
 	  resource "ibm_app" "app" {
 		name                  = "%s"
 		space_guid            = data.ibm_space.space.id
-		app_path              = "test-fixtures/app1.zip"
+		app_path              = "../../test-fixtures/app1.zip"
 		wait_time_minutes     = 20
 		buildpack             = "sdk-for-nodejs"
 		instances             = 1
@@ -563,7 +563,7 @@ func testAccCheckIBMAppAddMultipleService(name, route, serviceName1, serviceName
 	  resource "ibm_app" "app" {
 		name                  = "%s"
 		space_guid            = data.ibm_space.space.id
-		app_path              = "test-fixtures/app1.zip"
+		app_path              = "../../test-fixtures/app1.zip"
 		wait_time_minutes     = 20
 		buildpack             = "sdk-for-nodejs"
 		instances             = 1
@@ -619,7 +619,7 @@ func testAccCheckIBMAppUnBindService(name, route1, serviceName1, serviceName2 st
 	  resource "ibm_app" "app" {
 		name                  = "%s"
 		space_guid            = data.ibm_space.space.id
-		app_path              = "test-fixtures/app1.zip"
+		app_path              = "../../test-fixtures/app1.zip"
 		wait_time_minutes     = 20
 		buildpack             = "sdk-for-nodejs"
 		instances             = 1
@@ -651,7 +651,7 @@ func testAccCheckIBMAppCreate_With_Tags(name string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 90
 		buildpack         = "sdk-for-nodejs"
 		tags              = ["one", "two"]
@@ -671,7 +671,7 @@ func testAccCheckIBMAppCreate_With_Updated_Tags(name string) string {
 	  resource "ibm_app" "app" {
 		name              = "%s"
 		space_guid        = data.ibm_space.space.id
-		app_path          = "test-fixtures/app1.zip"
+		app_path          = "../../test-fixtures/app1.zip"
 		wait_time_minutes = 90
 		buildpack         = "sdk-for-nodejs"
 		tags              = ["one", "two", "three"]
@@ -690,7 +690,7 @@ func testAccCheckIBMAppWithHealthCheck(name string) string {
 	  resource "ibm_app" "app" {
 		name                 = "%s"
 		space_guid           = data.ibm_space.space.id
-		app_path             = "test-fixtures/app1.zip"
+		app_path             = "../../test-fixtures/app1.zip"
 		wait_time_minutes    = 90
 		health_check_timeout = 120
 		instances            = 1
@@ -711,7 +711,7 @@ func testAccCheckIBMAppWithHealthCheckUpdate(name string) string {
 	  resource "ibm_app" "app" {
 		name                 = "%s"
 		space_guid           = data.ibm_space.space.id
-		app_path             = "test-fixtures/app1.zip"
+		app_path             = "../../test-fixtures/app1.zip"
 		wait_time_minutes    = 90
 		health_check_timeout = 180
 		instances            = 1

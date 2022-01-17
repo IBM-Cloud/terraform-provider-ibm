@@ -288,8 +288,8 @@ func TestAccIBMPIInstanceMixedStorage(t *testing.T) {
 	instanceRes := "ibm_pi_instance.instance"
 	name := fmt.Sprintf("tf-pi-mixedstorage-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -343,5 +343,5 @@ func testAccIBMPIInstanceMixedStorage(name string) string {
 		pi_volume_id         = ibm_pi_volume.power_volume.volume_id
 		pi_instance_id       = ibm_pi_instance.instance.instance_id
 	}
-	`, pi_cloud_instance_id, name)
+	`, acc.Pi_cloud_instance_id, name)
 }

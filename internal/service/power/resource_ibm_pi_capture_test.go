@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power_test
 
 import (
 	"context"
@@ -11,6 +11,9 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -20,8 +23,8 @@ func TestAccIBMPICaptureBasic(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPICaptureDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -39,8 +42,8 @@ func TestAccIBMPICaptureWithVolume(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPICaptureDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -60,8 +63,8 @@ func TestAccIBMPICaptureCloudStorage(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPICaptureCloudStorageConfig(name),
@@ -77,8 +80,8 @@ func TestAccIBMPICaptureBoth(t *testing.T) {
 	captureRes := "ibm_pi_capture.capture_instance"
 	name := fmt.Sprintf("tf-pi-capture-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPICaptureBothConfig(name),
@@ -104,11 +107,11 @@ func testAccCheckIBMPICaptureExists(n string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		cloudInstanceID := parts[0]
 		captureID := parts[1]
 		if err != nil {
@@ -126,7 +129,7 @@ func testAccCheckIBMPICaptureExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckIBMPICaptureDestroy(s *terraform.State) error {
-	sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
@@ -134,7 +137,7 @@ func testAccCheckIBMPICaptureDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_capture" {
 			continue
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		cloudInstanceID := parts[0]
 		captureID := parts[1]
 		if err != nil {
@@ -160,7 +163,7 @@ func testAccCheckIBMPICaptureWithVolumeConfig(name string, healthStatus string) 
 		pi_capture_destination = "image-catalog"
 		pi_capture_volume_ids = [ibm_pi_volume.power_volume.volume_id]
 	}
-	`, pi_cloud_instance_id, name)
+	`, acc.Pi_cloud_instance_id, name)
 }
 
 func testAccCheckIBMPICaptureConfigBasic(name string) string {
@@ -171,7 +174,7 @@ func testAccCheckIBMPICaptureConfigBasic(name string) string {
 		pi_instance_name = "%s"
 		pi_capture_destination = "image-catalog"
 	}
-	`, pi_cloud_instance_id, name, pi_instance_name)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name)
 }
 
 func testAccCheckIBMPICaptureCloudStorageConfig(name string) string {
@@ -186,7 +189,7 @@ func testAccCheckIBMPICaptureCloudStorageConfig(name string) string {
 		pi_capture_cloud_storage_secret_key = "%s"
 		pi_capture_storage_image_path = "%s"
 	}
-	`, pi_cloud_instance_id, name, pi_instance_name, pi_capture_cloud_storage_access_key, pi_capture_cloud_storage_secret_key, pi_capture_storage_image_path)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
 }
 
 func testAccCheckIBMPICaptureBothConfig(name string) string {
@@ -201,5 +204,5 @@ func testAccCheckIBMPICaptureBothConfig(name string) string {
 		pi_capture_cloud_storage_secret_key = "%s"
 		pi_capture_storage_image_path = "%s"
 	}
-	`, pi_cloud_instance_id, name, pi_instance_name, pi_capture_cloud_storage_access_key, pi_capture_cloud_storage_secret_key, pi_capture_storage_image_path)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_instance_name, acc.Pi_capture_cloud_storage_access_key, acc.Pi_capture_cloud_storage_secret_key, acc.Pi_capture_storage_image_path)
 }

@@ -19,7 +19,7 @@ func TestAccIBMCOSBucketObject_basic(t *testing.T) {
 	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
 	instanceCRN := acc.CosCRN
 	objectBody := "Acceptance Testing"
-	objectFile := "test-fixtures/cosObject.json"
+	objectFile := "../../test-fixtures/cosObject.json"
 	objectFileBody, _ := ioutil.ReadFile(objectFile)
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },

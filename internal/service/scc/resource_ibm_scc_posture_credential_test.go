@@ -1,13 +1,15 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -29,11 +31,11 @@ func TestAccIBMSccPostureCredentialsBasic(t *testing.T) {
 	purposeUpdate := "discovery_fact_collection_remediation"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSccPostureCredentialsDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCredentialsConfigBasic(enabled, typeVar, name, description, purpose),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureCredentialsExists("ibm_scc_posture_credential.credentials", conf),
@@ -44,7 +46,7 @@ func TestAccIBMSccPostureCredentialsBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_posture_credential.credentials", "purpose", purpose),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMSccPostureCredentialsConfigBasic(enabledUpdate, typeVarUpdate, nameUpdate, descriptionUpdate, purposeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSccPostureCredentialsExists("ibm_scc_posture_credential.credentials", conf),
@@ -55,7 +57,7 @@ func TestAccIBMSccPostureCredentialsBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_scc_posture_credential.credentials", "purpose", purposeUpdate),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName: "ibm_scc_posture_credential.credentials",
 				ImportState:  true,
 				//ImportStateVerify: true,
@@ -93,7 +95,7 @@ func testAccCheckIBMSccPostureCredentialsExists(n string, obj posturemanagementv
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+		postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 		if err != nil {
 			return err
 		}
@@ -112,7 +114,7 @@ func testAccCheckIBMSccPostureCredentialsExists(n string, obj posturemanagementv
 }
 
 func testAccCheckIBMSccPostureCredentialsDestroy(s *terraform.State) error {
-	postureManagementClient, err := testAccProvider.Meta().(ClientSession).PostureManagementV2()
+	postureManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return err
 	}
@@ -130,7 +132,7 @@ func testAccCheckIBMSccPostureCredentialsDestroy(s *terraform.State) error {
 		if err == nil {
 			return nil
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for credentials (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("[ERROR] Error checking for credentials (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

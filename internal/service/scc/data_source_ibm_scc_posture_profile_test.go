@@ -1,22 +1,23 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc_test
 
 import (
 	"fmt"
 	"testing"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMSccPostureProfileDetailsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMSccPostureProfileDetailsDataSourceConfigBasic(scc_posture_profile_id),
+			{
+				Config: testAccCheckIBMSccPostureProfileDetailsDataSourceConfigBasic(acc.Scc_posture_profile_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "profile_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_profile.profile_details", "name"),

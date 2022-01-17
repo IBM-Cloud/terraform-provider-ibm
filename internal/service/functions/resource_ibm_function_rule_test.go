@@ -267,7 +267,7 @@ func testAccCheckIAMFunctionRuleCreate(actionName, triggerName, name, namespace 
 		namespace = ibm_function_namespace.namespace.name
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	  
@@ -418,7 +418,7 @@ func testAccCheckCFFunctionRuleCreate(actionName, triggerName, name, namespace s
 		namespace = "%s"
 		exec {
 		  kind = "nodejs:10"
-		  code = file("test-fixtures/hellonode.js")
+		  code = file("../../test-fixtures/hellonode.js")
 		}
 	  }
 	  

@@ -61,7 +61,7 @@ func testAccCheckIBMISInstanceDiskDataSourceConfig(vpcname, subnetname, sshname,
 	return testAccCheckIBMISInstanceDisk(vpcname, subnetname, sshname, publicKey, volname, name) + fmt.Sprintf(`
 	data "ibm_is_instance" "ins" {
 		name = "%s"
-		private_key = file("test-fixtures/.ssh/id_rsa")
+		private_key = file("../../test-fixtures/.ssh/id_rsa")
   		passphrase  = ""
 	  }
       data "ibm_is_instance_disks" "test1" {

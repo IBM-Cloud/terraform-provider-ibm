@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package power_test
 
 import (
 	"context"
@@ -14,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/internal/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/internal/flex"
 )
 
 func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
@@ -21,8 +24,8 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 	policy := "affinity"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIPlacementGroupDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -82,7 +85,7 @@ func TestAccIBMPIPlacementGroupBasic(t *testing.T) {
 
 func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
 
-	sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
@@ -90,7 +93,7 @@ func testAccCheckIBMPIPlacementGroupDestroy(s *terraform.State) error {
 		if rs.Type != "ibm_pi_placement_group" {
 			continue
 		}
-		parts, _ := idParts(rs.Primary.ID)
+		parts, _ := flex.IdParts(rs.Primary.ID)
 		cloudinstanceid := parts[0]
 		placementGroupC := st.NewIBMPIPlacementGroupClient(context.Background(), sess, cloudinstanceid)
 		_, err = placementGroupC.Get(parts[1])
@@ -114,11 +117,11 @@ func testAccCheckIBMPIPlacementGroupExists(n string) resource.TestCheckFunc {
 			return errors.New("No Record ID is set")
 		}
 
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -148,11 +151,11 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, instance string) reso
 		}
 
 		// refresh placement group info since a server should be in the placement group
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -168,7 +171,7 @@ func testAccCheckIBMPIPlacementGroupMemberExists(n string, instance string) reso
 		if !ok {
 			return fmt.Errorf("Not found: %s", instance)
 		}
-		instanccParts, err := idParts(instancers.Primary.ID)
+		instanccParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -194,11 +197,11 @@ func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, instance string
 		}
 
 		// refresh placement group info since a server should be in the placement group
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -214,7 +217,7 @@ func testAccCheckIBMPIPlacementGroupMemberDoesNotExist(n string, instance string
 		if !ok {
 			return fmt.Errorf("Not found: %s", instance)
 		}
-		instanccParts, err := idParts(instancers.Primary.ID)
+		instanccParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -250,11 +253,11 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 		}
 
 		// refresh placement group info since a server should be in the placement group
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -270,7 +273,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 		if !ok {
 			return fmt.Errorf("Not found: %s", instance)
 		}
-		instanceParts, err := idParts(instancers.Primary.ID)
+		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -279,7 +282,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 		if !ok {
 			return fmt.Errorf("Not found: %s", newInstance)
 		}
-		newinstanceParts, err := idParts(newinstancers.Primary.ID)
+		newinstanceParts, err := flex.IdParts(newinstancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -296,7 +299,7 @@ func testAccCheckIBMPIPlacementGroupMemberExistsFromInstanceCreate(n string, ins
 
 func testAccCheckIBMPIPlacementGroupDelete(n string, instance string, newInstance string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		sess, err := testAccProvider.Meta().(ClientSession).IBMPISession()
+		sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 		if err != nil {
 			return err
 		}
@@ -305,7 +308,7 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, instance string, newInstanc
 		if !ok {
 			return fmt.Errorf("Not found: %s", instance)
 		}
-		instanceParts, err := idParts(instancers.Primary.ID)
+		instanceParts, err := flex.IdParts(instancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -314,7 +317,7 @@ func testAccCheckIBMPIPlacementGroupDelete(n string, instance string, newInstanc
 		if !ok {
 			return fmt.Errorf("Not found: %s", newInstance)
 		}
-		newinstanceParts, err := idParts(newinstancers.Primary.ID)
+		newinstanceParts, err := flex.IdParts(newinstancers.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -367,7 +370,7 @@ func testAccCheckIBMPIPlacementGroupConfig(name string, policy string) string {
 			pi_placement_group_name   = "%[2]s"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
 
 func testAccCheckIBMPIPlacementGroupAddMemberConfig(name string, policy string) string {
@@ -399,7 +402,7 @@ func testAccCheckIBMPIPlacementGroupAddMemberConfig(name string, policy string) 
 			pi_placement_group_name   = "%[2]s"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
 
 func testAccCheckIBMPIPlacementGroupUpdateMemberConfig(name string, policy string) string {
@@ -437,7 +440,7 @@ func testAccCheckIBMPIPlacementGroupUpdateMemberConfig(name string, policy strin
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
 
 func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy string) string {
@@ -475,7 +478,7 @@ func testAccCheckIBMPIPlacementGroupRemoveMemberConfig(name string, policy strin
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
 
 func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string) string {
@@ -528,7 +531,7 @@ func testAccCheckIBMPICreateInstanceInPlacementGroup(name string, policy string)
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
 
 func testAccCheckIBMPIDeletePlacementGroup(name string, policy string) string {
@@ -573,5 +576,5 @@ func testAccCheckIBMPIDeletePlacementGroup(name string, policy string) string {
 			pi_placement_group_name   = "%[2]s-2"
 			pi_placement_group_policy = "%[3]s"
 		}
-	`, pi_cloud_instance_id, name, policy, pi_image)
+	`, acc.Pi_cloud_instance_id, name, policy, acc.Pi_image)
 }
