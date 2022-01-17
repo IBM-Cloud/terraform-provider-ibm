@@ -1,4 +1,69 @@
-# 1.37.0 (Dec09, 2021)
+# 1.38.0 (Jan12, 2022)
+Features
+* Support Power Instance
+    - **DataSources**
+        - ibm_pi_cloud_connections
+        - ibm_pi_keys
+        - ibm_pi_console_languages
+        - ibm_pi_placement_group
+        - ibm_pi_placement_groups
+    - **Resources**
+        - ibm_pi_console_language
+        - ibm_pi_volume_attach
+        - ibm_pi_image_export
+        - ibm_pi_placement_group
+        - ibm_pi_capture
+* Support Security and Compliance Center
+    - **DataSources**
+        - ibm_scc_posture_profile
+        - ibm_scc_posture_group_profile
+        - ibm_scc_posture_scope_correlation
+    - **Resources**
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credential
+* Support IAM Authorization Policies
+    - **Datasources**
+        - ibm_iam_authorization_policies
+* Support Satellite Cluster
+    - **Datasources**
+        - ibm_satellite_cluster_worker_pool_zone_attachment
+    - **Resources**
+        - ibm_satellite_cluster_worker_pool_zone_attachment
+       
+ENHANCEMENTS:
+* Add issue labeler workflow and update issue template ([3430](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3430))
+* Enhance log statements ([3442](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3442))
+* Allow retrieval of IAM access tag (data source) ([3287](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3287))
+* Refactor multiple pi resources with context awareness ([3429](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3429)) 
+* Support: mysql in ibm_database ([3454](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3454))
+* ibm_resource_instance cannot except json in "parameters" ([3458](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3458))
+* Add release process and maintainers ([3472](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3472))
+* Allow mixed storage for pi_instance ([3484](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3484))
+
+BUGFIXES:
+* Invite Users module it's not working as expected ([3226](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3226))
+* Docs: data iam_trusted_profile_claim_rules actually is documented as iam_trusted_profiles_claim_rules ([3421](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3421))
+* ibm_iam_custom_role does not honor description changes ([3353](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3353))
+* ibm_cos_bucket documented storge_class flex does not work ([3349](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3349))
+* DocFix: satellite_host resource ([3437](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3437))
+* ibm_cos_bucket missing docs and missing s3_endpoint_direct ([3436](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3436))
+* Docs for data ibm_iam_trusted_profile_policy: Wrong title for examples ([3425](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3425))
+* Not documented: how to access ibm_resource_key.objectstorage.credentials.cos_hmac_keys.access_key_id ([2180](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2180))
+* Cloud Object Storage access key and secret ([1860](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1860))
+* ibm_resource_key for COS does not nest HMAC object ([1741](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1741))
+* IBM Cloud Databases CLI Behavior Update ([1387](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1387))
+* Feature Request: Make ibm_resource_key resources linked to ibm_database resources more importable ([1232](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/1232))
+* Bug Fix Policy ([3413](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3413))
+* Fix: iam url issue in kms client ([3417](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3417))
+* Update doc of container service bind ([3450](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3450))
+* removed required tag from name in instance template ([3432](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3432))
+* DocFix: dns services ([3462](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3462))
+* Fix the entitlement for VPC worker pool ([3464](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3464))
+* Add Watson query example ([3451](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3451))
+* Issue with Access group creation ([3476](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3476))
+
+# 1.37.1 (Dec09, 2021)
 BUGFIXES:
 * Regression: Breaking change on policy resources ([3410](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3410))
 * ibm_pi_instance is not able to complete with pi_health_status "WARNING" ([3401](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3401))
