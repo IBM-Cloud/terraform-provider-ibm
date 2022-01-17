@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/internal/provider"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
