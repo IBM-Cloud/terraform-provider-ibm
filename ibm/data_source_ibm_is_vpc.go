@@ -384,13 +384,13 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 
 			for {
 				if startSub != "" {
-					options.Start = &start
+					options.Start = &startSub
 				}
 				s, response, err := sess.ListSubnets(options)
 				if err != nil {
 					return fmt.Errorf("Error fetching subnets %s\n%s", err, response)
 				}
-				start = GetNext(s.Next)
+				startSub = GetNext(s.Next)
 				allrecsSub = append(allrecsSub, s.Subnets...)
 				if startSub == "" {
 					break
