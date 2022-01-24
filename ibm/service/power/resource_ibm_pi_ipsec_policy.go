@@ -74,7 +74,7 @@ func ResourceIBMPIIPSecPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"hmac-md5-96", "hmac-sha-256-128", "hmac-sha1-96", "none"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"hmac-sha-256-128", "hmac-sha1-96", "none"}),
 				Description:  "Authentication for the IPSec Policy",
 			},
 
