@@ -68,8 +68,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -210,7 +210,7 @@ func testAccCheckIBMISSnapshotConfigRestart(vpcname, subnetname, sshname, public
 		depends_on 		= [ibm_is_instance_action.testacc_instanceaction]
 		name 			= "%s"
 		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
-}`, vpcname, subnetname, ISZoneName, sshname, publicKey, name, isImage, instanceProfileName, ISZoneName, sname)
+}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname)
 
 }
 
