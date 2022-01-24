@@ -43,9 +43,9 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `created_at` - (Timestamp)  The date and time that the default routing table was created.
-- `default_routing_table` - (String) The unique identifier for the default routing table.
+- `default_routing_table` - (String) The unique identifier for this routing table.
 - `href` - (String) The routing table URL.
-- `id` - (String) The unique ID for the default routing table.
+- `id` - (String) The unique identifier for this routing table. Same as `default_routing_table`.
 - `is_default` - (String)  Indicates the default routing table for this VPC.
 - `lifecycle_state` - (String) The lifecycle state of the routing table.
 - `name` - (String) The name for the default routing table.
