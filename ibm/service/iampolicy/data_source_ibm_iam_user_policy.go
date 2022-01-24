@@ -29,6 +29,12 @@ func DataSourceIBMIAMUserPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -150,8 +156,16 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		Type:      core.StringPtr("access"),
 	}
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	if v, ok := d.GetOk("sort"); ok {
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
+	}
+
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
@@ -159,8 +173,8 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return fmt.Errorf("Error listing user policies: %s, %s", err, resp)
 	}
-	policies := policyList.Policies
 
+	policies := policyList.Policies
 	userPolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
@@ -178,6 +192,9 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 			p["description"] = policy.Description
 		}
 		userPolicies = append(userPolicies, p)
+	}
+	if resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.SetId(userEmail)
 	d.Set("policies", userPolicies)

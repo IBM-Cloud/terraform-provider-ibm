@@ -181,6 +181,13 @@ func ResourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Description: "Description of the Policy",
 			},
 
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
+
 			"version": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -240,6 +247,10 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		createPolicyOptions.Description = &des
 	}
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		createPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	accessGroupPolicy, res, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 	if err != nil || accessGroupPolicy == nil {
 		return fmt.Errorf("[ERROR] Error creating access group policy: %s\n%s", err, res)
@@ -247,6 +258,10 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: accessGroupPolicy.ID,
+	}
+
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -290,6 +305,11 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: &accessGroupPolicyId,
 	}
+
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	accessGroupPolicy := &iampolicymanagementv1.Policy{}
 	res := &core.DetailedResponse{}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -409,6 +429,10 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 			updatePolicyOptions.Description = &des
 		}
 
+		if transactionID, ok := d.GetOk("transaction_id"); ok {
+			updatePolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+		}
+
 		_, res, err := iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {
 			return fmt.Errorf("[ERROR] Error updating access group policy: %s\n%s", err, res)
@@ -434,6 +458,10 @@ func resourceIBMIAMAccessGroupPolicyDelete(d *schema.ResourceData, meta interfac
 	deletePolicyOptions := iamPolicyManagementClient.NewDeletePolicyOptions(
 		accessGroupPolicyId,
 	)
+
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		deletePolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
 
 	res, err := iamPolicyManagementClient.DeletePolicy(deletePolicyOptions)
 	if err != nil {
