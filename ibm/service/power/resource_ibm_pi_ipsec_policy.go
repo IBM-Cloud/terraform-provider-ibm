@@ -98,13 +98,14 @@ func resourceIBMPIIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData,
 	name := d.Get(helpers.PIVPNPolicyName).(string)
 	dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
 	encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
-	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
 	pfs := d.Get(helpers.PIVPNPolicyPFS).(bool)
+	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	klt := models.KeyLifetime(keyLifetime)
 
 	body := &models.IPSecPolicyCreate{
 		DhGroup:     &dhGroup,
 		Encryption:  &encryption,
-		KeyLifetime: models.KeyLifetime(keyLifetime),
+		KeyLifetime: &klt,
 		Name:        &name,
 		Pfs:         &pfs,
 	}

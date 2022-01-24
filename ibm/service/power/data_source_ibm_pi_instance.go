@@ -177,7 +177,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("processors", powervmdata.Processors)
 	d.Set("status", powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
-	d.Set("volumes", powervmdata.VolumeIds)
+	d.Set("volumes", powervmdata.VolumeIDs)
 	d.Set("minproc", powervmdata.Minproc)
 	d.Set("minmem", powervmdata.Minmem)
 	d.Set("maxproc", powervmdata.Maxproc)

@@ -126,7 +126,7 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 	snapshotBody := &models.SnapshotCreate{Name: &name, Description: description}
 
 	if len(volids) > 0 {
-		snapshotBody.VolumeIds = volids
+		snapshotBody.VolumeIDs = volids
 	} else {
 		log.Printf("no volumeids provided. Will snapshot the entire instance")
 	}

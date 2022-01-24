@@ -108,14 +108,15 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 	name := d.Get(helpers.PIVPNPolicyName).(string)
 	dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
 	encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
-	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
 	presharedKey := d.Get(helpers.PIVPNPolicyPresharedKey).(string)
 	version := int64(d.Get(helpers.PIVPNPolicyVersion).(int))
+	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	klt := models.KeyLifetime(keyLifetime)
 
 	body := &models.IKEPolicyCreate{
 		DhGroup:      &dhGroup,
 		Encryption:   &encryption,
-		KeyLifetime:  models.KeyLifetime(keyLifetime),
+		KeyLifetime:  &klt,
 		Name:         &name,
 		PresharedKey: &presharedKey,
 		Version:      &version,

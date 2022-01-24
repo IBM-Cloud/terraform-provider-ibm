@@ -137,15 +137,16 @@ func resourceIBMPIVPNConnectionCreate(ctx context.Context, d *schema.ResourceDat
 	ipsecPolicyId := d.Get(helpers.PIVPNIPSecPolicyId).(string)
 	mode := d.Get(helpers.PIVPNConnectionMode).(string)
 	networks := d.Get(helpers.PIVPNConnectionNetworks).(*schema.Set)
-	peerGatewayAddress := d.Get(helpers.PIVPNConnectionPeerGatewayAddress).(string)
 	peerSubnets := d.Get(helpers.PIVPNConnectionPeerSubnets).(*schema.Set)
+	peerGatewayAddress := d.Get(helpers.PIVPNConnectionPeerGatewayAddress).(string)
+	pga := models.PeerGatewayAddress(peerGatewayAddress)
 
 	body := &models.VPNConnectionCreate{
 		IkePolicy:          &ikePolicyId,
 		IPSecPolicy:        &ipsecPolicyId,
 		Mode:               &mode,
 		Name:               &name,
-		PeerGatewayAddress: models.PeerGatewayAddress(peerGatewayAddress),
+		PeerGatewayAddress: &pga,
 	}
 	// networks
 	if networks.Len() > 0 {
@@ -319,7 +320,7 @@ func resourceIBMPIVPNConnectionRead(ctx context.Context, d *schema.ResourceData,
 	d.Set(PIVPNConnectionStatus, vpnConnection.Status)
 	d.Set(PIVPNConnectionVpnGatewayAddress, vpnConnection.VpnGatewayAddress)
 
-	d.Set(helpers.PIVPNConnectionNetworks, vpnConnection.NetworkIds)
+	d.Set(helpers.PIVPNConnectionNetworks, vpnConnection.NetworkIDs)
 	d.Set(helpers.PIVPNConnectionPeerSubnets, vpnConnection.PeerSubnets)
 
 	if vpnConnection.DeadPeerDetection != nil {
