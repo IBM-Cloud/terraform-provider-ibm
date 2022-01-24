@@ -1128,7 +1128,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Visibility:           visibility,
 		EndpointsFile:        file,
 		IAMTrustedProfileID:  iamTrustedProfileId,
-		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()
