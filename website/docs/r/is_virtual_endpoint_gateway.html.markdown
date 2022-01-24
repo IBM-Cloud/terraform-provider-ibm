@@ -93,7 +93,8 @@ Review the argument references that you can specify for your resource.
 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `security_groups` - (Optional, list) The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.
-  **NOTE:** either of `ibm_is_security_group_target` resource or `security_groups` attribute should be used, both can't be use together. - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
+  **NOTE:** either of `ibm_is_security_group_target` resource or `security_groups` attribute should be used, both can't be use together. 
+- `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
 - `target` - (Required, List) The endpoint gateway target.
 
   Nested scheme for `target`:
