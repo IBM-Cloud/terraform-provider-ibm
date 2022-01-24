@@ -58,7 +58,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 			helpers.PIVPNPolicyEncryption: {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"3des-cbc", "aes-128-cbc", "aes-128-gcm", "aes-192-cbc", "aes-256-cbc", "aes-256-gcm", "des-cbc"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"aes-256-cbc", "aes-192-cbc", "aes-128-cbc", "aes-256-gcm", "aes-128-gcm", "3des-cbc"}),
 				Description:  "Encryption of the IKE Policy",
 			},
 			helpers.PIVPNPolicyKeyLifetime: {
@@ -84,7 +84,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"none", "sha-256", "sha-384", "sha1"}),
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"sha-256", "sha-384", "sha1", "none"}),
 				Description:  "Authentication for the IKE Policy",
 			},
 
