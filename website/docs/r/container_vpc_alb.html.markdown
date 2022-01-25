@@ -38,7 +38,7 @@ Review the argument references that you can specify for your resource.
 **Note** You must include either `enable` or `disable_deployment` in the configuration, but must not include both.
 
 
-## Attribute Reference
+## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `alb_type` - (String) The ALB type.

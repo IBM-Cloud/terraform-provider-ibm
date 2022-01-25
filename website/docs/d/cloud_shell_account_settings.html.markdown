@@ -6,25 +6,25 @@ description: |-
 subcategory: "IBM Cloud Shell"
 ---
 
-# ibm\_cloud_shell_account_settings
+# ibm_cloud_shell_account_settings
 
 Provides a read-only data source for cloud_shell_account_settings. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "cloud_shell_account_settings" "cloud_shell_account_settings" {
 	account_id = "account_id"
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
 * `account_id` - (Required, string) The account ID in which the account settings belong to.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

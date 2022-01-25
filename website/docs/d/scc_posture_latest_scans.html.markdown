@@ -8,64 +8,68 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_latest_scans
 
-Review information about the security and compliance center posture latest scans. For more information, about latest scans, see [viewing evaluation results](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-results).
+Provides a read-only data source for list_latest_scans. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example usage
+## Example Usage
 
-```terraform
+```hcl
 data "ibm_scc_posture_latest_scans" "list_latest_scans" {
 	scan_id = "262"
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument reference that you can specify for your data source.
 
 * `scan_id` - (Optional, String) The ID of the scan.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the `list_latest_scans`.
-* `first` - (Optional, List) The URL of the first page of scans.
+* `id` - The unique identifier of the list_latest_scans.
+* `first` - (List) The URL of a page.
 Nested scheme for **first**:
-	* `href` - (Optional, String) The URL of the first page of scans.
+	* `href` - (String) The URL of a page.
 
-* `last` - (Optional, List) The URL of the last page of scans.
+* `last` - (List) The URL of a page.
 Nested scheme for **last**:
-	* `href` - (Optional, String) The URL of the last page of scans.
+	* `href` - (String) The URL of a page.
 
-* `latest_scans` - (Optional, List) The details of a scan.
+* `latest_scans` - (List) The details of a scan.
 Nested scheme for **latest_scans**:
-	* `scan_id` - (Optional, String) The ID of the scan.
-	* `scan_name` - (Optional, String) A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.
-	* `scope_id` - (Optional, String) The ID of the scan.
-	* `scope_name` - (Optional, String) The name of the scope.
-	* `profile_id` - (Optional, String) The ID of the profile.
-	* `profile_name` - (Optional, String) The name of the profile.
-	* `profile_type` - (Optional, String) The type of profile. To learn more about profile types, check out the [docs] (https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
-	  * Constraints: Allowable values are: **standard**, **authored**, **custom**, **standard_cv**, **temmplategroup**, **standard_certificate**
-	* `group_profile_id` - (Optional, String) The group ID of profile.
-	* `group_profile_name` - (Optional, String) The group name of the profile.
-	* `report_run_by` - (Optional, String) The entity that ran the report.
-	* `start_time` - (Optional, String) The date and time the scan was run.
-	* `end_time` - (Optional, String) The date and time the scan completed.
-	* `result` - (Optional, List) The result of a scan.
+	* `end_time` - (String) The date and time the scan completed.
+	* `group_profile_id` - (String) The group ID of profile.
+	* `group_profile_name` - (String) The group name of the profile.
+	* `profiles` - (List) Profiles array.
+	Nested scheme for **profiles**:
+		* `id` - (String) An auto-generated unique identifier for the scope.
+		* `name` - (String) The name of the profile.
+		  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
+		* `type` - (String) The type of profile.
+		  * Constraints: Allowable values are: `predefined`, `custom`, `template_group`.
+	* `report_run_by` - (String) The entity that ran the report.
+	* `report_setting_id` - (String) The unique ID for Scan that is created.
+	* `result` - (List) The result of a scan.The above values will not be avaialble if no scopes are available.
 	Nested scheme for **result**:
-		* `goals_pass_count` - (Optional, Integer) The number of goals that passed the scan.
-		* `goals_unable_to_perform_count` - (Optional, Integer) The number of goals that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
-		* `goals_not_applicable_count` - (Optional, Integer) The number of goals that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
-		* `goals_fail_count` - (Optional, Integer) The number of goals that failed the scan.
-		* `goals_total_count` - (Optional, Integer) The total number of goals that were included in the scan.
-		* `controls_pass_count` - (Optional, Integer) The number of controls that passed the scan.
-		* `controls_fail_count` - (Optional, Integer) The number of controls that failed the scan.
-		* `controls_not_applicable_count` - (Optional, Integer) The number of controls that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
-		* `controls_unable_to_perform_count` - (Optional, Integer) The number of controls that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
-		* `controls_total_count` - (Optional, Integer) The total number of controls that were included in the scan.
+		* `controls_fail_count` - (Integer) The number of controls that failed the scan.
+		* `controls_not_applicable_count` - (Integer) The number of controls that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
+		* `controls_pass_count` - (Integer) The number of controls that passed the scan.
+		* `controls_total_count` - (Integer) The total number of controls that were included in the scan.
+		* `controls_unable_to_perform_count` - (Integer) The number of controls that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
+		* `goals_fail_count` - (Integer) The number of goals that failed the scan.
+		* `goals_not_applicable_count` - (Integer) The number of goals that are not relevant to the current scan. A scan is listed as 'Not applicable' when information about its associated resource can't be found.
+		* `goals_pass_count` - (Integer) The number of goals that passed the scan.
+		* `goals_total_count` - (Integer) The total number of goals that were included in the scan.
+		* `goals_unable_to_perform_count` - (Integer) The number of goals that could not be validated. A control is listed as 'Unable to perform' when information about its associated resource can't be collected.
+	* `scan_id` - (String) The ID of the scan.
+	* `scan_name` - (String) A system generated name that is the combination of 12 characters in the scope name and 12 characters of a profile name.
+	* `scope_id` - (String) The scope ID of the scan.
+	* `scope_name` - (String) The name of the scope.
+	* `start_time` - (String) The date and time the scan was run.
 
-* `previous` - (Optional, List) The URL of the previous page of scans.
+* `previous` - (List) The URL of a page.
 Nested scheme for **previous**:
-	* `href` - (Optional, String) The URL of the previous page of scans.
+	* `href` - (String) The URL of a page.
 

@@ -61,3 +61,8 @@ variable "cluster_tags" {
   type        = list(string)
   default     = ["env:cluster"]
 }
+
+variable "zone_name" {
+  description = "zone name"
+  type        = string
+}

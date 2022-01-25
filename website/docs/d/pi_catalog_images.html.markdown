@@ -24,7 +24,7 @@ data "ibm_pi_catalog_images" "ds_images" {
   * `region` - `lon`
   * `zone` - `lon04`
   
-  Example Usage:
+  Example usage:
   
   ```terraform
     provider "ibm" {

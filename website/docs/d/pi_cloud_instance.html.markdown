@@ -23,7 +23,7 @@ data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   * `region` - `lon`
   * `zone` - `lon04`
 
-Example Usage:
+Example usage:
 
   ```terraform
     provider "ibm" {

@@ -8,7 +8,18 @@ description: |-
 ---
 
 # ibm_is_instance_template
-Create, update, or delete an instance template on VPC.
+Create, update, or delete an instance template on VPC. For more information, about instance template, see [managing an instance template](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-template).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 The following example creates an instance template in a VPC generation-2 infrastructure.
@@ -174,20 +185,20 @@ Review the argument references that you can specify for your resource.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
-  **NOTE:**
+  **Note:**
     - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
 - `dedicated_host_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host group where the instance is placed.
 
-  **NOTE:**
+  **Note:**
     - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
 - `image` - (Required, String) The ID of the image to create the template.
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
-- `name` - (Required, String) The name of the instance template.
+- `name` - (Optional, String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 
-  **NOTE:**
+  **Note:**
     - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
 - `profile` - (Required, String) The number of instances created in the instance group.

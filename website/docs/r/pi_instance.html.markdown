@@ -74,6 +74,7 @@ Review the argument references that you can specify for your resource.
 - `pi_migratable`- (Optional, Bool) Indicates the VM is migrated or not.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance. The `pi_network` object structure is documented below.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`. 
+- `pi_placement_group_id`- (Optional, String) The ID of the placement group that the instance is in if any or empty quotes `""` to also indicate it is not in a placement group.
 - `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
@@ -84,6 +85,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` and `pi_storage_type` will be ignored.
+- `pi_storage_pool_affinity` - (Optional, Bool) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment. Only valid when you deploy one of the IBM supplied stock images. Storage type for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage type the image was created in
 - `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Only supported value is `vSCSI`.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e880/e980).

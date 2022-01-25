@@ -37,10 +37,10 @@ resource "ibm_satellite_cluster" "create_cluster" {
 
 The `ibm_satellite_cluster` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- `create` - (Default 120 minutes) Used for creating Instance.
-- `read`   - (Default 10 minutes) Used for reading Instance.
-- `update` - (Default 120 minutes) Used for updating Instance.
-- `delete` - (Default 30 minutes) Used for deleting Instance.
+- `create` - (Default 120 minutes) Used for creating instance.
+- `read`   - (Default 10 minutes) Used for reading instance.
+- `update` - (Default 120 minutes) Used for updating instance.
+- `delete` - (Default 30 minutes) Used for deleting instance.
 
 ## Argument reference
 
@@ -106,7 +106,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-`ibm_satellite_cluster` can be imported using the location id or name.
+The `ibm_satellite_cluster` can be imported using the location id or name.
 
 Example:
 

@@ -6,13 +6,13 @@ description: |-
   Manages satellite endpoint.
 ---
 
-# ibm\_satellite_endpoint
+# ibm_satellite_endpoint
 
 Provides a resource for ibm_satellite_endpoint. This allows ibm_satellite_endpoint to be created, updated and deleted.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_satellite_endpoint" "satellite_endpoint" {
   location = "location_id"
   connection_type = "cloud"
@@ -30,7 +30,7 @@ resource "ibm_satellite_endpoint" "satellite_endpoint" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -61,7 +61,7 @@ The following arguments are supported:
   * Constraints: The maximum value is `180`. The minimum value is `1`.
 
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

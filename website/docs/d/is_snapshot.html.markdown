@@ -9,6 +9,17 @@ description: |-
 
 Import the details of existing IBM Cloud infrastructure snapshot as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about infrastructure snapshots, see [viewing snapshots](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-view).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 
 ## Example usage
 

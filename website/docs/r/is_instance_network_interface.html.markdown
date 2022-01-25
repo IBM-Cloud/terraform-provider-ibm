@@ -8,18 +8,24 @@ description: |-
 
 # ibm_is_instance_network_interface
 
-Provides a resource for NetworkInterface. This allows NetworkInterface to be created, updated and deleted.
+Create, update, or delete an instance network interface on VPC. For more information, about instance network interface, see [managing an network interface](https://cloud.ibm.com/docs/vpc?topic=vpc-using-instance-vnics).
 
-~> **Note**
-  - IBM Cloud terraform provider currently provides both a standalone `ibm_is_instance_network_interface` resource and a `network_interfaces` block defined in-line in the `ibm_is_instance` resource. At this time you cannot use the `network_interfaces` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_instance_network_interface`. Doing so will create a conflict of network interfaces and will overwrite it.
+**Note:**
+- IBM Cloud terraform provider currently provides both a standalone `ibm_is_instance_network_interface` resource and a `network_interfaces` block defined in-line in the `ibm_is_instance` resource. At this time you cannot use the `network_interfaces` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_instance_network_interface`. Doing so will create a conflict of network interfaces and will overwrite it.
+- IBM Cloud terraform provider currently provides both a standalone `ibm_is_security_group_target` resource and a `security_groups` block defined in-line in the `ibm_is_instance_network_interface` resource to attach security group to a network interface target. At this time you cannot use the `security_groups` block inline with `ibm_is_instance_network_interface` in conjunction with the standalone resource `ibm_is_security_group_target`. Doing so will create a conflict of security groups attaching to the network interface and will overwrite it.
+- VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-~> **Note**
-  - IBM Cloud terraform provider currently provides both a standalone `ibm_is_security_group_target` resource and a `security_groups` block defined in-line in the `ibm_is_instance_network_interface` resource to attach security group to a network interface target. At this time you cannot use the `security_groups` block inline with `ibm_is_instance_network_interface` in conjunction with the standalone resource `ibm_is_security_group_target`. Doing so will create a conflict of security groups attaching to the network interface and will overwrite it.
+  **provider.tf**
 
+  ```terraform
+  provider "ibm" {
+    region = "eu-gb"
+  }
+  ```
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
@@ -65,7 +71,7 @@ resource "ibm_is_instance_network_interface" "example" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -85,7 +91,7 @@ The following arguments are supported:
 ~> **Note**
   - Using `ibm_is_security_group_target` to attach security groups to the network interface along with `security_groups` field in this resource could cause undesired behavior. Use either one of them to associate network interface to a security group.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 

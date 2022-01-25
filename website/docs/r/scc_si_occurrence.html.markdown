@@ -82,39 +82,35 @@ Review the argument reference that you can specify for your resource.
 	- `network_connection` - (Optional, List) It provides details about a network connection.
 	
 	Nested scheme for **network_connection**:
-		- `client` - (Optional, List) It provides details about a socket address.
-		
-		  Nested scheme for **client**:
-		  - `address` - (Required, String) The IP address of this socket address.
-		  - `port` - (Optional, Integer) The port number of this socket address.
-		- `direction` - (Optional, String) The direction of this network connection.
-		- `protocol` - (Optional, String) The protocol of this network connection.
-		- `server` - (Optional, List) It provides details about a socket address.
-		
-		  Nested scheme for **server**:
-		  - `address` - (Required, String) The IP address of this socket address.
-		  - `port` - (Optional, Integer) The port number of this socket address.
-	- `next_steps` - (Optional, List) Remediation steps for the issues reported in this finding. They override the note's next steps.
-	
-	  Nested scheme for **next_steps**:
-	  - `title` - (Optional, String) Title of this next step.
-	  - `url` - (Optional, String) The URL associated to this next steps.
-	- `severity` - (Optional, String) Note provider-assigned severity/impact ranking- LOW&#58; Low Impact- MEDIUM&#58; Medium Impact- HIGH&#58; High Impact- CRITICAL&#58; Critical Impact.
-	  - Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-- `kind` - (Required, String) The type of note. Use this field to filter notes and occurrences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
-  - Constraints: Allowable values are: `FINDING`, `KPI`, `CARD`, `CARD_CONFIGURED`, `SECTION`.
-- `kpi` - (Optional, List) Kpi provides details about a KPI occurrence.
-
-  Nested scheme for **kpi**:
-	- `total` - (Optional, Float) The total value of this KPI.
-	- `value` - (Required, Float) The value of this KPI.
-- `note_name` - (Required, String) An analysis note associated with this image, in the form "{account_id}/providers/{provider_id}/notes/{note_id}" This field can be used as a filter in list requests.
-- `account_id` - (Optional, Forces new resource, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
-- `occurrence_id` - (Required, Forces new resource, String) The ID of the occurrence.
-- `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
-- `remediation` - (Optional, String) A description of actions that can be taken to remedy the `Note`.
-- `replace_if_exists` - (Optional, Boolean) When set to true, an existing occurrence is replaced rather than duplicated.
-- `resource_url` - (Optional, String) The unique URL of the resource, image or the container, for which the `Occurrence` applies. For example, https://gcr.io/provider/image@sha256:foo. This field can be used as a filter in list requests.
+		* `client` - (Optional, List) It provides details about a socket address.
+		Nested scheme for **client**:
+			* `address` - (Required, String) The IP address of this socket address.
+			* `port` - (Optional, Integer) The port number of this socket address.
+		* `direction` - (Optional, String) The direction of this network connection.
+		* `protocol` - (Optional, String) The protocol of this network connection.
+		* `server` - (Optional, List) It provides details about a socket address.
+		Nested scheme for **server**:
+			* `address` - (Required, String) The IP address of this socket address.
+			* `port` - (Optional, Integer) The port number of this socket address.
+	* `next_steps` - (Optional, List) Remediation steps for the issues reported in this finding. They override the note's next steps.
+	Nested scheme for **next_steps**:
+		* `title` - (Optional, String) Title of this next step.
+		* `url` - (Optional, String) The URL associated to this next steps.
+	* `severity` - (Optional, String) Note provider-assigned severity/impact ranking- LOW&#58; Low Impact- MEDIUM&#58; Medium Impact- HIGH&#58; High Impact- CRITICAL&#58; Critical Impact.
+	  * Constraints: Allowable values are: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+* `kind` - (Required, String) The type of note. Use this field to filter notes and occurrences by kind. - FINDING&#58; The note and occurrence represent a finding. - KPI&#58; The note and occurrence represent a KPI value. - CARD&#58; The note represents a card showing findings and related metric values. - CARD_CONFIGURED&#58; The note represents a card configured for a user account. - SECTION&#58; The note represents a section in a dashboard.
+  * Constraints: Allowable values are: `FINDING`, `KPI`, `CARD`, `CARD_CONFIGURED`, `SECTION`.
+* `kpi` - (Optional, List) Kpi provides details about a KPI occurrence.
+Nested scheme for **kpi**:
+	* `total` - (Optional, Float) The total value of this KPI.
+	* `value` - (Required, Float) The value of this KPI.
+* `note_name` - (Required, String) An analysis note associated with this image, in the form "{account_id}/providers/{provider_id}/notes/{note_id}" This field can be used as a filter in list requests.
+* `account_id` - (Optional, Forces new resource, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
+* `occurrence_id` - (Required, Forces new resource, String) The ID of the occurrence.
+* `provider_id` - (Required, Forces new resource, String) Part of the parent. This field contains the provider ID. For example: providers/{provider_id}.
+* `remediation` - (Optional, String) A description of actions that can be taken to remedy the `Note`.
+* `replace_if_exists` - (Optional, Boolean) When set to true, an existing occurrence is replaced rather than duplicated.
+* `resource_url` - (Optional, String) The unique URL of the resource, image or the container, for which the `Occurrence` applies. For example, https://gcr.io/provider/image@sha256:foo. This field can be used as a filter in list requests.
 
 ## Attribute reference
 

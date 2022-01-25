@@ -24,7 +24,7 @@ resource "ibm_schematics_workspace" "schematics_workspace" {
 ```
 
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -86,7 +86,7 @@ Nested scheme for **variablestore**:
 * `locked_time` - (Optional, String) The timestamp when the workspace was locked.
 * `x_github_token` - (Optional, String) The personal access token to authenticate with your private GitHub or GitLab repository and access your Terraform template.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

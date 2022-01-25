@@ -10,9 +10,9 @@ description: |-
 
 Create, update, or delete a destination by using IBM Cloud™ Event Notifications.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 resource "ibm_en_destination" "en_destination" {
   instance_guid = "instance_guid"
   name        = "name"
@@ -31,7 +31,7 @@ resource "ibm_en_destination" "en_destination" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your resource.
 
@@ -58,7 +58,7 @@ Review the argument reference that you can specify for your resource.
   - `url` - (Optional, String) URL of webhook.
   - `verb` - (Optional, String) HTTP method of webhook. Allowable values are: `GET`, `POST`.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 

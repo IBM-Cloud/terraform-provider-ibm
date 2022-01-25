@@ -10,7 +10,7 @@ subcategory: "Identity & Access Management (IAM)"
 
 Retrieve list of IAM trusted profile link as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about trusted profile link, see [list link to a trusted profile](https://cloud.ibm.com/apidocs/iam-identity-token-api#list-link)
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_iam_trusted_profile_links" "iam_trusted_profile_links" {
@@ -18,13 +18,13 @@ data "ibm_iam_trusted_profile_links" "iam_trusted_profile_links" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `profile_id` - (Required, String) ID of the trusted profile.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

@@ -23,7 +23,7 @@ data "ibm_dns_resource_records" "ds_pdns_resource_records" {
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
-- `instance_id` - (Required, String) The ID of the private DNS service instance.
+- `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `zone_id` - (Required, String) The ID of the zone that you added to the private DNS service instance.
 
 ## Attribute reference

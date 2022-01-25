@@ -86,8 +86,11 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.
-The `id` property can be formed from `custom resolver id` and `instance_id` in the following format:
+The `id` property can be formed from `custom_resolver_id` and `instance_id` in the following format:
+
+```
 <custom_resolver_id>:<instance_id>
+```
 
 **Example**
 
