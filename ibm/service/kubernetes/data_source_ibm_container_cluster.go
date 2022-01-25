@@ -311,6 +311,11 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "email id of the key owner",
 			},
+			"image_security_enforcement": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True if image security enforcement is enabled",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -442,6 +447,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	d.Set("api_key_id", apikeyConfig.ID)
 	d.Set("api_key_owner_name", apikeyConfig.Name)
 	d.Set("api_key_owner_email", apikeyConfig.Email)
+	d.Set("image_security_enforcement", clusterFields.ImageSecurityEnabled)
 	d.Set(flex.ResourceName, clusterFields.Name)
 	d.Set(flex.ResourceCRN, clusterFields.CRN)
 	d.Set(flex.ResourceStatus, clusterFields.State)
