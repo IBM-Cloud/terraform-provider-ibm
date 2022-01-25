@@ -589,6 +589,18 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		} else if parsed.remoteSecGrpID != "" {
 			remoteTemplate.ID = &parsed.remoteSecGrpID
 			remoteTemplateUpdate.ID = &parsed.remoteSecGrpID
+
+			// check if remote is actually a SG identifier
+			getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+				ID: &parsed.remoteSecGrpID,
+			}
+			sg, res, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+			if err != nil || sg == nil {
+				if res != nil && res.StatusCode == 404 {
+					return nil, nil, nil, err
+				}
+				return nil, nil, nil, fmt.Errorf("Error getting Security Group in remote (%s): %s\n%s", parsed.remoteSecGrpID, err, res)
+			}
 		}
 		sgTemplate.Remote = remoteTemplate
 		securityGroupRulePatchModel.Remote = remoteTemplateUpdate
