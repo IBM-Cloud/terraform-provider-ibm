@@ -201,6 +201,7 @@ Review the argument references that you can specify for your resource.
   2. Set this argument to `cloud_pak` only if you use this cluster with a Cloud Pak that has an OpenShift entitlement.
 - `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **NOTE** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
 - `hardware` - (Optional, Forces new resource, String) The level of hardware isolation for your worker node. Use `dedicated` to have available physical resources dedicated to you only, or `shared` to allow physical resources to be shared with other IBM customers. This option is available for virtual machine worker node flavors only.
+- `image_security_enforcement` - (Optional, Bool) Set to **true** to enable image security enforcement policies in a cluster.
 - `gateway_enabled` - (Optional, Bool) Set to **true** if you want to automatically create a gateway-enabled cluster. If `gateway_enabled` is set to **true**, then `private_service_endpoint` must be set to **true** at the same time.
 - `kms_config` - (Optional, List) Used to attach a Key Protect instance to a cluster. Nested `kms_config` block have `instance_id`, `crk_id`, `private_endpoint` structure.
 
