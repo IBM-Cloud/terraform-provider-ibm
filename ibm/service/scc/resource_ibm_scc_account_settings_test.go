@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
+	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 )
 
 func TestAccIbmSccAccountSettingsResourceBasic(t *testing.T) {

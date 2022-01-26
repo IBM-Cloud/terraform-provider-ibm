@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
+	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 )
 
 func DataSourceIBMSccAccountLocations() *schema.Resource {
