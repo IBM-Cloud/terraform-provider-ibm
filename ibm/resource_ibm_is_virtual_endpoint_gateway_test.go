@@ -94,8 +94,8 @@ func TestAccIBMISVirtualEndpointGateway_FullySpecified(t *testing.T) {
 		CheckDestroy: testAccCheckisVirtualEndpointGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				ExpectNonEmptyPlan: true,
-				Config:             testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1),
+				// ExpectNonEmptyPlan: true,
+				Config: testAccCheckisVirtualEndpointGatewayConfigFullySpecified(vpcname1, subnetname1, name1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists(name, &monitor),
 					resource.TestCheckResourceAttr(name, "name", name1),
