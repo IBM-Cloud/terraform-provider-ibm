@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package transitgateway
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ const (
 	tgRouteReportOverlappingPrefix            = "prefix"
 )
 
-func dataSourceIBMTransitGatewayRouteReports() *schema.Resource {
+func DataSourceIBMTransitGatewayRouteReports() *schema.Resource {
 
 	return &schema.Resource{
 		Read: dataSourceIBMTransitGatewayRouteReportsRead,

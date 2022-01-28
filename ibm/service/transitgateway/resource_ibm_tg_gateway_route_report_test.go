@@ -1,10 +1,13 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package transitgateway_test
 
 import (
 	"fmt"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,8 +21,8 @@ func TestAccIBMTransitGatewayRouteReport_basic(t *testing.T) {
 	gatewayName := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
 	location := fmt.Sprintf("us-south")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMTransitGatewayRouteReportDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -50,7 +53,7 @@ func testAccCheckIBMTransitGatewayRouteReportConfig(gatewayname, location string
 }
 
 func testAccCheckIBMTransitGatewayRouteReportDestroy(s *terraform.State) error {
-	client, err := transitgatewayClient(testAccProvider.Meta())
+	client, err := transitgatewayClient(acc.TestAccProvider.Meta())
 	if err != nil {
 		return err
 	}
@@ -59,7 +62,7 @@ func testAccCheckIBMTransitGatewayRouteReportDestroy(s *terraform.State) error {
 			continue
 		}
 
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -80,7 +83,7 @@ func testAccCheckIBMTransitGatewayRouteReportDestroy(s *terraform.State) error {
 func testAccCheckIBMTransitGatewayRouteReportExists(n string, vc string) resource.TestCheckFunc {
 	log.Printf("Inside testAccCheckIBMTransitGatewayRouteReportExists :  %s", vc)
 	return func(s *terraform.State) error {
-		client, err := transitgatewayClient(testAccProvider.Meta())
+		client, err := transitgatewayClient(acc.TestAccProvider.Meta())
 		if err != nil {
 			return err
 		}
@@ -88,7 +91,7 @@ func testAccCheckIBMTransitGatewayRouteReportExists(n string, vc string) resourc
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
-		parts, err := idParts(rs.Primary.ID)
+		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

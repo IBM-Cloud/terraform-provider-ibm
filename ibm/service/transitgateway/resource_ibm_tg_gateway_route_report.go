@@ -1,13 +1,14 @@
 // Copyright IBM Corp. 2017, 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package transitgateway
 
 import (
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,7 +21,7 @@ const (
 	isTransitGatewayRouteReportDone    = "complete"
 )
 
-func resourceIBMTransitGatewayRouteReport() *schema.Resource {
+func ResourceIBMTransitGatewayRouteReport() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMTransitGatewayRouteReportCreate,
 		Read:     resourceIBMTransitGatewayRouteReportRead,
@@ -189,7 +190,7 @@ func isWaitForTransitGatewayRouteReportAvailable(client *transitgatewayapisv1.Tr
 
 func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		parts, err := idParts(id)
+		parts, err := flex.IdParts(id)
 		if err != nil {
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway Route Report: %s", err)
 		}
@@ -201,8 +202,8 @@ func isTransitGatewayRouteReportRefreshFunc(client *transitgatewayapisv1.Transit
 		getTransitGatewayRouteReportOptions.SetTransitGatewayID(gatewayId)
 		getTransitGatewayRouteReportOptions.SetID(ID)
 
-		routeReport, response, err := client.GetTransitGatewayRouteReport(getTransitGatewayRouteReportOptions)
-		if err != nil {
+		routeReport, response, getRouteErr := client.GetTransitGatewayRouteReport(getTransitGatewayRouteReportOptions)
+		if getRouteErr != nil {
 			return nil, "", fmt.Errorf("Error Getting Transit Gateway Route Report: %s\n%s", err, response)
 		}
 
@@ -220,7 +221,7 @@ func resourceIBMTransitGatewayRouteReportRead(d *schema.ResourceData, meta inter
 	if err != nil {
 		return err
 	}
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return err
 	}
@@ -340,7 +341,7 @@ func resourceIBMTransitGatewayRouteReportDelete(d *schema.ResourceData, meta int
 	if err != nil {
 		return err
 	}
-	parts, err := idParts(d.Id())
+	parts, err := flex.IdParts(d.Id())
 	if err != nil {
 		return err
 	}
