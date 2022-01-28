@@ -1305,7 +1305,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 
 	}
 
-	if d.HasChange("image_security_enforcement") {
+	if d.HasChange("image_security_enforcement") && !d.IsNewResource() {
 		var imageSecurity bool
 		if v, ok := d.GetOk("image_security_enforcement"); ok {
 			imageSecurity = v.(bool)
@@ -1315,7 +1315,6 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		} else {
 			csClientV2.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnvV2)
 		}
-		d.Set("image_security_enforcement", imageSecurity)
 	}
 
 	return resourceIBMContainerClusterRead(d, meta)

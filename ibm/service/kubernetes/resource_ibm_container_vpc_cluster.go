@@ -844,7 +844,7 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		d.Set("force_delete_storage", forceDeleteStorage)
 	}
 
-	if d.HasChange("image_security_enforcement") {
+	if d.HasChange("image_security_enforcement") && !d.IsNewResource() {
 		var imageSecurity bool
 		if v, ok := d.GetOk("image_security_enforcement"); ok {
 			imageSecurity = v.(bool)
@@ -854,7 +854,6 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		} else {
 			csClient.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnv)
 		}
-		d.Set("image_security_enforcement", imageSecurity)
 	}
 
 	return resourceIBMContainerVpcClusterRead(d, meta)
