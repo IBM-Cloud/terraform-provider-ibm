@@ -23,9 +23,9 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_subnet_reserved_ip" "data_reserved_ip" {
-  subnet = ibm_is_subnet.test_subnet.id
-  reserved_ip = ibm_is_subnet_reserved_ip.resource_res_ip.reserved_ip
+data "ibm_is_subnet_reserved_ip" "example" {
+  subnet      = ibm_is_subnet.example.id
+  reserved_ip = ibm_is_subnet_reserved_ip.example.reserved_ip
 }
 ```
 

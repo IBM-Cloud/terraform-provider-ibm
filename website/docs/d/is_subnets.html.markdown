@@ -32,7 +32,7 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_vpc_routing_table" "example" {
-  name = "example-routing-table"
+  name = "example-vpc-routing-table"
   vpc  = ibm_is_vpc.example.id
 }
 
@@ -45,19 +45,19 @@ resource "ibm_is_subnet" "example" {
   resource_group  = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example_resource_group" {
+data "ibm_is_subnets" "example1" {
   resource_group = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example_routing_table_name" {
+data "ibm_is_subnets" "example2" {
   routing_table_name = ibm_is_vpc_routing_table.example.name
 }
 
-data "ibm_is_subnets" "example_routing_table" {
+data "ibm_is_subnets" "example3" {
   routing_table = ibm_is_vpc_routing_table.example.id
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example4" {
 }
 ```
 

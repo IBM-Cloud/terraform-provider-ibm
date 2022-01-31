@@ -24,8 +24,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_floating_ips" "is_floating_ips" {
-	name = "my-floating-ip"
+data "ibm_is_floating_ips" "example" {
+  name = "example-floating-ips"
 }
 ```
 

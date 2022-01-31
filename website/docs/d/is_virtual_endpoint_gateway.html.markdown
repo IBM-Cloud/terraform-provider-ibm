@@ -23,8 +23,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateway" "data_test" {
-    name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
+data "ibm_is_virtual_endpoint_gateway" "example" {
+  name = ibm_is_virtual_endpoint_gateway.example.name
 }
 ```
 

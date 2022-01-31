@@ -23,8 +23,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_operating_system" "testacc_dsos"{
-  name = "red-8-amd64"
+data "ibm_is_operating_system" "example" {
+  name = "centos-7-amd64"
 }
 ```
 

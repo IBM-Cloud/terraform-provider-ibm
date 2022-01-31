@@ -24,15 +24,15 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances" {
+data "ibm_is_instances" "example" {
 }
 
 ```
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances1" {
-  vpc_name = "testacc_vpc"
+data "ibm_is_instances" "example" {
+  vpc_name = "example-vpc"
 }
 
 ```

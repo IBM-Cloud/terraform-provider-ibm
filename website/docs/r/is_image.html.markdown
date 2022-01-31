@@ -33,30 +33,29 @@ The `ibm_is_image` provides the following [Timeouts](https://www.terraform.io/do
 ## Example usage
 
 ```terraform
-resource "ibm_is_image" "test_is_image1" {
- name                   = "test-image"
- href                   = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
- operating_system       = "ubuntu-16-04-amd64"
- encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
- encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
-   
+resource "ibm_is_image" "example" {
+  name               = "example-image"
+  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
 }
 ```
 ```terraform
-resource "ibm_is_image" "test_is_image2" {
- name                   = "test-image2"
+resource "ibm_is_image" "example" {
+  name = "example-image"
 
- //optional field, either of (href, operating_system) or source_volume is required
- 
- source_volume          = "xxxx-xxxx-xxxxxxx"
- encrypted_data_key     = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
- encryption_key         = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+  //optional field, either of (href, operating_system) or source_volume is required
 
-   //increase timeouts as per volume size
+  source_volume      = "xxxx-xxxx-xxxxxxx"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+
+  //increase timeouts as per volume size
   timeouts {
     create = "45m"
   }
-   
+
 }
 ```
 
@@ -74,7 +73,7 @@ Review the argument references that you can specify for your resource.
 - `source_volume` - (Optional, string) The volume id of the volume from which to create the image. 
   - either `source_volume` or `href` is required.
 
-  **Note** The specified volume must:
+  ~> **Note:** The specified volume must:
   - Originate from an image, which will be used to populate this image's operating system information.(boot type volumes)
   - Not be active or busy.
   - During image creation, the specified volume may briefly become busy.

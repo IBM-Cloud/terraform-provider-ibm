@@ -24,14 +24,14 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
-  name = "test"
+resource "ibm_is_vpc_address_prefix" "example" {
+  name = "example-address-prefix"
   zone = "us-south-1"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   cidr = "10.240.0.0/24"
 }
 

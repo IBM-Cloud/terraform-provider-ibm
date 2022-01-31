@@ -54,14 +54,14 @@ resource "ibm_is_instance" "example" {
   }
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet               = ibm_is_subnet.example.id
     primary_ipv4_address = "10.240.0.6"
-    allow_ip_spoofing = true
+    allow_ip_spoofing    = true
   }
 
   network_interfaces {
-    name   = "eth1"
-    subnet = ibm_is_subnet.example.id
+    name              = "eth1"
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = false
   }
 
@@ -78,8 +78,9 @@ resource "ibm_is_instance" "example" {
 }
 
 resource "ibm_is_instance_action" "example" {
-  action = "stop"
+  action       = "stop"
   force_action = true
+  instance     = ibm_is_instance.example.id
 }
 
 
@@ -89,11 +90,7 @@ resource "ibm_is_instance_action" "example" {
 
 Review the argument references that you can specify for your resource. 
 
-<<<<<<< HEAD
-- `action` - (Required, String) The type of action to perform on the instance. Supported values are `stop`, `start`, or `reboot`.
-=======
 - `action` - (Required, String) The type of action to perfrom on the instance. Supported values are `stop`, `start`, or `reboot`.
->>>>>>> a1365fd62119d501b7c8984d03ccb7f4ff0725fb
 - `force_action` - (Optional, Boolean)  If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action. The Default value is `false`.
 - `instance` - (Required, String) Instance identifier.
 

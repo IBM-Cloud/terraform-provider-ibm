@@ -23,15 +23,13 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-
-resource "ibm_is_vpc" "test_vpc" {
-  name = "test-vpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc_default_routing_table" "ds_default_routing_table" {
-	vpc = ibm_is_vpc.test_vpc.id
+data "ibm_is_vpc_default_routing_table" "example" {
+  vpc = ibm_is_vpc.example.id
 }
-
 ```
 
 ## Argument reference

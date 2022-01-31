@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_zones" "ds_zones" {
+data "ibm_is_zones" "example" {
   region = "us-south"
 }
 ```

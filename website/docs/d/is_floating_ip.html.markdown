@@ -23,11 +23,9 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-
-    data "ibm_is_floating_ip" "test" {
-        name   = "test-fp"
-    }
-
+data "ibm_is_floating_ip" "example" {
+  name = "example-floating-ip"
+}
 ```
 
 ## Argument reference

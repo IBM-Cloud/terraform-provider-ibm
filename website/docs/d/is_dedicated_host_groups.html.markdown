@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_groups" "is_dedicated_host_groups" {
+data "ibm_is_dedicated_host_groups" "example" {
 }
 ```
 
