@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_credential"
 description: |-
   Manages credentials.
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_credential
