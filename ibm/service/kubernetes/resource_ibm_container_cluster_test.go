@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes_test
@@ -184,6 +184,26 @@ func TestAccIBMContainerClusterPrivateAndPublicSubnet(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerClusterImageSecuritySetting(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-cluster-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerClusterImageSecuritySetting(clusterName, "true"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_cluster.testacc_cluster", "image_security_enforcement", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ContainerAPI()
 	if err != nil {
@@ -357,4 +377,18 @@ resource "ibm_container_cluster" "testacc_cluster" {
   no_subnet       = true
   subnet_id       = ["%s"]
 }	`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, acc.PrivateSubnetID)
+}
+
+func testAccCheckIBMContainerClusterImageSecuritySetting(clusterName string, imageSecuritySetting string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_container_cluster" "testacc_cluster" {
+  name       = "%s"
+  datacenter = "%s"
+  machine_type    = "%s"
+  hardware        = "shared"
+  public_vlan_id  = "%s"
+  private_vlan_id = "%s"
+  image_security_enforcement = %s
+}	`, clusterName, acc.Datacenter, acc.MachineType, acc.PublicVlanID, acc.PrivateVlanID, imageSecuritySetting)
 }
