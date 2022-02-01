@@ -30,7 +30,9 @@ The `ibm_is_image` provides the following [Timeouts](https://www.terraform.io/do
 - **update** - (Default 10 minutes) Used for updating image.
 - **delete** - (Default 10 minutes) Used for deleting image.
 
-## Example usage
+
+
+## Example usage (using href and operating_system)
 
 ```terraform
 resource "ibm_is_image" "example" {
@@ -41,6 +43,10 @@ resource "ibm_is_image" "example" {
   encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
 }
 ```
+  ~> **NOTE**
+      `operating_system` is required with `href`.
+
+## Example usage (using volume)      
 ```terraform
 resource "ibm_is_image" "example" {
   name = "example-image"
@@ -64,21 +70,27 @@ Review the argument references that you can specify for your resource.
 
 - `encrypted_data_key` - (Optional, Forces new resource, String) A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
 - `encryption_key` - (Optional, Forces new resource, String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
-- `href` - (Required, String) The path of an image to be uploaded.
-  - either `href` or `source_volume` is required
+- `href` - (Optional, String) The path of an image to be uploaded. The Cloud Object Store (COS) location of the image file.
+
+  ~> **NOTE**
+      either `href` or `source_volume` is required
 - `name` - (Required, String) The descriptive name used to identify an image.
 - `operating_system` - (Required, String) Description of underlying OS of an image.
-  - `operating_system` is required with `href`
-- `resource_group` - (Optional, Forces new resource, String) The resource group ID for this image.
-- `source_volume` - (Optional, string) The volume id of the volume from which to create the image. 
-  - either `source_volume` or `href` is required.
 
-  ~> **Note:** The specified volume must:
-  - Originate from an image, which will be used to populate this image's operating system information.(boot type volumes)
-  - Not be active or busy.
-  - During image creation, the specified volume may briefly become busy.
-  - Creating image from volume requires instance to which volume is attached to be in stopped status, running instance will be stopped on using this option.
-  - increase the default timeout as per the volume size.
+  ~> **NOTE**
+      `operating_system` is required with `href`
+- `resource_group` - (Optional, Forces new resource, String) The resource group ID for this image.
+- `source_volume` - (Optional, string) The volume id of the volume from which to create the image.
+
+  ~> **NOTE**
+      either `source_volume` or `href` is required.
+
+  The specified volume must:
+    - Originate from an image, which will be used to populate this image's operating system information.(boot type volumes)
+    - Not be active or busy.
+    - During image creation, the specified volume may briefly become busy.
+    - Creating image from volume requires instance to which volume is attached to be in stopped status, running instance will be stopped on using this option.
+    - increase the default timeout as per the volume size.
 - `tags` (Optional, Array of Strings) A list of tags that you want to your image. Tags can help you find the image more easily later.
 
 ## Attribute reference
