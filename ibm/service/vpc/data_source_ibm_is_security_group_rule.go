@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package vpc
 
 import (
 	"context"
@@ -9,12 +9,14 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMIsSecurityGroupRule() *schema.Resource {
+func DataSourceIBMIsSecurityGroupRule() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIsSecurityGroupRuleRead,
 
@@ -127,7 +129,7 @@ func dataSourceIBMIsSecurityGroupRule() *schema.Resource {
 }
 
 func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -201,10 +203,10 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 				}
 			}
 
-			if err = d.Set("code", intValue(securityGroupRule.Code)); err != nil {
+			if err = d.Set("code", flex.IntValue(securityGroupRule.Code)); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting code: %s", err))
 			}
-			if err = d.Set("type", intValue(securityGroupRule.Type)); err != nil {
+			if err = d.Set("type", flex.IntValue(securityGroupRule.Type)); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 			}
 		}
@@ -235,10 +237,10 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 					return diag.FromErr(fmt.Errorf("Error setting remote %s", err))
 				}
 			}
-			if err = d.Set("port_max", intValue(securityGroupRule.PortMax)); err != nil {
+			if err = d.Set("port_max", flex.IntValue(securityGroupRule.PortMax)); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting port_max: %s", err))
 			}
-			if err = d.Set("port_min", intValue(securityGroupRule.PortMin)); err != nil {
+			if err = d.Set("port_min", flex.IntValue(securityGroupRule.PortMin)); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting port_min: %s", err))
 			}
 		}

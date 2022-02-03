@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package vpc
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceIBMIsSecurityGroupRules() *schema.Resource {
+func DataSourceIBMIsSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMIsSecurityGroupRulesRead,
 
