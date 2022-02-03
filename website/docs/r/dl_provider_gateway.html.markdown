@@ -23,6 +23,7 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
   speed_mbps = 1000 
   port = "434-c749-4f1d-b190-22"
   customer_account_id = "0c474da-c749-4f1d-b190-2333"
+  vlan = 35
 } 
 ```
 
@@ -36,6 +37,7 @@ Review the argument reference that you can specify for your resource.
 - `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
 - `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
 - `speed_mbps`- (Required, Integer) The gateway speed in megabits per second. For example, `10.254.30.78/30`.
+- `vlan` - (Integer) The VLAN to assign for `type=connect` gateways.
 
 
 ## Attribute reference
