@@ -58,4 +58,4 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String)  A snake case string identifying the status reason.
   - `message` - (String)  An explanation of the status reason
-- `tags` - (String) Tags associated with the volume.
+- `user_tags` - (String) Tags associated with the volume.

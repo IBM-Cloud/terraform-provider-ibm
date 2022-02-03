@@ -96,7 +96,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `encryption_type` - (String) The type of ecryption used in the volume [**provider_managed**, **user_managed**].
+- `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `id` - (String) The unique identifier of the volume.
 - `source_snapshot` - ID of the snapshot, if volume was created from it.
 - `status` - (String) The status of volume. Supported values are **available**, **failed**, **pending**, **unusable**, or **pending_deletion**.

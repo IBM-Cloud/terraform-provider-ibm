@@ -130,6 +130,59 @@ func DataSourceSnapshots() *schema.Resource {
 							Computed:    true,
 							Description: "The size of the snapshot",
 						},
+
+						isSnapshotUserTags: {
+							Type: schema.TypeSet,
+							// Optional: true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "User Tags for the snapshot",
+						},
+
+						isSnapshotBackupPolicyPlan: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, the backup policy plan which created this snapshot.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted and provides some supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this backup policy plan.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this backup policy plan.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique user-defined name for this backup policy plan.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type of resource referenced",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -199,6 +252,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			isSnapshotResourceType: *snapshot.ResourceType,
 			isSnapshotBootable:     *snapshot.Bootable,
 		}
+		if snapshot.UserTags != nil {
+			l[isSnapshotUserTags] = snapshot.UserTags
+		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 			l[isSnapshotResourceGroup] = *snapshot.ResourceGroup.ID
 		}
@@ -211,6 +267,21 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
 			l[isSnapshotOperatingSystem] = *snapshot.OperatingSystem.Name
 		}
+		backupPolicyPlanList := []map[string]interface{}{}
+		if snapshot.BackupPolicyPlan != nil {
+			backupPolicyPlan := map[string]interface{}{}
+			if snapshot.BackupPolicyPlan.Deleted != nil {
+				snapshotBackupPolicyPlanDeletedMap := map[string]interface{}{}
+				snapshotBackupPolicyPlanDeletedMap["more_info"] = snapshot.BackupPolicyPlan.Deleted.MoreInfo
+				backupPolicyPlan["deleted"] = []map[string]interface{}{snapshotBackupPolicyPlanDeletedMap}
+			}
+			backupPolicyPlan["href"] = snapshot.BackupPolicyPlan.Href
+			backupPolicyPlan["id"] = snapshot.BackupPolicyPlan.ID
+			backupPolicyPlan["name"] = snapshot.BackupPolicyPlan.Name
+			backupPolicyPlan["resource_type"] = snapshot.BackupPolicyPlan.ResourceType
+			backupPolicyPlanList = append(backupPolicyPlanList, backupPolicyPlan)
+		}
+		l[isSnapshotBackupPolicyPlan] = backupPolicyPlanList
 		snapshotsInfo = append(snapshotsInfo, l)
 	}
 	d.SetId(dataSourceIBMISSnapshotsID(d))

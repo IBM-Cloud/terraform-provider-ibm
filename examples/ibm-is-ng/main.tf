@@ -547,12 +547,14 @@ resource "ibm_is_instance" "instance4" {
 resource "ibm_is_snapshot" "b_snapshot" {
   name          = "my-snapshot-boot"
   source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
+  tags          = ["tags1"]
 }
 
 // creating a snapshot from data volume
 resource "ibm_is_snapshot" "d_snapshot" {
   name          = "my-snapshot-data"
   source_volume = ibm_is_instance.instance4.volume_attachments[1].volume_id
+  tags          = ["tags1"]
 }
 
 // data source for snapshot by name
@@ -586,6 +588,7 @@ resource "ibm_is_volume" "vol5" {
   name    = "vol5"
   profile = "10iops-tier"
   zone    = "us-south-2"
+  tags    = ["tag1"]
 }
 
 // creating a volume attachment on an existing instance using an existing volume
@@ -722,4 +725,57 @@ data "ibm_is_vpc_address_prefix" "example-2" {
 data "ibm_is_vpc_address_prefix" "example-3" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
+}
+
+## Backup Policy
+resource "ibm_is_backup_policy" "is_backup_policy" {
+  match_user_tags = ["tag1"]
+  name            = "my-backup-policy"
+  plans {
+    name      = "my-backup-policy-plan"
+    cron_spec = "30 09 * * *" 
+    deletion_trigger {
+      delete_after      = 20
+      delete_over_count = 20
+    }
+    copy_user_tags = true
+  }
+}
+
+resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags = true
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = 20
+  }
+  name = "my-backup-policy-plan-1"
+}
+
+data "ibm_is_backup_policies" "is_backup_policies" {
+}
+
+data "ibm_is_backup_policy" "is_backup_policy" {
+  name = "my-backup-policy"
+}
+
+data "ibm_is_backup_policy_plans" "is_backup_policy_plans" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+}
+
+data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
+  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+  name             = "my-backup-policy-plan"
+}
+
+data "ibm_is_backup_policy_job" "is_backup_policy_job" {
+	backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+	identifier = " "
+}
+
+data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
+	backup_policy_id = ibm_is_backup_policy.is_backup_policy.id	
 }

@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -168,12 +167,12 @@ func ResourceIBMISVolume() *schema.Resource {
 				Description: "Deletes all snapshots created from this volume",
 			},
 			isVolumeTags: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
+				Type:     schema.TypeSet,
+				Optional: true,
+				// Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_volume", "tag")},
 				Set:         flex.ResourceIBMVPCHash,
-				Description: "Tags for the volume instance",
+				Description: "UserTags for the volume instance",
 			},
 
 			flex.ResourceControllerURL: {
@@ -322,6 +321,19 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 		volTemplate.Iops = &iops
 	}
 
+	var userTags *schema.Set
+	if v, ok := d.GetOk(isVolumeTags); ok {
+		userTags = v.(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			volTemplate.UserTags = userTagsArray
+		}
+	}
+
 	vol, response, err := sess.CreateVolume(options)
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Create volume err %s\n%s", err, response)
@@ -331,15 +343,6 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
-	}
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk(isVolumeTags); ok || v != "" {
-		oldList, newList := d.GetChange(isVolumeTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on create of resource Volume (%s) tags: %s", d.Id(), err)
-		}
 	}
 	return nil
 }
@@ -401,12 +404,11 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		d.Set(isVolumeStatusReasons, statusReasonsList)
 	}
-	tags, err := flex.GetTagsUsingCRN(meta, *vol.CRN)
-	if err != nil {
-		log.Printf(
-			"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
+	if vol.UserTags != nil {
+		if err = d.Set(isVolumeTags, vol.UserTags); err != nil {
+			return fmt.Errorf("Error setting user tags: %s", err)
+		}
 	}
-	d.Set(isVolumeTags, tags)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -455,26 +457,22 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		deleteAllSnapshots(sess, id)
 	}
 
-	// tags update
-	if d.HasChange(isVolumeTags) {
-		options := &vpcv1.GetVolumeOptions{
-			ID: &id,
-		}
-		vol, response, err := sess.GetVolume(options)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Volume : %s\n%s", err, response)
-		}
-		oldList, newList := d.GetChange(isVolumeTags)
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on update of resource vpc volume (%s) tags: %s", id, err)
-		}
+	optionsget := &vpcv1.GetVolumeOptions{
+		ID: &id,
 	}
-
+	_, response, err := sess.GetVolume(optionsget)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error getting Volume (%s): %s\n%s", id, err, response)
+	}
+	eTag := response.Headers.Get("ETag")
 	options := &vpcv1.UpdateVolumeOptions{
 		ID: &id,
 	}
+	options.IfMatch = &eTag
 
 	//name update
 	volumeNamePatchModel := &vpcv1.VolumePatch{}
@@ -612,6 +610,37 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 		_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return err
+		}
+	}
+
+	// user tags update
+	if d.HasChange(isVolumeTags) {
+		var userTags *schema.Set
+		if v, ok := d.GetOk(isVolumeTags); ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumeNamePatchModel := &vpcv1.VolumePatch{}
+				volumeNamePatchModel.UserTags = userTagsArray
+				volumeNamePatch, err := volumeNamePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("Error calling asPatch for volumeNamePatch: %s", err)
+				}
+				options.IfMatch = &eTag
+				options.VolumePatch = volumeNamePatch
+				_, response, err := sess.UpdateVolume(options)
+				if err != nil {
+					return fmt.Errorf("Error updating volume : %s\n%s", err, response)
+				}
+				_, err = isWaitForVolumeAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 

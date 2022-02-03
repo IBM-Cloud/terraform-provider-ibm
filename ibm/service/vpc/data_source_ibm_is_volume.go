@@ -5,7 +5,6 @@ package vpc
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -238,12 +237,7 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
-		tags, err := flex.GetTagsUsingCRN(meta, *vol.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
-		}
-		d.Set(isVolumeTags, tags)
+		d.Set(isVolumeTags, vol.UserTags)
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
 			return err
