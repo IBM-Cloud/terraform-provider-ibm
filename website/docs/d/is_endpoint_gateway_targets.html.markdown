@@ -23,10 +23,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-
-    data "ibm_is_endpoint_gateway_targets" "endpointGatewayTargets" {
-    }
-
+data "ibm_is_endpoint_gateway_targets" "example" {
+}
 ```
 
 ## Attribute reference

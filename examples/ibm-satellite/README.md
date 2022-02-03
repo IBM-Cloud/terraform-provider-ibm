@@ -6,7 +6,7 @@ This example uses below modules to set up the satellite location with IBM enviro
 
 1. [satellite-location](modules/location) This module `creates satellite location` for the specified zone|location|region and `generates script` named addhost.sh in the working directory by performing attach host.The generated script is used by `ibm_is_instance` as `user_data` and runs the script. At this stage all the VMs that has run addhost.sh will be attached to the satellite location and will be in unassigned state.
 2. [satellite-host](modules/host) This module assigns 3 host to setup the location control plane.
-3. [satellite-cluster](modules/cluster) This module will create ROKS satellite cluster and worker pool.
+3. [satellite-cluster](modules/cluster) This module will create ROKS satellite cluster and worker pool, attach zone to worker pool.
 4. [satellite-link](modules/link) This module will create satellite link.
 5. [satellite-route](modules/route) This module will create openshift route.
 6. [satellite-endpoint](modules/endpoint) This module will create satellite endpoint.
@@ -69,6 +69,7 @@ module "satellite-cluster" {
   workerpool_labels    = var.workerpool_labels
   cluster_tags         = var.cluster_tags
   host_labels          = var.host_labels
+  zone_name            = var.zone_name
 }
 
 module "satellite-dns" {
@@ -146,6 +147,7 @@ module "satellite-endpoint" {
 | default_wp_labels              | Labels on the default worker pool                                 | map      | n/a     | no       |
 | worker_pool_name               | Public SSH key used to provision Host/VSI                         | string   | satellite-ibm-cluster-wp     | no       |
 | workerpool_labels              | Labels on the worker pool                                         | map      | n/a     | no       |
+| zone_name                      | creates new zone on workerpool                                    | string   | n/a     | no       |
 | cluster_tags                   | List of tags for the cluster resource                             | list     | [ "env:cluster" ]     | no       |
 | connection_type                | The type of the endpoint.                                         | string   | n/a     | no |
 | is_endpoint_provision          | Determines if the route and endpoint has to be created or not.    | bool   | false |   no      |

@@ -24,9 +24,9 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_instance_volume_attachment" "ds_vsi_va" {
-  instance = "xx-x-x-x-xxxxx
-  name = "test-volume"
+data "ibm_is_instance_volume_attachment" "example" {
+  instance = ibm_is_instance.example.id
+  name = "example-instance-volume-attachment"
 }
 
 ```

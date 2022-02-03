@@ -12,6 +12,7 @@ module "satellite-cluster" {
   workerpool_labels = var.workerpool_labels
   cluster_tags      = var.cluster_tags
   host_labels       = var.host_labels
+  zone_name         = var.zone_name
 
   depends_on = [module.satellite-host]
 }

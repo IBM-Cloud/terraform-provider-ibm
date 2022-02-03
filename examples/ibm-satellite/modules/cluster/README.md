@@ -40,6 +40,7 @@ module "satellite-cluster" {
   workerpool_labels    = var.workerpool_labels
   cluster_tags         = var.cluster_tags
   host_labels          = var.host_labels
+  zone_name            = var.zone_name
 }
 ```
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -61,6 +62,7 @@ module "satellite-cluster" {
 | host_labels                   | List of host labels to assign host to cluter                      | list     | n/a     | no       |
 | workerpool_labels             | Labels on the worker pool                                         | map      | n/a     | no       |
 | cluster_tags                  | List of tags for the cluster resource                             | list     | n/a     | no       |
+| zone_name                     | creates new zone on workerpool                                    | string   | n/a     | no       |
 
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

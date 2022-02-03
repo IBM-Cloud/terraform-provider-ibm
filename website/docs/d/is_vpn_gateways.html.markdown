@@ -24,8 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_vpn_gateways" "ds_vpn_gateways" {
-  
+data "ibm_is_vpn_gateways" "example" {
 }
 
 ```

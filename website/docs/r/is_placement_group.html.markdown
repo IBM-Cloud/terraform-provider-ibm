@@ -24,9 +24,9 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_placement_group" "is_placement_group" {
+resource "ibm_is_placement_group" "example" {
   strategy = "host_spread"
-  name = "my-placement-group"
+  name     = "example-placement-group"
 }
 ```
 
@@ -34,7 +34,7 @@ resource "ibm_is_placement_group" "is_placement_group" {
 
 Review the argument references that you can specify for your resource. 
 
-- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the placement group. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the placement group. ~> **Note:** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `name` - (Optional, string) The unique user-defined name for this placement group. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `resource_group` - (Optional, string, Forces new resource) The unique identifier of the resource group to use. If unspecified, the account's 
 - `strategy` - (Required, string, Forces new resource) The strategy for this placement group- `host_spread`: place on different compute hosts- `power_spread`: place on compute hosts that use different power sources. The enumerated values for this property may expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the placement group on which the unexpected strategy was encountered.

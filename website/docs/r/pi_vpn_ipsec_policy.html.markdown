@@ -18,10 +18,10 @@ The following example creates a IPSec Policy.
 		pi_cloud_instance_id    = "<value of the cloud_instance_id>"
 		pi_policy_name          = "test"
 		pi_policy_dh_group = 1
-		pi_policy_encryption = "3des-cbc"
-		pi_policy_key_lifetime = 180
+		pi_policy_encryption = "aes-256-cbc"
+		pi_policy_key_lifetime = 28800
 		pi_policy_pfs = true
-		pi_policy_authentication = "hmac-md5-96"
+		pi_policy_authentication = "hmac-sha-256-128"
 	}
 ```
 
@@ -51,9 +51,9 @@ ibm_pi_ipsec_policy provides the following [timeouts](https://www.terraform.io/d
 ## Argument reference 
 Review the argument references that you can specify for your resource. 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_policy_authentication`  - (Optional, String) Authentication for the IPSec Policy. Supported values are `none`(Default), `sha-256`, `sha-384`, and `sha1`.
+- `pi_policy_authentication`  - (Optional, String) Authentication for the IPSec Policy. Supported values are `none`(Default), `hmac-sha-256-128`, `hmac-sha1-96`.
 - `pi_policy_dh_group` - (Required, Integer) DH group of the IPSec Policy. Supported values are `1`,`2`,`5`,`14`,`19`,`20`,`24`.
-- `pi_policy_encryption`- (Required, String) Encryption of the IPSec Policy. Supported values are `3des-cbc`,`aes-128-cbc`,`aes-128-gcm`,`aes-192-cbc`,`aes-256-cbc`,`aes-256-gcm`,`des-cbc`.
+- `pi_policy_encryption`- (Required, String) Encryption of the IPSec Policy. Supported values are `aes-256-cbc`, `aes-192-cbc`, `aes-128-cbc`, `aes-256-gcm`, `aes-128-gcm`, `3des-cbc`.
 - `pi_policy_key_lifetime` - (Required, Integer) Policy key lifetime. Supported values:  `180` ≤ value ≤ `86400`.
 - `pi_policy_name` - (Required, String) Name of the IPSec Policy.
 - `pi_policy_pfs` - (Required, Boolean) Perfect Forward Secrecy.

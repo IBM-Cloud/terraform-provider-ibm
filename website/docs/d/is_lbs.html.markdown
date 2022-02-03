@@ -23,8 +23,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_lbs" "ds_lbs" {
- }
+data "ibm_is_lbs" "example" {
+}
 ```
 
 

@@ -25,13 +25,13 @@ provider "ibm" {
 The following example shows how you can create a public gateway for all the subnets that are located in a specific zone.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_public_gateway" "testacc_gateway" {
-  name = "test-gateway"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_public_gateway" "example" {
+  name = "example-gateway"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
 
   //User can configure timeouts

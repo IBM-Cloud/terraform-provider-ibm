@@ -26,27 +26,25 @@ provider "ibm" {
 ### Sample to create a load balancer pool member for application load balancer.
 
 ```terraform
-resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
-  lb             = "daac2b08-fe8a-443b-9b06-1cef79922dce"
-  pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
+resource "ibm_is_lb_pool_member" "example" {
+  lb             = ibm_is_lb.example.id
+  pool           = element(split("/", ibm_is_lb_pool.example.id), 1)
   port           = 8080
   target_address = "127.0.0.1"
   weight         = 60
 }
-
 ```
 
 ### Sample to create a load balancer pool member for network load balancer.
 
 ```terraform
-resource "ibm_is_lb_pool_member" "testacc_lb_mem" {
-  lb             = "daac2b08-fe8a-443b-9b06-1cef79922dce"
-  pool           = "f087d3bd-3da8-452d-9ce4-c1010c9fec04"
-  port           = 8080
-  target_id      = "54ad563a-0261-11e9-8317-bec54e704988"
-  weight         = 60
+resource "ibm_is_lb_pool_member" "example" {
+  lb        = ibm_is_lb.example.id
+  pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
+  port      = 8080
+  target_id = ibm_is_instance.example.id
+  weight    = 60
 }
-
 ```
 
 ## Timeouts

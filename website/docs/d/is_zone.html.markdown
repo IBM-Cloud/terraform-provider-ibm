@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_zone" "ds_zone" {
+data "ibm_is_zone" "example" {
   name   = "us-south-1"
   region = "us-south"
 }

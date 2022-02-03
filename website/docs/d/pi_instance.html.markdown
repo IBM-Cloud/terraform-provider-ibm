@@ -63,10 +63,12 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+- `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
 - `status` - (String) The status of the instance.
-- `storage_pool`- (String) Storage Pool where server is deployed.
-- `storage_type` - (String) Storage type where server is deployed.
+- `storage_pool` - (String) The storage Pool where server is deployed.
+- `storage_pool_affinity` - (Bool) Indicates if all volumes attached to the server must reside in the same storage pool.
+- `storage_type` - (String) The storage type where server is deployed.
 - `virtual_cores_assigned` - (Integer) The virtual cores that are assigned to the instance.
-- `volumes`- (List of strings) The list of volume IDs that are attached to the instance.
+- `volumes` - (List of strings) The list of volume IDs that are attached to the instance.
