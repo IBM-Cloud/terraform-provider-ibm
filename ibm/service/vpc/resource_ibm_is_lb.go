@@ -120,6 +120,7 @@ func ResourceIBMISLB() *schema.Resource {
 			isLBSubnets: {
 				Type:        schema.TypeSet,
 				Required:    true,
+				ForceNew:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Load Balancer subnets list",
