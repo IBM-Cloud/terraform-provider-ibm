@@ -79,7 +79,7 @@ func dataIBMCISWebhooksRead(d *schema.ResourceData, meta interface{}) error {
 		webhook[cisWebhooksType] = *instance.Type
 		webhooks = append(webhooks, webhook)
 	}
-	d.SetId(dataSourceCISFiltersCheckID(d))
+	d.SetId(dataSourceCISWebhooksCheckID(d))
 	d.Set(cisID, crn)
 	d.Set(cisWebhooksList, webhooks)
 	return nil
