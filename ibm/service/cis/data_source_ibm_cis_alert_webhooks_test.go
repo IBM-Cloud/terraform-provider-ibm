@@ -33,7 +33,7 @@ func testAccCheckIBMCisWebhooksDataSourceConfig() string {
 		cis_id 		= "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
 		name 		= "test-Webhooks"
 		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-		secret		=  "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+		secret		=  "ZaHkdsdsadsdfsdfdsfsdffdsfsdfanchfnR4TISjOPC_I1U"
 	  }
 	data "ibm_cis_webhooks" "test" {
 		cis_id = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"

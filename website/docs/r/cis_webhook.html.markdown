@@ -39,7 +39,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_cis_webgook` resource can be imported using the `id`. The ID is formed from the `Webhook ID`and the `CRN` (Cloud Resource Name) concatentated usinga `:` character.
+The `ibm_cis_webhook` resource can be imported using the `id`. The ID is formed from the `Webhook ID`and the `CRN` (Cloud Resource Name) concatentated usinga `:` character.
 
 The CRN will be located on the **Overview** page of the Internet Services instance under the **Domain** heading of the UI, or via using the `ibmcloud cis` CLI commands.
 
