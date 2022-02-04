@@ -58,6 +58,11 @@ The   ibm_pi_image   provides the following [timeouts](https://www.terraform.io/
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `pi_affinity_instance` - (Optional, String) PVM Instance (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_volume` is not provided.
+- `pi_affinity_policy` - (Optional, String) Affinity policy for image; ignored if `pi_image_storage_pool` provided; for policy affinity requires one of `pi_affinity_instance` or `pi_affinity_volume` to be specified; for policy anti-affinity requires one of `pi_anti_affinity_instances` or `pi_anti_affinity_volumes` to be specified; Allowable values: `affinity`, `anti-affinity`
+- `pi_affinity_volume`- (Optional, String) Volume (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_instance` is not provided.
+- `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
+- `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_image_name` - (Required, String) The name of an image.
 - `pi_image_id` - (Optional, String) Image ID of existing source image; required for copy image.
@@ -73,8 +78,8 @@ Review the argument references that you can specify for your resource.
   - `pi_image_bucket_region` is required with `pi_image_bucket_name`
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
-- `pi_image_storage_type` - (Optional, String) Type of storage.
-  - `pi_image_storage_type` is required with `pi_image_bucket_name`
+- `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_image_storage_type` and `pi_affinity_policy` will be ignored.
+- `pi_image_storage_type` - (Optional, String) Type of storage. Will be ignored if `pi_image_storage_pool` or `pi_affinity_policy` is provided. If only using `pi_image_storage_type` for storage selection then the storage pool with the most available space will be selected.
 
 
 ## Attribute reference
