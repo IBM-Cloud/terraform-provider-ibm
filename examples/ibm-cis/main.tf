@@ -330,6 +330,20 @@ data "ibm_cis_waf_groups" "waf_groups" {
   package_id = "c504870194831cd12c3fc0284f294abb"
 }
 
+# CIS Webhooks
+resource "ibm_cis_webhook" "test" {
+    cis_id = data.ibm_cis.cis.id
+    name    = "test-Webhooks"
+    url     = "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
+    secret = "ZaHkAf0iN234f8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+}
+
+# CIS Webhooks data source
+data "ibm_cis_webhooks" "test1" {
+  cis_id = data.ibm_cis.cis.id
+}
+
+
 # CIS Rnage application service
 resource "ibm_cis_range_app" "app" {
   cis_id         = data.ibm_cis.cis.id
