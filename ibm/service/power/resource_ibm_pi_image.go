@@ -27,7 +27,6 @@ func ResourceIBMPIImage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIImageCreate,
 		ReadContext:   resourceIBMPIImageRead,
-		UpdateContext: resourceIBMPIImageUpdate,
 		DeleteContext: resourceIBMPIImageDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -41,12 +40,14 @@ func ResourceIBMPIImage() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
+				ForceNew:    true,
 			},
 			helpers.PIImageName: {
 				Type:             schema.TypeString,
 				Required:         true,
 				Description:      "Image name",
 				DiffSuppressFunc: flex.ApplyOnce,
+				ForceNew:         true,
 			},
 			helpers.PIImageId: {
 				Type:             schema.TypeString,
@@ -110,11 +111,53 @@ func ResourceIBMPIImage() *schema.Resource {
 				ForceNew:      true,
 			},
 			helpers.PIImageStorageType: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Type of storage",
+				ForceNew:    true,
+			},
+			helpers.PIImageStoragePool: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Storage pool where the image will be loaded, if provided then pi_image_storage_type and pi_affinity_policy will be ignored",
+				ForceNew:    true,
+			},
+			PIAffinityPolicy: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "Type of storage",
-				RequiredWith: []string{helpers.PIImageBucketName},
+				Description:  "Affinity policy for image; ignored if pi_image_storage_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"affinity", "anti-affinity"}),
 				ForceNew:     true,
+			},
+			PIAffinityVolume: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Volume (ID or Name) to base storage affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
+				ConflictsWith: []string{PIAffinityInstance},
+				ForceNew:      true,
+			},
+			PIAffinityInstance: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "PVM Instance (ID or Name) to base storage affinity policy against; required if requesting storage affinity and pi_affinity_volume is not provided",
+				ConflictsWith: []string{PIAffinityVolume},
+				ForceNew:      true,
+			},
+			PIAntiAffinityVolumes: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of volumes to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
+				ConflictsWith: []string{PIAntiAffinityInstances},
+				ForceNew:      true,
+			},
+			PIAntiAffinityInstances: {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
+				ConflictsWith: []string{PIAntiAffinityVolumes},
+				ForceNew:      true,
 			},
 
 			// Computed Attribute
@@ -168,7 +211,6 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		bucketImageFileName := d.Get(helpers.PIImageBucketFileName).(string)
 		bucketRegion := d.Get(helpers.PIImageBucketRegion).(string)
 		bucketAccess := d.Get(helpers.PIImageBucketAccess).(string)
-		storageType := d.Get(helpers.PIImageStorageType).(string)
 
 		body := &models.CreateCosImageImportJob{
 			ImageName:     &imageName,
@@ -176,7 +218,6 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			BucketAccess:  &bucketAccess,
 			ImageFilename: &bucketImageFileName,
 			Region:        &bucketRegion,
-			StorageType:   storageType,
 		}
 
 		if v, ok := d.GetOk(helpers.PIImageAccessKey); ok {
@@ -186,6 +227,39 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			body.SecretKey = v.(string)
 		}
 
+		if v, ok := d.GetOk(helpers.PIImageStorageType); ok {
+			body.StorageType = v.(string)
+		}
+		if v, ok := d.GetOk(helpers.PIImageStoragePool); ok {
+			body.StoragePool = v.(string)
+		}
+		if ap, ok := d.GetOk(PIAffinityPolicy); ok {
+			policy := ap.(string)
+			affinity := &models.StorageAffinity{
+				AffinityPolicy: &policy,
+			}
+
+			if policy == "affinity" {
+				if av, ok := d.GetOk(PIAffinityVolume); ok {
+					afvol := av.(string)
+					affinity.AffinityVolume = &afvol
+				}
+				if ai, ok := d.GetOk(PIAffinityInstance); ok {
+					afins := ai.(string)
+					affinity.AffinityPVMInstance = &afins
+				}
+			} else {
+				if avs, ok := d.GetOk(PIAntiAffinityVolumes); ok {
+					afvols := flex.ExpandStringList(avs.([]interface{}))
+					affinity.AntiAffinityVolumes = afvols
+				}
+				if ais, ok := d.GetOk(PIAntiAffinityInstances); ok {
+					afinss := flex.ExpandStringList(ais.([]interface{}))
+					affinity.AntiAffinityPVMInstances = afinss
+				}
+			}
+			body.StorageAffinity = affinity
+		}
 		imageResponse, err := client.CreateCosImage(body)
 		if err != nil {
 			return diag.FromErr(err)
@@ -237,10 +311,6 @@ func resourceIBMPIImageRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("image_id", imageid)
 	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 
-	return nil
-}
-
-func resourceIBMPIImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
 
