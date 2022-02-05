@@ -460,6 +460,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_keys":               power.DataSourceIBMPIKeys(),
 			"ibm_pi_image":              power.DataSourceIBMPIImage(),
 			"ibm_pi_instance":           power.DataSourceIBMPIInstance(),
+			"ibm_pi_instances":          power.DataSourceIBMPIInstances(),
 			"ibm_pi_tenant":             power.DataSourceIBMPITenant(),
 			"ibm_pi_network":            power.DataSourceIBMPINetwork(),
 			"ibm_pi_volume":             power.DataSourceIBMPIVolume(),

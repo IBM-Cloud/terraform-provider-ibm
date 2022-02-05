@@ -28,7 +28,7 @@ func TestAccIBMIsLbListenerPolicyDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsLbListenerPolicyDataSourceConfigBasic(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname1, action, priority1),
+				Config: testAccCheckIBMIsLbListenerPolicyDataSourceConfigBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname1, action, priority1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listener_policy.is_lb_listener_policy", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listener_policy.is_lb_listener_policy", "lb"),
@@ -47,7 +47,7 @@ func TestAccIBMIsLbListenerPolicyDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMIsLbListenerPolicyDataSourceConfigBasic(vpcname, subnetname, zone, cidr, lbname, port, protocol, lblistenerpolicyname, action, priority string) string {
-	return testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, ISZoneName, ISCIDR, lbname, port, protocol, lblistenerpolicyname, action, priority) + fmt.Sprintf(`
+	return testAccCheckIBMISLBListenerPolicyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, lblistenerpolicyname, action, priority) + fmt.Sprintf(`
 
 	data "ibm_is_lb_listener_policy" "is_lb_listener_policy" {
 		lb = "${ibm_is_lb.testacc_LB.id}"
