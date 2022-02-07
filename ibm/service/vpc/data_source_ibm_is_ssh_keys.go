@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package vpc
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -27,7 +29,7 @@ const (
 	isKeysLimit            = "limit"
 )
 
-func dataSourceIBMIsSshKeys() *schema.Resource {
+func DataSourceIBMIsSshKeys() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIsSshKeysRead,
 
@@ -115,7 +117,7 @@ func dataSourceIBMIsSshKeys() *schema.Resource {
 }
 
 func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,7 +137,7 @@ func dataSourceIBMIsSshKeysRead(context context.Context, d *schema.ResourceData,
 			return diag.FromErr(fmt.Errorf("ListKeysWithContext failed %s\n%s", err, response))
 		}
 
-		start = GetNext(keyCollection.Next)
+		start = flex.GetNext(keyCollection.Next)
 		allrecs = append(allrecs, keyCollection.Keys...)
 
 		if start == "" {

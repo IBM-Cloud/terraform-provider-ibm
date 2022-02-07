@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2021 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package vpc
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -82,7 +84,7 @@ const (
 	isVolumesZoneName                                      = "name"
 )
 
-func dataSourceIBMIsVolumes() *schema.Resource {
+func DataSourceIBMIsVolumes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMIsVolumesRead,
 
@@ -486,7 +488,7 @@ func dataSourceIBMIsVolumes() *schema.Resource {
 }
 
 func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -516,7 +518,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 			return diag.FromErr(fmt.Errorf("ListVolumesWithContext failed %s\n%s", err, response))
 		}
 
-		start = GetNext(volumeCollection.Next)
+		start = flex.GetNext(volumeCollection.Next)
 		allrecs = append(allrecs, volumeCollection.Volumes...)
 
 		if start == "" {
