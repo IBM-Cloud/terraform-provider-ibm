@@ -52,7 +52,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The name of the network.
 - `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
-- `pi_dns`-List of strings-Optional-List of DNS entries for the network. Required for `vlan` network type.
+- `pi_dns` - (Optional, Set of String) The DNS Servers for the network. Required for `vlan` network type.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_network_jumbo` - (Optional, Bool) MTU Jumbo option of the network.
 

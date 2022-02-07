@@ -227,7 +227,7 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resourc
 			return nil, "", err
 		}
 
-		if &network.VlanID != nil {
+		if network.VlanID != nil {
 			return network, "NETWORK_READY", nil
 		}
 
