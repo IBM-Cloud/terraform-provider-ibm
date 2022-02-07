@@ -9,7 +9,18 @@ description: |-
 
 # ibm_is_instance_action
 
-Start, Stop, or Reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
+Start, stop, or reboot an instance for VPC. For more information, about managing VPC instance, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
@@ -43,14 +54,14 @@ resource "ibm_is_instance" "example" {
   }
 
   primary_network_interface {
-    subnet = ibm_is_subnet.example.id
+    subnet               = ibm_is_subnet.example.id
     primary_ipv4_address = "10.240.0.6"
-    allow_ip_spoofing = true
+    allow_ip_spoofing    = true
   }
 
   network_interfaces {
-    name   = "eth1"
-    subnet = ibm_is_subnet.example.id
+    name              = "eth1"
+    subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = false
   }
 
@@ -67,8 +78,9 @@ resource "ibm_is_instance" "example" {
 }
 
 resource "ibm_is_instance_action" "example" {
-  action = "stop"
+  action       = "stop"
   force_action = true
+  instance     = ibm_is_instance.example.id
 }
 
 
@@ -78,7 +90,7 @@ resource "ibm_is_instance_action" "example" {
 
 Review the argument references that you can specify for your resource. 
 
-- `action` - (Required, String) The type of action to perform on the instance. Supported values are `stop`, `start`, or `reboot`.
+- `action` - (Required, String) The type of action to perfrom on the instance. Supported values are `stop`, `start`, or `reboot`.
 - `force_action` - (Optional, Boolean)  If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action. The Default value is `false`.
 - `instance` - (Required, String) Instance identifier.
 

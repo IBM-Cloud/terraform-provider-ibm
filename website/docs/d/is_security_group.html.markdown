@@ -9,28 +9,38 @@ description: |-
 # ibm_is_security_group
 Retrieve information about a security group as a read-only data source. For more information, about managing IBM Cloud security group , see [about security group](https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 The following example allows to create a different types of protocol rules `ALL`, `ICMP`, `UDP`, `TCP` and read the security group.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_security_group" "testacc_security_group" {
-  name = "test"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_security_group" "example" {
+  name = "example-sg"
+  vpc  = ibm_is_vpc.example.id
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
-  group     = ibm_is_security_group.testacc_security_group.id
+resource "ibm_is_security_group_rule" "example" {
+  group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
-  group     = ibm_is_security_group.testacc_security_group.id
+resource "ibm_is_security_group_rule" "example" {
+  group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
   icmp {
@@ -39,8 +49,8 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
   }
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
-  group     = ibm_is_security_group.testacc_security_group.id
+resource "ibm_is_security_group_rule" "example" {
+  group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
   udp {
@@ -49,8 +59,8 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
   }
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
-  group     = ibm_is_security_group.testacc_security_group.id
+resource "ibm_is_security_group_rule" "example" {
+  group     = ibm_is_security_group.example.id
   direction = "egress"
   remote    = "127.0.0.1"
   tcp {
@@ -59,8 +69,8 @@ resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
   }
 }
 
-data "ibm_is_security_group" "sg1_rule" {
-  name = ibm_is_security_group.testacc_security_group.name
+data "ibm_is_security_group" "example" {
+  name = ibm_is_security_group.example.name
 }
 ```
 

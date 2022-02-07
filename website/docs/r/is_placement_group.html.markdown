@@ -6,24 +6,35 @@ description: |-
   Manages PlacementGroup.
 ---
 
-# ibm\_is_placement_group
+# ibm_is_placement_group
 
-Provides a resource for PlacementGroup. This allows PlacementGroup to be created, updated and deleted.
+Create, update, or delete a placement group. For more information, about placement group, see [managing placement groups](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-placement-group&interface=ui).
 
-## Example Usage
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-```hcl
-resource "ibm_is_placement_group" "is_placement_group" {
-  strategy = "host_spread"
-  name = "my-placement-group"
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
 }
 ```
 
-## Argument Reference
+## Example usage
 
-The following arguments are supported:
+```terraform
+resource "ibm_is_placement_group" "example" {
+  strategy = "host_spread"
+  name     = "example-placement-group"
+}
+```
 
-- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the placement group. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+## Argument reference
+
+Review the argument references that you can specify for your resource. 
+
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the placement group. ~> **Note:** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `name` - (Optional, string) The unique user-defined name for this placement group. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `resource_group` - (Optional, string, Forces new resource) The unique identifier of the resource group to use. If unspecified, the account's 
 - `strategy` - (Required, string, Forces new resource) The strategy for this placement group- `host_spread`: place on different compute hosts- `power_spread`: place on compute hosts that use different power sources. The enumerated values for this property may expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the placement group on which the unexpected strategy was encountered.
@@ -31,9 +42,9 @@ The following arguments are supported:
 - `tags`  - (Optional, List of Strings) The user tags to attach to the placement group.
 
 
-## Attribute Reference
+## Attribute reference
 
-The following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - The unique identifier of the PlacementGroup.
 - `created_at` - The date and time that the placement group was created.
@@ -44,7 +55,9 @@ The following attributes are exported:
 
 ## Import
 
-ibm_is_placement_group can be imported using ID, eg
+The `ibm_is_placement_group` can be imported by using ID.
+
+**Example**
 
 ```
 $ terraform import ibm_is_placement_group.example d7bec597-4726-451f-8a63-e62e6f19c32c

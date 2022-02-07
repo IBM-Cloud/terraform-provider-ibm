@@ -3,22 +3,33 @@ subcategory: "VPC infrastructure"
 layout: "ibm"
 page_title: "IBM : network_acls"
 description: |-
-  Get information about IBM Network ACL collection.
+  Get information about IBM Network ACLs.
+
 ---
 
 # ibm_is_network_acls
+Retrieve information about an existing Network ACLs. For more information, about Network ACLs, see [About network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
-Retrieve information about an existing Network ACL collection. For more information, about Network ACLs, see [About network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 resource "ibm_is_vpc" "example" {
-  name = "vpctest"
+  name = "example-vpc"
 }
 
 resource "ibm_is_network_acl" "example" {
-  name = "is-example-acl"
+  name = "example-network-acl"
   vpc  = ibm_is_vpc.example.id
 }
 
@@ -27,7 +38,6 @@ data "ibm_is_network_acls" "example" {
 ```
 
 ## Argument reference
-
 Review the argument reference that you can specify for your resource.
 
 - `resource_group` - (Optional, String) Filters the collection to resources within one of the resource groups identified in a comma-separated list of resource group identifiers.

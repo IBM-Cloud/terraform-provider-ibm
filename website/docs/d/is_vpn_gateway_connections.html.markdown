@@ -9,13 +9,23 @@ description: |-
 # ibm_is_vpn_gateway_connections
 Retrieve information of an existing VPN gateway connections. For more information, see [adding connections to a VPN gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-adding-connections).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_vpn_gateway_connections" "ds_vpn_gateway_connections" {
-  vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
+data "ibm_is_vpn_gateway_connections" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
 }
 
 ```

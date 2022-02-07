@@ -10,14 +10,25 @@ description: |-
 # ibm_is_lb_pool
 Create, update, or delete a VPC load balancer pool.  For more information, about load balancer pool, see [working with pool](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-pools).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ### Sample to create a load balancer pool.
 
 ```terraform
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test-pool"
-  lb             = "addfd-gg4r4-12345"
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-pool"
+  lb             = ibm_is_lb.example.id
   algorithm      = "round_robin"
   protocol       = "http"
   health_delay   = 60
@@ -26,15 +37,14 @@ resource "ibm_is_lb_pool" "testacc_pool" {
   health_type    = "http"
   proxy_protocol = "v1"
 }
-
 ```
 
 ### Sample to create a load balancer pool with `https` protocol.
 
 ```terraform
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test-pool"
-  lb             = "addfd-gg4r4-12345"
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-pool"
+  lb             = ibm_is_lb.example.id
   algorithm      = "round_robin"
   protocol       = "https"
   health_delay   = 60
@@ -46,12 +56,12 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 ```
 
-In the following example, you can create a load balancer pool with `app_cookie` session persistence:
+//In the following example, you can create a load balancer pool with `app_cookie` session persistence:
 
-```hcl
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test-pool"
-  lb             = "addfd-gg4r4-12345"
+```terraform
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-pool"
+  lb             = ibm_is_lb.example.id
   algorithm      = "round_robin"
   protocol       = "https"
   health_delay   = 60
@@ -65,12 +75,12 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 ```
 
-In the following example, you can create a load balancer pool with `http_cookie` session persistence:
+//In the following example, you can create a load balancer pool with `http_cookie` session persistence:
 
-```hcl
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test-pool"
-  lb             = "addfd-gg4r4-12345"
+```terraform
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-pool"
+  lb             = ibm_is_lb.example.id
   algorithm      = "round_robin"
   protocol       = "https"
   health_delay   = 60
@@ -83,12 +93,12 @@ resource "ibm_is_lb_pool" "testacc_pool" {
 
 ```
 
-In the following example, you can create a load balancer pool with `source_ip` session persistence:
+//In the following example, you can create a load balancer pool with `source_ip` session persistence:
 
-```hcl
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name           = "test-pool"
-  lb             = "addfd-gg4r4-12345"
+```terraform
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-pool"
+  lb             = ibm_is_lb.example.id
   algorithm      = "round_robin"
   protocol       = "https"
   health_delay   = 60

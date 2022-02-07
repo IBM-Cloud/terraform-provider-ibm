@@ -28,11 +28,11 @@ resource "ibm_kms_key" "test" {
   standard_key = false
   force_delete =true
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = ibm_kms_key.test.id
 }
 ```
@@ -73,6 +73,14 @@ resource "ibm_kms_key" "key" {
 
 Set policies for a key, as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys.
 
+~> **Deprecated:**
+
+The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been deprecated and it is scheduled to be removed soon in favor of a dedicated ibm_kms_key_policies resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy)
+
+Until the deprecation is released:
+- For new key policies, start using ibm_kms_key_policies
+- For existing policies already created through ibm_kms_key resource, add lifecycle ignore block to ibm_kms_key resource to ignore any state change to the policies (see example below)
+
 ```terraform
 resource "ibm_resource_instance" "kp_instance" {
   name     = "test_kp"
@@ -96,15 +104,9 @@ resource "ibm_kms_key" "key" {
 }
 ```
 
-**Deprecated** :
-1) Support for creating Policies along with the Key will be deprecated in future releases.
-2) A new resource for creating Key pollicies has been released which can be used to create policies for existing key.
-3) Use either "ibm_kms_key" or "ibm_kms_key_policies" to manage key policies but not both together.
-4) If both the resources have been utilised to create policies then add licycle ignore block to "ibm_kms_key" resource to avoid any changes kms_key_policies resource to the policies.
-
 ## Lifecycle Ignore Block Example
 
-```
+```terraform
 resource "ibm_kms_key" "kms_tf_test_key1" {
  instance_id = ibm_resource_instance.kms_tf_test1.guid
  key_name   = "kms_tf_test_key1"

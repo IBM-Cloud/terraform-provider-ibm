@@ -10,26 +10,36 @@ description: |-
 # ibm_is_volume
 Create, update, or delete a VPC block storage volume. For more information, about the VPC block storage volume, see [getting started with VPC](https://cloud.ibm.com/docs/vpc).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example creates a volume with 10 IOPs tier.
 
 ```terraform
-resource "ibm_is_volume" "testacc_volume" {
-  name     = "test-volume"
-  profile  = "10iops-tier"
-  zone     = "us-south-1"
+resource "ibm_is_volume" "example" {
+  name    = "example-volume"
+  profile = "10iops-tier"
+  zone    = "us-south-1"
 }
-
 ```
 The following example creates a custom volume.
 
 ```terraform
-resource "ibm_is_volume" "testacc_volume" {
-  name     = "test-volume"
-  profile  = "custom"
-  zone     = "us-south-1"
-  iops     = 1000
-  capacity = 200
+resource "ibm_is_volume" "example" {
+  name           = "example-volume"
+  profile        = "custom"
+  zone           = "us-south-1"
+  iops           = 1000
+  capacity       = 200
   encryption_key = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
 }
 
@@ -46,7 +56,7 @@ The `ibm_is_volume` resource provides the following [Timeouts](https://www.terra
 Review the argument references that you can specify for your resource. 
 
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
-  **NOTE** 
+  ~> **NOTE:**
     - Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity)
     - Can be updated only if volume is attached to an running virtual server instance.
     - Stopped instance will be started on update of capacity of the volume.
@@ -55,7 +65,7 @@ Review the argument references that you can specify for your resource.
 - `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
 - `iops` - (Optional, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.
 
-**NOTE**
+~> **NOTE:**
   - `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 
   This table shows how storage size affects the `iops` ranges:
@@ -76,7 +86,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The user-defined name for this volume.No.
 - `profile` - (Required, String) The profile to use for this volume.
 
-  **NOTE**
+  ~> **NOTE:**
     - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.

@@ -9,34 +9,45 @@ description: |-
 # ibm_is_lb_listener_policy
 Create, update, or delete a load balancer listener policy. For more information, about VPC load balance listener policy, see [monitoring application Load Balancer for VPC metrics](https://cloud.ibm.com/docs/vpc?topic=vpc-monitoring-metrics-alb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ### Sample to create a load balancer listener policy for a `redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-  action = "redirect"
-  priority = 2
-  name = "mylistener8"
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                      = ibm_is_lb.example.id
+  listener                = ibm_is_lb_listener.example.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "example-listener-policy"
   target_http_status_code = 302
-  target_url = "https://www.redirect.com"
-  rules{
-      condition = "contains"
-      type = "header"
-      field = "1"
-      value = "2"
+  target_url              = "https://www.redirect.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
   }
 }
 ```
@@ -44,30 +55,30 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 ### Sample to create a load balancer listener policy for a `https_redirect` action.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
-  port     = "9086"
-  protocol = "https"
-  certificate_instance="crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+resource "ibm_is_lb_listener" "example" {
+  lb                   = ibm_is_lb.example.id
+  port                 = "9086"
+  protocol             = "https"
+  certificate_instance = "crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  action = "https_redirect"
-  priority = 2
-  name = "mylistener8"
-  taget_https_redirect_listener=ibm_is_lb_listener.lb_listener2.listener_id
-  target_https_redirect_status_code=301
-  target_https_redirect_uri="/example?doc=geta"
-  rules{
-      condition = "contains"
-      type = "header"
-      field = "1"
-      value = "2"
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                                = ibm_is_lb.example.id
+  action                            = "https_redirect"
+  priority                          = 2
+  name                              = "example-listener"
+  taget_https_redirect_listener     = ibm_is_lb_listener.example.listener_id
+  target_https_redirect_status_code = 301
+  target_https_redirect_uri         = "/example?doc=geta"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
   }
 }
 ```
@@ -76,28 +87,40 @@ resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
 
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-  action = "forward"
-  priority = 2
-  name = "mylistener8"
-  target_id = "r006-beafdff0-4fe0-4db4-8f0c-b0b4ad828712"
-  rules{
-      condition = "contains"
-      type = "header"
-      field = "1"
-      value = "2"
+
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-lb-pool"
+  lb             = ibm_is_lb.example.id
+  algorithm      = "round_robin"
+  protocol       = "http"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "http"
+}
+
+resource "ibm_is_lb_listener_policy" "example" {
+  lb        = ibm_is_lb.example.id
+  listener  = ibm_is_lb_listener.example.listener_id
+  action    = "forward"
+  priority  = 2
+  name      = "example-listener"
+  target_id = ibm_is_lb_pool.example.pool_id
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
   }
 }
 ```
@@ -131,7 +154,7 @@ Review the argument references that you can specify for your resource.
 - `target_https_redirect_status_code` - (Optional, Integer) When `action` is set to **https_redirect**, specify the HTTP status code to be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, `308`.
 - `target_https_redirect_uri` - (Optional, String) When `action` is set to **https_redirect**, specify the target URI where traffic will be redirected.
 
-**Note**
+~> **Note:**
 
 When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
 When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.

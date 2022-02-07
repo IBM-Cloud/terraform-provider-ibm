@@ -45,7 +45,7 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `servers` - (String) List of all the DHCP Servers.
+- `servers` - (List) List of all the DHCP Servers.
 
   Nested scheme for `servers`:
   - `dhcp_id` - (String) The ID of the DHCP Server.

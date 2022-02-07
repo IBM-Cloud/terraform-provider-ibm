@@ -9,47 +9,58 @@ description: |-
 
 # ibm_is_instance_group_manager_policy
 
-Create update or delete a policy of an instance group manager. For more information, about instance group manager policy, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
+Create, update or delete a policy of an instance group manager. For more information, about instance group manager policy, see [creating an instance group for auto scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-auto-scale-instance-group).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 In the following example, you can create a policy for instance group manager.
 
 ```terraform
-resource "ibm_is_vpc" "vpc2" {
-  name = "vpc2test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "subnet2" {
-  name            = "subnet2"
-  vpc             = ibm_is_vpc.vpc2.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-2"
   ipv4_cidr_block = "10.240.64.0/28"
 }
 
-resource "ibm_is_ssh_key" "sshkey" {
-  name       = "ssh1"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "SSH_KEY"
 }
 
-resource "ibm_is_instance_template" "instancetemplate1" {
-  name    = "testtemplate"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+resource "ibm_is_instance_template" "example" {
+  name    = "example-template"
+  image   = ibm_is_image.example.id
   profile = "bx2-8x32"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+    subnet = ibm_is_subnet.example.id
   }
 
-  vpc  = ibm_is_vpc.vpc2.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 }
 
-resource "ibm_is_instance_group" "instance_group" {
-  name              = "testgroup"
-  instance_template = ibm_is_instance_template.instancetemplate1.id
+resource "ibm_is_instance_group" "example" {
+  name              = "example-instance-group"
+  instance_template = ibm_is_instance_template.example.id
   instance_count    = 2
-  subnets           = [ibm_is_subnet.subnet2.id]
+  subnets           = [ibm_is_subnet.example.id]
 
   //User can configure timeouts
   timeouts {
@@ -59,10 +70,10 @@ resource "ibm_is_instance_group" "instance_group" {
   }
 }
 
-resource "ibm_is_instance_group_manager" "instance_group_manager" {
-  name                 = "testmanager"
+resource "ibm_is_instance_group_manager" "example" {
+  name                 = "example-instance-group-manager"
   aggregation_window   = 120
-  instance_group       = ibm_is_instance_group.instance_group.id
+  instance_group       = ibm_is_instance_group.example.id
   cooldown             = 300
   manager_type         = "autoscale"
   enable_manager       = true
@@ -70,13 +81,13 @@ resource "ibm_is_instance_group_manager" "instance_group_manager" {
   min_membership_count = 1
 }
 
-resource "ibm_is_instance_group_manager_policy" "cpuPolicy" {
-  instance_group         = ibm_is_instance_group.instance_group.id
-  instance_group_manager = ibm_is_instance_group_manager.instance_group_manager.manager_id
+resource "ibm_is_instance_group_manager_policy" "example" {
+  instance_group         = ibm_is_instance_group.example.id
+  instance_group_manager = ibm_is_instance_group_manager.example.manager_id
   metric_type            = "cpu"
   metric_value           = 70
   policy_type            = "target"
-  name                   = "testpolicy"
+  name                   = "example-ig-manager-policy"
 }
 
 ```

@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_instance_ip
 Retrieve information about a Power Systems Virtual Server instance IP address. For more information, about Power Systems Virtual Server instance IP address, see [configuring and adding a private network subnet](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-configuring-subnet).
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
@@ -24,7 +24,7 @@ data "ibm_pi_instance_ip" "ds_instance_ip" {
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-  Example Usage:
+  Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -44,8 +44,9 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `external_ip` - (String) The external IP of the network that is attached to this instance.
-- `ip` - (String) The IP address that is attached to this instance from the subnet.
 - `id` - (String) The unique identifier of the network.
+- `ip` - (String) The IP address that is attached to this instance from the subnet.
 - `ipoctet` - (String) The IP octet of the network that is attached to this instance.
 - `macaddress` - (String) The MAC address of the network that is attached to this instance.
+- `network_id` - (String) ID of the network.
 - `type` - (String) The type of the network that is attached to this instance.

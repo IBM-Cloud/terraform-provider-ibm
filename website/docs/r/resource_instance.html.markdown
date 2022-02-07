@@ -69,6 +69,69 @@ resource "ibm_resource_instance" "myhpdbcluster" {
 }
 ```
 
+### Example to provision a Watson Query service instance
+The following example enables you to create a service instance of IBM Watson Query. For detailed argument reference, see the tables in the [Watson Query documentation](https://cloud.ibm.com/docs/data-virtualization?topic=data-virtualization-provisioning).
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "default"
+}
+resource "ibm_resource_instance" "wq_instance_1" {
+  name              = "terraform-integration-1"
+  service           = "data-virtualization"
+  plan              = "data-virtualization-enterprise" # "data-virtualization-enterprise-dev","data-virtualization-enterprise-preprod","data-virtualization-enterprise-dev-stable"
+  location          = "us-south" # "eu-gb", "eu-de", "jp-tok"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
+  }
+
+}
+```
+
+
+### Example to provision a Analytics Engine using parameters_json argument
+```terraform
+resource "ibm_resource_instance" "instance" {
+  name            = "MyServiceInstance"
+  plan            = "standard-hourly"
+  location        = "us-south"
+  service         = "ibmanalyticsengine"
+  parameters_json = <<PARAMETERS_JSON
+    {
+      "num_compute_nodes": "1",
+      "hardware_config": "default",
+      "software_package": "ae-1.2-hadoop-spark",
+      "autoscale_policy": {
+      "task_nodes": {
+        "num_min_nodes": 1,
+        "num_max_nodes": 10,
+        "scaleup_rule": {
+          "sustained_demand_period_minutes": "10",
+          "percentage_of_demand": "50"
+        },
+        "scaledown_rule": {
+          "sustained_excess_period_minutes": "20",
+          "percentage_of_excess": "25"
+        }
+      }
+    }
+  }
+    PARAMETERS_JSON
+  tags = [
+    "my-tag"
+  ]
+  timeouts {
+    create = "30m"
+    update = "15m"
+    delete = "15m"
+  }
+}
+```
+
 ## Timeouts
 
 The `ibm_resource_instance` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -81,7 +144,8 @@ The `ibm_resource_instance` resource provides the following [Timeouts](https://w
 Review the argument references that you can specify for your resource. 
 
 - `location` - (Required, Forces new resource, String) Target location or environment to create the resource instance.
-- `parameters` (Optional, Forces new resource, Map) Arbitrary parameters to create instance. The value must be a JSON object.
+- `parameters` (Optional, Map) Arbitrary parameters to create instance. The value must be a JSON object. Conflicts with `parameters_json`.
+- `parameters_json` (Optional,String) Arbitrary parameters to create instance. The value must be a JSON string. Conflicts with `parameters`.
 - `plan` - (Required, String) The name of the plan type supported by service. You can retrieve the value by running the `ibmcloud catalog service <servicename>` command.
 - `name` - (Required, String) A descriptive name used to identify the resource instance.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.

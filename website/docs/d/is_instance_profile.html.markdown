@@ -9,14 +9,24 @@ description: |-
 # ibm_is_instance_profile
 Retrieve information of an existing IBM Cloud virtual server instance profile. For more information, about virtual server instance profile, see [instance profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
-The following example retrieves information about the `b-2x8` instance profile. 
+The following example retrieves information about the `cx2-2x4` instance profile. 
 
 ```terraform
 
-data "ibm_is_instance_profile" "profile" {
-  name = "b-2x8"
+data "ibm_is_instance_profile" "example" {
+  name = "cx2-2x4"
 }
 
 ```

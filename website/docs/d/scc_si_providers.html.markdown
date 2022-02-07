@@ -10,22 +10,22 @@ description: |-
 
 Provides a read-only data source for scc_si_providers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_si_providers" "providers" {
   limit = 4
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument reference that you can specify for your data source.
 
 * `limit` - (Optional, String) Limit the number of the returned documents to the specified number.
 * `skip` - (Optional, String) The offset is the index of the item from which you want to start returning data from. Default is 0.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

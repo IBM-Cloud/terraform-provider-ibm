@@ -9,20 +9,30 @@ description: |-
 # ibm_is_instances
 Retrieve information of an existing  IBM Cloud virtual server instances as a read-only data source. For more information, about virtual server instances, see [about virtual server instances for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances" {
+data "ibm_is_instances" "example" {
 }
 
 ```
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances1" {
-  vpc_name = "testacc_vpc"
+data "ibm_is_instances" "example" {
+  vpc_name = "example-vpc"
 }
 
 ```

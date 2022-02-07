@@ -7,24 +7,34 @@ description: |-
 ---
 
 # ibm_is_placement_group
+Retrieve information of a placement group as a read-only data source. For more information, about placement group, see [managing placement groups](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-placement-group&interface=ui).
 
-Provides a read-only data source for PlacementGroup. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-## Example Usage
+**provider.tf**
 
-```hcl
-data "is_placement_group" "is_placement_group" {
-	id = "id"
+```terraform
+provider "ibm" {
+  region = "eu-gb"
 }
 ```
 
-## Argument Reference
+## Example usage
+
+```terraform
+data "is_placement_group" "example" {
+  name = ibm_is_placement_group.example.name
+}
+```
+
+## Argument reference
 
 The following arguments are supported:
 
 - `name` - (Required, String) The placement group identifier.
 
-## Attribute Reference
+## Attribute reference
 
 The following attributes are exported:
 

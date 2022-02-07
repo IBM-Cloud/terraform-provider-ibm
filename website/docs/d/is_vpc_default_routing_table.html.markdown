@@ -9,19 +9,27 @@ description: |-
 # ibm_is_vpc_default_routing_table
 Retrieve information of an existing IBM Cloud Infrastructure Virtual Pricate Cloud default routing table as a read-only data source. For more information, about VPC default routing table, see [about routing tables and routes](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-
-resource "ibm_is_vpc" "test_vpc" {
-  name = "test-vpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc_default_routing_table" "ds_default_routing_table" {
-	vpc = ibm_is_vpc.test_vpc.id
+data "ibm_is_vpc_default_routing_table" "example" {
+  vpc = ibm_is_vpc.example.id
 }
-
 ```
 
 ## Argument reference
@@ -33,9 +41,9 @@ Review the argument references that you can specify for your data source.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `created_at` - (Timestamp)  The date and time that the default routing table was created.
-- `default_routing_table` - (String) The unique identifier for the default routing table.
+- `default_routing_table` - (String) The unique identifier for this routing table.
 - `href` - (String) The routing table URL.
-- `id` - (String) The unique ID for the default routing table.
+- `id` - (String) The unique identifier for this routing table. Same as `default_routing_table`.
 - `is_default` - (String)  Indicates the default routing table for this VPC.
 - `lifecycle_state` - (String) The lifecycle state of the routing table.
 - `name` - (String) The name for the default routing table.

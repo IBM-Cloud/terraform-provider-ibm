@@ -7,11 +7,22 @@ description: |-
 ---
 
 # ibm_is_subnets
-Retrieve information about of an existing VPC subnets in an IBM Cloud account. For more information, about infrastructure subnets, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
+Retrieve information about of an existing VPC subnets in an IBM Cloud account as a read only data source. For more information, about infrastructure subnets, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
-```hcl
+```terraform
 data "ibm_resource_group" "example" {
   name = "Default"
 }
@@ -21,7 +32,7 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_vpc_routing_table" "example" {
-  name = "example-routing-table"
+  name = "example-vpc-routing-table"
   vpc  = ibm_is_vpc.example.id
 }
 
@@ -34,23 +45,23 @@ resource "ibm_is_subnet" "example" {
   resource_group  = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example_resource_group" {
+data "ibm_is_subnets" "example1" {
   resource_group = data.ibm_resource_group.example.id
 }
 
-data "ibm_is_subnets" "example_routing_table_name" {
+data "ibm_is_subnets" "example2" {
   routing_table_name = ibm_is_vpc_routing_table.example.name
 }
 
-data "ibm_is_subnets" "example_routing_table" {
+data "ibm_is_subnets" "example3" {
   routing_table = ibm_is_vpc_routing_table.example.id
 }
 
-data "ibm_is_subnets" "example" {
+data "ibm_is_subnets" "example4" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
 Review the argument references that you can specify for your data source. 
 

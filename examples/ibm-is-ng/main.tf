@@ -706,3 +706,20 @@ data "ibm_is_placement_groups" "is_placement_groups" {
 ## List regions 
 data "ibm_is_regions" "regions" {
 }
+
+data "ibm_is_vpc_address_prefix" "example" {
+  vpc = ibm_is_vpc.vpc1.id
+  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
+}
+data "ibm_is_vpc_address_prefix" "example-1" {
+  vpc_name = ibm_is_vpc.vpc1.name
+  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
+}
+data "ibm_is_vpc_address_prefix" "example-2" {
+  vpc = ibm_is_vpc.vpc1.id
+  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
+}
+data "ibm_is_vpc_address_prefix" "example-3" {
+  vpc_name = ibm_is_vpc.vpc1.name
+  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
+}

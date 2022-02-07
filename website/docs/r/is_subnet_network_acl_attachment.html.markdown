@@ -10,11 +10,22 @@ description: |-
 # ibm_is_subnet_network_acl_attachment
 Create, update, or delete a subnet network ACL attachment resource. For more information, about subnet network ACL attachment, see [setting up network ACLs](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
+resource "ibm_is_network_acl" "example" {
+  name = "example-acl"
   rules {
     name        = "outbound"
     action      = "allow"
@@ -39,17 +50,17 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test-subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "192.168.0.0/1"
 
 }
 
-resource "ibm_is_subnet_network_acl_attachment" attach {
-  subnet      = ibm_is_subnet.testacc_subnet.id
-  network_acl = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_subnet_network_acl_attachment" "example" {
+  subnet      = ibm_is_subnet.example.id
+  network_acl = ibm_is_network_acl.example.id
 }
 
 ```

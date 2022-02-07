@@ -9,14 +9,23 @@ description: |-
 # ibm_floating_ip
 Retrieve an information of VPC floating IP on IBM Cloud as a read-only data source. For more information, about floating IP, see [about floating IP](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-rest-apis#create-floating-ip-api-tutorial).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-
-    data "ibm_is_floating_ip" "test" {
-        name   = "test-fp"
-    }
-
+data "ibm_is_floating_ip" "example" {
+  name = "example-floating-ip"
+}
 ```
 
 ## Argument reference

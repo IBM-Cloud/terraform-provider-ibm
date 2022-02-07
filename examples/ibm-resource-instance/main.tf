@@ -1,5 +1,5 @@
 data "ibm_resource_group" "group" {
-  name = var.name
+  name = var.resource_group
 }
 
 resource "ibm_resource_instance" "resource_instance" {

@@ -1,28 +1,39 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : Placement_Proups"
+page_title: "IBM : Placement_Groups"
 description: |-
-  Get information about PlacementGroupCollection
+  Get information about placement groups
 ---
 
 # ibm_is_placement_groups
 
-Provides a read-only data source for PlacementGroupCollection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Retrieve information of a placement groups as a read-only data source. For more information, about placement groups, see [managing placement groups](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-placement-group&interface=ui).
 
-## Example Usage
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
-```hcl
-data "is_placement_groups" "is_placement_groups" {
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
 }
 ```
 
-## Argument Reference
+## Example usage
+
+```terraform
+data "is_placement_groups" "example" {
+}
+```
+
+## Argument reference
 
 The following arguments are supported:
 
 
-## Attribute Reference
+## Attribute reference
 
 The following attributes are exported:
 

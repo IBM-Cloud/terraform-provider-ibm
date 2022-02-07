@@ -28,7 +28,7 @@ resource "ibm_container_bind_service" "bind_service" {
 Review the argument references that you can specify for your resource. 
   
 - `cluster_name_id` - (Required, Forces new resource, String) The name or ID of the cluster to which you want to bind an IBM Cloud service. To find the cluster name or ID, run `ibmcloud ks cluster ls`.
-- `key` - (Optional, Forces new resource, String) The name of existing service credentials that you want to use for the service. If you do not provide this option, service credentials are automatically created as part of the service binding process.
+- `key` - (Optional, Forces new resource, String) The name or guid of existing service credentials that you want to use for the service. If you do not provide this option, service credentials are automatically created as part of the service binding process.
 - `namespace_id` - (Required, Forces new resource, String) The Kubernetes namespace where you want to create the Kubernetes secret that holds the service credentials of the service that you want to bind to the cluster.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where your IBM Cloud service is provisioned into. To list resource groups, run `ibmcloud resource groups`.
 - `role` - (Optional, Forces new resource, String) The IAM service access role that you want to use to create the service credentials for the IBM Cloud service instance. If you specified existing service credentials in the `key` parameter, settings for the `role` parameter are ignored.

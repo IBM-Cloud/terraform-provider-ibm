@@ -10,32 +10,42 @@ description: |-
 
 Retrieve information of an network ACL rule data source. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "vpctest"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.testacc_vpc.id
-}  
-
-resource "ibm_is_network_acl_rule" "isExampleACLRule1" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "test-nacl-rule"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "outbound"
+resource "ibm_is_network_acl" "example" {
+  name = "example-network-acl"
+  vpc  = ibm_is_vpc.example.id
 }
 
-data "ibm_is_network_acl_rule" "testacc_dsrule"{
-  network_acl = ibm_is_network_acl.isExampleACL.id
-  name = "test-nacl-rule"
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "example-network-acl-rule"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
 }
 
+data "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "example-network-acl-rule"
+}
 ```
 
 ## Argument reference

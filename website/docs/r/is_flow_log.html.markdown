@@ -10,52 +10,63 @@ description: |-
 # ibm_is_flow_log
 Create, update, delete and suspend the flow log resource. For more information, about VPC flow log, see [creating a flow log collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 
 ## Example usage
 
 ```terraform
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
-  profile = "b-2x8"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
+  profile = "bc1-2x8"
 
   primary_network_interface {
     port_speed = "1000"
-    subnet     = "70be8eae-134c-436e-a86e-04849f84cb34"
+    subnet     = ibm_is_subnet.example.id
   }
 
-  vpc  = "01eda778-b822-43a2-816d-d30713df5e13"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = ["eac87f33-0c00-4da7-aa66-dc2d972148bd"]
+  keys = [ibm_is_ssh_key.example.id]
 }
 
 
-data "ibm_resource_group" "instance_group" {
-  name = var.resource_group
+resource "ibm_resource_group" "example" {
+  name = "example-resource-group"
 }
 
-resource "ibm_resource_instance" "instance1" {
-  name              = "cos-instance"
-  resource_group_id = data.ibm_resource_group.instance_group.id
+resource "ibm_resource_instance" "example" {
+  name              = "example-cos-instance"
+  resource_group_id = ibm_resource_group.example.id
   service           = "cloud-object-storage"
   plan              = "standard"
   location          = "global"
 }
 
-resource "ibm_cos_bucket" "bucket1" {
-   bucket_name          = "us-south-bucket-vpc1"
-   resource_instance_id = ibm_resource_instance.instance1.id
-   region_location = var.region
-   storage_class = "standard"
+resource "ibm_cos_bucket" "example" {
+  bucket_name          = "us-south-bucket-vpc1"
+  resource_instance_id = ibm_resource_instance.example.id
+  region_location      = var.region
+  storage_class        = "standard"
 }
 
-resource ibm_is_flow_log test_flowlog {
-  depends_on = [ibm_cos_bucket.bucket1]
-  name = "test-instance-flow-log"
-  target = ibm_is_instance.testacc_instance.id
-  active = true
-  storage_bucket = ibm_cos_bucket.bucket1.bucket_name
+resource "ibm_is_flow_log" "example" {
+  depends_on     = [ibm_cos_bucket.example]
+  name           = "example-instance-flow-log"
+  target         = ibm_is_instance.example.id
+  active         = true
+  storage_bucket = ibm_cos_bucket.example.bucket_name
 }
 
 ```

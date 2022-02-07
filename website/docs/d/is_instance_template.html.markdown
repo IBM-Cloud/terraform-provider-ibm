@@ -9,28 +9,37 @@ description: |-
 # ibm_is_instance_template
 Retrieve information of an existing IBM VPC instance template. For more information, about VPC instance templates, see [creating an instance template](https://cloud.ibm.com/docs/vpc?topic=vpc-create-instance-template).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 In the following example, you can get information of an instance template of VPC Generation-2 infrastructure by either name or identifier.
 
 ```terraform	
-data "ibm_is_instance_template" "instancetemplate" {
-	name = "test-instance-template"	   
+data "ibm_is_instance_template" "example" {
+  name = "example-instance-template"
 }
-
 ```
 
 ```terraform	
-data "ibm_is_instance_template" "instancetemplate" {
-	identifier = "xxxxx-xxxxx-xxxxxx-xxxxx"	   
+data "ibm_is_instance_template" "example" {
+  identifier = ibm_is_instance_template.example.id
 }
-
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The id of the instance template.
-- `name` - (Optional, String) The name of the instance template.
+- `identifier` - (Optional, String) The id of the instance template, `name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the instance template, `name` and `identifier` are mutually exclusive.
 
 
 

@@ -39,7 +39,7 @@ resource "ibm_resource_instance" "metrics_monitor" {
   name              = "metrics_monitor"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "sysdig-monitor"
-  plan              = "graduated-tier "
+  plan              = "graduated-tier"
   location          = "us-south"
   parameters        = {
     default_receiver = true
@@ -53,11 +53,11 @@ resource "ibm_cos_bucket" "standard-ams03" {
   storage_class        = "standard"
 }
 
-resource "ibm_cos_bucket" "flex-us-south" {
-  bucket_name          = "a-flex-bucket-at-us-south"
+resource "ibm_cos_bucket" "smart-us-south" {
+  bucket_name          = "a-smart-bucket-at-us-south"
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
 }
 
 resource "ibm_cos_bucket" "cold-ap" {
@@ -85,11 +85,11 @@ resource "ibm_cos_bucket" "standard-ams03-firewall" {
   allowed_ip = ["223.196.168.27", "223.196.161.38", "192.168.0.1"]
 }
 
-resource "ibm_cos_bucket" "flex-us-south-firewall" {
-  bucket_name           = "a-flex-bucket-at-us-south"
+resource "ibm_cos_bucket" "smart-us-south-firewall" {
+  bucket_name           = "a-smart-bucket-at-us-south"
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = "sjc04"
-  storage_class         = "flex"
+  storage_class         = "smart"
   activity_tracking {
     read_data_events     = true
     write_data_events    = true
@@ -346,7 +346,7 @@ Review the argument references that you can specify for your resource.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
-- `storage_class` - (Required, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).
+- `storage_class` - (Required, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold` and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -359,6 +359,9 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_instance_id` - (String) The ID of IBM Cloud Object Storage instance. 
 - `single_site_location` - (String) The location if you created a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
+- `s3_endpoint_public` - (String) Public endpoint for cos bucket.
+- `s3_endpoint_private` - (String) Private endpoint for cos bucket.
+- `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.
 
 ## Import
 The `ibm_cos_bucket` resource can be imported by using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.

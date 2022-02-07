@@ -11,7 +11,7 @@ description: |-
 
 Review the [Event Streams](https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-about) resource that you can connect, administer, developed with Event Streams and integrate with the other services. 
 
-## Example Usage
+## Example usage
 
 ```terraform
 data "ibm_resource_instance" "es_instance" {
@@ -25,13 +25,13 @@ data "ibm_event_streams_topic" "es_topic" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 Review the argument parameters that you can specify for your data source. 
 
 - `name` - (Required, string) The name of the topic.
 - `resource_instance_id` - (Required, string) The ID or CRN of the Event Streams service instance.
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your data source is created. 
 

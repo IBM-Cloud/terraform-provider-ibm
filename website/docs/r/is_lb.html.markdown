@@ -10,14 +10,25 @@ description: |-
 # ibm_is_lb
 Create, update, or delete a VPC Load Balancer. For more information, about VPC load balancer, see [load balancers for VPC overview](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-vs-elb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 
 ## Example usage
 An example to create an application load balancer.
 
 ```terraform
-resource "ibm_is_lb" "lb" {
-  name    = "loadbalancer1"
-  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.example.id]
 }
 
 ```
@@ -25,9 +36,9 @@ resource "ibm_is_lb" "lb" {
 An example to create a network load balancer.
 
 ```terraform
-resource "ibm_is_lb" "lb" {
-  name    = "loadbalancer1"
-  subnets = ["04813493-15d6-4150-9948-6cc646cb67f2"]
+resource "ibm_is_lb" "example" {
+  name    = "example-load-balancer"
+  subnets = [ibm_is_subnet.example.id]
   profile = "network-fixed"
 }
 
@@ -48,7 +59,7 @@ Review the argument references that you can specify for your resource.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.
 - `resource_group` - (Optional, Forces new resource, String) The resource group where the load balancer to be created.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
-  **NOTE** Currently, public load balancers are not supported with `route_mode` enabled.
+  ~> **NOTE:** Currently, public load balancers are not supported with `route_mode` enabled.
 - `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
 - `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your load balancer. Tags can help you find the load balancer more easily later.

@@ -9,14 +9,24 @@ description: |-
 # ibm_is_instance_volume_attachment
 Retrieve information of an existing IBM Cloud infrastructure instance volume attachment as a read-only data source. For more information, about VPC virtual server instances, see [Managing virtual server instances](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-virtual-server-instances).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_instance_volume_attachment" "ds_vsi_va" {
-  instance = "xx-x-x-x-xxxxx
-  name = "test-volume"
+data "ibm_is_instance_volume_attachment" "example" {
+  instance = ibm_is_instance.example.id
+  name = "example-instance-volume-attachment"
 }
 
 ```

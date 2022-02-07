@@ -6,15 +6,15 @@ description: |-
   Manages IBM Cloud satellite cluster worker pool.
 ---
 
-# ibm\_satellite\_cluster\_worker\_pool
+# ibm_satellite_cluster_worker_pool
 
- Create or delete a worker pool. The worker pool will be attached to the specified cluster[IBM Cloud Satellite Cluster Worker Pool](https://cloud.ibm.com/docs/satellite?topic=openshift-satellite-clusters#satcluster-worker-pools).
+Create, update, or delete the Satellite cluster worker pool. The worker pool will be attached to the specified cluster[IBM Cloud Satellite Cluster Worker Pool](https://cloud.ibm.com/docs/satellite?topic=satellite-hosts#host-autoassign-ov).
 
-## Example Usage
+## Example usage
 
 ###  Create satellite cluster worker pool
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 	name               = var.worker_pool_name
 	cluster	           = var.cluster
@@ -32,7 +32,7 @@ resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 
 ###  Create satellite cluster worker pool without workers
 
-```hcl
+```terraform
 resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 	name               = var.worker_pool_name
 	cluster	           = data.ibm_satellite_cluster.read_cluster.id
@@ -47,49 +47,54 @@ resource "ibm_satellite_cluster_worker_pool" "create_cluster_wp" {
 
 ## Timeouts
 
-ibm_satellite_cluster_worker_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+The `ibm_satellite_cluster_worker_pool` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-* `create` - (Default 120 minutes) Used for creating Instance.
-* `read`   - (Default 10 minutes) Used for reading Instance.
-* `update` - (Default 120 minutes) Used for updating Instance.
-* `delete` - (Default 90 minutes) Used for deleting Instance.
+- `create` - (Default 120 minutes) Used for creating Instance.
+- `read`   - (Default 10 minutes) Used for reading Instance.
+- `update` - (Default 120 minutes) Used for updating Instance.
+- `delete` - (Default 90 minutes) Used for deleting Instance.
 
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your resource. 
 
-* `name` - (Required, Forces new resource, string) The name of the worker pool.
-* `cluster` - (Required, Forces new resource, string) The name or id of the cluster.
-* `worker_count` - (Optional, Int) The number of worker nodes per zone in the worker pool.
-* `flavor` - (Optional, string) The flavor defines the amount of virtual CPU, memory, and disk space that is set up in each worker node.
-* `isolation` - (Optional, string) Isolation for the worker node.
-* `disk_encryption` - (Optional, string) Disk encryption for worker node.
-* `zones` - (Required, set) A nested block describing the zones of this worker_pool. Nested zones blocks have the following structure:
-  * `id` - (Required, string) Name of the zone.
-* `host_labels` - (Optional, array of strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.
-* `worker_pool_labels` - Labels on all the workers in the worker pool.
-* `resource_group_id` - (Optional, Forces new resource, string) The ID of the resource group.  You can retrieve the value from data source 
-* `entitlement` - (Optional, string) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
+- `name` - (Required, Forces new resource, String) The name of the worker pool.
+- `cluster` - (Required, Forces new resource, String) The name or id of the cluster.
+- `worker_count` - (Optional, Integer) The number of worker nodes per zone in the worker pool.
+- `flavor` - (Optional, String) The flavor defines the amount of virtual CPU, memory, and disk space that is set up in each worker node.
+- `isolation` - (Optional, String) Isolation for the worker node.
+- `disk_encryption` - (Optional, String) Disk encryption for worker node.
+- `zones` - (Required, List) A nested block describing the zones of this worker_pool. 
 
- 
-## Attribute Reference
+  Nested scheme for `zones`:
+  - `id` - (Required, String) The name of the zone.
+- `host_labels` - (Optional, Array of Strings) Key-value pairs to label the host, such as cpu=4 to describe the host capabilities.
+- `worker_pool_labels` - Labels on all the workers in the worker pool.
+- `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group.  You can retrieve the value from data source 
+- `entitlement` - (Optional, String) The openshift cluster entitlement avoids the OCP licence charges incurred. Use cloud paks with OCP Licence entitlement to add the Openshift cluster worker pool.
 
-In addition to all arguments above, the following attributes are exported:
+## Attribute reference
 
-* `id` - The unique identifier of the worker pool resource. The id is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-**NOTE:**
+- `id` - The unique identifier of the worker pool resource. The `id` is composed of \<cluster_name_id\>/\<worker_pool_id\>.<br/>
+
+**Note**
 
 Host assignment to workerpool:
 
-*  When you attach a host to a Satellite location, the host automatically assigned to worker pools in satellite resources.
+-  When you attach a host to a Satellite location, the host automatically assigned to worker pools in satellite resources.
    Auto-assignment works based on matching host labels (https://cloud.ibm.com/docs/satellite?topic=satellite-hosts#host-autoassign-ov).
-*  For manual assignment, Use `ibm_satellite_host` resource to assign the host to workerpools.
+-  For manual assignment, Use `ibm_satellite_host` resource to assign the host to workerpools.
 
 ## Import
 
-`ibm_satellite_cluster_worker_pool` can be imported using cluster_name_id & worker_pool_id eg
+The `ibm_satellite_cluster_worker_pool` can be imported by using `cluster_name_id` and `worker_pool_id`.
+
+**Example**
 
 ```
 $ terraform import ibm_satellite_cluster_worker_pool.example mycluster/5c4f4d06e0dc402084922dea70850e3b-7cafe35
+
+```

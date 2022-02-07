@@ -10,15 +10,15 @@ description: |-
 
 Provides a read-only data source for scc_account_locations. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-## Example Usage
+## Example usage
 
-```hcl
+```terraform
 data "ibm_scc_account_locations" "scc_account_locations" {
 }
 ```
 
 
-## Attribute Reference
+## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 

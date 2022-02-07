@@ -27,7 +27,7 @@ resource "ibm_dns_permitted_network" "test-pdns-permitted-network-nw" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `instance_id` - (Required, String) The ID of the IBM Cloud DNS service instance where you want to add a permitted network.
+- `instance_id` - (Required, String) The GUID of the IBM Cloud DNS service instance where you want to add a permitted network.
 - `type` - (Required, String) The type of permitted network that you want to add. Supported values are `vpc`.
 - `vpc_crn` - (Required, String) The CRN of the VPC that you want to add as a permitted network.
 - `zone_id` - (Required, String) The ID of the private DNS zone where you want to add the permitted network.

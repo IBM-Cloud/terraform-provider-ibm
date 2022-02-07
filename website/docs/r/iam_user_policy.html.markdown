@@ -29,10 +29,11 @@ resource "ibm_iam_user_policy" "policy" {
 ```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
-  roles  = ["Viewer"]
+  roles  = ["Viewer", "Manager"]
 
   resources {
-    service = "kms"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
 

@@ -10,14 +10,24 @@ description: |-
 # ibm_is_security_group_target
 Retrieve information of an existing security group target as a read only data source. For more information, about security group target, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 In the following example, you can create a security group target:
 
 ```terraform
-data "ibm_is_security_group_target" "testacc_security_group_target" {
-    security_group = "r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198"
-    name = "securitygrouptargetname"
+data "ibm_is_security_group_target" "example" {
+  security_group = ibm_is_security_group.example.id
+  name           = "example-security-group-target"
 }
 ```
 

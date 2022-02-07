@@ -9,11 +9,22 @@ description: |-
 # ibm_is_zone
 Retrieve information of an existing IBM Cloud zone in a particular region as a read-only data source. For more information, about IBM Cloud zone, see [creating a VPC in a different region](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-in-a-different-region).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
 
-data "ibm_is_zone" "ds_zone" {
+data "ibm_is_zone" "example" {
   name   = "us-south-1"
   region = "us-south"
 }

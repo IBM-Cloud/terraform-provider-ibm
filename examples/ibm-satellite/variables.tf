@@ -9,7 +9,7 @@ variable "ibmcloud_api_key" {
 
 variable "ibm_region" {
   description = "Region of the IBM Cloud account. Currently supported regions for satellite are us-east and eu-gb region."
-  default     = "us-east"
+  default = "us-east"
 }
 
 variable "resource_group" {
@@ -21,6 +21,7 @@ variable "resource_group" {
 ##################################################
 variable "location" {
   description = "Location Name"
+  default = "satelllite-ibm"
 }
 
 variable "managed_from" {
@@ -81,7 +82,7 @@ variable "addl_host_count" {
 variable "is_prefix" {
   description = "Prefix to the Names of the VPC Infrastructure resources"
   type        = string
-  default     = "satellite-ibm-eb"
+  default     = "satellite-ibm"
 }
 
 variable "public_key" {
@@ -117,7 +118,7 @@ variable "default_wp_labels" {
 variable "kube_version" {
   description = "Satellite Kube Version"
   type        = string
-  default     = "4.6_openshift"
+  default     = "4.7_openshift"
 }
 
 variable "worker_pool_name" {
@@ -145,6 +146,12 @@ variable "cluster_tags" {
   description = "List of tags associated with this resource."
   type        = list(string)
   default     = ["env:cluster"]
+}
+
+variable "zone_name" {
+  description = "zone name"
+  type        = string
+  default     = "test_zone"
 }
 
 ##################################################

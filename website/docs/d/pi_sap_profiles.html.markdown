@@ -42,7 +42,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `profiles` - (String) List of all the SAP Profiles.
+- `profiles` - (List) List of all the SAP Profiles.
 
   Nested scheme for `profiles`:
   - `certified` - (Boolean) Has certification been performed on profile.

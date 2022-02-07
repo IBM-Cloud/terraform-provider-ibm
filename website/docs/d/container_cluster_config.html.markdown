@@ -82,8 +82,8 @@ resource "kubernetes_namespace" "example" {
   }
 }
 ```
-## Example usage5
-Example Usage for connecting to Kubernetes provider for classic OpenShift cluster with host and token.
+## Example usage
+Example usage for connecting to Kubernetes provider for classic OpenShift cluster with host and token.
 
 ```terraform
 data "ibm_container_cluster_config" "cluster_foo" {

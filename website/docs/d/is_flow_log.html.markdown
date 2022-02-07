@@ -4,19 +4,28 @@ layout: "ibm"
 page_title: "IBM : ibm_is_flow_log"
 description: |-
   Get information about Flow Log Collector
-subcategory: "Virtual Private Cloud API"
 ---
 
 # ibm_is_flow_log
+Retrieve an information of VPC flow log. For more information, about VPC flow log, see [about IBM Cloud flow logs for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-flow-logs).
 
-Retrieve information about an existing flow log collector. For more information, about Network ACLs, see [Creating a flow log collector](https://cloud.ibm.com/docs/vpc?topic=vpc-ordering-flow-log-collector).
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_flow_log" "is_flow_log" {
-	identifier = ibm_is_flow_log.test_flow_log.id
+data "ibm_is_flow_log" "example" {
+	identifier = ibm_is_flow_log.example.id
 }
 ```
 
@@ -26,6 +35,8 @@ Review the argument reference that you can specify for your data source.
 
 - `identifier` - (Optional, String) The ID of the subnet, This is required when `name` is not specified.
 - `name` - (Optional, String) The name of the subnet,  This is required when `identifier` is not specified.
+- `identifier` - (Optional, String) The ID of the subnet, This is required when name is not specified.
+- `name` - (Optional, String) The name of the subnet,  This is required when identifier is not specified.
 
 ## Attribute reference
 

@@ -9,11 +9,22 @@ description: |-
 # ibm_is_virtual_endpoint_gateway_ips
 Retrieve information of an existing IBM Cloud infrastructure virtual endpoint gateway IPs as a read only data source.  For more information, about the VPC endpoint gateways, see [about VPC gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateway_ips" "data_test1" {
-  gateway = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
+data "ibm_is_virtual_endpoint_gateway_ips" "example" {
+  gateway = ibm_is_virtual_endpoint_gateway.example.id
 }
 ```
 

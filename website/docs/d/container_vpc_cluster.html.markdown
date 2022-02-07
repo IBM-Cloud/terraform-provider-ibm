@@ -46,6 +46,7 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN of the cluster.
 - `health` - (String) The health of the cluster master.
 - `id` - (String) The unique identifier of the cluster.
+- `image_security_enforcement` - (Bool) Indicates if image security enforcement policies are enabled in a cluster.
 - `ingress_hostname`-  (String) The hostname that was assigned to your Ingress subdomain. 
 - `ingress_secret` - (String) The name of the Kubernetes secret that was created for your Ingress subdomain.
 - `kube_version` - (String) The Kubernetes version of the cluster, including the major.minor version.

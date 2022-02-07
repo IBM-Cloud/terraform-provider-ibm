@@ -8,7 +8,7 @@ description: |-
 
 # ibm_app_config_environment
 
-Create, update, or delete an environment by using IBM Cloud™ App Configuration. For more information, about App Configuration, see [getting started with App Configuration](https://cloud.ibm.com/docs/app-configuration?topic=app-configuration-getting-started).
+Create, update, or delete an environment by using IBM Cloud™ App Configuration. For more information, about App Configuration, see [Getting started with App Configuration](https://cloud.ibm.com/docs/app-configuration?topic=app-configuration-getting-started).
 
 ## Example usage
 

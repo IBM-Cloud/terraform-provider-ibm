@@ -9,13 +9,24 @@ description: |-
 # ibm_is_instance_group_membership
 Create, update, or delete a instance group memership of an instance group. For more information, about instance group membership, see [bulk provisioning instances with instance groups](https://cloud.ibm.com/docs/vpc?topic=vpc-bulk-provisioning).
 
-## Example Usage
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
 
 ```terraform
-resource "is_instance_group_membership" "is_instance_group_membership" {
-  instance_group            = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
-  instance_group_membership = "eff45fa0-de38-4368-8a0d-28dc88c2ef9b"
-  name                      = "membershipname"
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
+
+```terraform
+resource "is_instance_group_membership" "example" {
+  instance_group            = ibm_is_instance_group.example.id
+  instance_group_membership = data.ibm_is_instance_group_memberships.example.memberships.0.instance_group_membership
+  name                      = "example-ig-membership"
 }
 ```
 

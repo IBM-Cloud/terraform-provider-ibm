@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_cbr_rule"
 description: |-
-Get information about cbr_rule
+  Get information about cbr_rule
 subcategory: "Context Based Restrictions"
 ---
 

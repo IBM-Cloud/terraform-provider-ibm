@@ -3,7 +3,7 @@ data "ibm_resource_group" "resource_group" {
 }
 
 data "ibm_is_image" "rhel7" {
-  name = "ibm-redhat-7-9-minimal-amd64-3"
+  name = "ibm-redhat-7-9-minimal-amd64-4"
 }
 
 resource "ibm_is_vpc" "vpc" {

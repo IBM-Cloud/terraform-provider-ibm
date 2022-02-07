@@ -43,7 +43,7 @@ Review the argument references that you can specify for your data source.
 - `bucket_type` - (Required, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
 - `endpoint_type` - (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for the buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
-- `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, `smart`.
+- `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
@@ -110,3 +110,6 @@ In addition to all argument reference list, you can access the following attribu
   - `permanent` - (String) Specifies a permanent retention status either enable or disable for a bucket.
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
+- `s3_endpoint_public` - (String) Public endpoint for cos bucket.
+- `s3_endpoint_private` - (String) Private endpoint for cos bucket.
+- `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.

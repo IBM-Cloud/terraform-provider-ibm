@@ -30,11 +30,11 @@ resource "ibm_kp_key" "test" {
   key_name     = "key-name"
   standard_key = false
 }
-resource "ibm_cos_bucket" "flex-us-south" {
+resource "ibm_cos_bucket" "smart-us-south" {
   bucket_name          = "atest-bucket"
   resource_instance_id = "cos-instance-id"
   region_location      = "us-south"
-  storage_class        = "flex"
+  storage_class        = "smart"
   key_protect          = ibm_kp_key.test.id
 }
 ```

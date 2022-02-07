@@ -9,12 +9,23 @@ description: |-
 # ibm_is_instance_group_membership
 Retrieve information of an instance group memership. For more information, about instance group membership, see [bulk provisioning instances with instance groups](https://cloud.ibm.com/docs/vpc?topic=vpc-bulk-provisioning).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "is_instance_group_membership" "is_instance_group_membership" {
-  instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
-  name           = "membershipname"
+data "is_instance_group_membership" "example" {
+  instance_group = ibm_is_instance_group.example.id
+  name           = "example-ig-membership"
 }
 ```
 
