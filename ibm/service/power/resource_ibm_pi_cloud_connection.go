@@ -71,6 +71,7 @@ func ResourceIBMPICloudConnection() *schema.Resource {
 			helpers.PICloudConnectionNetworks: {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Set of Networks to attach to this cloud connection",
 			},
