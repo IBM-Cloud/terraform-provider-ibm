@@ -228,7 +228,6 @@ func ResourceIBMISInstance() *schema.Resource {
 			isPlacementTargetDedicatedHost: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{isPlacementTargetDedicatedHostGroup, isPlacementTargetPlacementGroup},
 				Description:   "Unique Identifier of the Dedicated Host where the instance will be placed",
 			},
@@ -236,7 +235,6 @@ func ResourceIBMISInstance() *schema.Resource {
 			isPlacementTargetDedicatedHostGroup: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{isPlacementTargetDedicatedHost, isPlacementTargetPlacementGroup},
 				Description:   "Unique Identifier of the Dedicated Host Group where the instance will be placed",
 			},
@@ -2474,6 +2472,78 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(isPlacementTargetDedicatedHost) || d.HasChange(isPlacementTargetDedicatedHostGroup) && !d.IsNewResource() {
+		dedicatedHost := d.Get(isPlacementTargetDedicatedHost).(string)
+		dedicatedHostGroup := d.Get(isPlacementTargetDedicatedHostGroup).(string)
+		actiontype := "stop"
+
+		if dedicatedHost == "" && dedicatedHostGroup == "" {
+			return fmt.Errorf("[ERROR] Error: Instances cannot be moved from private to public hosts")
+		}
+
+		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+			InstanceID: &id,
+			Type:       &actiontype,
+		}
+		_, response, err := instanceC.CreateInstanceAction(createinsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+		if err != nil {
+			return err
+		}
+
+		updateOptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+
+		instancePatchModel := &vpcv1.InstancePatch{}
+
+		if dedicatedHost != "" {
+			placementTarget := &vpcv1.InstancePlacementTargetPatch{
+				ID: &dedicatedHost,
+			}
+			instancePatchModel.PlacementTarget = placementTarget
+		} else if dedicatedHostGroup != "" {
+			placementTarget := &vpcv1.InstancePlacementTargetPatch{
+				ID: &dedicatedHostGroup,
+			}
+			instancePatchModel.PlacementTarget = placementTarget
+		}
+
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch with total volume bandwidth for InstancePatch: %s", err)
+		}
+
+		updateOptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updateOptions)
+		if err != nil {
+			return err
+		}
+
+		actiontype = "start"
+		createinsactoptions = &vpcv1.CreateInstanceActionOptions{
+			InstanceID: &id,
+			Type:       &actiontype,
+		}
+		_, response, err = instanceC.CreateInstanceAction(createinsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("[ERROR] Error Creating Instance Action: %s\n%s", err, response)
+		}
+		_, err = isWaitForInstanceActionStart(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
 		if err != nil {
 			return err
 		}
