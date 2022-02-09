@@ -54,7 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `route_id` - (String) The unique ID for the route.
 	- `lifecycle_state` - (String) The lifecycle state of the route.
 	- `href` - (String) The routing table URL.
-- `created_at` - (Timestamp)  The date and time that the route was created.
+	- `created_at` - (Timestamp)  The date and time that the route was created.
 	- `action` - (String) The action to perform with a packet matching the route.
 	- `destination` - (String) The destination of the route.
 	- `next_hop` - (String) The next hop address of the route.
