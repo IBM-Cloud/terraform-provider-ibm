@@ -28,8 +28,8 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `id` - (String) The Webhook ID. It is a combination of <`webhook_id`>,<`cis_id`> attributes concatenated with ":"
-- `cis_webhoks_list` - (List)
-   - `name` - (String) The expression of webhook.
+- `cis_webhooks` - (List)
+   - `name` - (String) The name of webhook.
    - `url` - (Boolean). Whether this webhook is currently disabled.
    - `type` - (String) The information about this webhook to help identify the purpose of it.
    - `webhook_id` - (String) The Webhook ID.

@@ -268,7 +268,7 @@ type ClientSession interface {
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
-	CisWebhooksSession() (*ciswebhooksv1.WebhooksV1, error)
+	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
@@ -992,7 +992,7 @@ func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.Kube
 }
 
 // CIS Webhooks
-func (sess clientSession) CisWebhooksSession() (*ciswebhooksv1.WebhooksV1, error) {
+func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
 		return sess.cisWebhooksClient, sess.cisWebhooksErr
 	}
@@ -1137,6 +1137,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamIdentityErr = errEmptyBluemixCredentials
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
+		session.cisWebhooksErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
@@ -1952,6 +1953,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRangeAppErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWebhooksErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cisURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CIS_API_ENDPOINT", c.Region, cisURL)

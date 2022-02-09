@@ -16,26 +16,21 @@ func TestAccIBMCisWebhookskDataSource_basic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMCisWebhooksDataSourceConfig(),
+				Config: testAccCheckIBMCisWebhooksDataSourceConfig("test", acc.CisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(node, "cis_webhooks_list.0.name"),
-					resource.TestCheckResourceAttrSet(node, "cis_webhooks_list.0.url"),
-					resource.TestCheckResourceAttrSet(node, "cis_webhooks_list.0.type"),
+					resource.TestCheckResourceAttrSet(node, "cis_webhooks.0.name"),
+					resource.TestCheckResourceAttrSet(node, "cis_webhooks.0.url"),
+					resource.TestCheckResourceAttrSet(node, "cis_webhooks.0.type"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMCisWebhooksDataSourceConfig() string {
-	return fmt.Sprintf(`
-	resource "ibm_cis_webhook"  "test" {
-		cis_id 		= "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
-		name 		= "test-Webhooks"
-		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-		secret		=  "ZaHkdsdsadsdfsdfdsfsdffdsfsdfanchfnR4TISjOPC_I1U"
+func testAccCheckIBMCisWebhooksDataSourceConfig(id, CisDomainStatic string) string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	data "ibm_cis_webhooks" "%[1]s" {
+		cis_id          = data.ibm_cis.cis.id
 	  }
-	data "ibm_cis_webhooks" "test" {
-		cis_id = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
-	  }`)
+`, id, acc.CisDomainStatic)
 }

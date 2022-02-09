@@ -12,39 +12,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const cisWebhooksList = "cis_webhooks_list"
+const cisWebhookList = "cis_webhooks"
 
 func DataSourceIBMCISWebhooks() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISWebhooksRead,
+		Read: dataIBMCISWebhookRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
 			},
-			cisWebhooksList: {
+			cisWebhookList: {
 				Type:        schema.TypeList,
 				Description: "Collection of Webhook details",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						cisWebhooksID: {
+						cisWebhookID: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Webhook ID",
 						},
-						cisWebhooksName: {
+						cisWebhookName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Webhook Name",
 						},
-						cisWebhooksURL: {
+						cisWebhookURL: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Webhook URL",
 						},
-						cisWebhooksType: {
+						cisWebhookType: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Webhook Type",
@@ -55,10 +55,10 @@ func DataSourceIBMCISWebhooks() *schema.Resource {
 		},
 	}
 }
-func dataIBMCISWebhooksRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := meta.(conns.ClientSession).CisWebhooksSession()
+func dataIBMCISWebhookRead(d *schema.ResourceData, meta interface{}) error {
+	sess, err := meta.(conns.ClientSession).CisWebhookSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisWebhooksSession %s", err)
+		return fmt.Errorf("[ERROR] Error while getting the cisWebhookession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
@@ -73,18 +73,18 @@ func dataIBMCISWebhooksRead(d *schema.ResourceData, meta interface{}) error {
 
 	for _, instance := range result.Result {
 		webhook := map[string]interface{}{}
-		webhook[cisWebhooksID] = *instance.ID
-		webhook[cisWebhooksName] = *instance.Name
-		webhook[cisWebhooksURL] = *instance.URL
-		webhook[cisWebhooksType] = *instance.Type
+		webhook[cisWebhookID] = *instance.ID
+		webhook[cisWebhookName] = *instance.Name
+		webhook[cisWebhookURL] = *instance.URL
+		webhook[cisWebhookType] = *instance.Type
 		webhooks = append(webhooks, webhook)
 	}
-	d.SetId(dataSourceCISWebhooksCheckID(d))
+	d.SetId(dataSourcecisWebhookCheckID(d))
 	d.Set(cisID, crn)
-	d.Set(cisWebhooksList, webhooks)
+	d.Set(cisWebhookList, webhooks)
 	return nil
 }
 
-func dataSourceCISWebhooksCheckID(d *schema.ResourceData) string {
+func dataSourcecisWebhookCheckID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
