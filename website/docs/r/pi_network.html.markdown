@@ -44,6 +44,7 @@ resource "ibm_pi_network" "power_networks" {
 The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating a network.
+- **update** - (Default 60 minutes) Used for updating a network.
 - **delete** - (Default 60 minutes) Used for deleting a network.
 
 ## Argument reference 
