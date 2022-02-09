@@ -37,7 +37,7 @@ Review the argument reference that you can specify for your resource.
 - `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
 - `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
 - `speed_mbps`- (Required, Integer) The gateway speed in megabits per second. For example, `10.254.30.78/30`.
-- `vlan` - (Integer) VLAN requested for this gateway.
+- `vlan` - (Optional, Integer) VLAN requested for this gateway.
 
 
 ## Attribute reference

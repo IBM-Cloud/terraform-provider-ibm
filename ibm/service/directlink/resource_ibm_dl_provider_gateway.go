@@ -111,6 +111,7 @@ func ResourceIBMDLProviderGateway() *schema.Resource {
 			dlVlan: {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "VLAN allocated for this gateway",
 			},
 			dlCrn: {
