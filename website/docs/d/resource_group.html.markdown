@@ -39,7 +39,6 @@ In addition to all argument reference list, you can access the following attribu
 - `account_id` - (String) Account ID.  
 - `crn` - (String) The full CRN associated with the resource group.
 - `created_at` - (Timestamp) The date when the resource group initially created.
-- `default` - (Bool) Specifies whether its default resource group or not.
 - `id` - (String) The unique identifier of the new resource group.
 - `payment_methods_url` - (String) The URL to access the payment methods details that is associated with the resource group.
 - `quota_url` - (String) The URL to access the quota details that is associated with the resource group.
