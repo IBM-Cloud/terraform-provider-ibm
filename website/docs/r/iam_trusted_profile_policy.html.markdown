@@ -164,7 +164,26 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
   }
 }
 ```
+### Trusted Profile Policy by using resource_attributes (serviceName,serviceInstance)
+```terraform
+resource "ibm_iam_trusted_profile" "profile_id" {
+  name = "test"
+}
+resource "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile.profile_id.id
+  roles      = ["Viewer"]
 
+  resource_attributes {
+    name  = "serviceName"
+    value = "databases-for-redis"
+  }
+
+  resource_attributes {
+    name  = "serviceInstance"
+    value = var.redis_guid
+  }
+}
+```
 ### Trusted Profile Policy using service_type with region
 
 ```terraform
