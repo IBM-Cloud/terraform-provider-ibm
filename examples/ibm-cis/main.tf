@@ -335,7 +335,7 @@ resource "ibm_cis_webhook" "test" {
     cis_id = data.ibm_cis.cis.id
     name    = "test-Webhooks"
     url     = "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-    secret = "Zdsfs3e23k223sfsdffdsfsdfanchfnR4TISjOPC_I1U"
+    secret = "bf67-6752fae1eb"
 }
 
 # CIS Webhooks data source

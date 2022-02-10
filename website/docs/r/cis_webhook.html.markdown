@@ -18,7 +18,7 @@ resource "ibm_cis_webhook" "test" {
     cis_id  = data.ibm_cis.cis.id
     name = "My Slack Alert Webhook",
     url ="https://hooks.slack.com/services/Ds3fdBFbV/456464Gdd",
-    secret = "Zdsfs3e23k223sfsdffdsfsdfanchfnR4TISjOPC_I1U"
+    secret = "bf67-6752fae1eb"
 }
 
 ```
