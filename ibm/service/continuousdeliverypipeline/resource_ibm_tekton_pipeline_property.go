@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
 )
 
@@ -34,93 +33,34 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "pipeline_id"),
 				Description:  "The tekton pipeline ID.",
 			},
-			"create_tekton_pipeline_properties_request": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Property name.",
-						},
-						"value": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "String format property value.",
-						},
-						"options": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "Options for SINGLE_SELECT property type.",
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Property type.",
-						},
-						"path": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "property path for INTEGRATION type properties.",
-						},
-						"env_properties": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Pipeline properties list.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Property name.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "String format property value.",
-									},
-									"options": &schema.Schema{
-										Type:        schema.TypeMap,
-										Optional:    true,
-										Description: "Options for SINGLE_SELECT property type.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Property type.",
-									},
-									"path": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "property path for INTEGRATION type properties.",
-									},
-								},
-							},
-						},
-					},
-				},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "name"),
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "String format property value.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "value"),
+				Description:  "String format property value.",
 			},
 			"options": &schema.Schema{
 				Type:        schema.TypeMap,
-				Computed:    true,
+				Optional:    true,
 				Description: "Options for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Property type.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "type"),
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "property path for INTEGRATION type properties.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "path"),
+				Description:  "property path for INTEGRATION type properties.",
 			},
 		},
 	}
@@ -138,6 +78,40 @@ func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
 			MinValueLength:             36,
 			MaxValueLength:             36,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,234}$`,
+			MinValueLength:             1,
+			MaxValueLength:             253,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "value",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `.`,
+			MinValueLength:             1,
+			MaxValueLength:             4096,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "INTEGRATION, SECURE, SINGLE_SELECT, TEXT",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "path",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `.`,
+			MinValueLength:             1,
+			MaxValueLength:             4096,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_tekton_pipeline_property", Schema: validateSchema}
@@ -153,15 +127,23 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 	createTektonPipelinePropertiesOptions := &continuousdeliverypipelinev2.CreateTektonPipelinePropertiesOptions{}
 
 	createTektonPipelinePropertiesOptions.SetPipelineID(d.Get("pipeline_id").(string))
-	if _, ok := d.GetOk("create_tekton_pipeline_properties_request"); ok {
-		createTektonPipelinePropertiesRequest, err := ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest(d.Get("create_tekton_pipeline_properties_request.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createTektonPipelinePropertiesOptions.SetCreateTektonPipelinePropertiesRequest(createTektonPipelinePropertiesRequest)
+	if _, ok := d.GetOk("name"); ok {
+		createTektonPipelinePropertiesOptions.SetName(d.Get("name").(string))
+	}
+	if _, ok := d.GetOk("value"); ok {
+		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
+	}
+	if _, ok := d.GetOk("options"); ok {
+
+	}
+	if _, ok := d.GetOk("type"); ok {
+		createTektonPipelinePropertiesOptions.SetType(d.Get("type").(string))
+	}
+	if _, ok := d.GetOk("path"); ok {
+		createTektonPipelinePropertiesOptions.SetPath(d.Get("path").(string))
 	}
 
-	envProperties, response, err := continuousDeliveryPipelineClient.CreateTektonPipelinePropertiesWithContext(context, createTektonPipelinePropertiesOptions)
+	property, response, err := continuousDeliveryPipelineClient.CreateTektonPipelinePropertiesWithContext(context, createTektonPipelinePropertiesOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateTektonPipelinePropertiesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateTektonPipelinePropertiesWithContext failed %s\n%s", err, response))
@@ -201,7 +183,9 @@ func ResourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.Re
 	if err = d.Set("pipeline_id", getTektonPipelinePropertyOptions.PipelineID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
-	// TODO: handle argument of type CreateTektonPipelinePropertiesRequest
+	if err = d.Set("name", property.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
@@ -240,12 +224,23 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
-	if d.HasChange("create_tekton_pipeline_properties_request") {
-		createTektonPipelinePropertiesRequest, err := ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest(d.Get("create_tekton_pipeline_properties_request.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		replaceTektonPipelinePropertyOptions.SetCreateTektonPipelinePropertiesRequest(createTektonPipelinePropertiesRequest)
+	if d.HasChange("name") {
+		replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+	if d.HasChange("value") {
+		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+		hasChange = true
+	}
+	if d.HasChange("options") {
+		hasChange = true
+	}
+	if d.HasChange("type") {
+		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
+		hasChange = true
+	}
+	if d.HasChange("path") {
+		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 		hasChange = true
 	}
 
@@ -285,167 +280,4 @@ func ResourceIBMTektonPipelinePropertyDelete(context context.Context, d *schema.
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest(modelMap map[string]interface{}) (continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestIntf, error) {
-	model := &continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequest{}
-	if modelMap["name"] != nil {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["value"] != nil {
-		model.Value = core.StringPtr(modelMap["value"].(string))
-	}
-	if modelMap["options"] != nil {
-
-	}
-	if modelMap["type"] != nil {
-		model.Type = core.StringPtr(modelMap["type"].(string))
-	}
-	if modelMap["path"] != nil {
-		model.Path = core.StringPtr(modelMap["path"].(string))
-	}
-	if modelMap["env_properties"] != nil {
-		envProperties := []continuousdeliverypipelinev2.Property{}
-		for _, envPropertiesItem := range modelMap["env_properties"].([]interface{}) {
-			envPropertiesItemModel, err := ResourceIBMTektonPipelinePropertyMapToProperty(envPropertiesItem.(map[string]interface{}))
-			if err != nil {
-				return model, err
-			}
-			envProperties = append(envProperties, *envPropertiesItemModel)
-		}
-		model.EnvProperties = envProperties
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelinePropertyMapToProperty(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.Property, error) {
-	model := &continuousdeliverypipelinev2.Property{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["value"] != nil {
-		model.Value = core.StringPtr(modelMap["value"].(string))
-	}
-	if modelMap["options"] != nil {
-
-	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	if modelMap["path"] != nil {
-		model.Path = core.StringPtr(modelMap["path"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequestProperty(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestProperty, error) {
-	model := &continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestProperty{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["value"] != nil {
-		model.Value = core.StringPtr(modelMap["value"].(string))
-	}
-	if modelMap["options"] != nil {
-
-	}
-	model.Type = core.StringPtr(modelMap["type"].(string))
-	if modelMap["path"] != nil {
-		model.Path = core.StringPtr(modelMap["path"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequestEnvProperties(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestEnvProperties, error) {
-	model := &continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestEnvProperties{}
-	envProperties := []continuousdeliverypipelinev2.Property{}
-	for _, envPropertiesItem := range modelMap["env_properties"].([]interface{}) {
-		envPropertiesItemModel, err := ResourceIBMTektonPipelinePropertyMapToProperty(envPropertiesItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		envProperties = append(envProperties, *envPropertiesItemModel)
-	}
-	model.EnvProperties = envProperties
-	return model, nil
-}
-
-func ResourceIBMTektonPipelinePropertyCreateTektonPipelinePropertiesRequestToMap(model continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestProperty); ok {
-		return ResourceIBMTektonPipelinePropertyCreateTektonPipelinePropertiesRequestPropertyToMap(model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestProperty))
-	} else if _, ok := model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestEnvProperties); ok {
-		return ResourceIBMTektonPipelinePropertyCreateTektonPipelinePropertiesRequestEnvPropertiesToMap(model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestEnvProperties))
-	} else if _, ok := model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequest); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequest)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Value != nil {
-			modelMap["value"] = model.Value
-		}
-		if model.Options != nil {
-			modelMap["options"] = model.Options
-		}
-		if model.Type != nil {
-			modelMap["type"] = model.Type
-		}
-		if model.Path != nil {
-			modelMap["path"] = model.Path
-		}
-		if model.EnvProperties != nil {
-			envProperties := []map[string]interface{}{}
-			for _, envPropertiesItem := range model.EnvProperties {
-				envPropertiesItemMap, err := ResourceIBMTektonPipelinePropertyPropertyToMap(&envPropertiesItem)
-				if err != nil {
-					return modelMap, err
-				}
-				envProperties = append(envProperties, envPropertiesItemMap)
-			}
-			modelMap["env_properties"] = envProperties
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestIntf subtype encountered")
-	}
-}
-
-func ResourceIBMTektonPipelinePropertyPropertyToMap(model *continuousdeliverypipelinev2.Property) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelinePropertyCreateTektonPipelinePropertiesRequestPropertyToMap(model *continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestProperty) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelinePropertyCreateTektonPipelinePropertiesRequestEnvPropertiesToMap(model *continuousdeliverypipelinev2.CreateTektonPipelinePropertiesRequestEnvProperties) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	envProperties := []map[string]interface{}{}
-	for _, envPropertiesItem := range model.EnvProperties {
-		envPropertiesItemMap, err := ResourceIBMTektonPipelinePropertyPropertyToMap(&envPropertiesItem)
-		if err != nil {
-			return modelMap, err
-		}
-		envProperties = append(envProperties, envPropertiesItemMap)
-	}
-	modelMap["env_properties"] = envProperties
-	return modelMap, nil
 }

@@ -33,6 +33,48 @@ func TestAccIBMTektonPipelinePropertyBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "pipeline_id", pipelineID),
 				),
 			},
+		},
+	})
+}
+
+func TestAccIBMTektonPipelinePropertyAllArgs(t *testing.T) {
+	var conf continuousdeliverypipelinev2.Property
+	pipelineID := fmt.Sprintf("tf_pipeline_id_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	typeVar := "SECURE"
+	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	typeVarUpdate := "SINGLE_SELECT"
+	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMTektonPipelinePropertyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMTektonPipelinePropertyConfig(pipelineID, name, value, typeVar, path),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMTektonPipelinePropertyExists("ibm_tekton_pipeline_property.tekton_pipeline_property", conf),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "pipeline_id", pipelineID),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "name", name),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "value", value),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "type", typeVar),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "path", path),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMTektonPipelinePropertyConfig(pipelineID, nameUpdate, valueUpdate, typeVarUpdate, pathUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "pipeline_id", pipelineID),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "value", valueUpdate),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "type", typeVarUpdate),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_property.tekton_pipeline_property", "path", pathUpdate),
+				),
+			},
 			resource.TestStep{
 				ResourceName:      "ibm_tekton_pipeline_property.tekton_pipeline_property",
 				ImportState:       true,
@@ -49,6 +91,20 @@ func testAccCheckIBMTektonPipelinePropertyConfigBasic(pipelineID string) string 
 			pipeline_id = "%s"
 		}
 	`, pipelineID)
+}
+
+func testAccCheckIBMTektonPipelinePropertyConfig(pipelineID string, name string, value string, typeVar string, path string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_tekton_pipeline_property" "tekton_pipeline_property" {
+			pipeline_id = "%s"
+			name = "%s"
+			value = "%s"
+			options = "FIXME"
+			type = "%s"
+			path = "%s"
+		}
+	`, pipelineID, name, value, typeVar, path)
 }
 
 func testAccCheckIBMTektonPipelinePropertyExists(n string, obj continuousdeliverypipelinev2.Property) resource.TestCheckFunc {
