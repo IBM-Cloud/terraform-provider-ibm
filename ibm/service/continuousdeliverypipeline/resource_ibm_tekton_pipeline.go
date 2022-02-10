@@ -20,18 +20,18 @@ import (
 
 func ResourceIBMTektonPipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineCreate,
-		ReadContext:     ResourceIBMTektonPipelineRead,
-		UpdateContext:   ResourceIBMTektonPipelineUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineCreate,
+		ReadContext:   ResourceIBMTektonPipelineRead,
+		UpdateContext: ResourceIBMTektonPipelineUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"integration_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline", "integration_instance_id"),
-				Description: "UUID.",
+				Description:  "UUID.",
 			},
 			"worker": &schema.Schema{
 				Type:        schema.TypeList,
@@ -654,7 +654,7 @@ func ResourceIBMTektonPipelineRead(context context.Context, d *schema.ResourceDa
 	if err = d.Set("triggers", triggers); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting triggers: %s", err))
 	}
-	
+
 	nextTimers := []map[string]interface{}{}
 	if tektonPipeline.NextTimers != nil {
 		for _, nextTimersItem := range tektonPipeline.NextTimers {

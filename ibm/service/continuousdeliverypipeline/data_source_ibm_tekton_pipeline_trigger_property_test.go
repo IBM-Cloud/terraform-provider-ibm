@@ -50,4 +50,3 @@ func testAccCheckIBMTektonPipelineTriggerPropertyDataSourceConfigBasic(triggerPr
 		}
 	`, triggerPropertyPipelineID, triggerPropertyTriggerID)
 }
-

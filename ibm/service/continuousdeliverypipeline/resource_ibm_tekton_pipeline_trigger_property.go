@@ -20,31 +20,31 @@ import (
 
 func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineTriggerPropertyCreate,
-		ReadContext:     ResourceIBMTektonPipelineTriggerPropertyRead,
-		UpdateContext:   ResourceIBMTektonPipelineTriggerPropertyUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineTriggerPropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineTriggerPropertyCreate,
+		ReadContext:   ResourceIBMTektonPipelineTriggerPropertyRead,
+		UpdateContext: ResourceIBMTektonPipelineTriggerPropertyUpdate,
+		DeleteContext: ResourceIBMTektonPipelineTriggerPropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "trigger_id"),
-				Description: "The trigger ID.",
+				Description:  "The trigger ID.",
 			},
 			"create_tekton_pipeline_trigger_properties_request": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"properties": &schema.Schema{
@@ -272,12 +272,12 @@ func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("trigger_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "trigger_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "trigger_id"))
 	}
 	if d.HasChange("create_tekton_pipeline_trigger_properties_request") {
 		createTektonPipelineTriggerPropertiesRequest, err := ResourceIBMTektonPipelineTriggerPropertyMapToCreateTektonPipelineTriggerPropertiesRequest(d.Get("create_tekton_pipeline_trigger_properties_request.0").(map[string]interface{}))
@@ -347,7 +347,7 @@ func ResourceIBMTektonPipelineTriggerPropertyMapToCreateTektonPipelineTriggerPro
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	if modelMap["type"] != nil {
 		model.Type = core.StringPtr(modelMap["type"].(string))
@@ -365,7 +365,7 @@ func ResourceIBMTektonPipelineTriggerPropertyMapToCreateTektonPipelineTriggerPro
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["path"] != nil {
@@ -398,7 +398,7 @@ func ResourceIBMTektonPipelineTriggerPropertyMapToCreateTektonPipelineTriggerPro
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["path"] != nil {
@@ -417,7 +417,7 @@ func ResourceIBMTektonPipelineTriggerPropertyMapToCreateTektonPipelineTriggerPro
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["path"] != nil {

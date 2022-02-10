@@ -46,4 +46,3 @@ func testAccCheckIBMTektonPipelinePropertyDataSourceConfigBasic(propertyPipeline
 		}
 	`, propertyPipelineID)
 }
-

@@ -553,7 +553,7 @@ type clientSession struct {
 	contextBasedRestrictionsClientErr error
 
 	// Tekton Pipeline
-	continuousDeliveryPipelineClient *continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2
+	continuousDeliveryPipelineClient    *continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2
 	continuousDeliveryPipelineClientErr error
 }
 
@@ -2816,7 +2816,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
-	continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{	
+	continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{
 		Authenticator: authenticator,
 	}
 	// Construct the service client.
@@ -2826,7 +2826,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.continuousDeliveryPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.continuousDeliveryPipelineClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
 		session.continuousDeliveryPipelineClientErr = fmt.Errorf("Error occurred while configuring Continuous Delivery Pipeline service: %q", err)

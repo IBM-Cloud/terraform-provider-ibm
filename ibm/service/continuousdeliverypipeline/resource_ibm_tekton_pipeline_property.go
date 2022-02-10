@@ -20,24 +20,24 @@ import (
 
 func ResourceIBMTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelinePropertyCreate,
-		ReadContext:     ResourceIBMTektonPipelinePropertyRead,
-		UpdateContext:   ResourceIBMTektonPipelinePropertyUpdate,
-		DeleteContext:   ResourceIBMTektonPipelinePropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelinePropertyCreate,
+		ReadContext:   ResourceIBMTektonPipelinePropertyRead,
+		UpdateContext: ResourceIBMTektonPipelinePropertyUpdate,
+		DeleteContext: ResourceIBMTektonPipelinePropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"create_tekton_pipeline_properties_request": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -237,8 +237,8 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("create_tekton_pipeline_properties_request") {
 		createTektonPipelinePropertiesRequest, err := ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest(d.Get("create_tekton_pipeline_properties_request.0").(map[string]interface{}))
@@ -296,7 +296,7 @@ func ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	if modelMap["type"] != nil {
 		model.Type = core.StringPtr(modelMap["type"].(string))
@@ -325,7 +325,7 @@ func ResourceIBMTektonPipelinePropertyMapToProperty(modelMap map[string]interfac
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["path"] != nil {
@@ -341,7 +341,7 @@ func ResourceIBMTektonPipelinePropertyMapToCreateTektonPipelinePropertiesRequest
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
 	if modelMap["options"] != nil {
-	
+
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	if modelMap["path"] != nil {

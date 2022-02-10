@@ -101,21 +101,6 @@ data "tekton_pipeline_workers" "tekton_pipeline_workers_instance" {
   pipeline_id = var.tekton_pipeline_workers_pipeline_id
 }
 ```
-tekton_pipeline_trigger data source:
-
-```hcl
-data "tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
-  pipeline_id = var.tekton_pipeline_trigger_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_trigger_id
-}
-```
-tekton_pipeline data source:
-
-```hcl
-data "tekton_pipeline" "tekton_pipeline_instance" {
-  id = var.tekton_pipeline_id
-}
-```
 
 ## Assumptions
 
@@ -161,9 +146,6 @@ data "tekton_pipeline" "tekton_pipeline_instance" {
 | pipeline_id | The tekton pipeline ID. | `string` | true |
 | property_name | The property's name. | `string` | true |
 | pipeline_id | The tekton pipeline ID. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger_id | The trigger ID. | `string` | true |
-| id | ID of current instance. | `string` | true |
 
 ## Outputs
 
@@ -178,5 +160,3 @@ data "tekton_pipeline" "tekton_pipeline_instance" {
 | tekton_pipeline_trigger_property | tekton_pipeline_trigger_property object |
 | tekton_pipeline_property | tekton_pipeline_property object |
 | tekton_pipeline_workers | tekton_pipeline_workers object |
-| tekton_pipeline_trigger | tekton_pipeline_trigger object |
-| tekton_pipeline | tekton_pipeline object |

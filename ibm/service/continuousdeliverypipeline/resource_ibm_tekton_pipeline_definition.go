@@ -20,24 +20,24 @@ import (
 
 func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineDefinitionCreate,
-		ReadContext:     ResourceIBMTektonPipelineDefinitionRead,
-		UpdateContext:   ResourceIBMTektonPipelineDefinitionUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDefinitionDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineDefinitionCreate,
+		ReadContext:   ResourceIBMTektonPipelineDefinitionRead,
+		UpdateContext: ResourceIBMTektonPipelineDefinitionUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDefinitionDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_definition", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"create_tekton_pipeline_definition_request": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"definitions": &schema.Schema{
@@ -232,8 +232,8 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("create_tekton_pipeline_definition_request") {
 		createTektonPipelineDefinitionRequest, err := ResourceIBMTektonPipelineDefinitionMapToCreateTektonPipelineDefinitionRequest(d.Get("create_tekton_pipeline_definition_request.0").(map[string]interface{}))

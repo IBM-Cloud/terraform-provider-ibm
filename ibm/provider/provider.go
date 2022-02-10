@@ -49,8 +49,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
-	"github.com/SidneyJiang/terraform-provider-ibm/ibm/service/continuousdeliverypipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/SidneyJiang/terraform-provider-ibm/ibm/service/continuousdeliverypipeline"
 )
 
 // Provider returns a *schema.Provider.
@@ -573,12 +573,12 @@ func Provider() *schema.Provider {
 			"ibm_en_subscriptions": eventnotification.DataSourceIBMEnSubscriptions(),
 
 			// // Added for Tekton Pipeline
-			"ibm_tekton_pipeline_definition": continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
+			"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
 			"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineTriggerProperty(),
-			"ibm_tekton_pipeline_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
-			"ibm_tekton_pipeline_workers": continuousdeliverypipeline.DataSourceIBMTektonPipelineWorkers(),
-			"ibm_tekton_pipeline_trigger": continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
-			"ibm_tekton_pipeline": continuousdeliverypipeline.DataSourceIBMTektonPipeline(),
+			"ibm_tekton_pipeline_property":         continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
+			"ibm_tekton_pipeline_workers":          continuousdeliverypipeline.DataSourceIBMTektonPipelineWorkers(),
+			"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
+			"ibm_tekton_pipeline":                  continuousdeliverypipeline.DataSourceIBMTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -902,11 +902,11 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription": eventnotification.ResourceIBMEnSubscription(),
 
 			// // Added for Tekton Pipeline
-			"ibm_tekton_pipeline_definition": continuousdeliverypipeline.ResourceIBMTektonPipelineDefinition(),
+			"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.ResourceIBMTektonPipelineDefinition(),
 			"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerProperty(),
-			"ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelineProperty(),
-			"ibm_tekton_pipeline_trigger": continuousdeliverypipeline.ResourceIBMTektonPipelineTrigger(),
-			"ibm_tekton_pipeline": continuousdeliverypipeline.ResourceIBMTektonPipeline(),
+			"ibm_tekton_pipeline_property":         continuousdeliverypipeline.ResourceIBMTektonPipelineProperty(),
+			"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.ResourceIBMTektonPipelineTrigger(),
+			"ibm_tekton_pipeline":                  continuousdeliverypipeline.ResourceIBMTektonPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1038,7 +1038,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_tekton_pipeline_property":            continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
 				"ibm_tekton_pipeline_trigger":             continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
 				"ibm_tekton_pipeline":                     continuousdeliverypipeline.ResourceIBMTektonPipelineValidator(),
-
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),

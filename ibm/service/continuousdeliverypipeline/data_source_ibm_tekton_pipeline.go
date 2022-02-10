@@ -547,7 +547,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	definitions := []map[string]interface{}{}
 	if tektonPipeline.Definitions != nil {
-		for _, modelItem := range tektonPipeline.Definitions { 
+		for _, modelItem := range tektonPipeline.Definitions {
 			modelMap, err := DataSourceIBMTektonPipelineDefinitionToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -561,7 +561,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	envProperties := []map[string]interface{}{}
 	if tektonPipeline.EnvProperties != nil {
-		for _, modelItem := range tektonPipeline.EnvProperties { 
+		for _, modelItem := range tektonPipeline.EnvProperties {
 			modelMap, err := DataSourceIBMTektonPipelinePropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -595,7 +595,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	triggers := []map[string]interface{}{}
 	if tektonPipeline.Triggers != nil {
-		for _, modelItem := range tektonPipeline.Triggers { 
+		for _, modelItem := range tektonPipeline.Triggers {
 			modelMap, err := DataSourceIBMTektonPipelineTriggerToMap(modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -609,7 +609,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	nextTimers := []map[string]interface{}{}
 	if tektonPipeline.NextTimers != nil {
-		for _, modelItem := range tektonPipeline.NextTimers { 
+		for _, modelItem := range tektonPipeline.NextTimers {
 			modelMap, err := DataSourceIBMTektonPipelineTimerToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
