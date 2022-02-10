@@ -34,6 +34,7 @@ resource "ibm_is_virtual_endpoint_gateway" "example" {
   }
   vpc            = ibm_is_vpc.example.id
   resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "example1" {
@@ -48,6 +49,7 @@ resource "ibm_is_virtual_endpoint_gateway" "example1" {
     name   = "example-reserved-ip"
   }
   resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "example3" {
@@ -62,6 +64,7 @@ resource "ibm_is_virtual_endpoint_gateway" "example3" {
     name   = "example-reserved-ip"
   }
   resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "example4" {
@@ -72,6 +75,7 @@ resource "ibm_is_virtual_endpoint_gateway" "example4" {
   }
   vpc            = ibm_is_vpc.example.id
   resource_group = data.ibm_resource_group.example.id
+  security_groups = [ibm_is_security_group.example.id]
 }
 ```
 
@@ -89,6 +93,8 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE:** `id` and `subnet` are mutually exclusive.
 
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
+- `security_groups` - (Optional, list) The security groups to use for this endpoint gateway. If unspecified, the VPC's default security group is used.
+  **NOTE:** either of `ibm_is_security_group_target` resource or `security_groups` attribute should be used, both can't be use together.
 - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
 - `target` - (Required, List) The endpoint gateway target.
 
