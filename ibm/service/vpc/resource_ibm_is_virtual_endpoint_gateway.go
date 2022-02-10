@@ -15,6 +15,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -38,6 +39,7 @@ const (
 	isVirtualEndpointGatewayTargetResourceType = "resource_type"
 	isVirtualEndpointGatewayVpcID              = "vpc"
 	isVirtualEndpointGatewayTags               = "tags"
+	isVirtualEndpointGatewaySecurityGroups     = "security_groups"
 )
 
 func ResourceIBMISEndpointGateway() *schema.Resource {
@@ -102,6 +104,14 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint gateway lifecycle state",
+			},
+			isVirtualEndpointGatewaySecurityGroups: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
+				Description: "Endpoint gateway securitygroups list",
 			},
 			isVirtualEndpointGatewayIPs: {
 				Type:             schema.TypeList,
@@ -256,7 +266,21 @@ func resourceIBMisVirtualEndpointGatewayCreate(d *schema.ResourceData, meta inte
 	if ips, ok := d.GetOk(isVirtualEndpointGatewayIPs); ok {
 		opt.SetIps(expandIPs(ips.([]interface{})))
 	}
-
+	// Security group option
+	var securityGroups *schema.Set
+	if sg, ok := d.GetOk(isVirtualEndpointGatewaySecurityGroups); ok {
+		securityGroups = sg.(*schema.Set)
+		if securityGroups != nil && securityGroups.Len() != 0 {
+			securityGroupobjs := make([]vpcv1.SecurityGroupIdentityIntf, securityGroups.Len())
+			for i, securityGroup := range securityGroups.List() {
+				securityGroupstr := securityGroup.(string)
+				securityGroupobjs[i] = &vpcv1.SecurityGroupIdentity{
+					ID: &securityGroupstr,
+				}
+			}
+			opt.SecurityGroups = securityGroupobjs
+		}
+	}
 	// Resource group option
 	if resourceGroup, ok := d.GetOk(isVirtualEndpointGatewayResourceGroupID); ok {
 		resourceGroupID := resourceGroup.(string)
@@ -307,6 +331,55 @@ func resourceIBMisVirtualEndpointGatewayUpdate(d *schema.ResourceData, meta inte
 		}
 
 	}
+	id := d.Id()
+	var remove, add []string
+	if d.HasChange(isVirtualEndpointGatewaySecurityGroups) {
+		o, n := d.GetChange(isVirtualEndpointGatewaySecurityGroups)
+		oSecurityGroups := o.(*schema.Set)
+		nSecurityGroups := n.(*schema.Set)
+		remove = flex.ExpandStringList(oSecurityGroups.Difference(nSecurityGroups).List())
+		add = flex.ExpandStringList(nSecurityGroups.Difference(oSecurityGroups).List())
+		if len(add) > 0 {
+			for _, sgId := range add {
+				createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
+				createSecurityGroupTargetBindingOptions.SecurityGroupID = &sgId
+				createSecurityGroupTargetBindingOptions.ID = &id
+				_, response, err := sess.CreateSecurityGroupTargetBinding(createSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error while creating Security Group Target Binding %s\n%s", err, response)
+				}
+				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if len(remove) > 0 {
+			for _, sgId := range remove {
+				getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
+					SecurityGroupID: &sgId,
+					ID:              &id,
+				}
+				_, response, err := sess.GetSecurityGroupTarget(getSecurityGroupTargetOptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						continue
+					}
+					return fmt.Errorf("Error Getting Security Group Target for this endpoint gateway (%s): %s\n%s", sgId, err, response)
+				}
+				deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(sgId, id)
+				response, err = sess.DeleteSecurityGroupTargetBinding(deleteSecurityGroupTargetBindingOptions)
+				if err != nil {
+					return fmt.Errorf("Error Deleting Security Group Target for this endpoint gateway : %s\n%s", err, response)
+				}
+				_, err = isWaitForVirtualEndpointGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+	}
 	if d.HasChange(isVirtualEndpointGatewayTags) {
 		opt := sess.NewGetEndpointGatewayOptions(d.Id())
 		result, response, err := sess.GetEndpointGateway(opt)
@@ -350,6 +423,9 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	d.Set(isVirtualEndpointGatewayTarget,
 		flattenEndpointGatewayTarget(result.Target.(*vpcv1.EndpointGatewayTarget)))
 	d.Set(isVirtualEndpointGatewayVpcID, result.VPC.ID)
+	if result.SecurityGroups != nil {
+		d.Set(isVirtualEndpointGatewaySecurityGroups, flattenDataSourceSecurityGroups(result.SecurityGroups))
+	}
 	tags, err := flex.GetTagsUsingCRN(meta, *result.CRN)
 	if err != nil {
 		log.Printf(
@@ -357,6 +433,49 @@ func resourceIBMisVirtualEndpointGatewayRead(d *schema.ResourceData, meta interf
 	}
 	d.Set(isVirtualEndpointGatewayTags, tags)
 	return nil
+}
+
+func flattenDataSourceSecurityGroups(securityGroupList []vpcv1.SecurityGroupReference) interface{} {
+	securitygroupList := make([]string, 0)
+	for _, securityGroup := range securityGroupList {
+		if securityGroup.ID != nil {
+			securityGroupID := *securityGroup.ID
+			securitygroupList = append(securitygroupList, securityGroupID)
+		}
+	}
+	return securitygroupList
+}
+
+func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"waiting", "pending", "updating"},
+		Target:     []string{"stable", "failed", ""},
+		Refresh:    isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVirtualEndpointGatewayRefreshFunc(sess *vpcv1.VpcV1, endPointGatewayId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		opt := sess.NewGetEndpointGatewayOptions(endPointGatewayId)
+		result, response, err := sess.GetEndpointGateway(opt)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil, "", fmt.Errorf("Error Getting Virtual Endpoint Gateway : %s\n%s", err, response)
+			}
+		}
+		if *result.LifecycleState == "stable" || *result.LifecycleState == "failed" {
+			return result, *result.LifecycleState, nil
+		}
+		return result, *result.LifecycleState, nil
+	}
 }
 
 func resourceIBMisVirtualEndpointGatewayDelete(d *schema.ResourceData, meta interface{}) error {
