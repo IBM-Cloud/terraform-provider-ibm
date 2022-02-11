@@ -16,7 +16,7 @@ func TestAccIBMCisWebhooks_Basic(t *testing.T) {
 
 	webhookname := "test-Webhooks"
 	webhooksurl := "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-	webhooksecret := "bf67-6752fae1eb7"
+	webhooksecret := "ff1d9b80-b51d-4a06-bf67-6752fae1eb74"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
