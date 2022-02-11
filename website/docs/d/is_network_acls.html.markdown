@@ -25,11 +25,11 @@ provider "ibm" {
 
 ```terraform
 resource "ibm_is_vpc" "example" {
-  name = "vpctest"
+  name = "example-vpc"
 }
 
 resource "ibm_is_network_acl" "example" {
-  name = "is-example-acl"
+  name = "example-network-acl"
   vpc  = ibm_is_vpc.example.id
 }
 

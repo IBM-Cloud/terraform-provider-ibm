@@ -451,14 +451,18 @@ func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 			} else if strings.HasPrefix(v.(string), "[") && strings.HasSuffix(v.(string), "]") {
 				//transform v.(string) to be []string
 				arrayString := v.(string)
+				result := []string{}
 				trimLeft := strings.TrimLeft(arrayString, "[")
 				trimRight := strings.TrimRight(trimLeft, "]")
-				array := strings.Split(trimRight, ",")
-				result := []string{}
-				for _, a := range array {
-					result = append(result, strings.Trim(a, "\""))
+				if len(trimRight) == 0 {
+					params[k] = result
+				} else {
+					array := strings.Split(trimRight, ",")
+					for _, a := range array {
+						result = append(result, strings.Trim(a, "\""))
+					}
+					params[k] = result
 				}
-				params[k] = result
 			} else {
 				params[k] = v
 			}

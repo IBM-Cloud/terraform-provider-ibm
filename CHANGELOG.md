@@ -1,3 +1,8 @@
+# 1.38.1 (Jan27, 2022)
+ENHANCEMENTS:
+* Support intergation of security groups with virtual private endpoint gateway ([3488](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3488))
+* Update the deprecation notice of policy management from KMS resource ([3520](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3520)
+
 # 1.38.0 (Jan12, 2022)
 Features
 * Support Power Instance

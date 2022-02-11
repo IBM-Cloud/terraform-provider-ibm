@@ -24,9 +24,9 @@ provider "ibm" {
 The following example retrieves information about the dedicated host data sources.
 
 ```terraform
-data "ibm_is_dedicated_host" "is_dedicated_host" {
-	host_group = "1e09281b-f177-46fb-baf1-bc152b2e391a"
-	name = "my-dedicated-host"
+data "ibm_is_dedicated_host" "example" {
+  host_group = ibm_is_dedicated_host_group.example.id
+  name       = "example-dedicated-host"
 }
 ```
 

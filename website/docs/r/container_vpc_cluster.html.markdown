@@ -156,6 +156,7 @@ Review the argument references that you can specify for your resource.
 - `entitlement` - (Optional, String) Entitlement reduces additional OCP Licence cost in OpenShift clusters. Use Cloud Pak with OCP Licence entitlement to create the OpenShift cluster. **Note** <ul><li> It is set only when the first time creation of the cluster, further modifications are not impacted. </li></ul> <ul><li> Set this argument to `cloud_pak` only if you use the cluster with a Cloud Pak that has an OpenShift entitlement.</li></ul>.
 - `force_delete_storage` - (Optional, Bool) If set to **true**,force the removal of persistent storage associated with the cluster during cluster deletion. Default value is **false**. **Note** If `force_delete_storage` parameter is used after provisioning the cluster, then, you need to execute `terraform apply` before `terraform destroy` for `force_delete_storage` parameter to take effect.
 - `flavor` - (Required, Forces new resource, String) The flavor of the VPC worker node that you want to use.
+- `image_security_enforcement` - (Optional, Bool) Set to **true** to enable image security enforcement policies in a cluster.
 - `name` - (Required, Forces new resource, String) The name of the cluster.
 - `kms_config` - (Optional, String) Use to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint`.
 

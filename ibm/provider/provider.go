@@ -375,6 +375,10 @@ func Provider() *schema.Provider {
 			"ibm_is_instance_volume_attachment":      vpc.DataSourceIBMISInstanceVolumeAttachment(),
 			"ibm_is_instance_volume_attachments":     vpc.DataSourceIBMISInstanceVolumeAttachments(),
 			"ibm_is_lb":                              vpc.DataSourceIBMISLB(),
+			"ibm_is_lb_pool":                         vpc.DataSourceIBMISLBPool(),
+			"ibm_is_lb_pools":                        vpc.DataSourceIBMISLBPools(),
+			"ibm_is_lb_pool_member":                  vpc.DataSourceIBMIBLBPoolMember(),
+			"ibm_is_lb_pool_members":                 vpc.DataSourceIBMISLBPoolMembers(),
 			"ibm_is_lb_profiles":                     vpc.DataSourceIBMISLbProfiles(),
 			"ibm_is_lbs":                             vpc.DataSourceIBMISLBS(),
 			"ibm_is_public_gateway":                  vpc.DataSourceIBMISPublicGateway(),
@@ -398,6 +402,7 @@ func Provider() *schema.Provider {
 			"ibm_is_vpcs":                            vpc.DataSourceIBMISVPCs(),
 			"ibm_is_vpn_gateways":                    vpc.DataSourceIBMISVPNGateways(),
 			"ibm_is_vpc_address_prefixes":            vpc.DataSourceIbmIsVpcAddressPrefixes(),
+			"ibm_is_vpc_address_prefix":              vpc.DataSourceIBMIsVPCAddressPrefix(),
 			"ibm_is_vpn_gateway_connections":         vpc.DataSourceIBMISVPNGatewayConnections(),
 			"ibm_is_vpc_default_routing_table":       vpc.DataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_tables":              vpc.DataSourceIBMISVPCRoutingTables(),
@@ -450,6 +455,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_keys":               power.DataSourceIBMPIKeys(),
 			"ibm_pi_image":              power.DataSourceIBMPIImage(),
 			"ibm_pi_instance":           power.DataSourceIBMPIInstance(),
+			"ibm_pi_instances":          power.DataSourceIBMPIInstances(),
 			"ibm_pi_tenant":             power.DataSourceIBMPITenant(),
 			"ibm_pi_network":            power.DataSourceIBMPINetwork(),
 			"ibm_pi_volume":             power.DataSourceIBMPIVolume(),
@@ -1130,7 +1136,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Visibility:           visibility,
 		EndpointsFile:        file,
 		IAMTrustedProfileID:  iamTrustedProfileId,
-		//PowerServiceInstance: powerServiceInstance,
 	}
 
 	return config.ClientSession()

@@ -23,11 +23,11 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpcs" "ds_vpcs" {
+data "ibm_is_vpcs" "example" {
 }
 
 ```

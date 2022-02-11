@@ -25,7 +25,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_snapshots" "ds_snapshots" {
+data "ibm_is_snapshots" "example" {
 }
 
 ```

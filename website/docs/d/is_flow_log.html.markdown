@@ -24,8 +24,8 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_flow_log" "is_flow_log" {
-	identifier = ibm_is_flow_log.test_flow_log.id
+data "ibm_is_flow_log" "example" {
+	identifier = ibm_is_flow_log.example.id
 }
 ```
 

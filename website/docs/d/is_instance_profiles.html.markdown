@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_instance_profiles" "ds_instance_profiles" {
+data "ibm_is_instance_profiles" "example" {
 }
 
 ```

@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_lb_profiles" "ds_lb_profiles" {
+data "ibm_is_lb_profiles" "example" {
 }
 
 ```

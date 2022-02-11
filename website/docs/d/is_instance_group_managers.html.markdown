@@ -21,11 +21,11 @@ provider "ibm" {
 ```
 
 ## Example usage
-In the following example, you can retrive list of instance group managers information.
+In the following example, you can retrieve list of instance group managers information.
 
 ```terraform
-data "ibm_is_instance_group_managers" "instance_group_managers" {
-    instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
+data "ibm_is_instance_group_managers" "example" {
+  instance_group = ibm_is_instance_group.example.id
 }
 ```
 

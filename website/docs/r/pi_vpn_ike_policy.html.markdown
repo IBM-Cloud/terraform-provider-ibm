@@ -18,8 +18,8 @@ The following example creates a IKE Policy.
 		pi_cloud_instance_id    = "<value of the cloud_instance_id>"
 		pi_policy_name          = "test"
 		pi_policy_dh_group = 1
-		pi_policy_encryption = "3des-cbc"
-		pi_policy_key_lifetime = 180
+		pi_policy_encryption = "aes-256-cbc"
+		pi_policy_key_lifetime = 28800
 		pi_policy_preshared_key = "sample"
 		pi_policy_version = 1
 		pi_policy_authentication = "sha1"
@@ -52,9 +52,9 @@ ibm_pi_ike_policy provides the following [timeouts](https://www.terraform.io/doc
 ## Argument reference 
 Review the argument references that you can specify for your resource. 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_policy_authentication`  - (Optional, String) Authentication for the IKE Policy. Supported values are `none`(Default), `sha-256`, `sha-384`, and `sha1`.
+- `pi_policy_authentication`  - (Optional, String) Authentication for the IKE Policy. Supported values are `none`(Default), `sha-256`, `sha-384`, `sha1`.
 - `pi_policy_dh_group` - (Required, Integer) DH group of the IKE Policy. Supported values are `1`,`2`,`5`,`14`,`19`,`20`,`24`.
-- `pi_policy_encryption`- (Required, String) Encryption of the IKE Policy. Supported values are `3des-cbc`,`aes-128-cbc`,`aes-128-gcm`,`aes-192-cbc`,`aes-256-cbc`,`aes-256-gcm`,`des-cbc`.
+- `pi_policy_encryption`- (Required, String) Encryption of the IKE Policy. Supported values are `aes-256-cbc`, `aes-192-cbc`, `aes-128-cbc`, `aes-256-gcm`, `aes-128-gcm`, `3des-cbc`.
 - `pi_policy_key_lifetime` - (Required, Integer) Policy key lifetime. Supported values:  `180` ≤ value ≤ `86400`.
 - `pi_policy_name` - (Required, String) Name of the IKE Policy.
 - `pi_policy_preshared_key` - (Required, String) Preshared key used in this IKE Policy (length of preshared key must be even).

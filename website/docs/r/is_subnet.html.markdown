@@ -30,8 +30,8 @@ resource "ibm_is_vpc" "example" {
 }
 
 resource "ibm_is_vpc_routing_table" "example" {
-  name   = "example-routing-table"
-  vpc    = ibm_is_vpc.example.id
+  name = "example-routing-table"
+  vpc  =  ibm_is_vpc.example.id
 }
 
 
@@ -40,7 +40,7 @@ resource "ibm_is_subnet" "example" {
   vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
-  routing_table   = ibm_is_vpc_routing_table.example.routing_table  
+  routing_table   = ibm_is_vpc_routing_table.example.routing_table
 
   //User can configure timeouts
   timeouts {
@@ -64,7 +64,7 @@ resource "ibm_is_vpc_address_prefix" "example" {
 }
 
 resource "ibm_is_subnet" "example" {
-  depends_on      = [
+  depends_on = [
     ibm_is_vpc_address_prefix.example
   ]
   ipv4_cidr_block = "10.0.1.0/24"
@@ -86,10 +86,10 @@ The `ibm_is_subnet` resource provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the subnet. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the subnet. ~> **Note:** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `ipv4_cidr_block` - (Optional, Forces new resource, String) The IPv4 range of the subnet.
 
-  **NOTE:**
+  ~> **NOTE:**
     - if using a IPv4 range from a `ibm_is_vpc_address_prefix` resource, add a `depends_on` to handle hidden `ibm_is_vpc_address_prefix` dependency if not using interpolation.
 
 - `ip_version` - (Optional, Forces new resource, String) The IP Version. The default is `ipv4`.

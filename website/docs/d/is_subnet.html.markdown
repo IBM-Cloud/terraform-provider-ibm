@@ -63,8 +63,8 @@ data "ibm_is_subnet" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The ID of the subnet.
-- `name` - (Optional, String) The name of the subnet.
+- `identifier` - (Optional, String) The ID of the subnet,`name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the subnet,`name` and `identifier` are mutually exclusive.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 

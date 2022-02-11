@@ -24,9 +24,9 @@ provider "ibm" {
 In the following example, you can retrieve a policy info of an instance group manager.
 
 ```terraform
-data "ibm_is_instance_group_manager_policy" "instance_group_manager_policy" {
-  instance_group = "r006-76770f94-f7654-11e9-96e7-a77724435315"
-  instance_group_manager = "r006-76770f94-f8764-11e9-96e7-a77726534315"
+data "ibm_is_instance_group_manager_policy" "example" {
+  instance_group         = ibm_is_instance_group.example.id
+  instance_group_manager = ibm_is_instance_group_manager.example.manager_id
 }
 ```
 
