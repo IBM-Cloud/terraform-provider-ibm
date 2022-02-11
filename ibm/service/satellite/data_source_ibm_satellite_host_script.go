@@ -138,7 +138,7 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 			if strings.ToLower(hostProvider) == "aws" {
 				lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
 			} else if strings.ToLower(hostProvider) == "ibm" {
-				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable=*\n"
+				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable rhel-server-rhscl-7-rpms\nsubscription-manager repos --enable rhel-7-server-optional-rpms\nsubscription-manager repos --enable rhel-7-server-rh-common-rpms\nsubscription-manager repos --enable rhel-7-server-supplementary-rpms\nsubscription-manager repos --enable rhel-7-server-extras-rpms"
 			} else if strings.ToLower(hostProvider) == "azure" {
 				lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*microsoft*" -y
 yum-config-manager --enable '*'
