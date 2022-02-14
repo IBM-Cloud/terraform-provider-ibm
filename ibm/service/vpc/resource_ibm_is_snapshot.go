@@ -429,7 +429,7 @@ func snapshotUpdate(d *schema.ResourceData, meta interface{}, id, name string, h
 		}
 		return fmt.Errorf("Error getting Snapshot : %s\n%s", err, response)
 	}
-	eTag := response.Headers.Get("E-Tag")
+	eTag := response.Headers.Get("ETag")
 
 	updateSnapshotOptions := &vpcv1.UpdateSnapshotOptions{
 		ID: &id,

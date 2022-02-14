@@ -229,53 +229,42 @@ func testAccCheckIBMISSnapshotConfigUpdate(vpcname, subnetname, sshname, publicK
 }
 
 func testAccCheckIBMISSnapshotConfigUsertag(vpcname, subnetname, sshname, publicKey, volname, name, sname, usertag string) string {
-	// 	return fmt.Sprintf(`
-	// 	resource "ibm_is_vpc" "testacc_vpc" {
-	// 		name = "%s"
-	// 	  }
-
-	// 	  resource "ibm_is_subnet" "testacc_subnet" {
-	// 		name           				= "%s"
-	// 		vpc             			= ibm_is_vpc.testacc_vpc.id
-	// 		zone            			= "%s"
-	// 		total_ipv4_address_count 	= 16
-	// 	  }
-
-	// 	  resource "ibm_is_ssh_key" "testacc_sshkey" {
-	// 		name       = "%s"
-	// 		public_key = "%s"
-	// 	  }
-
-	// 	  resource "ibm_is_instance" "testacc_instance" {
-	// 		name    = "%s"
-	// 		image   = "%s"
-	// 		profile = "%s"
-	// 		primary_network_interface {
-	// 		  subnet     = ibm_is_subnet.testacc_subnet.id
-	// 		}
-	// 		vpc  = ibm_is_vpc.testacc_vpc.id
-	// 		zone = "%s"
-	// 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
-	// 		network_interfaces {
-	// 		  subnet = ibm_is_subnet.testacc_subnet.id
-	// 		  name   = "eth1"
-	// 		}
-	// 	  }
-	// 	resource "ibm_is_snapshot" "testacc_snapshot" {
-	// 		name 			= "%s"
-	// 		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
-	// 		tags = ["%s"]
-	// }`, vpcname, subnetname, ISZoneName, sshname, publicKey, name, "r134-63363662-a4ee-4ba4-a6c4-92e6c78c6b58", instanceProfileName, ISZoneName, sname, usertag)
-
 	return fmt.Sprintf(`
-	data "ibm_is_instance" "testacc_instance" {
-		name = "cli-vsi-1"
-  	}
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		  }
 
-  	resource "ibm_is_snapshot" "testacc_snapshot" {
-		name 			= "sunitha-snapshot-1"
-		source_volume 	= data.ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
-		tags = ["%s"]
-  		}`, usertag)
+		  resource "ibm_is_subnet" "testacc_subnet" {
+			name           				= "%s"
+			vpc             			= ibm_is_vpc.testacc_vpc.id
+			zone            			= "%s"
+			total_ipv4_address_count 	= 16
+		  }
+
+		  resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       = "%s"
+			public_key = "%s"
+		  }
+
+		  resource "ibm_is_instance" "testacc_instance" {
+			name    = "%s"
+			image   = "%s"
+			profile = "%s"
+			primary_network_interface {
+			  subnet     = ibm_is_subnet.testacc_subnet.id
+			}
+			vpc  = ibm_is_vpc.testacc_vpc.id
+			zone = "%s"
+			keys = [ibm_is_ssh_key.testacc_sshkey.id]
+			network_interfaces {
+			  subnet = ibm_is_subnet.testacc_subnet.id
+			  name   = "eth1"
+			}
+		  }
+		resource "ibm_is_snapshot" "testacc_snapshot" {
+			name 			= "%s"
+			source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+			tags = ["%s"]
+	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, "r134-63363662-a4ee-4ba4-a6c4-92e6c78c6b58", acc.InstanceProfileName, acc.ISZoneName, sname, usertag)
 
 }
