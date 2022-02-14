@@ -1033,10 +1033,11 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
+				// // Added for Tekton Pipeline
 				// "ibm_tekton_pipeline_definition":          continuousdeliverypipeline.ResourceIBMTektonPipelineDefinitionValidator(),
-				// "ibm_tekton_pipeline_trigger_property":    continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+				// "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
 				"ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
-				// "ibm_tekton_pipeline_trigger":             continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
+				// "ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
 				// "ibm_tekton_pipeline":                     continuousdeliverypipeline.ResourceIBMTektonPipelineValidator(),
 
 				// // Added for Event Notifications

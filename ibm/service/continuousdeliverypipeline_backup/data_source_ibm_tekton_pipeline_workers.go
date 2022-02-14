@@ -72,17 +72,17 @@ func DataSourceIBMTektonPipelineWorkersRead(context context.Context, d *schema.R
 
 	d.SetId(DataSourceIBMTektonPipelineWorkersID(d))
 
-	workersList := []map[string]interface{}{}
+	workersL := []map[string]interface{}{}
 	if workers.Workers != nil {
 		for _, modelItem := range workers.Workers {
 			modelMap, err := DataSourceIBMTektonPipelineWorkersWorkerToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			workersList = append(workersList, modelMap)
+			workersL = append(workersL, modelMap)
 		}
 	}
-	if err = d.Set("workers", workersList); err != nil {
+	if err = d.Set("workers", workersL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting workers %s", err))
 	}
 

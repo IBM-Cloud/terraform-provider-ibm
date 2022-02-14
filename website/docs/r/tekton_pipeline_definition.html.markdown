@@ -14,8 +14,10 @@ Provides a resource for tekton_pipeline_definition. This allows tekton_pipeline_
 
 ```hcl
 resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
-  create_tekton_pipeline_definition_request = {"path":".tekton","url":"https://github.com/IBM/tekton-tutorial.git","branch":"master"}
+  branch = "master"
+  path = ".tekton"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
+  url = "https://github.com/IBM/tekton-tutorial.git"
 }
 ```
 
@@ -23,24 +25,14 @@ resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
 
 Review the argument reference that you can specify for your resource.
 
-* `create_tekton_pipeline_definition_request` - (Optional, List) 
-Nested scheme for **create_tekton_pipeline_definition_request**:
-	* `branch` - (Optional, String) The branch of the repo.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `definitions` - (Optional, List) Definition list.
-	Nested scheme for **definitions**:
-		* `branch` - (Required, String) The branch of the repo.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-		* `path` - (Required, String) The path to the definitions yaml files.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-		* `url` - (Required, String) General href URL.
-		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-	* `path` - (Optional, String) The path to the definitions yaml files.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `url` - (Optional, String) General href URL.
-	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `branch` - (Optional, String) The branch of the repo.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+* `path` - (Optional, String) The path to the definitions yaml files.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+* `url` - (Optional, String) General href URL.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
 ## Attribute Reference
 

@@ -134,7 +134,7 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("options"); ok {
-
+		createTektonPipelinePropertiesOptions.SetOptions(d.Get("options").(interface{}))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelinePropertiesOptions.SetType(d.Get("type").(string))
@@ -217,6 +217,8 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 
 	replaceTektonPipelinePropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelinePropertyOptions.SetPropertyName(parts[1])
+	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
@@ -224,21 +226,15 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
-	if d.HasChange("name") {
-		replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+
+	if d.Get("type").(string) == "SINGLE_SELECT" && d.HasChange("options") {
+		replaceTektonPipelinePropertyOptions.SetOptions(d.Get("options").(interface{}))
 		hasChange = true
-	}
-	if d.HasChange("value") {
+	} else if d.HasChange("value") {
 		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 		hasChange = true
 	}
-	if d.HasChange("options") {
-		hasChange = true
-	}
-	if d.HasChange("type") {
-		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
-	}
+
 	if d.HasChange("path") {
 		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 		hasChange = true
