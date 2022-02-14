@@ -1556,18 +1556,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// VPC Service
 	vpcurl := ContructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-	if c.Visibility == "private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcurl = ContructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-		} else {
-			session.vpcErr = fmt.Errorf("[ERROR] VPC supports private endpoints only in us-south and us-east")
-		}
-	}
-	if c.Visibility == "public-and-private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			vpcurl = ContructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
-		}
-		vpcurl = ContructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		vpcurl = ContructEndpoint(fmt.Sprintf("%s.private.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		vpcurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IS_NG_API_ENDPOINT", c.Region, vpcurl)
