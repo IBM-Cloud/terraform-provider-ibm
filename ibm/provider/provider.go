@@ -1017,6 +1017,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
+				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
