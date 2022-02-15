@@ -56,6 +56,7 @@ func ResourceIBMCISWebhooks() *schema.Resource {
 			cisWebhookSecret: {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Sensitive:   true,
 				Description: "API key needed to use the webhook",
 			},
 		},
