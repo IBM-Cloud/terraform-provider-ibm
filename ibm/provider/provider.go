@@ -36,6 +36,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamaccessgroup"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/ibmtoolchainapi"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
@@ -918,6 +919,12 @@ func Provider() *schema.Provider {
 			"ibm_en_destination":  eventnotification.ResourceIBMEnDestination(),
 			"ibm_en_topic":        eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_subscription": eventnotification.ResourceIBMEnSubscription(),
+
+			// Toolchain
+			"ibm_toolchain":                 ibmtoolchainapi.ResourceIbmToolchain(),
+			"ibm_toolchain_integration":     ibmtoolchainapi.ResourceIbmToolchainIntegration(),
+			"ibm_toolchain_tool_keyprotect": ibmtoolchainapi.ResourceIbmToolchainToolKeyprotect(),
+			"ibm_toolchain_tool_git":        ibmtoolchainapi.ResourceIbmToolchainToolGit(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1054,6 +1061,7 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
+				"ibm_toolchain":      ibmtoolchainapi.ResourceIbmToolchainValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

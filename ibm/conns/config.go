@@ -105,6 +105,7 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.ibm.com/org-ids/toolchain-go-sdk/ibmtoolchainapiv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -272,6 +273,7 @@ type ClientSession interface {
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
+	IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error)
 }
 
 type clientSession struct {
@@ -548,6 +550,10 @@ type clientSession struct {
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
+
+	// Toolchain
+	ibmToolchainApiClient    *ibmtoolchainapiv2.IbmToolchainApiV2
+	ibmToolchainApiClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1040,6 +1046,11 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
+// IBM Toolchain API
+func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error) {
+	return session.ibmToolchainApiClient, session.ibmToolchainApiClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1345,6 +1356,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.ibmToolchainApiClient, err = ibmtoolchainapiv2.NewIbmToolchainApiV2(ibmToolchainApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ibmToolchainApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ibmToolchainApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmToolchainApiClientErr = fmt.Errorf("Error occurred while configuring IBM Toolchain API service: %q", err)
 	}
 
 	// APPID Service

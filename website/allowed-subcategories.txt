@@ -18,6 +18,7 @@ Functions
 Global Tagging
 IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
+IBM Toolchain API
 Identity & Access Management (IAM)
 Internet services
 Key Management Service
