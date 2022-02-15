@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateways" "data_test" {
+data "ibm_is_virtual_endpoint_gateways" "example" {
 }
 ```
 

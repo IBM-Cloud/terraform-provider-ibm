@@ -17,6 +17,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/errors"
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_service_d_h_c_p"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -53,6 +54,13 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Description: "PI cloud instance ID",
 				ForceNew:    true,
 			},
+			helpers.PICloudConnectionId: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The cloud connection uuid to connect with DHCP private network",
+				ForceNew:    true,
+			},
+
 			//Computed Attributes
 			PIDhcpId: {
 				Type:        schema.TypeString,
@@ -100,8 +108,13 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 
+	body := &models.DHCPServerCreate{}
+	if c, ok := d.GetOk(helpers.PICloudConnectionId); ok {
+		body.CloudConnectionID = c.(string)
+	}
+
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
-	dhcpServer, err := client.Create()
+	dhcpServer, err := client.Create(body)
 	if err != nil {
 		log.Printf("[DEBUG] create DHCP failed %v", err)
 		return diag.FromErr(err)

@@ -24,13 +24,13 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "vpctest"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_network_acl" "example" {
+  name = "example-acl"
+  vpc  = ibm_is_vpc.example.id
   rules {
     name        = "outbound"
     action      = "allow"

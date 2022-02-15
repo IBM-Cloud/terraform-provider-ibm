@@ -24,8 +24,8 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_vpn_gateway_connections" "ds_vpn_gateway_connections" {
-  vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
+data "ibm_is_vpn_gateway_connections" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
 }
 
 ```

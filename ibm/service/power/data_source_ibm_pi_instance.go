@@ -53,6 +53,39 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Computed: true,
 			},
 			"addresses": {
+				Type:       schema.TypeList,
+				Computed:   true,
+				Deprecated: "This field is deprecated, use networks instead",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"macaddress": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"network_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"external_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"networks": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -177,7 +210,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("processors", powervmdata.Processors)
 	d.Set("status", powervmdata.Status)
 	d.Set("proctype", powervmdata.ProcType)
-	d.Set("volumes", powervmdata.VolumeIds)
+	d.Set("volumes", powervmdata.VolumeIDs)
 	d.Set("minproc", powervmdata.Minproc)
 	d.Set("minmem", powervmdata.Minmem)
 	d.Set("maxproc", powervmdata.Maxproc)
@@ -190,6 +223,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("storage_pool", powervmdata.StoragePool)
 	d.Set("storage_pool_affinity", powervmdata.StoragePoolAffinity)
 	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
+	d.Set("networks", flattenPvmInstanceNetworks(powervmdata.Networks))
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(PIPlacementGroupID, powervmdata.PlacementGroup)
 	}

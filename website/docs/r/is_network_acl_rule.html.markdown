@@ -25,54 +25,54 @@ provider "ibm" {
 ## Example usage (all)
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "vpctest"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.testacc_vpc.id
-}  
-resource "ibm_is_network_acl_rule" "isExampleACLRule1" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "outbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "outbound"
+resource "ibm_is_network_acl" "example" {
+  name = "example-acl"
+  vpc  = ibm_is_vpc.example.id
 }
-resource "ibm_is_network_acl_rule" "isExampleACLRule2" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "inbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "inbound"
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "outbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
+}
+resource "ibm_is_network_acl_rule" "example1" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "inbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "inbound"
 }
 ```
 
 ## Example usage (icmp)
 
 ```terraform
-resource "ibm_is_network_acl_rule" "isExampleACLRule" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "outbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "outbound"
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "outbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
   icmp {
     code = 1
     type = 1
   }
 }
-resource "ibm_is_network_acl_rule" "isExampleACLRule" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "inbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "inbound"
+resource "ibm_is_network_acl_rule" "example1" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "inbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "inbound"
   icmp {
     code = 1
     type = 1
@@ -84,13 +84,13 @@ resource "ibm_is_network_acl_rule" "isExampleACLRule" {
 ## Example usage (tcp/udp)
 
 ```terraform
-resource "ibm_is_network_acl_rule" "isExampleACL" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "outbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "outbound"
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "outbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
   tcp {
     port_max        = 65535
     port_min        = 1
@@ -98,13 +98,13 @@ resource "ibm_is_network_acl_rule" "isExampleACL" {
     source_port_min = 22
   }
 }
-resource "ibm_is_network_acl_rule" "isExampleACL" {
-  network_acl    = ibm_is_network_acl.isExampleACL.id
-  name           = "inbound"
-  action         = "allow"
-  source         = "0.0.0.0/0"
-  destination    = "0.0.0.0/0"
-  direction      = "inbound"
+resource "ibm_is_network_acl_rule" "example1" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "inbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "inbound"
   tcp {
     port_max        = 65535
     port_min        = 1
@@ -144,7 +144,7 @@ Review the argument references that you can specify for your resource.
    - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
    - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 
-**NOTE**: Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
+~> **NOTE:**: Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

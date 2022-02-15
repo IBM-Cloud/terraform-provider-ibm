@@ -24,9 +24,9 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_disk" "is_dedicated_host_disk" {
-	dedicated_host = "dedicatedhost id"
-	disk = "id"
+data "ibm_is_dedicated_host_disk" "example" {
+  dedicated_host = ibm_is_dedicated_host.example.id
+  disk           = data.ibm_is_dedicated_host_disks.example.disks.0.id
 }
 ```
 

@@ -24,12 +24,12 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
-  security_group    = "2d364f0a-a870-42c3-a554-000001352417"
-  network_interface = "6d6128aa-badc-45c4-bb0e-7c2c1c47be55"
+resource "ibm_is_security_group_network_interface_attachment" "example" {
+  security_group    = ibm_is_security_group.example.id
+  network_interface = ibm_is_instance.example.primary_network_interface[0].id
 }
 ```
-**Note** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
+~> **Note:** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 

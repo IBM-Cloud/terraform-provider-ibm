@@ -25,7 +25,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_flow_logs" "ds_flow_logs" {
+data "ibm_is_flow_logs" "example" {
 }
 
 ```

@@ -68,9 +68,9 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
-	"github.com/IBM/scc-go-sdk/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -176,9 +176,6 @@ type Config struct {
 
 	//IAM Refresh Token
 	IAMRefreshToken string
-
-	// PowerService Instance
-	PowerServiceInstance string
 
 	// Zone
 	Zone          string
@@ -348,7 +345,6 @@ type clientSession struct {
 	resourceCatalogConfigErr  error
 	resourceCatalogServiceAPI catalog.ResourceCatalogAPI
 
-	powerConfigErr error
 	ibmpiConfigErr error
 	ibmpiSession   *ibmpisession.IBMPISession
 
@@ -764,7 +760,7 @@ func (sess clientSession) TransitGatewayV1API() (*tg.TransitGatewayApisV1, error
 // Session to the Power Colo Service
 
 func (sess clientSession) IBMPISession() (*ibmpisession.IBMPISession, error) {
-	return sess.ibmpiSession, sess.powerConfigErr
+	return sess.ibmpiSession, sess.ibmpiConfigErr
 }
 
 // Private DNS Service
@@ -1099,7 +1095,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.enterpriseManagementClientErr = errEmptyBluemixCredentials
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
-		session.powerConfigErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
 		session.userManagementErr = errEmptyBluemixCredentials
 		session.certManagementErr = errEmptyBluemixCredentials
@@ -1164,8 +1159,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 			if err != nil {
 				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
 				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-				session.powerConfigErr = fmt.Errorf("[ERROR] Error occured while fetching the auth key for power iaas: %q", err)
-				session.ibmpiConfigErr = fmt.Errorf("[ERROR] Error occured while fetching the auth key for power iaas: %q", err)
 			}
 		}
 		err = authenticateCF(sess.BluemixSession)
@@ -1344,10 +1337,20 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if c.BluemixAPIKey != "" {
-		authenticator = &core.IamAuthenticator{
-			ApiKey: c.BluemixAPIKey,
-			URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL) + "/identity/token",
+	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+		if c.BluemixAPIKey != "" {
+			authenticator = &core.IamAuthenticator{
+				ApiKey: c.BluemixAPIKey,
+				URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
+		} else {
+			// Construct the IamAuthenticator with the IAM refresh token.
+			authenticator = &core.IamAuthenticator{
+				RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
+				ClientId:     "bx",
+				ClientSecret: "bx",
+				URL:          EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
+			}
 		}
 	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
 		authenticator = &core.BearerTokenAuthenticator{
@@ -1824,10 +1827,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.apigatewayAPI = apigatewayAPI
 
 	// POWER SYSTEMS Service
-	ibmpisession, err := ibmpisession.New(sess.BluemixSession.Config.IAMAccessToken, c.Region, false, session.bmxUserDetails.UserAccount, c.Zone)
+	piURL := ContructEndpoint(c.Region, "power-iaas.cloud.ibm.com")
+	ibmPIOptions := &ibmpisession.IBMPIOptions{
+		Authenticator: authenticator,
+		Debug:         os.Getenv("TF_LOG") != "",
+		Region:        c.Region,
+		URL:           EnvFallBack([]string{"IBMCLOUD_PI_API_ENDPOINT"}, piURL),
+		UserAccount:   userConfig.UserAccount,
+		Zone:          c.Zone,
+	}
+	ibmpisession, err := ibmpisession.NewIBMPISession(ibmPIOptions)
 	if err != nil {
-		session.ibmpiConfigErr = err
-		return nil, err
+		session.ibmpiConfigErr = fmt.Errorf("Error occured while configuring ibmpisession: %q", err)
 	}
 	session.ibmpiSession = ibmpisession
 
@@ -2913,8 +2924,6 @@ func newSession(c *Config) (*Session, error) {
 			Visibility:    c.Visibility,
 			EndpointsFile: c.EndpointsFile,
 			UserAgent:     fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
-
-			//PowerServiceInstance: c.PowerServiceInstance,
 		}
 		sess, err := bxsession.New(bmxConfig)
 		if err != nil {

@@ -24,47 +24,47 @@ provider "ibm" {
 ## Example usage (using capacity)
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "testsubnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
-  zone            = "us-south-2"
+resource "ibm_is_subnet" "example" {
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
   total_ipv4_address_count = 16
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testvsi1"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
   network_interfaces {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     name   = "eth1"
   }
 }
 
-resource "ibm_is_instance_volume_attachment" "testacc_att1" {
-  instance = ibm_is_instance.testacc_instance.id
+resource "ibm_is_instance_volume_attachment" "example" {
+  instance = ibm_is_instance.example.id
 
-  name = "test-vol-att-1"
-  profile = "general-purpose"
-  capacity = "20"
+  name                               = "example-vol-att-1"
+  profile                            = "general-purpose"
+  capacity                           = "20"
   delete_volume_on_attachment_delete = true
-  delete_volume_on_instance_delete = true
-  volume_name = "testvol1"
+  delete_volume_on_instance_delete   = true
+  volume_name                        = "example-vol-1"
 
   //User can configure timeouts
   timeouts {
@@ -78,37 +78,37 @@ resource "ibm_is_instance_volume_attachment" "testacc_att1" {
 ## Example usage (using existing volume)
 
 ```terraform
-resource "ibm_is_volume" "testacc_vol" {
-  name    = "testvol2"
+resource "ibm_is_volume" "example" {
+  name    = "example-vol"
   profile = "10iops-tier"
   zone    = "us-south-2"
 }
 
-resource "ibm_is_instance_volume_attachment" "testacc_att2" {
-  instance = ibm_is_instance.testacc_instance.id
+resource "ibm_is_instance_volume_attachment" "example" {
+  instance = ibm_is_instance.example.id
 
-  name = "test-col-att-2"
-  volume = ibm_is_volume.testacc_vol.id
+  name   = "example-col-att-2"
+  volume = ibm_is_volume.example.id
 
   // it is recommended to keep the delete_volume_on_attachment_delete as false here otherwise on deleting attachment, existing volume will also get deleted
 
   delete_volume_on_attachment_delete = false
-  delete_volume_on_instance_delete = false
+  delete_volume_on_instance_delete   = false
 }
 
 ```
 ## Example usage (creating new volume)
 
 ```terraform
-resource "ibm_is_instance_volume_attachment" "testacc_att3" {
-  instance = ibm_is_instance.testacc_instance.id
+resource "ibm_is_instance_volume_attachment" "example" {
+  instance = ibm_is_instance.example.id
 
-  name                                = "test-col-att-3"
+  name                                = "example-col-att-3"
   iops                                = 100
   capacity                            = 50
   delete_volume_on_attachment_delete  = true
   delete_volume_on_instance_delete    = true
-  volume_name                         = "testvol3"
+  volume_name                         = "example-vol-3"
 
   //User can configure timeouts
   timeouts {
@@ -123,15 +123,15 @@ resource "ibm_is_instance_volume_attachment" "testacc_att3" {
 ## Example usage (restoring using snapshot)
 
 ```terraform
-resource "ibm_is_instance_volume_attachment" "testacc_att4" {
-  instance = ibm_is_instance.testacc_instance.id
+resource "ibm_is_instance_volume_attachment" "example-vol-3" {
+  instance = ibm_is_instance.example.id
 
   name = "test-col-att-4"
   profile = "general-purpose"
   snapshot = xxxx-xx-x-xxxxx
   delete_volume_on_attachment_delete = true
   delete_volume_on_instance_delete = true
-  volume_name = "testvol4"
+  volume_name = "example-vol-4"
 
   //User can configure timeouts
   timeouts {
@@ -140,7 +140,6 @@ resource "ibm_is_instance_volume_attachment" "testacc_att4" {
     delete = "15m"
   }
 }
-
 ```
 
 ## Timeouts

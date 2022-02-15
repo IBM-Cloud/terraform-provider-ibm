@@ -71,6 +71,7 @@ func ResourceIBMPICloudConnection() *schema.Resource {
 			helpers.PICloudConnectionNetworks: {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Set of Networks to attach to this cloud connection",
 			},
@@ -212,7 +213,7 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 	if cloudConnection != nil {
 		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
 	} else if cloudConnectionJob != nil {
-		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnection.CloudConnectionID))
+		d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *cloudConnectionJob.CloudConnectionID))
 
 		jobID := *cloudConnectionJob.JobRef.ID
 

@@ -1035,7 +1035,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
 		volids := flex.ExpandStringList((v.(*schema.Set)).List())
 		if len(volids) > 0 {
-			body.VolumeIds = volids
+			body.VolumeIDs = volids
 		}
 	}
 	if p, ok := d.GetOk(helpers.PIInstancePinPolicy); ok {
@@ -1194,7 +1194,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		body.KeyPairName = sshkey
 	}
 	if len(volids) > 0 {
-		body.VolumeIds = volids
+		body.VolumeIDs = volids
 	}
 	if d.Get(helpers.PIInstancePinPolicy) == "soft" || d.Get(helpers.PIInstancePinPolicy) == "hard" {
 		body.PinPolicy = models.PinPolicy(pinpolicy)

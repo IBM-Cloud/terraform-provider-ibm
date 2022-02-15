@@ -5,6 +5,7 @@ package iamidentity
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -92,7 +93,7 @@ func resourceIBMIAMServiceIDCreate(context context.Context, d *schema.ResourceDa
 	serviceID, resp, err := iamIdentityClient.CreateServiceID(&createServiceIDOptions)
 	if err != nil || serviceID == nil {
 		log.Printf("Error creating serviceID: %s, %s", err, resp)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating serviceID: %s %s", err, resp))
 	}
 	d.SetId(*serviceID.ID)
 
@@ -115,7 +116,7 @@ func resourceIBMIAMServiceIDRead(context context.Context, d *schema.ResourceData
 			return nil
 		}
 		log.Printf("Error retrieving serviceID: %s %s", err, resp)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving serviceID: %s %s", err, resp))
 	}
 	if serviceID.Name != nil {
 		d.Set("name", *serviceID.Name)
@@ -169,7 +170,7 @@ func resourceIBMIAMServiceIDUpdate(context context.Context, d *schema.ResourceDa
 		_, resp, err := iamIdentityClient.UpdateServiceID(&updateServiceIDOptions)
 		if err != nil {
 			log.Printf("Error updating serviceID: %s, %s", err, resp)
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating serviceID: %s %s", err, resp))
 		}
 	}
 
@@ -190,7 +191,7 @@ func resourceIBMIAMServiceIDDelete(context context.Context, d *schema.ResourceDa
 	resp, err := iamIdentityClient.DeleteServiceID(&deleteServiceIDOptions)
 	if err != nil {
 		log.Printf("Error deleting serviceID: %s %s", err, resp)
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting serviceID: %s %s", err, resp))
 	}
 
 	d.SetId("")

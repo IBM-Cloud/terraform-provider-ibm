@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
@@ -575,7 +575,12 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "CRN of resource instance",
 			},
-
+			"image_security_enforcement": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Set true to enable image security enforcement policies",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -638,6 +643,10 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
+	csClientV2, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
 
 	name := d.Get("name").(string)
 	datacenter := d.Get("datacenter").(string)
@@ -655,6 +664,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	case hardwareShared:
 		hardware = isolationPublic
 	}
+	imageSecurityEnabled := d.Get("image_security_enforcement").(bool)
 
 	params := v1.ClusterCreateRequest{
 		Name:           name,
@@ -711,6 +721,17 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(cls.ID)
+
+	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
+	if imageSecurityEnabled {
+		err = csClientV2.Clusters().EnableImageSecurityEnforcement(cls.ID, targetEnvV2)
+		if err != nil {
+			return err
+		}
+	}
 
 	_, err = waitForClusterMasterAvailable(d, meta)
 	if err != nil {
@@ -874,6 +895,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return err
 	}
+	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set(flex.ResourceControllerURL, controller+"/kubernetes/clusters")
 	d.Set(flex.ResourceName, cls.Name)
 	d.Set(flex.ResourceCRN, cls.CRN)
@@ -889,7 +911,17 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		return err
 	}
 
+	csClientV2, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return err
+	}
+
 	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return err
+	}
+
+	targetEnvV2, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return err
 	}
@@ -1271,6 +1303,18 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				"An error occured during update of instance (%s) tags: %s", clusterID, err)
 		}
 
+	}
+
+	if d.HasChange("image_security_enforcement") && !d.IsNewResource() {
+		var imageSecurity bool
+		if v, ok := d.GetOk("image_security_enforcement"); ok {
+			imageSecurity = v.(bool)
+		}
+		if imageSecurity {
+			csClientV2.Clusters().EnableImageSecurityEnforcement(clusterID, targetEnvV2)
+		} else {
+			csClientV2.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnvV2)
+		}
 	}
 
 	return resourceIBMContainerClusterRead(d, meta)

@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_regions" "ds_regions" {
+data "ibm_is_regions" "example" {
 }
 
 ```

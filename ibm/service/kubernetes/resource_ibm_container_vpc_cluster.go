@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
@@ -366,6 +366,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Sensitive: true,
 			},
 
+			"image_security_enforcement": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Set true to enable image security enforcement policies",
+			},
+
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -442,6 +449,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	vpcID := d.Get("vpc_id").(string)
 	flavor := d.Get("flavor").(string)
 	workerCount := d.Get("worker_count").(int)
+	imageSecurityEnabled := d.Get("image_security_enforcement").(bool)
 
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
@@ -505,11 +513,19 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	cls, err := csClient.Clusters().Create(params, targetEnv)
-
 	if err != nil {
 		return err
 	}
+
 	d.SetId(cls.ID)
+
+	if imageSecurityEnabled {
+		err = csClient.Clusters().EnableImageSecurityEnforcement(cls.ID, targetEnv)
+		if err != nil {
+			return err
+		}
+	}
+
 	switch strings.ToLower(timeoutStage) {
 
 	case strings.ToLower(masterNodeReady):
@@ -828,6 +844,18 @@ func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface
 		d.Set("force_delete_storage", forceDeleteStorage)
 	}
 
+	if d.HasChange("image_security_enforcement") && !d.IsNewResource() {
+		var imageSecurity bool
+		if v, ok := d.GetOk("image_security_enforcement"); ok {
+			imageSecurity = v.(bool)
+		}
+		if imageSecurity {
+			csClient.Clusters().EnableImageSecurityEnforcement(clusterID, targetEnv)
+		} else {
+			csClient.Clusters().DisableImageSecurityEnforcement(clusterID, targetEnv)
+		}
+	}
+
 	return resourceIBMContainerVpcClusterRead(d, meta)
 }
 func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string, meta interface{}, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
@@ -942,6 +970,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("disable_public_service_endpoint", true)
 	}
+	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {

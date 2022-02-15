@@ -386,13 +386,13 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 
 			for {
 				if startSub != "" {
-					options.Start = &start
+					options.Start = &startSub
 				}
 				s, response, err := sess.ListSubnets(options)
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response)
 				}
-				start = flex.GetNext(s.Next)
+				startSub = flex.GetNext(s.Next)
 				allrecsSub = append(allrecsSub, s.Subnets...)
 				if startSub == "" {
 					break
@@ -416,7 +416,7 @@ func vpcGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 				d.Set(subnetsList, subnetsInfo)
 			}
 
-			// adding pagination support for subnets inside vpc
+			// adding pagination support for sg inside vpc
 
 			startSg := ""
 			allrecsSg := []vpcv1.SecurityGroup{}
