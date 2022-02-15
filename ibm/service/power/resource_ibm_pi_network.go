@@ -63,11 +63,10 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "PI network CIDR",
 			},
 			helpers.PINetworkGateway: {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				RequiredWith: []string{helpers.PINetworkIPAddressRange},
-				Description:  "PI network gateway",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI network gateway",
 			},
 			helpers.PINetworkJumbo: {
 				Type:        schema.TypeBool,
@@ -81,11 +80,10 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "PI cloud instance ID",
 			},
 			helpers.PINetworkIPAddressRange: {
-				Type:         schema.TypeList,
-				Optional:     true,
-				Computed:     true,
-				RequiredWith: []string{helpers.PINetworkGateway},
-				Description:  "List of one or more ip address range(s)",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of one or more ip address range(s)",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ending_ip_address": {
@@ -156,10 +154,17 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 			ipBodyRanges = getIPAddressRanges(ips.([]interface{}))
 		}
 
-		if len(gateway) == 0 || len(ipBodyRanges) == 0 {
-			log.Printf("[INFO] Either %v or %v is empty, calacultaing %v and %v",
-				helpers.PINetworkGateway, helpers.PINetworkIPAddressRange, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange)
-			gateway, firstip, lastip, err = generateIPData(networkcidr)
+		if len(gateway) == 0 {
+			log.Printf("[INFO] %v is empty, calacultaing %v", helpers.PINetworkGateway, helpers.PINetworkGateway)
+			gateway, _, _, err = generateIPData(networkcidr)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if len(ipBodyRanges) == 0 {
+			log.Printf("[INFO] %v is empty, calacultaing %v", helpers.PINetworkIPAddressRange, helpers.PINetworkIPAddressRange)
+			_, firstip, lastip, err = generateIPData(networkcidr)
 			if err != nil {
 				return diag.FromErr(err)
 			}
