@@ -133,7 +133,42 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 					},
 				},
 			},
-
+			pdnsCRForwardRules: {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						pdnsCRFRRuleID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifier of the forwarding rule.",
+						},
+						pdnsCRFRDesctiption: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Descriptive text of the forwarding rule.",
+						},
+						pdnsCRFRType: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the forwarding rule.",
+						},
+						pdnsCRFRMatch: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The matching zone or hostname.",
+						},
+						pdnsCRFRForwardTo: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The upstream DNS servers will be forwarded to.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			pdnsCRCreatedOn: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -226,6 +261,23 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error reading the custom resolver %s:%s", err, response))
 	}
+	fwopt := sess.NewListForwardingRulesOptions(crn, customResolverID)
+
+	fwresult, fwresp, fwerr := sess.ListForwardingRulesWithContext(context, fwopt)
+	if fwerr != nil || fwresult == nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the forwarding rules %s:%s", fwerr, fwresp))
+	}
+
+	forwardRules := make([]interface{}, 0)
+	for _, instance := range fwresult.ForwardingRules {
+		forwardRule := map[string]interface{}{}
+		forwardRule[pdnsCRFRRuleID] = *instance.ID
+		forwardRule[pdnsCRFRDesctiption] = *instance.Description
+		forwardRule[pdnsCRFRType] = *instance.Type
+		forwardRule[pdnsCRFRMatch] = *instance.Match
+		forwardRule[pdnsCRFRForwardTo] = instance.ForwardTo
+		forwardRules = append(forwardRules, forwardRule)
+	}
 	d.Set(pdnsInstanceID, crn)
 	d.Set(pdnsCRId, *result.ID)
 	d.Set(pdnsCRName, *result.Name)
@@ -233,7 +285,7 @@ func resouceIBMPrivateDNSCustomResolverRead(context context.Context, d *schema.R
 	d.Set(pdnsCRHealth, *result.Health)
 	d.Set(pdnsCREnabled, *result.Enabled)
 	d.Set(pdnsCustomResolverLocations, flattenPdnsCRLocations(result.Locations))
-
+	d.Set(pdnsCRForwardRules, forwardRules)
 	return nil
 }
 
