@@ -50,6 +50,7 @@ import (
 	ciswafgroupv1 "github.com/IBM/networking-go-sdk/wafrulegroupsapiv1"
 	ciswafpackagev1 "github.com/IBM/networking-go-sdk/wafrulepackagesapiv1"
 	ciswafrulev1 "github.com/IBM/networking-go-sdk/wafrulesapiv1"
+	ciswebhooksv1 "github.com/IBM/networking-go-sdk/webhooksv1"
 	cisaccessrulev1 "github.com/IBM/networking-go-sdk/zonefirewallaccessrulesv1"
 	cislockdownv1 "github.com/IBM/networking-go-sdk/zonelockdownv1"
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
@@ -264,6 +265,7 @@ type ClientSession interface {
 	SatelliteClientSession() (*kubernetesserviceapiv1.KubernetesServiceApiV1, error)
 	SatellitLinkClientSession() (*satellitelinkv1.SatelliteLinkV1, error)
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
+	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
@@ -509,6 +511,10 @@ type clientSession struct {
 	//IAM Access Groups
 	iamAccessGroupsErr error
 	iamAccessGroupsAPI *iamaccessgroups.IamAccessGroupsV2
+
+	// CIS Webhooks options
+	cisWebhooksClient *ciswebhooksv1.WebhooksV1
+	cisWebhooksErr    error
 
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
@@ -981,6 +987,14 @@ func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.Kube
 	return sess.satelliteClient, sess.satelliteClientErr
 }
 
+// CIS Webhooks
+func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
+	if sess.cisWebhooksErr != nil {
+		return sess.cisWebhooksClient, sess.cisWebhooksErr
+	}
+	return sess.cisWebhooksClient.Clone(), nil
+}
+
 // CIS Filters
 func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	if sess.cisFiltersErr != nil {
@@ -1118,6 +1132,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.iamIdentityErr = errEmptyBluemixCredentials
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
+		session.cisWebhooksErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
@@ -1939,6 +1954,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisRangeAppErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisWebhooksErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cisURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CIS_API_ENDPOINT", c.Region, cisURL)
@@ -2393,6 +2410,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM Network CIS Webhooks
+	cisWebhooksOpt := &ciswebhooksv1.WebhooksV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisWebhooksClient, session.cisWebhooksErr = ciswebhooksv1.NewWebhooksV1(cisWebhooksOpt)
+	if session.cisWebhooksErr != nil {
+		session.cisWebhooksErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Webhooks : %s",
+				session.cisWebhooksErr)
+	}
+	if session.cisWebhooksClient != nil && session.cisWebhooksClient.Service != nil {
+		session.cisWebhooksClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisWebhooksClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
 	// IBM Network CIS Filters
 	cisFiltersOpt := &cisfiltersv1.FiltersV1Options{
 		URL:           cisEndPoint,
