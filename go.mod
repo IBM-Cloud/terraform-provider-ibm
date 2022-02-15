@@ -49,6 +49,7 @@ require (
 	github.com/jinzhu/copier v0.3.2
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
 	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
