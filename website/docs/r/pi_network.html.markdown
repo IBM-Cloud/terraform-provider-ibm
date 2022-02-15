@@ -21,6 +21,11 @@ resource "ibm_pi_network" "power_networks" {
   pi_network_type      = "vlan"
   pi_cidr              = "<Network in CIDR notation (192.168.0.0/24)>"
   pi_dns               = [<"DNS Servers">]
+  pi_gateway           = "192.168.0.1"
+  pi_ipaddress_range {
+    starting_ip_address  = "192.168.0.2"
+    ending_ip_address    = "192.168.0.254"
+  }
 }
 ```
 
@@ -55,7 +60,15 @@ Review the argument references that you can specify for your resource.
 - `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
 - `pi_dns` - (Optional, Set of String) The DNS Servers for the network. Required for `vlan` network type.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
+- `pi_gateway` - (Optional, String) The gateway ip address.
+  - `pi_gateway` is required with `pi_ipaddress_range`
+- `pi_ipaddress_range` - (Optional, List of Map) List of one or more ip address range. The `pi_ipaddress_range` object structure is documented below.
+  - `pi_ipaddress_range` is required with `pi_gateway`. **Note** if any one of the `pi_gateway` or `pi_ipaddress_range` is found to be empty, it will ignore both the inputs and calculate the new values for `pi_gateway` and `pi_ipaddress_range`.
 - `pi_network_jumbo` - (Optional, Bool) MTU Jumbo option of the network.
+
+The `pi_ipaddress_range` block supports:
+  - `ending_ip_address` - (Required, String) The ending ip address.
+  - `starting_ip_address` - (Required, String) The staring ip address.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

@@ -63,9 +63,11 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Description: "PI network CIDR",
 			},
 			helpers.PINetworkGateway: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "PI network gateway",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				RequiredWith: []string{helpers.PINetworkIPAddressRange},
+				Description:  "PI network gateway",
 			},
 			helpers.PINetworkJumbo: {
 				Type:        schema.TypeBool,
@@ -77,6 +79,27 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
+			},
+			helpers.PINetworkIPAddressRange: {
+				Type:         schema.TypeList,
+				Optional:     true,
+				Computed:     true,
+				RequiredWith: []string{helpers.PINetworkGateway},
+				Description:  "List of one or more ip address range(s)",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ending_ip_address": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Ending ip address",
+						},
+						"starting_ip_address": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Starting ip address",
+						},
+					},
+				},
 			},
 
 			//Computed Attributes
@@ -117,20 +140,33 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if networktype == "vlan" {
-		var networkcidr string
+		var networkcidr, gateway, firstip, lastip string
+		var ipBodyRanges []*models.IPAddressRange
 		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
 			networkcidr = v.(string)
 		} else {
-			diag.Errorf("%s is required when %s is vlan", helpers.PINetworkCidr, helpers.PINetworkType)
+			return diag.Errorf("%s is required when %s is vlan", helpers.PINetworkCidr, helpers.PINetworkType)
 		}
 
-		gateway, firstip, lastip, err := generateIPData(networkcidr)
-		if err != nil {
-			return diag.FromErr(err)
+		if g, ok := d.GetOk(helpers.PINetworkGateway); ok {
+			gateway = g.(string)
 		}
 
-		var ipbody = []*models.IPAddressRange{{EndingIPAddress: &lastip, StartingIPAddress: &firstip}}
-		body.IPAddressRanges = ipbody
+		if ips, ok := d.GetOk(helpers.PINetworkIPAddressRange); ok {
+			ipBodyRanges = getIPAddressRanges(ips.([]interface{}))
+		}
+
+		if len(gateway) == 0 || len(ipBodyRanges) == 0 {
+			log.Printf("[INFO] Either %v or %v is empty, calacultaing %v and %v",
+				helpers.PINetworkGateway, helpers.PINetworkIPAddressRange, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange)
+			gateway, firstip, lastip, err = generateIPData(networkcidr)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			ipBodyRanges = []*models.IPAddressRange{{EndingIPAddress: &lastip, StartingIPAddress: &firstip}}
+		}
+
+		body.IPAddressRanges = ipBodyRanges
 		body.Gateway = gateway
 		body.Cidr = networkcidr
 	}
@@ -176,6 +212,20 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(helpers.PINetworkName, networkdata.Name)
 	d.Set(helpers.PINetworkType, networkdata.Type)
 	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
+	d.Set(helpers.PINetworkGateway, networkdata.Gateway)
+	ipRangesMap := []map[string]interface{}{}
+	if networkdata.IPAddressRanges != nil {
+		for _, n := range networkdata.IPAddressRanges {
+			if n != nil {
+				v := map[string]interface{}{
+					"ending_ip_address":   n.EndingIPAddress,
+					"starting_ip_address": n.StartingIPAddress,
+				}
+				ipRangesMap = append(ipRangesMap, v)
+			}
+		}
+	}
+	d.Set(helpers.PINetworkIPAddressRange, ipRangesMap)
 
 	return nil
 
@@ -192,15 +242,18 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS) {
+	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS, helpers.PINetworkGateway, helpers.PINetworkIPAddressRange) {
 		networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{
 			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
 		}
+		if d.Get(helpers.PINetworkType).(string) == "vlan" {
+			body.Gateway = flex.PtrToString(d.Get(helpers.PINetworkGateway).(string))
+			body.IPAddressRanges = getIPAddressRanges(d.Get(helpers.PINetworkIPAddressRange).([]interface{}))
+		}
 
 		if d.HasChange(helpers.PINetworkName) {
-			name := d.Get(helpers.PINetworkName).(string)
-			body.Name = &name
+			body.Name = flex.PtrToString(d.Get(helpers.PINetworkName).(string))
 		}
 
 		_, err = networkC.Update(networkID, body)
@@ -307,4 +360,19 @@ func generateIPData(cdir string) (gway, firstip, lastip string, err error) {
 	}
 	return gateway.String(), firstusable.String(), lastusable.String(), nil
 
+}
+
+func getIPAddressRanges(ipAddressRanges []interface{}) []*models.IPAddressRange {
+	ipRanges := make([]*models.IPAddressRange, 0, len(ipAddressRanges))
+	for _, v := range ipAddressRanges {
+		if v != nil {
+			ipAddressRange := v.(map[string]interface{})
+			ipRange := &models.IPAddressRange{
+				EndingIPAddress:   flex.PtrToString(ipAddressRange["ending_ip_address"].(string)),
+				StartingIPAddress: flex.PtrToString(ipAddressRange["starting_ip_address"].(string)),
+			}
+			ipRanges = append(ipRanges, ipRange)
+		}
+	}
+	return ipRanges
 }
