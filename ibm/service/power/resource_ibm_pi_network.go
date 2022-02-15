@@ -34,6 +34,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(60 * time.Minute),
 		},
 
@@ -181,7 +182,34 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	sess, err := meta.(conns.ClientSession).IBMPISession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	cloudInstanceID, networkID, err := splitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS) {
+		networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
+		body := &models.NetworkUpdate{
+			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
+		}
+
+		if d.HasChange(helpers.PINetworkName) {
+			name := d.Get(helpers.PINetworkName).(string)
+			body.Name = &name
+		}
+
+		_, err = networkC.Update(networkID, body)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return resourceIBMPINetworkRead(ctx, d, meta)
 }
 
 func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

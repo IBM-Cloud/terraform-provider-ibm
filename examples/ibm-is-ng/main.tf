@@ -723,3 +723,26 @@ data "ibm_is_vpc_address_prefix" "example-3" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
 }
+
+data "ibm_is_vpn_gateway" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
+}
+data "ibm_is_vpn_gateway" "example-1" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+}
+data "ibm_is_vpn_gateway_connection" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+}
+data "ibm_is_vpn_gateway_connection" "example-1" {
+  vpn_gateway = ibm_is_vpn_gateway.example-1.id
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+}
+data "ibm_is_vpn_gateway_connection" "example-2" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+}
+data "ibm_is_vpn_gateway_connection" "example-3" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+}

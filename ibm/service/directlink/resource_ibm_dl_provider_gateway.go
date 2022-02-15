@@ -80,7 +80,6 @@ func ResourceIBMDLProviderGateway() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_dl_provider_gateway", dlName),
 				// ValidateFunc: validateRegexpLen(1, 63, "^([a-zA-Z]|[a-zA-Z][-_a-zA-Z0-9]*[a-zA-Z0-9])$"),
 			},
-
 			dlSpeedMbps: {
 				Type:        schema.TypeInt,
 				Required:    true,
@@ -111,6 +110,7 @@ func ResourceIBMDLProviderGateway() *schema.Resource {
 			},
 			dlVlan: {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "VLAN allocated for this gateway",
 			},
@@ -220,6 +220,12 @@ func resourceIBMdlProviderGatewayCreate(d *schema.ResourceData, meta interface{}
 
 	}
 
+	if _, ok := d.GetOk(dlVlan); ok {
+		vlan := int64(d.Get(dlVlan).(int))
+		gatewayOptions.Vlan = &vlan
+
+	}
+
 	gateway, response, err := directLink.CreateProviderGateway(gatewayOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Create Direct Link Provider Gateway err %s\n%s", err, response)
@@ -280,7 +286,6 @@ func resourceIBMdlProviderGatewayRead(d *schema.ResourceData, meta interface{}) 
 	if instance.BgpIbmAsn != nil {
 		d.Set(dlBgpIbmAsn, *instance.BgpIbmAsn)
 	}
-
 	if instance.BgpCerCidr != nil {
 		d.Set(dlBgpCerCidr, *instance.BgpCerCidr)
 	}
@@ -378,7 +383,10 @@ func resourceIBMdlProviderGatewayUpdate(d *schema.ResourceData, meta interface{}
 		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
 		updateGatewayOptionsModel.BgpIbmCidr = &bgpIbmCidr
 	}
-
+	if d.HasChange(dlVlan) {
+		vlan := int64(d.Get(dlVlan).(int))
+		updateGatewayOptionsModel.Vlan = &vlan
+	}
 	_, response, err = directLink.UpdateProviderGateway(updateGatewayOptionsModel)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Provider Gateway  err %s\n%s", err, response)
