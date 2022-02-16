@@ -13,15 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIConsoleLanguageCode = "pi_language_code"
-)
-
+// Attributes and Arguments defined in data_source_ibm_pi_console_languages.go
 func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIInstanceConsoleLanguageCreate,
@@ -36,17 +32,17 @@ func ResourceIBMPIInstanceConsoleLanguage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PIInstanceName: {
+			PIConsoleLanguageName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The unique identifier or name of the instance",
 			},
-			PIConsoleLanguageCode: {
+			ConsoleLanguageCode: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Language code",
@@ -61,9 +57,9 @@ func resourceIBMPIInstanceConsoleLanguageCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	instanceName := d.Get(helpers.PIInstanceName).(string)
-	code := d.Get(PIConsoleLanguageCode).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	instanceName := d.Get(PIConsoleLanguageName).(string)
+	code := d.Get(ConsoleLanguageCode).(string)
 
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
@@ -94,9 +90,9 @@ func resourceIBMPIInstanceConsoleLanguageUpdate(ctx context.Context, d *schema.R
 	}
 
 	if d.HasChange(ConsoleLanguageCode) {
-		cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-		instanceName := d.Get(helpers.PIInstanceName).(string)
-		code := d.Get(PIConsoleLanguageCode).(string)
+		cloudInstanceID := d.Get(PICloudInstanceID).(string)
+		instanceName := d.Get(PIConsoleLanguageName).(string)
+		code := d.Get(ConsoleLanguageCode).(string)
 
 		client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 

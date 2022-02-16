@@ -48,6 +48,7 @@ In addition to all argument reference list, you can access the following attribu
 - `operatingsystem` - (String) The operating system that is installed with the image.
 - `size` - (String) The size of the image in megabytes.
 - `state` - (String) The state for this image. 
+- `hypervisor` - (String) The hypervisor for this image.
 - `storage_type` - (String) The storage type for this image.
 - `storage_pool` - (String) Storage pool where image resides.
 - `image_type` - (String) The identifier of this image type.

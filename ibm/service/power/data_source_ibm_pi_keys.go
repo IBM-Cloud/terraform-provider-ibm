@@ -13,44 +13,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIKeys    = "keys"
-	PIKeyName = "name"
-	PIKey     = "ssh_key"
-	PIKeyDate = "creation_date"
-)
-
+// Attributes and Arguments defined in data_source_ibm_pi_key.go
 func DataSourceIBMPIKeys() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIKeysRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "PI cloud instance ID",
 				ValidateFunc: validation.NoZeroValues,
 			},
 			// Computed Attributes
-			PIKeys: {
+			Keys: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						PIKeyName: {
+						KeyName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "User defined name for the SSH key",
 						},
-						PIKey: {
+						KeySSHKey: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "SSH RSA key",
 						},
-						PIKeyDate: {
+						KeyCreationDate: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Date of SSH key creation",
@@ -68,7 +61,7 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	client := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	sshKeys, err := client.GetAll()
@@ -80,16 +73,16 @@ func dataSourceIBMPIKeysRead(ctx context.Context, d *schema.ResourceData, meta i
 	result := make([]map[string]interface{}, 0, len(sshKeys.SSHKeys))
 	for _, sshKey := range sshKeys.SSHKeys {
 		key := map[string]interface{}{
-			PIKeyName: sshKey.Name,
-			PIKey:     sshKey.SSHKey,
-			PIKeyDate: sshKey.CreationDate.String(),
+			KeyName:         sshKey.Name,
+			KeySSHKey:       sshKey.SSHKey,
+			KeyCreationDate: sshKey.CreationDate.String(),
 		}
 		result = append(result, key)
 	}
 
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
-	d.Set(PIKeys, result)
+	d.Set(Keys, result)
 
 	return nil
 }

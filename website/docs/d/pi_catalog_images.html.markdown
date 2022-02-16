@@ -48,6 +48,7 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `images`:
 	- `architecture` - (String) Architecture.
 	- `creation_date` - (String) The creation date of an image.
+	- `container_format` - (String) Container format of an image
 	- `description` - (String) The description of an image.
 	- `disk_format` - (String) The disk format.
 	- `endianness` - (String) The `Endianness` order.

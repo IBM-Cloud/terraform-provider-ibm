@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -17,64 +16,86 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const (
+	// Arguments
+	PISnapshotInstanceName = "pi_instance_name"
+	PISnapshotName         = "pi_snapshot_name"
+	PISnapshotDescription  = "pi_description"
+	PISnapshotVolumeIDs    = "pi_volume_ids"
+
+	// Attributes
+	Snapshots               = "instance_snapshots"
+	SnapshotSnapshotID      = "snapshot_id"
+	Snapshot                = "pvm_snapshots"
+	SnapshotAction          = "action"
+	SnapshotCreationDate    = "creation_date"
+	SnapshotDescription     = "description"
+	SnapshotID              = "id"
+	SnapshotLastUpdatedDate = "last_updated_date"
+	SnapshotName            = "name"
+	SnapshotPercentComplete = "percent_complete"
+	SnapshotStatus          = "status"
+	SnapshotVolumeSnapshots = "volume_snapshots"
+)
+
 func DataSourceIBMPISnapshot() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPISnapshotRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			helpers.PIInstanceName: {
+			PISnapshotInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			//Computed Attributes
 
-			"pvm_snapshots": {
+			Snapshot: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						SnapshotID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						SnapshotName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"percent_complete": {
+						SnapshotPercentComplete: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
 
-						"description": {
+						SnapshotDescription: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"action": {
+						SnapshotAction: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						SnapshotStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"creation_date": {
+						SnapshotCreationDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"last_updated_date": {
+						SnapshotLastUpdatedDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_snapshots": {
+						SnapshotVolumeSnapshots: {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
@@ -92,8 +113,8 @@ func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	powerinstancename := d.Get(helpers.PIInstanceName).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	powerinstancename := d.Get(PISnapshotInstanceName).(string)
 	snapshot := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.GetSnapShotVM(powerinstancename)
 
@@ -103,26 +124,26 @@ func dataSourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, me
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("pvm_snapshots", flattenPVMSnapshotInstances(snapshotData.Snapshots))
+	d.Set(Snapshot, flattenSnapshotInstances(snapshotData.Snapshots))
 
 	return nil
 
 }
 
-func flattenPVMSnapshotInstances(list []*models.Snapshot) []map[string]interface{} {
+func flattenSnapshotInstances(list []*models.Snapshot) []map[string]interface{} {
 	log.Printf("Calling the flattensnapshotinstances call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"id":                *i.SnapshotID,
-			"name":              *i.Name,
-			"description":       i.Description,
-			"creation_date":     i.CreationDate.String(),
-			"last_updated_date": i.LastUpdateDate.String(),
-			"action":            i.Action,
-			"percent_complete":  i.PercentComplete,
-			"status":            i.Status,
-			"volume_snapshots":  i.VolumeSnapshots,
+			SnapshotID:              *i.SnapshotID,
+			SnapshotName:            *i.Name,
+			SnapshotDescription:     i.Description,
+			SnapshotCreationDate:    i.CreationDate.String(),
+			SnapshotLastUpdatedDate: i.LastUpdateDate.String(),
+			SnapshotAction:          i.Action,
+			SnapshotPercentComplete: i.PercentComplete,
+			SnapshotStatus:          i.Status,
+			SnapshotVolumeSnapshots: i.VolumeSnapshots,
 		}
 
 		result = append(result, l)

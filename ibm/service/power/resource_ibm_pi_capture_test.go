@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -47,7 +46,7 @@ func TestAccIBMPICaptureWithVolume(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPICaptureDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, helpers.PIInstanceHealthOk),
+				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, "OK"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICaptureExists(captureRes),
 					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),

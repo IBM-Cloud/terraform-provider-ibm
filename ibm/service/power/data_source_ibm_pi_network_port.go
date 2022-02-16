@@ -15,8 +15,27 @@ import (
 
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+const (
+	// Argumnets
+	PINetworkPortName         = "pi_network_name"
+	PINetworkPortDescription  = "pi_network_port_description"
+	PINetworkPortIP           = "pi_network_port_ipaddress"
+	PINetworkPortInstanceName = "pi_instance_name"
+	PINetworkPortID           = "port_id"
+
+	// Attributes
+	NetworkPorts           = "network_ports"
+	NetworkPortIP          = "ipaddress"
+	NetworkPortMAC         = "macaddress"
+	NetworkPortID          = "portid"
+	NetworkPortStatus      = "status"
+	NetworkPortHref        = "href"
+	NetworkPortDescription = "description"
+	NetworkPortPublicIP    = "public_ip"
+	NetworkPortInstance    = "pvminstance"
 )
 
 func DataSourceIBMPINetworkPort() *schema.Resource {
@@ -24,50 +43,50 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPINetworkPortsRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PINetworkName: {
+			PINetworkPortName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"network_ports": {
+			NetworkPorts: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ipaddress": {
+						NetworkPortIP: {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
 						},
-						"macaddress": {
+						NetworkPortMAC: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"portid": {
+						NetworkPortID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						NetworkPortStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"href": {
+						NetworkPortHref: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"description": {
+						NetworkPortDescription: {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"public_ip": {
+						NetworkPortPublicIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -84,16 +103,16 @@ func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	networkportC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkportdata, err := networkportC.GetAllPorts(d.Get(helpers.PINetworkName).(string))
+	networkportdata, err := networkportC.GetAllPorts(d.Get(PINetworkPortName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
 
-	d.Set("network_ports", flattenNetworkPorts(networkportdata.Ports))
+	d.Set(NetworkPorts, flattenNetworkPorts(networkportdata.Ports))
 
 	return nil
 
@@ -104,12 +123,13 @@ func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
 	log.Printf("the number of ports is %d", len(networkPorts))
 	for _, i := range networkPorts {
 		l := map[string]interface{}{
-			"portid":     *i.PortID,
-			"status":     *i.Status,
-			"href":       i.Href,
-			"ipaddress":  *i.IPAddress,
-			"macaddress": *i.MacAddress,
-			"public_ip":  i.ExternalIP,
+			NetworkPortID:          *i.PortID,
+			NetworkPortStatus:      *i.Status,
+			NetworkPortHref:        i.Href,
+			NetworkPortIP:          *i.IPAddress,
+			NetworkPortMAC:         *i.MacAddress,
+			NetworkPortDescription: *i.Description,
+			NetworkPortPublicIP:    i.ExternalIP,
 		}
 
 		result = append(result, l)

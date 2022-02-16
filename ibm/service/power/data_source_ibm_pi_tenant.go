@@ -11,9 +11,20 @@ import (
 
 	//"fmt"
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+const (
+	// Arguments
+
+	// Attributes
+	TenantCreationDate    = "creation_date"
+	TenantCloudInstances  = "cloud_instances"
+	TenantCloudInstanceID = "cloud_instance_id"
+	TenantRegion          = "region"
+	TenantEnabled         = "enabled"
+	TenantName            = "tenant_name"
 )
 
 func DataSourceIBMPITenant() *schema.Resource {
@@ -21,35 +32,35 @@ func DataSourceIBMPITenant() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPITenantRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"creation_date": {
+			TenantCreationDate: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"enabled": {
+			TenantEnabled: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"tenant_name": {
+			TenantName: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"cloud_instances": {
+			TenantCloudInstances: {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"cloud_instance_id": {
+						TenantCloudInstanceID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"region": {
+						TenantRegion: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -66,7 +77,7 @@ func dataSourceIBMPITenantRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	//tenantid := d.Get("tenantid").(string)
 
 	tenantC := instance.NewIBMPITenantClient(ctx, sess, cloudInstanceID)
@@ -76,23 +87,23 @@ func dataSourceIBMPITenantRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.SetId(*tenantData.TenantID)
-	d.Set("creation_date", tenantData.CreationDate.String())
-	d.Set("enabled", tenantData.Enabled)
+	d.Set(TenantCreationDate, tenantData.CreationDate.String())
+	d.Set(TenantEnabled, tenantData.Enabled)
 
 	if tenantData.CloudInstances != nil {
-		d.Set("tenant_name", tenantData.CloudInstances[0].Name)
+		d.Set(TenantName, tenantData.CloudInstances[0].Name)
 	}
 
 	if tenantData.CloudInstances != nil {
 		tenants := make([]map[string]interface{}, len(tenantData.CloudInstances))
 		for i, cloudinstance := range tenantData.CloudInstances {
 			j := make(map[string]interface{})
-			j["region"] = cloudinstance.Region
-			j["cloud_instance_id"] = cloudinstance.CloudInstanceID
+			j[TenantRegion] = cloudinstance.Region
+			j[TenantCloudInstanceID] = cloudinstance.CloudInstanceID
 			tenants[i] = j
 		}
 
-		d.Set("cloud_instances", tenants)
+		d.Set(TenantCloudInstances, tenants)
 	}
 
 	return nil

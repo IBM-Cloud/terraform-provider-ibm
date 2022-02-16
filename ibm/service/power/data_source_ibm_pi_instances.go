@@ -12,135 +12,135 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_instance.go
 func DataSourceIBMPIInstances() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstancesAllRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"pvm_instances": {
+			Instances: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"pvm_instance_id": {
+						InstancesInstanceID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"memory": {
+						InstanceMemory: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"processors": {
+						InstanceProcessors: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"health_status": {
+						InstanceHealthStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networks": {
+						InstanceNetworks: {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"ip": {
+									InstanceNetworksIP: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"macaddress": {
+									InstanceNetworksMAC: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"network_id": {
+									InstanceNetworkID: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"network_name": {
+									InstanceNetworkName: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"type": {
+									InstanceNetworkType: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"external_ip": {
+									InstanceNetworkExternalIP: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"proctype": {
+						InstanceProcType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"status": {
+						InstanceStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"minproc": {
+						InstanceMinProc: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"minmem": {
+						InstanceMinMem: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"maxproc": {
+						InstanceMaxProc: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"maxmem": {
+						InstanceMaxMem: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"pin_policy": {
+						InstancePinPolicy: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"virtual_cores_assigned": {
+						InstanceVirtualCores: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"max_virtual_cores": {
+						InstanceMaxVirtualCores: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"min_virtual_cores": {
+						InstanceMinVirtualCores: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"storage_type": {
+						InstanceStorageType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_pool": {
+						InstanceStoragePool: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_pool_affinity": {
+						InstanceStoragePoolAffinity: {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"license_repository_capacity": {
+						InstanceLRC: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						PIPlacementGroupID: {
+						InstancePlacementGroup: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -159,7 +159,7 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := powerC.GetAll()
@@ -170,7 +170,7 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("pvm_instances", flattenPvmInstances(powervmdata.PvmInstances))
+	d.Set(Instances, flattenPvmInstances(powervmdata.PvmInstances))
 
 	return nil
 }
@@ -180,29 +180,29 @@ func flattenPvmInstances(list []*models.PVMInstanceReference) []map[string]inter
 	for _, i := range list {
 
 		l := map[string]interface{}{
-			"pvm_instance_id":             *i.PvmInstanceID,
-			"memory":                      *i.Memory,
-			"processors":                  *i.Processors,
-			"proctype":                    *i.ProcType,
-			"status":                      *i.Status,
-			"minproc":                     i.Minproc,
-			"minmem":                      i.Minmem,
-			"maxproc":                     i.Maxproc,
-			"maxmem":                      i.Maxmem,
-			"pin_policy":                  i.PinPolicy,
-			"virtual_cores_assigned":      i.VirtualCores.Assigned,
-			"max_virtual_cores":           i.VirtualCores.Max,
-			"min_virtual_cores":           i.VirtualCores.Min,
-			"storage_type":                i.StorageType,
-			"storage_pool":                i.StoragePool,
-			"storage_pool_affinity":       i.StoragePoolAffinity,
-			"license_repository_capacity": i.LicenseRepositoryCapacity,
-			PIPlacementGroupID:            i.PlacementGroup,
-			"networks":                    flattenPvmInstanceNetworks(i.Networks),
+			InstancesInstanceID:         *i.PvmInstanceID,
+			InstanceMemory:              *i.Memory,
+			InstanceProcessors:          *i.Processors,
+			InstanceProcType:            *i.ProcType,
+			InstanceStatus:              *i.Status,
+			InstanceMinProc:             i.Minproc,
+			InstanceMinMem:              i.Minmem,
+			InstanceMaxProc:             i.Maxproc,
+			InstanceMaxMem:              i.Maxmem,
+			InstancePinPolicy:           i.PinPolicy,
+			InstanceVirtualCores:        i.VirtualCores.Assigned,
+			InstanceMaxVirtualCores:     i.VirtualCores.Max,
+			InstanceMinVirtualCores:     i.VirtualCores.Min,
+			InstanceStorageType:         i.StorageType,
+			InstanceStoragePool:         i.StoragePool,
+			InstanceStoragePoolAffinity: i.StoragePoolAffinity,
+			InstanceLRC:                 i.LicenseRepositoryCapacity,
+			InstancePlacementGroup:      i.PlacementGroup,
+			InstanceNetworks:            flattenPvmInstanceNetworks(i.Networks),
 		}
 
 		if i.Health != nil {
-			l["health_status"] = i.Health.Status
+			l[InstanceHealthStatus] = i.Health.Status
 		}
 
 		result = append(result, l)
@@ -217,12 +217,12 @@ func flattenPvmInstanceNetworks(list []*models.PVMInstanceNetwork) (networks []m
 		for i, pvmip := range list {
 
 			p := make(map[string]interface{})
-			p["ip"] = pvmip.IP
-			p["network_name"] = pvmip.NetworkName
-			p["network_id"] = pvmip.NetworkID
-			p["macaddress"] = pvmip.MacAddress
-			p["type"] = pvmip.Type
-			p["external_ip"] = pvmip.ExternalIP
+			p[InstanceNetworksIP] = pvmip.IP
+			p[InstanceNetworkName] = pvmip.NetworkName
+			p[InstanceNetworkID] = pvmip.NetworkID
+			p[InstanceNetworksMAC] = pvmip.MacAddress
+			p[InstanceNetworkType] = pvmip.Type
+			p[InstanceNetworkExternalIP] = pvmip.ExternalIP
 			networks[i] = p
 		}
 		return networks

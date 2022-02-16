@@ -13,8 +13,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+)
+
+const (
+	// Arguments
+	PINetworkName  = "pi_network_name"
+	PINetworkType  = "pi_network_type"
+	PINetworkDNS   = "pi_dns"
+	PINetworkCIDR  = "pi_cidr"
+	PINetworkJumbo = "pi_network_jumbo"
+
+	// Attributes
+	NetworkAvailableIPCount = "available_ip_count"
+	NetworkCIDR             = "cidr"
+	NetworkDNS              = "dns"
+	NetworkGateway          = "gateway"
+	NetworkNetworkID        = "networkid"
+	NetworkID               = "id"
+	NetworkType             = "type"
+	NetworkUsedIPCount      = "used_ip_count"
+	NetworkUsedIPPercent    = "used_ip_percent"
+	NetworkVlanID           = "vlan_id"
+	NetworkJumbo            = "jumbo"
+	NetworkName             = "name"
 )
 
 func DataSourceIBMPINetwork() *schema.Resource {
@@ -22,60 +44,55 @@ func DataSourceIBMPINetwork() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPINetworkRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PINetworkName: {
+			PINetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Network Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"cidr": {
+			NetworkCIDR: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"type": {
+			NetworkType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"vlan_id": {
+			NetworkVlanID: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"gateway": {
+			NetworkGateway: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"available_ip_count": {
+			NetworkAvailableIPCount: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"used_ip_count": {
+			NetworkUsedIPCount: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"used_ip_percent": {
+			NetworkUsedIPPercent: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"name": {
-				Type:       schema.TypeString,
-				Computed:   true,
-				Deprecated: "This value is deprecated in favor of" + helpers.PINetworkName,
-			},
-			"dns": {
+			NetworkDNS: {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"jumbo": {
+			NetworkJumbo: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
@@ -89,41 +106,38 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string))
+	networkdata, err := networkC.Get(d.Get(PINetworkName).(string))
 	if err != nil || networkdata == nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(*networkdata.NetworkID)
 	if networkdata.Cidr != nil {
-		d.Set("cidr", networkdata.Cidr)
+		d.Set(NetworkCIDR, networkdata.Cidr)
 	}
 	if networkdata.Type != nil {
-		d.Set("type", networkdata.Type)
+		d.Set(NetworkType, networkdata.Type)
 	}
-	d.Set("gateway", networkdata.Gateway)
+	d.Set(NetworkGateway, networkdata.Gateway)
 	if networkdata.VlanID != nil {
-		d.Set("vlan_id", networkdata.VlanID)
+		d.Set(NetworkVlanID, networkdata.VlanID)
 	}
 	if networkdata.IPAddressMetrics.Available != nil {
-		d.Set("available_ip_count", networkdata.IPAddressMetrics.Available)
+		d.Set(NetworkAvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
 	if networkdata.IPAddressMetrics.Used != nil {
-		d.Set("used_ip_count", networkdata.IPAddressMetrics.Used)
+		d.Set(NetworkUsedIPCount, networkdata.IPAddressMetrics.Used)
 	}
 	if networkdata.IPAddressMetrics.Utilization != nil {
-		d.Set("used_ip_percent", networkdata.IPAddressMetrics.Utilization)
-	}
-	if networkdata.Name != nil {
-		d.Set("name", networkdata.Name)
+		d.Set(NetworkUsedIPPercent, networkdata.IPAddressMetrics.Utilization)
 	}
 	if len(networkdata.DNSServers) > 0 {
-		d.Set("dns", networkdata.DNSServers)
+		d.Set(NetworkDNS, networkdata.DNSServers)
 	}
-	d.Set("jumbo", networkdata.Jumbo)
+	d.Set(NetworkJumbo, networkdata.Jumbo)
 
 	return nil
 

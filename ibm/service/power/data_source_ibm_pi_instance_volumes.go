@@ -6,7 +6,6 @@ package power
 import (
 	"context"
 
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -17,66 +16,84 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const (
+	// Attributes
+	PIInstanceVolumesName = "pi_volume_name"
+
+	// Arguments
+	InstanceVolumesBootVolumeID    = "boot_volume_id"
+	InstanceVolumesInstanceVolumes = "instance_volumes"
+	InstanceVolumesBootable        = "bootable"
+	InstanceVolumesHref            = "href"
+	InstanceVolumesID              = "id"
+	InstanceVolumesName            = "name"
+	InstanceVolumesPool            = "pool"
+	InstanceVolumesShareable       = "shareable"
+	InstanceVolumesSize            = "size"
+	InstanceVolumesState           = "state"
+	InstanceVolumesType            = "type"
+)
+
 func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstanceVolumesRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PIInstanceName: {
+			PIInstanceVolumesName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Instance Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			//Computed Attributes
-			"boot_volume_id": {
+			InstanceVolumesBootVolumeID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"instance_volumes": {
+			InstanceVolumesInstanceVolumes: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						InstanceVolumesID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"size": {
+						InstanceVolumesSize: {
 							Type:     schema.TypeFloat,
 							Computed: true,
 						},
-						"href": {
+						InstanceVolumesHref: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						InstanceVolumesName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
+						InstanceVolumesState: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
+						InstanceVolumesType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"pool": {
+						InstanceVolumesPool: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"shareable": {
+						InstanceVolumesShareable: {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"bootable": {
+						InstanceVolumesBootable: {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
@@ -93,18 +110,18 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(helpers.PIInstanceName).(string))
+	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(PIInstanceVolumesName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("boot_volume_id", *volumedata.Volumes[0].VolumeID)
-	d.Set("instance_volumes", flattenVolumesInstances(volumedata.Volumes))
+	d.Set(InstanceVolumesBootVolumeID, *volumedata.Volumes[0].VolumeID)
+	d.Set(InstanceVolumesInstanceVolumes, flattenVolumesInstances(volumedata.Volumes))
 
 	return nil
 
@@ -114,15 +131,15 @@ func flattenVolumesInstances(list []*models.VolumeReference) []map[string]interf
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"id":        *i.VolumeID,
-			"state":     *i.State,
-			"href":      *i.Href,
-			"name":      *i.Name,
-			"size":      *i.Size,
-			"type":      *i.DiskType,
-			"pool":      i.VolumePool,
-			"shareable": *i.Shareable,
-			"bootable":  *i.Bootable,
+			InstanceVolumesID:        *i.VolumeID,
+			InstanceVolumesState:     *i.State,
+			InstanceVolumesHref:      *i.Href,
+			InstanceVolumesName:      *i.Name,
+			InstanceVolumesSize:      *i.Size,
+			InstanceVolumesType:      *i.DiskType,
+			InstanceVolumesPool:      i.VolumePool,
+			InstanceVolumesShareable: *i.Shareable,
+			InstanceVolumesBootable:  *i.Bootable,
 		}
 
 		result = append(result, l)

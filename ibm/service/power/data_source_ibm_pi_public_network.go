@@ -12,31 +12,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_network.go
 func DataSourceIBMPIPublicNetwork() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIPublicNetworkRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"name": {
+			NetworkName: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"type": {
+			NetworkType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vlan_id": {
+			NetworkVlanID: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -50,7 +50,7 @@ func dataSourceIBMPIPublicNetworkRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.GetAllPublic()
@@ -63,13 +63,13 @@ func dataSourceIBMPIPublicNetworkRead(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(*networkdata.Networks[0].NetworkID)
 	if networkdata.Networks[0].Type != nil {
-		d.Set("type", networkdata.Networks[0].Type)
+		d.Set(NetworkType, networkdata.Networks[0].Type)
 	}
 	if networkdata.Networks[0].Name != nil {
-		d.Set("name", networkdata.Networks[0].Name)
+		d.Set(NetworkName, networkdata.Networks[0].Name)
 	}
 	if networkdata.Networks[0].VlanID != nil {
-		d.Set("vlan_id", networkdata.Networks[0].VlanID)
+		d.Set(NetworkVlanID, networkdata.Networks[0].VlanID)
 	}
 
 	return nil

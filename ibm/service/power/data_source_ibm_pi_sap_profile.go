@@ -12,41 +12,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+)
+
+const (
+	// Arguments
+	PISapProfileID = "pi_sap_profile_id"
+
+	// Attributes
+	SapProfilesID       = "profile_id"
+	SapProfiles         = "profiles"
+	SapProfileCertified = "certified"
+	SapProfileCores     = "cores"
+	SapProfileMemory    = "memory"
+	SapProfileType      = "type"
 )
 
 func DataSourceIBMPISAPProfile() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPISAPProfileRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			PISAPInstanceProfileID: {
+			PISapProfileID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "SAP Profile ID",
 			},
 			// Computed Attributes
-			PISAPProfileCertified: {
+			SapProfileCertified: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Has certification been performed on profile",
 			},
-			PISAPProfileCores: {
+			SapProfileCores: {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Amount of cores",
 			},
-			PISAPProfileMemory: {
+			SapProfileMemory: {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Amount of memory (in GB)",
 			},
-			PISAPProfileType: {
+			SapProfileType: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Type of profile",
@@ -61,8 +73,8 @@ func dataSourceIBMPISAPProfileRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	profileID := d.Get(PISAPInstanceProfileID).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	profileID := d.Get(PISapProfileID).(string)
 
 	client := instance.NewIBMPISAPInstanceClient(ctx, sess, cloudInstanceID)
 	sapProfile, err := client.GetSAPProfile(profileID)
@@ -72,10 +84,10 @@ func dataSourceIBMPISAPProfileRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(*sapProfile.ProfileID)
-	d.Set(PISAPProfileCertified, *sapProfile.Certified)
-	d.Set(PISAPProfileCores, *sapProfile.Cores)
-	d.Set(PISAPProfileMemory, *sapProfile.Memory)
-	d.Set(PISAPProfileType, *sapProfile.Type)
+	d.Set(SapProfileCertified, *sapProfile.Certified)
+	d.Set(SapProfileCores, *sapProfile.Cores)
+	d.Set(SapProfileMemory, *sapProfile.Memory)
+	d.Set(SapProfileType, *sapProfile.Type)
 
 	return nil
 }

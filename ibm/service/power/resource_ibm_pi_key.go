@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_key.go
 func ResourceIBMPIKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIKeyCreate,
@@ -33,30 +33,30 @@ func ResourceIBMPIKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIKeyName: {
+			PIKeyName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Key name in the PI instance",
 			},
 
-			helpers.PIKey: {
+			PIKeyRSA: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI instance key info",
 			},
-			helpers.PIKeyDate: {
+			PIKeyCreationDate: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Date info",
 			},
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
 
-			"key_id": {
+			KeyID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Key ID in the PI instance",
@@ -71,9 +71,9 @@ func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIKeyName).(string)
-	sshkey := d.Get(helpers.PIKey).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	name := d.Get(PIKeyName).(string)
+	sshkey := d.Get(PIKeyRSA).(string)
 
 	client := st.NewIBMPIKeyClient(ctx, sess, cloudInstanceID)
 	body := &models.SSHKey{
@@ -110,10 +110,10 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
-	d.Set(helpers.PIKeyName, sshkeydata.Name)
-	d.Set(helpers.PIKey, sshkeydata.SSHKey)
-	d.Set(helpers.PIKeyDate, sshkeydata.CreationDate.String())
-	d.Set("key_id", sshkeydata.Name)
+	d.Set(PIKeyName, sshkeydata.Name)
+	d.Set(PIKeyRSA, sshkeydata.SSHKey)
+	d.Set(PIKeyCreationDate, sshkeydata.CreationDate.String())
+	d.Set(KeyID, sshkeydata.Name)
 
 	return nil
 

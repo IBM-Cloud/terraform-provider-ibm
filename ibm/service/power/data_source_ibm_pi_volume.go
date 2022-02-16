@@ -13,52 +13,80 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+)
+
+const (
+	// Arguments
+	PIVolumeName                  = "pi_volume_name"
+	PIVolumeAffinityInstance      = "pi_affinity_instance"
+	PIVolumeAffinityPolicy        = "pi_affinity_policy"
+	PIVolumeAffinityVolume        = "pi_affinity_volume"
+	PIVolumeAntiAffinityInstances = "pi_anti_affinity_instances"
+	PIVolumeAniAffinityVolumes    = "pi_anti_affinity_volumes"
+	PIVolumePool                  = "pi_volume_pool"
+	PIVolumeShareable             = "pi_volume_shareable"
+	PIVolumeSize                  = "pi_volume_size"
+	PIVolumeType                  = "pi_volume_type"
+	PIVolumeAttachInstanceID      = "pi_instance_id"
+	PIVolumeAttachVolumeID        = "pi_volume_id"
+
+	// Attributes
+	VolumeDiskType            = "disk_type"
+	VolumeBootable            = "bootable"
+	VolumeShareable           = "shareable"
+	VolumeSize                = "size"
+	VolumeState               = "state"
+	VolumeVolumePool          = "volume_pool"
+	VolumeWWN                 = "wwn"
+	VolumeDeleteOnTermination = "delete_on_termination"
+	VolumeID                  = "volume_id"
+	VolumeStatus              = "volume_status"
+	VolumeAttachStatus        = "status"
 )
 
 func DataSourceIBMPIVolume() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIVolumeRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PIVolumeName: {
+			PIVolumeName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Volume Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"state": {
+			VolumeState: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"size": {
+			VolumeSize: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"shareable": {
+			VolumeShareable: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"bootable": {
+			VolumeBootable: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"disk_type": {
+			VolumeDiskType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"volume_pool": {
+			VolumeVolumePool: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"wwn": {
+			VolumeWWN: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -72,21 +100,21 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volumedata, err := volumeC.Get(d.Get(helpers.PIVolumeName).(string))
+	volumedata, err := volumeC.Get(d.Get(PIVolumeName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(*volumedata.VolumeID)
-	d.Set("size", volumedata.Size)
-	d.Set("state", volumedata.State)
-	d.Set("shareable", volumedata.Shareable)
-	d.Set("bootable", volumedata.Bootable)
-	d.Set("disk_type", volumedata.DiskType)
-	d.Set("volume_pool", volumedata.VolumePool)
-	d.Set("wwn", volumedata.Wwn)
+	d.Set(VolumeSize, volumedata.Size)
+	d.Set(VolumeState, volumedata.State)
+	d.Set(VolumeShareable, volumedata.Shareable)
+	d.Set(VolumeBootable, volumedata.Bootable)
+	d.Set(VolumeDiskType, volumedata.DiskType)
+	d.Set(VolumeVolumePool, volumedata.VolumePool)
+	d.Set(VolumeWWN, volumedata.Wwn)
 
 	return nil
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -29,11 +28,27 @@ ACTIVE --> SHUTOFF
 ACTIVE --> HARD-REBOOT
 ACTIVE --> SOFT-REBOOT
 SHUTOFF--> ACTIVE
-
-
-
-
 */
+
+const (
+	// Arguments
+	PIOperationsInstance = "pi_instance_name"
+	PIOperationsType     = "pi_operation"
+
+	// Attributes
+	OperationsStatus        = "status"
+	OperationsProgress      = "progress"
+	OperationsHealth        = "healthstatus"
+	OperationsAddresses     = "addresses"
+	OperationsIP            = "ip"
+	OperationsMAC           = "macaddress"
+	OperationsNetworkID     = "networkid"
+	OperationsNetworkName   = "networkname"
+	OperationsAddressesType = "type"
+
+	OperationsHealthOK      = "OK"
+	OperationsHealthWarning = "WARNING"
+)
 
 func ResourceIBMPIIOperations() *schema.Resource {
 	return &schema.Resource{
@@ -51,45 +66,45 @@ func ResourceIBMPIIOperations() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI Cloud instnce id",
 			},
 
-			helpers.PIInstanceOperationStatus: {
+			OperationsStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "PI instance operation status",
 			},
-			helpers.PIInstanceOperationServerName: {
+			PIOperationsInstance: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI instance Operation server name",
 			},
 
-			"addresses": {
+			OperationsAddresses: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip": {
+						OperationsIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"macaddress": {
+						OperationsMAC: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkid": {
+						OperationsNetworkID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"networkname": {
+						OperationsNetworkName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
+						OperationsAddressesType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -97,20 +112,20 @@ func ResourceIBMPIIOperations() *schema.Resource {
 				},
 			},
 
-			helpers.PIInstanceHealthStatus: {
+			OperationsHealth: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "PI instance health status",
 			},
 
-			helpers.PIInstanceOperationType: {
+			PIOperationsType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"start", "stop", "hard-reboot", "soft-reboot", "immediate-shutdown"}),
 				Description:  "PI instance operation type",
 			},
 
-			helpers.PIInstanceOperationProgress: {
+			OperationsProgress: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Progress of the operation",
@@ -126,9 +141,9 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	operation := d.Get(helpers.PIInstanceOperationType).(string)
-	name := d.Get(helpers.PIInstanceOperationServerName).(string)
+	powerinstanceid := d.Get(PICloudInstanceID).(string)
+	operation := d.Get(PIOperationsType).(string)
+	name := d.Get(PIOperationsInstance).(string)
 
 	body := &models.PVMInstanceAction{Action: flex.PtrToString(operation)}
 	log.Printf("Calling the IBM PI Operations [ %s ] with on the instance with name [ %s ]", operation, name)
@@ -175,14 +190,14 @@ func resourceIBMPIOperationsCreate(d *schema.ResourceData, meta interface{}) err
 
 func resourceIBMPIOperationsRead(d *schema.ResourceData, meta interface{}) error {
 
-	log.Printf("Calling the PowerOperations Read code..for instance name %s", d.Get(helpers.PIInstanceOperationServerName).(string))
+	log.Printf("Calling the PowerOperations Read code..for instance name %s", d.Get(PIOperationsInstance).(string))
 
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
 	}
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIInstanceOperationServerName).(string)
+	powerinstanceid := d.Get(PICloudInstanceID).(string)
+	name := d.Get(PIOperationsInstance).(string)
 	powerC := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 	powervmdata, err := powerC.Get(name)
 
@@ -190,11 +205,11 @@ func resourceIBMPIOperationsRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("status", powervmdata.Status)
-	d.Set("progress", powervmdata.Progress)
+	d.Set(OperationsStatus, powervmdata.Status)
+	d.Set(OperationsProgress, powervmdata.Progress)
 
 	if powervmdata.Health != nil {
-		d.Set("healthstatus", powervmdata.Health.Status)
+		d.Set(OperationsHealth, powervmdata.Health.Status)
 
 	}
 
@@ -224,7 +239,7 @@ func resourceIBMPIOperationsExists(d *schema.ResourceData, meta interface{}) (bo
 		return false, err
 	}
 	id := d.Id()
-	powerinstanceid := d.Get(helpers.PICloudInstanceId).(string)
+	powerinstanceid := d.Get(PICloudInstanceID).(string)
 	client := st.NewIBMPIInstanceClient(context.Background(), sess, powerinstanceid)
 
 	instance, err := client.Get(d.Id())
@@ -261,13 +276,13 @@ func isPIOperationsRefreshFunc(client *st.IBMPIInstanceClient, id, powerinstance
 			return nil, "", err
 		}
 
-		if *pvm.Status == targetstatus && pvm.Health.Status == helpers.PIInstanceHealthOk {
+		if *pvm.Status == targetstatus && pvm.Health.Status == OperationsHealthOK {
 			log.Printf("The health status is now ok")
 			//if *pvm.Status == "active" ; if *pvm.Addresses[0].IP == nil  {
 			return pvm, targetstatus, nil
 			//}
 		}
 
-		return pvm, helpers.PIInstanceHealthWarning, nil
+		return pvm, OperationsHealthWarning, nil
 	}
 }

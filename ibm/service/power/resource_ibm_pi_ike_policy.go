@@ -13,14 +13,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 const (
-	PIPolicyId = "policy_id"
+	// Arguments
+	PIIkePolicyAuth         = "pi_policy_authentication"
+	PIIkePolicyDH           = "pi_policy_dh_group"
+	PIIkePolicyEncryption   = "pi_policy_encryption"
+	PIIkePolicyKeyLifetime  = "pi_policy_key_lifetime"
+	PIIkePolicyName         = "pi_policy_name"
+	PIIkePolicyPresharedKey = "pi_policy_preshared_key"
+	PIIkePolicyVersion      = "pi_policy_version"
+
+	// Attributes
+	IkePolicyID = "policy_id"
 )
 
 func ResourceIBMPIIKEPolicy() *schema.Resource {
@@ -39,48 +48,48 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PIVPNPolicyName: {
+			PIIkePolicyName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the IKE Policy",
 			},
-			helpers.PIVPNPolicyDhGroup: {
+			PIIkePolicyDH: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedIntValues([]int{1, 2, 5, 14, 19, 20, 24}),
 				Description:  "DH group of the IKE Policy",
 			},
-			helpers.PIVPNPolicyEncryption: {
+			PIIkePolicyEncryption: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"aes-256-cbc", "aes-192-cbc", "aes-128-cbc", "aes-256-gcm", "aes-128-gcm", "3des-cbc"}),
 				Description:  "Encryption of the IKE Policy",
 			},
-			helpers.PIVPNPolicyKeyLifetime: {
+			PIIkePolicyKeyLifetime: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(180, 86400),
 				Description:  "Policy key lifetime",
 			},
-			helpers.PIVPNPolicyVersion: {
+			PIIkePolicyVersion: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(1, 2),
 				Description:  "Version of the IKE Policy",
 			},
-			helpers.PIVPNPolicyPresharedKey: {
+			PIIkePolicyPresharedKey: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Preshared key used in this IKE Policy (length of preshared key must be even)",
 			},
 
 			// Optional Attributes
-			helpers.PIVPNPolicyAuthentication: {
+			PIIkePolicyAuth: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
@@ -89,7 +98,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 			},
 
 			//Computed Attributes
-			PIPolicyId: {
+			IkePolicyID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IKE Policy ID",
@@ -104,13 +113,13 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIVPNPolicyName).(string)
-	dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
-	encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
-	presharedKey := d.Get(helpers.PIVPNPolicyPresharedKey).(string)
-	version := int64(d.Get(helpers.PIVPNPolicyVersion).(int))
-	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	name := d.Get(PIIkePolicyName).(string)
+	dhGroup := int64(d.Get(PIIkePolicyDH).(int))
+	encryption := d.Get(PIIkePolicyEncryption).(string)
+	presharedKey := d.Get(PIIkePolicyPresharedKey).(string)
+	version := int64(d.Get(PIIkePolicyVersion).(int))
+	keyLifetime := int64(d.Get(PIIkePolicyKeyLifetime).(int))
 	klt := models.KeyLifetime(keyLifetime)
 
 	body := &models.IKEPolicyCreate{
@@ -122,7 +131,7 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		Version:      &version,
 	}
 
-	if v, ok := d.GetOk(helpers.PIVPNPolicyAuthentication); ok {
+	if v, ok := d.GetOk(PIIkePolicyAuth); ok {
 		body.Authentication = models.IKEPolicyAuthentication(v.(string))
 	}
 
@@ -152,32 +161,32 @@ func resourceIBMPIIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	body := &models.IKEPolicyUpdate{}
 
-	if d.HasChange(helpers.PIVPNPolicyName) {
-		name := d.Get(helpers.PIVPNPolicyName).(string)
+	if d.HasChange(PIIkePolicyName) {
+		name := d.Get(PIIkePolicyName).(string)
 		body.Name = name
 	}
-	if d.HasChange(helpers.PIVPNPolicyDhGroup) {
-		dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
+	if d.HasChange(PIIkePolicyDH) {
+		dhGroup := int64(d.Get(PIIkePolicyDH).(int))
 		body.DhGroup = dhGroup
 	}
-	if d.HasChange(helpers.PIVPNPolicyEncryption) {
-		encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
+	if d.HasChange(PIIkePolicyEncryption) {
+		encryption := d.Get(PIIkePolicyEncryption).(string)
 		body.Encryption = encryption
 	}
-	if d.HasChange(helpers.PIVPNPolicyKeyLifetime) {
-		keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	if d.HasChange(PIIkePolicyKeyLifetime) {
+		keyLifetime := int64(d.Get(PIIkePolicyKeyLifetime).(int))
 		body.KeyLifetime = models.KeyLifetime(keyLifetime)
 	}
-	if d.HasChange(helpers.PIVPNPolicyPresharedKey) {
-		presharedKey := d.Get(helpers.PIVPNPolicyPresharedKey).(string)
+	if d.HasChange(PIIkePolicyPresharedKey) {
+		presharedKey := d.Get(PIIkePolicyPresharedKey).(string)
 		body.PresharedKey = presharedKey
 	}
-	if d.HasChange(helpers.PIVPNPolicyVersion) {
-		version := int64(d.Get(helpers.PIVPNPolicyVersion).(int))
+	if d.HasChange(PIIkePolicyVersion) {
+		version := int64(d.Get(PIIkePolicyVersion).(int))
 		body.Version = version
 	}
-	if d.HasChange(helpers.PIVPNPolicyAuthentication) {
-		authentication := d.Get(helpers.PIVPNPolicyAuthentication).(string)
+	if d.HasChange(PIIkePolicyAuth) {
+		authentication := d.Get(PIIkePolicyAuth).(string)
 		body.Authentication = models.IKEPolicyAuthentication(authentication)
 	}
 
@@ -214,13 +223,13 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	d.Set(PIPolicyId, ikePolicy.ID)
-	d.Set(helpers.PIVPNPolicyName, ikePolicy.Name)
-	d.Set(helpers.PIVPNPolicyDhGroup, ikePolicy.DhGroup)
-	d.Set(helpers.PIVPNPolicyEncryption, ikePolicy.Encryption)
-	d.Set(helpers.PIVPNPolicyKeyLifetime, ikePolicy.KeyLifetime)
-	d.Set(helpers.PIVPNPolicyVersion, ikePolicy.Version)
-	d.Set(helpers.PIVPNPolicyAuthentication, ikePolicy.Authentication)
+	d.Set(IkePolicyID, ikePolicy.ID)
+	d.Set(PIIkePolicyName, ikePolicy.Name)
+	d.Set(PIIkePolicyDH, ikePolicy.DhGroup)
+	d.Set(PIIkePolicyEncryption, ikePolicy.Encryption)
+	d.Set(PIIkePolicyKeyLifetime, ikePolicy.KeyLifetime)
+	d.Set(PIIkePolicyVersion, ikePolicy.Version)
+	d.Set(PIIkePolicyAuth, ikePolicy.Authentication)
 
 	return nil
 }

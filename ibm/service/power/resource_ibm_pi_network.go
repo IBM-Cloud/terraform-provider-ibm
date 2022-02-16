@@ -17,13 +17,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_network.go
 func ResourceIBMPINetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPINetworkCreate,
@@ -39,53 +39,53 @@ func ResourceIBMPINetwork() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			helpers.PINetworkType: {
+			PINetworkType: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vlan", "pub-vlan"}),
 				Description:  "PI network type",
 			},
-			helpers.PINetworkName: {
+			PINetworkName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI network name",
 			},
-			helpers.PINetworkDNS: {
+			PINetworkDNS: {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of PI network DNS name",
 			},
-			helpers.PINetworkCidr: {
+			PINetworkCIDR: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network CIDR",
 			},
-			helpers.PINetworkGateway: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "PI network gateway",
-			},
-			helpers.PINetworkJumbo: {
+			// helpers.PINetworkGateway: {
+			// 	Type:        schema.TypeString,
+			// 	Optional:    true,
+			// 	Description: "PI network gateway",
+			// },
+			PINetworkJumbo: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
 				Description: "PI network enable MTU Jumbo option",
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
 
 			//Computed Attributes
-			"network_id": {
+			NetworkNetworkID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "PI network ID",
 			},
-			"vlan_id": {
+			NetworkVlanID: {
 				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "VLAN Id value",
@@ -99,17 +99,17 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	networkname := d.Get(helpers.PINetworkName).(string)
-	networktype := d.Get(helpers.PINetworkType).(string)
-	networkdns := flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List())
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	networkname := d.Get(PINetworkName).(string)
+	networktype := d.Get(PINetworkType).(string)
+	networkdns := flex.ExpandStringList((d.Get(PINetworkDNS).(*schema.Set)).List())
 
 	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	var body = &models.NetworkCreate{
 		Type: &networktype,
 		Name: networkname,
 	}
-	if v, ok := d.GetOk(helpers.PINetworkJumbo); ok {
+	if v, ok := d.GetOk(PINetworkJumbo); ok {
 		body.Jumbo = v.(bool)
 	}
 	if len(networkdns) > 0 {
@@ -118,10 +118,10 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 
 	if networktype == "vlan" {
 		var networkcidr string
-		if v, ok := d.GetOk(helpers.PINetworkCidr); ok {
+		if v, ok := d.GetOk(PINetworkCIDR); ok {
 			networkcidr = v.(string)
 		} else {
-			diag.Errorf("%s is required when %s is vlan", helpers.PINetworkCidr, helpers.PINetworkType)
+			diag.Errorf("%s is required when %s is vlan", PINetworkCIDR, PINetworkType)
 		}
 
 		gateway, firstip, lastip, err := generateIPData(networkcidr)
@@ -169,13 +169,13 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	d.Set("network_id", networkdata.NetworkID)
-	d.Set(helpers.PINetworkCidr, networkdata.Cidr)
-	d.Set(helpers.PINetworkDNS, networkdata.DNSServers)
-	d.Set("vlan_id", networkdata.VlanID)
-	d.Set(helpers.PINetworkName, networkdata.Name)
-	d.Set(helpers.PINetworkType, networkdata.Type)
-	d.Set(helpers.PINetworkJumbo, networkdata.Jumbo)
+	d.Set(NetworkNetworkID, networkdata.NetworkID)
+	d.Set(PINetworkCIDR, networkdata.Cidr)
+	d.Set(PINetworkDNS, networkdata.DNSServers)
+	d.Set(NetworkVlanID, networkdata.VlanID)
+	d.Set(PINetworkName, networkdata.Name)
+	d.Set(PINetworkType, networkdata.Type)
+	d.Set(PINetworkJumbo, networkdata.Jumbo)
 
 	return nil
 
@@ -192,14 +192,14 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges(helpers.PINetworkName, helpers.PINetworkDNS) {
+	if d.HasChanges(PINetworkName, PINetworkDNS) {
 		networkC := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 		body := &models.NetworkUpdate{
-			DNSServers: flex.ExpandStringList((d.Get(helpers.PINetworkDNS).(*schema.Set)).List()),
+			DNSServers: flex.ExpandStringList((d.Get(PINetworkDNS).(*schema.Set)).List()),
 		}
 
-		if d.HasChange(helpers.PINetworkName) {
-			name := d.Get(helpers.PINetworkName).(string)
+		if d.HasChange(PINetworkName) {
+			name := d.Get(PINetworkName).(string)
 			body.Name = &name
 		}
 
@@ -237,7 +237,7 @@ func resourceIBMPINetworkDelete(ctx context.Context, d *schema.ResourceData, met
 
 func isWaitForIBMPINetworkAvailable(ctx context.Context, client *st.IBMPINetworkClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", helpers.PINetworkProvisioning},
+		Pending:    []string{"retry", "build"},
 		Target:     []string{"NETWORK_READY"},
 		Refresh:    isIBMPINetworkRefreshFunc(client, id),
 		Timeout:    timeout,
@@ -259,7 +259,7 @@ func isIBMPINetworkRefreshFunc(client *st.IBMPINetworkClient, id string) resourc
 			return network, "NETWORK_READY", nil
 		}
 
-		return network, helpers.PINetworkProvisioning, nil
+		return network, "build", nil
 	}
 }
 

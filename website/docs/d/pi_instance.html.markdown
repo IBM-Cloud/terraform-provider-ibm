@@ -72,6 +72,7 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+- `pin_policy` - (String) The pin policy of the instance
 - `placement_group_id`- (String) The ID of the placement group that the instance is a member.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.

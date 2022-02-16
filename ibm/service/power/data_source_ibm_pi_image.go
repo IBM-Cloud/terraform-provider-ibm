@@ -6,7 +6,6 @@ package power
 import (
 	"context"
 
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,53 +15,100 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const (
+	// Arguments
+	PIImageName                  = "pi_image_name"
+	PIImageAffinityInstance      = "pi_affinity_instance"
+	PIImageAffinityPolicy        = "pi_affinity_policy"
+	PIImageAffinityVolume        = "pi_affinity_volume"
+	PIImageAntiAffinityInstances = "pi_anti_affinity_instances"
+	PIImageAntiAffinityVolumes   = "pi_anti_affinity_volumes"
+	PIImageID                    = "pi_image_id"
+	PIImageBucketName            = "pi_image_bucket_name"
+	PIImageAccessKey             = "pi_image_access_key"
+	PIImageBucketAccess          = "pi_image_bucket_access"
+	PIImageBucketFile            = "pi_image_bucket_file_name"
+	PIImageBucketRegion          = "pi_image_bucket_region"
+	PIImageSecretKey             = "pi_image_secret_key"
+	PIImageStoragePool           = "pi_image_storage_pool"
+	PIImageStorageType           = "pi_image_storage_type"
+	CatalogImagesSAP             = "sap"
+	CatalogImagesVTL             = "vtl"
+
+	// Attributes
+	Images               = "image_info"
+	CatalogImages        = "images"
+	ImagesID             = "id"
+	ImageName            = "name"
+	ImageID              = "image_id"
+	ImageArchitecture    = "architecture"
+	ImageOperatingSystem = "operatingsystem"
+	ImageSize            = "size"
+	ImageState           = "state"
+	ImageHyperVisor      = "hypervisor"
+	ImageStorageType     = "storage_type"
+	ImageStoragePool     = "storage_pool"
+	ImageType            = "image_type"
+	ImageCreationDate    = "creation_date"
+	ImageDescription     = "description"
+	ImageDiskFormat      = "disk_format"
+	ImageEndianness      = "endianness"
+	ImageHref            = "href"
+	ImageLastUpdateDate  = "last_update_date"
+	ImageContainerFormat = "container_format"
+
+	// Attributes need to fix
+	ImageHypervisorType         = "hypervisor_type"
+	CatalogImageOperatingSystem = "operating_system"
+)
+
 func DataSourceIBMPIImage() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIImagesRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIImageName: {
+			PIImageName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Imagename Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			"state": {
+			ImageState: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"size": {
+			ImageSize: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"architecture": {
+			ImageArchitecture: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"operatingsystem": {
+			ImageOperatingSystem: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"hypervisor": {
+			ImageHyperVisor: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_type": {
+			ImageStorageType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_pool": {
+			ImageStoragePool: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_type": {
+			ImageType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -76,23 +122,23 @@ func dataSourceIBMPIImagesRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
-	imagedata, err := imageC.Get(d.Get(helpers.PIImageName).(string))
+	imagedata, err := imageC.Get(d.Get(PIImageName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(*imagedata.ImageID)
-	d.Set("state", imagedata.State)
-	d.Set("size", imagedata.Size)
-	d.Set("architecture", imagedata.Specifications.Architecture)
-	d.Set("hypervisor", imagedata.Specifications.HypervisorType)
-	d.Set("operatingsystem", imagedata.Specifications.OperatingSystem)
-	d.Set("storage_type", imagedata.StorageType)
-	d.Set("storage_pool", imagedata.StoragePool)
-	d.Set("image_type", imagedata.Specifications.ImageType)
+	d.Set(ImageState, imagedata.State)
+	d.Set(ImageSize, imagedata.Size)
+	d.Set(ImageArchitecture, imagedata.Specifications.Architecture)
+	d.Set(ImageHyperVisor, imagedata.Specifications.HypervisorType)
+	d.Set(ImageOperatingSystem, imagedata.Specifications.OperatingSystem)
+	d.Set(ImageStorageType, imagedata.StorageType)
+	d.Set(ImageStoragePool, imagedata.StoragePool)
+	d.Set(ImageType, imagedata.Specifications.ImageType)
 
 	return nil
 

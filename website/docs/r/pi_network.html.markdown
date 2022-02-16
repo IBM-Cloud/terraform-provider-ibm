@@ -62,7 +62,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of the network. The ID is composed of `<power_instance_id>/<network_id>`.
 - `networkid` - (String) The unique identifier of the network.
-- `vlanid` - (Integer) The ID of the VLAN that your network is attached to. 
+- `vlan_id` - (Integer) The ID of the VLAN that your network is attached to. 
 
 ## Import
 The `ibm_pi_network` resource can be imported by using `power_instance_id` and `network_id`.

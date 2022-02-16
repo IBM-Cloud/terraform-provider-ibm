@@ -14,7 +14,6 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/errors"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_cloud_connections"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_cloud_connection.go
 func ResourceIBMPICloudConnection() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPICloudConnectionCreate,
@@ -38,17 +38,17 @@ func ResourceIBMPICloudConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PICloudConnectionName: {
+			CloudConnectionName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the cloud connection",
 			},
-			helpers.PICloudConnectionSpeed: {
+			CloudConnectionSpeed: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedIntValues([]int{50, 100, 200, 500, 1000, 2000, 5000, 10000}),
@@ -56,85 +56,85 @@ func ResourceIBMPICloudConnection() *schema.Resource {
 			},
 
 			// Optional Attributes
-			helpers.PICloudConnectionGlobalRouting: {
+			CloudConnectionGlobalRouting: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Enable global routing for this cloud connection",
 			},
-			helpers.PICloudConnectionMetered: {
+			CloudConnectionMetered: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Enable metered for this cloud connection",
 			},
-			helpers.PICloudConnectionNetworks: {
+			CloudConnectionNetworks: {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Set of Networks to attach to this cloud connection",
 			},
-			helpers.PICloudConnectionClassicEnabled: {
+			CloudConnectionClassicEnabled: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Enable classic endpoint destination",
 			},
-			helpers.PICloudConnectionClassicGreCidr: {
+			PICloudConnectionGreCIDR: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				RequiredWith: []string{helpers.PICloudConnectionClassicEnabled, helpers.PICloudConnectionClassicGreDest},
+				RequiredWith: []string{CloudConnectionClassicEnabled, PICloudConnectionGREDestination},
 				Description:  "GRE network in CIDR notation",
 			},
-			helpers.PICloudConnectionClassicGreDest: {
+			PICloudConnectionGREDestination: {
 				Type:         schema.TypeString,
 				Optional:     true,
-				RequiredWith: []string{helpers.PICloudConnectionClassicEnabled, helpers.PICloudConnectionClassicGreCidr},
+				RequiredWith: []string{CloudConnectionClassicEnabled, PICloudConnectionGreCIDR},
 				Description:  "GRE destination IP address",
 			},
-			helpers.PICloudConnectionVPCEnabled: {
+			CloudConnectionVPCEnabled: {
 				Type:         schema.TypeBool,
 				Optional:     true,
 				Default:      false,
-				RequiredWith: []string{helpers.PICloudConnectionVPCCRNs},
+				RequiredWith: []string{PICloudConnectionVPCCrns},
 				Description:  "Enable VPC for this cloud connection",
 			},
-			helpers.PICloudConnectionVPCCRNs: {
+			PICloudConnectionVPCCrns: {
 				Type:         schema.TypeSet,
 				Optional:     true,
 				Elem:         &schema.Schema{Type: schema.TypeString},
-				RequiredWith: []string{helpers.PICloudConnectionVPCEnabled},
+				RequiredWith: []string{CloudConnectionVPCEnabled},
 				Description:  "Set of VPCs to attach to this cloud connection",
 			},
 
 			//Computed Attributes
-			PICloudConnectionId: {
+			CloudConnectionID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Cloud connection ID",
 			},
-			PICloudConnectionStatus: {
+			CloudConnectionStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Link status",
 			},
-			PICloudConnectionIBMIPAddress: {
+			CloudConnectionIbmIP: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IBM IP address",
 			},
-			PICloudConnectionUserIPAddress: {
+			CloudConnectionUserIP: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "User IP address",
 			},
-			PICloudConnectionPort: {
+			CloudConnectionPort: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Port",
 			},
-			PICloudConnectionClassicGreSource: {
+			CloudConnectionGreSource: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "GRE auto-assigned source IP address",
@@ -149,35 +149,35 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PICloudConnectionName).(string)
-	speed := int64(d.Get(helpers.PICloudConnectionSpeed).(int))
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	name := d.Get(CloudConnectionName).(string)
+	speed := int64(d.Get(CloudConnectionSpeed).(int))
 
 	body := &models.CloudConnectionCreate{
 		Name:  &name,
 		Speed: &speed,
 	}
-	if v, ok := d.GetOk(helpers.PICloudConnectionGlobalRouting); ok {
+	if v, ok := d.GetOk(CloudConnectionGlobalRouting); ok {
 		body.GlobalRouting = v.(bool)
 	}
-	if v, ok := d.GetOk(helpers.PICloudConnectionMetered); ok {
+	if v, ok := d.GetOk(CloudConnectionMetered); ok {
 		body.Metered = v.(bool)
 	}
 	// networks
-	if v, ok := d.GetOk(helpers.PICloudConnectionNetworks); ok && v.(*schema.Set).Len() > 0 {
+	if v, ok := d.GetOk(CloudConnectionNetworks); ok && v.(*schema.Set).Len() > 0 {
 		body.Subnets = flex.ExpandStringList(v.(*schema.Set).List())
 	}
 	// classic
-	if v, ok := d.GetOk(helpers.PICloudConnectionClassicEnabled); ok {
+	if v, ok := d.GetOk(CloudConnectionClassicEnabled); ok {
 		classicEnabled := v.(bool)
 		classic := &models.CloudConnectionEndpointClassicUpdate{
 			Enabled: classicEnabled,
 		}
-		if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreCidr); ok {
+		if v, ok := d.GetOk(PICloudConnectionGreCIDR); ok {
 			greCIDR := v.(string)
 			classic.Gre.Cidr = &greCIDR
 		}
-		if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreDest); ok {
+		if v, ok := d.GetOk(PICloudConnectionGREDestination); ok {
 			greDest := v.(string)
 			classic.Gre.DestIPAddress = &greDest
 		}
@@ -185,12 +185,12 @@ func resourceIBMPICloudConnectionCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	// VPC
-	if v, ok := d.GetOk(helpers.PICloudConnectionVPCEnabled); ok {
+	if v, ok := d.GetOk(CloudConnectionVPCEnabled); ok {
 		vpcEnabled := v.(bool)
 		vpc := &models.CloudConnectionEndpointVPC{
 			Enabled: vpcEnabled,
 		}
-		if v, ok := d.GetOk(helpers.PICloudConnectionVPCCRNs); ok && v.(*schema.Set).Len() > 0 {
+		if v, ok := d.GetOk(PICloudConnectionVPCCrns); ok && v.(*schema.Set).Len() > 0 {
 			vpcIds := flex.ExpandStringList(v.(*schema.Set).List())
 			vpcs := make([]*models.CloudConnectionVPC, len(vpcIds))
 			for i, vpcId := range vpcIds {
@@ -241,37 +241,37 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 	cloudInstanceID := parts[0]
 	cloudConnectionID := parts[1]
 
-	ccName := d.Get(helpers.PICloudConnectionName).(string)
-	ccSpeed := int64(d.Get(helpers.PICloudConnectionSpeed).(int))
+	ccName := d.Get(CloudConnectionName).(string)
+	ccSpeed := int64(d.Get(CloudConnectionSpeed).(int))
 
 	client := st.NewIBMPICloudConnectionClient(ctx, sess, cloudInstanceID)
 	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 
-	if d.HasChangesExcept(helpers.PICloudConnectionNetworks) {
+	if d.HasChangesExcept(CloudConnectionNetworks) {
 
 		body := &models.CloudConnectionUpdate{
 			Name:  &ccName,
 			Speed: &ccSpeed,
 		}
-		if v, ok := d.GetOk(helpers.PICloudConnectionGlobalRouting); ok {
+		if v, ok := d.GetOk(CloudConnectionGlobalRouting); ok {
 			globalRouting := v.(bool)
 			body.GlobalRouting = &globalRouting
 		}
-		if v, ok := d.GetOk(helpers.PICloudConnectionMetered); ok {
+		if v, ok := d.GetOk(CloudConnectionMetered); ok {
 			metered := v.(bool)
 			body.Metered = &metered
 		}
 		// classic
-		if v, ok := d.GetOk(helpers.PICloudConnectionClassicEnabled); ok {
+		if v, ok := d.GetOk(CloudConnectionClassicEnabled); ok {
 			classicEnabled := v.(bool)
 			classic := &models.CloudConnectionEndpointClassicUpdate{
 				Enabled: classicEnabled,
 			}
-			if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreCidr); ok {
+			if v, ok := d.GetOk(PICloudConnectionGreCIDR); ok {
 				greCIDR := v.(string)
 				classic.Gre.Cidr = &greCIDR
 			}
-			if v, ok := d.GetOk(helpers.PICloudConnectionClassicGreDest); ok {
+			if v, ok := d.GetOk(PICloudConnectionGREDestination); ok {
 				greDest := v.(string)
 				classic.Gre.DestIPAddress = &greDest
 			}
@@ -284,12 +284,12 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 			body.Classic = classic
 		}
 		// vpc
-		if v, ok := d.GetOk(helpers.PICloudConnectionVPCEnabled); ok {
+		if v, ok := d.GetOk(CloudConnectionVPCEnabled); ok {
 			vpcEnabled := v.(bool)
 			vpc := &models.CloudConnectionEndpointVPC{
 				Enabled: vpcEnabled,
 			}
-			if v, ok := d.GetOk(helpers.PICloudConnectionVPCCRNs); ok && v.(*schema.Set).Len() > 0 {
+			if v, ok := d.GetOk(PICloudConnectionVPCCrns); ok && v.(*schema.Set).Len() > 0 {
 				vpcIds := flex.ExpandStringList(v.(*schema.Set).List())
 				vpcs := make([]*models.CloudConnectionVPC, len(vpcIds))
 				for i, vpcId := range vpcIds {
@@ -319,8 +319,8 @@ func resourceIBMPICloudConnectionUpdate(ctx context.Context, d *schema.ResourceD
 			}
 		}
 	}
-	if d.HasChange(helpers.PICloudConnectionNetworks) {
-		oldRaw, newRaw := d.GetChange(helpers.PICloudConnectionNetworks)
+	if d.HasChange(CloudConnectionNetworks) {
+		oldRaw, newRaw := d.GetChange(CloudConnectionNetworks)
 		old := oldRaw.(*schema.Set)
 		new := newRaw.(*schema.Set)
 
@@ -387,16 +387,16 @@ func resourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.Set(PICloudConnectionId, cloudConnection.CloudConnectionID)
-	d.Set(helpers.PICloudConnectionName, cloudConnection.Name)
-	d.Set(helpers.PICloudConnectionGlobalRouting, cloudConnection.GlobalRouting)
-	d.Set(helpers.PICloudConnectionMetered, cloudConnection.Metered)
-	d.Set(PICloudConnectionIBMIPAddress, cloudConnection.IbmIPAddress)
-	d.Set(PICloudConnectionUserIPAddress, cloudConnection.UserIPAddress)
-	d.Set(PICloudConnectionStatus, cloudConnection.LinkStatus)
-	d.Set(PICloudConnectionPort, cloudConnection.Port)
-	d.Set(helpers.PICloudConnectionSpeed, cloudConnection.Speed)
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
+	d.Set(CloudConnectionID, cloudConnection.CloudConnectionID)
+	d.Set(CloudConnectionName, cloudConnection.Name)
+	d.Set(CloudConnectionGlobalRouting, cloudConnection.GlobalRouting)
+	d.Set(CloudConnectionMetered, cloudConnection.Metered)
+	d.Set(CloudConnectionIbmIP, cloudConnection.IbmIPAddress)
+	d.Set(CloudConnectionUserIP, cloudConnection.UserIPAddress)
+	d.Set(CloudConnectionStatus, cloudConnection.LinkStatus)
+	d.Set(CloudConnectionPort, cloudConnection.Port)
+	d.Set(CloudConnectionSpeed, cloudConnection.Speed)
+	d.Set(PICloudInstanceID, cloudInstanceID)
 	if cloudConnection.Networks != nil {
 		networks := make([]string, 0)
 		for _, ccNetwork := range cloudConnection.Networks {
@@ -404,23 +404,23 @@ func resourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceDat
 				networks = append(networks, *ccNetwork.NetworkID)
 			}
 		}
-		d.Set(helpers.PICloudConnectionNetworks, networks)
+		d.Set(CloudConnectionNetworks, networks)
 	}
 	if cloudConnection.Classic != nil {
-		d.Set(helpers.PICloudConnectionClassicEnabled, cloudConnection.Classic.Enabled)
+		d.Set(CloudConnectionClassicEnabled, cloudConnection.Classic.Enabled)
 		if cloudConnection.Classic.Gre != nil {
-			d.Set(helpers.PICloudConnectionClassicGreDest, cloudConnection.Classic.Gre.DestIPAddress)
-			d.Set(PICloudConnectionClassicGreSource, cloudConnection.Classic.Gre.SourceIPAddress)
+			d.Set(PICloudConnectionGREDestination, cloudConnection.Classic.Gre.DestIPAddress)
+			d.Set(CloudConnectionGreSource, cloudConnection.Classic.Gre.SourceIPAddress)
 		}
 	}
 	if cloudConnection.Vpc != nil {
-		d.Set(helpers.PICloudConnectionVPCEnabled, cloudConnection.Vpc.Enabled)
+		d.Set(CloudConnectionVPCEnabled, cloudConnection.Vpc.Enabled)
 		if cloudConnection.Vpc.Vpcs != nil && len(cloudConnection.Vpc.Vpcs) > 0 {
 			vpcCRNs := make([]string, len(cloudConnection.Vpc.Vpcs))
 			for i, vpc := range cloudConnection.Vpc.Vpcs {
 				vpcCRNs[i] = *vpc.VpcID
 			}
-			d.Set(helpers.PICloudConnectionVPCCRNs, vpcCRNs)
+			d.Set(PICloudConnectionVPCCrns, vpcCRNs)
 		}
 	}
 

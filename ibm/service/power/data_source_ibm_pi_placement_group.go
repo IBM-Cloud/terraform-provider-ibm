@@ -10,10 +10,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
+
+const (
+	// Arguments
+	PIPlacementGroupName   = "pi_placement_group_name"
+	PIPlacementGroupPolicy = "pi_placement_group_policy"
+
+	// Attributes
+	PlacementGroups       = "placement_groups"
+	PlacementGroupID      = "placement_group_id"
+	PlacementGroupName    = "name"
+	PlacementGroupMembers = "members"
+	PlacementGroupPolicy  = "policy"
+
+	// Attributes need to fix
+	PlacementGroupsID = "id"
 )
 
 func DataSourceIBMPIPlacementGroup() *schema.Resource {
@@ -21,23 +36,23 @@ func DataSourceIBMPIPlacementGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIPlacementGroupRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PIPlacementGroupName: {
+			PIPlacementGroupName: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"policy": {
+			PlacementGroupPolicy: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			PIPlacementGroupMembers: {
+			PlacementGroupMembers: {
 				Type:     schema.TypeList,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
@@ -53,8 +68,8 @@ func dataSourceIBMPIPlacementGroupRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	placementGroupName := d.Get(helpers.PIPlacementGroupName).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	placementGroupName := d.Get(PIPlacementGroupName).(string)
 	client := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 
 	response, err := client.Get(placementGroupName)
@@ -64,8 +79,8 @@ func dataSourceIBMPIPlacementGroupRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(*response.ID)
-	d.Set("policy", response.Policy)
-	d.Set(PIPlacementGroupMembers, response.Members)
+	d.Set(PlacementGroupPolicy, response.Policy)
+	d.Set(PlacementGroupMembers, response.Members)
 
 	return nil
 }

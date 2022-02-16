@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
@@ -181,7 +180,7 @@ func TestAccIBMPIInstanceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceConfig(name, helpers.PIInstanceHealthWarning),
+				Config: testAccCheckIBMPIInstanceConfig(name, "WARNING"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),

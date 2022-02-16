@@ -6,7 +6,6 @@ package power
 import (
 	"context"
 
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,9 +16,14 @@ import (
 )
 
 const (
+	// Arguments
+	PIConsoleLanguageName = "pi_instance_name"
+	PIConsoleLanguageCode = "pi_language_code"
+
+	// Attributes
 	ConsoleLanguages    = "console_languages"
 	ConsoleLanguageCode = "code"
-	ConsoleLanguageDesc = "language"
+	ConsoleLanguage     = "language"
 )
 
 /*
@@ -29,12 +33,12 @@ func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstanceConsoleLanguagesRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PIInstanceName: {
+			PIConsoleLanguageName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The unique identifier or name of the instance",
@@ -52,7 +56,7 @@ func DataSourceIBMPIInstanceConsoleLanguages() *schema.Resource {
 							Computed:    true,
 							Description: "language code",
 						},
-						ConsoleLanguageDesc: {
+						ConsoleLanguage: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "language description",
@@ -70,8 +74,8 @@ func dataSourceIBMPIInstanceConsoleLanguagesRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	instanceName := d.Get(helpers.PIInstanceName).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	instanceName := d.Get(PIConsoleLanguageName).(string)
 
 	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	languages, err := client.GetConsoleLanguages(instanceName)
@@ -87,7 +91,7 @@ func dataSourceIBMPIInstanceConsoleLanguagesRead(ctx context.Context, d *schema.
 		for _, language := range languages.ConsoleLanguages {
 			l := map[string]interface{}{
 				ConsoleLanguageCode: *language.Code,
-				ConsoleLanguageDesc: language.Language,
+				ConsoleLanguages:    language.Language,
 			}
 			result = append(result, l)
 		}

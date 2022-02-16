@@ -10,57 +10,57 @@ import (
 	"strconv"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_instance.go
 func DataSourceIBMPIInstanceIP() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIInstancesIPRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PIInstanceName: {
+			PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Server Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			helpers.PINetworkName: {
+			PIInstanceNetworkName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed attributes
-			"ip": {
+			InstanceNetworkIP: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ipoctet": {
+			InstanceIpOctet: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"macaddress": {
+			InstanceNetworkMAC: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"network_id": {
+			InstanceNetworkID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"type": {
+			InstanceNetworkType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"external_ip": {
+			InstanceExternalIP: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -74,11 +74,11 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	networkName := d.Get(helpers.PINetworkName).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	networkName := d.Get(PIInstanceNetworkName).(string)
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
+	powervmdata, err := powerC.Get(d.Get(PIInstanceName).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -87,15 +87,15 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 		if address.NetworkName == networkName {
 			log.Printf("Printing the ip %s", address.IP)
 			d.SetId(address.NetworkID)
-			d.Set("ip", address.IP)
-			d.Set("network_id", address.NetworkID)
-			d.Set("macaddress", address.MacAddress)
-			d.Set("external_ip", address.ExternalIP)
-			d.Set("type", address.Type)
+			d.Set(InstanceNetworkIP, address.IP)
+			d.Set(InstanceNetworkID, address.NetworkID)
+			d.Set(InstanceNetworkMAC, address.MacAddress)
+			d.Set(InstanceExternalIP, address.ExternalIP)
+			d.Set(InstanceNetworkType, address.Type)
 
 			IPObject := net.ParseIP(address.IP).To4()
 
-			d.Set("ipoctet", strconv.Itoa(int(IPObject[3])))
+			d.Set(InstanceIpOctet, strconv.Itoa(int(IPObject[3])))
 
 			return nil
 		}

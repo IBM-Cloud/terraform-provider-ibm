@@ -8,7 +8,6 @@ import (
 	"log"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,36 +19,34 @@ import (
 /*
 Datasource to get the list of dhcp servers in a power instance
 */
-
-const PIDhcpServers = "servers"
-
+// Attributes and Arguments defined in data_source_ibm_pi_dhcp.go
 func DataSourceIBMPIDhcps() *schema.Resource {
 
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPIDhcpServersRead,
+		ReadContext: dataSourceIBMDhcpsServersRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			// Computed Attributes
-			PIDhcpServers: {
+			DhcpServers: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						PIDhcpId: {
+						DhcpID: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the DHCP Server",
 						},
-						PIDhcpStatus: {
+						DhcpStatus: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The status of the DHCP Server",
 						},
-						PIDhcpNetwork: {
+						DhcpNetwork: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The DHCP Server private network",
@@ -61,13 +58,13 @@ func DataSourceIBMPIDhcps() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIDhcpServersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMDhcpsServersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServers, err := client.GetAll()
@@ -79,20 +76,20 @@ func dataSourceIBMPIDhcpServersRead(ctx context.Context, d *schema.ResourceData,
 	result := make([]map[string]interface{}, 0, len(dhcpServers))
 	for _, dhcpServer := range dhcpServers {
 		server := map[string]interface{}{
-			PIDhcpId:     *dhcpServer.ID,
-			PIDhcpStatus: *dhcpServer.Status,
+			DhcpID:     *dhcpServer.ID,
+			DhcpStatus: *dhcpServer.Status,
 		}
 
 		dhcpNetwork := dhcpServer.Network
 		if dhcpNetwork != nil {
-			server[PIDhcpNetwork] = *dhcpNetwork.ID
+			server[DhcpNetwork] = *dhcpNetwork.ID
 		}
 		result = append(result, server)
 	}
 
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
-	d.Set(PIDhcpServers, result)
+	d.Set(DhcpServers, result)
 
 	return nil
 }

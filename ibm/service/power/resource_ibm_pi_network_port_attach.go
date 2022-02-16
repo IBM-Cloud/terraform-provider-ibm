@@ -13,13 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_network_port.go
 func ResourceIBMPINetworkPortAttach() *schema.Resource {
 	return &schema.Resource{
 
@@ -35,31 +35,53 @@ func ResourceIBMPINetworkPortAttach() *schema.Resource {
 			Update: schema.DefaultTimeout(60 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
-			"port_id": {
+			PINetworkPortID: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			helpers.PIInstanceName: {
+			PINetworkPortInstanceName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Instance name to attach the network port to",
 			},
-			helpers.PINetworkName: {
+			PINetworkPortName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Network Name - This is the subnet name  in the Cloud instance",
 			},
-			helpers.PINetworkPortDescription: {
+			PINetworkPortDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "A human readable description for this network Port",
 				Default:     "Port Created via Terraform",
 			},
-			"public_ip": {
+
+			// Attributes
+			NetworkPortPublicIP: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			NetworkPortIP: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			NetworkPortMAC: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			NetworkPortStatus: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			NetworkPortID: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			NetworkPortInstance: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -74,11 +96,11 @@ func resourceIBMPINetworkPortAttachCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	networkname := d.Get(helpers.PINetworkName).(string)
-	portid := d.Get("port_id").(string)
-	instancename := d.Get(helpers.PIInstanceName).(string)
-	description := d.Get(helpers.PINetworkPortDescription).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	networkname := d.Get(PINetworkPortName).(string)
+	portid := d.Get(PINetworkPortID).(string)
+	instancename := d.Get(PINetworkPortInstanceName).(string)
+	description := d.Get(PINetworkPortDescription).(string)
 	client := st.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 
 	log.Printf("Printing the input to the resource: cloud instance [%s] and network name [%s] and the portid [%s]", cloudInstanceID, networkname, portid)
@@ -128,12 +150,12 @@ func resourceIBMPINetworkPortAttachRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.Set("ipaddress", networkdata.IPAddress)
-	d.Set("macaddress", networkdata.MacAddress)
-	d.Set("status", networkdata.Status)
-	d.Set("portid", networkdata.PortID)
-	d.Set("pvminstance", networkdata.PvmInstance.Href)
-	d.Set("public_ip", networkdata.ExternalIP)
+	d.Set(NetworkPortIP, networkdata.IPAddress)
+	d.Set(NetworkPortMAC, networkdata.MacAddress)
+	d.Set(NetworkPortStatus, networkdata.Status)
+	d.Set(NetworkPortID, networkdata.PortID)
+	d.Set(NetworkPortInstance, networkdata.PvmInstance.Href)
+	d.Set(NetworkPortPublicIP, networkdata.ExternalIP)
 
 	return nil
 }
@@ -182,7 +204,7 @@ func isWaitForIBMPINetworkPortAttachAvailable(ctx context.Context, client *st.IB
 	log.Printf("Waiting for Power Network (%s) that was created for Network Zone (%s) to be available.", id, networkname)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", helpers.PINetworkProvisioning},
+		Pending:    []string{"retry", "build"},
 		Target:     []string{"ACTIVE"},
 		Refresh:    isIBMPINetworkPortAttachRefreshFunc(client, id, networkname),
 		Timeout:    timeout,
@@ -208,6 +230,6 @@ func isIBMPINetworkPortAttachRefreshFunc(client *st.IBMPINetworkClient, id, netw
 			return network, "ACTIVE", nil
 		}
 
-		return network, helpers.PINetworkProvisioning, nil
+		return network, "build", nil
 	}
 }

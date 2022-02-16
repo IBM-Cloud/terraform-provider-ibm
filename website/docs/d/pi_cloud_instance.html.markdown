@@ -42,7 +42,7 @@ In addition to the argument reference list, you can access the following attribu
 
 - `capabilities` - (String) Lists the capabilities for this cloud instance.
 - `enabled` - (Bool) Indicates whether the tenant is enabled.
-- `id` - (String) The unique identifier for this tenant.
+- `id` - (String) The unique identifier for this cloud instance.
 - `pvm_instances` - (List) PVM instances owned by the Cloud Instance.
 
   Nested scheme for `pvm_instances`:

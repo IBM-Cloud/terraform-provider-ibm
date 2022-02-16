@@ -15,7 +15,6 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/errors"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_v_p_n_connections"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -24,14 +23,24 @@ import (
 )
 
 const (
-	PIVPNConnectionId                         = "connection_id"
-	PIVPNConnectionStatus                     = "connection_status"
-	PIVPNConnectionDeadPeerDetection          = "dead_peer_detections"
-	PIVPNConnectionDeadPeerDetectionAction    = "action"
-	PIVPNConnectionDeadPeerDetectionInterval  = "interval"
-	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
-	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
-	PIVPNConnectionVpnGatewayAddress          = "gateway_address"
+	// Arguments
+	PIVpnIkePolicyID        = "pi_ike_policy_id"
+	PIVpnIpSecPolicyID      = "pi_ipsec_policy_id"
+	PIVpnNetworks           = "pi_networks"
+	PIVpnPeerGatewayAddress = "pi_peer_gateway_address"
+	PIVpnSubnets            = "pi_peer_subnets"
+	PIVpnMode               = "pi_vpn_connection_mode"
+	PIVpnName               = "pi_vpn_connection_name"
+
+	// Attributes
+	VPNConnectionID        = "connection_id"
+	VPNConnectionStatus    = "connection_status"
+	VPNDeadPeer            = "dead_peer_detections"
+	VPNAction              = "action"
+	VPNInterval            = "interval"
+	VPNThreshold           = "threshold"
+	VPNGatewayAddress      = "gateway_address"
+	VPNLocalGatewayAddress = "local_gateway_addreess"
 )
 
 func ResourceIBMPIVPNConnection() *schema.Resource {
@@ -50,45 +59,45 @@ func ResourceIBMPIVPNConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PIVPNConnectionName: {
+			PIVpnName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the VPN Connection",
 			},
-			helpers.PIVPNIKEPolicyId: {
+			PIVpnIkePolicyID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of IKE Policy selected for this VPN Connection",
 			},
-			helpers.PIVPNIPSecPolicyId: {
+			PIVpnIpSecPolicyID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique identifier of IPSec Policy selected for this VPN Connection",
 			},
-			helpers.PIVPNConnectionMode: {
+			PIVpnMode: {
 				Type:             schema.TypeString,
 				Required:         true,
 				ValidateFunc:     validate.ValidateAllowedStringValues([]string{"policy", "route"}),
 				Description:      "Mode used by this VPN Connection, either 'policy' or 'route'",
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
-			helpers.PIVPNConnectionNetworks: {
+			PIVpnNetworks: {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Set of network IDs to attach to this VPN connection",
 			},
-			helpers.PIVPNConnectionPeerGatewayAddress: {
+			PIVpnPeerGatewayAddress: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Peer Gateway address",
 			},
-			helpers.PIVPNConnectionPeerSubnets: {
+			PIVpnSubnets: {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -96,27 +105,27 @@ func ResourceIBMPIVPNConnection() *schema.Resource {
 			},
 
 			//Computed Attributes
-			PIVPNConnectionId: {
+			VPNConnectionID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "VPN connection ID",
 			},
-			PIVPNConnectionLocalGatewayAddress: {
+			VPNLocalGatewayAddress: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Local Gateway address, only in 'route' mode",
 			},
-			PIVPNConnectionStatus: {
+			VPNConnectionStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Status of the VPN connection",
 			},
-			PIVPNConnectionVpnGatewayAddress: {
+			VPNGatewayAddress: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Public IP address of the VPN Gateway (vSRX) attached to this VPN Connection",
 			},
-			PIVPNConnectionDeadPeerDetection: {
+			VPNDeadPeer: {
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Dead Peer Detection",
@@ -131,14 +140,14 @@ func resourceIBMPIVPNConnectionCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIVPNConnectionName).(string)
-	ikePolicyId := d.Get(helpers.PIVPNIKEPolicyId).(string)
-	ipsecPolicyId := d.Get(helpers.PIVPNIPSecPolicyId).(string)
-	mode := d.Get(helpers.PIVPNConnectionMode).(string)
-	networks := d.Get(helpers.PIVPNConnectionNetworks).(*schema.Set)
-	peerSubnets := d.Get(helpers.PIVPNConnectionPeerSubnets).(*schema.Set)
-	peerGatewayAddress := d.Get(helpers.PIVPNConnectionPeerGatewayAddress).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	name := d.Get(PIVpnName).(string)
+	ikePolicyId := d.Get(PIVpnIkePolicyID).(string)
+	ipsecPolicyId := d.Get(PIVpnIpSecPolicyID).(string)
+	mode := d.Get(PIVpnMode).(string)
+	networks := d.Get(PIVpnNetworks).(*schema.Set)
+	peerSubnets := d.Get(PIVpnSubnets).(*schema.Set)
+	peerGatewayAddress := d.Get(PIVpnPeerGatewayAddress).(string)
 	pga := models.PeerGatewayAddress(peerGatewayAddress)
 
 	body := &models.VPNConnectionCreate{
@@ -152,13 +161,13 @@ func resourceIBMPIVPNConnectionCreate(ctx context.Context, d *schema.ResourceDat
 	if networks.Len() > 0 {
 		body.Networks = flex.ExpandStringList(networks.List())
 	} else {
-		return diag.Errorf("%s is a required field", helpers.PIVPNConnectionNetworks)
+		return diag.Errorf("%s is a required field", PIVpnNetworks)
 	}
 	// peer subnets
 	if peerSubnets.Len() > 0 {
 		body.PeerSubnets = flex.ExpandStringList(peerSubnets.List())
 	} else {
-		return diag.Errorf("%s is a required field", helpers.PIVPNConnectionPeerSubnets)
+		return diag.Errorf("%s is a required field", PIVpnSubnets)
 	}
 
 	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
@@ -198,23 +207,23 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 	client := st.NewIBMPIVpnConnectionClient(ctx, sess, cloudInstanceID)
 	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 
-	if d.HasChangesExcept(helpers.PIVPNConnectionNetworks, helpers.PIVPNConnectionPeerSubnets) {
+	if d.HasChangesExcept(PIVpnNetworks, PIVpnSubnets) {
 		body := &models.VPNConnectionUpdate{}
 
-		if d.HasChanges(helpers.PIVPNConnectionName) {
-			name := d.Get(helpers.PIVPNConnectionName).(string)
+		if d.HasChanges(PIVpnName) {
+			name := d.Get(PIVpnName).(string)
 			body.Name = name
 		}
-		if d.HasChanges(helpers.PIVPNIKEPolicyId) {
-			ikePolicyId := d.Get(helpers.PIVPNIKEPolicyId).(string)
+		if d.HasChanges(PIVpnIkePolicyID) {
+			ikePolicyId := d.Get(PIVpnIkePolicyID).(string)
 			body.IkePolicy = ikePolicyId
 		}
-		if d.HasChanges(helpers.PIVPNIPSecPolicyId) {
-			ipsecPolicyId := d.Get(helpers.PIVPNIPSecPolicyId).(string)
+		if d.HasChanges(PIVpnIpSecPolicyID) {
+			ipsecPolicyId := d.Get(PIVpnIpSecPolicyID).(string)
 			body.IPSecPolicy = ipsecPolicyId
 		}
-		if d.HasChanges(helpers.PIVPNConnectionPeerGatewayAddress) {
-			peerGatewayAddress := d.Get(helpers.PIVPNConnectionPeerGatewayAddress).(string)
+		if d.HasChanges(PIVpnPeerGatewayAddress) {
+			peerGatewayAddress := d.Get(PIVpnPeerGatewayAddress).(string)
 			body.PeerGatewayAddress = models.PeerGatewayAddress(peerGatewayAddress)
 		}
 
@@ -223,8 +232,8 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChanges(helpers.PIVPNConnectionNetworks) {
-		oldRaw, newRaw := d.GetChange(helpers.PIVPNConnectionNetworks)
+	if d.HasChanges(PIVpnNetworks) {
+		oldRaw, newRaw := d.GetChange(PIVpnNetworks)
 		old := oldRaw.(*schema.Set)
 		new := newRaw.(*schema.Set)
 
@@ -257,8 +266,8 @@ func resourceIBMPIVPNConnectionUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 
 	}
-	if d.HasChanges(helpers.PIVPNConnectionPeerSubnets) {
-		oldRaw, newRaw := d.GetChange(helpers.PIVPNConnectionPeerSubnets)
+	if d.HasChanges(PIVpnSubnets) {
+		oldRaw, newRaw := d.GetChange(PIVpnSubnets)
 		old := oldRaw.(*schema.Set)
 		new := newRaw.(*schema.Set)
 
@@ -306,31 +315,31 @@ func resourceIBMPIVPNConnectionRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.Set(PIVPNConnectionId, vpnConnection.ID)
-	d.Set(helpers.PIVPNConnectionName, vpnConnection.Name)
+	d.Set(VPNConnectionID, vpnConnection.ID)
+	d.Set(PIVpnName, vpnConnection.Name)
 	if vpnConnection.IkePolicy != nil {
-		d.Set(helpers.PIVPNIKEPolicyId, vpnConnection.IkePolicy.ID)
+		d.Set(PIVpnIkePolicyID, vpnConnection.IkePolicy.ID)
 	}
 	if vpnConnection.IPSecPolicy != nil {
-		d.Set(helpers.PIVPNIPSecPolicyId, vpnConnection.IPSecPolicy.ID)
+		d.Set(PIVpnIpSecPolicyID, vpnConnection.IPSecPolicy.ID)
 	}
-	d.Set(PIVPNConnectionLocalGatewayAddress, vpnConnection.LocalGatewayAddress)
-	d.Set(helpers.PIVPNConnectionMode, vpnConnection.Mode)
-	d.Set(helpers.PIVPNConnectionPeerGatewayAddress, vpnConnection.PeerGatewayAddress)
-	d.Set(PIVPNConnectionStatus, vpnConnection.Status)
-	d.Set(PIVPNConnectionVpnGatewayAddress, vpnConnection.VpnGatewayAddress)
+	d.Set(VPNLocalGatewayAddress, vpnConnection.LocalGatewayAddress)
+	d.Set(PIVpnMode, vpnConnection.Mode)
+	d.Set(PIVpnPeerGatewayAddress, vpnConnection.PeerGatewayAddress)
+	d.Set(VPNConnectionStatus, vpnConnection.Status)
+	d.Set(VPNGatewayAddress, vpnConnection.VpnGatewayAddress)
 
-	d.Set(helpers.PIVPNConnectionNetworks, vpnConnection.NetworkIDs)
-	d.Set(helpers.PIVPNConnectionPeerSubnets, vpnConnection.PeerSubnets)
+	d.Set(PIVpnNetworks, vpnConnection.NetworkIDs)
+	d.Set(PIVpnSubnets, vpnConnection.PeerSubnets)
 
 	if vpnConnection.DeadPeerDetection != nil {
 		dpc := vpnConnection.DeadPeerDetection
 		dpcMap := map[string]interface{}{
-			PIVPNConnectionDeadPeerDetectionAction:    *dpc.Action,
-			PIVPNConnectionDeadPeerDetectionInterval:  strconv.FormatInt(*dpc.Interval, 10),
-			PIVPNConnectionDeadPeerDetectionThreshold: strconv.FormatInt(*dpc.Threshold, 10),
+			VPNAction:    *dpc.Action,
+			VPNInterval:  strconv.FormatInt(*dpc.Interval, 10),
+			VPNThreshold: strconv.FormatInt(*dpc.Threshold, 10),
 		}
-		d.Set(PIVPNConnectionDeadPeerDetection, dpcMap)
+		d.Set(VPNDeadPeer, dpcMap)
 	}
 
 	return nil

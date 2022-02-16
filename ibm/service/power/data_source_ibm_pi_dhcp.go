@@ -11,7 +11,6 @@ import (
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -19,7 +18,18 @@ import (
 )
 
 const (
-	PIDhcpID = "pi_dhcp_id"
+	// Arguments
+	PIDhcpID              = "pi_dhcp_id"
+	PIDhcpCloudConnection = "pi_cloud_connection_id"
+
+	// Attributes
+	DhcpID          = "dhcp_id"
+	DhcpStatus      = "status"
+	DhcpNetwork     = "network"
+	DhcpLeases      = "leases"
+	DhcpInstanceIP  = "instance_ip"
+	DhcpInstanceMAC = "instance_mac"
+	DhcpServers     = "servers"
 )
 
 func DataSourceIBMPIDhcp() *schema.Resource {
@@ -27,7 +37,7 @@ func DataSourceIBMPIDhcp() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIDhcpRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -38,28 +48,28 @@ func DataSourceIBMPIDhcp() *schema.Resource {
 				Description: "The ID of the DHCP Server",
 			},
 			// Computed Attributes
-			PIDhcpStatus: {
+			DhcpStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the DHCP Server",
 			},
-			PIDhcpNetwork: {
+			DhcpNetwork: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The DHCP Server private network",
 			},
-			PIDhcpLeases: {
+			DhcpLeases: {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The list of DHCP Server PVM Instance leases",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						PIDhcpInstanceIp: {
+						DhcpInstanceIP: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The IP of the PVM Instance",
 						},
-						PIDhcpInstanceMac: {
+						DhcpInstanceMAC: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The MAC Address of the PVM Instance",
@@ -77,7 +87,7 @@ func dataSourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	dhcpID := d.Get(PIDhcpID).(string)
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
@@ -88,21 +98,21 @@ func dataSourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	d.SetId(*dhcpServer.ID)
-	d.Set(PIDhcpStatus, *dhcpServer.Status)
+	d.Set(DhcpStatus, *dhcpServer.Status)
 	dhcpNetwork := dhcpServer.Network
 	if dhcpNetwork != nil {
-		d.Set(PIDhcpNetwork, *dhcpNetwork.ID)
+		d.Set(DhcpNetwork, *dhcpNetwork.ID)
 	}
 	dhcpLeases := dhcpServer.Leases
 	if dhcpLeases != nil {
 		leaseList := make([]map[string]string, len(dhcpLeases))
 		for i, lease := range dhcpLeases {
 			leaseList[i] = map[string]string{
-				PIDhcpInstanceIp:  *lease.InstanceIP,
-				PIDhcpInstanceMac: *lease.InstanceMacAddress,
+				DhcpInstanceIP:  *lease.InstanceIP,
+				DhcpInstanceMAC: *lease.InstanceMacAddress,
 			}
 		}
-		d.Set(PIDhcpLeases, leaseList)
+		d.Set(DhcpLeases, leaseList)
 	}
 
 	return nil

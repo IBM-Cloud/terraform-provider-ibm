@@ -6,7 +6,6 @@ package power
 import (
 	"context"
 
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -20,15 +19,16 @@ import (
 
 /*
 Datasource to get the list of images that are available when a power instance is created
-
 */
+
+// Attributes and Arguments defined in data_source_ibm_pi_image.go
 func DataSourceIBMPIImages() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIImagesAllRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
@@ -36,36 +36,36 @@ func DataSourceIBMPIImages() *schema.Resource {
 
 			// Computed Attributes
 
-			"image_info": {
+			Images: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						ImagesID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						ImageName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"href": {
+						ImageHref: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
+						ImageState: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_type": {
+						ImageStorageType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_pool": {
+						ImageStoragePool: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"image_type": {
+						ImageType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -82,7 +82,7 @@ func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 	imagedata, err := imageC.GetAll()
@@ -92,7 +92,7 @@ func dataSourceIBMPIImagesAllRead(ctx context.Context, d *schema.ResourceData, m
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("image_info", flattenStockImages(imagedata.Images))
+	d.Set(Images, flattenStockImages(imagedata.Images))
 
 	return nil
 
@@ -103,13 +103,13 @@ func flattenStockImages(list []*models.ImageReference) []map[string]interface{} 
 	for _, i := range list {
 
 		l := map[string]interface{}{
-			"id":           *i.ImageID,
-			"state":        *i.State,
-			"href":         *i.Href,
-			"name":         *i.Name,
-			"storage_type": *i.StorageType,
-			"storage_pool": *i.StoragePool,
-			"image_type":   i.Specifications.ImageType,
+			ImagesID:         *i.ImageID,
+			ImageState:       *i.State,
+			ImageHref:        *i.Href,
+			ImageName:        *i.Name,
+			ImageStorageType: *i.StorageType,
+			ImageStoragePool: *i.StoragePool,
+			ImageType:        i.Specifications.ImageType,
 		}
 
 		result = append(result, l)

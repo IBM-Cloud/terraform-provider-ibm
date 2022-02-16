@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_snapshot.go
 func ResourceIBMPISnapshot() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPISnapshotCreate,
@@ -35,17 +35,17 @@ func ResourceIBMPISnapshot() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			helpers.PISnapshotName: {
+			PISnapshotName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Unique name of the snapshot",
 			},
-			helpers.PIInstanceName: {
+			PISnapshotInstanceName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Instance name / id of the pvm",
 			},
-			helpers.PIInstanceVolumeIds: {
+			PISnapshotVolumeIDs: {
 				Type:             schema.TypeSet,
 				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
@@ -53,48 +53,36 @@ func ResourceIBMPISnapshot() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "List of PI volumes",
 			},
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: " Cloud Instance ID - This is the service_instance_id.",
 			},
-			"pi_description": {
+			PISnapshotDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Description of the PVM instance snapshot",
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Snapshot description",
-				Deprecated:  "This field is deprecated, use pi_description instead",
-			},
 
 			// Computed Attributes
-			helpers.PISnapshot: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Id of the snapshot",
-				Deprecated:  "This field is deprecated, use snapshot_id instead",
-			},
-			"snapshot_id": {
+			SnapshotSnapshotID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of the PVM instance snapshot",
 			},
-			"status": {
+			SnapshotStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"creation_date": {
+			SnapshotCreationDate: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"last_update_date": {
+			SnapshotLastUpdatedDate: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"volume_snapshots": {
+			SnapshotVolumeSnapshots: {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
@@ -108,16 +96,16 @@ func resourceIBMPISnapshotCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	instanceid := d.Get(helpers.PIInstanceName).(string)
-	volids := flex.ExpandStringList((d.Get(helpers.PIInstanceVolumeIds).(*schema.Set)).List())
-	name := d.Get(helpers.PISnapshotName).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	instanceid := d.Get(PISnapshotInstanceName).(string)
+	volids := flex.ExpandStringList((d.Get(PISnapshotVolumeIDs).(*schema.Set)).List())
+	name := d.Get(PISnapshotName).(string)
 
 	var description string
 	if v, ok := d.GetOk("description"); ok {
 		description = v.(string)
 	}
-	if v, ok := d.GetOk("pi_description"); ok {
+	if v, ok := d.GetOk(PISnapshotDescription); ok {
 		description = v.(string)
 	}
 
@@ -166,13 +154,12 @@ func resourceIBMPISnapshotRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.Set(helpers.PISnapshotName, snapshotdata.Name)
-	d.Set(helpers.PISnapshot, *snapshotdata.SnapshotID)
-	d.Set("snapshot_id", *snapshotdata.SnapshotID)
-	d.Set("status", snapshotdata.Status)
-	d.Set("creation_date", snapshotdata.CreationDate.String())
-	d.Set("volume_snapshots", snapshotdata.VolumeSnapshots)
-	d.Set("last_update_date", snapshotdata.LastUpdateDate.String())
+	d.Set(PISnapshotName, snapshotdata.Name)
+	d.Set(SnapshotSnapshotID, *snapshotdata.SnapshotID)
+	d.Set(SnapshotStatus, snapshotdata.Status)
+	d.Set(SnapshotCreationDate, snapshotdata.CreationDate.String())
+	d.Set(SnapshotVolumeSnapshots, snapshotdata.VolumeSnapshots)
+	d.Set(SnapshotLastUpdatedDate, snapshotdata.LastUpdateDate.String())
 
 	return nil
 }
@@ -192,8 +179,8 @@ func resourceIBMPISnapshotUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	client := st.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 
-	if d.HasChange(helpers.PISnapshotName) || d.HasChange("description") {
-		name := d.Get(helpers.PISnapshotName).(string)
+	if d.HasChange(PISnapshotName) || d.HasChange("description") {
+		name := d.Get(PISnapshotName).(string)
 		description := d.Get("description").(string)
 		snapshotBody := &models.SnapshotUpdate{Name: name, Description: description}
 
@@ -286,7 +273,7 @@ func isWaitForPIInstanceSnapshotDeleted(ctx context.Context, client *st.IBMPISna
 	log.Printf("Waiting for (%s) to be deleted.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", helpers.PIInstanceDeleting},
+		Pending:    []string{"retry", "DELETING"},
 		Target:     []string{"Not Found"},
 		Refresh:    isPIInstanceSnapshotDeleteRefreshFunc(client, id),
 		Delay:      10 * time.Second,
@@ -302,9 +289,9 @@ func isPIInstanceSnapshotDeleteRefreshFunc(client *st.IBMPISnapshotClient, id st
 		snapshot, err := client.Get(id)
 		if err != nil {
 			log.Printf("The snapshot is not found.")
-			return snapshot, helpers.PIInstanceNotFound, nil
+			return snapshot, "Not Found", nil
 		}
-		return snapshot, helpers.PIInstanceNotFound, nil
+		return snapshot, "Not Found", nil
 
 	}
 }

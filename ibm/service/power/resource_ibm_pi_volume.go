@@ -15,21 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
-const (
-	PIAffinityPolicy        = "pi_affinity_policy"
-	PIAffinityVolume        = "pi_affinity_volume"
-	PIAffinityInstance      = "pi_affinity_instance"
-	PIAntiAffinityInstances = "pi_anti_affinity_instances"
-	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
-)
-
+// Attributes and Arguments defined in data_source_ibm_pi_volume.go
 func ResourceIBMPIVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIVolumeCreate,
@@ -45,27 +37,27 @@ func ResourceIBMPIVolume() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cloud Instance ID - This is the service_instance_id.",
 			},
-			helpers.PIVolumeName: {
+			PIVolumeName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Volume Name to create",
 			},
-			helpers.PIVolumeShareable: {
+			PIVolumeShareable: {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Flag to indicate if the volume can be shared across multiple instances?",
 			},
-			helpers.PIVolumeSize: {
+			PIVolumeSize: {
 				Type:        schema.TypeFloat,
 				Required:    true,
 				Description: "Size of the volume in GB",
 			},
-			helpers.PIVolumeType: {
+			PIVolumeType: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
@@ -73,69 +65,69 @@ func ResourceIBMPIVolume() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Type of Disk, required if pi_affinity_policy and pi_volume_pool not provided, otherwise ignored",
 			},
-			helpers.PIVolumePool: {
+			PIVolumePool: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Volume pool where the volume will be created; if provided then pi_volume_type and pi_affinity_policy values will be ignored",
 			},
-			PIAffinityPolicy: {
+			PIVolumeAffinityPolicy: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Affinity policy for data volume being created; ignored if pi_volume_pool provided; for policy affinity requires one of pi_affinity_instance or pi_affinity_volume to be specified; for policy anti-affinity requires one of pi_anti_affinity_instances or pi_anti_affinity_volumes to be specified",
 				ValidateFunc:     validate.InvokeValidator("ibm_pi_volume", "pi_affinity"),
 			},
-			PIAffinityVolume: {
+			PIVolumeAffinityVolume: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Volume (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_instance is not provided",
-				ConflictsWith:    []string{PIAffinityInstance},
+				ConflictsWith:    []string{PIVolumeAffinityInstance},
 			},
-			PIAffinityInstance: {
+			PIVolumeAffinityInstance: {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "PVM Instance (ID or Name) to base volume affinity policy against; required if requesting affinity and pi_affinity_volume is not provided",
-				ConflictsWith:    []string{PIAffinityVolume},
+				ConflictsWith:    []string{PIVolumeAffinityVolume},
 			},
-			PIAntiAffinityVolumes: {
+			PIVolumeAniAffinityVolumes: {
 				Type:             schema.TypeList,
 				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "List of volumes to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_instances is not provided",
-				ConflictsWith:    []string{PIAntiAffinityInstances},
+				ConflictsWith:    []string{PIVolumeAntiAffinityInstances},
 			},
-			PIAntiAffinityInstances: {
+			PIVolumeAntiAffinityInstances: {
 				Type:             schema.TypeList,
 				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "List of pvmInstances to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
-				ConflictsWith:    []string{PIAntiAffinityVolumes},
+				ConflictsWith:    []string{PIVolumeAniAffinityVolumes},
 			},
 
 			// Computed Attributes
-			"volume_id": {
+			VolumeID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Volume ID",
 			},
-			"volume_status": {
+			VolumeStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Volume status",
 			},
 
-			"delete_on_termination": {
+			VolumeDeleteOnTermination: {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Should the volume be deleted during termination",
 			},
-			"wwn": {
+			VolumeWWN: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "WWN Of the volume",
@@ -166,45 +158,45 @@ func resourceIBMPIVolumeCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	name := d.Get(helpers.PIVolumeName).(string)
-	size := float64(d.Get(helpers.PIVolumeSize).(float64))
+	name := d.Get(PIVolumeName).(string)
+	size := float64(d.Get(PIVolumeSize).(float64))
 	var shared bool
-	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
+	if v, ok := d.GetOk(PIVolumeShareable); ok {
 		shared = v.(bool)
 	}
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	body := &models.CreateDataVolume{
 		Name:      &name,
 		Shareable: &shared,
 		Size:      &size,
 	}
-	if v, ok := d.GetOk(helpers.PIVolumeType); ok {
+	if v, ok := d.GetOk(PIVolumeType); ok {
 		volType := v.(string)
 		body.DiskType = volType
 	}
-	if v, ok := d.GetOk(helpers.PIVolumePool); ok {
+	if v, ok := d.GetOk(PIVolumePool); ok {
 		volumePool := v.(string)
 		body.VolumePool = volumePool
 	}
-	if ap, ok := d.GetOk(PIAffinityPolicy); ok {
+	if ap, ok := d.GetOk(PIVolumeAffinityPolicy); ok {
 		policy := ap.(string)
 		body.AffinityPolicy = &policy
 
 		if policy == "affinity" {
-			if av, ok := d.GetOk(PIAffinityVolume); ok {
+			if av, ok := d.GetOk(PIVolumeAffinityVolume); ok {
 				afvol := av.(string)
 				body.AffinityVolume = &afvol
 			}
-			if ai, ok := d.GetOk(PIAffinityInstance); ok {
+			if ai, ok := d.GetOk(PIVolumeAffinityInstance); ok {
 				afins := ai.(string)
 				body.AffinityPVMInstance = &afins
 			}
 		} else {
-			if avs, ok := d.GetOk(PIAntiAffinityVolumes); ok {
+			if avs, ok := d.GetOk(PIVolumeAniAffinityVolumes); ok {
 				afvols := flex.ExpandStringList(avs.([]interface{}))
 				body.AntiAffinityVolumes = afvols
 			}
-			if ais, ok := d.GetOk(PIAntiAffinityInstances); ok {
+			if ais, ok := d.GetOk(PIVolumeAntiAffinityInstances); ok {
 				afinss := flex.ExpandStringList(ais.([]interface{}))
 				body.AntiAffinityPVMInstances = afinss
 			}
@@ -246,22 +238,22 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set(helpers.PIVolumeName, vol.Name)
-	d.Set(helpers.PIVolumeSize, vol.Size)
+	d.Set(PIVolumeName, vol.Name)
+	d.Set(PIVolumeSize, vol.Size)
 	if vol.Shareable != nil {
-		d.Set(helpers.PIVolumeShareable, vol.Shareable)
+		d.Set(PIVolumeShareable, vol.Shareable)
 	}
-	d.Set(helpers.PIVolumeType, vol.DiskType)
-	d.Set(helpers.PIVolumePool, vol.VolumePool)
-	d.Set("volume_status", vol.State)
+	d.Set(PIVolumeType, vol.DiskType)
+	d.Set(PIVolumePool, vol.VolumePool)
+	d.Set(VolumeStatus, vol.State)
 	if vol.VolumeID != nil {
-		d.Set("volume_id", vol.VolumeID)
+		d.Set(VolumeID, vol.VolumeID)
 	}
 	if vol.DeleteOnTermination != nil {
-		d.Set("delete_on_termination", vol.DeleteOnTermination)
+		d.Set(VolumeDeleteOnTermination, vol.DeleteOnTermination)
 	}
-	d.Set("wwn", vol.Wwn)
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
+	d.Set(VolumeWWN, vol.Wwn)
+	d.Set(PICloudInstanceID, cloudInstanceID)
 
 	return nil
 }
@@ -278,10 +270,10 @@ func resourceIBMPIVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	client := st.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	name := d.Get(helpers.PIVolumeName).(string)
-	size := float64(d.Get(helpers.PIVolumeSize).(float64))
+	name := d.Get(PIVolumeName).(string)
+	size := float64(d.Get(PIVolumeSize).(float64))
 	var shareable bool
-	if v, ok := d.GetOk(helpers.PIVolumeShareable); ok {
+	if v, ok := d.GetOk(PIVolumeShareable); ok {
 		shareable = v.(bool)
 	}
 
@@ -330,8 +322,8 @@ func isWaitForIBMPIVolumeAvailable(ctx context.Context, client *st.IBMPIVolumeCl
 	log.Printf("Waiting for Volume (%s) to be available.", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"retry", helpers.PIVolumeProvisioning},
-		Target:     []string{helpers.PIVolumeProvisioningDone},
+		Pending:    []string{"retry", "creating"},
+		Target:     []string{"available"},
 		Refresh:    isIBMPIVolumeRefreshFunc(client, id),
 		Delay:      10 * time.Second,
 		MinTimeout: 2 * time.Minute,
@@ -349,16 +341,16 @@ func isIBMPIVolumeRefreshFunc(client *st.IBMPIVolumeClient, id string) resource.
 		}
 
 		if vol.State == "available" || vol.State == "in-use" {
-			return vol, helpers.PIVolumeProvisioningDone, nil
+			return vol, "available", nil
 		}
 
-		return vol, helpers.PIVolumeProvisioning, nil
+		return vol, "creating", nil
 	}
 }
 
 func isWaitForIBMPIVolumeDeleted(ctx context.Context, client *st.IBMPIVolumeClient, id string, timeout time.Duration) (interface{}, error) {
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"deleting", helpers.PIVolumeProvisioning},
+		Pending:    []string{"deleting", "creating"},
 		Target:     []string{"deleted"},
 		Refresh:    isIBMPIVolumeDeleteRefreshFunc(client, id),
 		Delay:      10 * time.Second,

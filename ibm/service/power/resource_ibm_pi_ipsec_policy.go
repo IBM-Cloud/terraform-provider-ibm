@@ -13,10 +13,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+)
+
+const (
+	// Arguments
+	PIIpSecPolicyAuth        = "pi_policy_authentication"
+	PIIpSecPolicyDH          = "pi_policy_dh_group"
+	PIIpSecPolicyEncryption  = "pi_policy_encryption"
+	PIIpSecPolicyKeyLifetime = "pi_policy_key_lifetime"
+	PIIpSecPolicyName        = "pi_policy_name"
+	PIIpSecPfs               = "pi_policy_pfs"
+
+	// Attributes
+	IPSecPolicyID = "policy_id"
 )
 
 func ResourceIBMPIIPSecPolicy() *schema.Resource {
@@ -35,42 +47,42 @@ func ResourceIBMPIIPSecPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-			helpers.PIVPNPolicyName: {
+			PIIpSecPolicyName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the IPSec Policy",
 			},
-			helpers.PIVPNPolicyDhGroup: {
+			PIIpSecPolicyDH: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedIntValues([]int{1, 2, 5, 14, 19, 20, 24}),
 				Description:  "DH group of the IPSec Policy",
 			},
-			helpers.PIVPNPolicyEncryption: {
+			PIIpSecPolicyEncryption: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"aes-256-cbc", "aes-192-cbc", "aes-128-cbc", "aes-256-gcm", "aes-128-gcm", "3des-cbc"}),
 				Description:  "Encryption of the IPSec Policy",
 			},
-			helpers.PIVPNPolicyKeyLifetime: {
+			PIIpSecPolicyKeyLifetime: {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validate.ValidateAllowedRangeInt(180, 86400),
 				Description:  "Policy key lifetime",
 			},
-			helpers.PIVPNPolicyPFS: {
+			PIIpSecPfs: {
 				Type:        schema.TypeBool,
 				Required:    true,
 				Description: "Perfect Forward Secrecy",
 			},
 
 			// Optional Attributes
-			helpers.PIVPNPolicyAuthentication: {
+			PIIpSecPolicyAuth: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
@@ -79,7 +91,7 @@ func ResourceIBMPIIPSecPolicy() *schema.Resource {
 			},
 
 			//Computed Attributes
-			PIPolicyId: {
+			IPSecPolicyID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IPSec policy ID",
@@ -94,12 +106,12 @@ func resourceIBMPIIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	name := d.Get(helpers.PIVPNPolicyName).(string)
-	dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
-	encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
-	pfs := d.Get(helpers.PIVPNPolicyPFS).(bool)
-	keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	name := d.Get(PIIpSecPolicyName).(string)
+	dhGroup := int64(d.Get(PIIpSecPolicyDH).(int))
+	encryption := d.Get(PIIpSecPolicyEncryption).(string)
+	pfs := d.Get(PIIpSecPfs).(bool)
+	keyLifetime := int64(d.Get(PIIpSecPolicyKeyLifetime).(int))
 	klt := models.KeyLifetime(keyLifetime)
 
 	body := &models.IPSecPolicyCreate{
@@ -110,7 +122,7 @@ func resourceIBMPIIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		Pfs:         &pfs,
 	}
 
-	if v, ok := d.GetOk(helpers.PIVPNPolicyAuthentication); ok {
+	if v, ok := d.GetOk(PIIpSecPolicyAuth); ok {
 		body.Authentication = models.IPSECPolicyAuthentication(v.(string))
 	}
 
@@ -140,28 +152,28 @@ func resourceIBMPIIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 	client := st.NewIBMPIVpnPolicyClient(ctx, sess, cloudInstanceID)
 	body := &models.IPSecPolicyUpdate{}
 
-	if d.HasChange(helpers.PIVPNPolicyName) {
-		name := d.Get(helpers.PIVPNPolicyName).(string)
+	if d.HasChange(PIIpSecPolicyName) {
+		name := d.Get(PIIpSecPolicyName).(string)
 		body.Name = name
 	}
-	if d.HasChange(helpers.PIVPNPolicyDhGroup) {
-		dhGroup := int64(d.Get(helpers.PIVPNPolicyDhGroup).(int))
+	if d.HasChange(PIIpSecPolicyDH) {
+		dhGroup := int64(d.Get(PIIpSecPolicyDH).(int))
 		body.DhGroup = dhGroup
 	}
-	if d.HasChange(helpers.PIVPNPolicyEncryption) {
-		encryption := d.Get(helpers.PIVPNPolicyEncryption).(string)
+	if d.HasChange(PIIpSecPolicyEncryption) {
+		encryption := d.Get(PIIpSecPolicyEncryption).(string)
 		body.Encryption = encryption
 	}
-	if d.HasChange(helpers.PIVPNPolicyKeyLifetime) {
-		keyLifetime := int64(d.Get(helpers.PIVPNPolicyKeyLifetime).(int))
+	if d.HasChange(PIIpSecPolicyKeyLifetime) {
+		keyLifetime := int64(d.Get(PIIpSecPolicyKeyLifetime).(int))
 		body.KeyLifetime = models.KeyLifetime(keyLifetime)
 	}
-	if d.HasChange(helpers.PIVPNPolicyPFS) {
-		pfs := d.Get(helpers.PIVPNPolicyPFS).(bool)
+	if d.HasChange(PIIpSecPfs) {
+		pfs := d.Get(PIIpSecPfs).(bool)
 		body.Pfs = &pfs
 	}
-	if d.HasChange(helpers.PIVPNPolicyAuthentication) {
-		authentication := d.Get(helpers.PIVPNPolicyAuthentication).(string)
+	if d.HasChange(PIIpSecPolicyAuth) {
+		authentication := d.Get(PIIpSecPolicyAuth).(string)
 		body.Authentication = models.IPSECPolicyAuthentication(authentication)
 	}
 
@@ -198,13 +210,13 @@ func resourceIBMPIIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set(PIPolicyId, ipsecPolicy.ID)
-	d.Set(helpers.PIVPNPolicyName, ipsecPolicy.Name)
-	d.Set(helpers.PIVPNPolicyDhGroup, ipsecPolicy.DhGroup)
-	d.Set(helpers.PIVPNPolicyEncryption, ipsecPolicy.Encryption)
-	d.Set(helpers.PIVPNPolicyKeyLifetime, ipsecPolicy.KeyLifetime)
-	d.Set(helpers.PIVPNPolicyPFS, ipsecPolicy.Pfs)
-	d.Set(helpers.PIVPNPolicyAuthentication, ipsecPolicy.Authentication)
+	d.Set(IPSecPolicyID, ipsecPolicy.ID)
+	d.Set(PIIpSecPolicyName, ipsecPolicy.Name)
+	d.Set(PIIpSecPolicyDH, ipsecPolicy.DhGroup)
+	d.Set(PIIpSecPolicyEncryption, ipsecPolicy.Encryption)
+	d.Set(PIIpSecPolicyKeyLifetime, ipsecPolicy.KeyLifetime)
+	d.Set(PIIpSecPfs, ipsecPolicy.Pfs)
+	d.Set(PIIpSecPolicyAuth, ipsecPolicy.Authentication)
 
 	return nil
 }

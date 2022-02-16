@@ -11,8 +11,89 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+)
+
+const (
+	// Arguments
+	PIInstanceName                  = "pi_instance_name"
+	PIInstanceAffinityInstance      = "pi_affinity_instance"
+	PIInstanceAffinityPolicy        = "pi_affinity_policy"
+	PIInstanceAffinityVolume        = "pi_affinity_volume"
+	PIInstanceAntiAffinityInstances = "pi_anti_affinity_instances"
+	PIInstanceAntiAffinityVolumes   = "pi_anti_affinity_volumes"
+	PIInstanceHealth                = "pi_health_status"
+	PIInstanceImageID               = "pi_image_id"
+	PIInstanceKey                   = "pi_key_pair_name"
+	PIInstanceLRC                   = "pi_license_repository_capacity"
+	PIInstanceMemory                = "pi_memory"
+	PIInstanceMigratable            = "pi_migratable"
+	PIInstanceNetwork               = "pi_network"
+	PIInstanceNetworkID             = "network_id"
+	PIInstanceNetworkIP             = "ip_address"
+	PIInstancePinPolicy             = "pi_pin_policy"
+	PIInstancePlacementGroup        = "pi_placement_group_id"
+	PIInstanceProcessors            = "pi_processors"
+	PIInstanceProcType              = "pi_proc_type"
+	PIInstanceReplicants            = "pi_replicants"
+	PIInstanceReplicationPolicy     = "pi_replication_policy"
+	PIInstanceReplicationScheme     = "pi_replication_scheme"
+	PIInstanceSapProfileID          = "pi_sap_profile_id"
+	PIInstanceStoragePool           = "pi_storage_pool"
+	PIInstanceStoragePoolAffinity   = "pi_storage_pool_affinity"
+	PIInstanceStorageType           = "pi_storage_type"
+	PIInstanceStorageConnection     = "pi_storage_connection"
+	PIInstanceSysType               = "pi_sys_type"
+	PIInstanceUserData              = "pi_user_data"
+	PIInstanceVirtualCoresAssigned  = "pi_virtual_cores_assigned"
+	PIInstanceVolumeIDs             = "pi_volume_ids"
+	PIInstanceNetworkName           = "pi_network_name"
+
+	// Attributes
+	InstanceInstanceID          = "instance_id"
+	InstanceHealthStatus        = "health_status"
+	InstanceMemory              = "memory"
+	InstanceMinProc             = "minproc"
+	InstanceMaxProc             = "maxproc"
+	InstanceMaxVirtualCores     = "max_virtual_cores"
+	InstanceMinMem              = "minmem"
+	InstanceMaxMem              = "maxmem"
+	InstanceMinVirtualCores     = "min_virtual_cores"
+	InstanceLRC                 = "license_repository_capacity"
+	InstanceAddresses           = "addresses"
+	InstanceNetworks            = "networks"
+	InstanceNetworksIP          = "ip"
+	InstanceNetworkExternalIP   = "external_ip"
+	InstanceNetworksMAC         = "macaddress"
+	InstanceNetworkID           = "network_id"
+	InstanceNetworkName         = "network_name"
+	InstanceNetworkType         = "type"
+	InstancePlacementGroup      = "placement_group_id"
+	InstanceProcessors          = "processors"
+	InstanceProcType            = "proctype"
+	InstanceStatus              = "status"
+	InstanceStoragePool         = "storage_pool"
+	InstanceStoragePoolAffinity = "storage_pool_affinity"
+	InstanceStorageType         = "storage_type"
+	InstanceVirtualCores        = "virtual_cores_assigned"
+	InstanceVolumes             = "volumes"
+	InstancePinPolicy           = "pin_policy"
+	InstanceOSType              = "os_type"
+	InstanceOperatingSystem     = "operating_system"
+	InstanceProgress            = "progress"
+	InstanceIpOctet             = "ipoctet"
+
+	// Attributes to fix later
+	InstanceMaxProcessors = "max_processors"
+	InstanceMinProcessors = "min_processors"
+	InstanceMinMemory     = "min_memory"
+	InstanceMaxMemory     = "max_memory"
+	InstanceNetwork       = "pi_network"
+	InstanceNetworkIP     = "ip_address"
+	InstanceNetworkMAC    = "mac_address"
+	InstanceExternalIP    = "external_ip"
+	Instances             = "pvm_instances"
+	InstancesInstanceID   = "pvm_instance_id"
 )
 
 func DataSourceIBMPIInstance() *schema.Resource {
@@ -21,96 +102,96 @@ func DataSourceIBMPIInstance() *schema.Resource {
 		ReadContext: dataSourceIBMPIInstancesRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PIInstanceName: {
+			PIInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Server Name to be used for pvminstances",
 				ValidateFunc: validation.NoZeroValues,
 			},
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			// Computed Attributes
-			"volumes": {
+			InstanceVolumes: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"memory": {
+			InstanceMemory: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"processors": {
+			InstanceProcessors: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"health_status": {
+			InstanceHealthStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"addresses": {
+			InstanceAddresses: {
 				Type:       schema.TypeList,
 				Computed:   true,
 				Deprecated: "This field is deprecated, use networks instead",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip": {
+						InstanceNetworksIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"macaddress": {
+						InstanceNetworksMAC: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"network_id": {
+						InstanceNetworkID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"network_name": {
+						InstanceNetworkName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
+						InstanceNetworkType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"external_ip": {
+						InstanceNetworkExternalIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"networks": {
+			InstanceNetworks: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip": {
+						InstanceNetworksIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"macaddress": {
+						InstanceNetworksMAC: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"network_id": {
+						InstanceNetworkID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"network_name": {
+						InstanceNetworkName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
+						InstanceNetworkType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"external_ip": {
+						InstanceNetworkExternalIP: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -121,65 +202,65 @@ func DataSourceIBMPIInstance() *schema.Resource {
 					},
 				},
 			},
-			"proctype": {
+			InstanceProcType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"status": {
+			InstanceStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"minproc": {
+			InstanceMinProc: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"minmem": {
+			InstanceMinMem: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"maxproc": {
+			InstanceMaxProc: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"maxmem": {
+			InstanceMaxMem: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"pin_policy": {
+			InstancePinPolicy: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"virtual_cores_assigned": {
+			InstanceVirtualCores: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"max_virtual_cores": {
+			InstanceMaxVirtualCores: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"min_virtual_cores": {
+			InstanceMinVirtualCores: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"storage_type": {
+			InstanceStorageType: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_pool": {
+			InstanceStoragePool: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_pool_affinity": {
+			InstanceStoragePoolAffinity: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"license_repository_capacity": {
+			InstanceLRC: {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			PIPlacementGroupID: {
+			InstancePlacementGroup: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -195,10 +276,10 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	powervmdata, err := powerC.Get(d.Get(helpers.PIInstanceName).(string))
+	powervmdata, err := powerC.Get(d.Get(PIInstanceName).(string))
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -206,26 +287,26 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 
 	pvminstanceid := *powervmdata.PvmInstanceID
 	d.SetId(pvminstanceid)
-	d.Set("memory", powervmdata.Memory)
-	d.Set("processors", powervmdata.Processors)
-	d.Set("status", powervmdata.Status)
-	d.Set("proctype", powervmdata.ProcType)
-	d.Set("volumes", powervmdata.VolumeIDs)
-	d.Set("minproc", powervmdata.Minproc)
-	d.Set("minmem", powervmdata.Minmem)
-	d.Set("maxproc", powervmdata.Maxproc)
-	d.Set("maxmem", powervmdata.Maxmem)
-	d.Set("pin_policy", powervmdata.PinPolicy)
-	d.Set("virtual_cores_assigned", powervmdata.VirtualCores.Assigned)
-	d.Set("max_virtual_cores", powervmdata.VirtualCores.Max)
-	d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
-	d.Set("storage_type", powervmdata.StorageType)
-	d.Set("storage_pool", powervmdata.StoragePool)
-	d.Set("storage_pool_affinity", powervmdata.StoragePoolAffinity)
-	d.Set("license_repository_capacity", powervmdata.LicenseRepositoryCapacity)
-	d.Set("networks", flattenPvmInstanceNetworks(powervmdata.Networks))
+	d.Set(InstanceMemory, powervmdata.Memory)
+	d.Set(InstanceProcessors, powervmdata.Processors)
+	d.Set(InstanceStatus, powervmdata.Status)
+	d.Set(InstanceProcType, powervmdata.ProcType)
+	d.Set(InstanceVolumes, powervmdata.VolumeIDs)
+	d.Set(InstanceMinProc, powervmdata.Minproc)
+	d.Set(InstanceMinMem, powervmdata.Minmem)
+	d.Set(InstanceMaxProc, powervmdata.Maxproc)
+	d.Set(InstanceMaxMem, powervmdata.Maxmem)
+	d.Set(InstancePinPolicy, powervmdata.PinPolicy)
+	d.Set(InstanceVirtualCores, powervmdata.VirtualCores.Assigned)
+	d.Set(InstanceMaxVirtualCores, powervmdata.VirtualCores.Max)
+	d.Set(InstanceMinVirtualCores, powervmdata.VirtualCores.Min)
+	d.Set(InstanceStorageType, powervmdata.StorageType)
+	d.Set(InstanceStoragePool, powervmdata.StoragePool)
+	d.Set(InstanceStoragePoolAffinity, powervmdata.StoragePoolAffinity)
+	d.Set(InstanceLRC, powervmdata.LicenseRepositoryCapacity)
+	d.Set(InstanceNetworks, flattenPvmInstanceNetworks(powervmdata.Networks))
 	if *powervmdata.PlacementGroup != "none" {
-		d.Set(PIPlacementGroupID, powervmdata.PlacementGroup)
+		d.Set(InstancePlacementGroup, powervmdata.PlacementGroup)
 	}
 
 	if powervmdata.Addresses != nil {
@@ -233,21 +314,21 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		for i, pvmip := range powervmdata.Addresses {
 
 			p := make(map[string]interface{})
-			p["ip"] = pvmip.IP
-			p["network_name"] = pvmip.NetworkName
-			p["network_id"] = pvmip.NetworkID
-			p["macaddress"] = pvmip.MacAddress
-			p["type"] = pvmip.Type
-			p["external_ip"] = pvmip.ExternalIP
+			p[InstanceNetworksIP] = pvmip.IP
+			p[InstanceNetworkName] = pvmip.NetworkName
+			p[InstanceNetworkID] = pvmip.NetworkID
+			p[InstanceNetworksMAC] = pvmip.MacAddress
+			p[InstanceNetworkType] = pvmip.Type
+			p[InstanceNetworkExternalIP] = pvmip.ExternalIP
 			pvmaddress[i] = p
 		}
-		d.Set("addresses", pvmaddress)
+		d.Set(InstanceAddresses, pvmaddress)
 
 	}
 
 	if powervmdata.Health != nil {
 
-		d.Set("health_status", powervmdata.Health.Status)
+		d.Set(InstanceHealthStatus, powervmdata.Health.Status)
 
 	}
 

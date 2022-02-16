@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 )
 
 func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
@@ -30,7 +29,7 @@ func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, helpers.PIInstanceHealthOk),
+				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, "OK"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),

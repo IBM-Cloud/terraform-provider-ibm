@@ -13,44 +13,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIPlacementGroups = "placement_groups"
-)
-
+// Attributes and Arguments defined in data_source_ibm_pi_placement_group.go
 func DataSourceIBMPIPlacementGroups() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIPlacementGroupsRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "PI cloud instance ID",
 				ValidateFunc: validation.NoZeroValues,
 			},
 			// Computed Attributes
-			PIPlacementGroups: {
+			PlacementGroups: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						PlacementGroupsID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						PlacementGroupName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						PIPlacementGroupMembers: {
+						PlacementGroupMembers: {
 							Type:     schema.TypeList,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Computed: true,
 						},
-						"policy": {
+						PlacementGroupPolicy: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -67,7 +63,7 @@ func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 
 	client := st.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 	groups, err := client.GetAll()
@@ -79,17 +75,17 @@ func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceD
 	result := make([]map[string]interface{}, 0, len(groups.PlacementGroups))
 	for _, placementGroup := range groups.PlacementGroups {
 		key := map[string]interface{}{
-			"id":                    placementGroup.ID,
-			"name":                  placementGroup.Name,
-			PIPlacementGroupMembers: placementGroup.Members,
-			"policy":                placementGroup.Policy,
+			PlacementGroupsID:     placementGroup.ID,
+			PlacementGroupName:    placementGroup.Name,
+			PlacementGroupMembers: placementGroup.Members,
+			PlacementGroupPolicy:  placementGroup.Policy,
 		}
 		result = append(result, key)
 	}
 
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
-	d.Set(PIPlacementGroups, result)
+	d.Set(PlacementGroups, result)
 
 	return nil
 }

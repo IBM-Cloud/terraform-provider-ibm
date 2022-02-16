@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/go-uuid"
@@ -17,56 +16,57 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// Attributes and Arguments defined in data_source_ibm_pi_snapshot.go
 func DataSourceIBMPISnapshots() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPISnapshotsRead,
 		Schema: map[string]*schema.Schema{
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
 
 			//Computed Attributes
-			"instance_snapshots": {
+			Snapshots: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						SnapshotID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						SnapshotName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"percent_complete": {
+						SnapshotPercentComplete: {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"description": {
+						SnapshotDescription: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"action": {
+						SnapshotAction: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						SnapshotStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"creation_date": {
+						SnapshotCreationDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"last_updated_date": {
+						SnapshotLastUpdatedDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"volume_snapshots": {
+						SnapshotVolumeSnapshots: {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
@@ -83,7 +83,7 @@ func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	snapshot := instance.NewIBMPISnapshotClient(ctx, sess, cloudInstanceID)
 	snapshotData, err := snapshot.GetAll()
 	if err != nil {
@@ -92,7 +92,7 @@ func dataSourceIBMPISnapshotsRead(ctx context.Context, d *schema.ResourceData, m
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("instance_snapshots", flattenSnapshotsInstances(snapshotData.Snapshots))
+	d.Set(Snapshots, flattenSnapshotsInstances(snapshotData.Snapshots))
 
 	return nil
 }
@@ -102,15 +102,15 @@ func flattenSnapshotsInstances(list []*models.Snapshot) []map[string]interface{}
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"id":                *i.SnapshotID,
-			"name":              *i.Name,
-			"description":       i.Description,
-			"creation_date":     i.CreationDate.String(),
-			"last_updated_date": i.LastUpdateDate.String(),
-			"action":            i.Action,
-			"percent_complete":  i.PercentComplete,
-			"status":            i.Status,
-			"volume_snapshots":  i.VolumeSnapshots,
+			SnapshotID:              *i.SnapshotID,
+			SnapshotName:            *i.Name,
+			SnapshotDescription:     i.Description,
+			SnapshotCreationDate:    i.CreationDate.String(),
+			SnapshotLastUpdatedDate: i.LastUpdateDate.String(),
+			SnapshotAction:          i.Action,
+			SnapshotPercentComplete: i.PercentComplete,
+			SnapshotStatus:          i.Status,
+			SnapshotVolumeSnapshots: i.VolumeSnapshots,
 		}
 
 		result = append(result, l)
