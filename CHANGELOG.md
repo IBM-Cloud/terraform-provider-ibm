@@ -1,3 +1,8 @@
+# 1.38.2 (Feb09, 2022)
+BugFIXES:
+* Updating members_cpu_allocation_count to 0 fails with ibm_database ([3567](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3567))
+
+
 # 1.38.1 (Jan27, 2022)
 ENHANCEMENTS:
 * Support intergation of security groups with virtual private endpoint gateway ([3488](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3488))
