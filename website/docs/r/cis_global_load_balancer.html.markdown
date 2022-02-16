@@ -26,6 +26,7 @@ resource "ibm_cis_global_load_balancer" "example" {
   default_pool_ids = [ibm_cis_origin_pool.example.id]
   description      = "example load balancer using geo-balancing"
   proxied          = true
+  steering_policy = "dynamic_latency"
   region_pools{
 			region="WEU"
 			pool_ids = [ibm_cis_origin_pool.example.id]
@@ -70,6 +71,7 @@ Review the argument references that you can specify for your resource.
   - `region` - (Required, String) Enter a region code. Should not specify the multiple entries with the same region.
   - `pool_ids` - (Required, String) A list of pool IDs in failover priority for the provided region.
 - `session_affinity` - (Optional, String) Associates all requests from an end-user with a single origin. IBM sets a cookie on the initial response to the client, so that the consequent requests with the cookie in the request use the same origin, as long as it is available.
+- `steering_policy` - (Optional, String) Steering Policy which allows off,geo,random,dynamic_latency.
 - `ttl` - (Optional, Integer) The time to live (TTL) in seconds for how long the load balancer must cache a resolved IP address for a DNS entry before the load balancer must look up the IP address again. If your global load balancer is proxied, this value is automatically set and cannot be changed. If your global load balancer is not in proxy, you can enter a value that is 120 or greater.
 
 

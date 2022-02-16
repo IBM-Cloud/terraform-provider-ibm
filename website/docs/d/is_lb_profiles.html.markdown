@@ -7,14 +7,24 @@ description: |-
 ---
 
 # ibm_is_lb_profiles
-Retrieve information of an existing IBM Cloud Infrastructure load balancer profiles as a read-only data source. For more information, about infrastructure load balance profiles, see [managing security and compliance with load balancers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-security-compliance-lb).
+Retrieve information of an existing IBM Cloud infrastructure load balancer profiles as a read-only data source. For more information, about infrastructure load balance profiles, see [managing security and compliance with load balancers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-security-compliance-lb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_lb_profiles" "ds_lb_profiles" {
+data "ibm_is_lb_profiles" "example" {
 }
 
 ```
@@ -28,3 +38,5 @@ You can access the following attribute references after your data source is crea
 	- `family` - (String) The product family this load balancer profile belongs to.
 	- `href` - (String) The URL for this load balancer profile.
 	- `name` - (String) The name for this load balancer profile.
+	- `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
+	- `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]

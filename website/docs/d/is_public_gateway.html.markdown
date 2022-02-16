@@ -7,26 +7,36 @@ description: |-
 ---
 
 # ibm_is_public_gateway
-Retrieve information of an existing public gateway data source. For more information, about an VPC public gateway, see [about networking](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc).
+Retrieve information of an existing public gateway data source as a read only data source. For more information, about an VPC public gateway, see [about networking](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_public_gateway" "testacc_gateway" {
-  name = "test-gateway"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_public_gateway" "example" {
+  name = "example-gateway"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
 }
 
-data "ibm_is_public_gateway" "testacc_dspgw"{
-  name = ibm_is_public_gateway.testacc_public_gateway.name
+data "ibm_is_public_gateway" "example" {
+  name = ibm_is_public_gateway.example.name
 }
-
 ```
 
 ## Argument reference
@@ -38,6 +48,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `crn` - (String) The CRN for this public gateway.
 - `floating_ip` - (List) List of the nested block describes the floating IP of the gateway with the **id** and **address** details.
 	
   Nested scheme for `floating_ip`:

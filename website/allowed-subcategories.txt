@@ -1,4 +1,6 @@
+Activity Tracker
 API Gateway
+App ID Management
 App Configuration
 Catalog Management
 Certificate Manager
@@ -6,12 +8,15 @@ Classic infrastructure
 Cloud Databases
 Cloud Foundry
 Container Registry
+Context Based Restrictions
 Direct Link Gateway
 DNS Services
 Enterprise Management
+Event Notifications
 Event Streams
 Functions
 Global Tagging
+IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
 Identity & Access Management (IAM)
 Internet services
@@ -24,6 +29,6 @@ Resource management
 Satellite
 Schematics
 Secrets Manager
+Security and Compliance Center
 Transit Gateway
 VPC infrastructure
-

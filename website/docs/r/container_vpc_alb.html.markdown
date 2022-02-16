@@ -32,12 +32,13 @@ The ibm_container_vpc_alb provides the following [Timeouts](https://www.terrafor
 Review the argument references that you can specify for your resource.
 
 - `alb_id` - (Required, Forces new resource, String) The unique identifier of the application load balancer.
+- `resource_group_id` - (Optional, String) The ID of the resource group where your cluster is provisioned into. To list resource groups, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
 - `enable` - (Optional, Bool) If set to **true**, the ALB in your cluster is enabled. If you set this option, do not specify `disable_deployment` at the same time.
 - `disable_deployment` - (Optional, Bool) Disable the ALB deployment only. If provided, the ALB deployment is deleted but the IBM-provided Ingress subdomain remains. If you set this option, do not specify `enable` at the same time.
 **Note** You must include either `enable` or `disable_deployment` in the configuration, but must not include both.
 
 
-## Attribute Reference
+## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `alb_type` - (String) The ALB type.

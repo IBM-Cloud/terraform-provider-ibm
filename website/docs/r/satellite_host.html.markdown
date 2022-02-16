@@ -18,8 +18,7 @@ Create, update, or delete [IBM Cloud Satellite Host](https://cloud.ibm.com/docs/
 resource "ibm_satellite_host" "assign_host" {
   count         = 3
 
-  location      = "satellite-ibm"
-  cluster       = "satellite-ibm"
+  location      = var.location
   host_id       = element(var.host_vms, count.index)
   labels        = ["env:prod"]
   zone          = element(var.location_zones, count.index)
@@ -58,6 +57,14 @@ resource "ibm_satellite_host" "assign_host" {
 }
 
 ```
+## Timeouts
+
+The `ibm_satellite_host` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **Create** The assignment of hosts is considered failed if no response is received for 75 minutes.
+- **Update** The updation of the host assignment is considered failed if no response is received for 45 minutes.
+- **Delete** The deletion of the hosts is considered failed if no response is received for 45 minutes.
+
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -68,7 +75,7 @@ Review the argument references that you can specify for your resource.
  - `location` - (Required, String) The name or ID of the Satellite  location.
 - `labels`- (Optional, Array of Strings) The key value pairs to label the host, such as `cpu=4` to describe the host capabilities.
 - `worker_pool` - (Optional, String) The name or ID of the worker pool within the cluster to assign the host to.
-
+`wait_till` - (Optional, String) If this argument is provided this resource will wait until location is normal. Allowed values: `location_normal`
 
 
 ## Attribute reference

@@ -10,32 +10,39 @@ description: |-
 # ibm_is_vpc_routing_table_route
 Create, update, or delete of an VPC routing tables. For more information, about VPC routes, see [about routing tables and routes](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
-  vpc = ""
-  routing_table = ""
-  zone = "us-south-1"
-  name = "custom-route-2"
-  destination = "192.168.4.0/24"
-  action = "deliver"
-  next_hop = "10.0.0.4"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
-```
-
-```terraform
-resource "ibm_is_vpc_routing_table_route" "test_ibm_is_vpc_routing_table_route" {
-  vpc = ""
-  routing_table = ""
-  zone = "us-south-1"
-  name = "custom-route-2"
-  destination = "192.168.4.0/24"
-  action = "deliver"
-  next_hop = ibm_is_vpn_gateway_connection.VPNGatewayConnection.gateway_connection
+resource "ibm_is_vpc_routing_table" "example" {
+  vpc                           = ibm_is_vpc.example.id
+  name                          = "example-routing-table"
+  route_direct_link_ingress     = true
+  route_transit_gateway_ingress = false
+  route_vpc_zone_ingress        = false
 }
-
+resource "ibm_is_vpc_routing_table_route" "example" {
+  vpc           = ibm_is_vpc.example.id
+  routing_table = ibm_is_vpc_routing_table.example.routing_table
+  zone          = "us-south-1"
+  name          = "custom-route-2"
+  destination   = "192.168.4.0/24"
+  action        = "deliver"
+  next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
+}
 ```
 
 ## Argument reference

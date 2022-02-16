@@ -9,21 +9,32 @@ description: |-
 # ibm_is_dedicated_host
 Create, update, delete and suspend the dedicated host resource. For more information, about dedicated host in your IBM Cloud VPC, see [Dedicated hosts](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_dedicated_host_group" "dh_group01" {
+resource "ibm_is_dedicated_host_group" "example" {
   family = "memory"
-  class = "beta"
-  zone = "us-south-1"
+  class  = "beta"
+  zone   = "us-south-1"
 }
-data "ibm_is_dedicated_host_group" "dgroup" {
-  name = ibm_is_dedicated_host_group.dh_group01.name
+data "ibm_is_dedicated_host_group" "example" {
+  name = ibm_is_dedicated_host_group.example.name
 }
-resource "ibm_is_dedicated_host" "is_dedicated_host" {
-  profile = "dh2-56x464"
-  host_group = "1e09281b-f177-46fb-baf1-bc152b2e391a"
-  name = "testdh02"
+resource "ibm_is_dedicated_host" "example" {
+  profile    = "dh2-56x464"
+  host_group = ibm_is_dedicated_host_group.example.id
+  name       = "example-dh-host"
 }
 ```
 

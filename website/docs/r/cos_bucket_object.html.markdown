@@ -61,7 +61,7 @@ Review the argument references that you can specify for your resource.
 - `bucket_crn` - (Required, Forces new resource, String) The CRN of the COS bucket.
 - `bucket_location` - (Required, Forces new resource, String) The location of the COS bucket.
 - `content` - (Optional, String) Literal string value to use as an object content, which will be uploaded as UTF-8 encoded text. Conflicts with `content_base64` and `content_file`.
-- `content_base64` - (Optional, String) Base64-encoded data that will be decoded and uploaded as raw bytes for an object content. This  safely uploads non-UTF8 binary data, but is recommended only for small content. Conflicts with `content` and `content_file`.
+- `content_base64` - (Optional, String) Base64-encoded data that will be decoded and uploaded as raw bytes for an object content. This safely uploads `non-UTF8` binary data, but is recommended only for small content. Conflicts with `content` and `content_file`.
 - `content_file` - (Optional, String) The path to a file that will be read and uploaded as raw bytes for an object content. Conflicts with `content` and `content_base64`.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Supported values are `public`, `private`, or `direct`. Default value is `public`.
 - `etag` - (Optional, String) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
@@ -76,6 +76,7 @@ In addition to all argument reference list, you can access the following attribu
 - `content_type` - (String) A standard MIME type describing the format of an object data.
 - `etag` - (String) Computed MD5 hexdigest of an object content.
 - `last_modified` - (Timestamp) Last modified date of an object. A GMT formatted date.
+- `object_sql_url` - (String) Access the object using an SQL Query instance. The SQL URL is a reference url used inside of an SQL statement. The reference url is used to perform queries against objects storing structured data.
 
 ## Import
 

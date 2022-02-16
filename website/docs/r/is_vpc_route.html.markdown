@@ -10,16 +10,27 @@ description: |-
 # ibm_is_vpc_route
 Create, update, or delete a VPC route. For more information, about VPC routes, see [setting up advanced routing in VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_route" "testacc_vpc_route" {
-  name        = "routetest"
-  vpc         = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_vpc_route" "example" {
+  name        = "example-route"
+  vpc         = ibm_is_vpc.example.id
   zone        = "us-south-1"
   destination = "192.168.4.0/24"
   next_hop    = "10.0.0.4"

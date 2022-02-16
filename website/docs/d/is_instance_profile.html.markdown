@@ -9,14 +9,24 @@ description: |-
 # ibm_is_instance_profile
 Retrieve information of an existing IBM Cloud virtual server instance profile. For more information, about virtual server instance profile, see [instance profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
-The following example retrieves information about the `b-2x8` instance profile. 
+The following example retrieves information about the `cx2-2x4` instance profile. 
 
 ```terraform
 
-data "ibm_is_instance_profile" "profile" {
-  name = "b-2x8"
+data "ibm_is_instance_profile" "example" {
+  name = "cx2-2x4"
 }
 
 ```
@@ -42,6 +52,14 @@ In addition to the argument reference list, you can access the following attribu
   - `type` - (String) The type for this profile field.
   - `value` - (String) The value for this profile field.
   - `values` - (String) The permitted values for this profile field.
+- `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
+  - `type` - The type for this profile field.
+  - `value` - The value for this profile field.
+  - `default` - The default value for this profile field.
+  - `max` - The maximum value for this profile field.
+  - `min` - The minimum value for this profile field.
+  - `step` - The increment step value for this profile field.
+  - `values` - The permitted values for this profile field.
 - `disks` - (List) Collection of the instance profile's disks. Nested `disks` blocks have the following structure:
 
   Nested scheme for `disks`:
@@ -72,6 +90,32 @@ In addition to the argument reference list, you can access the following attribu
     - `type` - (String) The type for this profile field.
     - `values` - (String) The supported disk interfaces used for attaching the disk.
 - `family` - (String) The family of the virtual server instance profile.
+- `gpu_count` - (List) Nested `gpu_count` blocks have the following structure:
+  Nested scheme for `gpu_count`:
+  - `default` - (String) The default value for this profile field.
+  - `max` - (String) The maximum value for this profile field.
+  - `min` - (String) The minimum value for this profile field.
+  - `step` - (String) The increment step value for this profile field.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The value for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_manufacturer` - (List) Nested `gpu_manufacturer` blocks have the following structure:
+  Nested scheme for `gpu_manufacturer`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_memory` - (List) Nested `gpu_memory` blocks have the following structure:
+  Nested scheme for `gpu_memory`:
+  - `default` - (String) The default value for this profile field.
+  - `max` - (String) The maximum value for this profile field.
+  - `min` - (String) The minimum value for this profile field.
+  - `step` - (String) The increment step value for this profile field.
+  - `type` - (String) The type for this profile field.
+  - `value` - (String) The value for this profile field.
+  - `values` - (String) The permitted values for this profile field.
+- `gpu_model` - (List) Nested `gpu_model` blocks have the following structure:
+  Nested scheme for `gpu_model`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The permitted values for this profile field.
 - `href` - (String) The URL for this virtual server instance profile.
 - `memory` - (List) Nested `memory` blocks have the following structure:
 

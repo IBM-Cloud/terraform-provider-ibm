@@ -10,20 +10,33 @@ description: |-
 # ibm_is_security_group_network_interface_attachment
 Create, update, or delete a security group network interface attachment. For more information, about security group network interface attachment, see [attaching and detaching security groups](https://cloud.ibm.com/docs/vpc?topic=vpc-alb-integration-with-security-groups#attaching-detaching-sg-to-alb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
-  security_group    = "2d364f0a-a870-42c3-a554-000001352417"
-  network_interface = "6d6128aa-badc-45c4-bb0e-7c2c1c47be55"
+resource "ibm_is_security_group_network_interface_attachment" "example" {
+  security_group    = ibm_is_security_group.example.id
+  network_interface = ibm_is_instance.example.primary_network_interface[0].id
 }
 ```
+~> **Note:** This resource is deprecated. Use `ibm_is_security_group_target` to attach a network interface to a security group
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `security_group` - (Required, Forces new resource, String) The security group ID. 
-- `network_interface` - (Required, Forces new resource, String) The network interface ID.
+- `security_group` - (Required, Forces new resource, String) The `.id` attribute of a `ibm_is_security_group` resource or data.
+- `network_interface` - (Required, Forces new resource, String) The network interface `id` that is available in the `ibm_is_instance.primary_network_interface[0].id`.
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -51,19 +64,17 @@ In addition to all argument reference list, you can access the following attribu
 	- `name` - (String) The name of this security group.
 - `type` - (String) The type of this network interface as it relates to a instance.
 
-
-
 ## Import
 The `ibm_is_security_group_network_interface_attachment` resource can be imported by using security group ID and network interface ID.
 
 **Syntax**
 
-```
+```sh
 $ terraform import ibm_is_security_group_network_interface_attachment.example <security_group_ID>/<network_interface_ID>
 ```
 
 **Example**
 
-```
+```sh
 $ terraform import ibm_is_security_group_network_interface_attachment.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
 ```

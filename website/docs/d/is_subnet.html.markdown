@@ -9,43 +9,53 @@ description: |-
 # ibm_is_subnet
 Retrieve information of an existing VPC Generation 2 compute subnet as a read only data source. For more information, about the IBM Cloud subnet, see [attaching subnets to a routing table](https://cloud.ibm.com/docs/vpc?topic=vpc-attach-subnets-routing-table).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 Example to retrieve the subnet information by using subnet name.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test_subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
-data "ibm_is_subnet" "ds_subnet" {
-  name = ibm_is_subnet.testacc_subnet.name
+data "ibm_is_subnet" "example" {
+  name = ibm_is_subnet.example.name
 }
 
 ```
 // Example to retrieve the subnet information by using subnet ID.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "test-subnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
-  ipv4_cidr_block = "192.168.0.0/1"
+  ipv4_cidr_block = "10.240.0.0/24"
 }
 
-data "ibm_is_subnet" "ds_subnet" {
-  identifier = ibm_is_subnet.testacc_subnet.id
+data "ibm_is_subnet" "example" {
+  identifier = ibm_is_subnet.example.id
 }
 
 ```
@@ -53,8 +63,8 @@ data "ibm_is_subnet" "ds_subnet" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The ID of the subnet.
-- `name` - (Optional, String) The name of the subnet.
+- `identifier` - (Optional, String) The ID of the subnet,`name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the subnet,`name` and `identifier` are mutually exclusive.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 

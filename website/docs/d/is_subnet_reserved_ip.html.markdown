@@ -7,14 +7,25 @@ description: |-
 ---
 
 # ibm_is_subnet_reserved_ip
-Retrieve information of an existing reserved IP in a subnet. For more information, about associated reserved IP subnet, see [binding and unbinding a reserved IP address](https://cloud.ibm.com/docs/vpc?topic=vpc-bind-unbind-reserved-ip).
+Retrieve information of an existing reserved IP in a subnet as a read only data source. For more information, about associated reserved IP subnet, see [binding and unbinding a reserved IP address](https://cloud.ibm.com/docs/vpc?topic=vpc-bind-unbind-reserved-ip).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-data "ibm_is_subnet_reserved_ip" "data_reserved_ip" {
-  subnet = ibm_is_subnet.test_subnet.id
-  reserved_ip = ibm_is_subnet_reserved_ip.resource_res_ip.reserved_ip
+data "ibm_is_subnet_reserved_ip" "example" {
+  subnet      = ibm_is_subnet.example.id
+  reserved_ip = ibm_is_subnet_reserved_ip.example.reserved_ip
 }
 ```
 

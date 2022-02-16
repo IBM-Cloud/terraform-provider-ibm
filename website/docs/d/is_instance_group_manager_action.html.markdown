@@ -9,13 +9,24 @@ description: |-
 # ibm_is_instance_group_manager_action
 Retrive information about an instance group manager. For more information, about VPC instance group manager action, see [scheduled scaling](https://cloud.ibm.com/docs/vpc?topic=vpc-scheduled-scaling-vpc).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "ibm_is_instance_group_manager_action" "ibm_is_instance_group_manager_action" {
-  instance_group         = "r006-76770f94-f7654-11e9-96e7-a77724435315"
-  instance_group_manager = "r006-76770f94-f8764-11e9-96e7-a77726534315"
-  name                   = "testinstancegroupmanageraction"
+data "ibm_is_instance_group_manager_action" "example" {
+  instance_group         = ibm_is_instance_group.example.id
+  instance_group_manager = ibm_is_instance_group_manager.example.manager_id
+  name                   = "example-instance-group-manager-action"
 }
 ```
 

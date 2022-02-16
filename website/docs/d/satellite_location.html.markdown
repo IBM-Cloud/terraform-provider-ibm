@@ -34,6 +34,13 @@ In addition to all argument reference list, you can access the following attribu
 - `ingress_secret` - (String) The Ingress secret.
 - `host_attached_count` - (Integer) The total number of hosts that are attached to the Satellite location.
 - `host_available_count` - (Integer) The available number of hosts that can be assigned to a cluster resource in the Satellite location.
+* `hosts`- Collection of hosts in a location
+    * `host_id`- ID of the host 
+    * `host_name`- Name of the host
+    * `cluster_name`- Host are used for control plane or ROKS satellite cluster
+    * `status`- Status of the host
+    * `zone`- The name of the zone
+    * `host_labels`- Host Labels
 - `logging_account_id` - (String) The account ID for IBM Cloud Log Analysis with IBM Cloud Log Analysis log forwarding.
 - `managed_from` - (String) The IBM Cloud metro from which the Satellite location is managed. To list available multizone regions, run `ibmcloud ks locations`. such as `wdc04`, `wdc06`, or `lon04`.
 - `resource_group_id` - (String) The ID of the resource group.

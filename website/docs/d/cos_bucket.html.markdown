@@ -41,13 +41,12 @@ Review the argument references that you can specify for your data source.
 - `bucket_name` - (Required, String) The name of the bucket.
 - `bucket_region` - (Required, String) The region of the bucket.
 - `bucket_type` - (Required, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
-- `endpoint_type` - (Optional, String) The type of the endpoint either public or private to be used for the buckets. Default value is `public`.
+- `endpoint_type` - (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for the buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
-- `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `flex`, `smart`.
+- `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
-
 - `allowed_ip`-  (String) List of `IPv4` or `IPv6` addresses in CIDR notation to be affected by firewall.
 - `activity_tracking` (List) Nested block with the following structure.
 
@@ -60,25 +59,42 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `archive_rule`:
   - `days` - (String)  Specifies the number of days when the specific rule action takes effect.
   - `enable`- (Bool) Specifies archive rule status either `enable` or `disable` for a bucket.
-  - `type` - (String)  Specifies the storage class or archive type to which you want the object to transition. Supported values are `Glacier` or `Accelerated`.
   - `rule_id` - (String)  Unique identifier for the rule. Archive rules allow you to set a specific time frame after which objects transition to archive.
+  - `type` - (String)  Specifies the storage class or archive type to which you want the object to transition. Supported values are `Glacier` or `Accelerated`.
+- `abort_incomplete_multipart_upload_days` (List) Nested block with the following structure.
+  
+  Nested scheme for `abort_incomplete_multipart_upload_days`:
+  - `days_after_initiation` - (String) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0.
+  - `enable` - (Bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
+  - `prefix` - (String)  A rule with a prefix will only apply to the objects that match. You can use multiple rules for different actions for different prefixes within the same bucket.
+  - `rule_id` - (String) Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket.
 - `crn` - (String) The CRN of the bucket.
 - `cross_region_location` - (String) The location to create a cross-regional bucket.
 - `expire_rule` (List) Nested block with the following structure.
 
   Nested scheme for `expire_rule`:
   - `days` - (String)  Specifies the number of days when the specific rule action takes effect.
+  - `date` - (String)  After the specifies date , the current version of objects in your bucket expires.
   - `enable`- (Bool) Specifies expire rule status either `enable` or `disable` for a bucket.
+  - `expired_object_delete_marker` - (Bool) Expired object delete markers can be automatically cleaned up to improve performance in your bucket. This cannot be used alongside version expiration.
   - `prefix` - (String)  Specifies a prefix filter to apply to only a subset of objects with names that match the prefix.
   - `rule_id` - (String)  Unique identifier for the rule. Expire rules allow you to set a specific time frame after which objects are deleted.
-- `id` - (String) The ID of the bucket. 
-- `key_protect` - (String) The CRN of the IBM Key Protect instance where a root key is already provisioned.
+- `hard_quota` - (String) Maximum bytes for the bucket.
+- `id` - (String) The ID of the bucket.
+- `key_protect` - (String) The CRN of the IBM Key Protect instance where a root key is already provisioned. 
 - `metrics_monitoring`- (List) Nested block with the following structure.
    
-   Nested scheme for `metrics_monitoring`:
-    - `metrics_monitoring_crn` - (String) The first time `metrics_monitoring` is configured. The instance of IBM Cloud monitoring that will receive the bucket metrics.
-    -	`request_metrics_enabled` - (Bool) If set to `true`, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service at 1 minute (`@1mins`) granularity.
-    - `usage_metrics_enabled`- (Bool) If set to **true**, all usage metrics (that is `bytes_used`) is sent to the monitoring service.
+  Nested scheme for `metrics_monitoring`:
+  - `metrics_monitoring_crn` - (String) The first time `metrics_monitoring` is configured. The instance of IBM Cloud monitoring that will receive the bucket metrics.
+  -	`request_metrics_enabled` - (Bool) If set to `true`, all request metrics `ibm_cos_bucket_all_request` is sent to the monitoring service at 1 minute (`@1mins`) granularity.
+  - `usage_metrics_enabled`- (Bool) If set to **true**, all usage metrics (that is `bytes_used`) is sent to the monitoring service.
+- `noncurrent_version_expiration` (List) Nested block with the following structure.
+  
+  Nested scheme for `noncurrent_version_expiration`:
+  - `enable` - (Bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
+  - `noncurrent_days` - (Int) Configuration parameter in your policy that says how long to retain a non-current version before deleting it. Must be greater than 0.
+  - `prefix` - (String) The rule applies to any objects with keys that match this prefix. You can use multiple rules for different actions for different prefixes within the same bucket.
+  - `rule_id` - (String) Unique identifier for the rule. Rules allow you to remove versions from objects. Set Rule ID for cos bucket.
 - `object_versioning` - (List) Nestedblock have the following structure:
 
   Nested scheme for `object_verionining`:
@@ -92,6 +108,8 @@ In addition to all argument reference list, you can access the following attribu
   - `maximum` - (String) Specifies maximum duration of time an object can be kept unmodified in the bucket.
   - `minimum` - (String) Specifies minimum duration of time an object must be kept unmodified in the bucket.
   - `permanent` - (String) Specifies a permanent retention status either enable or disable for a bucket.
-- `hard_quota` - (String) Maximum bytes for the bucket.
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
+- `s3_endpoint_public` - (String) Public endpoint for cos bucket.
+- `s3_endpoint_private` - (String) Private endpoint for cos bucket.
+- `s3_endpoint_direct` - (String) Direct endpoint for cos bucket.

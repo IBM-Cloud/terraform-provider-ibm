@@ -9,60 +9,70 @@ description: |-
 # ibm_is_instance_disk_management
 Create, update, or delete an IBM instance disk management. For more information, about instance disk management, see [managing instance storage](https://cloud.ibm.com/docs/vpc?topic=vpc-instance-storage-provisioning).
 
+**Note:** VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "testsubnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = file("~/.ssh/id_rsa.pub")
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "a7a0626c-f97e-4180-afbe-0331ec62f32a"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
   }
 
   network_interfaces {
     name   = "eth1"
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
   }
 
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 }
 
-data "ibm_is_instance" "ds_instance" {
-  name        = "${ibm_is_instance.testacc_instance.name}"
+data "ibm_is_instance" "example" {
+  name        = ibm_is_instance.example.name
   private_key = file("~/.ssh/id_rsa")
   passphrase  = ""
 }
 
-data "is_instance_disk" "is_instance_disk" {
-  instance = data.ibm_is_instance.ds_instance.id
-  disk = data.ibm_is_instance.ds_instance.disks.0.id
+data "is_instance_disk" "example" {
+  instance = data.ibm_is_instance.example.id
+  disk     = data.ibm_is_instance.example.disks.0.id
 }
 
-resource "ibm_is_instance_disk_management" "disks"{
-  instance = data.ibm_is_instance.ds_instance.id
+resource "ibm_is_instance_disk_management" "example" {
+  instance = data.ibm_is_instance.example.id
   disks {
-    name = "mydisk01"
-    id = data.ibm_is_instance.ds_instance.disks.0.id
+    name = "example-disk"
+    id   = data.ibm_is_instance.example.disks.0.id
   }
 }
 ```

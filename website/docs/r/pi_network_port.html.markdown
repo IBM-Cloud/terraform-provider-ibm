@@ -12,15 +12,15 @@ description: |-
 Creates or updates network port in the Power Virtual Server Cloud. For more information, about network in IBM power virutal server, see [adding or removing a public network
 ](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-modifying-server#adding-removing-network)..
 
-## Example Usage
+## Example usage
 
 In the following example, you can create an network_port:
 
 ```terraform
 resource "ibm_pi_network_port" "test-network-port" {
     pi_network_name             = "Zone1-CFN"
-    pi_cloud_instance_id  = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
-    pi_network_port_description         = "IP Reserved for Oracle RAC "
+    pi_cloud_instance_id        = "51e1879c-bcbe-4ee1-a008-49cdba0eaf60"
+    pi_network_port_description = "IP Reserved for Oracle RAC "
 }
 ```
 
@@ -47,17 +47,17 @@ ibm_pi_network_port provides the following [timeouts](https://www.terraform.io/d
 - **delete** - (Default 60 minutes) Used for deleting a network_port.
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_network_name` - (Required, String) Network ID or name.
 - `pi_network_port_description` - (Optional, String) The description for the Network Port.
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account. 
-- `pi_instance_name` - (Required, String) The name of the VM.
+- `pi_network_port_ipaddress` - (Optional, String) The requested ip address of this port.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the instance. The ID is composed of <power_network_port_id>/<id>.
-- `ipaddress` - (String) The unique identifier of the instance.
+- `id` - (String) The unique identifier of the instance. The ID is composed of `<pi_cloud_instance_id>/<power_network_port_id>/<id>`.
 - `macaddress` - (String) The MAC address of the port.
 - `portid` - (String) The ID of the port.
 - `public_ip` - (String) The public IP associated with the port.

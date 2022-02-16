@@ -10,7 +10,7 @@ description: |-
 # ibm_pi_network
 Create, update, or delete a network connection for your Power Systems Virtual Server instance. For more information, about power virtual server instance network, see [setting up an IBM i network install server](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-preparing-install-server).
 
-## Example Usage
+## Example usage
 The following example creates a network connection for your Power Systems Virtual Server instance.
 
 ```terraform
@@ -44,6 +44,7 @@ resource "ibm_pi_network" "power_networks" {
 The `ibm_pi_network` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
 - **create** - (Default 60 minutes) Used for creating a network.
+- **update** - (Default 60 minutes) Used for updating a network.
 - **delete** - (Default 60 minutes) Used for deleting a network.
 
 ## Argument reference 
@@ -52,8 +53,9 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_network_name` - (Required, String) The name of the network.
 - `pi_network_type` - (Required, String) The type of network that you want to create, such as `pub-vlan` or `vlan`.
-- `pi_dns`-List of strings-Optional-List of DNS entries for the network. Required for `vlan` network type.
+- `pi_dns` - (Optional, Set of String) The DNS Servers for the network. Required for `vlan` network type.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
+- `pi_network_jumbo` - (Optional, Bool) MTU Jumbo option of the network.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

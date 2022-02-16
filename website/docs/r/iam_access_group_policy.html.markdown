@@ -7,7 +7,7 @@ description: |-
   Manages IBM IAM access group policy.
 ---
 
-# ibm_access_group_policy
+# ibm_iam_access_group_policy
 
 Create, update, or delete an IAM policy for an IAM access group. For more information, about IBM access group policy, see [creating policies for account management service access](https://cloud.ibm.com/docs/account?topic=account-account-services#account-management-access).
 
@@ -24,6 +24,11 @@ resource "ibm_iam_access_group" "accgrp" {
 resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
   roles           = ["Viewer"]
+  
+  resource_tags {
+    name = "env"
+    value = "dev"
+  }
 }
 
 ```
@@ -51,7 +56,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 ```
 
 ### Access group policy using service with region
-The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all service instances of IBM Cloud Object Storage. 
+The following example creates an IAM policy that grants members of the access group the IAM `Viewer` platform role to all service instances of cloudantnosqldb in us-south region
 
 ```terraform
 resource "ibm_iam_access_group" "accgrp" {
@@ -63,7 +68,26 @@ resource "ibm_iam_access_group_policy" "policy" {
   roles           = ["Viewer"]
 
   resources {
-    service = "cloud-object-storage"
+    service = "cloudantnosqldb"
+    region  = "us-south"
+  }
+}
+```
+
+### Access group policy using service_type with region
+
+```terraform
+resource "ibm_iam_access_group" "accgrp" {
+  name = "test"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+  access_group_id = ibm_iam_access_group.accgrp.id
+  roles           = ["Viewer"]
+
+  resources {
+    service_type = "service"
+    region = "us-south"
   }
 }
 
@@ -208,7 +232,8 @@ Review the argument references that you can specify for your resource.
   - `resource_type`  (Optional, String) The resource type of the policy definition.
   - `resource`  (Optional, String) The resource of the policy definition.
   - `resources.resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
-  - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output.
+  - `service` - (Optional, String) The service name that you want to include in your policy definition. For account management services, you can find supported values in the [documentation](https://cloud.ibm.com/docs/account?topic=account-account-services#api-acct-mgmt). For other services, run the `ibmcloud catalog service-marketplace` command and retrieve the value from the **Name** column of your command line output. Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
 
 - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
 
@@ -216,7 +241,13 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) Name of an attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
   - `value` - (Required, String) Value of an attribute.
   - `operator` - (Optional, string) Operator of an attribute. Default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
-- `tags` - (Optional, Array of strings) A list of tags that you want to add to the access group policy. **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+
+- `resource_tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `resource_tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
+  
+  Nested scheme for `resource_tags`:
+  - `name` - (Required, String) The key of an access management tag. 
+  - `value` - (Required, String) The value of an access management tag.
+  - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

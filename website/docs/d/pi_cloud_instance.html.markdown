@@ -23,7 +23,7 @@ data "ibm_pi_cloud_instance" "ds_cloud_instance" {
   * `region` - `lon`
   * `zone` - `lon04`
 
-Example Usage:
+Example usage:
 
   ```terraform
     provider "ibm" {
@@ -40,13 +40,23 @@ Review the argument reference that you can specify for your data source.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-- `capabilities` -  (String) Lists the capabilities for this cloud instance.
-- `creation_date` - (String) The date on which the tenant was created.
-- `enabled` -  (Bool) Indicates whether the tenant is enabled.
+- `capabilities` - (String) Lists the capabilities for this cloud instance.
+- `enabled` - (Bool) Indicates whether the tenant is enabled.
 - `id` - (String) The unique identifier for this tenant.
-- `tenant_name` -  (String) The name of the tenant.
-- `total_instances` -  (String) The count of lpars that belong to this specific cloud instance.
-- `total_memory_consumed` -  (String) The total memory consumed by this service instance.
-- `total_processors_consumed` -  (String) The total processors consumed by this service instance.
-- `total_ssd_storage_consumed` -  (String) The total SSD Storage consumed by this service instance.
-- `total_standard_storage_consumed` -  (String) The total Standard Storage consumed by this service instance.
+- `pvm_instances` - (List) PVM instances owned by the Cloud Instance.
+
+  Nested scheme for `pvm_instances`:
+  - `creation_date` - (String) Date/Time of PVM creation.
+  - `href` - (String) Link to Cloud Instance resource.
+  - `id` - (String) PVM Instance ID.
+  - `name` - (String) Name of the server.
+  - `status` - (String) The status of the instance.
+  - `systype` - (string) System type used to host the instance.
+- `region` - (String) The region the cloud instance lives.
+- `tenant_id` - (String) The tenant ID that owns this cloud instance.
+- `total_instances` - (String) The count of lpars that belong to this specific cloud instance.
+- `total_memory_consumed` - (String) The total memory consumed by this service instance.
+- `total_processors_consumed` - (String) The total processors consumed by this service instance.
+- `total_ssd_storage_consumed` - (String) The total SSD Storage consumed by this service instance.
+- `total_standard_storage_consumed` - (String) The total Standard Storage consumed by this service instance.
+

@@ -9,11 +9,22 @@ description: |-
 # ibm_is_lbs
 Retrieve information of an existing IBM VPC load balancers as a read-only data source. For more information, about VPC load balancer, see [load balancers for VPC overview](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-vs-elb).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "ibm_is_lbs" "ds_lbs" {
- }
+data "ibm_is_lbs" "example" {
+}
 ```
 
 
@@ -57,6 +68,7 @@ Review the attribute references that you can access after you retrieve your data
 	- `provisioning_status` - (String) The provisioning status of this load balancer. Possible values are: **active**, **create_pending**, **delete_pending**, **failed**, **maintenance_pending**, **update_pending**-
 	- `public_ips` - (String) The public IP addresses assigned to this load balancer.
 	- `resource_group` - (String) The resource group where the load balancer is created.
+	- `route_mode` - (Bool) Indicates whether route mode is enabled for this load balancer.
 	- `status` - (String) The status of the load balancers.
 	- `type` - (String) The type of the load balancer.
 	- `tags` - (String) Tags associated with the load balancer.

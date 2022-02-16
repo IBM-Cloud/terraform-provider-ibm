@@ -19,6 +19,13 @@ Create, update, or delete an IAM user policy. To assign a policy to one user, th
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
   roles  = ["Viewer"]
+  description = "IAM User Policy"
+  
+  resource_tags {
+    name = "env"
+    value = "dev"
+  }
+  
 }
 
 ```
@@ -28,10 +35,11 @@ resource "ibm_iam_user_policy" "policy" {
 ```terraform
 resource "ibm_iam_user_policy" "policy" {
   ibm_id = "test@in.ibm.com"
-  roles  = ["Viewer"]
+  roles  = ["Viewer", "Manager"]
 
   resources {
-    service = "kms"
+    service = "cloudantnosqldb"
+    region  = "us-south"
   }
 }
 
@@ -136,10 +144,26 @@ resource "ibm_iam_user_policy" "policy" {
 }
 ```
 
+### User policy using service_type with region
+
+```terraform
+resource "ibm_iam_user_policy" "policy" {
+  ibm_id = "test@in.ibm.com"
+  roles  = ["Viewer"]
+
+  resources {
+    service_type = "service"
+    region = "us-south"
+  }
+}
+
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `account_management` - (Optional, Bool) Gives access to all account management services if set to **true**. Default value **false**. If you set this option, do not set `resources` at the same time. **Note** Conflicts with `resources` and `resource_attributes`.
+- `description`  (Optional, String) The description of the IAM User Policy.
 - `ibm_id` - (Required, Forces new resource, String) The IBM ID or Email address of the user.
 - `roles` - (Required, List)  A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 - `resources` - (Optional, List) A nested block describes the resource of this policy. **Note** Conflicts with `account_management` and `resource_attributes`.
@@ -151,14 +175,21 @@ Review the argument references that you can specify for your resource.
   - `resource_type` - (Optional, String) The resource type of the policy definition.
   - `resource` - (Optional, String) The resource of the policy definition.
   - `resource_group_id` - (Optional, String) The ID of the resource group. To retrieve the value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
-  - `service` - (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
+  - `service` - (Optional, String) The service name of the policy definition. You can retrieve the value by running the `ibmcloud catalog service-marketplace` or `ibmcloud catalog search` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started). Attributes service, service_type are mutually exclusive.
+  - `service_type`  (Optional, String) The service type of the policy definition. **Note** Attributes service, service_type are mutually exclusive.
 - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. - `resource_attributes` - (Optional, List) A nested block describing the resource of this policy. **Note** Conflicts with `account_management` and `resources`.
   
   Nested scheme for `resource_attributes`:
   - `name` - (Required, String) The name of an Attribute. Supported values are `serviceName`, `serviceInstance`, `region`,`resourceType`, `resource`, `resourceGroupId`, and other service specific resource attributes.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`. **Note**: Conflicts with `account_management` and `resources`.
-- `tags`  (Optional, Array of Strings)  A list of tags that are associated with the service policy instance.  **Note** `Tags` are managed locally and not stored on the IBM Cloud Service Endpoint at this moment.
+
+- `resource_tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `resource_tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
+
+  Nested scheme for `resource_tags`:
+  - `name` - (Required, String) The key of an access management tag. 
+  - `value` - (Required, String) The value of an access management tag.
+  - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
 
 
 ## Attribute reference

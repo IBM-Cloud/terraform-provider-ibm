@@ -7,12 +7,23 @@ description: |-
 ---
 
 # ibm_is_public_gateways
-Retrieve information of an existing public gateways as a ready only data source. For more information, about an VPC public gateway, see [about networking](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc).
+Retrieve information of an existing public gateways as a read only data source. For more information, about an VPC public gateway, see [about networking](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-data "ibm_is_public_gateways" "testacc_dspgw"{
+data "ibm_is_public_gateways" "example"{
 }
 
 ```
@@ -23,6 +34,7 @@ Review the attribute references that you can access after you retrieve your data
 - `public_gateways` - (List) List of all Public Gateways in the IBM Cloud infrastructure region.
 
   Nested scheme for `public_gateways`:
+  - `crn` - (String) The CRN for this public gateway.
   - `id` - (String) The ID of the public gateway.
   - `status` - (String) The status of the public gateway.
   - `vpc` - (String) The VPC ID of the public gateway.

@@ -1,11 +1,11 @@
 variable "cluster" {
   description = "Satellite Location Name"
-  type         = string
+  type        = string
 }
 
 variable "location" {
   description = "Satellite Location Name"
-  type         = string
+  type        = string
 }
 
 variable "kube_version" {
@@ -14,40 +14,40 @@ variable "kube_version" {
 
 variable "resource_group" {
   description = "Resource Group Name that has to be targeted"
-  type         = string
+  type        = string
 }
 
 variable "zones" {
-  type        = list(string)
-  default     = ["us-east-1", "us-east-2", "us-east-3"]
+  type    = list(string)
+  default = ["us-east-1", "us-east-2", "us-east-3"]
 }
 
 variable "worker_pool_name" {
   description = "Worker Pool Name"
-  type         = string
+  type        = string
 }
 
 variable "worker_count" {
   description = "Worker Count for default pool"
-  type         = number
-  default      = 1
+  type        = number
+  default     = 1
 }
 
 variable "default_wp_labels" {
   description = "Label to add default worker pool"
-  type        = map
+  type        = map(any)
 
   default = {
-    "poolname"  = "default-worker-pool"
+    "poolname" = "default-worker-pool"
   }
 }
 
 variable "workerpool_labels" {
   description = "Label to add to workerpool"
-  type        = map
+  type        = map(any)
 
   default = {
-    "poolname"  = "worker-pool"
+    "poolname" = "worker-pool"
   }
 }
 
@@ -59,5 +59,10 @@ variable "host_labels" {
 variable "cluster_tags" {
   description = "List of tags associated with this resource."
   type        = list(string)
-  default     = [ "env:cluster" ]
+  default     = ["env:cluster"]
+}
+
+variable "zone_name" {
+  description = "zone name"
+  type        = string
 }

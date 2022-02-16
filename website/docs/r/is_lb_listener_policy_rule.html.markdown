@@ -10,40 +10,51 @@ description: |-
 # ibm_is_lb_listener_policy
 Create, update, or delete a VPC load balancer listener policy rule. For more information, about load balancer listener policy and rules, see [layer 7 load balancing policies and rules](https://cloud.ibm.com/docs/vpc?topic=vpc-layer-7-load-balancing).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 Sample to create a load balancer listener policy rule, along with `lb` and `lb listener`.
 
 ```terraform
-resource "ibm_is_lb" "lb2"{
-  name    = "mylb"
-  subnets = ["35860fed-c911-4936-8c94-f0d8577dbe5b"]
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
 }
 
-resource "ibm_is_lb_listener" "lb_listener2"{
-  lb       = ibm_is_lb.lb2.id
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
   port     = "9086"
   protocol = "http"
 }
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-  action = "redirect"
-  priority = 2
-  name = "mylistener8"
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                      = ibm_is_lb.example.id
+  listener                = ibm_is_lb_listener.example.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "example-listener"
   target_http_status_code = 302
-  target_url = "https://www.redirect.com"
-  rules{
-      condition = "contains"
-      type = "header"
-      field = "1"
-      value = "2"
+  target_url              = "https://www.redirect.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
   }
 }
 
-resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
-  lb        = ibm_is_lb.lb2.id
-  listener  = ibm_is_lb_listener.lb_listener2.listener_id
-  policy    = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
+resource "ibm_is_lb_listener_policy_rule" "example" {
+  lb        = ibm_is_lb.example.id
+  listener  = ibm_is_lb_listener.example.listener_id
+  policy    = ibm_is_lb_listener_policy.example.policy_id
   condition = "equals"
   type      = "header"
   field     = "MY-APP-HEADER"

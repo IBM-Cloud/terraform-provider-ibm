@@ -8,9 +8,9 @@ subcategory: "Container Registry"
 
 # ibm_cr_retention_policy
 
-Provides a resource for ibm_cr_retention_policy. You can use this resource to create, update, and delete a retention policy.
+Create, update, and delete about the IBM Cloud Container Registry retention policy resource. For more information, about IBM Cloud Container Registry retention policy, see [Managing access for Container Registry](https://cloud.ibm.com/docs/Registry?topic=Registry-iam).
 
-## Example Usage
+## Example usage
 
 ```terraform
 resource "ibm_cr_retention_policy" "cr_retention_policy" {
@@ -20,17 +20,17 @@ resource "ibm_cr_retention_policy" "cr_retention_policy" {
 }
 ```
 
-## Argument Reference
+## Argument reference
 
-The following arguments are supported:
+Review the argument references that you can specify for your resource.
 
-- `namespace` - (Required, string) The namespace to which the retention policy is attached.
-- `images_per_repo` - (Required, int) Determines how many images are retained in each repository when the retention policy is processed. The value -1 denotes 'Unlimited' (all images are retained).
-- `retain_untagged` - (Optional, bool) Determines whether untagged images are retained when the retention policy is processed. The value is false by default, which means that untagged images can be deleted when the policy runs.
+- `namespace` - (Required, String) The namespace to which the retention policy is attached.
+- `images_per_repo` - (Required, Integer) Determines how many images are retained in each repository when the retention policy is processed. The value `-1` denotes `Unlimited` (all images are retained).
+- `retain_untagged` - (Optional, Bool) Determines whether untagged images are retained when the retention policy is processed. Default value is **false**, means untagged images can be deleted when the policy runs.
 
-## Attribute Reference
+## Attribute reference
 
-In addition to the arguments in the Argument Reference section, the following attributes are exported:
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - The unique identifier of the cr_retention_policy. This identifier is the same as the name of namespace to which the retention policy is attached.
 

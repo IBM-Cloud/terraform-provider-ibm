@@ -10,13 +10,24 @@ description: |-
 # ibm_is_ike_policy
 Create, update, or cancel an Internet Key Exchange (IKE) policy. IKE is an IPSec (Internet Protocol Security) standard protocol that is used to ensure secure communication over the VPC VPN service. For more information, see [Using VPC with your VPC](https://cloud.ibm.com/docs/vpc-on-classic-network?topic=vpc-on-classic-networkusing-vpn-with-your-vpc).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 In the following example, you can create a IKE policy:
 
 ```terraform
 resource "ibm_is_ike_policy" "example" {
-  name                     = "test"
+  name                     = "example-ike-policy"
   authentication_algorithm = "md5"
   encryption_algorithm     = "triple_des"
   dh_group                 = 2

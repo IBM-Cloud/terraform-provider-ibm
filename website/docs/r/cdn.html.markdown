@@ -33,7 +33,7 @@ Review the argument references that you can specify for your resource.
 - `host_name` - (Required, Forces new resource, String) The host name that is associated with the CDN domain mapping.
 - `http_port` - (Optional, Integer) The port to be opened up. Default value is 80. This option can be set only if you use `HTTP` or `HTTPS` as the `protocol`.
 - `https_port` - (Optional, Integer) The HTTPS port. Default value is 0. This option can be set only if you use `HTTP` or `HTTPS` as the `protocol`.
-- `origin_address` - (Required, String) The IP address for the domain mapping.
+- `origin_address` - (Required, String) The IP address or hostname for the domain mapping. If **origin_type=HOST_SERVER** provide the hostname or IP address. If **origin_type=OBJECT_STORAGE** provide your [COS endpoints](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-endpoints). 
 - `origin_type` - (Required, Forces new resource, String) The type of storage to use. Valid values are `HOST_SERVER` or `OBJECT_STORAGE`.
 - `path` - (Optional, Forces new resource, String) The path for the CDN.
 - `performance_configuration` - (Optional, String) The performance configuration. Default is `General web delivery`.

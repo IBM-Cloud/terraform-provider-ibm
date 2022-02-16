@@ -80,6 +80,11 @@ resource "ibm_is_instance_template" "instancetemplate2" {
     }
 }
 
+// datasource for instance template
+data "ibm_is_instance_template" "instancetemplates" {
+	identifier = ibm_is_instance_template.instancetemplate2.id
+}
+
 resource "ibm_is_lb" "lb2" {
   name    = "mylb"
   subnets = [ibm_is_subnet.subnet1.id]
@@ -114,6 +119,46 @@ resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
   type      = "header"
   field     = "MY-APP-HEADER"
   value     = "UpdateVal"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "app_cookie"
+  session_persistence_app_cookie_name = "cookie1"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "http_cookie"
+}
+
+resource "ibm_is_lb_pool" "testacc_pool" {
+  name           = "test_pool"
+  lb             = ibm_is_lb.lb2.id
+  algorithm      = "round_robin"
+  protocol       = "https"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "https"
+  proxy_protocol = "v1"
+  session_persistence_type = "source_ip"
 }
 
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
@@ -154,6 +199,24 @@ data "ibm_is_instance" "ds_instance" {
   name = ibm_is_instance.instance1.name
   private_key = file("~/.ssh/id_rsa")
   passphrase = ""
+}
+
+
+resource "ibm_is_instance_network_interface" "is_instance_network_interface" {
+  instance = ibm_is_instance.instance1.id
+  subnet = ibm_is_subnet.subnet1.id
+  allow_ip_spoofing = true
+  name = "my-network-interface"
+  primary_ipv4_address = "10.0.0.5"
+}
+
+data "ibm_is_instance_network_interface" "is_instance_network_interface" {
+	instance_name = ibm_is_instance.instance1.name
+	network_interface_name = ibm_is_instance_network_interface.is_instance_network_interface.name
+}
+
+data "ibm_is_instance_network_interfaces" "is_instance_network_interfaces" {
+	instance_name = ibm_is_instance.instance1.name
 }
 
 resource "ibm_is_floating_ip" "floatingip1" {
@@ -325,6 +388,7 @@ resource "ibm_is_volume" "vol2" {
 
 resource "ibm_is_network_acl" "isExampleACL" {
   name = "is-example-acl"
+  vpc = ibm_is_vpc.vpc1.id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -373,6 +437,18 @@ data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
 
 data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
   network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl" {
+	network_acl = ibm_is_network_acl.isExampleACL.id
+}
+
+data "ibm_is_network_acl" "is_network_acl1" {
+	name = ibm_is_network_acl.isExampleACL.name
+	vpc_name = ibm_is_vpc.vpc1.name
+}
+
+data "ibm_is_network_acls" "is_network_acls" {
 }
 
 resource "ibm_is_public_gateway" "publicgateway1" {
@@ -612,4 +688,177 @@ data "ibm_is_operating_system" "os"{
 }
 
 data "ibm_is_operating_systems" "oslist"{
+}
+
+#### BARE METAL SERVER
+
+
+resource "ibm_is_bare_metal_server" "bms" {
+  profile = "bx2-metal-192x768"
+  name = "my-bms"
+  image = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone = "us-south-3"
+  keys = [ibm_is_ssh_key.sshkey.id]
+  primary_network_interface {
+    subnet     = ibm_is_subnet.subnet1.id
+  }
+  vpc = ibm_is_vpc.vpc1.id
+}
+
+resource ibm_is_bare_metal_server_disk this {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  disk              = ibm_is_bare_metal_server.bms.disks.0.id
+  name              = "bms-disk-update"
+}
+
+resource ibm_is_bare_metal_server_action this {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  action            = "stop"
+  stop_type         = "hard"
+}
+
+data ibm_is_bare_metal_server_profiles this  {
+}
+
+data ibm_is_bare_metal_server_profile this {
+	name = data.ibm_is_bare_metal_server_profiles.this.profiles.0.name
+}
+
+data ibm_is_bare_metal_server_disk this {
+	bare_metal_server = ibm_is_bare_metal_server.this.id
+	disk = ibm_is_bare_metal_server.this.disks.0.id
+}
+
+data ibm_is_bare_metal_server_disks this {
+	bare_metal_server = ibm_is_bare_metal_server.this.id
+} 
+
+resource ibm_is_bare_metal_server_network_interface bms_nic {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+
+  subnet = ibm_is_subnet.subnet1.id
+  name   = "eth2"
+  allow_ip_spoofing = true
+  allowed_vlans = [101, 102]
+}
+
+resource ibm_is_bare_metal_server_network_interface_allow_float bms_vlan_nic {
+ bare_metal_server  = ibm_is_bare_metal_server.bms.id
+
+  subnet            = ibm_is_subnet.subnet1.id
+  name              = "eth2"
+  vlan              = 102
+}
+
+resource ibm_is_bare_metal_server_network_interface bms_nic2 {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+
+  subnet = ibm_is_subnet.subnet1.id
+  name   = "eth2"
+  allow_ip_spoofing = true
+  vlan = 101
+}
+
+resource ibm_is_floating_ip testacc_fip {
+  name = "testaccfip"
+  zone = ibm_is_subnet.subnet1.zone
+}
+
+resource ibm_is_bare_metal_server_network_interface_floating_ip bms_nic_fip {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  network_interface = ibm_is_bare_metal_server_network_interface.bms_nic2.id
+  floating_ip       = ibm_is_floating_ip.testacc_fip.id
+}
+
+data ibm_is_bare_metal_server_network_interface this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+  network_interface = ibm_is_bare_metal_server.this.primary_network_interface.id
+}
+
+data ibm_is_bare_metal_server_network_interfaces this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+}
+
+data ibm_is_bare_metal_server this {
+  identifier = ibm_is_bare_metal_server.this.id
+}
+
+data ibm_is_bare_metal_servers this {
+}
+ 
+data ibm_is_bare_metal_server_initialization this {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+}
+
+resource "ibm_is_floating_ip" "floatingipbms" {
+  name   = "fip1"
+  zone    = ibm_is_subnet.subnet1.zone
+}
+
+data "ibm_is_bare_metal_server_network_interface_floating_ip" "this" {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
+  floating_ip       = ibm_is_floating_ip.floatingipbms.id
+}
+
+data "ibm_is_bare_metal_server_network_interface_floating_ips" "this" {
+  bare_metal_server = ibm_is_bare_metal_server.this.id
+  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
+}
+
+resource "ibm_is_placement_group" "is_placement_group" {
+  strategy = "%s"
+  name = "%s"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+data "ibm_is_placement_group" "is_placement_group" {
+  name = ibm_is_placement_group.is_placement_group.name
+}
+
+data "ibm_is_placement_groups" "is_placement_groups" {
+}
+
+## List regions 
+data "ibm_is_regions" "regions" {
+}
+
+data "ibm_is_vpc_address_prefix" "example" {
+  vpc = ibm_is_vpc.vpc1.id
+  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
+}
+data "ibm_is_vpc_address_prefix" "example-1" {
+  vpc_name = ibm_is_vpc.vpc1.name
+  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
+}
+data "ibm_is_vpc_address_prefix" "example-2" {
+  vpc = ibm_is_vpc.vpc1.id
+  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
+}
+data "ibm_is_vpc_address_prefix" "example-3" {
+  vpc_name = ibm_is_vpc.vpc1.name
+  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
+}
+
+data "ibm_is_vpn_gateway" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
+}
+data "ibm_is_vpn_gateway" "example-1" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+}
+data "ibm_is_vpn_gateway_connection" "example" {
+  vpn_gateway = ibm_is_vpn_gateway.example.id
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+}
+data "ibm_is_vpn_gateway_connection" "example-1" {
+  vpn_gateway = ibm_is_vpn_gateway.example-1.id
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+}
+data "ibm_is_vpn_gateway_connection" "example-2" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
+}
+data "ibm_is_vpn_gateway_connection" "example-3" {
+  vpn_gateway_name = ibm_is_vpn_gateway.example.name
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
 }

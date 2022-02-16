@@ -20,6 +20,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   source_service_name = "cloud-object-storage"
   target_service_name = "kms"
   roles               = ["Reader"]
+  description         = "Authorization Policy"
 }
 
 ```
@@ -30,7 +31,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "databases-for-postgresql"
   target_service_name         = "kms"
-  roles                       = ["Reader", "AuthorizationDelegator"]
+  roles                       = ["Reader", "Authorization Delegator"]
 }
 ```
 
@@ -95,6 +96,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
+- `description`  (Optional, String) The description of the Authorization Policy.
 - `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
 - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.
 - `source_service_name` - (Required, Forces new resource, string) The source service name.

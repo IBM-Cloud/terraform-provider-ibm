@@ -10,17 +10,28 @@ description: |-
 # ibm_is_public_gateway
 Create, update, or delete a public gateway for a VPC subnet. Public gateways enable a VPC subnet and all the instances that are connected to the subnet to connect to the internet. For more information, see [use a Public Gateway for external connectivity of a subnet](hhttps://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example shows how you can create a public gateway for all the subnets that are located in a specific zone.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_public_gateway" "testacc_gateway" {
-  name = "test-gateway"
-  vpc  = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_public_gateway" "example" {
+  name = "example-gateway"
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
 
   //User can configure timeouts
@@ -52,6 +63,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `crn` - (String) The crn for the public gateway.
 - `id` - (String) The unique identifier that was assigned to your public gateway.
 - `status` - (String) The provisioning status of your public gateway.
 

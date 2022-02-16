@@ -9,21 +9,38 @@ description: |-
 # ibm_is_image
 Retrieve information of an existing IBM Cloud Infrastructure image as a read-only data source. For more information, about VPC custom images, see [IBM Cloud Importing and managing custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-images).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
 
-data "ibm_is_image" "ds_image" {
+data "ibm_is_image" "example" {
   name = "centos-7.x-amd64"
 }
-
+```
+```terraform
+data "ibm_is_image" "example" {
+  identifier = ibm_is_image.example.id
+}
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source.
 
-- `name` - (Required, String) The name of the image.
+- `identifier` - (Optional, String) The id of the image.
+    ~> **Note:** `name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the image.
+    ~> **Note:** `name` and `identifier` are mutually exclusive.
 - `visibility` - (Optional, String) The visibility of the image. Accepted values are `public` or `private`.
 
 ## Attribute reference

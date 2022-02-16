@@ -30,6 +30,10 @@ Review the argument reference that you can specify for your resource.
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
 - `authentication_key` - (String) BGP MD5 authentication key.
+- `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
+- `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
+- `bfd_status` - (String) Gateway BFD status.
+- `bfd_status_updated_at` - (String) Date and time bfd status was updated.
 - `bgp_asn` - (String) Customer BGP ASN.
 - `bgp_base_cidr` - (String) The BGP base CIDR.
 - `bgp_cer_cidr` - (String) The BGP customer edge router CIDR.
@@ -39,6 +43,7 @@ In addition to the argument reference list, you can access the following attribu
 - `created_at` - (String) The date and time resource is created.
 - `crn` - (String) The CRN of the gateway.
 - `completion_notice_reject_reason` - (String) The reason for completion notice rejection. Only included on a dedicated gateways type with a rejected completion notice.
+- `connection_mode` - (String) Type of network connection that you want to bind to your direct link.
 - `cross_connect_router` - (String) The cross connect router. Only included on a dedicated gateways type.
 - `global` - (Bool) Gateway with global routing as **true** can connect networks outside your associated region.
 - `id` - (String) The unique identifier of the gateway.

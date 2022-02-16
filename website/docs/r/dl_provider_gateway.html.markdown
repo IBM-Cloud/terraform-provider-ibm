@@ -23,19 +23,21 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
   speed_mbps = 1000 
   port = "434-c749-4f1d-b190-22"
   customer_account_id = "0c474da-c749-4f1d-b190-2333"
+  vlan = 35
 } 
 ```
 
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `bgp_asn`- (Required, Forces new resource, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
-- `bgp_cer_cidr` - (Optional, Forces new resource, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
-- `bgp_ibm_cidr` - (Optional, Forces new resource, String) The IBM BGP CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.77/30`.
+- `bgp_asn`- (Required, Integer) The BGP ASN of the gateway to be created. For example, `64999`.
+- `bgp_cer_cidr` - (Optional, String) The BGP customer edge router CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.78/30`.
+- `bgp_ibm_cidr` - (Optional, String) The IBM BGP CIDR. Specify a value within bgp_base_cidr. If bgp_base_cidr is `169.254.0.0/16`, this parameter can exclude and a CIDR is selected automatically. For example, `10.254.30.77/30`.
 - `customer_account_id` - (Required, Forces new resource, String) The customer IBM Cloud account ID for the new gateway. A gateway object contains the pending create request to be available in the specified account.
 - `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
 - `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
 - `speed_mbps`- (Required, Integer) The gateway speed in megabits per second. For example, `10.254.30.78/30`.
+- `vlan` - (Optional, Integer) VLAN requested for this gateway.
 
 
 ## Attribute reference
@@ -51,7 +53,7 @@ In addition to all argument reference list, you can access the following attribu
 - `operational_status` - (String) The gateway operational status. Supported values are`configuring`, `create_pending`, `create_rejected`, `delete_pending`, `provisioned`.
 - `port` - (String) The gateway port for `type=connect` gateways.
 - `provider_api_managed` - (String) Indicates whether the gateway changes need to be made via a provider portal.
-- `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
+- `vlan` - (String) VLAN requested for this gateway.
 
 ## Import
 The `ibm_dl_provider_gateway` resource can be imported by using gateway ID. 

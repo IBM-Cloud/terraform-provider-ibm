@@ -7,20 +7,29 @@ description: |-
 ---
 
 # ibm_is_vpc
-Retrieve information of an existing IBM Virtual Private cloud as a read-only data source. For more information, about VPC, see [getting started with Virtual Private Cloud (VPC)](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started).
+Retrieve information of an existing IBM Virtual Private cloud. For more information, about VPC, see [getting started with Virtual Private Cloud (VPC)](https://cloud.ibm.com/docs/vpc?topic=vpc-getting-started).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc" "ds_vpc" {
-  name = "test"
+data "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
-
 ```
 
 ## Argument reference
@@ -40,8 +49,10 @@ In addition to all argument reference list, you can access the following attribu
 	- `address` - (String) The IP address of the cloud service endpoint.
 	- `zone_name` - (String) The zone where the cloud service endpoint is located.
 - `default_network_acl` - (String) The ID of the default network ACL.
+- `default_network_acl_crn` - (String)  The CRN of the default network ACL.
 - `default_network_acl_name` - (String)  The name of the default network ACL.
 - `default_security_group`-  (String) The unique identifier of the VPC default security group.
+- `default_security_group_crn` - (String) The CRN of the default security group.
 - `default_security_group_name` - (String) The name of the default security group.
 - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
 - `default_routing_table_name` - (String) The name of the default routing table.

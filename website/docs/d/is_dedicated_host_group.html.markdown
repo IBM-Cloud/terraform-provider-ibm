@@ -9,11 +9,22 @@ description: |-
 # ibm_is_dedicated_host_group
 Retrieve the dedicated host group data sources. For more information, about dedicated host group in your IBM Cloud VPC, see [dedicated hosts groups](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-dedicated-hosts-instances).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_group" "is_dedicated_host_group" {
-	name = "my-host-group"
+data "ibm_is_dedicated_host_group" "example" {
+  name = "example-host-group"
 }
 ```
 

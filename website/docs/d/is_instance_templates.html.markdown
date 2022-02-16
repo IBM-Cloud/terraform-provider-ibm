@@ -1,7 +1,7 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM: istance_templates"
+page_title: "IBM: instance_templates"
 description: |-
   Retrives all the IBM VPC instance templates.
 ---
@@ -9,11 +9,22 @@ description: |-
 # ibm_is_instance_templates
 Retrieve information of an existing IBM VPC instance templates. For more information, about VPC instance templates, see [creating an instance template](https://cloud.ibm.com/docs/vpc?topic=vpc-create-instance-template).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 In the following example, you can get information of list of instance templates of VPC Generation-2 infrastructure.
 
 ```terraform	
-data "ibm_is_instance_templates" "instancetemplates" {	   
+data "ibm_is_instance_templates" "example" {	   
 }
 
 ```
@@ -31,6 +42,8 @@ You can access the following attribute references after your data source is crea
 		- `name` - (String) The name of the boot volume.
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
+	- `crn` - (String) The CRN of the instance template.
+	- `href` - (String) The URL of the instance template.
 	- `id` - (String) The ID of the instance template.
 	- `image` - (String) The ID of the image to create the template.
 	- `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
@@ -42,6 +55,11 @@ You can access the following attribute references after your data source is crea
 		- `primary_ipv4_address` - (String) The IPv4 address assigned to the network interface.
 		- `subnet` - (String) The VPC subnet to assign to the interface.
 		- `security_groups` - (String) List of security groups of  the subnet.
+	- `placement_target` - (List) The placement restrictions to use for the virtual server instance.
+	  Nested scheme for `placement_target`:
+		- `crn` - (String) The unique identifier for this placement target.
+		- `href` - (String) The CRN for this placement target.
+		- `id` - (String) The URL for this placement target.
 	- `profile` - (String) The number of instances created in the instance group.
 	- `primary_network_interfaces` - (List) A nested block describes the primary network interface for the template.
 
@@ -50,7 +68,8 @@ You can access the following attribute references after your data source is crea
 		- `primary_ipv4_address` - (String) The IPv4 address assigned to the primary network interface.
 		- `subnet` - (String) The VPC subnet to assign to the interface.
 		- `security_groups` - (String) List of security groups of the subnet.
-	- `resource_group` - (String) The resource group ID.	
+	- `resource_group` - (String) The resource group ID.
+	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes	
 	- `user_data` -  (String) The user data provided for the instance.
 	- `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 

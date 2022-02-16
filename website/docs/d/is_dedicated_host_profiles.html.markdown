@@ -9,10 +9,21 @@ description: |-
 # ibm_is_dedicated_host_profiles
 Retrieve an information about the dedicated host profiles. For more information, about dedicated host profiles, see [dedicated host profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-dh-profiles).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_profiles" "is_dedicated_host_profiles" {
+data "ibm_is_dedicated_host_profiles" "example" {
 }
 ```
 

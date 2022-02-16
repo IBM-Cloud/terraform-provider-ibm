@@ -9,13 +9,24 @@ description: |-
 # ibm_is_instance_group_manager
 Retrieve information about an instance group manager. For more information, about instance group manager, see [managing an instance group](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-group).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example can retrieve instance group manager info.
 
 ```terraform
-data "ibm_is_instance_group_manager" "instance_group_manager" {
-  instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
-  name = "testmanager"
+data "ibm_is_instance_group_manager" "example" {
+  instance_group = ibm_is_instance_group.example.id
+  name = "example-instance-group-manager"
 }
 ```
 

@@ -48,6 +48,7 @@ Review the argument references that you can specify for your resource.
 
 - `location` - (Required, String) The target location where you want to create your instance.
 - `name` - (Required, String) A descriptive name for your IBM Cloud Internet Services instance.
+- `parameters` (Optional, Map) Arbitrary parameters to create instance. The value must be a JSON object.
 - `plan` - (Required, String) The name of the plan for your instance. To retrieve this value, run `ibmcloud catalog service internet-svcs` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the service. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is specified, the `default` resource group is used.
 - `tags` - (Optional, Array of strings) A list of tags that you want to associate with the instance.
@@ -58,7 +59,8 @@ In addition to all argument reference list, you can access the following attribu
 
 - `guid` - (String) The unique identifier of the CIS instance.
 - `id` - (String) The CRN of the CIS instance.
-- `status` - (String) The status of the CIS instance.
+* `service` - (String) The service type of the instance.
+* `status` - (String) The status of the CIS instance.
 
 ## Import
 

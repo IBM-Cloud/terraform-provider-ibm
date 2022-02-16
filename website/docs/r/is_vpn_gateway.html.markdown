@@ -10,14 +10,37 @@ description: |-
 # ibm_is_vpn_gateway
 Create, update, or delete a VPN gateway. For more information, about VPN gateway, see [adding connections to a VPN gateway](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-adding-connections).
 
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
 ## Example usage
 The following example creates a VPN gateway:
 
 ```terraform
-resource "ibm_is_vpn_gateway" "testacc_vpn_gateway" {
-  name   = "test"
-  subnet = "a4ce411d-e118-4802-95ad-525e6ea0cfc9"
-  mode="route"
+
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-1"
+  ipv4_cidr_block = "10.240.0.0/24"
+}
+
+resource "ibm_is_vpn_gateway" "example" {
+  name   = "example-vpn-gateway"
+  subnet = ibm_is_subnet.example.id
+  mode   = "route"
 }
 
 ```
@@ -43,6 +66,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `created_at` -  (String) The Second IP address assigned to this VPN gateway.
+- `crn` - (String) The CRN for this VPN gateway.
 - `id` - (String) The unique identifier of the VPN gateway.
 - `members` - (List) Collection of VPN gateway members.
 

@@ -7,13 +7,25 @@ description: |-
 ---
 
 # ibm_is_dedicated_host_disks
+
 Retrieve the dedicated host disk collection. For more information, about dedicated host disk collection, see [managing dedicated hosts and groups](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-dedicated-hosts-groups).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
 
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_disks" "is_dedicated_host_disks" {
-	dedicated_host = "dedicatedhost id"
+data "ibm_is_dedicated_host_disks" "example" {
+  dedicated_host = ibm_is_dedicated_host.example.id
 }
 ```
 
@@ -47,7 +59,7 @@ In addition to the argument reference list, you can access the following attribu
   - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
   - `name` - (String) The user-defined or system-provided name for this disk.
   - `provisionable` - (String) Indicates whether this dedicated host disk is available for instance disk creation.
-  - `resource_type` -(String) The type of resource referenced.
-  - `size` -(String)  The size of the disk in GB (gigabytes).
+  - `resource_type` - (String) The type of resource referenced.
+  - `size` - (String) The size of the disk in GB (gigabytes).
   - `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
 - `id` - (String) The unique identifier of the dedicated host disk collection.
