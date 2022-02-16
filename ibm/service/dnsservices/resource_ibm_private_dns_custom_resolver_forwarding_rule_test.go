@@ -33,24 +33,50 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRule_basic(t *testing.T) {
 
 func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 	return fmt.Sprintf(`
-		
+	data "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name			= "test-pdns-custom-resolver-vpc"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name			= "test-pdns-cr-subnet1"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.0.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name			= "test-pdns-cr-subnet2"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.64.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		location			= "global"
+		service				= "dns-svcs"
+		plan				= "standard-dns"
+	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name			= "testpdnscustomresolver"
-		instance_id		=  "d515a480-a702-4837-9f40-6c0c285262fd"
-		description		= "new test CR Locations - TF"
-		high_availability =  true
-		enabled		= true
-		locations{
-			subnet_crn	= "crn:v1:staging:public:is:us-south-3:a/01652b251c3ae2787110a995d8db0135::subnet:0736-d62b72eb-cc23-429e-af19-2ac807a60d5a"
-			enabled		= false
+		name		= "New TestCR"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "Test CR"
+		enabled 	= true
+		locations {
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled		= true
 		}
 		locations {
-			subnet_crn  = "crn:v1:staging:public:is:us-south-3:a/01652b251c3ae2787110a995d8db0135::subnet:0736-986b8c23-6ba2-412c-8e84-f1fd779de669"
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
 		}
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id =  "d515a480-a702-4837-9f40-6c0c285262fd"
+		instance_id =  ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		description = "Test Fw Rule"
 		type = "%s"
