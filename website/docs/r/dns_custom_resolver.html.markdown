@@ -68,6 +68,7 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
 - `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
+- `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
@@ -83,6 +84,12 @@ In addition to all argument reference list, you can access the following attribu
   - `dns_server_ip`- (String) The DNS server IP.
   - `enabled`- (Bool) Whether the location is enabled.
   - `location_id`- (String) The location ID.
+
+ Nested scheme for `rules`:
+  - `description`- (String) Descriptive text of the forwarding rule.
+  - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
+ - `match` - (String) The matching zone or hostname.
+ - `forward_to` - (List) The upstream DNS servers will be forwarded to.
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.

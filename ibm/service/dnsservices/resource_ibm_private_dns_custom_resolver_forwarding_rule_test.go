@@ -36,21 +36,21 @@ func testAccCheckIbmDnsCrForwardingRuleConfig(typeVar, match string) string {
 		
 	resource "ibm_dns_custom_resolver" "test" {
 		name			= "testpdnscustomresolver"
-		instance_id		= "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
+		instance_id		=  "d515a480-a702-4837-9f40-6c0c285262fd"
 		description		= "new test CR Locations - TF"
 		high_availability =  true
 		enabled		= true
 		locations{
-			subnet_crn	= "crn:v1:bluemix:public:is:us-south-3:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0737-0d198509-3221-4162-b2d8-4a9326d3d7ad"
+			subnet_crn	= "crn:v1:staging:public:is:us-south-3:a/01652b251c3ae2787110a995d8db0135::subnet:0736-d62b72eb-cc23-429e-af19-2ac807a60d5a"
 			enabled		= false
 		}
 		locations {
-			subnet_crn  = "crn:v1:bluemix:public:is:us-south-2:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0727-f17967f2-2bbe-427c-bcf6-22f8c2395285"
+			subnet_crn  = "crn:v1:staging:public:is:us-south-3:a/01652b251c3ae2787110a995d8db0135::subnet:0736-986b8c23-6ba2-412c-8e84-f1fd779de669"
 			enabled     = true
 		}
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
-		instance_id = "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
+		instance_id =  "d515a480-a702-4837-9f40-6c0c285262fd"
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 		description = "Test Fw Rule"
 		type = "%s"

@@ -68,22 +68,49 @@ func TestAccIBMPrivateDNSCustomResolverImport(t *testing.T) {
 
 func testAccCheckIBMPrivateDNSCustomResolverBasic(name, description string) string {
 	return fmt.Sprintf(`
+	data "ibm_resource_group" "rg" {
+		is_default	= true
+	}
+	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
+		name			= "test-pdns-custom-resolver-vpc"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
+		name			= "test-pdns-cr-subnet1"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.0.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
+		name			= "test-pdns-cr-subnet2"
+		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
+		zone			= "us-south-1"
+		ipv4_cidr_block	= "10.240.64.0/24"
+		resource_group	= data.ibm_resource_group.rg.id
+	}
+	resource "ibm_resource_instance" "test-pdns-cr-instance" {
+		name				= "test-pdns-cr-instance"
+		resource_group_id	= data.ibm_resource_group.rg.id
+		location			= "global"
+		service				= "dns-svcs"
+		plan				= "standard-dns"
+	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name			= "%s"
-		instance_id		= "c9e23743-b039-4f33-ba8a-c3bf35e9b450"
-		description		= "%s"
-		high_availability =  false
-		enabled		= true
-		locations	{
-			subnet_crn	= "crn:v1:bluemix:public:is:us-south-3:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0737-0d198509-3221-4162-b2d8-4a9326d3d7ad"
-			enabled		= false
+		name		= "%s"
+		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
+		description = "%s"
+		enabled 	= true
+		locations {
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled		= true
 		}
 		locations {
-			subnet_crn  = "crn:v1:bluemix:public:is:us-south-2:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0727-f17967f2-2bbe-427c-bcf6-22f8c2395285"
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
 		}
 	}
-	  `, name, description)
+	`, name, description)
 }
 
 func testAccCheckIBMPrivateDNSCustomResolverDestroy(s *terraform.State) error {

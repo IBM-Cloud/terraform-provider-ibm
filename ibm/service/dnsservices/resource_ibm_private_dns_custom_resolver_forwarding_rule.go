@@ -87,7 +87,7 @@ func ResourceIBMPrivateDNSForwardingRuleValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "hostname, zone, Default, default",
+			AllowedValues:              "hostname, zone, Default",
 		},
 	)
 
@@ -167,28 +167,19 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 	if d.HasChange(pdnsCRFRDesctiption) ||
 		d.HasChange(pdnsCRFRMatch) ||
 		d.HasChange(pdnsCRFRForwardTo) {
-
+		if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
+			frdesc := des.(string)
+			opt.SetDescription(frdesc)
+		}
+		if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
+			opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
+		}
 		if ty, ok := d.GetOk(pdnsCRFRType); ok {
 			crtype := ty.(string)
-			if strings.ToLower(crtype) == "default" {
-				if de, ok := d.GetOk(pdnsCRFRDesctiption); ok {
-					frdesc := de.(string)
-					opt.SetDescription(frdesc)
-				}
-				if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-					opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
-				}
-			} else {
-				if de, ok := d.GetOk(pdnsCRFRDesctiption); ok {
-					frdesc := de.(string)
-					opt.SetDescription(frdesc)
-				}
-				if ma, ok := d.GetOk(pdnsCRFRMatch); ok {
-					frmatch := ma.(string)
+			if strings.ToLower(crtype) == "Default" {
+				if match, ok := d.GetOk(pdnsCRFRMatch); ok {
+					frmatch := match.(string)
 					opt.SetMatch(frmatch)
-				}
-				if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-					opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
 				}
 			}
 		}
