@@ -34,6 +34,16 @@ func TestAccIBMPINetworkbasic(t *testing.T) {
 						"ibm_pi_network.power_networks", "pi_network_name", name),
 				),
 			},
+			{
+				Config: testAccCheckIBMPINetworkConfigUpdateDNS(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
+				),
+			},
 		},
 	})
 }
@@ -97,6 +107,17 @@ func testAccCheckIBMPINetworkConfig(name string) string {
 			pi_cloud_instance_id = "%s"
 			pi_network_name      = "%s"
 			pi_network_type      = "pub-vlan"
+		}
+	`, acc.Pi_cloud_instance_id, name)
+}
+
+func testAccCheckIBMPINetworkConfigUpdateDNS(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id = "%s"
+			pi_network_name      = "%s"
+			pi_network_type      = "pub-vlan"
+			pi_dns               = ["127.0.0.1"]
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }

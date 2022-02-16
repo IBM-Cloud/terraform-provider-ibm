@@ -46,6 +46,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `available_ip_count` - (Float) The total number of IP addresses that you have in your network.
 - `cidr` - (String) The CIDR of the network.
+- `dns`- (Set of String) The DNS Servers for the network.
 - `gateway` - (String) The network gateway that is attached to your network.
 - `id` - (String) The ID of the network.
 - `type` - (String) The type of network.

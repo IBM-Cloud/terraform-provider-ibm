@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -56,6 +57,7 @@ func ResourceIBMCloudShellAccountSettings() *schema.Resource {
 			"features": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of Cloud Shell features.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -75,6 +77,7 @@ func ResourceIBMCloudShellAccountSettings() *schema.Resource {
 			"regions": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of Cloud Shell region settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -205,7 +208,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 
 	getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
 
-	getAccountSettingsOptions.SetAccountID(d.Id())
+	getAccountSettingsOptions.SetAccountID(strings.Trim(d.Id(), "ac-"))
 
 	accountSettings, response, err := ibmCloudShellClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
 	if err != nil {
@@ -305,7 +308,7 @@ func resourceIBMCloudShellAccountSettingsUpdate(context context.Context, d *sche
 
 	updateAccountSettingsOptions := &ibmcloudshellv1.UpdateAccountSettingsOptions{}
 
-	updateAccountSettingsOptions.SetAccountID(d.Id())
+	updateAccountSettingsOptions.SetAccountID(strings.Trim(d.Id(), "ac-"))
 	hasChange := false
 	updateAccountSettingsOptions.SetRev(d.Get("rev").(string))
 	if d.HasChange("default_enable_new_features") {
