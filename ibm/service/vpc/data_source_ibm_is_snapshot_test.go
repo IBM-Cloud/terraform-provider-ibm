@@ -37,10 +37,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
 					resource.TestCheckResourceAttr(
 						"ibm_is_snapshot.testacc_snapshot", "name", name1),
+					// resource.TestCheckResourceAttrSet(snpName, "delatable"), // commented as it is deprecated
 					resource.TestCheckResourceAttrSet(snpName, "href"),
 					resource.TestCheckResourceAttrSet(snpName, "crn"),
 					resource.TestCheckResourceAttrSet(snpName, "lifecycle_state"),
 					resource.TestCheckResourceAttrSet(snpName, "encryption"),
+					resource.TestCheckResourceAttrSet(snpName, "captured_at"),
 				),
 			},
 		},
