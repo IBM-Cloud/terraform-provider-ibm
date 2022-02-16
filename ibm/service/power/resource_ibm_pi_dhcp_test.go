@@ -11,6 +11,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -96,4 +97,39 @@ func testAccCheckIBMPIDhcpConfig() string {
 		pi_cloud_instance_id = "%s"
 	}
 	`, acc.Pi_cloud_instance_id)
+}
+
+func TestAccIBMPIDhcpWithCloudConnection(t *testing.T) {
+	name := fmt.Sprintf("tf-cloudconnection-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIDhcpDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIDhcpWithCloudConnectionConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIDhcpExists("ibm_pi_dhcp.dhcp_service"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_pi_dhcp.dhcp_service", "dhcp_id"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_pi_dhcp.dhcp_service", "pi_cloud_connection_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIDhcpWithCloudConnectionConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_cloud_connection" "cc" {
+			pi_cloud_instance_id				= "%[1]s"
+			pi_cloud_connection_name			= "%[2]s"
+			pi_cloud_connection_speed			= 50
+		}
+		resource "ibm_pi_dhcp" "dhcp_service" {
+			pi_cloud_instance_id 	= "%[1]s"
+			pi_cloud_connection_id 	= ibm_pi_cloud_connection.cc.cloud_connection_id
+		}
+	`, acc.Pi_cloud_instance_id, name)
 }

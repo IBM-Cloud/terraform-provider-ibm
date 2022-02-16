@@ -259,16 +259,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 			PISAPInstanceProfileID: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType, helpers.PIInstanceSystemType},
+				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType},
 				Description:   "SAP Profile ID for the amount of cores and memory",
 			},
 			helpers.PIInstanceSystemType: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues([]string{"s922", "e880", "e980"}),
-				ConflictsWith: []string{PISAPInstanceProfileID},
-				Description:   "PI Instance system type",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI Instance system type",
 			},
 			helpers.PIInstanceReplicants: {
 				Type:        schema.TypeInt,
@@ -1057,6 +1055,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 			return nil, err
 		}
 		body.UserData = userData
+	}
+	if sys, ok := d.GetOk(helpers.PIInstanceSystemType); ok {
+		body.SysType = sys.(string)
 	}
 
 	if st, ok := d.GetOk(helpers.PIInstanceStorageType); ok {

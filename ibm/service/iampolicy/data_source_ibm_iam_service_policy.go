@@ -97,6 +97,30 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 								},
 							},
 						},
+						"resource_tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Description: "Set access management tags.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of attribute.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value of attribute.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator of attribute.",
+									},
+								},
+							},
+						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -152,11 +176,12 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+
 	if err != nil {
-		return err
+		return fmt.Errorf("Error listing service policies: %s, %s", err, resp)
 	}
+	policies := policyList.Policies
 
 	servicePolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
@@ -166,8 +191,9 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"roles":     roles,
-			"resources": resources,
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 			serviceIDUUID := v.(string)
