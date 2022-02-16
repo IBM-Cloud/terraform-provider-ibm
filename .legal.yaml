@@ -1,8 +1,18 @@
 schemaVersion: oss-license-declaration.cloud.ibm.com:v4
 name: terraform-provider-ibm
 source: https://github.com/IBM-Cloud/terraform-provider-ibm
-issues: https://github.ibm.com/blueprint/schematics-compliance/issues
+issues: https://github.ibm.com/blueprint/security-project-management/issues
 objectCodeOnly: false
+additionalDownloads:
+  include:
+  - go modules
+  exclude:
+  - name: glide
+    documentation: Package manager not invoked in build nor runtime use
+  - name: nodejs
+    documentation: Package manager not invoked in build nor runtime use
+  - name: yarn
+    documentation: Package manager not invoked in build nor runtime use
 dependencies:
   - name: cloud.google.com/go
     version: v0.65.0
