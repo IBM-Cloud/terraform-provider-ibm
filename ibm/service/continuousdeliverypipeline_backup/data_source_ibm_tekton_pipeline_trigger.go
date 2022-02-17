@@ -307,7 +307,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	concurrency := []map[string]interface{}{}
 	if trigger.Concurrency != nil {
-		modelMap, err := DataSourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(trigger.Concurrency)
+		modelMap, err := DataSourceIBMTektonPipelineTriggerConcurrencyToMap(trigger.Concurrency)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -408,7 +408,7 @@ func DataSourceIBMTektonPipelineTriggerWorkerToMap(model *continuousdeliverypipe
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerConcurrency) (map[string]interface{}, error) {
+func DataSourceIBMTektonPipelineTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.Concurrency) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = *model.MaxConcurrentRuns
