@@ -58,47 +58,9 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
+							Computed:    true,
 							Optional:    true,
 							Description: "UUID.",
-						},
-						"properties": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Trigger properties.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Property name.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "String format property value.",
-									},
-									"options": &schema.Schema{
-										Type:        schema.TypeMap,
-										Optional:    true,
-										Description: "Options for SINGLE_SELECT property type.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Property type.",
-									},
-									"path": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "property path for INTEGRATION type properties.",
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "General href URL.",
-									},
-								},
-							},
 						},
 						"tags": &schema.Schema{
 							Type:        schema.TypeList,
@@ -116,11 +78,13 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "worker name.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "worker type.",
 									},
 									"id": &schema.Schema{
@@ -171,11 +135,13 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 									"blind_connection": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
+										Computed:    true,
 										Description: "Needed only for git trigger type. Branch name of the repo.",
 									},
 									"hook_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
+										Computed:    true,
 										Description: "Webhook Id.",
 									},
 								},
@@ -209,6 +175,7 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "UUID.",
 						},
 						"cron": &schema.Schema{
@@ -383,7 +350,11 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.tags") {
-		updateTektonPipelineTriggerOptions.SetTags(d.Get("trigger.tags").([]string))
+		tags := []string{}
+		for _, tagsItem := range d.Get("trigger.0.tags").([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		updateTektonPipelineTriggerOptions.SetTags(tags)
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.worker") {
@@ -633,17 +604,6 @@ func ResourceIBMTektonPipelineTriggerTriggerToMap(model continuousdeliverypipeli
 		if model.ID != nil {
 			modelMap["id"] = model.ID
 		}
-		if model.Properties != nil {
-			properties := []map[string]interface{}{}
-			for _, propertiesItem := range model.Properties {
-				propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(&propertiesItem)
-				if err != nil {
-					return modelMap, err
-				}
-				properties = append(properties, propertiesItemMap)
-			}
-			modelMap["properties"] = properties
-		}
 		if model.Tags != nil {
 			modelMap["tags"] = model.Tags
 		}
@@ -698,25 +658,6 @@ func ResourceIBMTektonPipelineTriggerTriggerToMap(model continuousdeliverypipeli
 	} else {
 		return nil, fmt.Errorf("Unrecognized continuousdeliverypipelinev2.TriggerIntf subtype encountered")
 	}
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMTektonPipelineTriggerWorkerToMap(model *continuousdeliverypipelinev2.Worker) (map[string]interface{}, error) {
@@ -798,17 +739,6 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model *continuous
 	if model.ID != nil {
 		modelMap["id"] = model.ID
 	}
-	if model.Properties != nil {
-		properties := []map[string]interface{}{}
-		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerManualTriggerPropertiesItemToMap(&propertiesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			properties = append(properties, propertiesItemMap)
-		}
-		modelMap["properties"] = properties
-	}
 	if model.Tags != nil {
 		modelMap["tags"] = model.Tags
 	}
@@ -856,17 +786,6 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 	modelMap["event_listener"] = model.EventListener
 	if model.ID != nil {
 		modelMap["id"] = model.ID
-	}
-	if model.Properties != nil {
-		properties := []map[string]interface{}{}
-		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(&propertiesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			properties = append(properties, propertiesItemMap)
-		}
-		modelMap["properties"] = properties
 	}
 	if model.Tags != nil {
 		modelMap["tags"] = model.Tags
@@ -933,17 +852,6 @@ func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model *continuousd
 	if model.ID != nil {
 		modelMap["id"] = model.ID
 	}
-	if model.Properties != nil {
-		properties := []map[string]interface{}{}
-		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerTimerTriggerPropertiesItemToMap(&propertiesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			properties = append(properties, propertiesItemMap)
-		}
-		modelMap["properties"] = properties
-	}
 	if model.Tags != nil {
 		modelMap["tags"] = model.Tags
 	}
@@ -997,17 +905,6 @@ func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model *continuou
 	modelMap["event_listener"] = model.EventListener
 	if model.ID != nil {
 		modelMap["id"] = model.ID
-	}
-	if model.Properties != nil {
-		properties := []map[string]interface{}{}
-		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerGenericTriggerPropertiesItemToMap(&propertiesItem)
-			if err != nil {
-				return modelMap, err
-			}
-			properties = append(properties, propertiesItemMap)
-		}
-		modelMap["properties"] = properties
 	}
 	if model.Tags != nil {
 		modelMap["tags"] = model.Tags
