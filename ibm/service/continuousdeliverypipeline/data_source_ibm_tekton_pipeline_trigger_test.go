@@ -44,3 +44,4 @@ func testAccCheckIBMTektonPipelineTriggerDataSourceConfigBasic(triggerPipelineID
 		}
 	`, triggerPipelineID)
 }
+

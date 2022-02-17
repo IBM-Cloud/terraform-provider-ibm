@@ -20,19 +20,19 @@ import (
 
 func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMTektonPipelineTriggerCreate,
-		ReadContext:   ResourceIBMTektonPipelineTriggerRead,
-		UpdateContext: ResourceIBMTektonPipelineTriggerUpdate,
-		DeleteContext: ResourceIBMTektonPipelineTriggerDelete,
-		Importer:      &schema.ResourceImporter{},
+		CreateContext:   ResourceIBMTektonPipelineTriggerCreate,
+		ReadContext:     ResourceIBMTektonPipelineTriggerRead,
+		UpdateContext:   ResourceIBMTektonPipelineTriggerUpdate,
+		DeleteContext:   ResourceIBMTektonPipelineTriggerDelete,
+		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger", "pipeline_id"),
-				Description:  "The tekton pipeline ID.",
+				Description: "The tekton pipeline ID.",
 			},
 			"trigger": &schema.Schema{
 				Type:        schema.TypeList,
@@ -259,6 +259,216 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 					},
 				},
 			},
+			"type": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Trigger type.",
+			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Trigger name.",
+			},
+			"event_listener": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Event listener name.",
+			},
+			"properties": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Trigger properties.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Property name.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "String format property value.",
+						},
+						"options": &schema.Schema{
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Description: "Options for SINGLE_SELECT property type.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Property type.",
+						},
+						"path": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "property path for INTEGRATION type properties.",
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "General href URL.",
+						},
+					},
+				},
+			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Trigger tags array.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"worker": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Trigger worker used to run the trigger, the trigger worker overrides the default pipeline worker.If not exist, this trigger uses default pipeline worker.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "worker name.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "worker type.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID.",
+						},
+					},
+				},
+			},
+			"concurrency": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Concurrency object.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max_concurrent_runs": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Defines the maximum number of concurrent runs for this trigger.",
+						},
+					},
+				},
+			},
+			"disabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Defines if this trigger is disabled.",
+			},
+			"scm_source": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Scm source for git type tekton pipeline trigger.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Needed only for git trigger type. Repo URL that listening to.",
+						},
+						"branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Needed only for git trigger type. Branch name of the repo.",
+						},
+						"blind_connection": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Needed only for git trigger type. Branch name of the repo.",
+						},
+						"hook_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Webhook Id.",
+						},
+					},
+				},
+			},
+			"events": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Needed only for git trigger type. Events object defines the events this git trigger listening to.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"push": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger will start when a 'push' event received.",
+						},
+						"pull_request_closed": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger will start when a pull request 'close' event received.",
+						},
+						"pull_request": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger will start when a pull request 'open' or 'update' event received.",
+						},
+					},
+				},
+			},
+			"service_instance_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "UUID.",
+			},
+			"cron": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Needed only for timer trigger type. Cron expression for timer trigger.",
+			},
+			"timezone": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Needed only for timer trigger type. Timezones for timer trigger.",
+			},
+			"secret": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Needed only for generic trigger type. Secret used to execute generic trigger.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret type.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret value, not needed if secret type is \"internalValidation\".",
+						},
+						"source": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret location, not needed if secret type is \"internalValidation\".",
+						},
+						"key_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret name, not needed if type is \"internalValidation\".",
+						},
+						"algorithm": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Algorithm used for \"digestMatches\" secret type.",
+						},
+					},
+				},
+			},
+			"trigger_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "UUID.",
+			},
 		},
 	}
 }
@@ -298,13 +508,11 @@ func ResourceIBMTektonPipelineTriggerCreate(context context.Context, d *schema.R
 		createTektonPipelineTriggerOptions.SetTrigger(trigger)
 	}
 
-	TriggerIntf, response, err := continuousDeliveryPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
+	trigger, response, err := continuousDeliveryPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateTektonPipelineTriggerWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateTektonPipelineTriggerWithContext failed %s\n%s", err, response))
 	}
-
-	trigger := TriggerIntf.(*continuousdeliverypipelinev2.Trigger)
 
 	d.SetId(fmt.Sprintf("%s/%s", *createTektonPipelineTriggerOptions.PipelineID, *trigger.ID))
 
@@ -327,7 +535,7 @@ func ResourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.Res
 	getTektonPipelineTriggerOptions.SetPipelineID(parts[0])
 	getTektonPipelineTriggerOptions.SetTriggerID(parts[1])
 
-	TriggerIntf, response, err := continuousDeliveryPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	trigger, response, err := continuousDeliveryPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -340,13 +548,95 @@ func ResourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.Res
 	if err = d.Set("pipeline_id", getTektonPipelineTriggerOptions.PipelineID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
-
-	trigger, err := ResourceIBMTektonPipelineTriggerTriggerToMap(TriggerIntf)
-	if err != nil {
-		return diag.FromErr(err)
+	// TODO: handle argument of type Trigger
+	if err = d.Set("type", trigger.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
-	if err = d.Set("trigger", []map[string]interface{}{trigger}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trigger: %s", err))
+	if err = d.Set("name", trigger.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("event_listener", trigger.EventListener); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
+	}
+	
+	properties := []map[string]interface{}{}
+	if trigger.Properties != nil {
+		for _, propertiesItem := range trigger.Properties {
+			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(&propertiesItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			properties = append(properties, propertiesItemMap)
+		}
+	}
+	if err = d.Set("properties", properties); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+	}
+	
+	if trigger.Tags != nil {
+		if err = d.Set("tags", trigger.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+		}
+	}
+	if trigger.Worker != nil {
+		workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(trigger.Worker)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("worker", []map[string]interface{}{workerMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting worker: %s", err))
+		}
+	}
+	if trigger.Concurrency != nil {
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(trigger.Concurrency)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("concurrency", []map[string]interface{}{concurrencyMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting concurrency: %s", err))
+		}
+	}
+	if err = d.Set("disabled", trigger.Disabled); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting disabled: %s", err))
+	}
+	if trigger.ScmSource != nil {
+		scmSourceMap, err := ResourceIBMTektonPipelineTriggerTriggerScmSourceToMap(trigger.ScmSource)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("scm_source", []map[string]interface{}{scmSourceMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting scm_source: %s", err))
+		}
+	}
+	if trigger.Events != nil {
+		eventsMap, err := ResourceIBMTektonPipelineTriggerEventsToMap(trigger.Events)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("events", []map[string]interface{}{eventsMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting events: %s", err))
+		}
+	}
+	if err = d.Set("service_instance_id", trigger.ServiceInstanceID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting service_instance_id: %s", err))
+	}
+	if err = d.Set("cron", trigger.Cron); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting cron: %s", err))
+	}
+	if err = d.Set("timezone", trigger.Timezone); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting timezone: %s", err))
+	}
+	if trigger.Secret != nil {
+		secretMap, err := ResourceIBMTektonPipelineTriggerGenericSecretToMap(trigger.Secret)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("secret", []map[string]interface{}{secretMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting secret: %s", err))
+		}
+	}
+	if err = d.Set("trigger_id", trigger.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))
 	}
 
 	return nil
@@ -371,37 +661,17 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
+				" The resource must be re-created to update this property.", "pipeline_id"))
 	}
-	if d.HasChange("trigger.0.name") {
-		updateTektonPipelineTriggerOptions.SetName(d.Get("trigger.0.name").(string))
-		hasChange = true
-	}
-	if d.HasChange("trigger.0.event_listener") {
-		updateTektonPipelineTriggerOptions.SetEventListener(d.Get("trigger.0.event_listener").(string))
-		hasChange = true
-	}
-	if d.HasChange("trigger.0.tags") {
-		updateTektonPipelineTriggerOptions.SetTags(d.Get("trigger.tags").([]string))
-		hasChange = true
-	}
-	if d.HasChange("trigger.0.worker") {
-		worker, err := ResourceIBMTektonPipelineTriggerMapToWorker(d.Get("trigger.0.worker").([]interface{})[0].(map[string]interface{}))
+	if d.HasChange("trigger") {
+		trigger, err := ResourceIBMTektonPipelineTriggerMapToTrigger(d.Get("trigger.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetWorker(worker)
+		updateTektonPipelineTriggerOptions.SetTrigger(trigger)
 		hasChange = true
 	}
-
-	// SetConcurrency
-	// SetDisabled
-	// SetSecret
-	// SetCron
-	// SetTimezone
-	// SetScmSource
-	// SetEvents
 
 	if hasChange {
 		_, response, err := continuousDeliveryPipelineClient.UpdateTektonPipelineTriggerWithContext(context, updateTektonPipelineTriggerOptions)
@@ -452,6 +722,20 @@ func ResourceIBMTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{
 	if modelMap["event_listener"] != nil {
 		model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
 	}
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["properties"] != nil {
+		properties := []continuousdeliverypipelinev2.TriggerPropertiesItem{}
+		for _, propertiesItem := range modelMap["properties"].([]interface{}) {
+			propertiesItemModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerPropertiesItem(propertiesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			properties = append(properties, *propertiesItemModel)
+		}
+		model.Properties = properties
+	}
 	if modelMap["tags"] != nil {
 		tags := []string{}
 		for _, tagsItem := range modelMap["tags"].([]interface{}) {
@@ -459,15 +743,15 @@ func ResourceIBMTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{
 		}
 		model.Tags = tags
 	}
-	if modelMap["worker"] != nil && len(modelMap["worker"].([]interface{})) > 0 {
-		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["worker"] != nil {
+		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Worker = WorkerModel
 	}
-	if modelMap["concurrency"] != nil && len(modelMap["concurrency"].([]interface{})) > 0 {
-		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerConcurrency(modelMap["concurrency"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["concurrency"] != nil {
+		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -476,31 +760,31 @@ func ResourceIBMTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{
 	if modelMap["disabled"] != nil {
 		model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
 	}
-	if modelMap["scm_source"] != nil && len(modelMap["scm_source"].([]interface{})) > 0 {
-		ScmSourceModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap["scm_source"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["scm_source"] != nil {
+		ScmSourceModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap["scm_source"].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.ScmSource = ScmSourceModel
 	}
-	if modelMap["events"] != nil && len(modelMap["events"].([]interface{})) > 0 {
-		EventsModel, err := ResourceIBMTektonPipelineTriggerMapToEvents(modelMap["events"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["events"] != nil {
+		EventsModel, err := ResourceIBMTektonPipelineTriggerMapToEvents(modelMap["events"].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Events = EventsModel
 	}
-	if modelMap["service_instance_id"] != nil && modelMap["service_instance_id"].(string) != "" {
+	if modelMap["service_instance_id"] != nil {
 		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
 	}
-	if modelMap["cron"] != nil && modelMap["cron"].(string) != "" {
+	if modelMap["cron"] != nil {
 		model.Cron = core.StringPtr(modelMap["cron"].(string))
 	}
-	if modelMap["timezone"] != nil && modelMap["timezone"].(string) != "" {
+	if modelMap["timezone"] != nil {
 		model.Timezone = core.StringPtr(modelMap["timezone"].(string))
 	}
-	if modelMap["secret"] != nil && len(modelMap["secret"].([]interface{})) > 0 {
-		SecretModel, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap["secret"].([]interface{})[0].(map[string]interface{}))
+	if modelMap["secret"] != nil {
+		SecretModel, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap["secret"].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -509,14 +793,39 @@ func ResourceIBMTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{
 	return model, nil
 }
 
+func ResourceIBMTektonPipelineTriggerMapToTriggerPropertiesItem(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerPropertiesItem, error) {
+	model := &continuousdeliverypipelinev2.TriggerPropertiesItem{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["options"] != nil {
+	
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["path"] != nil {
+		model.Path = core.StringPtr(modelMap["path"].(string))
+	}
+	if modelMap["href"] != nil {
+		model.Href = core.StringPtr(modelMap["href"].(string))
+	}
+	return model, nil
+}
+
 func ResourceIBMTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.Worker, error) {
 	model := &continuousdeliverypipelinev2.Worker{}
+	if modelMap["name"] != nil {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["type"] != nil {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineTriggerMapToTriggerConcurrency(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerConcurrency, error) {
-	model := &continuousdeliverypipelinev2.TriggerConcurrency{}
+func ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.Concurrency, error) {
+	model := &continuousdeliverypipelinev2.Concurrency{}
 	if modelMap["max_concurrent_runs"] != nil {
 		model.MaxConcurrentRuns = core.Int64Ptr(int64(modelMap["max_concurrent_runs"].(int)))
 	}
@@ -530,6 +839,12 @@ func ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string]i
 	}
 	if modelMap["branch"] != nil {
 		model.Branch = core.StringPtr(modelMap["branch"].(string))
+	}
+	if modelMap["blind_connection"] != nil {
+		model.BlindConnection = core.BoolPtr(modelMap["blind_connection"].(bool))
+	}
+	if modelMap["hook_id"] != nil {
+		model.HookID = core.StringPtr(modelMap["hook_id"].(string))
 	}
 	return model, nil
 }
@@ -550,20 +865,302 @@ func ResourceIBMTektonPipelineTriggerMapToEvents(modelMap map[string]interface{}
 
 func ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.GenericSecret, error) {
 	model := &continuousdeliverypipelinev2.GenericSecret{}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+	if modelMap["type"] != nil {
 		model.Type = core.StringPtr(modelMap["type"].(string))
 	}
-	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+	if modelMap["value"] != nil {
 		model.Value = core.StringPtr(modelMap["value"].(string))
 	}
-	if modelMap["source"] != nil && modelMap["source"].(string) != "" {
+	if modelMap["source"] != nil {
 		model.Source = core.StringPtr(modelMap["source"].(string))
 	}
-	if modelMap["key_name"] != nil && modelMap["key_name"].(string) != "" {
+	if modelMap["key_name"] != nil {
 		model.KeyName = core.StringPtr(modelMap["key_name"].(string))
 	}
-	if modelMap["algorithm"] != nil && modelMap["algorithm"].(string) != "" {
+	if modelMap["algorithm"] != nil {
 		model.Algorithm = core.StringPtr(modelMap["algorithm"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerManualTrigger(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerManualTrigger, error) {
+	model := &continuousdeliverypipelinev2.TriggerManualTrigger{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["properties"] != nil {
+		properties := []continuousdeliverypipelinev2.TriggerManualTriggerPropertiesItem{}
+		for _, propertiesItem := range modelMap["properties"].([]interface{}) {
+			propertiesItemModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerManualTriggerPropertiesItem(propertiesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			properties = append(properties, *propertiesItemModel)
+		}
+		model.Properties = properties
+	}
+	if modelMap["tags"] != nil {
+		tags := []string{}
+		for _, tagsItem := range modelMap["tags"].([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		model.Tags = tags
+	}
+	if modelMap["worker"] != nil {
+		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Worker = WorkerModel
+	}
+	if modelMap["concurrency"] != nil {
+		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Concurrency = ConcurrencyModel
+	}
+	model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerManualTriggerPropertiesItem(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerManualTriggerPropertiesItem, error) {
+	model := &continuousdeliverypipelinev2.TriggerManualTriggerPropertiesItem{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["options"] != nil {
+	
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["path"] != nil {
+		model.Path = core.StringPtr(modelMap["path"].(string))
+	}
+	if modelMap["href"] != nil {
+		model.Href = core.StringPtr(modelMap["href"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerScmTrigger(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerScmTrigger, error) {
+	model := &continuousdeliverypipelinev2.TriggerScmTrigger{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["properties"] != nil {
+		properties := []continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem{}
+		for _, propertiesItem := range modelMap["properties"].([]interface{}) {
+			propertiesItemModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmTriggerPropertiesItem(propertiesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			properties = append(properties, *propertiesItemModel)
+		}
+		model.Properties = properties
+	}
+	if modelMap["tags"] != nil {
+		tags := []string{}
+		for _, tagsItem := range modelMap["tags"].([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		model.Tags = tags
+	}
+	if modelMap["worker"] != nil {
+		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Worker = WorkerModel
+	}
+	if modelMap["concurrency"] != nil {
+		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Concurrency = ConcurrencyModel
+	}
+	model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
+	if modelMap["scm_source"] != nil {
+		ScmSourceModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap["scm_source"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ScmSource = ScmSourceModel
+	}
+	if modelMap["events"] != nil {
+		EventsModel, err := ResourceIBMTektonPipelineTriggerMapToEvents(modelMap["events"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Events = EventsModel
+	}
+	if modelMap["service_instance_id"] != nil {
+		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerScmTriggerPropertiesItem(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem, error) {
+	model := &continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["options"] != nil {
+	
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["path"] != nil {
+		model.Path = core.StringPtr(modelMap["path"].(string))
+	}
+	if modelMap["href"] != nil {
+		model.Href = core.StringPtr(modelMap["href"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerTimerTrigger(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerTimerTrigger, error) {
+	model := &continuousdeliverypipelinev2.TriggerTimerTrigger{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["properties"] != nil {
+		properties := []continuousdeliverypipelinev2.TriggerTimerTriggerPropertiesItem{}
+		for _, propertiesItem := range modelMap["properties"].([]interface{}) {
+			propertiesItemModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerTimerTriggerPropertiesItem(propertiesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			properties = append(properties, *propertiesItemModel)
+		}
+		model.Properties = properties
+	}
+	if modelMap["tags"] != nil {
+		tags := []string{}
+		for _, tagsItem := range modelMap["tags"].([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		model.Tags = tags
+	}
+	if modelMap["worker"] != nil {
+		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Worker = WorkerModel
+	}
+	if modelMap["concurrency"] != nil {
+		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Concurrency = ConcurrencyModel
+	}
+	model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
+	if modelMap["cron"] != nil {
+		model.Cron = core.StringPtr(modelMap["cron"].(string))
+	}
+	if modelMap["timezone"] != nil {
+		model.Timezone = core.StringPtr(modelMap["timezone"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerTimerTriggerPropertiesItem(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerTimerTriggerPropertiesItem, error) {
+	model := &continuousdeliverypipelinev2.TriggerTimerTriggerPropertiesItem{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["options"] != nil {
+	
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["path"] != nil {
+		model.Path = core.StringPtr(modelMap["path"].(string))
+	}
+	if modelMap["href"] != nil {
+		model.Href = core.StringPtr(modelMap["href"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerGenericTrigger(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerGenericTrigger, error) {
+	model := &continuousdeliverypipelinev2.TriggerGenericTrigger{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["properties"] != nil {
+		properties := []continuousdeliverypipelinev2.TriggerGenericTriggerPropertiesItem{}
+		for _, propertiesItem := range modelMap["properties"].([]interface{}) {
+			propertiesItemModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerGenericTriggerPropertiesItem(propertiesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			properties = append(properties, *propertiesItemModel)
+		}
+		model.Properties = properties
+	}
+	if modelMap["tags"] != nil {
+		tags := []string{}
+		for _, tagsItem := range modelMap["tags"].([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		model.Tags = tags
+	}
+	if modelMap["worker"] != nil {
+		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Worker = WorkerModel
+	}
+	if modelMap["concurrency"] != nil {
+		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Concurrency = ConcurrencyModel
+	}
+	model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
+	if modelMap["secret"] != nil {
+		SecretModel, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap["secret"].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Secret = SecretModel
+	}
+	return model, nil
+}
+
+func ResourceIBMTektonPipelineTriggerMapToTriggerGenericTriggerPropertiesItem(modelMap map[string]interface{}) (*continuousdeliverypipelinev2.TriggerGenericTriggerPropertiesItem, error) {
+	model := &continuousdeliverypipelinev2.TriggerGenericTriggerPropertiesItem{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["value"] != nil {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["options"] != nil {
+	
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["path"] != nil {
+		model.Path = core.StringPtr(modelMap["path"].(string))
+	}
+	if modelMap["href"] != nil {
+		model.Href = core.StringPtr(modelMap["href"].(string))
 	}
 	return model, nil
 }
@@ -614,7 +1211,7 @@ func ResourceIBMTektonPipelineTriggerTriggerToMap(model continuousdeliverypipeli
 			modelMap["worker"] = []map[string]interface{}{workerMap}
 		}
 		if model.Concurrency != nil {
-			concurrencyMap, err := ResourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(model.Concurrency)
+			concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 			if err != nil {
 				return modelMap, err
 			}
@@ -690,7 +1287,7 @@ func ResourceIBMTektonPipelineTriggerWorkerToMap(model *continuousdeliverypipeli
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerConcurrency) (map[string]interface{}, error) {
+func ResourceIBMTektonPipelineTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.Concurrency) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
@@ -779,7 +1376,7 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model *continuous
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerTriggerManualTriggerConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -808,14 +1405,6 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerPropertiesItemToMap(mod
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerManualTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerManualTriggerConcurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
-	}
-	return modelMap, nil
-}
-
 func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdeliverypipelinev2.TriggerScmTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
@@ -827,7 +1416,7 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := ResourceIBMTektonPipelineTriggerTriggerScmTriggerPropertiesItemToMap(&propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -846,7 +1435,7 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerScmTriggerConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -873,7 +1462,7 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.ScmTriggerPropertiesItem) (map[string]interface{}, error) {
+func ResourceIBMTektonPipelineTriggerTriggerScmTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	if model.Value != nil {
@@ -888,14 +1477,6 @@ func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *contin
 	}
 	if model.Href != nil {
 		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerScmTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.ScmTriggerConcurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
 	return modelMap, nil
 }
@@ -930,7 +1511,7 @@ func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model *continuousd
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerTriggerTimerTriggerConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -965,14 +1546,6 @@ func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerPropertiesItemToMap(mode
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerTimerTriggerConcurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
-	}
-	return modelMap, nil
-}
-
 func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model *continuousdeliverypipelinev2.TriggerGenericTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
@@ -1003,7 +1576,7 @@ func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model *continuou
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerTriggerGenericTriggerConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1035,14 +1608,6 @@ func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerPropertiesItemToMap(mo
 	}
 	if model.Href != nil {
 		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerGenericTriggerConcurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
 	return modelMap, nil
 }

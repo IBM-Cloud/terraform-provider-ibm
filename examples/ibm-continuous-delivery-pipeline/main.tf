@@ -80,11 +80,6 @@ data "ibm_tekton_pipeline_property" "tekton_pipeline_property_instance" {
   property_name = var.tekton_pipeline_property_property_name
 }
 
-// Create tekton_pipeline_workers data source
-data "ibm_tekton_pipeline_workers" "tekton_pipeline_workers_instance" {
-  pipeline_id = var.tekton_pipeline_workers_pipeline_id
-}
-
 // Create tekton_pipeline_trigger data source
 data "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
   pipeline_id = var.tekton_pipeline_trigger_pipeline_id

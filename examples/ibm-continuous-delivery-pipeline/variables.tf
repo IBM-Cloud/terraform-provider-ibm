@@ -127,13 +127,6 @@ variable "tekton_pipeline_property_property_name" {
   default     = "debug-pipeline"
 }
 
-// Data source arguments for tekton_pipeline_workers
-variable "tekton_pipeline_workers_pipeline_id" {
-  description = "The tekton pipeline ID."
-  type        = string
-  default     = "94619026-912b-4d92-8f51-6c74f0692d90"
-}
-
 // Data source arguments for tekton_pipeline_trigger
 variable "tekton_pipeline_trigger_pipeline_id" {
   description = "The tekton pipeline ID."
