@@ -395,13 +395,54 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 		hasChange = true
 	}
 
-	// SetConcurrency
-	// SetDisabled
-	// SetSecret
-	// SetCron
-	// SetTimezone
-	// SetScmSource
-	// SetEvents
+	if d.HasChange("trigger.0.concurrency") {
+		concurrency, err := ResourceIBMTektonPipelineTriggerMapToTriggerConcurrency(d.Get("trigger.0.concurrency").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateTektonPipelineTriggerOptions.SetConcurrency(concurrency)
+		hasChange = true
+	}
+
+	if d.HasChange("trigger.0.secret") {
+		secret, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(d.Get("trigger.0.secret").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateTektonPipelineTriggerOptions.SetSecret(secret)
+		hasChange = true
+	}
+
+	if d.HasChange("trigger.0.scm_source") {
+		secret, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(d.Get("trigger.0.scm_source").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateTektonPipelineTriggerOptions.SetScmSource(secret)
+		hasChange = true
+	}
+
+	if d.HasChange("trigger.0.events") {
+		events, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(d.Get("trigger.0.events").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateTektonPipelineTriggerOptions.SetEvents(events)
+		hasChange = true
+	}
+
+	if d.HasChange("trigger.0.cron") {
+		updateTektonPipelineTriggerOptions.SetCron(d.Get("trigger.0.cron").(string))
+		hasChange = true
+	}
+	if d.HasChange("trigger.0.timezone") {
+		updateTektonPipelineTriggerOptions.SetTimezone(d.Get("trigger.0.timezone").(string))
+		hasChange = true
+	}
+	if d.HasChange("trigger.0.disabled") {
+		updateTektonPipelineTriggerOptions.SetDisabled(d.Get("trigger.0.disabled").(bool))
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := continuousDeliveryPipelineClient.UpdateTektonPipelineTriggerWithContext(context, updateTektonPipelineTriggerOptions)
