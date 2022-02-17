@@ -14,9 +14,7 @@ To add this generated code into the IBM Terraform Provider:
     "ibm_tekton_pipeline_definition": continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
     "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineTriggerProperty(),
     "ibm_tekton_pipeline_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
-    "ibm_tekton_pipeline_workers": continuousdeliverypipeline.DataSourceIBMTektonPipelineWorkers(),
     "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
-    "ibm_tekton_pipeline": continuousdeliverypipeline.DataSourceIBMTektonPipeline(),
 ```
 
 - Add the following entries to `ResourcesMap`:
@@ -25,7 +23,6 @@ To add this generated code into the IBM Terraform Provider:
     "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerProperty(),
     "ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelineProperty(),
     "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.ResourceIBMTektonPipelineTrigger(),
-    "ibm_tekton_pipeline": continuousdeliverypipeline.ResourceIBMTektonPipeline(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
@@ -34,7 +31,6 @@ To add this generated code into the IBM Terraform Provider:
     "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
     "ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
     "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
-    "ibm_tekton_pipeline": continuousdeliverypipeline.ResourceIBMTektonPipelineValidator(),
 ```
 
 ### Changes to `config.go`
@@ -70,6 +66,21 @@ func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdelivery
   add the code to initialize the service client
 ```
     // Construct an "options" struct for creating the service client.
+    var continuousDeliveryPipelineClientURL string
+    if c.Visibility == "private" || c.Visibility == "public-and-private" {
+        continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion("private." + c.Region)
+        if err != nil && c.Visibility == "public-and-private" {
+            continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+        }
+    } else {
+        continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+    }
+    if err != nil {
+        continuousDeliveryPipelineClientURL = continuousdeliverypipelinev2.DefaultServiceURL
+    }
+    if fileMap != nil && c.Visibility != "public-and-private" {
+		continuousDeliveryPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, continuousDeliveryPipelineClientURL)
+	}
     continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{
         Authenticator: authenticator,
     }

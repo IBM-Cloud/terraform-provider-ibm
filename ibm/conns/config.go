@@ -2816,7 +2816,23 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
+	var continuousDeliveryPipelineClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		continuousDeliveryPipelineClientURL = continuousdeliverypipelinev2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		continuousDeliveryPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, continuousDeliveryPipelineClientURL)
+	}
 	continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, containerRegistryClientURL),
 		Authenticator: authenticator,
 	}
 	// Construct the service client.
