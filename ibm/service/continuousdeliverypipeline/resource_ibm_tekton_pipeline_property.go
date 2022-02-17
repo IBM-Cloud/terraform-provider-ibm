@@ -19,31 +19,31 @@ import (
 
 func ResourceIBMTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelinePropertyCreate,
-		ReadContext:     ResourceIBMTektonPipelinePropertyRead,
-		UpdateContext:   ResourceIBMTektonPipelinePropertyUpdate,
-		DeleteContext:   ResourceIBMTektonPipelinePropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelinePropertyCreate,
+		ReadContext:   ResourceIBMTektonPipelinePropertyRead,
+		UpdateContext: ResourceIBMTektonPipelinePropertyUpdate,
+		DeleteContext: ResourceIBMTektonPipelinePropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "name"),
-				Description: "Property name.",
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "value"),
-				Description: "String format property value.",
+				Description:  "String format property value.",
 			},
 			"options": &schema.Schema{
 				Type:        schema.TypeMap,
@@ -51,16 +51,16 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				Description: "Options for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "type"),
-				Description: "Property type.",
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "path"),
-				Description: "property path for INTEGRATION type properties.",
+				Description:  "property path for INTEGRATION type properties.",
 			},
 		},
 	}
@@ -134,7 +134,7 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("options"); ok {
-	
+		createTektonPipelinePropertiesOptions.SetOptions(d.Get("options").(interface{}))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelinePropertiesOptions.SetType(d.Get("type").(string))
@@ -217,28 +217,24 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 
 	replaceTektonPipelinePropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelinePropertyOptions.SetPropertyName(parts[1])
+	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
-	if d.HasChange("name") {
-		replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+
+	if d.Get("type").(string) == "SINGLE_SELECT" && d.HasChange("options") {
+		replaceTektonPipelinePropertyOptions.SetOptions(d.Get("options").(interface{}))
 		hasChange = true
-	}
-	if d.HasChange("value") {
+	} else if d.HasChange("value") {
 		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 		hasChange = true
 	}
-	if d.HasChange("options") {
-		hasChange = true
-	}
-	if d.HasChange("type") {
-		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
-	}
+
 	if d.HasChange("path") {
 		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 		hasChange = true

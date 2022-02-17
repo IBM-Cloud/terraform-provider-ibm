@@ -252,13 +252,20 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 	getTektonPipelineTriggerOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	getTektonPipelineTriggerOptions.SetTriggerID(d.Get("trigger_id").(string))
 
-	trigger, response, err := continuousDeliveryPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	TriggerIntf, response, err := continuousDeliveryPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetTektonPipelineTriggerWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetTektonPipelineTriggerWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
+
+	trigger := TriggerIntf.(*continuousdeliverypipelinev2.Trigger)
+
+	if err != nil {
+		log.Printf("[DEBUG] ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err)
+		return diag.FromErr(fmt.Errorf("ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err))
+	}
 
 	if err = d.Set("type", trigger.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
@@ -274,7 +281,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
-		for _, modelItem := range trigger.Properties { 
+		for _, modelItem := range trigger.Properties {
 			modelMap, err := DataSourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -285,7 +292,6 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 	if err = d.Set("properties", properties); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
-
 
 	worker := []map[string]interface{}{}
 	if trigger.Worker != nil {
@@ -301,7 +307,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	concurrency := []map[string]interface{}{}
 	if trigger.Concurrency != nil {
-		modelMap, err := DataSourceIBMTektonPipelineTriggerConcurrencyToMap(trigger.Concurrency)
+		modelMap, err := DataSourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(trigger.Concurrency)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -402,7 +408,7 @@ func DataSourceIBMTektonPipelineTriggerWorkerToMap(model *continuousdeliverypipe
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.Concurrency) (map[string]interface{}, error) {
+func DataSourceIBMTektonPipelineTriggerTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.TriggerConcurrency) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = *model.MaxConcurrentRuns

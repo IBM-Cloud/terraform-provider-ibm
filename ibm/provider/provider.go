@@ -576,7 +576,6 @@ func Provider() *schema.Provider {
 			"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
 			"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineTriggerProperty(),
 			"ibm_tekton_pipeline_property":         continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
-			"ibm_tekton_pipeline_workers":          continuousdeliverypipeline.DataSourceIBMTektonPipelineWorkers(),
 			"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
 			// "ibm_tekton_pipeline": continuousdeliverypipeline.DataSourceIBMTektonPipeline(),
 		},

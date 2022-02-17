@@ -20,19 +20,19 @@ import (
 
 func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineDefinitionCreate,
-		ReadContext:     ResourceIBMTektonPipelineDefinitionRead,
-		UpdateContext:   ResourceIBMTektonPipelineDefinitionUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDefinitionDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineDefinitionCreate,
+		ReadContext:   ResourceIBMTektonPipelineDefinitionRead,
+		UpdateContext: ResourceIBMTektonPipelineDefinitionUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDefinitionDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_definition", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -182,12 +182,15 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
+	diag.FromErr(fmt.Errorf("d.ServiceInstanceID() %s", d.Get("service_instance_id").(string)))
+	replaceTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
+	replaceTektonPipelineDefinitionOptions.SetID(parts[1])
 
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("scm_source") {
 		scmSource, err := ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))

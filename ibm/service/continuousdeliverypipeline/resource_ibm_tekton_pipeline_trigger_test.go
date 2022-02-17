@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMTektonPipelineTriggerBasic(t *testing.T) {
@@ -74,12 +74,13 @@ func testAccCheckIBMTektonPipelineTriggerExists(n string, obj continuousdelivery
 		getTektonPipelineTriggerOptions.SetPipelineID(parts[0])
 		getTektonPipelineTriggerOptions.SetTriggerID(parts[1])
 
-		trigger, _, err := continuousDeliveryPipelineClient.GetTektonPipelineTrigger(getTektonPipelineTriggerOptions)
+		_, response, err := continuousDeliveryPipelineClient.GetTektonPipelineTrigger(getTektonPipelineTriggerOptions)
 		if err != nil {
 			return err
 		}
-
-		obj = *trigger
+		if response.StatusCode != 200 {
+			return fmt.Errorf("Error checking for tekton_pipeline_trigger (%s) has been fetched: %s", rs.Primary.ID, err)
+		}
 		return nil
 	}
 }

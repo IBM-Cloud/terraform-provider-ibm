@@ -19,38 +19,38 @@ import (
 
 func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineTriggerPropertyCreate,
-		ReadContext:     ResourceIBMTektonPipelineTriggerPropertyRead,
-		UpdateContext:   ResourceIBMTektonPipelineTriggerPropertyUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineTriggerPropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineTriggerPropertyCreate,
+		ReadContext:   ResourceIBMTektonPipelineTriggerPropertyRead,
+		UpdateContext: ResourceIBMTektonPipelineTriggerPropertyUpdate,
+		DeleteContext: ResourceIBMTektonPipelineTriggerPropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "trigger_id"),
-				Description: "The trigger ID.",
+				Description:  "The trigger ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "name"),
-				Description: "Property name.",
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "value"),
-				Description: "String format property value.",
+				Description:  "String format property value.",
 			},
 			"options": &schema.Schema{
 				Type:        schema.TypeMap,
@@ -58,16 +58,16 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				Description: "Options for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "type"),
-				Description: "Property type.",
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "path"),
-				Description: "property path for INTEGRATION type properties.",
+				Description:  "property path for INTEGRATION type properties.",
 			},
 		},
 	}
@@ -151,7 +151,7 @@ func ResourceIBMTektonPipelineTriggerPropertyCreate(context context.Context, d *
 		createTektonPipelineTriggerPropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("options"); ok {
-	
+		createTektonPipelineTriggerPropertiesOptions.SetOptions(d.Get("options").(interface{}))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetType(d.Get("type").(string))
@@ -239,30 +239,24 @@ func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *
 	replaceTektonPipelineTriggerPropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineTriggerPropertyOptions.SetTriggerID(parts[1])
 	replaceTektonPipelineTriggerPropertyOptions.SetPropertyName(parts[2])
+	replaceTektonPipelineTriggerPropertyOptions.SetName(d.Get("name").(string))
+	replaceTektonPipelineTriggerPropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("trigger_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "trigger_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "trigger_id"))
 	}
-	if d.HasChange("name") {
-		replaceTektonPipelineTriggerPropertyOptions.SetName(d.Get("name").(string))
+	if d.Get("type").(string) == "SINGLE_SELECT" && d.HasChange("options") {
+		replaceTektonPipelineTriggerPropertyOptions.SetOptions(d.Get("options").(interface{}))
 		hasChange = true
-	}
-	if d.HasChange("value") {
+	} else if d.HasChange("value") {
 		replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
-		hasChange = true
-	}
-	if d.HasChange("options") {
-		hasChange = true
-	}
-	if d.HasChange("type") {
-		replaceTektonPipelineTriggerPropertyOptions.SetType(d.Get("type").(string))
 		hasChange = true
 	}
 	if d.HasChange("path") {
