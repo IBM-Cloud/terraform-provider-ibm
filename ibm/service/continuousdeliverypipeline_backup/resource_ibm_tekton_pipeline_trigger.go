@@ -820,7 +820,7 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model *continuous
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerTriggerManualTriggerConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -845,14 +845,6 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerPropertiesItemToMap(mod
 	}
 	if model.Href != nil {
 		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerConcurrencyToMap(model *continuousdeliverypipelinev2.Concurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
 	return modelMap, nil
 }
@@ -914,7 +906,7 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.ScmTriggerPropertiesItem) (map[string]interface{}, error) {
+func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model.Name
 	if model.Value != nil {
