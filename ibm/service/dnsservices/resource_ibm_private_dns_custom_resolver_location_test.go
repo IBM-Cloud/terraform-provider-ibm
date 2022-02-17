@@ -14,23 +14,23 @@ import (
 )
 
 func TestAccIBMPrivateDNSCustomResolverLocations_basic(t *testing.T) {
+
+	vpcname := fmt.Sprintf("cr-loc-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("cr-loc-subnet-name-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
-	subnet_crn := "crn:v1:bluemix:public:is:us-south-3:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0737-0d198509-3221-4162-b2d8-4a9326d3d7ad"
-	subnet_crn_new := "crn:v1:bluemix:public:is:us-south-2:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0727-f17967f2-2bbe-427c-bcf6-22f8c2395285"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, subnet_crn_new),
+				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "subnet_crn", subnet_crn),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "enabled", "true"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "cr_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "cr_enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "subnet_crn", subnet_crn_new),
 				),
 			},
 		},
@@ -41,21 +41,20 @@ func TestAccIBMPrivateDNSCustomResolverLocations_Import(t *testing.T) {
 
 	name := fmt.Sprintf("testpdnscustomresolver%s", acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum))
 	description := "new test CR Locations - TF"
-	subnet_crn := "crn:v1:bluemix:public:is:us-south-3:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0737-0d198509-3221-4162-b2d8-4a9326d3d7ad"
-	subnet_crn_new := "crn:v1:bluemix:public:is:us-south-2:a/bcf1865e99742d38d2d5fc3fb80a5496::subnet:0727-f17967f2-2bbe-427c-bcf6-22f8c2395285"
+	vpcname := fmt.Sprintf("cr-loc-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("cr-loc-subnet-name-%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, subnet_crn_new),
+				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "subnet_crn", subnet_crn),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "enabled", "true"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "cr_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
 					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "cr_enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "subnet_crn", subnet_crn_new),
 				),
 			},
 			{
@@ -73,27 +72,20 @@ func TestAccIBMPrivateDNSCustomResolverLocations_Import(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, subnet_crn_new string) string {
+func testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, zone, cidr, name, description string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
 		is_default	= true
 	}
 	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "test-pdns-custom-resolver-vpc"
+		name			= "%s"
 		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name			= "test-pdns-cr-subnet1"
+		name			= "%s"
 		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.0.0/24"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name			= "test-pdns-cr-subnet2"
-		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.64.0/24"
+		zone			= "%s"
+		ipv4_cidr_block	= "%s"
 		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
@@ -108,7 +100,7 @@ func testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, su
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		description = "%s"
 		high_availability = false
-		enabled = false
+		enabled 	= false
 	}
 	resource "ibm_dns_custom_resolver_location" "test1" {
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
@@ -120,9 +112,10 @@ func testAccCheckIBMPrivateDNSCRLocationsBasic(name, description, subnet_crn, su
 	resource "ibm_dns_custom_resolver_location" "test2" {
 		instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn    = ibm_is_subnet.test-pdns-cr-subnet2.crn
+		subnet_crn    = ibm_is_subnet.test-pdns-cr-subnet1.crn
 		enabled       = false
 		cr_enabled    = false 
-	}
-	`, name, description)
+	  }
+	`, vpcname, subnetname, zone, cidr, name, description)
+
 }

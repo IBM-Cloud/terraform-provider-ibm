@@ -9,6 +9,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -17,12 +18,14 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRulesDataSource_basic(t *testin
 	forwardingRuleType := "zone"
 	forwardingRuleMatch := "test.example.com"
 	node := "data.ibm_dns_custom_resolver_forwarding_rules.test-fr"
+	vpcname := fmt.Sprintf("d-fr-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("d-fr-subnet-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescription, forwardingRuleType, forwardingRuleMatch),
+				Config: testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, forwardingRuleDescription, forwardingRuleType, forwardingRuleMatch),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(node, "rules.0.description"),
 					resource.TestCheckResourceAttrSet(node, "rules.0.type"),
@@ -33,28 +36,21 @@ func TestAccIBMPrivateDNSCustomResolverForwardingRulesDataSource_basic(t *testin
 	})
 }
 
-func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescription string, forwardingRuleType string, forwardingRuleMatch string) string {
+func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(vpcname, subnetname, zone, cidr, forwardingRuleDescription, forwardingRuleType string, forwardingRuleMatch string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "rg" {
 		is_default	= true
 	}
 	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
-		name			= "test-pdns-custom-resolver-vpc"
+		name			= "%s"
 		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-		name			= "test-pdns-cr-subnet1"
+		name			= "%s"
 		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.0.0/24"
-		resource_group	= data.ibm_resource_group.rg.id
-	}
-	resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-		name			= "test-pdns-cr-subnet2"
-		vpc				= ibm_is_vpc.test-pdns-cr-vpc.id
-		zone			= "us-south-1"
-		ipv4_cidr_block	= "10.240.64.0/24"
+		zone			= "%s"
+		ipv4_cidr_block	= "%s"
 		resource_group	= data.ibm_resource_group.rg.id
 	}
 	resource "ibm_resource_instance" "test-pdns-cr-instance" {
@@ -65,17 +61,14 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 		plan				= "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name		= "New TestCR"
+		name		= "testpdnscustomresolver"
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "Test CR"
+		description = "new test CR - TF"
+		high_availability = false
 		enabled 	= true
 		locations {
 			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
 			enabled		= true
-		}
-		locations {
-			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
-			enabled     = true
 		}
 	}
 	resource "ibm_dns_custom_resolver_forwarding_rule" "dns_custom_resolver_forwarding_rule" {
@@ -91,5 +84,5 @@ func testAccCheckIbmDnsCrForwardingRulesDataSourceConfig(forwardingRuleDescripti
 		instance_id	= ibm_dns_custom_resolver.test.instance_id
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
 	}
-	`, forwardingRuleType, forwardingRuleMatch)
+	`, vpcname, subnetname, zone, cidr, forwardingRuleType, forwardingRuleMatch)
 }
