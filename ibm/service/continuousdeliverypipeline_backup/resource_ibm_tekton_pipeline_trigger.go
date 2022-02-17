@@ -760,25 +760,6 @@ func ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model *continuous
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerManualTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerManualTriggerPropertiesItem) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
 func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdeliverypipelinev2.TriggerScmTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
@@ -825,25 +806,6 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *continuousdel
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerScmTriggerPropertiesItem) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
-	}
-	return modelMap, nil
-}
-
 func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model *continuousdeliverypipelinev2.TriggerTimerTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
@@ -875,25 +837,6 @@ func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model *continuousd
 	}
 	if model.Timezone != nil {
 		modelMap["timezone"] = model.Timezone
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerTimerTriggerPropertiesItem) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }
@@ -930,25 +873,6 @@ func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model *continuou
 			return modelMap, err
 		}
 		modelMap["secret"] = []map[string]interface{}{secretMap}
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerPropertiesItemToMap(model *continuousdeliverypipelinev2.TriggerGenericTriggerPropertiesItem) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.Value != nil {
-		modelMap["value"] = model.Value
-	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
-	}
-	modelMap["type"] = model.Type
-	if model.Path != nil {
-		modelMap["path"] = model.Path
-	}
-	if model.Href != nil {
-		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }
