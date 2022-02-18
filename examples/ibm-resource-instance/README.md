@@ -74,5 +74,4 @@ You need Terraform v1.0.0 installer to execute this example in your account. For
 | plan| The name of the plan type supported by service.| `string` | yes |
 | location | Target location or environment to create the resource instance. | `string` | yes |
 | resource_group | Name of your resource group. | `string` | yes |
-{: caption="Resource input variables" caption-side="top"}
 
