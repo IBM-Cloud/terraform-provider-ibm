@@ -15,7 +15,7 @@ variable "location" {
 }
 
 variable "resource_group" {
-  default = "Default"
+  default = "default"
 }
 
 
