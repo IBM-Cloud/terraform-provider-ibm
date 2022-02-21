@@ -56,12 +56,6 @@ resource "ibm_cos_bucket" "lifecycle_rule_cos" {
     days    = var.archive_days
     type    = var.archive_types
   }
-  expire_rule {
-    rule_id = var.expire_ruleid
-    enable  = true
-    days    = var.expire_days
-    prefix  = var.expire_prefix
-  }
   retention_rule {
     default = var.default_retention
     maximum = var.maximum_retention
@@ -84,12 +78,6 @@ resource "ibm_cos_bucket" "cos_bucket" {
     enable  = true
     prefix  = var.abort_mpu_prefix
     days_after_initiation = var.abort_mpu_days_init
-  }
-  expire_rule {
-    rule_id = var.expire_ruleid
-    enable  = true
-    date    = var.expire_date
-    prefix  = var.expire_prefix
   }
   noncurrent_version_expiration {
     rule_id = var.nc_exp_ruleid
