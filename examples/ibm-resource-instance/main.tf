@@ -21,3 +21,11 @@ resource "ibm_resource_instance" "resource_instance" {
   }
 }
 
+resource "ibm_cos_bucket" "standard-ams03" {
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.resource_instance.id
+  single_site_location = "sjc04"
+  #cross_region_location = var.region
+  storage_class        = var.storage
+}
+
