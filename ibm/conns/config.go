@@ -1761,18 +1761,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	var cloudDatabasesEndpoint string
 
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-	        cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.private.databases.cloud.ibm.com/v5/ibm", c.Region)
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.private.databases.cloud.ibm.com/v5/ibm", c.Region)
 	} else {
-	        cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
 	}
 
 	cloudDatabasesAPI, err := clouddatabasesv5.NewCloudDatabasesV5(&clouddatabasesv5.CloudDatabasesV5Options{
-	        URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
-	        Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
+		Authenticator: authenticator,
 	})
 
 	if err != nil {
-	        session.cloudDatabasesConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
+		session.cloudDatabasesConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
 	}
 
 	session.cloudDatabasesServiceAPI = *cloudDatabasesAPI
