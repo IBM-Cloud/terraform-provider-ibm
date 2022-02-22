@@ -23,6 +23,7 @@ import (
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -209,6 +210,7 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
+	CloudDatabasesV5() (clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -333,6 +335,9 @@ type clientSession struct {
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
+
+	cloudDatabasesConfigErr  error
+	cloudDatabasesServiceAPI clouddatabasesv5.CloudDatabasesV5
 
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
@@ -651,6 +656,11 @@ func (session clientSession) IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1
 // IcdAPI provides IBM Cloud Databases APIs ...
 func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
+}
+
+// CloudDatabasesV5 provides IBM Cloud Databases APIs ...
+func (sess clientSession) CloudDatabasesV5() (clouddatabasesv5.CloudDatabasesV5, error) {
+	return sess.cloudDatabasesServiceAPI, sess.cloudDatabasesConfigErr
 }
 
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
@@ -1747,6 +1757,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.icdConfigErr = fmt.Errorf("[ERROR] Error occured while configuring IBM Cloud Database Services: %q", err)
 	}
 	session.icdServiceAPI = icdAPI
+
+	var cloudDatabasesEndpoint string
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+	        cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.private.databases.cloud.ibm.com/v5/ibm", c.Region)
+	} else {
+	        cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
+	}
+
+	cloudDatabasesAPI, err := clouddatabasesv5.NewCloudDatabasesV5(&clouddatabasesv5.CloudDatabasesV5Options{
+	        URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
+	        Authenticator: authenticator,
+	})
+
+	if err != nil {
+	        session.cloudDatabasesConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
+	}
+
+	session.cloudDatabasesServiceAPI = *cloudDatabasesAPI
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {
