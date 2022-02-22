@@ -186,9 +186,17 @@ func ResourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.Re
 	if err = d.Set("name", property.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if err = d.Set("value", property.Value); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+
+	if *property.Type == "SECURE" {
+		if err = d.Set("value", d.Get("value").(string)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting secure value: %s", err))
+		}
+	} else {
+		if err = d.Set("value", property.Value); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
+		}
 	}
+
 	if err = d.Set("options", property.Options); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting options: %s", err))
 	}
