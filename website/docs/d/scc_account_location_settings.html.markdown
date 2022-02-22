@@ -10,6 +10,7 @@ description: |-
 
 Provides a read-only data source for scc_account_location_settings. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
+~> **NOTE**: exporting out the environmental variable `IBM_CLOUD_SCC_ADMIN_API_ENDPOINT` will help out if the account fails to resolve.
 ## Example usage
 
 ```terraform
