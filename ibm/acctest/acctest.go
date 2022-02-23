@@ -111,6 +111,8 @@ var Pi_dhcp_id string
 var PiCloudConnectionName string
 var PiSAPProfileID string
 var Pi_placement_group_name string
+var PiStoragePool string
+var PiStorageType string
 
 var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
@@ -598,6 +600,16 @@ func init() {
 	if Pi_placement_group_name == "" {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
+	}
+	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
+	if PiStoragePool == "" {
+		PiStoragePool = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_STORAGE_POOL for testing ibm_pi_storage_pool_capacity else it is set to default value 'terraform-test-power'")
+	}
+	PiStorageType = os.Getenv("PI_STORAGE_TYPE")
+	if PiStorageType == "" {
+		PiStorageType = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_STORAGE_TYPE for testing ibm_pi_storage_type_capacity else it is set to default value 'terraform-test-power'")
 	}
 	// Added for resource capture instance testing
 	Pi_capture_storage_image_path = os.Getenv("PI_CAPTURE_STORAGE_IMAGE_PATH")
