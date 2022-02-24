@@ -98,6 +98,7 @@ const (
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
 	isInstancePlacementTarget           = "placement_target"
 	isPlacementTargetPlacementGroup     = "placement_group"
+	isInstanceMetadataServiceEnabled    = "metadata_service_enabled"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -568,6 +569,12 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			isInstanceMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -931,6 +938,11 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+		Enabled: &metadataServiceEnabled,
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1154,6 +1166,11 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+		Enabled: &metadataServiceEnabled,
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1167,6 +1184,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	log.Printf("[INFO] Instance : %s", *instance.ID)
 	d.Set(isInstanceStatus, instance.Status)
+
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -1371,6 +1392,10 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+		Enabled: &metadataServiceEnabled,
+	}
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1738,7 +1763,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
 		d.Set(flex.ResourceGroupName, *instance.ResourceGroup.Name)
 	}
-
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 	if instance.Disks != nil {
 		disks := []map[string]interface{}{}
 		for _, disksItem := range instance.Disks {
@@ -2067,6 +2094,28 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updnetoptions.InstancePatch = instancePatch
 
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange(isInstanceMetadataServiceEnabled) && !d.IsNewResource() {
+		enabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		instancePatchModel := &vpcv1.InstancePatch{
+			MetadataService: &vpcv1.InstanceMetadataServicePatch{
+				Enabled: &enabled,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
 		if err != nil {
 			return err
 		}

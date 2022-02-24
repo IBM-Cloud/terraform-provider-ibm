@@ -47,6 +47,7 @@ resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
   profile = "bc1-2x8"
+  metadata_service_enabled  = false
 
   boot_volume {
     encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
@@ -286,6 +287,7 @@ Review the argument references that you can specify for your resource.
     
   - `image` conflicts with `boot_volume.0.snapshot`  
 - `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `metadata_service_enabled` - (Optional, Boolean) If set to true, enables the metadata service endpoint on the virtual server instance.Default value : **false**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
