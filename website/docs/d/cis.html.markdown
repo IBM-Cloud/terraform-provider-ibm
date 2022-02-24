@@ -22,6 +22,7 @@ data "ibm_cis" "cis_instance" {
 Review the argument references that you can specify for your data source. 
 
 - `name` - (Required, String) The name of a CIS instance.
+- `resource_group_id` - (Optional, String) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
@@ -30,4 +31,5 @@ In addition to the argument reference list, you can access the following attribu
 - `id` - (String) The CRN of your instance.
 - `location` - (String) The location of your instance.
 - `plan` - (String) The service plan for the instance.
-- `status` - (String) The status of your instance.
+* `service` - (String) The service type of the instance.
+* `status` - (String) Status of the resource instance.

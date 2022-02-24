@@ -62,6 +62,8 @@ var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
 var InstanceProfileNameUpdate string
+var IsBareMetalServerProfileName string
+var IsBareMetalServerImage string
 var DedicatedHostProfileName string
 var DedicatedHostGroupID string
 var InstanceDiskProfileName string
@@ -441,6 +443,18 @@ func init() {
 	if InstanceProfileNameUpdate == "" {
 		InstanceProfileNameUpdate = "cx2-4x8"
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
+	}
+
+	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
+	if IsBareMetalServerProfileName == "" {
+		IsBareMetalServerProfileName = "bx2-metal-192x768" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-192x768'")
+	}
+
+	IsBareMetalServerImage = os.Getenv("IS_BARE_METAL_SERVER_IMAGE")
+	if IsBareMetalServerImage == "" {
+		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
 	}
 
 	DedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")

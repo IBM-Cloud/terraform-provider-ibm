@@ -46,9 +46,10 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `policies`:
   - `description`  (String) The description of the IAM trusted profile policy.
-	- `id` - (String) The unique identifier of the IAM trusted profile policy. The ID is composed of `<profile_id>/<profile_policy_id>`. If policy is created by using <profile_id>. The ID is composed of `<iam_id>/<profile_policy_id>` if policy is created by using <iam_id>.
+  - `id` - (String) The unique identifier of the IAM trusted profile policy. The ID is composed of `<profile_id>/<profile_policy_id>`. If policy is created by using <profile_id>. The ID is composed of `<iam_id>/<profile_policy_id>` if policy is created by using <iam_id>.
   - `roles`-  (String) The roles that are assigned to the policy.
   - `resources`- (List of objects) A nested block describes the resources in the policy.
+  
 
     Nested scheme for `resources`:
       - `service`- (String) The service name of the policy definition.
@@ -57,3 +58,10 @@ In addition to all argument reference list, you can access the following attribu
       - `resource_type`- (String) The resource type of the policy definition.
       - `resource`- (String) The resource of the policy definition.
       - `resource_group_id`- (String) The ID of the resource group.
+ 
+  - `resource_tags`- (List of objects) A nested block describes the access management tags in the policy.
+
+    Nested scheme for `resource_tags`:
+      - `name` - (String) The key of an access management tag. 
+      - `value` - (String) The value of an access management tag.
+      - `operator` - (String) Operator of an attribute.

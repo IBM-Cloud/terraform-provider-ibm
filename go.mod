@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20220209072802-61d92fc63fd1
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62
-	github.com/IBM-Cloud/power-go-client v1.1.2
+	github.com/IBM-Cloud/power-go-client v1.1.3
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -45,7 +45,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/jinzhu/copier v0.3.2
 	github.com/kardianos/govendor v1.0.9 // indirect

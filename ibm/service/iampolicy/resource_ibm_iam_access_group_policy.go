@@ -149,6 +149,38 @@ func ResourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Set:      schema.HashString,
 			},
 
+			"resource_tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set access management tags.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of attribute.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value of attribute.",
+						},
+						"operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "stringEquals",
+							Description: "Operator of attribute.",
+						},
+					},
+				},
+			},
+
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the Policy",
+			},
+
 			"version": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -193,6 +225,7 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 
 	policyResource := &iampolicymanagementv1.PolicyResource{
 		Attributes: append(policyOptions.Resources[0].Attributes, *accountIdResourceAttribute),
+		Tags:       flex.SetTags(d),
 	}
 
 	createPolicyOptions := iamPolicyManagementClient.NewCreatePolicyOptions(
@@ -201,6 +234,11 @@ func resourceIBMIAMAccessGroupPolicyCreate(d *schema.ResourceData, meta interfac
 		policyOptions.Roles,
 		[]iampolicymanagementv1.PolicyResource{*policyResource},
 	)
+
+	if desc, ok := d.GetOk("description"); ok {
+		des := desc.(string)
+		createPolicyOptions.Description = &des
+	}
 
 	accessGroupPolicy, res, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 	if err != nil || accessGroupPolicy == nil {
@@ -292,6 +330,11 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	if _, ok := d.GetOk("resource_attributes"); ok {
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(accessGroupPolicy.Resources))
 	}
+
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
+	}
+
 	if len(accessGroupPolicy.Resources) > 0 {
 		if *flex.GetResourceAttribute("serviceType", accessGroupPolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
@@ -299,6 +342,10 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 		if *flex.GetResourceAttribute("serviceType", accessGroupPolicy.Resources[0]) == "platform_service" {
 			d.Set("account_management", true)
 		}
+	}
+
+	if accessGroupPolicy.Description != nil {
+		d.Set("description", *accessGroupPolicy.Description)
 	}
 
 	return nil
@@ -310,7 +357,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
 			return err
@@ -345,6 +392,7 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 
 		policyResource := &iampolicymanagementv1.PolicyResource{
 			Attributes: append(policyOptions.Resources[0].Attributes, *accountIdResourceAttribute),
+			Tags:       flex.SetTags(d),
 		}
 
 		updatePolicyOptions := iamPolicyManagementClient.NewUpdatePolicyOptions(
@@ -355,6 +403,11 @@ func resourceIBMIAMAccessGroupPolicyUpdate(d *schema.ResourceData, meta interfac
 			policyOptions.Roles,
 			[]iampolicymanagementv1.PolicyResource{*policyResource},
 		)
+
+		if desc, ok := d.GetOk("description"); ok {
+			des := desc.(string)
+			updatePolicyOptions.Description = &des
+		}
 
 		_, res, err := iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)
 		if err != nil {
@@ -451,6 +504,7 @@ func importAccessGroupPolicy(d *schema.ResourceData, meta interface{}) (interfac
 
 	resources := flex.FlattenPolicyResource(accessGroupPolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(accessGroupPolicy.Resources)
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(accessGroupPolicy.Resources))
 
 	return resources, resource_attributes, nil
 }
