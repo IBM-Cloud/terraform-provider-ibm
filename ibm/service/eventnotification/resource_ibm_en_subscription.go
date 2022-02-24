@@ -54,7 +54,7 @@ func ResourceIBMEnSubscription() *schema.Resource {
 			"attributes": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Required: true,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"to": {
@@ -312,10 +312,10 @@ func attributesMapToAttributes(attributeMap map[string]interface{}) (en.Subscrip
 		attributesUpdate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
 	}
 
-	if attributeMap["reply_to"] != nil {
-		attributesCreate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
-		attributesUpdate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
-	}
+	// if attributeMap["reply_to"] != nil {
+	// 	attributesCreate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
+	// 	attributesUpdate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
+	// }
 
 	if attributeMap["signing_enabled"] != nil {
 		attributesCreate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
