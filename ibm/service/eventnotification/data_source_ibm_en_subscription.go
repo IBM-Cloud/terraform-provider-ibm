@@ -200,17 +200,17 @@ func enSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attributeMap
 		attributeMap["add_notification_payload"] = attributeItem.AddNotificationPayload
 	}
 
-	if attributeItem.RecipientSelection != nil {
-		attributeMap["recipient_selection"] = attributeItem.RecipientSelection
-	}
+	// if attributeItem.RecipientSelection != nil {
+	// 	attributeMap["recipient_selection"] = attributeItem.RecipientSelection
+	// }
 
-	if attributeItem.ReplyTo != nil {
-		attributeMap["reply_to"] = attributeItem.ReplyTo
-	}
+	// if attributeItem.ReplyTo != nil {
+	// 	attributeMap["reply_to"] = attributeItem.ReplyTo
+	// }
 
-	if attributeItem.To != nil {
-		attributeMap["to"] = attributeItem.To
-	}
+	// if attributeItem.To != nil {
+	// 	attributeMap["to"] = attributeItem.To
+	// }
 
 	if attributeItem.SigningEnabled != nil {
 		attributeMap["signing_enabled"] = attributeItem.SigningEnabled

@@ -225,10 +225,10 @@ func resourceIBMEnTopicRead(context context.Context, d *schema.ResourceData, met
 
 	if result.Sources != nil {
 		sources := []map[string]interface{}{}
-		for _, sourcesItem := range result.Sources {
-			sourcesItemMap := enTopicUpdateSourcesItemToMap(sourcesItem)
-			sources = append(sources, sourcesItemMap)
-		}
+		// for _, sourcesItem := range result.Sources {
+		// 	sourcesItemMap := enTopicUpdateSourcesItemToMap(sourcesItem)
+		// 	sources = append(sources, sourcesItemMap)
+		// }
 		if err = d.Set("sources", sources); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting sources: %s", err))
 		}
@@ -364,40 +364,40 @@ func resourceIBMEnTopicMapToRules(rulesMap map[string]interface{}) en.Rules {
 	return rules
 }
 
-func enTopicUpdateSourcesItemToMap(source en.TopicSourcesItem) map[string]interface{} {
-	sourceMap := map[string]interface{}{}
+// func enTopicUpdateSourcesItemToMap(source en.TopicSourcesItem) map[string]interface{} {
+// 	sourceMap := map[string]interface{}{}
 
-	if source.ID != nil {
-		sourceMap["id"] = source.ID
-	}
+// 	if source.ID != nil {
+// 		sourceMap["id"] = source.ID
+// 	}
 
-	if source.Rules != nil {
-		rules := []map[string]interface{}{}
-		for _, rulesItem := range source.Rules {
-			rulesItemMap := resourceIBMEnTopicRulesToMap(rulesItem)
-			rules = append(rules, rulesItemMap)
-		}
-		sourceMap["rules"] = rules
-	}
+// 	if source.Rules != nil {
+// 		rules := []map[string]interface{}{}
+// 		for _, rulesItem := range source.Rules {
+// 			rulesItemMap := resourceIBMEnTopicRulesToMap(rulesItem)
+// 			rules = append(rules, rulesItemMap)
+// 		}
+// 		sourceMap["rules"] = rules
+// 	}
 
-	return sourceMap
-}
+// 	return sourceMap
+// }
 
-func resourceIBMEnTopicRulesToMap(rules en.RulesGet) map[string]interface{} {
-	rulesMap := map[string]interface{}{}
+// func resourceIBMEnTopicRulesToMap(rules en.RulesGet) map[string]interface{} {
+// 	rulesMap := map[string]interface{}{}
 
-	if rules.Enabled != nil {
-		rulesMap["enabled"] = rules.Enabled
-	}
+// 	if rules.Enabled != nil {
+// 		rulesMap["enabled"] = rules.Enabled
+// 	}
 
-	rulesMap["event_type_filter"] = rules.EventTypeFilter
+// 	rulesMap["event_type_filter"] = rules.EventTypeFilter
 
-	if rules.NotificationFilter != nil {
-		rulesMap["notification_filter"] = rules.NotificationFilter
-	}
+// 	if rules.NotificationFilter != nil {
+// 		rulesMap["notification_filter"] = rules.NotificationFilter
+// 	}
 
-	return rulesMap
-}
+// 	return rulesMap
+// }
 
 func enTopicSubscriptionToMap(subscriptionListItem en.SubscriptionListItem) map[string]interface{} {
 	subscriptionMap := map[string]interface{}{}
