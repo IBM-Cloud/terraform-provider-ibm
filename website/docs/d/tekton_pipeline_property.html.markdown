@@ -33,10 +33,13 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the tekton_pipeline_property.
+* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+
+* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
+  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+
 * `name` - (Required, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-
-* `options` - (Optional, Map) Options for SINGLE_SELECT property type.
 
 * `path` - (Optional, String) property path for INTEGRATION type properties.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.

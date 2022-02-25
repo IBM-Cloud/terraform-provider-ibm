@@ -182,7 +182,6 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
-	diag.FromErr(fmt.Errorf("d.ServiceInstanceID() %s", d.Get("service_instance_id").(string)))
 	replaceTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 	replaceTektonPipelineDefinitionOptions.SetID(parts[1])
 

@@ -27,7 +27,7 @@ func TestAccIBMTektonPipelineDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "toolchain.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "definitions.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "env_properties.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "properties.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "created"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "triggers.#"),

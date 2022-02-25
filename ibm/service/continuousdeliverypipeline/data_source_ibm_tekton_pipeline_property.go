@@ -40,10 +40,18 @@ func DataSourceIBMTektonPipelineProperty() *schema.Resource {
 				Computed:    true,
 				Description: "String format property value.",
 			},
-			"options": &schema.Schema{
-				Type:        schema.TypeMap,
+			"enum": &schema.Schema{
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Options for SINGLE_SELECT property type.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"default": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default option for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -86,8 +94,8 @@ func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
 
-	if err = d.Set("options", property.Options); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting options: %s", err))
+	if err = d.Set("default", property.Default); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}
 
 	if err = d.Set("type", property.Type); err != nil {

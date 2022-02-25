@@ -18,7 +18,8 @@ resource "ibm_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_propert
   trigger_id = var.tekton_pipeline_trigger_property_trigger_id
   name = var.tekton_pipeline_trigger_property_name
   value = var.tekton_pipeline_trigger_property_value
-  options = var.tekton_pipeline_trigger_property_options
+  enum = var.tekton_pipeline_trigger_property_enum
+  default = var.tekton_pipeline_trigger_property_default
   type = var.tekton_pipeline_trigger_property_type
   path = var.tekton_pipeline_trigger_property_path
 }
@@ -28,7 +29,8 @@ resource "ibm_tekton_pipeline_property" "tekton_pipeline_property_instance" {
   pipeline_id = var.tekton_pipeline_property_pipeline_id
   name = var.tekton_pipeline_property_name
   value = var.tekton_pipeline_property_value
-  options = var.tekton_pipeline_property_options
+  enum = var.tekton_pipeline_property_enum
+  default = var.tekton_pipeline_property_default
   type = var.tekton_pipeline_property_type
   path = var.tekton_pipeline_property_path
 }
@@ -44,6 +46,8 @@ resource "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
     properties {
       name = "name"
       value = "value"
+      enum = [ "enum" ]
+      default = "default"
       type = "SECURE"
       path = "path"
       href = "href"

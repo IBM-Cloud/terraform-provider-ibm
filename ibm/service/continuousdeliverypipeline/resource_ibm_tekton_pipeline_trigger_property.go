@@ -52,10 +52,16 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "value"),
 				Description:  "String format property value.",
 			},
-			"options": &schema.Schema{
-				Type:        schema.TypeMap,
+			"enum": &schema.Schema{
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Options for SINGLE_SELECT property type.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"default": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Default option for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
@@ -150,8 +156,11 @@ func ResourceIBMTektonPipelineTriggerPropertyCreate(context context.Context, d *
 	if _, ok := d.GetOk("value"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetValue(d.Get("value").(string))
 	}
-	if _, ok := d.GetOk("options"); ok {
-		createTektonPipelineTriggerPropertiesOptions.SetOptions(d.Get("options").(interface{}))
+	if _, ok := d.GetOk("enum"); ok {
+		createTektonPipelineTriggerPropertiesOptions.SetEnum(d.Get("enum").([]string))
+	}
+	if _, ok := d.GetOk("default"); ok {
+		createTektonPipelineTriggerPropertiesOptions.SetDefault(d.Get("default").(string))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetType(d.Get("type").(string))
@@ -210,8 +219,14 @@ func ResourceIBMTektonPipelineTriggerPropertyRead(context context.Context, d *sc
 	if err = d.Set("value", triggerProperty.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
-	if err = d.Set("options", triggerProperty.Options); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting options: %s", err))
+
+	if triggerProperty.Enum != nil {
+		if err = d.Set("enum", triggerProperty.Enum); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
+		}
+	}
+	if err = d.Set("default", triggerProperty.Default); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}
 	if err = d.Set("type", triggerProperty.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
@@ -252,11 +267,12 @@ func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "trigger_id"))
 	}
-	if d.Get("type").(string) == "SINGLE_SELECT" && d.HasChange("options") {
-		replaceTektonPipelineTriggerPropertyOptions.SetOptions(d.Get("options").(interface{}))
+	if d.HasChange("enum") {
+		replaceTektonPipelineTriggerPropertyOptions.SetEnum(d.Get("enum").([]string))
 		hasChange = true
-	} else if d.HasChange("value") {
-		replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
+	}
+	if d.HasChange("default") {
+		replaceTektonPipelineTriggerPropertyOptions.SetDefault(d.Get("default").(string))
 		hasChange = true
 	}
 	if d.HasChange("path") {

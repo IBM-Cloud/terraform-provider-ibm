@@ -45,10 +45,12 @@ func TestAccIBMTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 	triggerID := fmt.Sprintf("tf_trigger_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	value := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	defaultVar := fmt.Sprintf("tf_default_%d", acctest.RandIntRange(10, 100))
 	typeVar := "SECURE"
 	path := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	valueUpdate := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	defaultVarUpdate := fmt.Sprintf("tf_default_%d", acctest.RandIntRange(10, 100))
 	typeVarUpdate := "SINGLE_SELECT"
 	pathUpdate := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
@@ -58,24 +60,26 @@ func TestAccIBMTektonPipelineTriggerPropertyAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMTektonPipelineTriggerPropertyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID, triggerID, name, value, typeVar, path),
+				Config: testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID, triggerID, name, value, defaultVar, typeVar, path),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMTektonPipelineTriggerPropertyExists("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", conf),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "pipeline_id", pipelineID),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "trigger_id", triggerID),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "name", name),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "value", value),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "default", defaultVar),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "type", typeVar),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "path", path),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID, triggerID, nameUpdate, valueUpdate, typeVarUpdate, pathUpdate),
+				Config: testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID, triggerID, nameUpdate, valueUpdate, defaultVarUpdate, typeVarUpdate, pathUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "pipeline_id", pipelineID),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "trigger_id", triggerID),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "value", valueUpdate),
+					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "default", defaultVarUpdate),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "type", typeVarUpdate),
 					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property", "path", pathUpdate),
 				),
@@ -99,7 +103,7 @@ func testAccCheckIBMTektonPipelineTriggerPropertyConfigBasic(pipelineID string, 
 	`, pipelineID, triggerID)
 }
 
-func testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID string, triggerID string, name string, value string, typeVar string, path string) string {
+func testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID string, triggerID string, name string, value string, defaultVar string, typeVar string, path string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property" {
@@ -107,11 +111,12 @@ func testAccCheckIBMTektonPipelineTriggerPropertyConfig(pipelineID string, trigg
 			trigger_id = "%s"
 			name = "%s"
 			value = "%s"
-			options = "FIXME"
+			enum = "FIXME"
+			default = "%s"
 			type = "%s"
 			path = "%s"
 		}
-	`, pipelineID, triggerID, name, value, typeVar, path)
+	`, pipelineID, triggerID, name, value, defaultVar, typeVar, path)
 }
 
 func testAccCheckIBMTektonPipelineTriggerPropertyExists(n string, obj continuousdeliverypipelinev2.TriggerProperty) resource.TestCheckFunc {

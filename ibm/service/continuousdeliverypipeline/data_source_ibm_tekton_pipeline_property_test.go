@@ -38,6 +38,7 @@ func TestAccIBMTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 	propertyPipelineID := fmt.Sprintf("tf_pipeline_id_%d", acctest.RandIntRange(10, 100))
 	propertyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	propertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
+	propertyDefault := fmt.Sprintf("tf_default_%d", acctest.RandIntRange(10, 100))
 	propertyType := "SECURE"
 	propertyPath := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
@@ -46,14 +47,15 @@ func TestAccIBMTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMTektonPipelinePropertyDataSourceConfig(propertyPipelineID, propertyName, propertyValue, propertyType, propertyPath),
+				Config: testAccCheckIBMTektonPipelinePropertyDataSourceConfig(propertyPipelineID, propertyName, propertyValue, propertyDefault, propertyType, propertyPath),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "property_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "value"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "options"),
+					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "enum.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "default"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "type"),
 					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_property.tekton_pipeline_property", "path"),
 				),
@@ -75,13 +77,14 @@ func testAccCheckIBMTektonPipelinePropertyDataSourceConfigBasic(propertyPipeline
 	`, propertyPipelineID)
 }
 
-func testAccCheckIBMTektonPipelinePropertyDataSourceConfig(propertyPipelineID string, propertyName string, propertyValue string, propertyType string, propertyPath string) string {
+func testAccCheckIBMTektonPipelinePropertyDataSourceConfig(propertyPipelineID string, propertyName string, propertyValue string, propertyDefault string, propertyType string, propertyPath string) string {
 	return fmt.Sprintf(`
 		resource "ibm_tekton_pipeline_property" "tekton_pipeline_property" {
 			pipeline_id = "%s"
 			name = "%s"
 			value = "%s"
-			options = "FIXME"
+			enum = "FIXME"
+			default = "%s"
 			type = "%s"
 			path = "%s"
 		}
@@ -90,5 +93,5 @@ func testAccCheckIBMTektonPipelinePropertyDataSourceConfig(propertyPipelineID st
 			pipeline_id = ibm_tekton_pipeline_property.tekton_pipeline_property.pipeline_id
 			property_name = "debug-pipeline"
 		}
-	`, propertyPipelineID, propertyName, propertyValue, propertyType, propertyPath)
+	`, propertyPipelineID, propertyName, propertyValue, propertyDefault, propertyType, propertyPath)
 }

@@ -31,10 +31,15 @@ variable "tekton_pipeline_trigger_property_value" {
   type        = string
   default     = "https://github.com/IBM/tekton-tutorial.git"
 }
-variable "tekton_pipeline_trigger_property_options" {
+variable "tekton_pipeline_trigger_property_enum" {
   description = "Options for SINGLE_SELECT property type."
-  type        = 
-  default     = 
+  type        = list(string)
+  default     = [ "enum" ]
+}
+variable "tekton_pipeline_trigger_property_default" {
+  description = "Default option for SINGLE_SELECT property type."
+  type        = string
+  default     = "default"
 }
 variable "tekton_pipeline_trigger_property_type" {
   description = "Property type."
@@ -63,10 +68,15 @@ variable "tekton_pipeline_property_value" {
   type        = string
   default     = "https://github.com/IBM/tekton-tutorial.git"
 }
-variable "tekton_pipeline_property_options" {
+variable "tekton_pipeline_property_enum" {
   description = "Options for SINGLE_SELECT property type."
-  type        = 
-  default     = 
+  type        = list(string)
+  default     = [ "enum" ]
+}
+variable "tekton_pipeline_property_default" {
+  description = "Default option for SINGLE_SELECT property type."
+  type        = string
+  default     = "default"
 }
 variable "tekton_pipeline_property_type" {
   description = "Property type."

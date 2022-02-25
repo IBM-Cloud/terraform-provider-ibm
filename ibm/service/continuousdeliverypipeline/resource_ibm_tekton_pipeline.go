@@ -137,7 +137,7 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 					},
 				},
 			},
-			"env_properties": &schema.Schema{
+			"properties": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Tekton pipeline level environment properties.",
@@ -153,10 +153,16 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 							Optional:    true,
 							Description: "String format property value.",
 						},
-						"options": &schema.Schema{
-							Type:        schema.TypeMap,
+						"enum": &schema.Schema{
+							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Options for SINGLE_SELECT property type.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Default option for SINGLE_SELECT property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -247,10 +253,16 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 										Optional:    true,
 										Description: "String format property value.",
 									},
-									"options": &schema.Schema{
-										Type:        schema.TypeMap,
+									"enum": &schema.Schema{
+										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Options for SINGLE_SELECT property type.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Default option for SINGLE_SELECT property type.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -474,7 +486,6 @@ func ResourceIBMTektonPipelineCreate(context context.Context, d *schema.Resource
 	if _, ok := d.GetOk("pipeline_id"); ok {
 		createTektonPipelineOptions.SetID(d.Get("pipeline_id").(string))
 	}
-
 	tektonPipeline, response, err := continuousDeliveryPipelineClient.CreateTektonPipelineWithContext(context, createTektonPipelineOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateTektonPipelineWithContext failed %s\n%s", err, response)
@@ -547,16 +558,16 @@ func ResourceIBMTektonPipelineRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("Error setting definitions: %s", err))
 	}
 
-	envProperties := []map[string]interface{}{}
-	for _, envPropertiesItem := range tektonPipeline.EnvProperties {
-		envPropertiesItemMap, err := ResourceIBMTektonPipelinePropertyToMap(&envPropertiesItem)
+	properties := []map[string]interface{}{}
+	for _, propertiesItem := range tektonPipeline.Properties {
+		propertiesItemMap, err := ResourceIBMTektonPipelinePropertyToMap(&propertiesItem)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		envProperties = append(envProperties, envPropertiesItemMap)
+		properties = append(properties, propertiesItemMap)
 	}
-	if err = d.Set("env_properties", envProperties); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting env_properties: %s", err))
+	if err = d.Set("properties", properties); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(tektonPipeline.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
@@ -696,8 +707,11 @@ func ResourceIBMTektonPipelinePropertyToMap(model *continuousdeliverypipelinev2.
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
@@ -814,8 +828,11 @@ func ResourceIBMTektonPipelineTriggerPropertiesItemToMap(model *continuousdelive
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
@@ -944,8 +961,11 @@ func ResourceIBMTektonPipelineTriggerManualTriggerPropertiesItemToMap(model *con
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
@@ -1020,8 +1040,11 @@ func ResourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *contin
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
@@ -1085,8 +1108,11 @@ func ResourceIBMTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *cont
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {
@@ -1151,8 +1177,11 @@ func ResourceIBMTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model *co
 	if model.Value != nil {
 		modelMap["value"] = model.Value
 	}
-	if model.Options != nil {
-		modelMap["options"] = model.Options
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = model.Default
 	}
 	modelMap["type"] = model.Type
 	if model.Path != nil {

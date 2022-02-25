@@ -61,10 +61,18 @@ func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
 							Computed:    true,
 							Description: "String format property value.",
 						},
-						"options": &schema.Schema{
-							Type:        schema.TypeMap,
+						"enum": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Options for SINGLE_SELECT property type.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default option for SINGLE_SELECT property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -380,7 +388,11 @@ func DataSourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(model *continu
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type

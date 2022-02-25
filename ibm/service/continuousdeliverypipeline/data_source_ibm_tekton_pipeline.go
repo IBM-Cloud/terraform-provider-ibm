@@ -103,7 +103,7 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 					},
 				},
 			},
-			"env_properties": &schema.Schema{
+			"properties": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Tekton pipeline level environment properties.",
@@ -119,10 +119,18 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 							Computed:    true,
 							Description: "String format property value.",
 						},
-						"options": &schema.Schema{
-							Type:        schema.TypeMap,
+						"enum": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Options for SINGLE_SELECT property type.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Default option for SINGLE_SELECT property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -208,10 +216,18 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 										Computed:    true,
 										Description: "String format property value.",
 									},
-									"options": &schema.Schema{
-										Type:        schema.TypeMap,
+									"enum": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "Options for SINGLE_SELECT property type.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Default option for SINGLE_SELECT property type.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -486,18 +502,18 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("Error setting definitions %s", err))
 	}
 
-	envProperties := []map[string]interface{}{}
-	if tektonPipeline.EnvProperties != nil {
-		for _, modelItem := range tektonPipeline.EnvProperties {
+	properties := []map[string]interface{}{}
+	if tektonPipeline.Properties != nil {
+		for _, modelItem := range tektonPipeline.Properties {
 			modelMap, err := DataSourceIBMTektonPipelinePropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			envProperties = append(envProperties, modelMap)
+			properties = append(properties, modelMap)
 		}
 	}
-	if err = d.Set("env_properties", envProperties); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting env_properties %s", err))
+	if err = d.Set("properties", properties); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(tektonPipeline.UpdatedAt)); err != nil {
@@ -612,7 +628,11 @@ func DataSourceIBMTektonPipelinePropertyToMap(model *continuousdeliverypipelinev
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -733,7 +753,11 @@ func DataSourceIBMTektonPipelineTriggerPropertiesItemToMap(model *continuousdeli
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -876,7 +900,11 @@ func DataSourceIBMTektonPipelineTriggerManualTriggerPropertiesItemToMap(model *c
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -963,7 +991,11 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cont
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -1039,7 +1071,11 @@ func DataSourceIBMTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *co
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -1116,7 +1152,11 @@ func DataSourceIBMTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model *
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
 	}
-	if model.Options != nil {
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
+	}
+	if model.Default != nil {
+		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type

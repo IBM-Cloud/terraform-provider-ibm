@@ -41,7 +41,8 @@ resource "tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property_in
   trigger_id = var.tekton_pipeline_trigger_property_trigger_id
   name = var.tekton_pipeline_trigger_property_name
   value = var.tekton_pipeline_trigger_property_value
-  options = var.tekton_pipeline_trigger_property_options
+  enum = var.tekton_pipeline_trigger_property_enum
+  default = var.tekton_pipeline_trigger_property_default
   type = var.tekton_pipeline_trigger_property_type
   path = var.tekton_pipeline_trigger_property_path
 }
@@ -53,7 +54,8 @@ resource "tekton_pipeline_property" "tekton_pipeline_property_instance" {
   pipeline_id = var.tekton_pipeline_property_pipeline_id
   name = var.tekton_pipeline_property_name
   value = var.tekton_pipeline_property_value
-  options = var.tekton_pipeline_property_options
+  enum = var.tekton_pipeline_property_enum
+  default = var.tekton_pipeline_property_default
   type = var.tekton_pipeline_property_type
   path = var.tekton_pipeline_property_path
 }
@@ -148,13 +150,15 @@ data "tekton_pipeline" "tekton_pipeline_instance" {
 | trigger_id | The trigger ID. | `string` | true |
 | name | Property name. | `string` | false |
 | value | String format property value. | `string` | false |
-| options | Options for SINGLE_SELECT property type. | `` | false |
+| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
+| default | Default option for SINGLE_SELECT property type. | `string` | false |
 | type | Property type. | `string` | false |
 | path | property path for INTEGRATION type properties. | `string` | false |
 | pipeline_id | The tekton pipeline ID. | `string` | true |
 | name | Property name. | `string` | false |
 | value | String format property value. | `string` | false |
-| options | Options for SINGLE_SELECT property type. | `` | false |
+| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
+| default | Default option for SINGLE_SELECT property type. | `string` | false |
 | type | Property type. | `string` | false |
 | path | property path for INTEGRATION type properties. | `string` | false |
 | pipeline_id | The tekton pipeline ID. | `string` | true |

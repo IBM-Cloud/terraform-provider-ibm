@@ -26,9 +26,11 @@ resource "ibm_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_propert
 
 Review the argument reference that you can specify for your resource.
 
+* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
+  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `name` - (Optional, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-* `options` - (Optional, Map) Options for SINGLE_SELECT property type.
 * `path` - (Optional, String) property path for INTEGRATION type properties.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 * `pipeline_id` - (Required, Forces new resource, String) The tekton pipeline ID.

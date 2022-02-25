@@ -50,17 +50,6 @@ Nested scheme for **definitions**:
 	* `service_instance_id` - (Required, String) UUID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `enabled` - (Required, Boolean) Flag whether this pipeline enabled.
-* `env_properties` - (Required, List) Tekton pipeline level environment properties.
-Nested scheme for **env_properties**:
-	* `name` - (Required, String) Property name.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-	* `options` - (Optional, Map) Options for SINGLE_SELECT property type.
-	* `path` - (Optional, String) property path for INTEGRATION type properties.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
-	* `type` - (Required, String) Property type.
-	  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`.
-	* `value` - (Optional, String) String format property value.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 * `html_url` - (Required, String) Dashboard URL of this pipeline.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `name` - (Required, String) String.
@@ -71,6 +60,19 @@ Nested scheme for **pipeline_definition**:
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `status` - (Optional, String) The state of pipeline definition status.
 	  * Constraints: Allowable values are: `updated`, `outdated`, `updating`, `failed`.
+* `properties` - (Required, List) Tekton pipeline level environment properties.
+Nested scheme for **properties**:
+	* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+	* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
+	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	* `name` - (Required, String) Property name.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
+	* `path` - (Optional, String) property path for INTEGRATION type properties.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
+	* `type` - (Required, String) Property type.
+	  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`.
+	* `value` - (Optional, String) String format property value.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 * `resource_group_id` - (Required, String) ID.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]+$/`.
 * `status` - (Required, String) Pipeline status.
@@ -103,11 +105,13 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
 	* `properties` - (Optional, List) Trigger properties.
 	Nested scheme for **properties**:
+		* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+		* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
+		  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 		* `href` - (Optional, String) General href URL.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `name` - (Required, String) Property name.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-		* `options` - (Optional, Map) Options for SINGLE_SELECT property type.
 		* `path` - (Optional, String) property path for INTEGRATION type properties.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 		* `type` - (Required, String) Property type.
