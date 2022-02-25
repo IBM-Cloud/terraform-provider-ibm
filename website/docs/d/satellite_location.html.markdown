@@ -42,7 +42,7 @@ In addition to all argument reference list, you can access the following attribu
     * `zone`- The name of the zone
     * `host_labels`- Host Labels
 - `logging_account_id` - (String) The account ID for IBM Cloud Log Analysis with IBM Cloud Log Analysis log forwarding.
-- `managed_from` - (String) The IBM Cloud metro from which the Satellite location is managed. To list available multizone regions, run `ibmcloud ks locations`. such as `wdc04`, `wdc06`, or `lon04`.
+- `managed_from` - (String) The IBM Cloud regions that you can choose from to manage your Satellite location. To list available multizone regions, run `ibmcloud ks locations`. For more information, refer to [supported IBM Cloud locations](https://cloud.ibm.com/docs/satellite?topic=satellite-sat-regions).
 - `resource_group_id` - (String) The ID of the resource group.
 - `resource_group_name` - (String) The name of the resource group.
 - `tags` - (String) List of tags associated with resource instance.
