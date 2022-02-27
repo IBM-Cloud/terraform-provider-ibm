@@ -119,6 +119,20 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
+			isInstanceTemplateAvailablePolicy: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceTemplateHostFailure: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The action to perform if the compute host experiences a failure.",
+						},
+					},
+				},
+			},
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -329,6 +343,13 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			}
 		}
 
+		if instance.AvailabilityPolicy != nil {
+			availabilityPolicyList := make([]map[string]interface{}, 0)
+			availabilityPolicy := map[string]interface{}{}
+			availabilityPolicy[isInstanceTemplateHostFailure] = *instance.AvailabilityPolicy.HostFailure
+			availabilityPolicyList = append(availabilityPolicyList, availabilityPolicy)
+			d.Set(isInstanceTemplateAvailablePolicy, availabilityPolicyList)
+		}
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {
