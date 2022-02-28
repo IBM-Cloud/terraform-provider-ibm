@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnDestination() *schema.Resource {
+func DataSourceIBMEnWebhookDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnDestinationRead,
+		ReadContext: dataSourceIBMEnWebhookDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -110,7 +110,7 @@ func DataSourceIBMEnDestination() *schema.Resource {
 	}
 }
 
-func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnWebhookDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,7 +143,7 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enWebhookDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -167,20 +167,20 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func enDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enWebhookDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enDestinationConfigToMap(result)
+	finalMap := enWebhookDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enWebhookDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enWebhookDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -188,7 +188,7 @@ func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[st
 	return configMap
 }
 
-func enDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
+func enWebhookDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigParams)

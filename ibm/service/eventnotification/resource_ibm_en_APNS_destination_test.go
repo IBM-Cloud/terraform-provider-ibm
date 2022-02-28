@@ -18,7 +18,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnDestinationAllArgs(t *testing.T) {
+func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
 	var config en.Destination
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -29,27 +29,27 @@ func TestAccIBMEnDestinationAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnDestinationDestroy,
+		CheckDestroy: testAccCheckIBMEnAPNSDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnDestinationConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnDestinationExists("ibm_en_destination.en_destination_resource_1", config),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "description", description),
+					testAccCheckIBMEnAPNSDestinationExists("ibm_en_apns_destination.en_destination_resource_apns", config),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "description", description),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnDestinationConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_destination.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_destination.en_destination_resource_1",
+				ResourceName:      "ibm_en_apns_destination.en_destination_resource_apns",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -57,7 +57,7 @@ func TestAccIBMEnDestinationAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnDestinationConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_destination_resource" {
 		name     = "%s"
@@ -66,22 +66,25 @@ func testAccCheckIBMEnDestinationConfig(instanceName, name, description string) 
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_destination" "en_destination_resource_1" {
+	resource "ibm_en_apns_destination" "en_destination_resource_apns" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
-		type        = "webhook"
+		type        = "push_ios"
+		certificate_content_type = "p12"
+        certificate = "${path.module}/cert.p12"
 		description = "%s"
 		config {
 			params {
-				verb = "POST"
-				url  = "https://demo.webhook.com"
+				cert_type = "p12"
+                is_sandbox = true
+                password = "certpassword"
 			}
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
+func testAccCheckIBMEnAPNSDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -114,7 +117,7 @@ func testAccCheckIBMEnDestinationExists(n string, obj en.Destination) resource.T
 	}
 }
 
-func testAccCheckIBMEnDestinationDestroy(s *terraform.State) error {
+func testAccCheckIBMEnAPNSDestinationDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err

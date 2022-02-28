@@ -9,7 +9,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,12 +16,12 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnDestination() *schema.Resource {
+func ResourceIBMEnFCMDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnDestinationCreate,
-		ReadContext:   resourceIBMEnDestinationRead,
-		UpdateContext: resourceIBMEnDestinationUpdate,
-		DeleteContext: resourceIBMEnDestinationDelete,
+		CreateContext: resourceIBMEnFCMDestinationCreate,
+		ReadContext:   resourceIBMEnFCMDestinationRead,
+		UpdateContext: resourceIBMEnFCMDestinationUpdate,
+		DeleteContext: resourceIBMEnFCMDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,10 +37,9 @@ func ResourceIBMEnDestination() *schema.Resource {
 				Description: "The Destintion name.",
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_en_destination", "type"),
-				Description:  "The type of Destination Webhook.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The type of Destination Webhook.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -63,35 +61,13 @@ func ResourceIBMEnDestination() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"sender_id": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The Sender_id value for FCM project.",
 									},
 									"server_key": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "The Server_key value for FCM project.",
-									},
-									"url": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "URL of webhook.",
-									},
-									"verb": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "HTTP method of webhook.",
-									},
-									"custom_headers": {
-										Type:        schema.TypeMap,
-										Optional:    true,
-										Description: "Custom headers (Key-Value pair) for webhook call.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"sensitive_headers": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "List of sensitive headers from custom headers.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								},
 							},
@@ -124,24 +100,7 @@ func ResourceIBMEnDestination() *schema.Resource {
 	}
 }
 
-func ResourceIBMEnDestinationValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "webhook,push_android",
-			MinValueLength:             1,
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_en_destination", Schema: validateSchema}
-	return &resourceValidator
-}
-
-func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnFCMDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -158,7 +117,7 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+		config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 		options.SetConfig(&config)
 	}
 
@@ -169,10 +128,10 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnDestinationRead(context, d, meta)
+	return resourceIBMEnFCMDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -218,7 +177,7 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enFCMDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -241,7 +200,7 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnFCMDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -265,7 +224,7 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 		}
 		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
-			config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+			config := FCMdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -273,13 +232,13 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnDestinationRead(context, d, meta)
+		return resourceIBMEnFCMDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnFCMDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -309,44 +268,17 @@ func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func destinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
+func FCMdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigParams)
-	if destinationtype == "webhook" {
-		if configParams["url"] != nil {
-			params.URL = core.StringPtr(configParams["url"].(string))
-		}
 
-		if configParams["verb"] != nil {
-			params.Verb = core.StringPtr(configParams["verb"].(string))
-		}
-
-		if configParams["custom_headers"] != nil {
-			var customHeaders = make(map[string]string)
-			for k, v := range configParams["custom_headers"].(map[string]interface{}) {
-				customHeaders[k] = v.(string)
-			}
-			params.CustomHeaders = customHeaders
-		}
-
-		if configParams["sensitive_headers"] != nil {
-			sensitiveHeaders := []string{}
-			for _, sensitiveHeadersItem := range configParams["sensitive_headers"].([]interface{}) {
-				sensitiveHeaders = append(sensitiveHeaders, sensitiveHeadersItem.(string))
-			}
-			params.SensitiveHeaders = sensitiveHeaders
-		}
-
+	if configParams["sender_id"] != nil {
+		params.SenderID = core.StringPtr(configParams["sender_id"].(string))
 	}
-	if destinationtype == "push_android" {
 
-		if configParams["sender_id"] != nil {
-			params.SenderID = core.StringPtr(configParams["sender_id"].(string))
-		}
-
-		if configParams["server_key"] != nil {
-			params.ServerKey = core.StringPtr(configParams["server_key"].(string))
-		}
+	if configParams["server_key"] != nil {
+		params.ServerKey = core.StringPtr(configParams["server_key"].(string))
 	}
+
 	destinationConfig := new(en.DestinationConfig)
 	destinationConfig.Params = params
 	return *destinationConfig

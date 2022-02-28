@@ -59,7 +59,7 @@ func DataSourceIBMEnDestinations() *schema.Resource {
 						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Destination type Email/SMS/Webhook.",
+							Description: "Destination type Email/SMS/Webhook/push_android/push_ios.",
 						},
 						"subscription_count": {
 							Type:        schema.TypeInt,

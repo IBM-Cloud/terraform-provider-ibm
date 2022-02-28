@@ -564,12 +564,17 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-			"ibm_en_destination":   eventnotification.DataSourceIBMEnDestination(),
-			"ibm_en_destinations":  eventnotification.DataSourceIBMEnDestinations(),
-			"ibm_en_topic":         eventnotification.DataSourceIBMEnTopic(),
-			"ibm_en_topics":        eventnotification.DataSourceIBMEnTopics(),
-			"ibm_en_subscription":  eventnotification.DataSourceIBMEnSubscription(),
-			"ibm_en_subscriptions": eventnotification.DataSourceIBMEnSubscriptions(),
+			"ibm_en_webhook_destination":  eventnotification.DataSourceIBMEnWebhookDestination(),
+			"ibm_en_fcm_destination":      eventnotification.DataSourceIBMEnFCMDestination(),
+			"ibm_en_apns_destination":     eventnotification.DataSourceIBMEnAPNSDestination(),
+			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
+			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
+			"ibm_en_topics":               eventnotification.DataSourceIBMEnTopics(),
+			"ibm_en_sms_subscription":     eventnotification.DataSourceIBMEnSMSSubscription(),
+			"ibm_en_email_subscription":   eventnotification.DataSourceIBMEnEmailSubscription(),
+			"ibm_en_webhook_subscription": eventnotification.DataSourceIBMEnWebhookSubscription(),
+			"ibm_en_fcm_subscription":     eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscriptions":        eventnotification.DataSourceIBMEnSubscriptions(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -888,9 +893,15 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-			"ibm_en_destination":  eventnotification.ResourceIBMEnDestination(),
-			"ibm_en_topic":        eventnotification.ResourceIBMEnTopic(),
-			"ibm_en_subscription": eventnotification.ResourceIBMEnSubscription(),
+			// "ibm_en_destination":  eventnotification.ResourceIBMEnDestination(),
+			"ibm_en_webhook_destination":  eventnotification.ResourceIBMEnWebhookDestination(),
+			"ibm_en_fcm_destination":      eventnotification.ResourceIBMEnFCMDestination(),
+			"ibm_en_apns_destination":     eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
+			"ibm_en_sms_subscription":     eventnotification.ResourceIBMEnSMSSubscription(),
+			"ibm_en_email_subscription":   eventnotification.ResourceIBMEnEmailSubscription(),
+			"ibm_en_webhook_subscription": eventnotification.ResourceIBMEnWebhookSubscription(),
+			"ibm_en_fcm_subscription":     eventnotification.ResourceIBMEnFCMSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1019,7 +1030,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
 
 				// // Added for Event Notifications
-				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
+				// "ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":               vpc.DataSourceIBMISSubnetValidator(),

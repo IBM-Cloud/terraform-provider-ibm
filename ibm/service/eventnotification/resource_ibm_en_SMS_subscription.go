@@ -13,15 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
-	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMEnSubscription() *schema.Resource {
+func ResourceIBMEnSMSSubscription() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnSubscriptionCreate,
-		ReadContext:   resourceIBMEnSubscriptionRead,
-		UpdateContext: resourceIBMEnSubscriptionUpdate,
-		DeleteContext: resourceIBMEnSubscriptionDelete,
+		CreateContext: resourceIBMEnSMSSubscriptionCreate,
+		ReadContext:   resourceIBMEnSMSSubscriptionRead,
+		UpdateContext: resourceIBMEnSMSSubscriptionUpdate,
+		DeleteContext: resourceIBMEnSMSSubscriptionDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -59,25 +58,9 @@ func ResourceIBMEnSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"to": {
 							Type:        schema.TypeList,
-							Optional:    true,
+							Required:    true,
 							Description: "The phone number to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"add_notification_payload": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Whether to add the notification payload to the email.",
-						},
-						"reply_to": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The email address to reply to.",
-						},
-						"signing_enabled": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Signing webhook attributes.",
 						},
 					},
 				},
@@ -116,7 +99,7 @@ func ResourceIBMEnSubscription() *schema.Resource {
 	}
 }
 
-func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSMSSubscriptionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,7 +117,7 @@ func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.Resource
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	attributes, _ := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+	attributes, _ := SMSattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 	options.SetAttributes(&attributes)
 
 	result, response, err := enClient.CreateSubscriptionWithContext(context, options)
@@ -144,10 +127,10 @@ func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.Resource
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnSubscriptionRead(context, d, meta)
+	return resourceIBMEnSMSSubscriptionRead(context, d, meta)
 }
 
-func resourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSMSSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -227,7 +210,7 @@ func resourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSMSSubscriptionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -250,7 +233,7 @@ func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.Resource
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		_, attributes := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+		_, attributes := SMSattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 		options.SetAttributes(&attributes)
 
 		_, response, err := enClient.UpdateSubscriptionWithContext(context, options)
@@ -258,13 +241,13 @@ func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("UpdateSubscriptionWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnSubscriptionRead(context, d, meta)
+		return resourceIBMEnSMSSubscriptionRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnSubscriptionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnSMSSubscriptionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -294,7 +277,7 @@ func resourceIBMEnSubscriptionDelete(context context.Context, d *schema.Resource
 	return nil
 }
 
-func attributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
+func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
 	attributesCreate := en.SubscriptionCreateAttributes{}
 	attributesUpdate := en.SubscriptionUpdateAttributes{}
 
@@ -306,21 +289,5 @@ func attributesMapToAttributes(attributeMap map[string]interface{}) (en.Subscrip
 		attributesCreate.To = to
 		attributesUpdate.To = to
 	}
-
-	if attributeMap["add_notification_payload"] != nil {
-		attributesCreate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-		attributesUpdate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-	}
-
-	// if attributeMap["reply_to"] != nil {
-	// 	attributesCreate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
-	// 	attributesUpdate.ReplyTo = core.StringPtr(attributeMap["reply_to"].(string))
-	// }
-
-	if attributeMap["signing_enabled"] != nil {
-		attributesCreate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
-		attributesUpdate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
-	}
-
 	return attributesCreate, attributesUpdate
 }
