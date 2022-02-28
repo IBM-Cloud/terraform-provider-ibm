@@ -5,15 +5,18 @@ package continuousdeliverypipeline
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
 )
 
@@ -140,7 +143,12 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("enum"); ok {
-		createTektonPipelinePropertiesOptions.SetEnum(d.Get("enum").([]string))
+		enumInterface := d.Get("enum").([]interface{})
+		enum := make([]string, len(enumInterface))
+		for i, v := range enumInterface {
+			enum[i] = fmt.Sprint(v)
+		}
+		createTektonPipelinePropertiesOptions.SetEnum(enum)
 	}
 	if _, ok := d.GetOk("default"); ok {
 		createTektonPipelinePropertiesOptions.SetDefault(d.Get("default").(string))
@@ -195,6 +203,7 @@ func ResourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.Re
 	if err = d.Set("name", property.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
@@ -242,12 +251,30 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 
-	if d.HasChange("value") {
-		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-		hasChange = true
+	if d.Get("type").(string) == "SECURE" {
+		o, n := d.GetChange("value")
+		mac := hmac.New(sha512.New, []byte(parts[0]))
+		mac.Write([]byte(n.(string)))
+		secureHmac := hex.EncodeToString(mac.Sum(nil))
+		hasEnvChange := !cmp.Equal(secureHmac, o.(string))
+		if hasEnvChange {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			hasChange = true
+		}
+	} else {
+		if d.HasChange("value") {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			hasChange = true
+		}
 	}
+
 	if d.HasChange("enum") {
-		replaceTektonPipelinePropertyOptions.SetEnum(d.Get("enum").([]string))
+		enumInterface := d.Get("enum").([]interface{})
+		enum := make([]string, len(enumInterface))
+		for i, v := range enumInterface {
+			enum[i] = fmt.Sprint(v)
+		}
+		replaceTektonPipelinePropertyOptions.SetEnum(enum)
 		hasChange = true
 	}
 	if d.HasChange("default") {
