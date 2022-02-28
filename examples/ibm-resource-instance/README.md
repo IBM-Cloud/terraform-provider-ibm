@@ -57,7 +57,7 @@ You need Terraform v1.0.0 installer to execute this example in your account. For
 
 | Name | Version |
 |------|---------|
-| terraform |>= 1.0.0, < 2.0.0 |
+| terraform | >=1.0.0, <2.0 |
 
 ## Providers
 
