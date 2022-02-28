@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
+	"github.com/IBM/cloudant-go-sdk/common"
 	"github.com/IBM/go-sdk-core/v5/core"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -409,6 +411,11 @@ func getCloudantClient(d *schema.ResourceData, meta interface{}) (*cloudantv1.Cl
 	})
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error occured while configuring Cloudant service: %q", err)
+	}
+	if client != nil {
+		customHeaders := http.Header{}
+		customHeaders.Add("User-Agent", "cloudant-terraform/"+common.Version)
+		client.SetDefaultHeaders(customHeaders)
 	}
 
 	return client, nil
