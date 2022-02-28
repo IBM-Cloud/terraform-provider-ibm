@@ -14,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
+	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -419,6 +420,7 @@ func GetCloudantClientForUrl(endpoint string, meta interface{}) (*cloudantv1.Clo
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error occured while configuring Cloudant service: %q", err)
 	}
+	client.Service.SetUserAgent("cloudant-terraform/" + version.Version)
 
 	return client, nil
 }
