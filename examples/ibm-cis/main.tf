@@ -430,7 +430,7 @@ resource "ibm_cis_alert" "test" {
  filters =<<FILTERS
   		{}
   		FILTERS
-conditions =<<CONDITIONS
+ conditions =<<CONDITIONS
   		{}
   		CONDITIONS
 
