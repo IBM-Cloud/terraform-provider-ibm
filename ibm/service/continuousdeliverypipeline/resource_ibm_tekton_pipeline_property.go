@@ -47,6 +47,24 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "value"),
 				Description:  "String format property value.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if d.Get("type").(string) == "SECURE" {
+						parts, _ := flex.SepIdParts(d.Id(), "/")
+						mac := hmac.New(sha512.New, []byte(parts[0]))
+						mac.Write([]byte(new))
+						secureHmac := hex.EncodeToString(mac.Sum(nil))
+						hasEnvChange := !cmp.Equal(secureHmac, old)
+						if hasEnvChange {
+							return false
+						}
+						return true
+					} else {
+						if old == new {
+							return true
+						}
+						return false
+					}
+				},
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -251,21 +269,9 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 
-	if d.Get("type").(string) == "SECURE" {
-		o, n := d.GetChange("value")
-		mac := hmac.New(sha512.New, []byte(parts[0]))
-		mac.Write([]byte(n.(string)))
-		secureHmac := hex.EncodeToString(mac.Sum(nil))
-		hasEnvChange := !cmp.Equal(secureHmac, o.(string))
-		if hasEnvChange {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
-	} else {
-		if d.HasChange("value") {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
+	if d.HasChange("value") {
+		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+		hasChange = true
 	}
 
 	if d.HasChange("enum") {
