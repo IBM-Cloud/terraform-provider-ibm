@@ -50,7 +50,9 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
 						parts, _ := flex.SepIdParts(d.Id(), "/")
-						mac := hmac.New(sha512.New, []byte(parts[0]))
+						segs := []string{parts[0], d.Get("name").(string)}
+						secret := strings.Join(segs, ".")
+						mac := hmac.New(sha512.New, []byte(secret))
 						mac.Write([]byte(new))
 						secureHmac := hex.EncodeToString(mac.Sum(nil))
 						hasEnvChange := !cmp.Equal(secureHmac, old)

@@ -68,6 +68,26 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "type"),
 				Description:  "Property type.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if d.Get("type").(string) == "SECURE" {
+						parts, _ := flex.SepIdParts(d.Id(), "/")
+						segs := []string{parts[0], parts[1], d.Get("name").(string)}
+						secret := strings.Join(segs, ".")
+						mac := hmac.New(sha512.New, []byte(secret))
+						mac.Write([]byte(new))
+						secureHmac := hex.EncodeToString(mac.Sum(nil))
+						hasEnvChange := !cmp.Equal(secureHmac, old)
+						if hasEnvChange {
+							return false
+						}
+						return true
+					} else {
+						if old == new {
+							return true
+						}
+						return false
+					}
+				},
 			},
 			"path": &schema.Schema{
 				Type:         schema.TypeString,
