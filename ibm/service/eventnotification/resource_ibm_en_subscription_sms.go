@@ -58,7 +58,7 @@ func ResourceIBMEnSMSSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"to": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "The phone number to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
@@ -277,9 +277,9 @@ func resourceIBMEnSMSSubscriptionDelete(context context.Context, d *schema.Resou
 	return nil
 }
 
-func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
+func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributesSmsAttributes) {
 	attributesCreate := en.SubscriptionCreateAttributes{}
-	attributesUpdate := en.SubscriptionUpdateAttributes{}
+	attributesUpdate := en.SubscriptionUpdateAttributesSmsAttributes{}
 
 	if attributeMap["to"] != nil {
 		to := []string{}
@@ -289,5 +289,6 @@ func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.Subsc
 		attributesCreate.To = to
 		attributesUpdate.To = to
 	}
+
 	return attributesCreate, attributesUpdate
 }

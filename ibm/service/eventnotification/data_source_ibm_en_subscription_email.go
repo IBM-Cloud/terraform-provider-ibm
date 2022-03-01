@@ -59,51 +59,54 @@ func DataSourceIBMEnEmailSubscription() *schema.Resource {
 							Computed:    true,
 							Description: "Whether to add the notification payload to the email.",
 						},
-						// "additional_properties": {
-						// 	Type:        schema.TypeMap,
-						// 	Computed:    true,
-						// 	Optional:    true,
-						// 	Description: "Additional attributes.",
-						// 	Elem: &schema.Schema{
-						// 		Type: schema.TypeString,
-						// 	},
-						// Elem: &schema.Resource{
-						// 	Schema: map[string]*schema.Schema{
-						// 		"reply_to_mail": {
-						// 			Type:        schema.TypeString,
-						// 			Optional:    true,
-						// 			Computed:    true,
-						// 			Description: "The email address to reply to.",
-						// 		},
-						// 		"reply_to_name": {
-						// 			Type:        schema.TypeString,
-						// 			Optional:    true,
-						// 			Computed:    true,
-						// 			Description: "The email address to reply to.",
-						// 		},
-						// 		"from_name": {
-						// 			Type:        schema.TypeString,
-						// 			Optional:    true,
-						// 			Computed:    true,
-						// 			Description: "The email address user name to reply to.",
-						// 		},
-						// 		"to": {
-						// 			Type:        schema.TypeList,
-						// 			Optional:    true,
-						// 			Computed:    true,
-						// 			Description: "The email id in case of smtp_ibm destination type.",
-						// 			Elem:        &schema.Schema{Type: schema.TypeString},
-						// 		},
-						// 		"invited": {
-						// 			Type:        schema.TypeList,
-						// 			Optional:    true,
-						// 			Computed:    true,
-						// 			Description: "The email id in case of smtp_ibm destination type.",
-						// 			Elem:        &schema.Schema{Type: schema.TypeString},
-						// 		},
-						// 	},
-						// },
-						// },
+						"additional_properties": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Optional:    true,
+							Description: "Additional attributes.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"reply_to_mail": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The email address to reply to.",
+									},
+									"reply_to_name": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The email address to reply to.",
+									},
+									"from_name": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The email address user name to reply to.",
+									},
+									"to": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "The email id in case of smtp_ibm destination type.",
+										Elem:        &schema.Schema{Type: schema.TypeMap},
+									},
+									"invited": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "The email id in case of smtp_ibm destination type.",
+										Elem:        &schema.Schema{Type: schema.TypeMap},
+									},
+									"unsubscribed": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "The Email address which should be unsubscribed from smtp_ibm.",
+										Elem:        &schema.Schema{Type: schema.TypeMap},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -155,33 +158,39 @@ func dataSourceIBMEnEmailSubscriptionRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting topic_id: %s", err))
 	}
 
-	// if result.Attributes != nil {
-	// 	if err = d.Set("attributes", enEmailSubscriptionFlattenAttributes(result.Attributes)); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting attributes %s", err))
-	// 	}
-	// }
+	if result.Attributes != nil {
+		if err = d.Set("attributes", enEmailSubscriptionFlattenAttributes(result.Attributes)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting attributes %s", err))
+		}
+	}
 
 	return nil
 }
 
-// func enEmailSubscriptionFlattenAttributes(result en.SubscriptionAttributesIntf) (finalList []map[string]interface{}) {
-// 	finalList = []map[string]interface{}{}
+func enEmailSubscriptionFlattenAttributes(result en.SubscriptionAttributesIntf) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
 
-// 	attributes := result.(*en.SubscriptionAttributes)
+	attributes := result.(*en.SubscriptionAttributes)
 
-// 	finalMap := enEmailSubscriptionToMap(attributes)
-// 	finalList = append(finalList, finalMap)
+	finalMap := enEmailSubscriptionToMap(attributes)
+	finalList = append(finalList, finalMap)
 
-// 	return finalList
-// }
+	return finalList
+}
 
-// func enEmailSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attributeMap map[string]interface{}) {
-// 	attributeMap = map[string]interface{}{}
+func enEmailSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attributeMap map[string]interface{}) {
+	attributeMap = map[string]interface{}{}
 
-// 	// prop := []map[string]interface{}{}
-// 	// b := attributeItem.GetProperties()
-// 	// prop = append(prop, b)
-// 	// attributeMap["additional_properties"] = prop
-// 	attributeMap["additional_properties"] = attributeItem.GetProperties()
-// 	return attributeMap
-// }
+	prop := []map[string]interface{}{}
+
+	b := attributeItem.GetProperties()
+	m := make(map[string]interface{})
+	if len(b) > 0 {
+		for k, v := range b {
+			m[k] = v
+		}
+	}
+	prop = append(prop, m)
+	attributeMap["additional_properties"] = prop
+	return attributeMap
+}

@@ -1,27 +1,26 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription'
+page_title: 'IBM : ibm_en_subscription_sms'
 description: |-
-  Manages Event Notifications subscription.
+  Manages Event Notifications SMS subscription.
 ---
 
-# ibm_en_subscription
+# ibm_en_subscription_sms
 
-Create, update, or delete a subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a SMS subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription" "en_subscription" {
-  instance_guid    = "instance_guid"
-  name           = "name"
-  description    = "description"
-  destination_id = "destinationId"
+resource "ibm_en_subscription_sms" "sms_subscription" {
+  instance_guid    = "my_instance_guid"
+  name           = "News Subscription"
+  description    = "SMS subscription for news alert"
+  destination_id = "sms_destination_id"
   topic_id       = "topicId"
   attributes {
-    add_notification_payload = true
-    signing_enabled          = true
+    to = ["+15678923404", "+19643567389"]
   }
 }
 ```
@@ -43,14 +42,6 @@ Review the argument reference that you can specify for your resource.
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
-  - `add_notification_payload` - (Optional, Boolean) Add notification payload.
-
-  - `signing_enabled` - (Optional, Boolean) Signing enabled.
-
-  - `add_notification_payload` - (Optional, Boolean) Whether to add the notification payload to the email.
-
-  - `reply_to` - (Optional, String) The email address to reply to.
-
   - `to` - (Optional, List) The phone number to send the SMS to.
 
 ## Attribute reference
@@ -60,14 +51,6 @@ In addition to all argument references listed, you can access the following attr
 - `id` - (String) The unique identifier of the `en_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
-
-- `destination_name` - (Required, String) The destination name.
-
-- `destination_type`- (Required, String) The type of destination.
-
-- `topic_name` - (Required, String) Topic name.
-
-- `from` - (Optional, String) From Email ID (it will be displayed only in case of smtp_ibm destination type).
 
 - `updated_at` - (Required, String) Last updated time.
 
@@ -86,5 +69,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription.en_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_sms.sms_en_subscription <instance_guid>/<subscription_id>
 ```

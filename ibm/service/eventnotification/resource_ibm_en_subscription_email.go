@@ -95,11 +95,11 @@ func ResourceIBMEnEmailSubscription() *schema.Resource {
 							Description: "The Email address which should be unsubscribed from smtp_ibm.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
-						"signing_enabled": {
-							Type:        schema.TypeBool,
+						"add": {
+							Type:        schema.TypeList,
 							Optional:    true,
-							Default:     false,
-							Description: "Signing webhook attributes.",
+							Description: "The Email address which should be unsubscribed from smtp_ibm.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -156,7 +156,7 @@ func resourceIBMEnEmailSubscriptionCreate(context context.Context, d *schema.Res
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	attributes, _ := EmailattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+	attributes := EmailattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 	options.SetAttributes(&attributes)
 
 	result, response, err := enClient.CreateSubscriptionWithContext(context, options)
@@ -272,7 +272,7 @@ func resourceIBMEnEmailSubscriptionUpdate(context context.Context, d *schema.Res
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		_, attributes := EmailattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+		attributes := EmailattributesupdateMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 		options.SetAttributes(&attributes)
 
 		_, response, err := enClient.UpdateSubscriptionWithContext(context, options)
@@ -316,41 +316,62 @@ func resourceIBMEnEmailSubscriptionDelete(context context.Context, d *schema.Res
 	return nil
 }
 
-func EmailattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
+func EmailattributesMapToAttributes(attributeMap map[string]interface{}) en.SubscriptionCreateAttributes {
 	attributesCreate := en.SubscriptionCreateAttributes{}
-	attributesUpdate := en.SubscriptionUpdateAttributes{}
-
 	if attributeMap["to"] != nil {
 		to := []string{}
 		for _, toItem := range attributeMap["to"].([]interface{}) {
 			to = append(to, toItem.(string))
 		}
 		attributesCreate.To = to
-		attributesUpdate.To = to
 	}
 
 	if attributeMap["add_notification_payload"] != nil {
 		attributesCreate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-		attributesUpdate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
 	}
 
 	if attributeMap["reply_to_mail"] != nil {
 		attributesCreate.ReplyToMail = core.StringPtr(attributeMap["reply_to_mail"].(string))
-		attributesUpdate.ReplyToMail = core.StringPtr(attributeMap["reply_to_mail"].(string))
 	}
 
 	if attributeMap["reply_to_name"] != nil {
 		attributesCreate.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
-		attributesUpdate.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
 	}
 
 	if attributeMap["from_name"] != nil {
 		attributesCreate.FromName = core.StringPtr(attributeMap["from_name"].(string))
-		attributesUpdate.FromName = core.StringPtr(attributeMap["from_name"].(string))
 	}
 
-	if attributeMap["signing_enabled"] != nil {
-		attributesUpdate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
+	return attributesCreate
+}
+
+func EmailattributesupdateMapToAttributes(attributeMap map[string]interface{}) en.SubscriptionUpdateAttributesEmailUpdateAttributes {
+	updateattributes := en.SubscriptionUpdateAttributesEmailUpdateAttributes{}
+
+	addemail := new(en.EmailUpdateAttributesTo)
+	if attributeMap["add"] != nil {
+		to := []string{}
+		for _, toItem := range attributeMap["add"].([]interface{}) {
+			to = append(to, toItem.(string))
+		}
+		addemail.Add = to
+	}
+	updateattributes.To = addemail
+
+	if attributeMap["add_notification_payload"] != nil {
+		updateattributes.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
+	}
+
+	if attributeMap["reply_to_mail"] != nil {
+		updateattributes.ReplyToMail = core.StringPtr(attributeMap["reply_to_mail"].(string))
+	}
+
+	if attributeMap["reply_to_name"] != nil {
+		updateattributes.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
+	}
+
+	if attributeMap["from_name"] != nil {
+		updateattributes.FromName = core.StringPtr(attributeMap["from_name"].(string))
 	}
 
 	if attributeMap["invited"] != nil {
@@ -358,16 +379,19 @@ func EmailattributesMapToAttributes(attributeMap map[string]interface{}) (en.Sub
 		for _, invitedItem := range attributeMap["invited"].([]interface{}) {
 			invited = append(invited, invitedItem.(string))
 		}
-		attributesUpdate.Invited = invited
+		updateattributes.Invited = invited
 	}
 
-	// if attributeMap["unsubscribed"] != nil {
-	// 	unsubscribe := []string{}
-	// 	for _, unsubscribeItem := range attributeMap["unsubscribed"].([]interface{}) {
-	// 		unsubscribe = append(unsubscribe, unsubscribeItem.(string))
-	// 	}
-	// 	attributesUpdate.Unsubscribed.Remove = unsubscribe
-	// }
+	unsubscribed := new(en.EmailUpdateAttributesUnsubscribed)
+	if attributeMap["unsubscribed"] != nil {
+		unsubscribe := []string{}
+		for _, unsubscribeItem := range attributeMap["unsubscribed"].([]interface{}) {
+			unsubscribe = append(unsubscribe, unsubscribeItem.(string))
+		}
+		addemail.Remove = unsubscribe
+		unsubscribed.Remove = unsubscribe
+	}
+	updateattributes.Unsubscribed = unsubscribed
 
-	return attributesCreate, attributesUpdate
+	return updateattributes
 }

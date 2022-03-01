@@ -70,6 +70,11 @@ func ResourceIBMEnFCMSubscription() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the topic.",
 			},
+			"from": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "From Email ID (it will be displayed only in case of smtp_ibm destination type).",
+			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,

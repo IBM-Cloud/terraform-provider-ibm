@@ -278,9 +278,9 @@ func resourceIBMEnWebhookSubscriptionDelete(context context.Context, d *schema.R
 	return nil
 }
 
-func webhookattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
+func webhookattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributesWebhookAttributes) {
 	attributesCreate := en.SubscriptionCreateAttributes{}
-	attributesUpdate := en.SubscriptionUpdateAttributes{}
+	attributesUpdate := en.SubscriptionUpdateAttributesWebhookAttributes{}
 
 	if attributeMap["signing_enabled"] != nil {
 		attributesCreate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))

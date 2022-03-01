@@ -58,8 +58,7 @@ func DataSourceIBMEnSMSSubscription() *schema.Resource {
 						"additional_properties": {
 							Type:        schema.TypeMap,
 							Computed:    true,
-							Optional:    true,
-							Description: "Additional dynamic attributes to be retrieved from subscription",
+							Description: "Additional attributes.",
 							Elem: &schema.Schema{
 								Type: schema.TypeList,
 							},

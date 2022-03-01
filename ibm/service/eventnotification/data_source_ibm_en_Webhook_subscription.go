@@ -54,11 +54,6 @@ func DataSourceIBMEnWebhookSubscription() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"add_notification_payload": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Whether to add the notification payload to the email.",
-						},
 						"signing_enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -145,22 +140,6 @@ func enWebhookSubscriptionFlattenAttributes(result en.SubscriptionAttributesIntf
 
 func enWebhookSubscriptionToMap(attributeItem *en.SubscriptionAttributes) (attributeMap map[string]interface{}) {
 	attributeMap = map[string]interface{}{}
-
-	if attributeItem.AddNotificationPayload != nil {
-		attributeMap["add_notification_payload"] = attributeItem.AddNotificationPayload
-	}
-
-	// if attributeItem.RecipientSelection != nil {
-	// 	attributeMap["recipient_selection"] = attributeItem.RecipientSelection
-	// }
-
-	// if attributeItem.ReplyTo != nil {
-	// 	attributeMap["reply_to"] = attributeItem.ReplyTo
-	// }
-
-	// if attributeItem.To != nil {
-	// 	attributeMap["to"] = attributeItem.To
-	// }
 
 	if attributeItem.SigningEnabled != nil {
 		attributeMap["signing_enabled"] = attributeItem.SigningEnabled
