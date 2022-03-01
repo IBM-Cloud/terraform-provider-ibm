@@ -116,7 +116,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				Type:         schema.TypeBool,
 				Optional:     true,
 				ForceNew:     true,
-				Default:      true,
+				Computed:     true,
 				RequiredWith: []string{isInstanceDefaultTrustedProfileTarget},
 				Description:  "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
 			},
@@ -504,11 +504,7 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
-		defaultTrustedProfileAutoLink := true
-		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileAutoLink); ok {
 
-			defaultTrustedProfileAutoLink = defaultTrustedProfileAutoLinkIntf.(bool)
-		}
 		target := &vpcv1.TrustedProfileIdentity{}
 		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
 			target.CRN = &defaultTrustedProfiletarget
@@ -516,8 +512,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			target.ID = &defaultTrustedProfiletarget
 		}
 		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
-			Target:   target,
-			AutoLink: &defaultTrustedProfileAutoLink,
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
 		}
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
