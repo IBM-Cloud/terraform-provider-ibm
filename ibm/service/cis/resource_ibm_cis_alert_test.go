@@ -46,14 +46,14 @@ func TestAccIBMCisAlert_Basic(t *testing.T) {
 func testAccCheckCisAlert_basic() string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + `
 	resource "ibm_cis_webhook"  "test"  {
-		cis_id 		= "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
+		cis_id 		= data.ibm_cis.cis.id
 		name 		= "test-Webhooks"
 		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
 		secret		=  "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
 	  }
 	resource "ibm_cis_alert" "test" {
 		depends_on  = [ibm_cis_webhook.test]
-		cis_id      = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
+		cis_id      = data.ibm_cis.cis.id
 		name        = "test-alert-policy"
 		description = "Description alert policy"
 		enabled     = true
@@ -75,14 +75,14 @@ func testAccCheckCisAlert_basic() string {
 func testAccCheckCisAlert_update() string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + `
 	resource "ibm_cis_webhook"  "test"  {
-		cis_id 		= "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
+		cis_id 		= data.ibm_cis.cis.id
 		name 		= "test-Webhooks"
 		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
 		secret		=  "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
 	  }
 	resource "ibm_cis_alert" "test" {
 		depends_on  = [ibm_cis_webhook.test]
-		cis_id      = "crn:v1:staging:public:internet-svcs-ci:global:a/01652b251c3ae2787110a995d8db0135:79c0ce9a-f0fd-4c10-ae78-d890aca7a350::"
+		cis_id      = data.ibm_cis.cis.id
 		name        = "test-alert-policy-update"
 		description = "Description alert policy update"
 		enabled     = true

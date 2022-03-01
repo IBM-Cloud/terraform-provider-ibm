@@ -111,7 +111,7 @@ func dataIBMCISAlertPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	opt := sess.NewGetAlertPoliciesOptions()
 	result, resp, err := sess.GetAlertPolicies(opt)
 	if err != nil {
-		log.Printf("[WARN] List all GLB failed: %v\n", resp)
+		log.Printf("[WARN] List all alerts failed: %v\n", resp)
 		return err
 	}
 	alertList := make([]map[string]interface{}, 0)
