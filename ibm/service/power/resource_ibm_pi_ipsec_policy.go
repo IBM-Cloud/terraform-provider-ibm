@@ -20,12 +20,12 @@ import (
 
 const (
 	// Arguments
-	PIIpSecPolicyAuth        = "pi_policy_authentication"
-	PIIpSecPolicyDH          = "pi_policy_dh_group"
-	PIIpSecPolicyEncryption  = "pi_policy_encryption"
-	PIIpSecPolicyKeyLifetime = "pi_policy_key_lifetime"
-	PIIpSecPolicyName        = "pi_policy_name"
-	PIIpSecPfs               = "pi_policy_pfs"
+	PIIpSecPolicyAuthentication = "pi_policy_authentication"
+	PIIpSecPolicyDH             = "pi_policy_dh_group"
+	PIIpSecPolicyEncryption     = "pi_policy_encryption"
+	PIIpSecPolicyKeyLifetime    = "pi_policy_key_lifetime"
+	PIIpSecPolicyName           = "pi_policy_name"
+	PIIpSecPfs                  = "pi_policy_pfs"
 
 	// Attributes
 	IPSecPolicyID = "policy_id"
@@ -82,7 +82,7 @@ func ResourceIBMPIIPSecPolicy() *schema.Resource {
 			},
 
 			// Optional Attributes
-			PIIpSecPolicyAuth: {
+			PIIpSecPolicyAuthentication: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
@@ -122,7 +122,7 @@ func resourceIBMPIIPSecPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		Pfs:         &pfs,
 	}
 
-	if v, ok := d.GetOk(PIIpSecPolicyAuth); ok {
+	if v, ok := d.GetOk(PIIpSecPolicyAuthentication); ok {
 		body.Authentication = models.IPSECPolicyAuthentication(v.(string))
 	}
 
@@ -172,8 +172,8 @@ func resourceIBMPIIPSecPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 		pfs := d.Get(PIIpSecPfs).(bool)
 		body.Pfs = &pfs
 	}
-	if d.HasChange(PIIpSecPolicyAuth) {
-		authentication := d.Get(PIIpSecPolicyAuth).(string)
+	if d.HasChange(PIIpSecPolicyAuthentication) {
+		authentication := d.Get(PIIpSecPolicyAuthentication).(string)
 		body.Authentication = models.IPSECPolicyAuthentication(authentication)
 	}
 
@@ -216,7 +216,7 @@ func resourceIBMPIIPSecPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(PIIpSecPolicyEncryption, ipsecPolicy.Encryption)
 	d.Set(PIIpSecPolicyKeyLifetime, ipsecPolicy.KeyLifetime)
 	d.Set(PIIpSecPfs, ipsecPolicy.Pfs)
-	d.Set(PIIpSecPolicyAuth, ipsecPolicy.Authentication)
+	d.Set(PIIpSecPolicyAuthentication, ipsecPolicy.Authentication)
 
 	return nil
 }

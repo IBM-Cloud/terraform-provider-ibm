@@ -20,13 +20,13 @@ import (
 
 const (
 	// Arguments
-	PIIkePolicyAuth         = "pi_policy_authentication"
-	PIIkePolicyDH           = "pi_policy_dh_group"
-	PIIkePolicyEncryption   = "pi_policy_encryption"
-	PIIkePolicyKeyLifetime  = "pi_policy_key_lifetime"
-	PIIkePolicyName         = "pi_policy_name"
-	PIIkePolicyPresharedKey = "pi_policy_preshared_key"
-	PIIkePolicyVersion      = "pi_policy_version"
+	PIIpIkePolicyAuthentication = "pi_policy_authentication"
+	PIIkePolicyDH               = "pi_policy_dh_group"
+	PIIkePolicyEncryption       = "pi_policy_encryption"
+	PIIkePolicyKeyLifetime      = "pi_policy_key_lifetime"
+	PIIkePolicyName             = "pi_policy_name"
+	PIIkePolicyPresharedKey     = "pi_policy_preshared_key"
+	PIIkePolicyVersion          = "pi_policy_version"
 
 	// Attributes
 	IkePolicyID = "policy_id"
@@ -89,7 +89,7 @@ func ResourceIBMPIIKEPolicy() *schema.Resource {
 			},
 
 			// Optional Attributes
-			PIIkePolicyAuth: {
+			PIIpIkePolicyAuthentication: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "none",
@@ -131,7 +131,7 @@ func resourceIBMPIIKEPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		Version:      &version,
 	}
 
-	if v, ok := d.GetOk(PIIkePolicyAuth); ok {
+	if v, ok := d.GetOk(PIIpIkePolicyAuthentication); ok {
 		body.Authentication = models.IKEPolicyAuthentication(v.(string))
 	}
 
@@ -185,8 +185,8 @@ func resourceIBMPIIKEPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 		version := int64(d.Get(PIIkePolicyVersion).(int))
 		body.Version = version
 	}
-	if d.HasChange(PIIkePolicyAuth) {
-		authentication := d.Get(PIIkePolicyAuth).(string)
+	if d.HasChange(PIIpIkePolicyAuthentication) {
+		authentication := d.Get(PIIpIkePolicyAuthentication).(string)
 		body.Authentication = models.IKEPolicyAuthentication(authentication)
 	}
 
@@ -229,7 +229,7 @@ func resourceIBMPIIKEPolicyRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set(PIIkePolicyEncryption, ikePolicy.Encryption)
 	d.Set(PIIkePolicyKeyLifetime, ikePolicy.KeyLifetime)
 	d.Set(PIIkePolicyVersion, ikePolicy.Version)
-	d.Set(PIIkePolicyAuth, ikePolicy.Authentication)
+	d.Set(PIIpIkePolicyAuthentication, ikePolicy.Authentication)
 
 	return nil
 }
