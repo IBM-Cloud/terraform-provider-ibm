@@ -5,8 +5,12 @@ package continuousdeliverypipeline
 
 import (
 	"context"
+	"crypto/hmac"
+	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/sha3"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/google/go-cmp/cmp"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
 )
 
@@ -73,7 +78,7 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 						parts, _ := flex.SepIdParts(d.Id(), "/")
 						segs := []string{parts[0], parts[1], d.Get("name").(string)}
 						secret := strings.Join(segs, ".")
-						mac := hmac.New(sha512.New, []byte(secret))
+						mac := hmac.New(sha3.New512, []byte(secret))
 						mac.Write([]byte(new))
 						secureHmac := hex.EncodeToString(mac.Sum(nil))
 						hasEnvChange := !cmp.Equal(secureHmac, old)
