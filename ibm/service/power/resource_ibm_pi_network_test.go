@@ -32,6 +32,9 @@ func TestAccIBMPINetworkbasic(t *testing.T) {
 					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
 				),
 			},
 			{
@@ -42,6 +45,9 @@ func TestAccIBMPINetworkbasic(t *testing.T) {
 						"ibm_pi_network.power_networks", "pi_network_name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network.power_networks", "pi_dns.#", "1"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_gateway"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
 				),
 			},
 		},
@@ -74,9 +80,9 @@ func TestAccIBMPINetworkGatewaybasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network.power_networks", "pi_gateway", "192.168.17.2"),
 					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_ipaddress_range.0.ending_ip_address", "192.168.17.254"),
+						"ibm_pi_network.power_networks", "pi_ipaddress_range.0.pi_ending_ip_address", "192.168.17.254"),
 					resource.TestCheckResourceAttr(
-						"ibm_pi_network.power_networks", "pi_ipaddress_range.0.starting_ip_address", "192.168.17.3"),
+						"ibm_pi_network.power_networks", "pi_ipaddress_range.0.pi_starting_ip_address", "192.168.17.3"),
 				),
 			},
 		},
@@ -178,8 +184,8 @@ func testAccCheckIBMPINetworkConfigGatewayUpdateDNS(name string) string {
 			pi_gateway           = "192.168.17.2"
 			pi_cidr              = "192.168.17.0/24"
 			pi_ipaddress_range {
-				ending_ip_address = "192.168.17.254"
-				starting_ip_address = "192.168.17.3"
+				pi_ending_ip_address = "192.168.17.254"
+				pi_starting_ip_address = "192.168.17.3"
 			}
 		}
 	`, acc.Pi_cloud_instance_id, name)
