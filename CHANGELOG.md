@@ -1,3 +1,7 @@
+# 1.39.1 (Mar02, 2022)
+BUGFIXES:
+* Fix the breaking change of 1.39.0 release for ibm_is_instance resource for force_new on VSI([3619](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3619))
+
 # 1.39.0 (Feb28, 2022)
 Features
 * Support VPC Infrastructure
