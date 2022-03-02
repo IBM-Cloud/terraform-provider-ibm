@@ -34,18 +34,7 @@ func TestAccIBMPINetworkPortAttachbasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network_port_attach.power_network_port_attach", "pi_network_name", name),
 					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "portid"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "public_ip"),
-				),
-			},
-			{
-				Config: testAccCheckIBMPINetworkPortAttachUpdateConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkPortAttachExists("ibm_pi_network_port_attach.power_network_port_attach"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network_port_attach.power_network_port_attach", "pi_network_name", name),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "portid"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "network_port_id"),
 					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "public_ip"),
 				),
 			},
@@ -67,17 +56,7 @@ func TestAccIBMPINetworkPortAttachVlanbasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_pi_network_port_attach.power_network_port_attach", "pi_network_name", name),
 					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "portid"),
-				),
-			},
-			{
-				Config: testAccCheckIBMPINetworkPortAttachVlanUpdateConfig(name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPINetworkPortAttachExists("ibm_pi_network_port_attach.power_network_port_attach"),
-					resource.TestCheckResourceAttr(
-						"ibm_pi_network_port_attach.power_network_port_attach", "pi_network_name", name),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "id"),
-					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "portid"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network_port_attach.power_network_port_attach", "network_port_id"),
 				),
 			},
 		},
@@ -154,34 +133,12 @@ func testAccCheckIBMPINetworkPortAttachConfig(name string) string {
 	`, acc.Pi_cloud_instance_id, acc.Pi_instance_name)
 }
 
-func testAccCheckIBMPINetworkPortAttachUpdateConfig(name string) string {
-	return testAccCheckIBMPINetworkConfig(name) + fmt.Sprintf(`
-	resource "ibm_pi_network_port_attach" "power_network_port_attach" {
-		pi_cloud_instance_id  = "%s"
-		pi_network_name       = ibm_pi_network.power_networks.pi_network_name
-		pi_network_port_description = "IP Reserved for TF Test"
-		pi_instance_id = "%s"
-	}
-	`, acc.Pi_cloud_instance_id, acc.Pi_instance_name)
-}
-
 func testAccCheckIBMPINetworkPortAttachVlanConfig(name string) string {
 	return testAccCheckIBMPINetworkGatewayConfig(name) + fmt.Sprintf(`
 	resource "ibm_pi_network_port_attach" "power_network_port_attach" {
 		pi_cloud_instance_id  = "%s"
 		pi_network_name       = ibm_pi_network.power_networks.pi_network_name
 		pi_network_port_description = "IP Reserved for Test UAT"
-		pi_instance_id = "%s"
-	}
-	`, acc.Pi_cloud_instance_id, acc.Pi_instance_name)
-}
-
-func testAccCheckIBMPINetworkPortAttachVlanUpdateConfig(name string) string {
-	return testAccCheckIBMPINetworkGatewayConfig(name) + fmt.Sprintf(`
-	resource "ibm_pi_network_port_attach" "power_network_port_attach" {
-		pi_cloud_instance_id  = "%s"
-		pi_network_name       = ibm_pi_network.power_networks.pi_network_name
-		pi_network_port_description = "IP Reserved for TF Test"
 		pi_instance_id = "%s"
 	}
 	`, acc.Pi_cloud_instance_id, acc.Pi_instance_name)
