@@ -210,7 +210,7 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
-	CloudDatabasesV5() (clouddatabasesv5.CloudDatabasesV5, error)
+	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -336,8 +336,8 @@ type clientSession struct {
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
 
-	cloudDatabasesConfigErr  error
-	cloudDatabasesServiceAPI clouddatabasesv5.CloudDatabasesV5
+	cloudDatabasesClientErr error
+	cloudDatabasesClient    *clouddatabasesv5.CloudDatabasesV5
 
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
@@ -658,9 +658,9 @@ func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
 }
 
-// CloudDatabasesV5 provides IBM Cloud Databases APIs ...
-func (sess clientSession) CloudDatabasesV5() (clouddatabasesv5.CloudDatabasesV5, error) {
-	return sess.cloudDatabasesServiceAPI, sess.cloudDatabasesConfigErr
+// The IBM Cloud Databases API
+func (session clientSession) CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error) {
+	return session.cloudDatabasesClient, session.cloudDatabasesClientErr
 }
 
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
@@ -1766,16 +1766,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
 	}
 
-	cloudDatabasesAPI, err := clouddatabasesv5.NewCloudDatabasesV5(&clouddatabasesv5.CloudDatabasesV5Options{
+	// Construct an "options" struct for creating the service client.
+	cloudDatabasesClientOptions := &clouddatabasesv5.CloudDatabasesV5Options{
 		URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
 		Authenticator: authenticator,
-	})
-
-	if err != nil {
-		session.cloudDatabasesConfigErr = fmt.Errorf("Error occured while configuring IBM Cloud Database Services: %q", err)
 	}
 
-	session.cloudDatabasesServiceAPI = *cloudDatabasesAPI
+	// Construct the service client.
+	session.cloudDatabasesClient, err = clouddatabasesv5.NewCloudDatabasesV5(cloudDatabasesClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudDatabasesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudDatabasesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudDatabasesClientErr = fmt.Errorf("Error occurred while configuring The IBM Cloud Databases API service: %q", err)
+	}
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {

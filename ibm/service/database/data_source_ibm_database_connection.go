@@ -1407,11 +1407,11 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	d.SetId(DataSourceIBMDatabaseConnectionID(d))
-	connection1 := connection.Connection.(*clouddatabasesv5.Connection)
+	conn := connection.Connection.(*clouddatabasesv5.Connection)
 
 	postgres := []map[string]interface{}{}
-	if connection1.Postgres != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionPostgreSQLConnectionURIToMap(connection1.Postgres)
+	if conn.Postgres != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionPostgreSQLConnectionURIToMap(conn.Postgres)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1422,8 +1422,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	cli := []map[string]interface{}{}
-	if connection1.Cli != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionCliToMap(connection1.Cli)
+	if conn.Cli != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionCliToMap(conn.Cli)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1434,8 +1434,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	rediss := []map[string]interface{}{}
-	if connection1.Rediss != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionRedisConnectionURIToMap(connection1.Rediss)
+	if conn.Rediss != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionRedisConnectionURIToMap(conn.Rediss)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1446,8 +1446,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	https := []map[string]interface{}{}
-	if connection1.HTTPS != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.HTTPS)
+	if conn.HTTPS != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.HTTPS)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1458,8 +1458,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	amqps := []map[string]interface{}{}
-	if connection1.Amqps != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.Amqps)
+	if conn.Amqps != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.Amqps)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1470,8 +1470,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	mqtts := []map[string]interface{}{}
-	if connection1.Mqtts != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.Mqtts)
+	if conn.Mqtts != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.Mqtts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1482,8 +1482,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	stompSsl := []map[string]interface{}{}
-	if connection1.StompSsl != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.StompSsl)
+	if conn.StompSsl != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.StompSsl)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1494,8 +1494,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	grpc := []map[string]interface{}{}
-	if connection1.Grpc != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.Grpc)
+	if conn.Grpc != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.Grpc)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1506,8 +1506,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	mongodb := []map[string]interface{}{}
-	if connection1.Mongodb != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionMongoDbConnectionURIToMap(connection1.Mongodb)
+	if conn.Mongodb != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionMongoDbConnectionURIToMap(conn.Mongodb)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1518,8 +1518,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	opsManager := []map[string]interface{}{}
-	if connection1.OpsManager != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.OpsManager)
+	if conn.OpsManager != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.OpsManager)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1530,8 +1530,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	mysql := []map[string]interface{}{}
-	if connection1.Mysql != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionMySQLConnectionURIToMap(connection1.Mysql)
+	if conn.Mysql != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionMySQLConnectionURIToMap(conn.Mysql)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1542,8 +1542,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	secure := []map[string]interface{}{}
-	if connection1.Secure != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionDataStaxConnectionURIToMap(connection1.Secure)
+	if conn.Secure != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionDataStaxConnectionURIToMap(conn.Secure)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1554,8 +1554,8 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 
 	emp := []map[string]interface{}{}
-	if connection1.Emp != nil {
-		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(connection1.Emp)
+	if conn.Emp != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.Emp)
 		if err != nil {
 			return diag.FromErr(err)
 		}
