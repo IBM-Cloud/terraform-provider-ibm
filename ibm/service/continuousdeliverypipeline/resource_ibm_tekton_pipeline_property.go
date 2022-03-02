@@ -131,7 +131,7 @@ func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "INTEGRATION, SECURE, SINGLE_SELECT, TEXT",
+			AllowedValues:              "INTEGRATION, SECURE, SINGLE_SELECT, TEXT, APPCONFIG",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "path",
