@@ -20,11 +20,11 @@ func TestAccIBMDatabaseConnectionDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMDatabaseConnectionDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_connections.database_connection", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_connections.database_connection", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_connections.database_connection", "user_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_connections.database_connection", "user_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_connections.database_connection", "endpoint_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "endpoint_type"),
 				),
 			},
 		},
@@ -33,7 +33,7 @@ func TestAccIBMDatabaseConnectionDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMDatabaseConnectionDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_database_connections" "database_connection" {
+		data "ibm_database_connection" "database_connection" {
 			id = "crn:v1:bluemix:public:databases-for-postgresql:us-east:a/40ddc34a953a8c02f10987b59085b60e:dd922d62-2fda-43fa-ab1f-9f4d058d5893::"
 			user_type = "database"
 			user_id = "user_id"
