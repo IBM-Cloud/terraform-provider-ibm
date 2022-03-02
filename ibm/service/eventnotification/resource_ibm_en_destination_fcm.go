@@ -191,10 +191,9 @@ func resourceIBMEnFCMDestinationRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_count: %s", err))
 	}
 
-	if result.Config != nil {
-		if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
-		}
+	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
+
 	}
 
 	return nil

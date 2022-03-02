@@ -146,6 +146,10 @@ func resourceIBMEnAPNSDestinationCreate(context context.Context, d *schema.Resou
 
 	options.SetType(d.Get("type").(string))
 
+	options.SetCertificateContentType(d.Get("certificate_content_type").(string))
+
+	certificatetype := d.Get("certificate_content_type").(string)
+
 	if c, ok := d.GetOk("certificate"); ok {
 		path := c.(string)
 		file, err := os.Open(path)
@@ -163,11 +167,6 @@ func resourceIBMEnAPNSDestinationCreate(context context.Context, d *schema.Resou
 		}()
 	}
 
-	if _, ok := d.GetOk("certificate_content_type"); ok {
-		options.SetCertificateContentType(d.Get("certificate_content_type").(string))
-	}
-
-	certificatetype := d.Get("certificate_content_type").(string)
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
@@ -231,14 +230,6 @@ func resourceIBMEnAPNSDestinationRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
 	}
 
-	if err = d.Set("certificate_content_type", result.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting Certificate Content Type: %s", err))
-	}
-
-	if err = d.Set("certificate", result.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting Certificate Content Type: %s", err))
-	}
-
 	if result.Config != nil {
 		err = d.Set("config", enAPNSDestinationFlattenConfig(*result.Config))
 		if err != nil {
@@ -254,10 +245,8 @@ func resourceIBMEnAPNSDestinationRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_count: %s", err))
 	}
 
-	if result.Config != nil {
-		if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
-		}
+	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
 	}
 
 	return nil
@@ -279,12 +268,13 @@ func resourceIBMEnAPNSDestinationUpdate(context context.Context, d *schema.Resou
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	if ok := d.HasChanges("name", "description", "certificate_content_type", "certificate", "config"); ok {
+	if ok := d.HasChanges("name", "description", "certificate", "config"); ok {
 		options.SetName(d.Get("name").(string))
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+
 		certificatetype := d.Get("certificate_content_type").(string)
 
 		if c, ok := d.GetOk("certificate"); ok {
