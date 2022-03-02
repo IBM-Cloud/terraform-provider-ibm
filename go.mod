@@ -11,7 +11,7 @@ require (
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloudant-go-sdk v0.0.36
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/event-notifications-go-admin-sdk v0.0.6
+	github.com/IBM/event-notifications-go-admin-sdk v0.0.7
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.9.1
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
@@ -59,5 +59,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-replace github.com/IBM/event-notifications-go-admin-sdk v0.0.6 => /Users/divyasingh/Documents/Terraform/event-notifications-go-admin-sdk
