@@ -56,7 +56,7 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 						mac := hmac.New(sha3.New512, []byte(secret))
 						mac.Write([]byte(new))
 						secureHmac := hex.EncodeToString(mac.Sum(nil))
-						hasEnvChange := !cmp.Equal(secureHmac, old)
+						hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
 						if hasEnvChange {
 							return false
 						}
