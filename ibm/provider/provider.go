@@ -565,16 +565,16 @@ func Provider() *schema.Provider {
 
 			// // Added for Event Notifications
 			"ibm_en_destination_webhook":  eventnotification.DataSourceIBMEnWebhookDestination(),
-			"ibm_en_destination_fcm":      eventnotification.DataSourceIBMEnFCMDestination(),
-			"ibm_en_destination_apns":     eventnotification.DataSourceIBMEnAPNSDestination(),
+			"ibm_en_destination_android":  eventnotification.DataSourceIBMEnFCMDestination(),
+			"ibm_en_destination_ios":      eventnotification.DataSourceIBMEnAPNSDestination(),
 			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
 			"ibm_en_topics":               eventnotification.DataSourceIBMEnTopics(),
 			"ibm_en_subscription_sms":     eventnotification.DataSourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.DataSourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.DataSourceIBMEnWebhookSubscription(),
-			"ibm_en_subscription_fcm":     eventnotification.DataSourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_apns":    eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_android": eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscriptions":        eventnotification.DataSourceIBMEnSubscriptions(),
 		},
 
@@ -895,14 +895,14 @@ func Provider() *schema.Provider {
 
 			// // Added for Event Notifications
 			"ibm_en_destination_webhook":  eventnotification.ResourceIBMEnWebhookDestination(),
-			"ibm_en_destination_fcm":      eventnotification.ResourceIBMEnFCMDestination(),
-			"ibm_en_destination_apns":     eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_destination_android":  eventnotification.ResourceIBMEnFCMDestination(),
+			"ibm_en_destination_ios":      eventnotification.ResourceIBMEnAPNSDestination(),
 			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_subscription_sms":     eventnotification.ResourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.ResourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.ResourceIBMEnWebhookSubscription(),
-			"ibm_en_subscription_fcm":     eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_subscription_apns":    eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_android": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,

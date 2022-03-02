@@ -1,7 +1,7 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_fcm'
+page_title: 'IBM : ibm_en_subscription_android'
 description: |-
   Get information about a FCM subscription
 ---
@@ -13,9 +13,9 @@ Provides a read-only data source for subscription. You can then reference the fi
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_fcm" "data_fcm_subscription" {
+data "ibm_en_subscription_android" "data_fcm_subscription" {
   instance_guid = "my_instance_id"
-  subscription_id = "fcm_subscription_id"
+  subscription_id = "android_subscription_id"
 }
 ```
 

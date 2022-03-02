@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_apns'
+page_title: 'IBM : ibm_en_subscription_ios'
 description: |-
   Manages Event Notifications IOS subscription.
 ---
 
-# ibm_en_subscription_apns
+# ibm_en_subscription_ios
 
 Create, update, or delete a IOS subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_apns" "apns_subscription" {
+resource "ibm_en_subscription_ios" "ios_subscription" {
   instance_guid    = "my_instance_guid"
-  name           = "APNS Subscription"
+  name           = "IOS Subscription"
   description    = "IOS device subscription"
   destination_id = "destinationId"
   topic_id       = "topicId"
@@ -40,7 +40,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `apns_subscription`.
+- `id` - (String) The unique identifier of the `ios_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -48,7 +48,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_apns` resource by using `id`.
+You can import the `ibm_en_subscription_ios` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -61,5 +61,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_apns.apns_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_ios.ios_subscription <instance_guid>/<subscription_id>
 ```

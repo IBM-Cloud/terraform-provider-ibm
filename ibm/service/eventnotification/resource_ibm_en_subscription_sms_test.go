@@ -34,28 +34,28 @@ func TestAccIBMEnSMSSubscriptionAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnSMSSubscriptionExists("ibm_en_sms_subscription.en_subscription_resource_1", conf),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "name"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "description"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "subscription_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_sms_subscription.en_subscription_resource_1", "attributes.0.to"),
+					testAccCheckIBMEnSMSSubscriptionExists("ibm_en_subscription_sms.en_subscription_resource_1", conf),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "subscription_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.#"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.to"),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnSMSSubscriptionConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_sms_subscription.en_subscription_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_sms_subscription.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_sms_subscription.en_subscription_resource_1",
+				ResourceName:      "ibm_en_subscription_sms.en_subscription_resource_1",
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -79,7 +79,7 @@ func testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description stri
 	}
 	
 	
-	resource "ibm_en_sms_subscription" "en_subscription_resource_1" {
+	resource "ibm_en_subscription_sms" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_resource.guid

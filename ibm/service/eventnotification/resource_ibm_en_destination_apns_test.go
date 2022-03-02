@@ -35,21 +35,21 @@ func TestAccIBMEnAPNSDestinationAllArgs(t *testing.T) {
 				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnAPNSDestinationExists("ibm_en_apns_destination.en_destination_resource_apns", config),
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "type", "push_ios"),
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", description),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnAPNSDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "type", "push_ios"),
-					resource.TestCheckResourceAttr("ibm_en_apns_destination.en_destination_resource_apns", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "type", "push_ios"),
+					resource.TestCheckResourceAttr("ibm_en_destination_ios.en_destination_resource_apns", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_apns_destination.en_destination_resource_apns",
+				ResourceName:      "ibm_en_destination_ios.en_destination_resource_apns",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -66,7 +66,7 @@ func testAccCheckIBMEnAPNSDestinationConfig(instanceName, name, description stri
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_apns_destination" "en_destination_resource_apns" {
+	resource "ibm_en_destination_ios" "en_destination_resource_apns" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "push_ios"

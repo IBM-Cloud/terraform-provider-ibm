@@ -48,7 +48,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_subscription`.
+- `id` - (String) The unique identifier of the `sms_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -56,7 +56,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription` resource by using `id`.
+You can import the `ibm_en_subscription_sms` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -69,5 +69,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_sms.sms_en_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_sms.sms_subscription <instance_guid>/<subscription_id>
 ```

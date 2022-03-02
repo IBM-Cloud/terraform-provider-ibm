@@ -1,19 +1,19 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_fcm'
+page_title: 'IBM : ibm_en_destination_android'
 description: |-
   Get information about a FCM destination
 ---
 
-# ibm_en_destination_fcm
+# ibm_en_destination_android
 
 Provides a read-only data source for FCM destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination_fcm" "fcm_en_destination" {
+data "ibm_en_destination_android" "fcm_en_destination" {
   instance_guid = "my_instance_id"
   destination_id = "fcm_destination_id"
 }
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `fcm_en_destination`.
+- `id` - The unique identifier of the `android_en_destination`.
 
 - `name` - (String) Destination name.
 

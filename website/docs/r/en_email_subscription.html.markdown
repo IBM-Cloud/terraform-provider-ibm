@@ -82,7 +82,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_subscription`.
+- `id` - (String) The unique identifier of the `email_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 

@@ -24,14 +24,14 @@ func TestAccIBMEnFCMDestinationDataSourceBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnFCMDestinationDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "instance_guid"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "type"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "destination_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_destination.en_destination_data_6", "subscription_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "instance_guid"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "destination_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_android.en_destination_data_6", "subscription_count"),
 				),
 			},
 		},
@@ -47,7 +47,7 @@ func testAccCheckIBMEnFCMDestinationDataSourceConfigBasic(instanceName, name, de
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_fcm_destination" "en_destination_datasource_4" {
+	resource "ibm_en_destination_android" "en_destination_datasource_4" {
 		instance_guid = ibm_resource_instance.en_destination_datasource2.guid
 		name        = "%s"
 		type        = "push_android"
@@ -60,9 +60,9 @@ func testAccCheckIBMEnFCMDestinationDataSourceConfigBasic(instanceName, name, de
 		}
 	}
 
-		data "ibm_en_fcm_destination" "en_destination_data_6" {
+		data "ibm_en_destination_android" "en_destination_data_6" {
 			instance_guid = ibm_resource_instance.en_destination_datasource2.guid
-			destination_id = ibm_en_fcm_destination.en_destination_datasource_4.destination_id
+			destination_id = ibm_en_destination_android.en_destination_datasource_4.destination_id
 		}
 	`, instanceName, name, description)
 }

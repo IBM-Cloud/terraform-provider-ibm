@@ -24,14 +24,14 @@ func TestAccIBMEnAPNSDestinationDataSourceBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnAPNSDestinationDataSourceConfigBasic(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "instance_guid"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "type"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "destination_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_apns_destination.en_destination_data_6", "subscription_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "instance_guid"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "destination_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_destination_ios.en_destination_data_6", "subscription_count"),
 				),
 			},
 		},
@@ -47,10 +47,10 @@ func testAccCheckIBMEnAPNSDestinationDataSourceConfigBasic(instanceName, name, d
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_apns_destination" "en_destination_datasource_4" {
+	resource "ibm_en_destination_ios" "en_destination_datasource_4" {
 		instance_guid = ibm_resource_instance.en_destination_datasource2.guid
 		name        = "%s"
-		type        = "webhook"
+		type        = "push_ios"
 		certificate_content_type = "p12"
         certificate = "${path.module}/cert.p12"
 		description = "%s"
@@ -63,9 +63,9 @@ func testAccCheckIBMEnAPNSDestinationDataSourceConfigBasic(instanceName, name, d
 		}
 	}
 
-		data "ibm_en_apns_destination" "en_destination_data_6" {
+		data "ibm_en_destination_ios" "en_destination_data_6" {
 			instance_guid = ibm_resource_instance.en_destination_datasource2.guid
-			destination_id = ibm_en_apns_destination.en_destination_datasource_4.destination_id
+			destination_id = ibm_en_destination_ios.en_destination_datasource_4.destination_id
 		}
 	`, instanceName, name, description)
 }

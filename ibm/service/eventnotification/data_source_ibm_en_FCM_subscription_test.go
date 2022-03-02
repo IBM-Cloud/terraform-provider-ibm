@@ -25,17 +25,17 @@ func TestAccIBMEnFCMSubscriptionDataSourceAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnFCMSubscriptionDataSourceConfig(instanceName, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "subscription_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "description"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "destination_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_en_fcm_subscription.data_subscription_1", "topic_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "subscription_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_androidn.data_subscription_1", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "destination_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_subscription_android.data_subscription_1", "topic_name"),
 				),
 			},
 		},
@@ -57,10 +57,10 @@ func testAccCheckIBMEnFCMSubscriptionDataSourceConfig(instanceName, name, descri
 		description = "tf_topic_description_0455"
 	}
 	
-	resource "ibm_en_fcm_destination" "en_destination_resource_4" {
+	resource "ibm_en_destination_android" "en_destination_resource_4" {
 		instance_guid = ibm_resource_instance.en_subscription_datasource.guid
 		name        = "tf_destination_name_02944"
-		type        = "webhook"
+		type        = "push_android"
 		description = "tf_destinatios_description_0364"
 		config {
 			params {
@@ -70,7 +70,7 @@ func testAccCheckIBMEnFCMSubscriptionDataSourceConfig(instanceName, name, descri
 		}
 	}
 	
-	resource "ibm_en_fcm_subscription" "en_subscription_resource_4" {
+	resource "ibm_en_subscription_android" "en_subscription_resource_4" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_datasource.guid
@@ -78,9 +78,9 @@ func testAccCheckIBMEnFCMSubscriptionDataSourceConfig(instanceName, name, descri
 		destination_id = ibm_en_fcm_destination.en_destination_resource_4.destination_id
 	}
 
-	data "ibm_en_fcm_subscription" "data_subscription_1" {
+	data "ibm_en_subscription_android" "data_subscription_1" {
 		instance_guid     = ibm_resource_instance.en_subscription_datasource.guid
-		subscription_id = ibm_en_fcm_subscription.en_subscription_resource_4.subscription_id
+		subscription_id = ibm_en_subscription_android.en_subscription_resource_4.subscription_id
 	}
 
 	`, instanceName, name, description)

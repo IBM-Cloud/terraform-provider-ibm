@@ -1,19 +1,19 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_fcm'
+page_title: 'IBM : ibm_en_subscription_android'
 description: |-
   Manages Event Notifications Android subscription.
 ---
 
-# ibm_en_subscription_fcm
+# ibm_en_subscription_android
 
 Create, update, or delete a FCM subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_fcm" "fcm_subscription" {
+resource "ibm_en_subscription_android" "android_subscription" {
   instance_guid    = "my_instance_guid"
   name           = "Android Subscription"
   description    = "Android Subscription for Notification"
@@ -41,7 +41,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_subscription`.
+- `id` - (String) The unique identifier of the `android_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -49,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_fcm` resource by using `id`.
+You can import the `ibm_en_subscription_android` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -62,5 +62,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_fcm.fcm_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_android.android_subscription <instance_guid>/<subscription_id>
 ```

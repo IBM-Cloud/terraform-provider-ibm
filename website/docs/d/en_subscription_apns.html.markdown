@@ -1,19 +1,19 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_apns'
+page_title: 'IBM : ibm_en_subscription_ios'
 description: |-
   Get information about a IOS subscription
 ---
 
-# ibm_en_subscription_apns
+# ibm_en_subscription_ios
 
 Provides a read-only data source for APNS subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_apns" "data_apns_subscription" {
+data "ibm_en_subscription_ios" "data_apns_subscription" {
   instance_guid = "my_instance_id"
   subscription_id = "apns_subscription_id"
 }

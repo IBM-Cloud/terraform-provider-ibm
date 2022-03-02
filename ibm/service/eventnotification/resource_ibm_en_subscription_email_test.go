@@ -34,32 +34,32 @@ func TestAccIBMEnEmailSubscriptionAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnEmailSubscriptionConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnEmailSubscriptionExists("ibm_en_email_subscription.en_subscription_resource_1", conf),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "name"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "description"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "subscription_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.0.reply_to_mail"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.0.reply_to_name"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.0.from_name"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.0.add_notification_payload"),
-					resource.TestCheckResourceAttrSet("ibm_en_email_subscription.en_subscription_resource_1", "attributes.0.to"),
+					testAccCheckIBMEnEmailSubscriptionExists("ibm_en_subscription_email.en_subscription_resource_1", conf),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "subscription_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.#"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.reply_to_mail"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.reply_to_name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.from_name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.add_notification_payload"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.to"),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnEmailSubscriptionConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_email_subscription.en_subscription_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_email_subscription.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_email.en_subscription_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_subscription_email.en_subscription_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_email_subscription.en_subscription_resource_1",
+				ResourceName:      "ibm_en_subscription_email.en_subscription_resource_1",
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -83,7 +83,7 @@ func testAccCheckIBMEnEmailSubscriptionConfig(instanceName, name, description st
 	}
 	
 	
-	resource "ibm_en_email_subscription" "en_subscription_resource_1" {
+	resource "ibm_en_subscription_email" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_resource.guid

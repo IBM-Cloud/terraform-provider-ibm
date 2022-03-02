@@ -1,19 +1,19 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_apns'
+page_title: 'IBM : ibm_en_destination_ios'
 description: |-
   Manages Event Notifications IOS destination.
 ---
 
-# ibm_en_destination_apns
+# ibm_en_destination_ios
 
-Create, update, or delete a APNS destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete IOS destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage for P8
 
 ```terraform
-resource "ibm_en_destination_apns" "ios_en_destination" {
+resource "ibm_en_destination_ios" "ios_en_destination" {
   instance_guid = "my_instance_guid"
   name        = "IOS Destination Auth"
   type        = "push_ios"
@@ -34,7 +34,7 @@ resource "ibm_en_destination_apns" "ios_en_destination" {
 ## Example usage for P12
 
 ```terraform
-resource "ibm_en_destination_apns" "ios_en_destination" {
+resource "ibm_en_destination_ios" "ios_en_destination" {
   instance_guid = "my_instance_guid"
   name        = "IOS Destination "
   type        = "push_ios"
@@ -91,7 +91,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `apns_destination`.
+- `id` - (String) The unique identifier of the `ios_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -100,7 +100,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination_apns` resource by using `id`.
+You can import the `ibm_en_destination_ios` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -115,5 +115,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_apns.ios_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_ios.ios_en_destination <instance_guid>/<destination_id>
 ```

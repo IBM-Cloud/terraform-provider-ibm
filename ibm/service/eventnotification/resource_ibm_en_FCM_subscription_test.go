@@ -34,26 +34,26 @@ func TestAccIBMEnFCMSubscriptionAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnFCMSubscriptionConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnFCMSubscriptionExists("ibm_en_subscription.en_subscription_resource_1", conf),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "name"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "description"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("ibm_en_fcm_subscription.en_subscription_resource_1", "subscription_id"),
+					testAccCheckIBMEnFCMSubscriptionExists("ibm_en_subscription_android.en_subscription_resource_1", conf),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_android.en_subscription_resource_1", "subscription_id"),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnFCMSubscriptionConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_fcm_subscription.en_subscription_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_fcm_subscription.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_android.en_subscription_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_subscription_android.en_subscription_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_fcm_subscription.en_subscription_resource_1",
+				ResourceName:      "ibm_en_subscription_android.en_subscription_resource_1",
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -76,7 +76,7 @@ func testAccCheckIBMEnFCMSubscriptionConfig(instanceName, name, description stri
 		description = "tf_topic_description_0235"
 	}
 	
-	resource "ibm_en_fcm_destination" "en_destination_resource_2" {
+	resource "ibm_en_destination_android" "en_destination_resource_2" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
 		name        = "tf_destination_name_02983"
 		type        = "push_android"
@@ -89,12 +89,12 @@ func testAccCheckIBMEnFCMSubscriptionConfig(instanceName, name, description stri
 		}
 	}
 	
-	resource "ibm_en_subscription" "en_subscription_resource_1" {
+	resource "ibm_en_subscription_android" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
-		destination_id = ibm_en_fcm_destination.en_destination_resource_2.destination_id
+		destination_id = ibm_en_destination_android.en_destination_resource_2.destination_id
 	}
 	`, instanceName, name, description)
 }

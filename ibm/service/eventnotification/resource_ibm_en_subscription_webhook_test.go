@@ -34,28 +34,28 @@ func TestAccIBMEnWebhookSubscriptionAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnWebhookSubscriptionConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnWebhookSubscriptionExists("ibm_en_subscription.en_subscription_resource_1", conf),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "name"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "description"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "subscription_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_webhook_subscription.en_subscription_resource_1", "attributes.0.signing_enabled"),
+					testAccCheckIBMEnWebhookSubscriptionExists("ibm_en_subscription_webhook.en_subscription_resource_1", conf),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "subscription_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "attributes.#"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_webhook.en_subscription_resource_1", "attributes.0.signing_enabled"),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnWebhookSubscriptionConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_webhook_subscription.en_subscription_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_webhook_subscription.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_webhook.en_subscription_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_subscription_webhook.en_subscription_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_webhook_subscription.en_subscription_resource_1",
+				ResourceName:      "ibm_en_subscription_webhook.en_subscription_resource_1",
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -78,7 +78,7 @@ func testAccCheckIBMEnWebhookSubscriptionConfig(instanceName, name, description 
 		description = "tf_topic_description_0235"
 	}
 	
-	resource "ibm_en_webhook_destination" "en_destination_resource_2" {
+	resource "ibm_en_destination_webhook" "en_destination_resource_2" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
 		name        = "tf_destination_name_02983"
 		type        = "webhook"
@@ -91,12 +91,12 @@ func testAccCheckIBMEnWebhookSubscriptionConfig(instanceName, name, description 
 		}
 	}
 	
-	resource "ibm_en_webhook_subscription" "en_subscription_resource_1" {
+	resource "ibm_en_subscription_webhook" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
-		destination_id = ibm_en_destination.en_webhook_destination_resource_2.destination_id
+		destination_id = ibm_en_destination_webhook.en_webhook_destination_resource_2.destination_id
 		attributes {
 			signing_enabled          = true
 		}

@@ -34,22 +34,22 @@ func TestAccIBMEnWebhookDestinationAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnWebhookDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnWebhookDestinationExists("ibm_en_webhook_destination.en_destination_resource_1", config),
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "description", description),
+					testAccCheckIBMEnWebhookDestinationExists("ibm_en_destination_webhook.en_destination_resource_1", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "type", "webhook"),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "description", description),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnWebhookDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_webhook_destination.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "type", "webhook"),
+					resource.TestCheckResourceAttr("ibm_en_destination_webhook.en_destination_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_webhook_destination.en_destination_resource_1",
+				ResourceName:      "ibm_en_destination_webhook.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -66,7 +66,7 @@ func testAccCheckIBMEnWebhookDestinationConfig(instanceName, name, description s
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_webhook_destination" "en_destination_resource_1" {
+	resource "ibm_en_destination_webhook" "en_destination_resource_1" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "webhook"

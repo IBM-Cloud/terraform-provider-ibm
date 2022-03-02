@@ -1,19 +1,19 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_apns'
+page_title: 'IBM : ibm_en_destination_ios'
 description: |-
   Get information about a IOS destination
 ---
 
-# _ibm_en_destination_apns
+# _ibm_en_destination_ios
 
 Provides a read-only data source for destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination_apns" "ios_en_destination" {
+data "ibm_en_destination_ios" "ios_en_destination" {
   instance_guid = "my_instance_id"
   destination_id = "ios_destination_id"
 }

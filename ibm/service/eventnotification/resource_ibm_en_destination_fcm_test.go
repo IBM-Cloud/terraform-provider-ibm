@@ -34,22 +34,22 @@ func TestAccIBMEnFCMDestinationAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnFCMDestinationExists("ibm_en_fcm_destination.en_destination_resource_fcm", config),
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "name", name),
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "type", "webhook"),
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "description", description),
+					testAccCheckIBMEnFCMDestinationExists("ibm_en_destination_android.en_destination_resource_fcm", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "webhook"),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", description),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnFCMDestinationConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "type", "push_android"),
-					resource.TestCheckResourceAttr("ibm_en_fcm_destination.en_destination_resource_fcm", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "type", "push_android"),
+					resource.TestCheckResourceAttr("ibm_en_destination_android.en_destination_resource_fcm", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_fcm_destination.en_destination_resource_1",
+				ResourceName:      "ibm_en_destination_android.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -66,7 +66,7 @@ func testAccCheckIBMEnFCMDestinationConfig(instanceName, name, description strin
 		service  = "event-notifications"
 	}
 	
-	resource "ibm_en_fcm_destination" "en_destination_resource_fcm" {
+	resource "ibm_en_destination_android" "en_destination_resource_fcm" {
 		instance_guid = ibm_resource_instance.en_destination_resource.guid
 		name        = "%s"
 		type        = "push_android"
