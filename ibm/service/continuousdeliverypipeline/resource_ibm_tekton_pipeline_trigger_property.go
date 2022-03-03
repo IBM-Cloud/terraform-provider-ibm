@@ -75,8 +75,7 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				Description:  "Property type.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
-						parts, _ := flex.SepIdParts(d.Id(), "/")
-						segs := []string{parts[0], parts[1], d.Get("name").(string)}
+						segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string), d.Get("name").(string)}
 						secret := strings.Join(segs, ".")
 						mac := hmac.New(sha3.New512, []byte(secret))
 						mac.Write([]byte(new))

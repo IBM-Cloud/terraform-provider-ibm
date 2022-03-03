@@ -50,8 +50,7 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				Description:  "String format property value.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
-						parts, _ := flex.SepIdParts(d.Id(), "/")
-						segs := []string{parts[0], d.Get("name").(string)}
+						segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
 						secret := strings.Join(segs, ".")
 						mac := hmac.New(sha3.New512, []byte(secret))
 						mac.Write([]byte(new))
