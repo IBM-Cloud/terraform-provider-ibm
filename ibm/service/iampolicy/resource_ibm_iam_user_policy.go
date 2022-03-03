@@ -148,6 +148,32 @@ func ResourceIBMIAMUserPolicy() *schema.Resource {
 				Set:      schema.HashString,
 			},
 
+			"resource_tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set access management tags.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of attribute.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value of attribute.",
+						},
+						"operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "stringEquals",
+							Description: "Operator of attribute.",
+						},
+					},
+				},
+			},
+
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -201,6 +227,7 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 
 	policyResources := iampolicymanagementv1.PolicyResource{
 		Attributes: append(policyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+		Tags:       flex.SetTags(d),
 	}
 
 	createPolicyOptions := iamPolicyManagementClient.NewCreatePolicyOptions(
@@ -215,10 +242,10 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 		createPolicyOptions.Description = &des
 	}
 
-	userPolicy, _, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
+	userPolicy, resp, err := iamPolicyManagementClient.CreatePolicy(createPolicyOptions)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating user policies: %s, %s", err, resp)
 	}
 
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
@@ -305,6 +332,11 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	if _, ok := d.GetOk("resource_attributes"); ok {
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(userPolicy.Resources))
 	}
+
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
+	}
+
 	if len(userPolicy.Resources) > 0 {
 		if *flex.GetResourceAttribute("serviceType", userPolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
@@ -324,7 +356,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
 			return err
@@ -357,6 +389,7 @@ func resourceIBMIAMUserPolicyUpdate(d *schema.ResourceData, meta interface{}) er
 
 		policyResources := iampolicymanagementv1.PolicyResource{
 			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+			Tags:       flex.SetTags(d),
 		}
 
 		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
@@ -483,5 +516,6 @@ func importUserPolicy(d *schema.ResourceData, meta interface{}) (interface{}, in
 	}
 	resources := flex.FlattenPolicyResource(userPolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(userPolicy.Resources)
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(userPolicy.Resources))
 	return resources, resource_attributes, nil
 }

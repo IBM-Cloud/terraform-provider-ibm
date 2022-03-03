@@ -390,13 +390,13 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 		options := &vpcv1.ListSubnetsOptions{}
 		for {
 			if startSub != "" {
-				options.Start = &start
+				options.Start = &startSub
 			}
 			s, response, err := sess.ListSubnetsWithContext(context, options)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("[ERROR] Error fetching subnets %s\n%s", err, response))
 			}
-			start = flex.GetNext(s.Next)
+			startSub = flex.GetNext(s.Next)
 			allrecsSub = append(allrecsSub, s.Subnets...)
 			if startSub == "" {
 				break
@@ -420,7 +420,7 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 			l[subnetsList] = subnetsInfo
 		}
 
-		// adding pagination support for subnets inside vpc
+		// adding pagination support for sg inside vpc
 
 		startSg := ""
 		allrecsSg := []vpcv1.SecurityGroup{}

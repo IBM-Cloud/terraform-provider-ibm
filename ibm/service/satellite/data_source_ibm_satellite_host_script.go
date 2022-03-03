@@ -43,8 +43,9 @@ func DataSourceIBMSatelliteAttachHostScript() *schema.Resource {
 				Description: "List of labels for the attach host",
 			},
 			"host_provider": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"host_provider", "custom_script"},
 			},
 			"script_dir": {
 				Description: "The directory where the satellite attach host script to be downloaded. Default is home directory",
@@ -61,6 +62,12 @@ func DataSourceIBMSatelliteAttachHostScript() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Attach host script content",
+			},
+			"custom_script": {
+				Description:  "The custom script that has to be appended to generated host script file",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"host_provider", "custom_script"},
 			},
 		},
 	}
@@ -135,25 +142,35 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	for i, line := range lines {
 		if strings.Contains(line, "API_URL=") {
 			i = i + 1
-			if strings.ToLower(hostProvider) == "aws" {
-				lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
-			} else if strings.ToLower(hostProvider) == "ibm" {
-				lines[i] = "subscription-manager refresh\nsubscription-manager repos --enable=*\n"
-			} else if strings.ToLower(hostProvider) == "azure" {
-				lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*microsoft*" -y
+			if script, ok := d.GetOk("custom_script"); ok {
+				lines[i] = script.(string)
+			} else {
+				if strings.ToLower(hostProvider) == "aws" {
+					lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
+				} else if strings.ToLower(hostProvider) == "ibm" {
+					lines[i] = `subscription-manager refresh
+subscription-manager repos --enable rhel-server-rhscl-7-rpms
+subscription-manager repos --enable rhel-7-server-optional-rpms
+subscription-manager repos --enable rhel-7-server-rh-common-rpms
+subscription-manager repos --enable rhel-7-server-supplementary-rpms
+subscription-manager repos --enable rhel-7-server-extras-rpms`
+				} else if strings.ToLower(hostProvider) == "azure" {
+					lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*microsoft*" -y
 yum-config-manager --enable '*'
 yum repolist all
 yum install container-selinux -y
-				`)
-			} else if strings.ToLower(hostProvider) == "google" {
-				lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*" -y
+					`)
+				} else if strings.ToLower(hostProvider) == "google" {
+					lines[i] = fmt.Sprintf(`yum update --disablerepo=* --enablerepo="*" -y
 yum repolist all
 yum install container-selinux -y
 yum install subscription-manager -y
-`)
-			} else {
-				lines[i] = "subscription-manager refresh\nyum update -y\n"
+	`)
+				} else {
+					lines[i] = "subscription-manager refresh\nyum update -y\n"
+				}
 			}
+
 		}
 	}
 

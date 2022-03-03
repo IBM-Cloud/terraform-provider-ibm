@@ -289,6 +289,36 @@ func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_With_Resource_Tags(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicyResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIAMAccessGroupPolicyUpdateResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_tags.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDestroy(s *terraform.State) error {
 	iamPolicyManagementClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -367,7 +397,7 @@ func testAccCheckIBMIAMAccessGroupPolicyBasic(name string) string {
 		resource "ibm_iam_access_group_policy" "policy" {
   			access_group_id = ibm_iam_access_group.accgrp.id
   			roles           = ["Viewer"]
-  			tags            = ["tag1"]
+			tags            = ["tag1"]
 		}
 
 	`, name)
@@ -638,5 +668,48 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceAttributesUpdate(name string) st
 				value    = "messagehub"
 			}
 	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyResourceTags(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+  			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+  			access_group_id = ibm_iam_access_group.accgrp.id
+  			roles           = ["Viewer"]
+			
+			resource_tags {
+				name = "one"
+				value = "terrformupdate"
+			}
+		}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyUpdateResourceTags(name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_access_group" "accgrp" {
+  			name = "%s"
+		}
+
+		resource "ibm_iam_access_group_policy" "policy" {
+  			access_group_id = ibm_iam_access_group.accgrp.id
+  			roles           = ["Viewer"]
+			
+			resource_tags {
+				name = "one"
+				value = "terrformupdate"
+			}
+
+			resource_tags   {
+				name = "two"
+				value = "terrformupdate"
+            }
+		}
 	`, name)
 }

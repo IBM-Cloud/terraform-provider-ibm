@@ -158,6 +158,32 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 				Set:      schema.HashString,
 			},
 
+			"resource_tags": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set access management tags.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name of attribute.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Value of attribute.",
+						},
+						"operator": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "stringEquals",
+							Description: "Operator of attribute.",
+						},
+					},
+				},
+			},
+
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -217,6 +243,7 @@ func resourceIBMIAMTrustedProfilePolicyCreate(d *schema.ResourceData, meta inter
 
 	policyResources := iampolicymanagementv1.PolicyResource{
 		Attributes: append(policyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+		Tags:       flex.SetTags(d),
 	}
 
 	iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
@@ -337,6 +364,11 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 	if _, ok := d.GetOk("resource_attributes"); ok {
 		d.Set("resource_attributes", flex.FlattenPolicyResourceAttributes(trustedProfilePolicy.Resources))
 	}
+
+	if _, ok := d.GetOk("resource_tags"); ok {
+		d.Set("resource_tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
+	}
+
 	if len(trustedProfilePolicy.Resources) > 0 {
 		if *flex.GetResourceAttribute("serviceType", trustedProfilePolicy.Resources[0]) == "service" {
 			d.Set("account_management", false)
@@ -354,7 +386,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 
 func resourceIBMIAMTrustedProfilePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") {
+	if d.HasChange("roles") || d.HasChange("resources") || d.HasChange("resource_attributes") || d.HasChange("account_management") || d.HasChange("description") || d.HasChange("resource_tags") {
 
 		parts, err := flex.IdParts(d.Id())
 		if err != nil {
@@ -401,6 +433,7 @@ func resourceIBMIAMTrustedProfilePolicyUpdate(d *schema.ResourceData, meta inter
 
 		policyResources := iampolicymanagementv1.PolicyResource{
 			Attributes: append(createPolicyOptions.Resources[0].Attributes, *accountIDResourceAttribute),
+			Tags:       flex.SetTags(d),
 		}
 
 		subjectAttribute := &iampolicymanagementv1.SubjectAttribute{
@@ -535,5 +568,6 @@ func importTrustedProfilePolicy(d *schema.ResourceData, meta interface{}) (inter
 	}
 	resources := flex.FlattenPolicyResource(trustedProfilePolicy.Resources)
 	resource_attributes := flex.FlattenPolicyResourceAttributes(trustedProfilePolicy.Resources)
+	d.Set("resource_tags", flex.FlattenPolicyResourceTags(trustedProfilePolicy.Resources))
 	return resources, resource_attributes, nil
 }

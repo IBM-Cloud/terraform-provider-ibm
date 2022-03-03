@@ -66,8 +66,14 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Computed: true,
 			},
 			"name": {
-				Type:     schema.TypeString,
+				Type:       schema.TypeString,
+				Computed:   true,
+				Deprecated: "This value is deprecated in favor of" + helpers.PINetworkName,
+			},
+			"dns": {
+				Type:     schema.TypeSet,
 				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"jumbo": {
 				Type:     schema.TypeBool,
@@ -113,6 +119,9 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 	if networkdata.Name != nil {
 		d.Set("name", networkdata.Name)
+	}
+	if len(networkdata.DNSServers) > 0 {
+		d.Set("dns", networkdata.DNSServers)
 	}
 	d.Set("jumbo", networkdata.Jumbo)
 

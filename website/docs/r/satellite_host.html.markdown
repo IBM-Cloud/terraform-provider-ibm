@@ -75,7 +75,7 @@ Review the argument references that you can specify for your resource.
  - `location` - (Required, String) The name or ID of the Satellite  location.
 - `labels`- (Optional, Array of Strings) The key value pairs to label the host, such as `cpu=4` to describe the host capabilities.
 - `worker_pool` - (Optional, String) The name or ID of the worker pool within the cluster to assign the host to.
-
+`wait_till` - (Optional, String) If this argument is provided this resource will wait until location is normal. Allowed values: `location_normal`
 
 
 ## Attribute reference

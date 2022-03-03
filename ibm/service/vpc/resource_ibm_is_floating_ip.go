@@ -382,7 +382,7 @@ func fipUpdate(d *schema.ResourceData, meta interface{}, id string) error {
 
 	if d.HasChange(isFloatingIPTarget) {
 		target := d.Get(isFloatingIPTarget).(string)
-		floatingIPPatchModel.Target = &vpcv1.FloatingIPPatchTargetNetworkInterfaceIdentity{
+		floatingIPPatchModel.Target = &vpcv1.FloatingIPTargetPatch{
 			ID: &target,
 		}
 		hasChanged = true

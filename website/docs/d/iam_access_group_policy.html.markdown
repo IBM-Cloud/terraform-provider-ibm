@@ -50,9 +50,6 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The unique identifier of the IAM access group policy. The ID is composed of `<ibm_id>/<access_group_policy_id>`.
   - `roles`-  (String) The roles that are assigned to the policy.
   - `resources`- (List of objects) A nested block describes the resources in the policy.
-  
-    Nested scheme for `roles`:
-    - `resources`- (List of objects) A nested block describes the resources in the policy.
 
       Nested scheme for `resources`:
       - `service` - (String) The service name of the policy definition. 
@@ -63,3 +60,9 @@ In addition to all argument reference list, you can access the following attribu
       - `resource_instance_id`- (String) The ID of resource instance of the policy definition.
       - `service_type`- (String) The service type of the policy definition.
 
+  - `resource_tags`- (List of objects) A nested block describes the access management tags in the policy.
+    
+    Nested scheme for `resource_tags`:
+    - `name` - (String) The key of an access management tag. 
+    - `value` - (String) The value of an access management tag.
+    - `operator` - (String) Operator of an attribute.

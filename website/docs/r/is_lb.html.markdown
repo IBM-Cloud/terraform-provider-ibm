@@ -61,7 +61,7 @@ Review the argument references that you can specify for your resource.
 - `route_mode` - (Optional, Forces new resource, Bool) Indicates whether route mode is enabled for this load balancer.
   ~> **NOTE:** Currently, public load balancers are not supported with `route_mode` enabled.
 - `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
-- `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
+- `subnets` - (Required, Forces new resource, List) List of the subnets IDs to connect to the load balancer.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your load balancer. Tags can help you find the load balancer more easily later.
 - `type` - (Optional, Forces new resource, String) The type of the load balancer. Default value is `public`. Supported values are `public` and `private`.
 
