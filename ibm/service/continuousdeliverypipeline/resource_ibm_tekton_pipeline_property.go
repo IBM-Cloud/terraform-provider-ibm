@@ -271,27 +271,33 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 
-	if d.HasChange("value") {
-		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-		hasChange = true
+	if d.HasChange("name") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
 	}
 
-	if d.HasChange("enum") {
-		enumInterface := d.Get("enum").([]interface{})
-		enum := make([]string, len(enumInterface))
-		for i, v := range enumInterface {
-			enum[i] = fmt.Sprint(v)
+	if d.Get("type").(string) == "INTEGRATION" {
+		if d.HasChange("value") || d.HasChange("path") {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
+			hasChange = true
 		}
-		replaceTektonPipelinePropertyOptions.SetEnum(enum)
-		hasChange = true
-	}
-	if d.HasChange("default") {
-		replaceTektonPipelinePropertyOptions.SetDefault(d.Get("default").(string))
-		hasChange = true
-	}
-	if d.HasChange("path") {
-		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
-		hasChange = true
+	} else if d.Get("type").(string) == "SINGLE_SELECT" {
+		if d.HasChange("enum") || d.HasChange("default") {
+			enumInterface := d.Get("enum").([]interface{})
+			enum := make([]string, len(enumInterface))
+			for i, v := range enumInterface {
+				enum[i] = fmt.Sprint(v)
+			}
+			replaceTektonPipelinePropertyOptions.SetEnum(enum)
+			replaceTektonPipelinePropertyOptions.SetDefault(d.Get("default").(string))
+			hasChange = true
+		}
+	} else {
+		if d.HasChange("value") {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			hasChange = true
+		}
 	}
 
 	if hasChange {
