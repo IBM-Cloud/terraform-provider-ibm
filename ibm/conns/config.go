@@ -730,7 +730,7 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 			}
 		}
 
-		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
+		kpClient, err := kp.New(*clientConfig, DefaultTransport())
 		if err != nil {
 			sess.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 		}
@@ -1284,7 +1284,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			Verbose: kp.VerboseFailOnly,
 		}
 	}
-	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
+	kpAPIclient, err := kp.New(options, DefaultTransport())
 	if err != nil {
 		session.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 	}
