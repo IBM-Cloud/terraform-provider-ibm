@@ -921,10 +921,13 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription": eventnotification.ResourceIBMEnSubscription(),
 
 			// Toolchain
-			"ibm_toolchain":                 ibmtoolchainapi.ResourceIbmToolchain(),
-			"ibm_toolchain_integration":     ibmtoolchainapi.ResourceIbmToolchainIntegration(),
-			"ibm_toolchain_tool_keyprotect": ibmtoolchainapi.ResourceIbmToolchainToolKeyprotect(),
-			"ibm_toolchain_tool_git":        ibmtoolchainapi.ResourceIbmToolchainToolGit(),
+			"ibm_toolchain":                  ibmtoolchainapi.ResourceIbmToolchain(),
+			"ibm_toolchain_integration":      ibmtoolchainapi.ResourceIbmToolchainIntegration(),
+			"ibm_toolchain_tool_keyprotect":  ibmtoolchainapi.ResourceIbmToolchainToolKeyprotect(),
+			"ibm_toolchain_tool_git":         ibmtoolchainapi.ResourceIbmToolchainToolGit(),
+			"ibm_toolchain_tool_custom":      ibmtoolchainapi.ResourceIbmToolchainToolCustom(),
+			"ibm_toolchain_tool_artifactory": ibmtoolchainapi.ResourceIbmToolchainToolArtifactory(),
+			"ibm_toolchain_tool_pipeline":    ibmtoolchainapi.ResourceIbmToolchainToolPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,

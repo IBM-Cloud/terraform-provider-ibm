@@ -16,12 +16,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/ibmtoolchainapiv2"
 )
 
-func ResourceIbmToolchainToolGit() *schema.Resource {
+func ResourceIbmToolchainToolArtifactory() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainToolGitCreate,
-		ReadContext:   ResourceIbmToolchainToolGitRead,
-		UpdateContext: ResourceIbmToolchainToolGitUpdate,
-		DeleteContext: ResourceIbmToolchainToolGitDelete,
+		CreateContext: ResourceIbmToolchainToolArtifactoryCreate,
+		ReadContext:   ResourceIbmToolchainToolArtifactoryRead,
+		UpdateContext: ResourceIbmToolchainToolArtifactoryUpdate,
+		DeleteContext: ResourceIbmToolchainToolArtifactoryDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,37 +30,61 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"git_provider": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
 			"parameters": &schema.Schema{
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"repo_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.",
 						},
-						"action": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+						"dashboard_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL that you want to navigate to when you click the Artifactory integration tile.",
 						},
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Choose the type of repository for your Artifactory integration.",
 						},
-						"enable_traceability": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
+						"user_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the User ID or email for your Artifactory repository.",
 						},
-						"has_issues": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
+						"token": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the API key for your Artifactory repository.",
+						},
+						"release_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Artifactory release repository.",
+						},
+						"mirror_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+						},
+						"snapshot_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Artifactory snapshot repository.",
+						},
+						"repository_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the name of your artifactory repository where your docker images are located.",
+						},
+						"repository_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL of your artifactory repository where your docker images are located.",
 						},
 					},
 				},
@@ -98,7 +122,7 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolArtifactoryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ibmToolchainApiClient, err := meta.(conns.ClientSession).IbmToolchainApiV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,12 +130,10 @@ func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.Resour
 
 	createServiceInstanceOptions := &ibmtoolchainapiv2.CreateServiceInstanceOptions{}
 
+	createServiceInstanceOptions.SetServiceID("artifactory")
 	createServiceInstanceOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	if _, ok := d.GetOk("git_provider"); ok {
-		createServiceInstanceOptions.SetServiceID(d.Get("git_provider").(string))
-	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parameters, err := ResourceIbmToolchainToolGitMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIbmToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -121,7 +143,7 @@ func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.Resour
 		// TODO: Add code to handle map container: ParametersReferences
 	}
 	if _, ok := d.GetOk("container"); ok {
-		container, err := ResourceIbmToolchainToolGitMapToContainer(d.Get("container.0").(map[string]interface{}))
+		container, err := ResourceIbmToolchainToolArtifactoryMapToContainer(d.Get("container.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -136,10 +158,10 @@ func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.Resour
 
 	d.SetId(*serviceResponse.InstanceID)
 
-	return ResourceIbmToolchainToolGitRead(context, d, meta)
+	return ResourceIbmToolchainToolArtifactoryRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolGitRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolArtifactoryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ibmToolchainApiClient, err := meta.(conns.ClientSession).IbmToolchainApiV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -164,18 +186,21 @@ func ResourceIbmToolchainToolGitRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	if serviceResponse.Parameters != nil {
-		parametersMap, err := ResourceIbmToolchainToolGitParametersToMap(serviceResponse.Parameters)
+		parametersMap, err := ResourceIbmToolchainToolArtifactoryParametersToMap(serviceResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		oldParams := d.Get("parameters.0").(map[string]interface{})
-		parametersMap["action"] = oldParams["action"]
+		if parametersMap["token"] == "****" {
+			parametersMap["token"] = oldParams["token"]
+		}
+
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
 	}
 	if serviceResponse.Container != nil {
-		containerMap, err := ResourceIbmToolchainToolGitContainerToMap(serviceResponse.Container)
+		containerMap, err := ResourceIbmToolchainToolArtifactoryContainerToMap(serviceResponse.Container)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -190,7 +215,7 @@ func ResourceIbmToolchainToolGitRead(context context.Context, d *schema.Resource
 	return nil
 }
 
-func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolArtifactoryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ibmToolchainApiClient, err := meta.(conns.ClientSession).IbmToolchainApiV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -198,6 +223,7 @@ func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.Resour
 
 	patchServiceInstanceOptions := &ibmtoolchainapiv2.PatchServiceInstanceOptions{}
 
+	patchServiceInstanceOptions.SetServiceID("artifactory")
 	patchServiceInstanceOptions.SetServiceInstanceID(d.Id())
 
 	hasChange := false
@@ -206,29 +232,18 @@ func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
-	if d.HasChange("git_provider") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "git_provider"))
-	}
 	if d.HasChange("container") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "container"))
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolGitMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIbmToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		patchServiceInstanceOptions.SetParameters(parameters)
 		hasChange = true
 	}
-	// if d.HasChange("parameters.0.has_issues") {
-	// 	modelMap := make(map[string]interface{})
-	// 	modelMap["has_issues"] = d.Get("parameters.0.has_issues").(bool)
-	// 	patchServiceInstanceOptions.SetParameters(modelMap)
-	// 	hasChange = true
-	// }
-
 	if d.HasChange("parameters_references") {
 		// TODO: handle ParametersReferences of type TypeMap -- not primitive, not model
 		hasChange = true
@@ -242,10 +257,10 @@ func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	return ResourceIbmToolchainToolGitRead(context, d, meta)
+	return ResourceIbmToolchainToolArtifactoryRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolGitDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolArtifactoryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ibmToolchainApiClient, err := meta.(conns.ClientSession).IbmToolchainApiV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -266,51 +281,76 @@ func ResourceIbmToolchainToolGitDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func ResourceIbmToolchainToolGitMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolArtifactoryMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
-	if modelMap["repo_url"] != nil {
-		model["repo_url"] = core.StringPtr(modelMap["repo_url"].(string))
+	model["name"] = core.StringPtr(modelMap["name"].(string))
+	if modelMap["dashboard_url"] != nil {
+		model["dashboard_url"] = core.StringPtr(modelMap["dashboard_url"].(string))
 	}
-	if modelMap["action"] != nil {
-		model["type"] = core.StringPtr(modelMap["action"].(string))
+	model["type"] = core.StringPtr(modelMap["type"].(string))
+	if modelMap["user_id"] != nil {
+		model["user_id"] = core.StringPtr(modelMap["user_id"].(string))
 	}
-	if modelMap["legal"] != nil {
-		model["legal"] = core.BoolPtr(modelMap["legal"].(bool))
+	if modelMap["token"] != nil {
+		model["token"] = core.StringPtr(modelMap["token"].(string))
 	}
-	if modelMap["enable_traceability"] != nil {
-		model["enable_traceability"] = core.BoolPtr(modelMap["enable_traceability"].(bool))
+	if modelMap["release_url"] != nil {
+		model["release_url"] = core.StringPtr(modelMap["release_url"].(string))
 	}
-	if modelMap["has_issues"] != nil {
-		model["has_issues"] = core.BoolPtr(modelMap["has_issues"].(bool))
+	if modelMap["mirror_url"] != nil {
+		model["mirror_url"] = core.StringPtr(modelMap["mirror_url"].(string))
+	}
+	if modelMap["snapshot_url"] != nil {
+		model["snapshot_url"] = core.StringPtr(modelMap["snapshot_url"].(string))
+	}
+	if modelMap["repository_name"] != nil {
+		model["repository_name"] = core.StringPtr(modelMap["repository_name"].(string))
+	}
+	if modelMap["repository_url"] != nil {
+		model["repository_url"] = core.StringPtr(modelMap["repository_url"].(string))
 	}
 	return model, nil
 }
 
-func ResourceIbmToolchainToolGitMapToContainer(modelMap map[string]interface{}) (*ibmtoolchainapiv2.Container, error) {
+func ResourceIbmToolchainToolArtifactoryMapToContainer(modelMap map[string]interface{}) (*ibmtoolchainapiv2.Container, error) {
 	model := &ibmtoolchainapiv2.Container{}
 	model.Guid = core.StringPtr(modelMap["guid"].(string))
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	return model, nil
 }
 
-func ResourceIbmToolchainToolGitParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolArtifactoryParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model["repo_url"] != nil {
-		modelMap["repo_url"] = model["repo_url"]
+	modelMap["name"] = model["name"]
+	if model["dashboard_url"] != nil {
+		modelMap["dashboard_url"] = model["dashboard_url"]
 	}
-	if model["legal"] != nil {
-		modelMap["legal"] = model["legal"]
+	modelMap["type"] = model["type"]
+	if model["user_id"] != nil {
+		modelMap["user_id"] = model["user_id"]
 	}
-	if model["enable_traceability"] != nil {
-		modelMap["enable_traceability"] = model["enable_traceability"]
+	if model["token"] != nil {
+		modelMap["token"] = model["token"]
 	}
-	if model["has_issues"] != nil {
-		modelMap["has_issues"] = model["has_issues"]
+	if model["release_url"] != nil {
+		modelMap["release_url"] = model["release_url"]
+	}
+	if model["mirror_url"] != nil {
+		modelMap["mirror_url"] = model["mirror_url"]
+	}
+	if model["snapshot_url"] != nil {
+		modelMap["snapshot_url"] = model["snapshot_url"]
+	}
+	if model["repository_name"] != nil {
+		modelMap["repository_name"] = model["repository_name"]
+	}
+	if model["repository_url"] != nil {
+		modelMap["repository_url"] = model["repository_url"]
 	}
 	return modelMap, nil
 }
 
-func ResourceIbmToolchainToolGitContainerToMap(model *ibmtoolchainapiv2.Container) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolArtifactoryContainerToMap(model *ibmtoolchainapiv2.Container) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["guid"] = model.Guid
 	modelMap["type"] = model.Type
