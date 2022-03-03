@@ -51,7 +51,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.0-00010101000000-000000000000
+	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef // indirect
 	golang.org/x/tools v0.1.7 // indirect
