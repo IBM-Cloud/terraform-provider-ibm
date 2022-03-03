@@ -928,6 +928,8 @@ func Provider() *schema.Provider {
 			"ibm_toolchain_tool_custom":      ibmtoolchainapi.ResourceIbmToolchainToolCustom(),
 			"ibm_toolchain_tool_artifactory": ibmtoolchainapi.ResourceIbmToolchainToolArtifactory(),
 			"ibm_toolchain_tool_pipeline":    ibmtoolchainapi.ResourceIbmToolchainToolPipeline(),
+			"ibm_toolchain_tool_orion":       ibmtoolchainapi.ResourceIbmToolchainToolOrion(),
+			"ibm_toolchain_tool_insights":    ibmtoolchainapi.ResourceIbmToolchainToolInsights(),
 		},
 
 		ConfigureFunc: providerConfigure,

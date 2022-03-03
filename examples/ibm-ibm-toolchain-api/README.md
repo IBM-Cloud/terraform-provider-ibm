@@ -4,7 +4,7 @@ This example illustrates how to use the IbmToolchainApiV2
 
 These types of resources are supported:
 
-* toolchain_tool_pipeline
+* toolchain_tool_insights
 
 ## Usage
 
@@ -21,14 +21,13 @@ Run `terraform destroy` when you don't need these resources.
 
 ## IbmToolchainApiV2 resources
 
-toolchain_tool_pipeline resource:
+toolchain_tool_insights resource:
 
 ```hcl
-resource "toolchain_tool_pipeline" "toolchain_tool_pipeline_instance" {
-  toolchain_id = var.toolchain_tool_pipeline_toolchain_id
-  parameters = var.toolchain_tool_pipeline_parameters
-  parameters_references = var.toolchain_tool_pipeline_parameters_references
-  container = var.toolchain_tool_pipeline_container
+resource "toolchain_tool_insights" "toolchain_tool_insights_instance" {
+  toolchain_id = var.toolchain_tool_insights_toolchain_id
+  parameters_references = var.toolchain_tool_insights_parameters_references
+  container = var.toolchain_tool_insights_container
 }
 ```
 
@@ -61,7 +60,6 @@ resource "toolchain_tool_pipeline" "toolchain_tool_pipeline_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | toolchain_id |  | `string` | true |
-| parameters |  | `` | false |
 | parameters_references | Decoded values used on provision in the broker that reference fields in the parameters. | `map()` | false |
 | container |  | `` | false |
 
@@ -69,4 +67,4 @@ resource "toolchain_tool_pipeline" "toolchain_tool_pipeline_instance" {
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_pipeline | toolchain_tool_pipeline object |
+| toolchain_tool_insights | toolchain_tool_insights object |
