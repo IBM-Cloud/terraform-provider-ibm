@@ -52,7 +52,8 @@ resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = ibm_is_image.example.id
   profile = "bc1-2x8"
-
+  metadata_service_enabled  = false
+  
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
   }
@@ -119,6 +120,7 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The ID of the SSH key.
   - `name` - (String) The name of the SSH key that you entered when you uploaded the key to IBM Cloud.
 - `memory`- (Integer) The amount of memory that was allocated to the instance.
+- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
   Nested scheme for `network_interfaces`:

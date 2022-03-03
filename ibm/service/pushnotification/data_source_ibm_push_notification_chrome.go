@@ -32,6 +32,7 @@ func DataSourceIBMPNApplicationChrome() *schema.Resource {
 				Description: "The URL of the WebSite / WebApp that should be permitted to subscribe to WebPush.",
 			},
 		},
+		DeprecationMessage: "This service is deprecated. For more information about the deprecation of this service, see here https://www.ibm.com/cloud/blog/announcements/ibm-push-notifications-deprecation",
 	}
 }
 

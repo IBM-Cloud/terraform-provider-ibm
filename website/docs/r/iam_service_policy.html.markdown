@@ -24,6 +24,11 @@ resource "ibm_iam_service_policy" "policy" {
   iam_service_id = ibm_iam_service_id.service_id.id
   roles          = ["Viewer"]
   description    = "IAM Service Policy"
+  
+  resource_tags {
+    name = "env"
+    value = "dev"
+  }
 }
 
 ```
@@ -235,7 +240,13 @@ Review the argument references that you can specify for your resource.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`. **Note** Conflicts with `account_management` and `resources`.
 - `roles` - (Required, List) A comma separated list of roles. Valid roles are `Writer`, `Reader`, `Manager`, `Administrator`, `Operator`, `Viewer`, and `Editor`. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
-- `tags`  - (Optional, List of Strings) A list of tags with the service policy instance. **Note** Tags are managed locally and not stored in the IBM Cloud service endpoint at this moment.
+
+- `resource_tags`  (Optional, List)  A nested block describing the access management tags.  **Note** `resource_tags` are only allowed in policy with resource attribute serviceType, where value is equal to service.
+  
+  Nested scheme for `resource_tags`:
+  - `name` - (Required, String) The key of an access management tag. 
+  - `value` - (Required, String) The value of an access management tag.
+  - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

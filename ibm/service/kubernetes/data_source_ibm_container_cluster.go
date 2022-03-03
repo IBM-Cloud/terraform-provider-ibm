@@ -5,6 +5,7 @@ package kubernetes
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -442,7 +443,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	apikeyAPI := csClient.Apikeys()
 	apikeyConfig, err := apikeyAPI.GetApiKeyInfo(name, targetEnv)
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Error in GetApiKeyInfo, %s", err)
 	}
 	d.Set("api_key_id", apikeyConfig.ID)
 	d.Set("api_key_owner_name", apikeyConfig.Name)

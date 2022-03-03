@@ -401,3 +401,16 @@ resource "ibm_cis_dns_records_import" "test" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
   file      = "dns_records.txt"
 }
+
+# CIS Webhooks
+resource "ibm_cis_webhook" "test" {
+    cis_id = data.ibm_cis.cis.id
+    name    = "test-Webhooks"
+    url     = "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
+    secret = "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+}
+
+# CIS Webhooks data source
+data "ibm_cis_webhooks" "test1" {
+  cis_id = data.ibm_cis.cis.id
+}

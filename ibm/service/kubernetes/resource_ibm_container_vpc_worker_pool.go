@@ -531,6 +531,9 @@ func resourceIBMContainerVpcWorkerPoolExists(d *schema.ResourceData, meta interf
 		}
 		return false, fmt.Errorf("[ERROR] Error getting container vpc workerpool: %s", err)
 	}
+	if strings.Compare(workerPool.Lifecycle.ActualState, "deleted") == 0 {
+		return false, nil
+	}
 
 	return workerPool.ID == workerPoolID, nil
 }
