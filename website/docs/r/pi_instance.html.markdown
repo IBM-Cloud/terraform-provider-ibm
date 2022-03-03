@@ -78,13 +78,13 @@ Review the argument references that you can specify for your resource.
   - `network_id` - (String) The network ID to assign to the instance.
   - `ip_address` - (String) The ip address to be used of this network.
 - `pi_pin_policy` - (Optional, String) Select the pinning policy for your Power Systems Virtual Server instance. Supported values are `soft`, `hard`, and `none`.    **Note** You can choose to soft pin (`soft`) or hard pin (`hard`) a virtual server to the physical host where it runs. When you soft pin an instance for high availability, the instance automatically migrates back to the original host once the host is back to its operating state. If the instance has a licensing restriction with the host, the hard pin option restricts the movement of the instance during remote restart, automated remote restart, DRO, and live partition migration. The default pinning policy is `none`. 
-- `pi_placement_group_id`- (Optional, String) The ID of the placement group that the instance is in if any or empty quotes `""` to also indicate it is not in a placement group.
+- `pi_placement_group_id` - (Optional, String) The ID of the placement group that the instance is in or empty quotes `""` to indicate it is not in a placement group. The meta-argument `count` and a `pi_replicants` cannot be used when specifying a placement group ID. Instances provisioning in the same placement group must be provisioned one at a time; however, to provision multiple instances on the same host or different hosts then use `pi_replicants` and `pi_replication_policy` instead of `pi_placement_group_id`.
 - `pi_processors` - (Optional, Float) The number of vCPUs to assign to the VM as visible within the guest Operating System.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_proc_type` - (Optional, String) The type of processor mode in which the VM will run with `shared`, `capped` or `dedicated`.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_replicants` - (Optional, Integer) The number of instances that you want to provision with the same configuration. If this parameter is not set,  `1` is used by default.
-- `pi_replication_policy` - (Optional, String) The replication policy that you want to use. If this parameter is not set, `none` is used by default. 
+- `pi_replication_policy` - (Optional, String) The replication policy that you want to use, either `affinity`, `anti-affinity` or `none`. If this parameter is not set, `none` is used by default. 
 - `pi_replication_scheme` - (Optional, String) The replication scheme that you want to set, either `prefix` or `suffix`.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.

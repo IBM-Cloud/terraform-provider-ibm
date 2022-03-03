@@ -97,6 +97,7 @@ var IksClusterResourceGroupID string
 // For Power Colo
 
 var Pi_image string
+var Pi_sap_image string
 var Pi_image_bucket_name string
 var Pi_image_bucket_file_name string
 var Pi_image_bucket_access_key string
@@ -517,6 +518,11 @@ func init() {
 	if Pi_image == "" {
 		Pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
+	}
+	Pi_sap_image = os.Getenv("PI_SAP_IMAGE")
+	if Pi_sap_image == "" {
+		Pi_sap_image = "2e29d6d2-e5ed-4ff8-8fad-64e4be90e023"
+		fmt.Println("[INFO] Set the environment variable PI_SAP_IMAGE for testing ibm_pi_image resource else it is set to default value 'Linux-RHEL-SAP-8-2'")
 	}
 	Pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
 	if Pi_image_bucket_name == "" {
