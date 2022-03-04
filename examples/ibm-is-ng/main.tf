@@ -161,6 +161,37 @@ resource "ibm_is_lb_pool" "testacc_pool" {
   session_persistence_type = "source_ip"
 }
 
+data "ibm_is_lb_listener" "is_lb_listener" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener_id = ibm_is_lb_listener.lb_listener2.listener_id
+}
+data "ibm_is_lb_listeners" "is_lb_listeners" {
+	lb = "${ibm_is_lb.lb2.id}"
+}
+
+data "ibm_is_lb_listener_policy" "is_lb_listener_policy" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = ibm_is_lb_listener.lb_listener2.listener_id
+	policy_id = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
+}
+data "ibm_is_lb_listener_policies" "is_lb_listener_policies" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+}
+
+data "ibm_is_lb_listener_policy_rule" "is_lb_listener_policy_rule" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+	policy = "${ibm_is_lb_listener_policy.lb_listener_policy.policy_id}"
+	rule = "${ibm_is_lb_listener_policy_rule.lb_listener_policy_rule.rule}"
+}
+
+data "ibm_is_lb_listener_policy_rules" "is_lb_listener_policy_rules" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+	policy = "${ibm_is_lb_listener_policy.lb_listener_policy.policy_id}"
+}
+
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
   subnet = ibm_is_subnet.subnet1.id
