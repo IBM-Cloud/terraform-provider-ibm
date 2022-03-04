@@ -553,7 +553,6 @@ type clientSession struct {
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
 
-
 	// Tekton Pipeline
 	continuousDeliveryPipelineClient    *continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2
 	continuousDeliveryPipelineClientErr error
@@ -561,7 +560,6 @@ type clientSession struct {
 	// Toolchain
 	ibmToolchainApiClient    *ibmtoolchainapiv2.IbmToolchainApiV2
 	ibmToolchainApiClientErr error
-
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1054,10 +1052,10 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
-
 // Continuous Delivery Pipeline
 func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error) {
 	return session.continuousDeliveryPipelineClient, session.continuousDeliveryPipelineClientErr
+}
 
 // IBM Toolchain API
 func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error) {

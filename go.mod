@@ -29,7 +29,6 @@ require (
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
-	github.com/SidneyJiang/terraform-provider-ibm v0.0.0-00010101000000-000000000000
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/aws-sdk-go v1.37.0 // indirect
@@ -49,7 +48,6 @@ require (
 	github.com/jinzhu/copier v0.3.2
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
 	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.1
 	github.ibm.com/org-ids/toolchain-go-sdk v0.0.2
@@ -64,4 +62,6 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.ibm.com/MARJORAM/toolchain-go-sdk => ../toolchain-go-sdk
+replace github.ibm.com/org-ids/toolchain-go-sdk => ../toolchain-go-sdk
+
+replace github.ibm.com/org-ids/tekton-pipeline-go-sdk => ../tekton-pipeline-go-sdk
