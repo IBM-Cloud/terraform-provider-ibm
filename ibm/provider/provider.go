@@ -23,6 +23,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/continuousdeliverypipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
@@ -50,7 +51,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/SidneyJiang/terraform-provider-ibm/ibm/service/continuousdeliverypipeline"
 )
 
 // Provider returns a *schema.Provider.
