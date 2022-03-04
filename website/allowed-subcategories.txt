@@ -9,6 +9,7 @@ Cloud Databases
 Cloud Foundry
 Container Registry
 Context Based Restrictions
+Continuous Delivery Pipeline
 Direct Link Gateway
 DNS Services
 Enterprise Management
