@@ -1370,24 +1370,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
-	// Construct an "options" struct for creating the service client.
-	ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
-		Authenticator: authenticator,
-	}
-
-	// Construct the service client.
-	session.ibmToolchainApiClient, err = ibmtoolchainapiv2.NewIbmToolchainApiV2(ibmToolchainApiClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.ibmToolchainApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.ibmToolchainApiClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.ibmToolchainApiClientErr = fmt.Errorf("Error occurred while configuring IBM Toolchain API service: %q", err)
-	}
-
 	// APPID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
 	if c.Visibility == "private" {
@@ -2832,6 +2814,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// Construct an "options" struct for creating the service client.
+	ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.ibmToolchainApiClient, err = ibmtoolchainapiv2.NewIbmToolchainApiV2(ibmToolchainApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ibmToolchainApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ibmToolchainApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ibmToolchainApiClientErr = fmt.Errorf("Error occurred while configuring IBM Toolchain API service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
