@@ -485,7 +485,7 @@ func setCloudantInstanceCapacity(client *cloudantv1.CloudantV1, d *schema.Resour
 	if capacityThroughputInformation.Current != nil && capacityThroughputInformation.Current.Throughput != nil {
 		currentThroughput := capacityThroughputInformation.Current.Throughput
 		// lite plan doesn't have "blocks" attr on broker's response
-		if d.Get("plan").(string) == "lite" {
+		if d.Get("plan").(string) == "lite" || currentThroughput.Blocks == nil {
 			d.Set("capacity", 1)
 		} else {
 			blocks := int(*currentThroughput.Blocks)
