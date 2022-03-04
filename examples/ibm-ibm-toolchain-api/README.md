@@ -4,7 +4,7 @@ This example illustrates how to use the IbmToolchainApiV2
 
 These types of resources are supported:
 
-* toolchain_tool_insights
+* toolchain_tool_sonarqube
 
 ## Usage
 
@@ -21,13 +21,14 @@ Run `terraform destroy` when you don't need these resources.
 
 ## IbmToolchainApiV2 resources
 
-toolchain_tool_insights resource:
+toolchain_tool_sonarqube resource:
 
 ```hcl
-resource "toolchain_tool_insights" "toolchain_tool_insights_instance" {
-  toolchain_id = var.toolchain_tool_insights_toolchain_id
-  parameters_references = var.toolchain_tool_insights_parameters_references
-  container = var.toolchain_tool_insights_container
+resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
+  toolchain_id = var.toolchain_tool_sonarqube_toolchain_id
+  parameters = var.toolchain_tool_sonarqube_parameters
+  parameters_references = var.toolchain_tool_sonarqube_parameters_references
+  container = var.toolchain_tool_sonarqube_container
 }
 ```
 
@@ -60,6 +61,7 @@ resource "toolchain_tool_insights" "toolchain_tool_insights_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | toolchain_id |  | `string` | true |
+| parameters |  | `` | false |
 | parameters_references | Decoded values used on provision in the broker that reference fields in the parameters. | `map()` | false |
 | container |  | `` | false |
 
@@ -67,4 +69,4 @@ resource "toolchain_tool_insights" "toolchain_tool_insights_instance" {
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_insights | toolchain_tool_insights object |
+| toolchain_tool_sonarqube | toolchain_tool_sonarqube object |

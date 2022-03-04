@@ -11,7 +11,7 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_toolchain_tool_insights": ibmtoolchainapi.ResourceIbmToolchainToolInsights(),
+    "ibm_toolchain_tool_sonarqube": ibmtoolchainapi.ResourceIbmToolchainToolSonarqube(),
 ```
 
 ### Changes to `config.go`

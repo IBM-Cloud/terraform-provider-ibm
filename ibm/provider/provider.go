@@ -930,6 +930,8 @@ func Provider() *schema.Provider {
 			"ibm_toolchain_tool_pipeline":    ibmtoolchainapi.ResourceIbmToolchainToolPipeline(),
 			"ibm_toolchain_tool_orion":       ibmtoolchainapi.ResourceIbmToolchainToolOrion(),
 			"ibm_toolchain_tool_insights":    ibmtoolchainapi.ResourceIbmToolchainToolInsights(),
+			"ibm_toolchain_tool_slack":       ibmtoolchainapi.ResourceIbmToolchainToolSlack(),
+			"ibm_toolchain_tool_sonarqube":   ibmtoolchainapi.ResourceIbmToolchainToolSonarqube(),
 		},
 
 		ConfigureFunc: providerConfigure,
