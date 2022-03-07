@@ -2816,8 +2816,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
-	// Construct an "options" struct for creating the service client.
+	// Construct an "options" struct for creating the toolchain service client.
+	var ibmToolchainApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		ibmToolchainApiClientURL = ibmtoolchainapiv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		ibmToolchainApiClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, ibmToolchainApiClientURL)
+	}
+
 	ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, ibmToolchainApiClientURL),
 		Authenticator: authenticator,
 	}
 
