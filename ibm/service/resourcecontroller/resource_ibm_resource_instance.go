@@ -587,7 +587,7 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	if instance.ScheduledReclaimAt != nil {
 		d.Set("scheduled_reclaim_at", instance.ScheduledReclaimAt.String())
 	}
-	if instance.ScheduledReclaimAt != nil {
+	if instance.DeletedAt != nil {
 		d.Set("deleted_at", instance.DeletedAt.String())
 	}
 	d.Set("deleted_by", instance.DeletedBy)
