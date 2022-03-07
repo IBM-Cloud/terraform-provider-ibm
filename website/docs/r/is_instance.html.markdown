@@ -269,6 +269,7 @@ Review the argument references that you can specify for your resource.
   ~> **Note** 
     `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
@@ -344,12 +345,6 @@ Review the argument references that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
-- availability_policy - (Optional, List) The availability policy to use for this virtual server instance
-
-  Nested scheme for `availability_policy`:
-  - `host_failure`- (Optional, String) The action to perform if the compute host experiences a failure. 
-    - `restart` - Automatically restart the virtual server instance after host failure
-    - `stop` -  Leave the virtual server instance stopped after host failure
 - `bandwidth` - The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
 

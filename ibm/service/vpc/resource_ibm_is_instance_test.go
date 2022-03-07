@@ -116,6 +116,7 @@ func TestAccIBMISInstance_withAvailablePolicy(t *testing.T) {
 	var instance string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	templateName := fmt.Sprintf("tf-instnace-template-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
@@ -128,14 +129,36 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		CheckDestroy: testAccCheckIBMISInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceConfigWithAvailablePolicy(vpcname, subnetname, sshname, publicKey, name),
+				Config: testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_Default(vpcname, subnetname, sshname, publicKey, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
-					resource.TestCheckResourceAttrSet("ibm_is_instance.testacc_instance", "availability_policy.0.host_failure"),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "availability_policy_host_failure", "restart"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_Updated(vpcname, subnetname, sshname, publicKey, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "availability_policy_host_failure", "stop"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_WithTemplate(vpcname, subnetname, sshname, publicKey, templateName, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr("ibm_is_instance.testacc_instance", "availability_policy_host_failure", "stop"),
 				),
 			},
 		},
@@ -1324,7 +1347,7 @@ func testAccCheckIBMISInstanceVolumeUpdate(vpcname, subnetname, sshname, publicK
 `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, volName, acc.ISZoneName, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
 
-func testAccCheckIBMISInstanceConfigWithAvailablePolicy(vpcname, subnetname, sshname, publicKey, name string) string {
+func testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_Default(vpcname, subnetname, sshname, publicKey, name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -1346,9 +1369,6 @@ func testAccCheckIBMISInstanceConfigWithAvailablePolicy(vpcname, subnetname, ssh
 		name    = "%s"
 		image   = "%s"
 		profile = "%s"
-		availability_policy {
-		  host_failure  = "stop"
-		}
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
@@ -1360,4 +1380,78 @@ func testAccCheckIBMISInstanceConfigWithAvailablePolicy(vpcname, subnetname, ssh
 		  name   = "eth1"
 		}
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
+}
+
+func testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_Updated(vpcname, subnetname, sshname, publicKey, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  
+	  resource "ibm_is_instance" "testacc_instance" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		availability_policy_host_failure = "stop"
+		primary_network_interface {
+		  subnet     = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		network_interfaces {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		  name   = "eth1"
+		}
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
+}
+
+func testAccCheckIBMISInstanceConfigWithAvailablePolicyHostFailure_WithTemplate(vpcname, subnetname, sshname, publicKey, templateName, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  
+	  resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	  }
+	  
+	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	  }
+	  data "ibm_is_images" "is_images" {
+	  }
+	  resource "ibm_is_instance_template" "instancetemplate1" {
+		name    = "%s"
+		image   = data.ibm_is_images.is_images.images.0.id
+		profile = "bx2-8x32"
+		primary_network_interface {
+		  subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		availability_policy_host_failure = "stop"
+		vpc       = ibm_is_vpc.testacc_vpc.id
+		zone      = "%s"
+		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+	  }
+
+	  resource "ibm_is_instance" "testacc_instance" {
+		name              = "%s"
+  		instance_template   = ibm_is_instance_template.instancetemplate1.id
+	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, templateName, acc.ISZoneName, name)
 }

@@ -35,19 +35,10 @@ func DataSourceIBMISInstance() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			isInstanceAvailablePolicy: {
-				Type:        schema.TypeList,
+			isInstanceAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The availability policy to use for this virtual server instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						isInstanceHostFailure: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The action to perform if the compute host experiences a failure.",
-						},
-					},
-				},
+				Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
 			},
 
 			isInstanceName: {
@@ -577,12 +568,8 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 			if instance.MetadataService != nil {
 				d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
 			}
-			if instance.AvailabilityPolicy != nil {
-				availabilityPolicyList := make([]map[string]interface{}, 0)
-				availabilityPolicy := map[string]interface{}{}
-				availabilityPolicy[isInstanceHostFailure] = *instance.AvailabilityPolicy.HostFailure
-				availabilityPolicyList = append(availabilityPolicyList, availabilityPolicy)
-				d.Set(isInstanceAvailablePolicy, availabilityPolicyList)
+			if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+				d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
 			}
 			cpuList := make([]map[string]interface{}, 0)
 			if instance.Vcpu != nil {

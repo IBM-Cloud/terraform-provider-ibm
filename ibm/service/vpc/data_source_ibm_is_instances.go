@@ -125,19 +125,10 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance status",
 						},
-						isInstanceAvailablePolicy: {
-							Type:        schema.TypeList,
+						isInstanceAvailablePolicyHostFailure: {
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The availability policy to use for this virtual server instance",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									isInstanceHostFailure: {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The action to perform if the compute host experiences a failure.",
-									},
-								},
-							},
+							Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
 						},
 						isInstanceStatusReasons: {
 							Type:        schema.TypeList,
@@ -677,12 +668,8 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["resource_group"] = *instance.ResourceGroup.ID
 		l["vpc"] = *instance.VPC.ID
 
-		if instance.AvailabilityPolicy != nil {
-			availabilityPolicyList := make([]map[string]interface{}, 0)
-			availabilityPolicy := map[string]interface{}{}
-			availabilityPolicy[isInstanceHostFailure] = *instance.AvailabilityPolicy.HostFailure
-			availabilityPolicyList = append(availabilityPolicyList, availabilityPolicy)
-			l[isInstanceAvailablePolicy] = availabilityPolicyList
+		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+			l[isInstanceAvailablePolicyHostFailure] = *instance.AvailabilityPolicy.HostFailure
 		}
 
 		if instance.PlacementTarget != nil {

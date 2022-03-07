@@ -72,6 +72,7 @@ In addition to all argument reference list, you can access the following attribu
 - `access_tags`  - (String) Access management tags associated for the instance.
 - `available_ipv4_address_count` - (Integer) The total number of available IPv4 addresses.
 - `crn` - (String) The CRN of subnet.
+- `id` - (String) The unique ID of the subnet.
 - `ipv4_cidr_block` -  (String) The IPv4 range of the subnet.
 - `ip_version` - (String) The IP version.
 - `name` - (String) The name of the subnet.
