@@ -529,10 +529,12 @@ func Provider() *schema.Provider {
 			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
 
 			// //Added for Transit Gateway
-			"ibm_tg_gateway":   transitgateway.DataSourceIBMTransitGateway(),
-			"ibm_tg_gateways":  transitgateway.DataSourceIBMTransitGateways(),
-			"ibm_tg_locations": transitgateway.DataSourceIBMTransitGatewaysLocations(),
-			"ibm_tg_location":  transitgateway.DataSourceIBMTransitGatewaysLocation(),
+			"ibm_tg_gateway":       transitgateway.DataSourceIBMTransitGateway(),
+			"ibm_tg_gateways":      transitgateway.DataSourceIBMTransitGateways(),
+			"ibm_tg_locations":     transitgateway.DataSourceIBMTransitGatewaysLocations(),
+			"ibm_tg_location":      transitgateway.DataSourceIBMTransitGatewaysLocation(),
+			"ibm_tg_route_report":  transitgateway.DataSourceIBMTransitGatewayRouteReport(),
+			"ibm_tg_route_reports": transitgateway.DataSourceIBMTransitGatewayRouteReports(),
 
 			// //Added for BSS Enterprise
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
@@ -873,8 +875,9 @@ func Provider() *schema.Provider {
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
 			// //Added for Transit Gateway
-			"ibm_tg_gateway":    transitgateway.ResourceIBMTransitGateway(),
-			"ibm_tg_connection": transitgateway.ResourceIBMTransitGatewayConnection(),
+			"ibm_tg_gateway":      transitgateway.ResourceIBMTransitGateway(),
+			"ibm_tg_connection":   transitgateway.ResourceIBMTransitGatewayConnection(),
+			"ibm_tg_route_report": transitgateway.ResourceIBMTransitGatewayRouteReport(),
 
 			// //Catalog related resources
 			"ibm_cm_offering_instance": catalogmanagement.ResourceIBMCmOfferingInstance(),
