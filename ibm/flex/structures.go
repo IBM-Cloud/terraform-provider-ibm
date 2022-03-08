@@ -2902,6 +2902,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			name := a["name"].(string)
 			value := a["value"].(string)
 			operator := a["operator"].(string)
+			if name == "serviceName" {
+				serviceName = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
