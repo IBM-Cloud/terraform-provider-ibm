@@ -52,6 +52,11 @@ func DataSourceIBMIAMAccessGroup() *schema.Resource {
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
+						"iam_profile_ids": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 						"rules": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -157,6 +162,29 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	profileStart := ""
+	allprofiles := []iamidentityv1.TrustedProfile{}
+	var plimit int64 = 100
+	for {
+		listProfilesOptions := iamidentityv1.ListProfilesOptions{
+			AccountID: &userDetails.UserAccount,
+			Pagesize:  &plimit,
+		}
+		if profileStart != "" {
+			listProfilesOptions.Pagetoken = &profileStart
+		}
+
+		profileIDs, resp, err := iamClient.ListProfiles(&listProfilesOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp)
+		}
+		profileStart = flex.GetNextIAM(profileIDs.Next)
+		allprofiles = append(allprofiles, profileIDs.Profiles...)
+		if profileStart == "" {
+			break
+		}
+	}
+
 	listAccessGroupOption := iamAccessGroupsClient.NewListAccessGroupsOptions(accountID)
 	retreivedGroups, detailedResponse, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOption)
 	if err != nil {
@@ -196,7 +224,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			log.Printf("Error retrieving access group rules: %s. API Response: %s", err, detailedResponse)
 		}
-		ibmID, serviceID := flex.FlattenMembersData(members.Members, res, allrecs)
+		ibmID, serviceID, profileID := flex.FlattenMembersData(members.Members, res, allrecs, allprofiles)
 
 		grpInstance := map[string]interface{}{
 			"id":              grp.ID,
@@ -204,6 +232,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 			"description":     grp.Description,
 			"ibm_ids":         ibmID,
 			"iam_service_ids": serviceID,
+			"iam_profile_ids": profileID,
 			"rules":           flex.FlattenAccessGroupRules(rules),
 		}
 

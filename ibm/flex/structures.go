@@ -1399,9 +1399,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID, profileids []iamidentityv1.TrustedProfile) ([]string, []string, []string) {
 	var ibmid []string
 	var serviceid []string
+	var profileid []string
 	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
@@ -1410,19 +1411,24 @@ func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember,
 					break
 				}
 			}
+		} else if *m.Type == "profile" {
+			for _, prid := range profileids {
+				if *prid.IamID == *m.IamID {
+					profileid = append(profileid, *prid.ID)
+					break
+				}
+			}
 		} else {
-
 			for _, srid := range serviceids {
 				if *srid.IamID == *m.IamID {
 					serviceid = append(serviceid, *srid.ID)
 					break
 				}
 			}
-
 		}
 
 	}
-	return ibmid, serviceid
+	return ibmid, serviceid, profileid
 }
 
 func FlattenAccessGroupMembers(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) []map[string]interface{} {
