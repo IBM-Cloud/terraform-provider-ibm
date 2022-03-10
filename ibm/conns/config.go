@@ -1832,18 +1832,16 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.apigatewayAPI = apigatewayAPI
 
 	// POWER SYSTEMS Service
-	piURL := ContructEndpoint(c.Region, "power-iaas.cloud.ibm.com")
 	ibmPIOptions := &ibmpisession.IBMPIOptions{
 		Authenticator: authenticator,
 		Debug:         os.Getenv("TF_LOG") != "",
-		Region:        c.Region,
-		URL:           EnvFallBack([]string{"IBMCLOUD_PI_API_ENDPOINT"}, piURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_PI_API_ENDPOINT"}, ""),
 		UserAccount:   userConfig.UserAccount,
 		Zone:          c.Zone,
 	}
 	ibmpisession, err := ibmpisession.NewIBMPISession(ibmPIOptions)
 	if err != nil {
-		session.ibmpiConfigErr = fmt.Errorf("Error occured while configuring ibmpisession: %q", err)
+		session.ibmpiConfigErr = fmt.Errorf("error occured while configuring ibmpisession: %q", err)
 	}
 	session.ibmpiSession = ibmpisession
 
