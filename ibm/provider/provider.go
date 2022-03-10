@@ -790,6 +790,7 @@ func Provider() *schema.Provider {
 			"ibm_is_subnet":                                      vpc.ResourceIBMISSubnet(),
 			"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISReservedIP(),
 			"ibm_is_subnet_network_acl_attachment":               vpc.ResourceIBMISSubnetNetworkACLAttachment(),
+			"ibm_is_subnet_public_gateway_attachment":            vpc.ResourceIBMISSubnetPublicGatewayAttachment(),
 			"ibm_is_ssh_key":                                     vpc.ResourceIBMISSSHKey(),
 			"ibm_is_snapshot":                                    vpc.ResourceIBMSnapshot(),
 			"ibm_is_volume":                                      vpc.ResourceIBMISVolume(),
