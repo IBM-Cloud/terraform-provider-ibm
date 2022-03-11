@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_connection"
 description: |-
   Get information about database_connection
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_connection
@@ -15,7 +15,7 @@ Provides a read-only data source for database_connection. You can then reference
 ```hcl
 data "ibm_database_connection" "database_connection" {
 	endpoint_type = "public"
-	id = "id"
+	deployment_id = ibm_database.my_db.id
 	user_id = "user_id"
 	user_type = "database"
 }
@@ -25,11 +25,11 @@ data "ibm_database_connection" "database_connection" {
 
 Review the argument reference that you can specify for your data source.
 
-* `endpoint_type` - (Required, Forces new resource, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.
+* `endpoint_type` - (Required, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.
   * Constraints: Allowable values are: `public`, `private`.
-* `id` - (Required, Forces new resource, String) Deployment ID.
-* `user_id` - (Required, Forces new resource, String) User ID.
-* `user_type` - (Required, Forces new resource, String) User type.
+* `deployment_id` - (Required, String) Deployment ID.
+* `user_id` - (Required, String) User ID.
+* `user_type` - (Required, String) User type.
 
 ## Attribute Reference
 

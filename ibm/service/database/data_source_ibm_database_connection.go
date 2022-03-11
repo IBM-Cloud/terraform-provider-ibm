@@ -14,6 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
 
@@ -22,7 +23,7 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 		ReadContext: DataSourceIBMDatabaseConnectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"deployment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Deployment ID.",
@@ -38,9 +39,10 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 				Description: "User ID.",
 			},
 			"endpoint_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.",
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
 			},
 			"postgres": &schema.Schema{
 				Type:     schema.TypeList,
@@ -1395,7 +1397,7 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 
 	getConnectionOptions := &clouddatabasesv5.GetConnectionOptions{}
 
-	getConnectionOptions.SetID(d.Get("id").(string))
+	getConnectionOptions.SetID(d.Get("deployment_id").(string))
 	getConnectionOptions.SetUserType(d.Get("user_type").(string))
 	getConnectionOptions.SetUserID(d.Get("user_id").(string))
 	getConnectionOptions.SetEndpointType(d.Get("endpoint_type").(string))

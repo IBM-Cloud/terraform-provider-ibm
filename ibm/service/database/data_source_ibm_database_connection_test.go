@@ -23,7 +23,7 @@ func TestAccIBMDatabaseConnectionDataSourceBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMDatabaseInstancePostgresql(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "endpoint_type"),
@@ -59,7 +59,7 @@ func testAccCheckIBMDatabaseDataSourceConfig2(name string) string {
 func testAccCheckIBMDatabaseInstancePostgresql(name string) string {
 	return testAccCheckIBMDatabaseDataSourceConfig2(name) + `
 		data "ibm_database_connection" "database_connection" {
-			id = ibm_database.db.id
+			deployment_id = ibm_database.db.id
 			user_type = "database"
 			user_id = "user_id"
 			endpoint_type = "public"
