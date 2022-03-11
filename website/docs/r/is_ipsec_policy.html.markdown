@@ -26,7 +26,7 @@ In the following example, you can create a IPsec policy:
 
 ```terraform
 resource "ibm_is_ipsec_policy" "example" {
-  name                     = "test"
+  name                     = "example-ipsec-policy"
   authentication_algorithm = "md5"
   encryption_algorithm     = "triple_des"
   pfs                      = "disabled"

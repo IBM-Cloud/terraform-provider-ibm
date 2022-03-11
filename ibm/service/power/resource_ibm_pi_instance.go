@@ -259,16 +259,14 @@ func ResourceIBMPIInstance() *schema.Resource {
 			PISAPInstanceProfileID: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType, helpers.PIInstanceSystemType},
+				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType},
 				Description:   "SAP Profile ID for the amount of cores and memory",
 			},
 			helpers.PIInstanceSystemType: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues([]string{"s922", "e880", "e980"}),
-				ConflictsWith: []string{PISAPInstanceProfileID},
-				Description:   "PI Instance system type",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "PI Instance system type",
 			},
 			helpers.PIInstanceReplicants: {
 				Type:        schema.TypeInt,
@@ -1035,7 +1033,7 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
 		volids := flex.ExpandStringList((v.(*schema.Set)).List())
 		if len(volids) > 0 {
-			body.VolumeIds = volids
+			body.VolumeIDs = volids
 		}
 	}
 	if p, ok := d.GetOk(helpers.PIInstancePinPolicy); ok {
@@ -1057,6 +1055,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 			return nil, err
 		}
 		body.UserData = userData
+	}
+	if sys, ok := d.GetOk(helpers.PIInstanceSystemType); ok {
+		body.SysType = sys.(string)
 	}
 
 	if st, ok := d.GetOk(helpers.PIInstanceStorageType); ok {
@@ -1194,7 +1195,7 @@ func createPVMInstance(d *schema.ResourceData, client *st.IBMPIInstanceClient, i
 		body.KeyPairName = sshkey
 	}
 	if len(volids) > 0 {
-		body.VolumeIds = volids
+		body.VolumeIDs = volids
 	}
 	if d.Get(helpers.PIInstancePinPolicy) == "soft" || d.Get(helpers.PIInstancePinPolicy) == "hard" {
 		body.PinPolicy = models.PinPolicy(pinpolicy)

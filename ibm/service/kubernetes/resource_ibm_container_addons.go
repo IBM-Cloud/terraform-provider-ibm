@@ -175,7 +175,7 @@ func expandAddOns(d *schema.ResourceData, meta interface{}, cluster string, targ
 				if existAddon.Name == ao["name"].(string) {
 					exist = true
 					if existAddon.Version != ao["version"].(string) {
-						if (ao["version"].(string) == existAddon.TargetVersion) && (flex.StringContains(existAddon.AllowedUpgradeVersion, ao["version"].(string))) {
+						if flex.StringContains(existAddon.AllowedUpgradeVersion, ao["version"].(string)) {
 							// This block upgrates addon version if addon has `allowed_upgrade_versions`
 							err := updateAddOnVersion(d, meta, ao, cluster, targetEnv)
 							if err != nil {
@@ -342,7 +342,7 @@ func resourceIBMContainerAddOnsUpdate(d *schema.ResourceData, meta interface{}) 
 			for _, oA := range os.List() {
 				oldPack := oA.(map[string]interface{})
 				if (strings.Compare(newPack["name"].(string), oldPack["name"].(string)) == 0) && (strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0) {
-					if (newPack["version"].(string) == oldPack["target_version"].(string)) && (flex.StringContains(flex.ExpandStringList(oldPack["allowed_upgrade_versions"].([]interface{})), newPack["version"].(string))) {
+					if flex.StringContains(flex.ExpandStringList(oldPack["allowed_upgrade_versions"].([]interface{})), newPack["version"].(string)) {
 						// This block upgrates addon version if addon has `allowed_upgrade_versions`
 						err := updateAddOnVersion(d, meta, newPack, cluster, targetEnv)
 						if err != nil {

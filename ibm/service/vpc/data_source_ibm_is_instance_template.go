@@ -6,6 +6,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -102,6 +103,21 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+			},
+			isInstanceDefaultTrustedProfileAutoLink: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
+			},
+			isInstanceDefaultTrustedProfileTarget: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
+			},
+			isInstanceTemplateMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
@@ -293,6 +309,26 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 		d.Set(isInstanceTemplateName, instance.Name)
 		d.Set(isInstanceTemplateUserData, instance.UserData)
 
+		if instance.DefaultTrustedProfile != nil {
+			if instance.DefaultTrustedProfile.AutoLink != nil {
+				d.Set(isInstanceDefaultTrustedProfileAutoLink, instance.DefaultTrustedProfile.AutoLink)
+			}
+			if instance.DefaultTrustedProfile.Target != nil {
+				switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
+				case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
+					{
+						target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByID)
+						d.Set(isInstanceDefaultTrustedProfileTarget, target.ID)
+					}
+				case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
+					{
+						target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByCRN)
+						d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN)
+					}
+				}
+			}
+		}
+
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {
@@ -301,6 +337,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			}
 			d.Set(isInstanceTemplateKeys, keys)
 		}
+
+		if instance.MetadataService != nil {
+			d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+		}
+
 		if instance.Profile != nil {
 			instanceProfileIntf := instance.Profile
 			identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
@@ -467,6 +508,25 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				d.Set(isInstanceTemplateName, instance.Name)
 				d.Set(isInstanceTemplateUserData, instance.UserData)
 
+				if instance.DefaultTrustedProfile != nil {
+					if instance.DefaultTrustedProfile.AutoLink != nil {
+						d.Set(isInstanceDefaultTrustedProfileAutoLink, instance.DefaultTrustedProfile.AutoLink)
+					}
+					if instance.DefaultTrustedProfile.Target != nil {
+						switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
+						case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
+							{
+								target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByID)
+								d.Set(isInstanceDefaultTrustedProfileTarget, target.ID)
+							}
+						case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
+							{
+								target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByCRN)
+								d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN)
+							}
+						}
+					}
+				}
 				if instance.Keys != nil {
 					keys := []string{}
 					for _, intfc := range instance.Keys {
@@ -475,6 +535,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					}
 					d.Set(isInstanceTemplateKeys, keys)
 				}
+
+				if instance.MetadataService != nil {
+					d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
+				}
+
 				if instance.Profile != nil {
 					instanceProfileIntf := instance.Profile
 					identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)

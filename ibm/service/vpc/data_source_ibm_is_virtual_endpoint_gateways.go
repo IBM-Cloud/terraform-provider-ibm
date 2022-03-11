@@ -67,6 +67,13 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 							Computed:    true,
 							Description: "Endpoint gateway lifecycle state",
 						},
+						isVirtualEndpointGatewaySecurityGroups: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Description: "Endpoint gateway securitygroups list",
+						},
 						isVirtualEndpointGatewayIPs: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -166,6 +173,10 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 			flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget))
 		endpointGatewayOutput[isVirtualEndpointGatewayIPs] =
 			flattenDataSourceIPs(endpointGateway.Ips)
+		if endpointGateway.SecurityGroups != nil {
+			endpointGatewayOutput[isVirtualEndpointGatewaySecurityGroups] =
+				flattenDataSourceSecurityGroups(endpointGateway.SecurityGroups)
+		}
 		endpointGateways = append(endpointGateways, endpointGatewayOutput)
 	}
 	d.SetId(dataSourceIBMISEndpointGatewaysCheckID(d))

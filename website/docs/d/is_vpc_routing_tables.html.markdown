@@ -23,18 +23,16 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-
-resource "ibm_is_vpc" "test_vpc" {
-  name = "test-vpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-data "ibm_is_vpc_routing_tables" "ds_routing_tables" {
-	vpc = ibm_is_vpc.test_vpc.id
+data "ibm_is_vpc_routing_tables" "example" {
+  vpc = ibm_is_vpc.example.id
 }
-
 ```
 
-#
+
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -56,13 +54,11 @@ In addition to the argument reference list, you can access the following attribu
 	- `route_direct_link_ingress` - (String) Indicates if the routing table is used to route traffic that originates from Direct Link to the VPC.
 	- `route_transit_gateway_ingress` - (String) Indicates if the routing table is used to route traffic that originates from Transit Gateway to the VPC.
 	- `route_vpc_zone_ingress` - (String)  Indicates if the routing table is used to route traffic that originates from subnets in other zones of the VPC.
-- `routes` - (List) The routes for the routing table.
- 
-  Nested scheme for `routes`:
-	- `id` - (String) The unique ID of the route.
-	- `name`-  (String) The user-defined name of the route.
-- `subnets` - (List) The subnets to which routing table is attached.
-
-  Nested scheme for `subnets`:
-	- `id` - (String) The unique ID of the subnet.
-	- `name` - (String) The user-defined name of the subnet.
+	- `routes` - (List) The routes for the routing table.	
+		Nested scheme for `routes`:
+		- `id` - (String) The unique ID of the route.
+		- `name`-  (String) The user-defined name of the route.
+	- `subnets` - (List) The subnets to which routing table is attached.    
+		Nested scheme for `subnets`:
+		- `id` - (String) The unique ID of the subnet.
+		- `name` - (String) The user-defined name of the subnet.

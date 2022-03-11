@@ -33,7 +33,7 @@ func TestAccIBMPIIPSecPolicyBasic(t *testing.T) {
 					testAccCheckIBMPIIPSecPolicyExists(policyRes),
 					resource.TestCheckResourceAttr(policyRes, "pi_policy_name", name),
 					resource.TestCheckResourceAttrSet(policyRes, "policy_id"),
-					resource.TestCheckResourceAttr(policyRes, "pi_policy_authentication", "hmac-md5-96"),
+					resource.TestCheckResourceAttr(policyRes, "pi_policy_authentication", "hmac-sha-256-128"),
 				),
 			},
 		},
@@ -98,7 +98,7 @@ func testAccCheckIBMPIIPSecPolicyConfig(name string) string {
 		pi_policy_encryption = "3des-cbc"
 		pi_policy_key_lifetime = 180
 		pi_policy_pfs = true
-		pi_policy_authentication = "hmac-md5-96"
+		pi_policy_authentication = "hmac-sha-256-128"
 	}
 	`, acc.Pi_cloud_instance_id, name)
 }

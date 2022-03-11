@@ -115,6 +115,11 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance memory",
 						},
+						isInstanceMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+						},
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -652,6 +657,9 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
+		if instance.MetadataService != nil {
+			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
+		}
 		l["status"] = *instance.Status
 		l["resource_group"] = *instance.ResourceGroup.ID
 		l["vpc"] = *instance.VPC.ID

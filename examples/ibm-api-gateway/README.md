@@ -4,14 +4,15 @@ This example illustrates how to use the API Gateway Endpoint and Subscription re
 
 These types of resources are supported:
 
-* [API Gateway Endpoint](https://cloud.ibm.com/docs/terraform?topic=terraform-api-gateway-resources#api-gw-endpoint)
-* [API Gateway Endpoint Subscription](https://cloud.ibm.com/docs/terraform?topic=terraform-api-gateway-resources#api-gw-endpoint-subscript)
+* [API Gateway Endpoint](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/api_gateway_endpoint)
+* [API Gateway Endpoint Subscription](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/api_gateway_endpoint_subscription)
 
 ## Terraform versions
 
-Terraform 0.12. Pin module version to `~> v1.4.0`. Branch - `master`.
+| Name | Version |
+|------|---------|
+| terraform | >=1.0.0, <2.0 |
 
-Terraform 0.11. Pin module version to `~> v0.25.0`. Branch - `terraform_v0.11.x`.
 
 ## Usage
 
@@ -30,7 +31,7 @@ Run `terraform destroy` when you don't need these resources.
 
 API Gateway Endpoint resource with single OpenAPI document:
 
-```hcl
+```terraform
 resource "ibm_api_gateway_endpoint" "endpoint" {
   service_instance_crn = ibm_resource_instance.apigateway.id
   name                 = "test-endpoint"
@@ -40,7 +41,7 @@ resource "ibm_api_gateway_endpoint" "endpoint" {
 }
 ```
 API Gateway Endpoint resource with directory of OpenAPI documents:
-```hcl
+```terraform
 resource "ibm_api_gateway_endpoint" "endpoint" {
   for_each             = fileset(var.dir_path, "*.json")
   service_instance_crn = ibm_resource_instance.apigateway.id
@@ -51,7 +52,7 @@ resource "ibm_api_gateway_endpoint" "endpoint" {
 }
 ```
 API Gateway Endpoint Subscription Resource:
-```hcl
+```terraform
 resource "ibm_api_gateway_endpoint_subscription" "subs" {
   artifact_id   = data.ibm_api_gateway.endpoint.endpoints[0].endpoint_id
   client_id     = "testapikey"
@@ -64,7 +65,7 @@ resource "ibm_api_gateway_endpoint_subscription" "subs" {
 ##  API Gateway Data Source
 Lists all endpoints and its subscriptions of an API Gateway Instance.
 
-```hcl
+```terraform
 data "ibm_api_gateway" "endpoint"{
     service_instance_crn =ibm_resource_instance.apigateway.id
 }
@@ -72,13 +73,13 @@ data "ibm_api_gateway" "endpoint"{
 
 ## Assumptions
 
-1. It's recommended to use subscription resource by making the endpoint online. i.e manged attribute of endpoint resource should be true.
+1. It's recommended to use subscription resource by making the endpoint online. i.e managed attribute of endpoint resource should be `true`.
 2. To view the subscriptions it is required to enable any of the two options of `Application authentication via API key` under `Define and Secure` page and save the endpoint in API Gateway service page.
 3. The `client ID` of a particular subscription is available as an `API key` in the `Manage and Sharing` page of an endpoint of the API Gateway service.
 
 ## Notes
 
-1. Terraform IBM provider v1.4.0 (via Terraform 0.12) supports "Autogeneration of Client ID i.e API key and Client Secret for the endpoint subscription".
+1. Terraform IBM provider supports "Autogeneration of Client ID i.e API key and Client Secret for the endpoint subscription".
 
 ## Examples
 
@@ -89,7 +90,7 @@ data "ibm_api_gateway" "endpoint"{
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | >=1.0.0, <2.0 |
 
 Single OpenAPI document or directory of documents.
 
@@ -97,23 +98,23 @@ Single OpenAPI document or directory of documents.
 
 | Name | Version |
 |------|---------|
-| ibm | n/a |
+| ibm | Latest |
 
 ## Inputs
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | region | THe region where the resource has to be provisioned. Default: `us-south`| `string` | yes |
-| service\_name | The name of the API Gateway Service Instance. | `string` | yes |
+| service_name | The name of the API Gateway Service Instance. | `string` | yes |
 | endpoint_name | The name of the API Gateway Endpoint resource. | `string` | yes |
 | managed | Indicates whether endpoint is online or not. Default: false | `bool` | yes |
 | routes | Invokable routes for an endpoint | `list` | no |
-| file\_path | The API document name that represents the endpoint. It is required when a single endpoint is created| `string` | yes |
+| file_path | The API document name that represents the endpoint. It is required when a single endpoint is created| `string` | yes |
 | dir_path | The directory name of API documents that represents multiple endpoint. It is required when a multipple endpoints are created| `string` | no |
-| action\_type | The type of action that is performed on the API endpoint. Supported values are [`share`], [`unshare`], [`manage`], and [`unmanage`].To manage API to offline and online action\_type has to be set. The default value is [`unshare`]. Note that endpoint actions are performed by using the type parameter after the endpoint is created. As a consequence, endpoint actions are invoked during an endpoint update only. | `string` | required while managing actions. |
-| subscription\_name | The name of the subscription resource indicates the name for an API key. | `string` | yes |
-| client\_id | The API key to generate an API key for the subscription. The generated API key represents the ID of a subscription. If not provided it is auto generated. | `string` | yes |
-| subscription\_type | The type of the subscription resource indicates the type of API key sharing. Supported values are [`external`], and [`internal`]. | `string` | yes |
+| action_type | The type of action that is performed on the API endpoint. Supported values are [`share`], [`unshare`], [`manage`], and [`unmanage`].To manage API to offline and online action_type has to be set. The default value is [`unshare`]. Note that endpoint actions are performed by using the type parameter after the endpoint is created. As a consequence, endpoint actions are invoked during an endpoint update only. | `string` | required while managing actions. |
+| subscription_name | The name of the subscription resource indicates the name for an API key. | `string` | yes |
+| client_id | The API key to generate an API key for the subscription. The generated API key represents the ID of a subscription. If not provided it is auto generated. | `string` | yes |
+| subscription_type | The type of the subscription resource indicates the type of API key sharing. Supported values are [`external`], and [`internal`]. | `string` | yes |
 | secret | The secret of the API key. | `string` | yes |
 | generate_secret | It conflicts with secret. If `generate_secret`- `true`, secret is auto generated. | `bool` | no |
 

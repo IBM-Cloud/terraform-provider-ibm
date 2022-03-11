@@ -130,6 +130,12 @@ func DataSourceSnapshots() *schema.Resource {
 							Computed:    true,
 							Description: "The size of the snapshot",
 						},
+
+						isSnapshotCapturedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time that this snapshot was created",
+						},
 					},
 				},
 			},
@@ -198,6 +204,9 @@ func getSnapshots(d *schema.ResourceData, meta interface{}) error {
 			isSnapshotLCState:      *snapshot.LifecycleState,
 			isSnapshotResourceType: *snapshot.ResourceType,
 			isSnapshotBootable:     *snapshot.Bootable,
+		}
+		if snapshot.CapturedAt != nil {
+			l[isSnapshotCapturedAt] = (*snapshot.CapturedAt).String()
 		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 			l[isSnapshotResourceGroup] = *snapshot.ResourceGroup.ID

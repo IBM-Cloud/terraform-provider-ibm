@@ -64,6 +64,7 @@ In addition to all argument reference list, you can access the following attribu
 - `bounded_services` - List of strings - A list of IBM Cloud services that are bounded to the cluster.
 - `crn` - (String) The CRN of the cluster.
 - `id` - (String) The unique identifier of the cluster.
+- `image_security_enforcement` - (Bool) Indicates if image security enforcement policies are enabled in a cluster.
 - `ingress_hostname` - (String) The Ingress host name.
 - `ingress_secret` - (String) The name of the Ingress secret.
 - `name` - (String) The name of the cluster.

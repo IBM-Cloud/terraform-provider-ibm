@@ -20,6 +20,7 @@ const (
 	isVPCAddressPrefixVPCID      = "vpc"
 	isVPCAddressPrefixHasSubnets = "has_subnets"
 	isVPCAddressPrefixDefault    = "is_default"
+	isAddressPrefix              = "address_prefix"
 )
 
 func ResourceIBMISVpcAddressPrefix() *schema.Resource {
@@ -77,6 +78,12 @@ func ResourceIBMISVpcAddressPrefix() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The crn of the VPC resource",
+			},
+
+			isAddressPrefix: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier of the address prefix",
 			},
 		},
 	}
@@ -156,6 +163,7 @@ func vpcAddressPrefixCreate(d *schema.ResourceData, meta interface{}, name, zone
 
 	addrPrefixID := *addrPrefix.ID
 	d.SetId(fmt.Sprintf("%s/%s", vpcID, addrPrefixID))
+	d.Set(isAddressPrefix, addrPrefixID)
 	return nil
 }
 
@@ -200,6 +208,7 @@ func vpcAddressPrefixGet(d *schema.ResourceData, meta interface{}, vpcID, addrPr
 	}
 	d.Set(isVPCAddressPrefixCIDR, *addrPrefix.CIDR)
 	d.Set(isVPCAddressPrefixHasSubnets, *addrPrefix.HasSubnets)
+	d.Set(isAddressPrefix, addrPrefixID)
 	getVPCOptions := &vpcv1.GetVPCOptions{
 		ID: &vpcID,
 	}

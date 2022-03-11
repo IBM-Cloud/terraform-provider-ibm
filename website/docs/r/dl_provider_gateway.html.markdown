@@ -23,6 +23,7 @@ resource ibm_dl_provider_gateway test_dl_provider_gateway {
   speed_mbps = 1000 
   port = "434-c749-4f1d-b190-22"
   customer_account_id = "0c474da-c749-4f1d-b190-2333"
+  vlan = 35
 } 
 ```
 
@@ -36,6 +37,7 @@ Review the argument reference that you can specify for your resource.
 - `name` - (Required, String) The unique user-defined name for this gateway. Example: `myGateway`.
 - `port` - (Required, Forces new resource, String) The gateway port for type to connect gateway.
 - `speed_mbps`- (Required, Integer) The gateway speed in megabits per second. For example, `10.254.30.78/30`.
+- `vlan` - (Optional, Integer) VLAN requested for this gateway.
 
 
 ## Attribute reference
@@ -51,7 +53,7 @@ In addition to all argument reference list, you can access the following attribu
 - `operational_status` - (String) The gateway operational status. Supported values are`configuring`, `create_pending`, `create_rejected`, `delete_pending`, `provisioned`.
 - `port` - (String) The gateway port for `type=connect` gateways.
 - `provider_api_managed` - (String) Indicates whether the gateway changes need to be made via a provider portal.
-- `vlan` - (String) The VLAN allocated for the gateway. You can set only for `type=connect` gateways created directly through the IBM portal.
+- `vlan` - (String) VLAN requested for this gateway.
 
 ## Import
 The `ibm_dl_provider_gateway` resource can be imported by using gateway ID. 

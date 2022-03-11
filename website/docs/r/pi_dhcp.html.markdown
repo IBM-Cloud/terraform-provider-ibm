@@ -48,6 +48,7 @@ The `ibm_pi_dhcp` provides the following [timeouts](https://www.terraform.io/doc
 Review the argument references that you can specify for your resource. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with DHCP private network.
 
 ## Attribute reference
 

@@ -5,9 +5,11 @@ package vpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -97,6 +99,10 @@ const (
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
 	isInstancePlacementTarget           = "placement_target"
 	isPlacementTargetPlacementGroup     = "placement_group"
+
+	isInstanceDefaultTrustedProfileAutoLink = "default_trusted_profile_auto_link"
+	isInstanceDefaultTrustedProfileTarget   = "default_trusted_profile_target"
+	isInstanceMetadataServiceEnabled        = "metadata_service_enabled"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -195,7 +201,20 @@ func ResourceIBMISInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Profile info",
 			},
-
+			isInstanceDefaultTrustedProfileAutoLink: {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				RequiredWith: []string{isInstanceDefaultTrustedProfileTarget},
+				Description:  "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
+			},
+			isInstanceDefaultTrustedProfileTarget: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
+			},
 			isPlacementTargetDedicatedHost: {
 				Type:          schema.TypeString,
 				Optional:      true,
@@ -567,6 +586,13 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			isInstanceMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+			},
+
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -768,6 +794,24 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &vpcID,
 		},
 	}
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -930,6 +974,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -973,6 +1024,24 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		Name: &name,
 	}
 
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
 	if profile != "" {
 		instanceproto.Profile = &vpcv1.InstanceProfileIdentity{
 			Name: &profile,
@@ -1153,6 +1222,13 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	}
 
+	if metadataServiceEnabled, ok := d.GetOkExists(isInstanceMetadataServiceEnabled); ok {
+		metadataServiceEnabledBool := metadataServiceEnabled.(bool)
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabledBool,
+		}
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1166,6 +1242,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	log.Printf("[INFO] Instance : %s", *instance.ID)
 	d.Set(isInstanceStatus, instance.Status)
+
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -1201,6 +1281,26 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
+
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -1370,6 +1470,13 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1476,7 +1583,12 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 			close(communicator)
 			// taint the instance if status is failed
 			if *instance.Status == "failed" {
-				return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+				instanceStatusReason := instance.StatusReasons
+				out, err := json.MarshalIndent(instanceStatusReason, "", "    ")
+				if err != nil {
+					return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+				}
+				return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
 			}
 			return instance, *instance.Status, nil
 
@@ -1542,6 +1654,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
+	getinsIniOptions := &vpcv1.GetInstanceInitializationOptions{
+		ID: &id,
+	}
 	instance, response, err := instanceC.GetInstance(getinsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -1549,6 +1664,16 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return nil
 		}
 		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
+	}
+	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
+	}
+	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.AutoLink != nil {
+		d.Set(isInstanceDefaultTrustedProfileAutoLink, *instanceInitialization.DefaultTrustedProfile.AutoLink)
+	}
+	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.Target != nil {
+		d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID)
 	}
 
 	d.Set(isInstanceName, *instance.Name)
@@ -1732,7 +1857,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
 		d.Set(flex.ResourceGroupName, *instance.ResourceGroup.Name)
 	}
-
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 	if instance.Disks != nil {
 		disks := []map[string]interface{}{}
 		for _, disksItem := range instance.Disks {
@@ -2061,6 +2188,28 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updnetoptions.InstancePatch = instancePatch
 
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange(isInstanceMetadataServiceEnabled) && !d.IsNewResource() {
+		enabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		instancePatchModel := &vpcv1.InstancePatch{
+			MetadataService: &vpcv1.InstanceMetadataServicePatch{
+				Enabled: &enabled,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
 		if err != nil {
 			return err
 		}

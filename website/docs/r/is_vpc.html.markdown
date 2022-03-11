@@ -25,8 +25,8 @@ provider "ibm" {
 The following example to create a VPC:
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
 ```

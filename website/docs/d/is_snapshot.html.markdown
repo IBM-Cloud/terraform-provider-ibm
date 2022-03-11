@@ -24,62 +24,68 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            			    = "testsubnet"
-  vpc             			    = ibm_is_vpc.testacc_vpc.id
-  zone            			    = "us-south-2"
-  total_ipv4_address_count 	= 16
+resource "ibm_is_subnet" "example" {
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testvsi"
-  image   = "xxxxx-xxxxx-xxxxx-xxxxxx"
+resource "ibm_is_image" "example" {
+  name               = "example-image"
+  href               = "cos://us-south/buckettesttest/livecd.ubuntu-cpc.azure.vhd"
+  operating_system   = "ubuntu-16-04-amd64"
+  encrypted_data_key = "eJxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx0="
+  encryption_key     = "crn:v1:bluemix:public:kms:us-south:a/6xxxxxxxxxxxxxxx:xxxxxxx-xxxx-xxxx-xxxxxxx:key:dxxxxxx-fxxx-4xxx-9xxx-7xxxxxxxx"
+
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi"
+  image   = ibm_is_image.example.id
   profile = "bx2-2x8"
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
   network_interfaces {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     name   = "eth1"
   }
 }
-resource "ibm_is_snapshot" "testacc_snapshot" {
-  name            = "testsnapshot"
-  source_volume   = ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+resource "ibm_is_snapshot" "example" {
+  name          = "example-snapshot"
+  source_volume = ibm_is_instance.example.volume_attachments[0].volume_id
 }
 
-data "ibm_is_snapshot" "ds_snapshot1" {
-    identifier = ibm_is_snapshot.testacc_snapshot.id
+data "ibm_is_snapshot" "example" {
+  identifier = ibm_is_snapshot.example.id
 }
-
 ```
 
 ```terraform
-
-data "ibm_is_snapshot" "ds_snapshot2" {
-    name = ibm_is_snapshot.testacc_snapshot.name
+data "ibm_is_snapshot" "example" {
+  name = ibm_is_snapshot.example.name
 }
-
 ```
 
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
-- `identifier` - (Optional, String) The unique identifier for this snapshot.
-- `name` - (Optional, String) The name of the snapshot.
+- `identifier` - (Optional, String) The unique identifier for this snapshot,`name` and `identifier` are mutually exclusive.
+- `name` - (Optional, String) The name of the snapshot,`name` and `identifier` are mutually exclusive.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.
@@ -94,3 +100,4 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_type` - (String) The resource type.
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
+- `captured_at` - (String) The date and time that this snapshot was captured.

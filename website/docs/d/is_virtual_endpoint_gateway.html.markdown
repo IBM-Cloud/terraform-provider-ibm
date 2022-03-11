@@ -23,8 +23,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_virtual_endpoint_gateway" "data_test" {
-    name = ibm_is_virtual_endpoint_gateway.endpoint_gateway.name
+data "ibm_is_virtual_endpoint_gateway" "example" {
+  name = ibm_is_virtual_endpoint_gateway.example.name
 }
 ```
 
@@ -54,4 +54,6 @@ In addition to the argument reference list, you can access the following attribu
   - `name` - (String) The target name.
   - `resource_type` - (String) The resource type of the subnet reserved IP.
 - `vpc` - (String) The VPC ID.
+- `security_groups` (List) - The security groups to use for this endpoint gateway.
+
 

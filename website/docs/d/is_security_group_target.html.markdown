@@ -25,9 +25,9 @@ provider "ibm" {
 In the following example, you can create a security group target:
 
 ```terraform
-data "ibm_is_security_group_target" "testacc_security_group_target" {
-    security_group = "r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198"
-    name = "securitygrouptargetname"
+data "ibm_is_security_group_target" "example" {
+  security_group = ibm_is_security_group.example.id
+  name           = "example-security-group-target"
 }
 ```
 

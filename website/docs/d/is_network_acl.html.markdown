@@ -25,20 +25,20 @@ provider "ibm" {
 
 ```terraform
 resource "ibm_is_vpc" "example" {
-  name = "vpctest"
+  name = "example-vpc"
 }
 
 resource "ibm_is_network_acl" "example" {
-  name = "is-example-acl"
+  name = "example-network-acl"
   vpc  = ibm_is_vpc.example.id
-}  
+}
 
 data "ibm_is_network_acl" "example" {
   network_acl = ibm_is_network_acl.example.id
 }
 
 data "ibm_is_network_acl" "is_network_acl1" {
-  name = ibm_is_network_acl.example.name
+  name     = ibm_is_network_acl.example.name
   vpc_name = ibm_is_vpc.example.name
 }
 ```

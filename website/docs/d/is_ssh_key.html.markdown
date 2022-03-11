@@ -24,8 +24,8 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_ssh_key" "ds_key" {
-  name = "test"
+data "ibm_is_ssh_key" "example" {
+  name = "example-ssh-key"
 }
 
 ```

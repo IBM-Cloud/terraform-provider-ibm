@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_public_gateways" "testacc_dspgw"{
+data "ibm_is_public_gateways" "example"{
 }
 
 ```

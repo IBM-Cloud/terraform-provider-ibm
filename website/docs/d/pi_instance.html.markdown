@@ -44,8 +44,18 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
+- `addresses` - (Deprecated, List of objects) - The address associated with this instance.
+
+  Nested scheme for `addresses`:
+  - `ip` - (String) The IP address of the instance.
+  - `external_ip` - (String) The external IP address of the instance.
+  - `macaddress` - (String) The MAC address of the instance.
+  - `network_id` - (String) The network ID of the instance.
+  - `network_name` - (String) The network name of the instance.
+  - `type` - (String) The type of the network.
 - `health_status` - (String) The health of the instance.
 - `id` - (String) The unique identifier of the instance.
+- `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
 - `memory` - (Float) The amount of memory that is allocated to the instance.
 - `minproc`- (Float) The minimum number of processors that must be allocated to the instance. 
 - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
@@ -53,10 +63,9 @@ In addition to all argument reference list, you can access the following attribu
 - `minmem`- (Float) The minimum amount of memory that must be allocated to the instance.
 - `maxmem`- (Float) The maximum amount of memory that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum cores assigned to an instance.
-- `addresses` - List of objects - The address associated with this instance.
-- `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
+- `networks` - List of objects - The network associated with this instance.
 
-  Nested scheme for `addresses`:
+  Nested scheme for `networks`:
   - `ip` - (String) The IP address of the instance.
   - `external_ip` - (String) The external IP address of the instance.
   - `macaddress` - (String) The MAC address of the instance.

@@ -24,15 +24,15 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances" {
+data "ibm_is_instances" "example" {
 }
 
 ```
 
 ```terraform
 
-data "ibm_is_instances" "ds_instances1" {
-  vpc_name = "testacc_vpc"
+data "ibm_is_instances" "example" {
+  vpc_name = "example-vpc"
 }
 
 ```
@@ -86,6 +86,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
+	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
 	  Nested scheme for `network_interfaces`:

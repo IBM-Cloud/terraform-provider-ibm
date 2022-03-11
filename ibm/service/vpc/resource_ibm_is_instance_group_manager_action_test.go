@@ -62,6 +62,7 @@ func TestAccIBMISInstanceGroupManagerAction_basic_autoscale(t *testing.T) {
 	instanceGroupManager := fmt.Sprintf("testinstancegroupmanager%d", randInt)
 	instanceGroupManagerAutoscale := fmt.Sprintf("testinstancegroupmanagerautoscale%d", randInt)
 	instanceGroupManagerAction := fmt.Sprintf("testinstancegroupmanageraction%d", randInt)
+	instanceGroupManagerPolicyAction := fmt.Sprintf("testinstancegroupmanagerpolicy%d", randInt)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -69,7 +70,7 @@ func TestAccIBMISInstanceGroupManagerAction_basic_autoscale(t *testing.T) {
 		CheckDestroy: testAccCheckIBMISInstanceGroupManagerActionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerAction),
+				Config: testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerPolicyAction, instanceGroupManagerAction),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"ibm_is_instance_group_manager.instance_group_manager", "name", instanceGroupManager),
@@ -136,7 +137,7 @@ func testAccCheckIBMISInstanceGroupManagerActionConfig(vpcName, subnetName, sshK
 
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+	   image   = "%s"
 	   profile = "bx2-8x32"
 
 	   primary_network_interface {
@@ -170,11 +171,11 @@ func testAccCheckIBMISInstanceGroupManagerActionConfig(vpcName, subnetName, sshK
 		membership_count = 1
 	}
 
-	`, vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAction)
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName, acc.IsImage, instanceGroupName, instanceGroupManager, instanceGroupManagerAction)
 
 }
 
-func testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerAction string) string {
+func testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerPolicyAction, instanceGroupManagerAction string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
 		generation = 2
@@ -198,7 +199,7 @@ func testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetN
 
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
+	   image   = "%s"
 	   profile = "bx2-8x32"
 
 	   primary_network_interface {
@@ -241,7 +242,7 @@ func testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetN
 		metric_type = "cpu"
 		metric_value = 70
 		policy_type = "target"
-		name = "instancegrouppolicysunitha"
+		name = "%s"
 	}
 
 	resource "ibm_is_instance_group_manager_action" "instance_group_manager_action" {
@@ -254,6 +255,6 @@ func testAccCheckIBMISInstanceGroupManagerActionAutoscaleConfig(vpcName, subnetN
 		max_membership_count   = 2
 	  }
 
-	`, vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerAction)
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName, acc.IsImage, instanceGroupName, instanceGroupManager, instanceGroupManagerAutoscale, instanceGroupManagerPolicyAction, instanceGroupManagerAction)
 
 }

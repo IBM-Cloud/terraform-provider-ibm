@@ -24,13 +24,13 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_vpc_route" "testacc_vpc_route" {
-  name        = "routetest"
-  vpc         = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_vpc_route" "example" {
+  name        = "example-route"
+  vpc         = ibm_is_vpc.example.id
   zone        = "us-south-1"
   destination = "192.168.4.0/24"
   next_hop    = "10.0.0.4"

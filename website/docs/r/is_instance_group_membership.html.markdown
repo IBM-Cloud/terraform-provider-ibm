@@ -23,10 +23,10 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "is_instance_group_membership" "is_instance_group_membership" {
-  instance_group            = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
-  instance_group_membership = "eff45fa0-de38-4368-8a0d-28dc88c2ef9b"
-  name                      = "membershipname"
+resource "is_instance_group_membership" "example" {
+  instance_group            = ibm_is_instance_group.example.id
+  instance_group_membership = data.ibm_is_instance_group_memberships.example.memberships.0.instance_group_membership
+  name                      = "example-ig-membership"
 }
 ```
 

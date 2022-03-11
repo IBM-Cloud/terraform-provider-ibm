@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/api/globalsearch/globalsearchv2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -93,7 +94,7 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	resourceInfo := make([]map[string]interface{}, 0)
 	getCatalogOptions := &catalogmanagementv1.SearchObjectsOptions{}
 	// query := "kind%3Avpe+AND+svc+AND+parent_id%3Aus-south"
 	query := fmt.Sprintf("kind:vpe AND svc AND parent_id:%s", region)
@@ -126,15 +127,14 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 		}
 	}
 	if catalog != nil {
-		resourceInfo := make([]map[string]interface{}, 0)
 		for _, res := range catalog {
 			l := map[string]interface{}{}
 			if res.ParentID != nil {
 				l[isVPEResourceParent] = *res.ParentID
 			}
-			l[isVPEResourceName] = "provider_cloud_service"
+			l[isVPEResourceType] = "provider_cloud_service"
 			if res.Label != nil {
-				l[isVPEResourceType] = *res.Label
+				l[isVPEResourceName] = *res.Label
 			}
 			sl := ""
 			data := res.Data
@@ -158,9 +158,38 @@ func dataSourceIBMISEndpointGatewayTargetsRead(context context.Context, d *schem
 			}
 			resourceInfo = append(resourceInfo, l)
 		}
-		d.Set(isVPEResources, resourceInfo)
-		d.SetId(dataSourceIBMISEndpointGatewayTargetsId(d))
+		staticService := map[string]interface{}{}
+		staticService[isVPEResourceName] = "ibm-ntp-server"
+		staticService[isVPEResourceType] = "provider_infrastructure_service"
+		resourceInfo = append(resourceInfo, staticService)
 	}
+	queryString := "doc.extensions.virtual_private_endpoints.endpoints.ip_address:*"
+	fields := []string{"name", "region", "family", "type", "crn", "tags", "organization_guid", "doc.extensions", "doc.resource_group_id", "doc.space_guid", "resource_id"}
+	getSearchOptions := globalsearchv2.SearchBody{
+		Query:  queryString,
+		Fields: fields,
+	}
+	globalSearchClient, err := meta.(conns.ClientSession).GlobalSearchAPI()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	searchResult, err := globalSearchClient.Searches().PostQuery(getSearchOptions)
+	if err != nil {
+		log.Printf("[DEBUG] PostQuery on globalSearchApi for query string %s failed %s", queryString, err)
+		return diag.FromErr(err)
+	}
+	searchItems := searchResult.Items
+	for _, item := range searchItems {
+		info := map[string]interface{}{}
+		info[isVPEResourceName] = item.Name
+		info[isVPEResourceType] = item.Type
+		info[isVPEResourceCRN] = item.CRN
+		resourceInfo = append(resourceInfo, info)
+
+	}
+
+	d.Set(isVPEResources, resourceInfo)
+	d.SetId(dataSourceIBMISEndpointGatewayTargetsId(d))
 	return nil
 }
 func dataSourceIBMISEndpointGatewayTargetsId(d *schema.ResourceData) string {

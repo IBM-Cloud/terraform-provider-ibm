@@ -157,7 +157,7 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 	if v, ok := d.GetOk(helpers.PIInstanceCaptureVolumeIds); ok {
 		volids := flex.ExpandStringList((v.(*schema.Set)).List())
 		if len(volids) > 0 {
-			captureBody.CaptureVolumeIds = volids
+			captureBody.CaptureVolumeIDs = volids
 		}
 	}
 

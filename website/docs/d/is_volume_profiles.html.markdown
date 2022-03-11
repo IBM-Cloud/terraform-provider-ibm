@@ -24,7 +24,7 @@ provider "ibm" {
 
 ```terraform
 
-data "ibm_is_volume_profiles" "volprofiles"{
+data "ibm_is_volume_profiles" "example" {
 }
 
 ```

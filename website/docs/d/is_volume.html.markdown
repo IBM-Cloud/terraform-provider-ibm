@@ -23,13 +23,13 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_volume" "testacc_volume"{
-    name = "testvol"
-    profile = "10iops-tier"
-    zone = "us-south-1"
+resource "ibm_is_volume" "example" {
+  name    = "example-volume"
+  profile = "10iops-tier"
+  zone    = "us-south-1"
 }
-data "ibm_is_volume" "testacc_dsvol" {
-    name = ibm_is_volume.testacc_volume.name
+data "ibm_is_volume" "example" {
+  name = ibm_is_volume.example.name
 }
 
 ```

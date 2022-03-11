@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_operating_systems" "testacc_dsoslist"{
+data "ibm_is_operating_systems" "example"{
 }
 ```
 
