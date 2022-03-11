@@ -1,3 +1,11 @@
+# 1.39.2 (Mar11, 2022)
+BUGFIXES:
+* fix proxy on kms client ([3634](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3634))
+* Fix crash on resource_instance ([3643](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3643))
+* SCC data.ibm_scc_posture_latest_scans failing ([3594](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3594))
+* Error: Collector Creation in Security Posture Management API service: us region not supported ([3630](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3630))
+* Fix ibm_cloud_shell_account_settings IAM issue ([3654](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3654))
+
 # 1.39.1 (Mar02, 2022)
 BUGFIXES:
 * Fix the breaking change of 1.39.0 release for ibm_is_instance resource for force_new on VSI([3619](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3619))
