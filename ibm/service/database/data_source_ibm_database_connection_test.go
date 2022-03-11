@@ -7,20 +7,22 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMDatabaseConnectionDataSourceBasic(t *testing.T) {
+	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMDatabaseConnectionDataSourceConfigBasic(),
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresql(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "user_id"),
@@ -31,13 +33,36 @@ func TestAccIBMDatabaseConnectionDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseConnectionDataSourceConfigBasic() string {
+func testAccCheckIBMDatabaseDataSourceConfig2(name string) string {
 	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+	}
+
+	data "ibm_database" "%[1]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = ibm_database.db.name
+	}
+
+	resource "ibm_database" "db" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[1]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "au-syd"
+		tags              = ["one:two"]
+	}
+
+				`, name)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresql(name string) string {
+	return testAccCheckIBMDatabaseDataSourceConfig2(name) + `
 		data "ibm_database_connection" "database_connection" {
-			id = "crn:v1:bluemix:public:databases-for-postgresql:us-east:a/40ddc34a953a8c02f10987b59085b60e:dd922d62-2fda-43fa-ab1f-9f4d058d5893::"
+			id = ibm_database.db.id
 			user_type = "database"
 			user_id = "user_id"
 			endpoint_type = "public"
 		}
-	`)
+	  `
 }
