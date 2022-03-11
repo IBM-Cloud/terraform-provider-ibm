@@ -27,6 +27,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -233,6 +234,7 @@ type ClientSession interface {
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
+	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
@@ -391,6 +393,10 @@ type clientSession struct {
 	// CIS Zones
 	cisZonesErr      error
 	cisZonesV1Client *ciszonesv1.ZonesV1
+
+	// CIS Alerts
+	cisAlertsClient *cisalertsv1.AlertsV1
+	cisAlertsErr    error
 
 	// CIS dns service options
 	cisDNSErr           error
@@ -879,6 +885,14 @@ func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1
 	return sess.cisDomainSettingsClient.Clone(), nil
 }
 
+// CIS Alerts
+func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
+	if sess.cisAlertsErr != nil {
+		return sess.cisAlertsClient, sess.cisAlertsErr
+	}
+	return sess.cisAlertsClient.Clone(), nil
+}
+
 // CIS Routing
 func (sess clientSession) CisRoutingClientSession() (*cisroutingv1.RoutingV1, error) {
 	if sess.cisRoutingErr != nil {
@@ -1108,6 +1122,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.functionIAMNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisAlertsErr = errEmptyBluemixCredentials
 		session.cisDNSBulkErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
 		session.cisGLBErr = errEmptyBluemixCredentials
@@ -2112,6 +2127,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
 		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisRLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	// IBM Network CIS Alerts
+	cisAlertsOpt := &cisalertsv1.AlertsV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisAlertsClient, session.cisAlertsErr = cisalertsv1.NewAlertsV1(cisAlertsOpt)
+	if session.cisAlertsErr != nil {
+		session.cisAlertsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Alerts : %s",
+				session.cisAlertsErr)
+	}
+	if session.cisAlertsClient != nil && session.cisAlertsClient.Service != nil {
+		session.cisAlertsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisAlertsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
