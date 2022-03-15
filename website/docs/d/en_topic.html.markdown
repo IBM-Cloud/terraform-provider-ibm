@@ -14,7 +14,7 @@ Provides a read-only data source for topic. You can then reference the fields of
 
 ```terraform
 data "ibm_en_topic" "en_topic" {
-  instance_guid = "instance_guid"
+  instance_guid = "my_instance_guid"
   topic_id = "topic_id"
 }
 ```
