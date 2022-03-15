@@ -68,7 +68,6 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
 - `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
-- `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
@@ -78,6 +77,7 @@ In addition to all argument reference list, you can access the following attribu
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
 - `locations` - (Set) Locations on which the custom resolver will be running.
+- `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
 
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
