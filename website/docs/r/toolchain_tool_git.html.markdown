@@ -14,6 +14,8 @@ Provides a resource for toolchain_tool_git. This allows toolchain_tool_git to be
 
 ```hcl
 resource "ibm_toolchain_tool_git" "toolchain_tool_git" {
+  git_provider = "git_provider"
+  initialization = {  }
   toolchain_id = "toolchain_id"
 }
 ```
@@ -27,16 +29,27 @@ Nested scheme for **container**:
 	* `guid` - (Required, String)
 	* `type` - (Required, String)
 	  * Constraints: Allowable values are: `organization_guid`, `resource_group_id`.
+* `git_provider` - (Required, Forces new resource, String) 
+* `initialization` - (Required, List) 
+Nested scheme for **initialization**:
+	* `private_repo` - (Optional, Forces new resource, Boolean) Select this check box to make this repository private.
+	  * Constraints: The default value is `false`.
+	* `repo_name` - (Optional, Forces new resource, String)
+	* `repo_url` - (Optional, Forces new resource, String) Type the URL of the repository that you are linking to.
+	* `source_repo_url` - (Optional, Forces new resource, String) Type the URL of the repository that you are forking or cloning.
+	* `type` - (Optional, Forces new resource, String)
+	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `parameters` - (Optional, List) 
 Nested scheme for **parameters**:
-	* `action` - (Optional, Forces new resource, String)
-	  * Constraints: Allowable values are: `clone`, `new`, `existing`.
 	* `enable_traceability` - (Optional, Boolean)
 	* `has_issues` - (Optional, Boolean)
-	* `legal` - (Optional, Boolean)
-	* `repo_url` - (Optional, String)
-* `parameters_references` - (Optional, Map) Decoded values used on provision in the broker that reference fields in the parameters.
-* `provider` - (Optional, Forces new resource, String) 
+	* `private_repo` - (Optional, Boolean) Select this check box to make this repository private.
+	  * Constraints: The default value is `false`.
+	* `repo_name` - (Optional, String)
+	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
+	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
+	* `type` - (Optional, String)
+	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `toolchain_id` - (Required, Forces new resource, String) 
 
 ## Attribute Reference

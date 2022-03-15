@@ -18,6 +18,7 @@ import (
 
 func TestAccIbmToolchainToolGitBasic(t *testing.T) {
 	var conf ibmtoolchainapiv2.ServiceResponse
+	gitProvider := fmt.Sprintf("tf_git_provider_%d", acctest.RandIntRange(10, 100))
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -26,32 +27,11 @@ func TestAccIbmToolchainToolGitBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmToolchainToolGitDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolGitConfigBasic(toolchainID),
+				Config: testAccCheckIbmToolchainToolGitConfigBasic(gitProvider, toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "git_provider", gitProvider),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "toolchain_id", toolchainID),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIbmToolchainToolGitAllArgs(t *testing.T) {
-	var conf ibmtoolchainapiv2.ServiceResponse
-	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	provider := fmt.Sprintf("tf_provider_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolGitDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolGitConfig(toolchainID, provider),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "provider", provider),
 				),
 			},
 			resource.TestStep{
@@ -63,35 +43,21 @@ func TestAccIbmToolchainToolGitAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolGitConfigBasic(toolchainID string) string {
+func testAccCheckIbmToolchainToolGitConfigBasic(gitProvider string, toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_git" "toolchain_tool_git" {
+			git_provider = "%s"
 			toolchain_id = "%s"
-		}
-	`, toolchainID)
-}
-
-func testAccCheckIbmToolchainToolGitConfig(toolchainID string, provider string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_toolchain_tool_git" "toolchain_tool_git" {
-			toolchain_id = "%s"
-			provider = "%s"
-			parameters {
+			initialization {
+				repo_name = "repo_name"
 				repo_url = "repo_url"
-				action = "clone"
-				legal = true
-				enable_traceability = true
-				has_issues = true
-			}
-			parameters_references = "FIXME"
-			container {
-				guid = "d02d29f1-e7bb-4977-8a6f-26d7b7bb893e"
-				type = "organization_guid"
+				source_repo_url = "source_repo_url"
+				type = "new"
+				private_repo = true
 			}
 		}
-	`, toolchainID, provider)
+	`, gitProvider, toolchainID)
 }
 
 func testAccCheckIbmToolchainToolGitExists(n string, obj ibmtoolchainapiv2.ServiceResponse) resource.TestCheckFunc {

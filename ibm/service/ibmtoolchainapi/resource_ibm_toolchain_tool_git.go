@@ -25,15 +25,64 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"git_provider": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
 			"toolchain_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"git_provider": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+			"initialization": &schema.Schema{
+				Type:     schema.TypeList,
+				MinItems: 1,
+				MaxItems: 1,
+				Required: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"repo_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Type the URL of the repository that you are linking to.",
+						},
+						"source_repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Type the URL of the repository that you are forking or cloning.",
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"private_repo": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+							Description: "Select this check box to make this repository private.",
+						},
+						"git_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"owner_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
 			},
 			"parameters": &schema.Schema{
 				Type:     schema.TypeList,
@@ -41,19 +90,6 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"repo_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"action": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
 						"enable_traceability": &schema.Schema{
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -62,14 +98,39 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
+						"repo_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type the URL of the repository that you are linking to.",
+						},
+						"source_repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type the URL of the repository that you are forking or cloning.",
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"private_repo": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Select this check box to make this repository private.",
+						},
+						"git_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"owner_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
-			},
-			"parameters_references": &schema.Schema{
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Decoded values used on provision in the broker that reference fields in the parameters.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"container": &schema.Schema{
 				Type:     schema.TypeList,
@@ -92,6 +153,7 @@ func ResourceIbmToolchainToolGit() *schema.Resource {
 			"dashboard_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
 				Description: "The URL of a user-facing user interface for this instance of a service.",
 			},
 		},
@@ -106,20 +168,21 @@ func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.Resour
 
 	createServiceInstanceOptions := &ibmtoolchainapiv2.CreateServiceInstanceOptions{}
 
+	createServiceInstanceOptions.SetServiceID(d.Get("git_provider").(string))
 	createServiceInstanceOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	if _, ok := d.GetOk("git_provider"); ok {
-		createServiceInstanceOptions.SetServiceID(d.Get("git_provider").(string))
-	}
+	modelMapParam := make(map[string]interface{})
 	if _, ok := d.GetOk("parameters"); ok {
-		parameters, err := ResourceIbmToolchainToolGitMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createServiceInstanceOptions.SetParameters(parameters)
+		modelMapParam = d.Get("parameters.0").(map[string]interface{})
 	}
-	if _, ok := d.GetOk("parameters_references"); ok {
-		// TODO: Add code to handle map container: ParametersReferences
+	parameters, err := ResourceIbmToolchainToolGitMapToParametersCreate(d.Get("initialization.0").(map[string]interface{}), modelMapParam)
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	if d.Get("git_provider").(string) == "github_integrated" {
+		parameters["legal"] = true
+	}
+	createServiceInstanceOptions.SetParameters(parameters)
+
 	if _, ok := d.GetOk("container"); ok {
 		container, err := ResourceIbmToolchainToolGitMapToContainer(d.Get("container.0").(map[string]interface{}))
 		if err != nil {
@@ -159,17 +222,15 @@ func ResourceIbmToolchainToolGitRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("GetServiceInstanceWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", serviceResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
+
 	if serviceResponse.Parameters != nil {
 		parametersMap, err := ResourceIbmToolchainToolGitParametersToMap(serviceResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		oldParams := d.Get("parameters.0").(map[string]interface{})
-		parametersMap["action"] = oldParams["action"]
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -183,6 +244,7 @@ func ResourceIbmToolchainToolGitRead(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("Error setting container: %s", err))
 		}
 	}
+
 	if err = d.Set("dashboard_url", serviceResponse.DashboardURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting dashboard_url: %s", err))
 	}
@@ -202,35 +264,27 @@ func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.Resour
 
 	hasChange := false
 
-	if d.HasChange("toolchain_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "toolchain_id"))
-	}
 	if d.HasChange("git_provider") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "git_provider"))
+	}
+	if d.HasChange("toolchain_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("container") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "container"))
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolGitMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIbmToolchainToolGitMapToParametersUpdate(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		if d.Get("git_provider").(string) == "github_integrated" {
+			parameters["legal"] = true
+		}
 		patchServiceInstanceOptions.SetParameters(parameters)
-		hasChange = true
-	}
-	// if d.HasChange("parameters.0.has_issues") {
-	// 	modelMap := make(map[string]interface{})
-	// 	modelMap["has_issues"] = d.Get("parameters.0.has_issues").(bool)
-	// 	patchServiceInstanceOptions.SetParameters(modelMap)
-	// 	hasChange = true
-	// }
-
-	if d.HasChange("parameters_references") {
-		// TODO: handle ParametersReferences of type TypeMap -- not primitive, not model
 		hasChange = true
 	}
 
@@ -266,22 +320,67 @@ func ResourceIbmToolchainToolGitDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func ResourceIbmToolchainToolGitMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolGitMapToParametersCreate(modelMapInit map[string]interface{}, modelMapParam map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
-	if modelMap["repo_url"] != nil {
-		model["repo_url"] = core.StringPtr(modelMap["repo_url"].(string))
+	if modelMapInit["repo_name"] != nil {
+		model["repo_name"] = core.StringPtr(modelMapInit["repo_name"].(string))
 	}
-	if modelMap["action"] != nil {
-		model["type"] = core.StringPtr(modelMap["action"].(string))
+	if modelMapInit["repo_url"] != nil {
+		model["repo_url"] = core.StringPtr(modelMapInit["repo_url"].(string))
+		log.Printf("[INFO] init %s", *model["repo_url"].(*string))
 	}
-	if modelMap["legal"] != nil {
-		model["legal"] = core.BoolPtr(modelMap["legal"].(bool))
+	if modelMapInit["source_repo_url"] != nil {
+		model["source_repo_url"] = core.StringPtr(modelMapInit["source_repo_url"].(string))
 	}
+	if modelMapInit["type"] != nil {
+		model["type"] = core.StringPtr(modelMapInit["type"].(string))
+	}
+	if modelMapInit["private_repo"] != nil {
+		model["private_repo"] = core.BoolPtr(modelMapInit["private_repo"].(bool))
+	}
+	if modelMapInit["git_id"] != nil {
+		model["git_id"] = core.StringPtr(modelMapInit["git_id"].(string))
+	}
+	if modelMapInit["owner_id"] != nil {
+		model["owner_id"] = core.StringPtr(modelMapInit["owner_id"].(string))
+	}
+	if modelMapParam["enable_traceability"] != nil {
+		model["enable_traceability"] = core.BoolPtr(modelMapParam["enable_traceability"].(bool))
+	}
+	if modelMapParam["has_issues"] != nil {
+		model["has_issues"] = core.BoolPtr(modelMapParam["has_issues"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIbmToolchainToolGitMapToParametersUpdate(modelMap map[string]interface{}) (map[string]interface{}, error) {
+	model := make(map[string]interface{})
 	if modelMap["enable_traceability"] != nil {
 		model["enable_traceability"] = core.BoolPtr(modelMap["enable_traceability"].(bool))
 	}
 	if modelMap["has_issues"] != nil {
 		model["has_issues"] = core.BoolPtr(modelMap["has_issues"].(bool))
+	}
+	if modelMap["repo_name"] != nil {
+		model["repo_name"] = core.StringPtr(modelMap["repo_name"].(string))
+	}
+	if modelMap["repo_url"] != nil {
+		model["repo_url"] = core.StringPtr(modelMap["repo_url"].(string))
+	}
+	if modelMap["source_repo_url"] != nil {
+		model["source_repo_url"] = core.StringPtr(modelMap["source_repo_url"].(string))
+	}
+	if modelMap["type"] != nil {
+		model["type"] = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["private_repo"] != nil {
+		model["private_repo"] = core.BoolPtr(modelMap["private_repo"].(bool))
+	}
+	if modelMap["git_id"] != nil {
+		model["git_id"] = core.StringPtr(modelMap["git_id"].(string))
+	}
+	if modelMap["owner_id"] != nil {
+		model["owner_id"] = core.StringPtr(modelMap["owner_id"].(string))
 	}
 	return model, nil
 }
@@ -295,17 +394,32 @@ func ResourceIbmToolchainToolGitMapToContainer(modelMap map[string]interface{}) 
 
 func ResourceIbmToolchainToolGitParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model["repo_url"] != nil {
-		modelMap["repo_url"] = model["repo_url"]
-	}
-	if model["legal"] != nil {
-		modelMap["legal"] = model["legal"]
-	}
 	if model["enable_traceability"] != nil {
 		modelMap["enable_traceability"] = model["enable_traceability"]
 	}
 	if model["has_issues"] != nil {
 		modelMap["has_issues"] = model["has_issues"]
+	}
+	if model["repo_name"] != nil {
+		modelMap["repo_name"] = model["repo_name"]
+	}
+	if model["repo_url"] != nil {
+		modelMap["repo_url"] = model["repo_url"]
+	}
+	if model["source_repo_url"] != nil {
+		modelMap["source_repo_url"] = model["source_repo_url"]
+	}
+	if model["type"] != nil {
+		modelMap["type"] = model["type"]
+	}
+	if model["private_repo"] != nil {
+		modelMap["private_repo"] = model["private_repo"]
+	}
+	if model["git_id"] != nil {
+		modelMap["git_id"] = model["git_id"]
+	}
+	if model["owner_id"] != nil {
+		modelMap["owner_id"] = model["owner_id"]
 	}
 	return modelMap, nil
 }
