@@ -22,7 +22,7 @@ require (
 	github.com/IBM/platform-services-go-sdk v0.22.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.4
-	github.com/IBM/scc-go-sdk/v3 v3.1.0
+	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/schematics-go-sdk v0.1.3
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
 	github.com/IBM/vpc-go-sdk v0.17.0

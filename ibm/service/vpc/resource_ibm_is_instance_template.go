@@ -50,6 +50,8 @@ const (
 	isInstanceTemplateResourceType                 = "resource_type"
 	isInstanceTemplateVolumeDeleteOnInstanceDelete = "delete_volume_on_instance_delete"
 	isInstanceTemplateMetadataServiceEnabled       = "metadata_service_enabled"
+	isInstanceTemplateAvailablePolicyHostFailure   = "availability_policy_host_failure"
+	isInstanceTemplateHostFailure                  = "host_failure"
 )
 
 func ResourceIBMISInstanceTemplate() *schema.Resource {
@@ -75,6 +77,14 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+			isInstanceTemplateAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+			},
+
 			isInstanceTemplateName: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -397,7 +407,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 }
 
 func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
-
+	host_failure := "restart, stop"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -415,6 +425,13 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeInt,
 			Optional:                   true,
 			MinValue:                   "500"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceTemplateAvailablePolicyHostFailure,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              host_failure})
 
 	ibmISInstanceTemplateValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
@@ -518,6 +535,12 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
 			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
+		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &availablePolicyHostFailure,
 		}
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
@@ -784,6 +807,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.Set(isInstanceTemplateName, *instance.Name)
 	d.Set(isInstanceTemplateCRN, *instance.CRN)
+	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+		d.Set(isInstanceTemplateAvailablePolicyHostFailure, instance.AvailabilityPolicy.HostFailure)
+	}
 	if instance.Profile != nil {
 		instanceProfileIntf := instance.Profile
 		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)

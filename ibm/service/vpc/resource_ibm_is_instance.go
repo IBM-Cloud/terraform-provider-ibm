@@ -75,15 +75,17 @@ const (
 	isInstanceDeleteDone              = "done"
 	isInstanceFailed                  = "failed"
 
-	isInstanceStatusRestarting     = "restarting"
-	isInstanceStatusStarting       = "starting"
-	isInstanceActionStatusStopping = "stopping"
-	isInstanceActionStatusStopped  = "stopped"
-	isInstanceStatusPending        = "pending"
-	isInstanceStatusRunning        = "running"
-	isInstanceStatusFailed         = "failed"
+	isInstanceStatusRestarting           = "restarting"
+	isInstanceStatusStarting             = "starting"
+	isInstanceActionStatusStopping       = "stopping"
+	isInstanceActionStatusStopped        = "stopped"
+	isInstanceStatusPending              = "pending"
+	isInstanceStatusRunning              = "running"
+	isInstanceStatusFailed               = "failed"
+	isInstanceAvailablePolicyHostFailure = "availability_policy_host_failure"
 
 	isInstanceBootAttachmentName = "name"
+	isInstanceBootVolumeId       = "volume_id"
 	isInstanceBootSize           = "size"
 	isInstanceBootIOPS           = "iops"
 	isInstanceBootEncryption     = "encryption"
@@ -158,6 +160,13 @@ func ResourceIBMISInstance() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+			isInstanceAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+			},
+
 			isInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -443,11 +452,10 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceBootVolume: {
-				Type:             schema.TypeList,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Optional:         true,
-				Computed:         true,
-				MaxItems:         1,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceBootAttachmentName: {
@@ -457,22 +465,30 @@ func ResourceIBMISInstance() *schema.Resource {
 							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
+						isInstanceBootVolumeId: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
 						isInstanceVolumeSnapshot: {
-							Type:          schema.TypeString,
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate},
-							Optional:      true,
-							ForceNew:      true,
+							Type:             schema.TypeString,
+							RequiredWith:     []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							AtLeastOneOf:     []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot"},
+							ConflictsWith:    []string{isInstanceImage, isInstanceSourceTemplate},
+							Optional:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 						isInstanceBootEncryption: {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Computed:         true,
 						},
 						isInstanceBootSize: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootSize),
 						},
 						isInstanceBootIOPS: {
 							Type:     schema.TypeInt,
@@ -726,6 +742,7 @@ func ResourceIBMISInstance() *schema.Resource {
 
 func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	actions := "stop, start, reboot"
+	host_failure := "restart, stop"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -754,6 +771,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MinValue:                   "500"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 isInstanceBootSize,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "250"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
 			Identifier:                 isInstanceAction,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
@@ -769,6 +794,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceAvailablePolicyHostFailure,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              host_failure})
 
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
@@ -812,6 +845,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
 		}
 	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -843,6 +883,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1082,7 +1128,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 		instanceproto.PlacementTarget = placementGrp
 	}
-
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
@@ -1090,6 +1141,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1330,6 +1387,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
 		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
+		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
 		if ok && encstr != "" {
@@ -1469,7 +1532,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		}
 
 	}
-
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
 	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
 	if metadataServiceEnabled {
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
@@ -1676,6 +1744,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID)
 	}
 
+	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
+	}
 	d.Set(isInstanceName, *instance.Name)
 	if instance.Profile != nil {
 		d.Set(isInstanceProfile, *instance.Profile.Name)
@@ -1818,6 +1889,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVol := map[string]interface{}{}
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
+			bootVol[isInstanceBootVolumeId] = *instance.BootVolumeAttachment.Volume.ID
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -1831,6 +1903,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				bootVol[isInstanceBootProfile] = *vol.Profile.Name
 				if vol.EncryptionKey != nil {
 					bootVol[isInstanceBootEncryption] = *vol.EncryptionKey.CRN
+				}
+				if vol.SourceSnapshot != nil {
+					bootVol[isInstanceVolumeSnapshot] = vol.SourceSnapshot.ID
 				}
 			}
 		}
@@ -1888,6 +1963,40 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
+
+	bootVolSize := "boot_volume.0.size"
+	if d.HasChange(bootVolSize) && !d.IsNewResource() {
+		old, new := d.GetChange(bootVolSize)
+		if new.(int) < old.(int) {
+			return fmt.Errorf("[ERROR] Error while updating boot volume size of the instance, only expansion is possible")
+		}
+		bootVol := int64(new.(int))
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Capacity: &bootVol,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume of instance %s/n%s", err, res))
+		}
+
+		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
+	}
 
 	if d.HasChange(isInstanceAction) && !d.IsNewResource() {
 
@@ -2201,6 +2310,28 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		instancePatchModel := &vpcv1.InstancePatch{
 			MetadataService: &vpcv1.InstanceMetadataServicePatch{
 				Enabled: &enabled,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(isInstanceAvailablePolicyHostFailure) && !d.IsNewResource() {
+
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		availablePolicyHostFailure := d.Get(isInstanceAvailablePolicyHostFailure).(string)
+		instancePatchModel := &vpcv1.InstancePatch{
+			AvailabilityPolicy: &vpcv1.InstanceAvailabilityPolicyPatch{
+				HostFailure: &availablePolicyHostFailure,
 			},
 		}
 		instancePatch, err := instancePatchModel.AsPatch()

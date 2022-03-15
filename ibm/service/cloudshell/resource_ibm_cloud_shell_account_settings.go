@@ -208,7 +208,7 @@ func resourceIBMCloudShellAccountSettingsRead(context context.Context, d *schema
 
 	getAccountSettingsOptions := &ibmcloudshellv1.GetAccountSettingsOptions{}
 
-	getAccountSettingsOptions.SetAccountID(strings.Trim(d.Id(), "ac-"))
+	getAccountSettingsOptions.SetAccountID(strings.TrimPrefix(d.Id(), "ac-"))
 
 	accountSettings, response, err := ibmCloudShellClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
 	if err != nil {
@@ -308,7 +308,7 @@ func resourceIBMCloudShellAccountSettingsUpdate(context context.Context, d *sche
 
 	updateAccountSettingsOptions := &ibmcloudshellv1.UpdateAccountSettingsOptions{}
 
-	updateAccountSettingsOptions.SetAccountID(strings.Trim(d.Id(), "ac-"))
+	updateAccountSettingsOptions.SetAccountID(strings.TrimPrefix(d.Id(), "ac-"))
 	hasChange := false
 	updateAccountSettingsOptions.SetRev(d.Get("rev").(string))
 	if d.HasChange("default_enable_new_features") {

@@ -97,6 +97,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isInstanceAvailablePolicyHostFailure: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
+						},
 						isInstanceTemplatesName: {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -369,6 +374,9 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 			template[isInstanceTemplateMetadataServiceEnabled] = *instance.MetadataService.Enabled
 		}
 
+		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+			template[isInstanceTemplateAvailablePolicyHostFailure] = *instance.AvailabilityPolicy.HostFailure
+		}
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {

@@ -414,3 +414,28 @@ resource "ibm_cis_webhook" "test" {
 data "ibm_cis_webhooks" "test1" {
   cis_id = data.ibm_cis.cis.id
 }
+
+# CIS Alert Policy
+resource "ibm_cis_alert" "test" {
+  depends_on  = [ibm_cis_webhook.test]
+  cis_id      = data.ibm_cis.cis.id
+  name        = "test-alert-police"
+  description = "alert policy description"
+  enabled     = true
+  alert_type = "clickhouse_alert_fw_anomaly"
+  mechanisms {
+    email    = ["mynotifications@email.com"]
+    webhooks = [ibm_cis_webhook.test.webhook_id]
+  }
+ filters =<<FILTERS
+  		{}
+  		FILTERS
+ conditions =<<CONDITIONS
+  		{}
+  		CONDITIONS
+
+} 
+# CIS Alert Policy Data source
+data "ibm_cis_alerts" "test1" {
+  cis_id = data.ibm_cis.cis.id
+}

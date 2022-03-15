@@ -33,6 +33,7 @@ data "ibm_is_instance_templates" "example" {
 You can access the following attribute references after your data source is created. 
 
 - `templates` - (List of Objects) List of templates.
+	- `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
 	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:

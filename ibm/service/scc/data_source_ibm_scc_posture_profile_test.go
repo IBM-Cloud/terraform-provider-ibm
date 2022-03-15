@@ -41,7 +41,7 @@ func testAccCheckIBMSccPostureProfileDetailsDataSourceConfigBasic(profileId stri
 	return fmt.Sprintf(`
 		data "ibm_scc_posture_profile" "profile_details" {
 			profile_id = "%s"
-			profile_type = "4"
+			profile_type = "authored"
 		}
 	`, profileId)
 }

@@ -488,6 +488,12 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   zone = var.zone1
 }
 
+// subnet public gateway attachment
+resource "ibm_is_subnet_public_gateway_attachment" "example" {
+  subnet      	  = ibm_is_subnet.subnet1.id
+  public_gateway 	= ibm_is_public_gateway.publicgateway1.id
+}
+
 data "ibm_is_public_gateway" "testacc_dspgw"{
   name = ibm_is_public_gateway.publicgateway1.name
 }

@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
 func DataSourceIBMSccPostureScanSummaries() *schema.Resource {
