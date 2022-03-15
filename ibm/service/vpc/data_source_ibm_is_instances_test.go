@@ -54,6 +54,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttrSet(resName, "instances.0.profile"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.vcpu.#"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.zone"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.availability_policy.#"),
 				),
 			},
 		},

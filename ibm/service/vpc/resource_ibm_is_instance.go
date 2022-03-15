@@ -75,13 +75,14 @@ const (
 	isInstanceDeleteDone              = "done"
 	isInstanceFailed                  = "failed"
 
-	isInstanceStatusRestarting     = "restarting"
-	isInstanceStatusStarting       = "starting"
-	isInstanceActionStatusStopping = "stopping"
-	isInstanceActionStatusStopped  = "stopped"
-	isInstanceStatusPending        = "pending"
-	isInstanceStatusRunning        = "running"
-	isInstanceStatusFailed         = "failed"
+	isInstanceStatusRestarting           = "restarting"
+	isInstanceStatusStarting             = "starting"
+	isInstanceActionStatusStopping       = "stopping"
+	isInstanceActionStatusStopped        = "stopped"
+	isInstanceStatusPending              = "pending"
+	isInstanceStatusRunning              = "running"
+	isInstanceStatusFailed               = "failed"
+	isInstanceAvailablePolicyHostFailure = "availability_policy_host_failure"
 
 	isInstanceBootAttachmentName = "name"
 	isInstanceBootVolumeId       = "volume_id"
@@ -159,6 +160,13 @@ func ResourceIBMISInstance() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+			isInstanceAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+			},
+
 			isInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -734,6 +742,7 @@ func ResourceIBMISInstance() *schema.Resource {
 
 func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	actions := "stop, start, reboot"
+	host_failure := "restart, stop"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -786,6 +795,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             63})
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceAvailablePolicyHostFailure,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              host_failure})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -828,6 +845,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
 		}
 	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -1104,7 +1128,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 		instanceproto.PlacementTarget = placementGrp
 	}
-
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
@@ -1503,7 +1532,12 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		}
 
 	}
-
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
 	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
 	if metadataServiceEnabled {
 		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
@@ -1710,6 +1744,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID)
 	}
 
+	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
+	}
 	d.Set(isInstanceName, *instance.Name)
 	if instance.Profile != nil {
 		d.Set(isInstanceProfile, *instance.Profile.Name)
@@ -2273,6 +2310,28 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		instancePatchModel := &vpcv1.InstancePatch{
 			MetadataService: &vpcv1.InstanceMetadataServicePatch{
 				Enabled: &enabled,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(isInstanceAvailablePolicyHostFailure) && !d.IsNewResource() {
+
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		availablePolicyHostFailure := d.Get(isInstanceAvailablePolicyHostFailure).(string)
+		instancePatchModel := &vpcv1.InstancePatch{
+			AvailabilityPolicy: &vpcv1.InstanceAvailabilityPolicyPatch{
+				HostFailure: &availablePolicyHostFailure,
 			},
 		}
 		instancePatch, err := instancePatchModel.AsPatch()
