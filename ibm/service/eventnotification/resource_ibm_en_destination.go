@@ -61,6 +61,16 @@ func ResourceIBMEnDestination() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"sender_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The Sender_id value for FCM project.",
+									},
+									"server_key": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The Server_key value for FCM project.",
+									},
 									"url": {
 										Type:        schema.TypeString,
 										Optional:    true,
@@ -123,7 +133,7 @@ func ResourceIBMEnDestinationValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "webhook",
+			AllowedValues:              "webhook,push_android",
 			MinValueLength:             1,
 		},
 	)
@@ -144,11 +154,12 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 	options.SetName(d.Get("name").(string))
 	options.SetType(d.Get("type").(string))
 
+	destinationtype := d.Get("type").(string)
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+		config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 		options.SetConfig(&config)
 	}
 
@@ -253,8 +264,9 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
-			config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+			config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -298,32 +310,44 @@ func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func destinationConfigMapToDestinationConfig(configParams map[string]interface{}) en.DestinationConfig {
+func destinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigParams)
-	if configParams["url"] != nil {
-		params.URL = core.StringPtr(configParams["url"].(string))
-	}
-
-	if configParams["verb"] != nil {
-		params.Verb = core.StringPtr(configParams["verb"].(string))
-	}
-
-	if configParams["custom_headers"] != nil {
-		var customHeaders = make(map[string]string)
-		for k, v := range configParams["custom_headers"].(map[string]interface{}) {
-			customHeaders[k] = v.(string)
+	if destinationtype == "webhook" {
+		if configParams["url"] != nil {
+			params.URL = core.StringPtr(configParams["url"].(string))
 		}
-		params.CustomHeaders = customHeaders
-	}
 
-	if configParams["sensitive_headers"] != nil {
-		sensitiveHeaders := []string{}
-		for _, sensitiveHeadersItem := range configParams["sensitive_headers"].([]interface{}) {
-			sensitiveHeaders = append(sensitiveHeaders, sensitiveHeadersItem.(string))
+		if configParams["verb"] != nil {
+			params.Verb = core.StringPtr(configParams["verb"].(string))
 		}
-		params.SensitiveHeaders = sensitiveHeaders
-	}
 
+		if configParams["custom_headers"] != nil {
+			var customHeaders = make(map[string]string)
+			for k, v := range configParams["custom_headers"].(map[string]interface{}) {
+				customHeaders[k] = v.(string)
+			}
+			params.CustomHeaders = customHeaders
+		}
+
+		if configParams["sensitive_headers"] != nil {
+			sensitiveHeaders := []string{}
+			for _, sensitiveHeadersItem := range configParams["sensitive_headers"].([]interface{}) {
+				sensitiveHeaders = append(sensitiveHeaders, sensitiveHeadersItem.(string))
+			}
+			params.SensitiveHeaders = sensitiveHeaders
+		}
+
+	}
+	if destinationtype == "push_android" {
+
+		if configParams["sender_id"] != nil {
+			params.SenderID = core.StringPtr(configParams["sender_id"].(string))
+		}
+
+		if configParams["server_key"] != nil {
+			params.ServerKey = core.StringPtr(configParams["server_key"].(string))
+		}
+	}
 	destinationConfig := new(en.DestinationConfig)
 	destinationConfig.Params = params
 	return *destinationConfig
