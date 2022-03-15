@@ -77,7 +77,6 @@ In addition to all argument reference list, you can access the following attribu
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
 - `locations` - (Set) Locations on which the custom resolver will be running.
-- `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
 
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
@@ -86,8 +85,9 @@ In addition to all argument reference list, you can access the following attribu
   - `location_id`- (String) The location ID.
 
  Nested scheme for `rules`:
-  - `description`- (String) Descriptive text of the forwarding rule.
-  - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
+ - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
+ - `description`- (String) Descriptive text of the forwarding rule.
+ - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
  - `match` - (String) The matching zone or hostname.
  - `forward_to` - (List) The upstream DNS servers will be forwarded to.
 
