@@ -59,6 +59,11 @@ resource "ibm_is_network_acl" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
  
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the network acl.
+  **Note** 
+  - Create access tag using `ibm_resource_tag` resource. You can attach only the access tags that already exists.
+  - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for creating `access_tags`
 - `name` - (Required, String) The name of the network ACL.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the network ACL.
 - `rules`- (Optional, Array of Strings) A list of rules for a network ACL. The order in which the rules are added to the list determines the priority of the rules. For example, the first rule that you want to enforce must be specified as the first rule in this list.

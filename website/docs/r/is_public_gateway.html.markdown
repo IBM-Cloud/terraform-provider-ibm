@@ -51,6 +51,11 @@ The `ibm_is_public_gateway` resource provides the following [Timeouts](https://w
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the public gateway.
+  **Note** 
+  - Create access tag using `ibm_resource_tag` resource. You can attach only the access tags that already exists.
+  - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for creating `access_tags`
 - `floating_ip` - (Optional, List) A list of floating IP addresses that you want to assign to the public gateway.
 	- `id` - (Optional, String) The unique identifier of the floating IP address. If you specify this parameter, do not specify `address` at the same time. 
 	- `address` - (Optional, String) The floating IP address. If you specify this parameter, do not specify `id` at the same time.

@@ -179,12 +179,21 @@ func publicGatewaysGet(d *schema.ResourceData, meta interface{}, name string) er
 			}
 			l[isPublicGatewayFloatingIP] = floatIP
 		}
-		tags, err := flex.GetTagsUsingCRN(meta, *publicgw.CRN)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of vpc public gateway (%s) tags: %s", *publicgw.ID, err)
 		}
 		l[isPublicGatewayTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of vpc public gateway (%s) access tags: %s", d.Id(), err)
+		}
+
+		l[isPublicGatewayAccessTags] = accesstags
+
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
 			return err

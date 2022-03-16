@@ -31,6 +31,7 @@ data "ibm_is_floating_ip" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
+- `access_tags`  - (String) Access management tags associated for the floating ip.
 - `name` - (Required, String) The name of the floating IP.
 
 ## Attribute reference

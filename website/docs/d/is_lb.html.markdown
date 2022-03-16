@@ -47,6 +47,7 @@ data "ibm_is_lb" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
  
+- `access_tags`  - (String) Access management tags associated for the load balancer.
 - `name` - (Required, String) The name of the load balancer. 
 
 ## Attribute reference

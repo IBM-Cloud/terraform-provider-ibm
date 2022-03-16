@@ -54,6 +54,11 @@ The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the load balancer.
+  **Note** 
+  - Create access tag using `ibm_resource_tag` resource. You can attach only the access tags that already exists.
+  - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
+  - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for creating `access_tags`
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.

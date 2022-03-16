@@ -77,6 +77,7 @@ data "ibm_is_security_group" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (String) Access management tags associated for the security group.
 - `name` - (Required, String) The name of the security group.
 
 ## Attribute reference

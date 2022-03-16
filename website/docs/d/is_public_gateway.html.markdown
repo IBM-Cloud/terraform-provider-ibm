@@ -42,6 +42,7 @@ data "ibm_is_public_gateway" "example" {
 ## Argument reference
 Review the argument references that you can specify for your data source. 
  
+- `access_tags`  - (String) Access management tags associated for the public gateway.
 - `name` - (Required, String) The name of the gateway.
 - `resource_group` - (Optional, String) The resource group ID of the public gateway. **Note** This parameter is supported only for VPC Generation 2 infrastructure.
 
