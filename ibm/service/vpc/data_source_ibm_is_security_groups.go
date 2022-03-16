@@ -73,55 +73,6 @@ func DataSourceIBMIsSecurityGroups() *schema.Resource {
 							Computed:    true,
 							Description: "The user-defined name for this security group. Names must be unique within the VPC the security group resides in.",
 						},
-						"network_interfaces": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Deprecated:  "This argument is deprecated",
-							Description: "The network interfaces for this security group.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"deleted": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"more_info": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "Link to documentation about deleted resources.",
-												},
-											},
-										},
-									},
-									"href": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The URL for this network interface.",
-									},
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The unique identifier for this network interface.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The user-defined name for this network interface.",
-									},
-									"primary_ipv4_address": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The primary IPv4 address.If the address has not yet been selected, the value will be `0.0.0.0`.",
-									},
-									"resource_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The resource type.",
-									},
-								},
-							},
-						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -436,14 +387,6 @@ func dataSourceSecurityGroupCollectionSecurityGroupsToMap(securityGroupsItem *vp
 	if securityGroupsItem.Name != nil {
 		resultMap["name"] = securityGroupsItem.Name
 	}
-	if securityGroupsItem.NetworkInterfaces != nil {
-		var mapSlice []map[string]interface{}
-		for _, listElem := range securityGroupsItem.NetworkInterfaces {
-			mapElem := dataSourceSecurityGroupCollectionSecurityGroupsNetworkInterfacesToMap(&listElem)
-			mapSlice = append(mapSlice, mapElem)
-		}
-		resultMap["network_interfaces"] = mapSlice
-	}
 	if securityGroupsItem.ResourceGroup != nil {
 		var mapSlice []map[string]interface{}
 		modelMap := dataSourceSecurityGroupCollectionSecurityGroupsResourceGroupToMap(securityGroupsItem.ResourceGroup)
@@ -471,44 +414,6 @@ func dataSourceSecurityGroupCollectionSecurityGroupsToMap(securityGroupsItem *vp
 		modelMap := dataSourceSecurityGroupCollectionSecurityGroupsVPCToMap(securityGroupsItem.VPC)
 		mapSlice = append(mapSlice, modelMap)
 		resultMap["vpc"] = mapSlice
-	}
-
-	return resultMap
-}
-
-func dataSourceSecurityGroupCollectionSecurityGroupsNetworkInterfacesToMap(networkInterfacesItem *vpcv1.NetworkInterfaceReference) (resultMap map[string]interface{}) {
-	resultMap = map[string]interface{}{}
-
-	if networkInterfacesItem.Deleted != nil {
-		var mapSlice []map[string]interface{}
-		modelMap := dataSourceSecurityGroupCollectionNetworkInterfacesDeletedToMap(networkInterfacesItem.Deleted)
-		mapSlice = append(mapSlice, modelMap)
-		resultMap["deleted"] = mapSlice
-	}
-	if networkInterfacesItem.Href != nil {
-		resultMap["href"] = networkInterfacesItem.Href
-	}
-	if networkInterfacesItem.ID != nil {
-		resultMap["id"] = networkInterfacesItem.ID
-	}
-	if networkInterfacesItem.Name != nil {
-		resultMap["name"] = networkInterfacesItem.Name
-	}
-	if networkInterfacesItem.PrimaryIpv4Address != nil {
-		resultMap["primary_ipv4_address"] = networkInterfacesItem.PrimaryIpv4Address
-	}
-	if networkInterfacesItem.ResourceType != nil {
-		resultMap["resource_type"] = networkInterfacesItem.ResourceType
-	}
-
-	return resultMap
-}
-
-func dataSourceSecurityGroupCollectionNetworkInterfacesDeletedToMap(deletedItem *vpcv1.NetworkInterfaceReferenceDeleted) (resultMap map[string]interface{}) {
-	resultMap = map[string]interface{}{}
-
-	if deletedItem.MoreInfo != nil {
-		resultMap["more_info"] = deletedItem.MoreInfo
 	}
 
 	return resultMap
@@ -753,45 +658,6 @@ func dataSourceSecurityGroupCollectionVPCDeletedToMap(deletedItem *vpcv1.VPCRefe
 	return resultMap
 }
 
-func dataSourceSecurityGroupsRuleFlattenRemote(m vpcv1.SecurityGroupRuleRemoteIntf) (ruleList []map[string]interface{}) {
-	ruleList = []map[string]interface{}{}
-	ruleMap := dataSourceSecurityGroupsRuleRemoteToMap(m.(*vpcv1.SecurityGroupRuleRemote))
-	ruleList = append(ruleList, ruleMap)
-	return ruleList
-}
-
-func dataSourceSecurityGroupsRuleRemoteToMap(remoteItem *vpcv1.SecurityGroupRuleRemote) (remoteMap map[string]interface{}) {
-	remoteMap = map[string]interface{}{}
-
-	if remoteItem.Address != nil {
-		remoteMap["address"] = *remoteItem.Address
-	}
-
-	if remoteItem.CIDRBlock != nil {
-		remoteMap["cidr_block"] = *remoteItem.CIDRBlock
-	}
-	if remoteItem.CRN != nil {
-		remoteMap["crn"] = *remoteItem.CRN
-	}
-	if remoteItem.Deleted != nil {
-		remoteDeletedList := []map[string]interface{}{}
-		remoteDeletedMap := dataSourceSecurityGroupCollectionRemoteDeletedToMap(remoteItem.Deleted)
-		remoteDeletedList = append(remoteDeletedList, remoteDeletedMap)
-		remoteMap["deleted"] = remoteDeletedList
-	}
-
-	if remoteItem.Href != nil {
-		remoteMap["href"] = *remoteItem.Href
-	}
-	if remoteItem.ID != nil {
-		remoteMap["id"] = *remoteItem.ID
-	}
-	if remoteItem.Name != nil {
-		remoteMap["name"] = *remoteItem.Name
-	}
-
-	return remoteMap
-}
 func dataSourceSecurityGroupsRemoteToMap(remoteItem vpcv1.SecurityGroupRuleRemote) (remoteMap map[string]interface{}) {
 	remoteMap = map[string]interface{}{}
 
