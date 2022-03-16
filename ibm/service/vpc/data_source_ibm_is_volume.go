@@ -115,6 +115,14 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Description: "Tags for the volume instance",
 			},
 
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "Access management tags for the volume instance",
+			},
+
 			isVolumeSourceSnapshot: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -238,12 +246,18 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			}
 			d.Set(isVolumeStatusReasons, statusReasonsList)
 		}
-		tags, err := flex.GetTagsUsingCRN(meta, *vol.CRN)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeUserTagType)
 		if err != nil {
 			log.Printf(
 				"Error on get of resource vpc volume (%s) tags: %s", d.Id(), err)
 		}
 		d.Set(isVolumeTags, tags)
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc volume (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isVolumeAccessTags, accesstags)
 		controller, err := flex.GetBaseController(meta)
 		if err != nil {
 			return err

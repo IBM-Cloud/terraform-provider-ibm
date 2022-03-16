@@ -55,6 +55,12 @@ The `ibm_is_volume` resource provides the following [Timeouts](https://www.terra
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the subnet.
+  **Note:**
+    - You can attach only those access tags that already exists.
+    - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).
+    - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`
+    - `access_tags` must be in the format `key:value`.
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
   ~> **NOTE:**
     - Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity)
