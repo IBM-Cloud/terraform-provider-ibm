@@ -281,6 +281,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_firewall_rules":                cis.DataSourceIBMCISFirewallRules(),
 			"ibm_cloudant":                          cloudant.DataSourceIBMCloudant(),
 			"ibm_database":                          database.DataSourceIBMDatabaseInstance(),
+			"ibm_database_connection":               database.DataSourceIBMDatabaseConnection(),
 			"ibm_compute_bare_metal":                classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":            classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":           classicinfrastructure.DataSourceIBMComputePlacementGroup(),

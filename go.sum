@@ -54,6 +54,8 @@ github.com/IBM/appconfiguration-go-admin-sdk v0.1.0 h1:9rdOk32VQFnMqsBB7cTpkZbD7
 github.com/IBM/appconfiguration-go-admin-sdk v0.1.0/go.mod h1:6x6KbqIwrEi07OvEM1+EnU4Lyk+JFm2O0vrSPPGTleU=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
+github.com/IBM/cloud-databases-go-sdk v0.2.0 h1:OkyYpj1LjUnBEgAkp5LMYyla40keEg4ZzWdEXAig4nk=
+github.com/IBM/cloud-databases-go-sdk v0.2.0/go.mod h1:ZOujnMABgw39Mr/5sFd16eniw9mSS4/if1Vht3m+F4M=
 github.com/IBM/cloudant-go-sdk v0.0.36 h1:h14ORyRs2pi2RtuqOGB+y9gWytRfQKnne2lMhl2MCws=
 github.com/IBM/cloudant-go-sdk v0.0.36/go.mod h1:04hA+Ok9aLYvnMEG4dMHTzU1W5b5tnl+Ddkdz4Z+xGs=
 github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
@@ -74,8 +76,9 @@ github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3bt
 github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.8.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.8.2/go.mod h1:axE2JrRq79gIJTjKPBwV6gWHswvVptBjbcvvCPIxARM=
-github.com/IBM/go-sdk-core/v5 v5.9.1 h1:06pXbD9Rgmqqe2HA5YAeQbB4eYRRFgIoOT+Kh3cp1zo=
 github.com/IBM/go-sdk-core/v5 v5.9.1/go.mod h1:axE2JrRq79gIJTjKPBwV6gWHswvVptBjbcvvCPIxARM=
+github.com/IBM/go-sdk-core/v5 v5.9.2 h1:QKB5JwhlZfRvFHqcOwMeu/Dis/Q7qCBxrQLhx04onMc=
+github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
 github.com/IBM/ibm-cos-sdk-go v1.3.1/go.mod h1:YLBAYobEA8bD27P7xpMwSQeNQu6W3DNBtBComXrRzRY=
 github.com/IBM/ibm-cos-sdk-go v1.8.0 h1:6d3BY+jo71JvQoyUwdtv4pemEfbnK/XSKQCKOEuWmks=
 github.com/IBM/ibm-cos-sdk-go v1.8.0/go.mod h1:Oi8AC5WNDhmUJgbo1GL2FtBdo0nRgbzE/1HmCL1SERU=
@@ -722,6 +725,9 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/zclconf/go-cty v1.1.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
 github.com/zclconf/go-cty v1.2.0/go.mod h1:hOPWgoHbaTUnI5k4D2ld+GRpFJSCe6bCM7m1q/N4PQ8=
+github.com/zclconf/go-cty v1.2.1/go.mod h1:hOPWgoHbaTUnI5k4D2ld+GRpFJSCe6bCM7m1q/N4PQ8=
+github.com/zclconf/go-cty v1.8.4 h1:pwhhz5P+Fjxse7S7UriBrMu6AUJSZM5pKqGem1PjGAs=
+github.com/zclconf/go-cty v1.8.4/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zclconf/go-cty v1.9.1 h1:viqrgQwFl5UpSxc046qblj78wZXVDFnSOufaOTER+cc=
 github.com/zclconf/go-cty v1.9.1/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
