@@ -22,7 +22,7 @@ provider "ibm" {
 ```
 
 ## Example usage
-In the following example, you create a different type of protocol rules `ALL`, `ICMP`, `UDP` and `TCP`.
+In the following example, you create a different type of protocol rules `ALL`, `ICMP`, `UDP`, `TCP` and `ANY`.
 
 ```terraform
 resource "ibm_is_vpc" "example" {
@@ -69,6 +69,31 @@ resource "ibm_is_security_group_rule" "example3" {
     port_max = 8080
   }
 }
+
+resource "ibm_is_security_group_rule" "example_security_group_rule_icmp_any" {
+  group      = ibm_is_security_group.example_security_group.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  icmp {
+  }
+}
+
+resource "ibm_is_security_group_rule" "example_security_group_rule_udp_any" {
+  group      = ibm_is_security_group.example_security_group.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  udp {
+  }
+}
+
+resource "ibm_is_security_group_rule" "example_security_group_rule_tcp_any" {
+  group      = ibm_is_security_group.example_security_group.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  tcp {
+  }
+}
+
 ```
 
 ## Argument reference
