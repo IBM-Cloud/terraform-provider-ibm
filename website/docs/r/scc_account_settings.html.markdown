@@ -28,7 +28,8 @@ resource "ibm_scc_account_settings" "scc_account_settings" {
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
-
+* `location_id` **Deprecated** - (Required, Forces new resource, String) The programatic ID of the location that you want to work in.
+  * Constraints: Allowable values are: `us`, `eu`, `uk`.
 * `event_notifications` - (Required, List) The Event Notification settings to register.
 Nested scheme for **event_notifications**:
 	* `instance_crn` - (Optional, String) The Cloud Resource Name (CRN) of the Event Notifications instance that you want to connect. If this field is left blank, no Event Notifications instance will be used.

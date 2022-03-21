@@ -27,10 +27,18 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"location_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_scc_account_settings", "location_id"),
+				Description:  "The programatic ID of the location that you want to work in.",
+				Deprecated:   "use location instead",
+			},
 			"location": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Required:    true, // Made this Required to avoid drift
+				ConflictsWith: []string{"location_id"},
 				Description: "Location Settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

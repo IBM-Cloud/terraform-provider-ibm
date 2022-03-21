@@ -21,7 +21,7 @@ func DataSourceIBMSccAccountLocationSettings() *schema.Resource {
 		ReadContext: dataSourceIbmSccAccountLocationSettingsRead,
 
 		Schema: map[string]*schema.Schema{
-			"location_id": &schema.Schema{
+			"id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The programatic ID of the location that you want to work in.",
@@ -53,7 +53,7 @@ func dataSourceIbmSccAccountLocationSettingsRead(context context.Context, d *sch
 
 	locationSettings := accountSettings.Location
 
-	if err = d.Set("location_id", locationSettings.ID); err != nil {
+	if err = d.Set("id", locationSettings.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 
