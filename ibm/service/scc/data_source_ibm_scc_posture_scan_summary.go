@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
 func DataSourceIBMSccPostureScansSummary() *schema.Resource {
@@ -256,8 +256,8 @@ func dataSourceSummaryControlsToMapv2(controlsItem posturemanagementv2.Control) 
 	if controlsItem.ExternalControlID != nil {
 		controlsMap["external_control_id"] = controlsItem.ExternalControlID
 	}
-	if controlsItem.Desciption != nil {
-		controlsMap["desciption"] = controlsItem.Desciption
+	if controlsItem.Description != nil {
+		controlsMap["description"] = controlsItem.Description
 	}
 	if controlsItem.Goals != nil {
 		goalsList := []map[string]interface{}{}

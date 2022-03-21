@@ -161,6 +161,37 @@ resource "ibm_is_lb_pool" "testacc_pool" {
   session_persistence_type = "source_ip"
 }
 
+data "ibm_is_lb_listener" "is_lb_listener" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener_id = ibm_is_lb_listener.lb_listener2.listener_id
+}
+data "ibm_is_lb_listeners" "is_lb_listeners" {
+	lb = "${ibm_is_lb.lb2.id}"
+}
+
+data "ibm_is_lb_listener_policy" "is_lb_listener_policy" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = ibm_is_lb_listener.lb_listener2.listener_id
+	policy_id = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
+}
+data "ibm_is_lb_listener_policies" "is_lb_listener_policies" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+}
+
+data "ibm_is_lb_listener_policy_rule" "is_lb_listener_policy_rule" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+	policy = "${ibm_is_lb_listener_policy.lb_listener_policy.policy_id}"
+	rule = "${ibm_is_lb_listener_policy_rule.lb_listener_policy_rule.rule}"
+}
+
+data "ibm_is_lb_listener_policy_rules" "is_lb_listener_policy_rules" {
+	lb = "${ibm_is_lb.lb2.id}"
+	listener = "${ibm_is_lb_listener.lb_listener2.listener_id}"
+	policy = "${ibm_is_lb_listener_policy.lb_listener_policy.policy_id}"
+}
+
 resource "ibm_is_vpn_gateway" "VPNGateway1" {
   name   = "vpn1"
   subnet = ibm_is_subnet.subnet1.id
@@ -455,6 +486,12 @@ resource "ibm_is_public_gateway" "publicgateway1" {
   name = "gateway1"
   vpc  = ibm_is_vpc.vpc1.id
   zone = var.zone1
+}
+
+// subnet public gateway attachment
+resource "ibm_is_subnet_public_gateway_attachment" "example" {
+  subnet      	  = ibm_is_subnet.subnet1.id
+  public_gateway 	= ibm_is_public_gateway.publicgateway1.id
 }
 
 data "ibm_is_public_gateway" "testacc_dspgw"{
@@ -827,19 +864,74 @@ data "ibm_is_vpc_address_prefix" "example" {
   vpc = ibm_is_vpc.vpc1.id
   address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
 }
+
 data "ibm_is_vpc_address_prefix" "example-1" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
 }
+
 data "ibm_is_vpc_address_prefix" "example-2" {
   vpc = ibm_is_vpc.vpc1.id
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
 }
+
 data "ibm_is_vpc_address_prefix" "example-3" {
   vpc_name = ibm_is_vpc.vpc1.name
   address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
 }
+  
+## Security Groups/Rules/Rule
+// Create is_security_groups data source
+data "ibm_is_security_groups" "example" {
+}
 
+// Create is_security_group data source
+resource "ibm_is_security_group" "example" {
+  name = "example-security-group"
+  vpc  = ibm_is_vpc.vpc1.id
+}
+
+resource "ibm_is_security_group_rule" "exampleudp" {
+  depends_on = [
+      ibm_is_security_group.example,
+  ]
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  udp {
+    port_min = 805
+    port_max = 807
+  }
+}
+
+data "ibm_is_security_group_rule" "example" {
+  depends_on = [
+      ibm_is_security_group_rule.exampleudp,
+  ]
+    security_group_rule = ibm_is_security_group_rule.exampleudp.rule_id
+    security_group = ibm_is_security_group.example.id
+}
+
+// Create is_security_group_rules data source
+resource "ibm_is_security_group_rule" "exampletcp" {
+  group     = ibm_is_security_group.example.id
+  direction = "outbound"
+  remote    = "127.0.0.1"
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
+  depends_on = [
+    ibm_is_security_group.example,
+  ]
+}
+
+data "ibm_is_security_group_rules" "example" {
+  depends_on = [
+    ibm_is_security_group_rule.exampletcp,
+  ]
+} 
+  
 data "ibm_is_vpn_gateway" "example" {
   vpn_gateway = ibm_is_vpn_gateway.example.id
 }
@@ -861,4 +953,25 @@ data "ibm_is_vpn_gateway_connection" "example-2" {
 data "ibm_is_vpn_gateway_connection" "example-3" {
   vpn_gateway_name = ibm_is_vpn_gateway.example.name
   vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
+}
+data "ibm_is_ike_policies" "example" {
+}
+
+data "ibm_is_ipsec_policies" "example" {
+}
+
+data "ibm_is_ike_policy" "example" {
+  ike_policy = ibm_is_ike_policy.example.id
+}
+
+data "ibm_is_ipsec_policy" "example1" {
+  ipsec_policy = ibm_is_ipsec_policy.example.id
+}
+
+data "ibm_is_ike_policy" "example2" {
+  name = "my-ike-policy"
+}
+
+data "ibm_is_ipsec_policy" "example3" {
+  name = "my-ipsec-policy"
 }

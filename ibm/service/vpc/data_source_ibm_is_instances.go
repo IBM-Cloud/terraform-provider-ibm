@@ -115,12 +115,21 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Instance memory",
 						},
+						isInstanceMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+						},
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Instance status",
 						},
-
+						isInstanceAvailablePolicyHostFailure: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
+						},
 						isInstanceStatusReasons: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -652,9 +661,16 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
 		l["memory"] = *instance.Memory
+		if instance.MetadataService != nil {
+			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
+		}
 		l["status"] = *instance.Status
 		l["resource_group"] = *instance.ResourceGroup.ID
 		l["vpc"] = *instance.VPC.ID
+
+		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+			l[isInstanceAvailablePolicyHostFailure] = *instance.AvailabilityPolicy.HostFailure
+		}
 
 		if instance.PlacementTarget != nil {
 			placementTargetMap := resourceIbmIsInstanceInstancePlacementToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTarget))

@@ -27,9 +27,9 @@ Review the argument references that you can specify for your data source.
 ## Attributes reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `id` - (String) The Webhook ID. It is a combination of <`webhook_id`>,<`cis_id`> attributes concatenated with ":"
-- `cis_webhooks` - (List)
-   - `alert_id` - (String) The Alert ID.
+- `id` - (String) The Webhook ID. It is a combination of <`policy_id`>,<`cis_id`> attributes concatenated with ":"
+- `alert_policies` - (List)
+   - `policy_id` - (String) The Alert Policy ID.
    - `name` - (String) The name of Alert policies.
    - `description` - (String) Description of the Alert Policies.
    - `enabled` - (Boolean) Whether this alert policies is active or not.

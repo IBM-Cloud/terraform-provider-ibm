@@ -46,10 +46,10 @@ func TestAccIBMCisAlert_Basic(t *testing.T) {
 func testAccCheckCisAlert_basic() string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + `
 	resource "ibm_cis_webhook"  "test"  {
-		cis_id 		= data.ibm_cis.cis.id
+		cis_id 		=  data.ibm_cis.cis.id
 		name 		= "test-Webhooks"
 		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-		secret		=  "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+		secret		=  "fBqWqLTwgx9aXuoOqLwenB6lIIyAYCvHJUowBS54Y3GC"
 	  }
 	resource "ibm_cis_alert" "test" {
 		depends_on  = [ibm_cis_webhook.test]
@@ -57,17 +57,51 @@ func testAccCheckCisAlert_basic() string {
 		name        = "test-alert-policy"
 		description = "Description alert policy"
 		enabled     = true
-		alert_type = "dos_attack_l7"
+		alert_type = "g6_pool_toggle_alert"
 		mechanisms {
 		  email    = ["mynotifications@email.com"]
 		  webhooks = [ibm_cis_webhook.test.webhook_id]
 		}
 		filters =<<FILTERS
-  		{}
+		{
+			"enabled": [
+			  "true"
+			],
+			"pool_id": [
+			  "9984f902f29adfc9bb8a5e42b7b5c592"
+			]
+		  }
   		FILTERS
 		conditions =<<CONDITIONS
-  		{}
-  		CONDITIONS
+		{
+			"and": [
+			  {
+				"or": [
+				  {
+					"==": [
+					  {
+						"var": "pool_id"
+					  },
+					  "9984f902f29adfc9bb8a5e42b7b5c592"
+					]
+				  }
+				]
+			  },
+			  {
+				"or": [
+				  {
+					"==": [
+					  {
+						"var": "enabled"
+					  },
+					  "true"
+					]
+				  }
+				]
+			  }
+			]
+		  }
+		CONDITIONS
 	}
 `
 }
@@ -75,28 +109,62 @@ func testAccCheckCisAlert_basic() string {
 func testAccCheckCisAlert_update() string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + `
 	resource "ibm_cis_webhook"  "test"  {
-		cis_id 		= data.ibm_cis.cis.id
+		cis_id 		=  data.ibm_cis.cis.id
 		name 		= "test-Webhooks"
 		url			= "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
-		secret		=  "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+		secret		=  "fBqWqLTwgx9aXuoOqLwenB6lIIyAYCvHJUowBS54Y3GC"
 	  }
 	resource "ibm_cis_alert" "test" {
 		depends_on  = [ibm_cis_webhook.test]
-		cis_id      = data.ibm_cis.cis.id
+		cis_id      =  data.ibm_cis.cis.id
 		name        = "test-alert-policy-update"
 		description = "Description alert policy update"
 		enabled     = true
-		alert_type = "dos_attack_l7"
+		alert_type = "g6_pool_toggle_alert"
 		mechanisms {
 		  email    = ["mynotifications@email.com"]
 		  webhooks = [ibm_cis_webhook.test.webhook_id]
 		}
 		filters =<<FILTERS
-  		{}
+		{
+			"enabled": [
+			  "true"
+			],
+			"pool_id": [
+			  "9984f902f29adfc9bb8a5e42b7b5c592"
+			]
+		  }
   		FILTERS
 		conditions =<<CONDITIONS
-  		{}
-  		CONDITIONS
+		{
+			"and": [
+			  {
+				"or": [
+				  {
+					"==": [
+					  {
+						"var": "pool_id"
+					  },
+					  "9984f902f29adfc9bb8a5e42b7b5c592"
+					]
+				  }
+				]
+			  },
+			  {
+				"or": [
+				  {
+					"==": [
+					  {
+						"var": "enabled"
+					  },
+					  "true"
+					]
+				  }
+				]
+			  }
+			]
+		  }
+		CONDITIONS
 	}
 `
 }

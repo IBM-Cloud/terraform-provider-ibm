@@ -50,6 +50,11 @@ resource "ibm_tg_connection" "test_tg_dl_connection"{
                 network_id = var.network_id
 }
 
+# Create a transit gateway route report
+resource ibm_tg_route_report" "test_tg_route_report" {
+	gateway = ibm_tg_gateway.new_tg_gw.id
+}
+
 # Retrieves specified Transit Gateway
 data "ibm_tg_gateway" "tg_gateway" {
         name= ibm_tg_gateway.new_tg_gw.name
@@ -63,6 +68,17 @@ data "ibm_tg_locations" "tg_locations" {
 # Get the details of a Transit Gateway Location.
 data "ibm_tg_location" "tg_location" {
         name = "us-south"
+}
+
+# List all route reports for a Transit Gateway
+data "ibm_tg_route_reports" "tg_route_reports" {
+	gateway = ibm_tg_gateway.new_tg_gw.id
+}
+
+# Retrieve specified Transit Gateway Route report
+data "ibm_tg_route_report" "tg_route_report" {
+	gateway = ibm_tg_gateway.new_tg_gw.
+	route_report = ibm_tg_route_report_test_tg_route_report.route_report_id
 }
 
 */

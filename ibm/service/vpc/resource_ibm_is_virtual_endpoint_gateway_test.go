@@ -36,6 +36,27 @@ func TestAccIBMISVirtualEndpointGateway_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVirtualEndpointGateway_CharacterCount(t *testing.T) {
+	var endpointGateway string
+	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname1 := fmt.Sprintf("tfvpngw-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpngw-createname-%d-%s", acctest.RandIntRange(10, 100), acctest.RandString(38))
+	name := "ibm_is_virtual_endpoint_gateway.endpoint_gateway"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckisVirtualEndpointGatewayConfigBasic(vpcname1, subnetname1, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists(name, &endpointGateway),
+					resource.TestCheckResourceAttr(name, "name", name1),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVirtualEndpointGateway_Basic_SecurityGroups(t *testing.T) {
 	var endpointGateway string
 	vpcname1 := fmt.Sprintf("tfvpngw-vpc-%d", acctest.RandIntRange(10, 100))

@@ -266,6 +266,27 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Attributes(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicy_With_Service_Specific_Roles(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAccessGroupPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyServiceSpecificRoles(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "resource_attributes.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMAccessGroupPolicy_WithCustomRole(t *testing.T) {
 	var conf iampolicymanagementv1.Policy
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -666,6 +687,27 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceAttributesUpdate(name string) st
 			resource_attributes {
 				name     = "serviceName"
 				value    = "messagehub"
+			}
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyServiceSpecificRoles(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_access_group" "accgrp" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_access_group_policy" "policy" {
+			access_group_id = ibm_iam_access_group.accgrp.id
+			roles           = ["Satellite Link Source and Endpoint Controller"]
+			resource_attributes {
+				name     = "resource"
+				value    = "test*"
+			}
+			resource_attributes {
+				name     = "serviceName"
+				value    = "satellite"
 			}
 	  	}
 	`, name)

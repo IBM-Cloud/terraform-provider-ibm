@@ -32,6 +32,8 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 						resName, "name", instanceName),
 					resource.TestCheckResourceAttr(
 						resName, "tags.#", "1"),
+					resource.TestCheckResourceAttrSet(
+						resName, "availability_policy.#"),
 				),
 			},
 		},
