@@ -6,7 +6,7 @@ description: |-
   Get information about backup policies.
 ---
 
-# ibm\_is_backup_policies
+# ibm_is_backup_policies
 
 Provides a read-only data source for BackupPolicyCollection. For more information, about backup policy in your IBM Cloud VPC, see [Backup policy](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-backup-policy).
 

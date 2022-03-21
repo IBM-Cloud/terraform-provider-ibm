@@ -104,7 +104,6 @@ func DataSourceIBMIsBackupPolicyPlan() *schema.Resource {
 }
 
 func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Println("I am inside BAckupPolicy Plan")
 	sess, err := vpcClient(meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,11 +135,7 @@ func dataSourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Reso
 			log.Printf("[DEBUG] ListBackupPolicyPlansWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ListBackupPolicyPlansWithContext failed %s\n%s", err, response))
 		}
-		log.Println("len(backupPolicyPlanCollection.Plans)")
-		log.Println(len(backupPolicyPlanCollection.Plans))
 		for _, backupPolicyPlanInfo := range backupPolicyPlanCollection.Plans {
-			log.Println("backupPolicyPlanInfo.Name)")
-			log.Println(*backupPolicyPlanInfo.Name)
 			if *backupPolicyPlanInfo.Name == name {
 				backupPolicyPlan = &backupPolicyPlanInfo
 				break

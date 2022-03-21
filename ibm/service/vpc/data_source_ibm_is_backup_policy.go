@@ -196,11 +196,7 @@ func dataSourceIBMIsBackupPolicyRead(context context.Context, d *schema.Resource
 				break
 			}
 		}
-		log.Println("len(allrecs)")
-		log.Println(len(allrecs))
 		for _, backupPolicyInfo := range allrecs {
-			log.Println("backupPolicyInfo.Name)")
-			log.Println(*backupPolicyInfo.Name)
 			if *backupPolicyInfo.Name == name {
 				backupPolicy = &backupPolicyInfo
 				break

@@ -6,7 +6,7 @@ description: |-
   Get information about backup policy plan.
 ---
 
-# ibm\_is_backup_policy_plan
+# ibm_is_backup_policy_plan
 
 Provides a read-only data source for BackupPolicyPlan. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 

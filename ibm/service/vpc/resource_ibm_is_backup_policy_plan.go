@@ -32,15 +32,21 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				ForceNew:    true,
 				Description: "The backup policy identifier.",
 			},
+			"backup_policy_plan_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The backup policy identifier.",
+			},
 			"cron_spec": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				// ValidateFunc: InvokeValidator("ibm_is_backup_policy_plan", "cron_spec"),
-				Description: "The cron specification for the backup schedule.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_backup_policy_plan", "cron_spec"),
+				Description:  "The cron specification for the backup schedule.",
 			},
 			"active": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Indicates whether the plan is active.",
 			},
 			"attach_user_tags": &schema.Schema{
@@ -50,39 +56,6 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Description: "User tags to attach to each backup (snapshot) created by this plan. If unspecified, no user tags will be attached.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			// "clone_policy": &schema.Schema{
-			// 	Type:     schema.TypeList,
-			// 	MaxItems: 1,
-			// 	Optional: true,
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"max_snapshots": &schema.Schema{
-			// 				Type:        schema.TypeInt,
-			// 				Optional:    true,
-			// 				Description: "The maximum number of recent snapshots (per source) that will keep clones.",
-			// 			},
-			// 			"zones": &schema.Schema{
-			// 				Type:        schema.TypeList,
-			// 				Required:    true,
-			// 				Description: "The zone this backup policy plan will create snapshot clones in.",
-			// 				Elem: &schema.Resource{
-			// 					Schema: map[string]*schema.Schema{
-			// 						"name": &schema.Schema{
-			// 							Type:        schema.TypeString,
-			// 							Optional:    true,
-			// 							Description: "The globally unique name for this zone.",
-			// 						},
-			// 						"href": &schema.Schema{
-			// 							Type:        schema.TypeString,
-			// 							Optional:    true,
-			// 							Description: "The URL for this zone.",
-			// 						},
-			// 					},
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
 			"copy_user_tags": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -93,28 +66,29 @@ func ResourceIBMIsBackupPolicyPlan() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"delete_after": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Default:     30,
+							Computed:    true,
 							Description: "The maximum number of days to keep each backup after creation.",
 						},
 						"delete_over_count": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "The maximum number of recent backups to keep. If unspecified, there will be no maximum.",
 						},
 					},
 				},
 			},
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-				// ValidateFunc: InvokeValidator("ibm_is_backup_policy_plan", "name"),
-				Description: "The user-defined name for this backup policy plan. Names must be unique within the backup policy this plan resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_backup_policy_plan", "name"),
+				Description:  "The user-defined name for this backup policy plan. Names must be unique within the backup policy this plan resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -152,7 +126,7 @@ func ResourceIBMIsBackupPolicyPlanValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^((((\\d+,)+\\d+|([\\d\\*]+(\/|-)\\d+)|\\d+|\\*) ?){5,7})$`,
+			Regexp:                     `^((((\d+,)+\d+|([\d\*]+(\/|-)\d+)|\d+|\*) ?){5,7})$`,
 			MinValueLength:             9,
 			MaxValueLength:             63,
 		},
@@ -187,10 +161,6 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 	if _, ok := d.GetOk("attach_user_tags"); ok {
 		createBackupPolicyPlanOptions.SetAttachUserTags((flex.ExpandStringList((d.Get("attach_user_tags").(*schema.Set)).List())))
 	}
-	// if _, ok := d.GetOk("clone_policy"); ok {
-	// 	clonePolicy := resourceIBMIsBackupPolicyPlanMapToBackupPolicyPlanClonePolicyPrototype(d.Get("clone_policy.0").(map[string]interface{}))
-	// 	createBackupPolicyPlanOptions.SetClonePolicy(&clonePolicy)
-	// }
 	if _, ok := d.GetOk("copy_user_tags"); ok {
 		createBackupPolicyPlanOptions.SetCopyUserTags(d.Get("copy_user_tags").(bool))
 	}
@@ -212,37 +182,6 @@ func resourceIBMIsBackupPolicyPlanCreate(context context.Context, d *schema.Reso
 
 	return resourceIBMIsBackupPolicyPlanRead(context, d, meta)
 }
-
-// func resourceIBMIsBackupPolicyPlanMapToBackupPolicyPlanClonePolicyPrototype(backupPolicyPlanClonePolicyPrototypeMap map[string]interface{}) vpcv1.BackupPolicyPlanClonePolicyPrototype {
-// 	backupPolicyPlanClonePolicyPrototype := vpcv1.BackupPolicyPlanClonePolicyPrototype{}
-
-// 	if backupPolicyPlanClonePolicyPrototypeMap["max_snapshots"] != nil {
-// 		backupPolicyPlanClonePolicyPrototype.MaxSnapshots = core.Int64Ptr(int64(backupPolicyPlanClonePolicyPrototypeMap["max_snapshots"].(int)))
-// 	}
-// 	zones := []vpcv1.ZoneIdentityIntf{}
-// 	for _, zonesItem := range backupPolicyPlanClonePolicyPrototypeMap["zones"].([]interface{}) {
-// 		zonesItemModel := resourceIBMIsBackupPolicyPlanMapToZoneIdentity(zonesItem.(map[string]interface{}))
-// 		zones = append(zones, zonesItemModel)
-// 	}
-// 	backupPolicyPlanClonePolicyPrototype.Zones = zones
-
-// 	return backupPolicyPlanClonePolicyPrototype
-// }
-// func resourceIBMIsBackupPolicyPlanMapToBackupPolicyPlanClonePolicyPatch(backupPolicyPlanClonePolicyPrototypeMap map[string]interface{}) vpcv1.BackupPolicyPlanClonePolicyPatch {
-// 	backupPolicyPlanClonePolicyPrototype := vpcv1.BackupPolicyPlanClonePolicyPatch{}
-
-// 	if backupPolicyPlanClonePolicyPrototypeMap["max_snapshots"] != nil {
-// 		backupPolicyPlanClonePolicyPrototype.MaxSnapshots = core.Int64Ptr(int64(backupPolicyPlanClonePolicyPrototypeMap["max_snapshots"].(int)))
-// 	}
-// 	zones := []vpcv1.ZoneIdentityIntf{}
-// 	for _, zonesItem := range backupPolicyPlanClonePolicyPrototypeMap["zones"].([]interface{}) {
-// 		zonesItemModel := resourceIBMIsBackupPolicyPlanMapToZoneIdentity(zonesItem.(map[string]interface{}))
-// 		zones = append(zones, zonesItemModel)
-// 	}
-// 	backupPolicyPlanClonePolicyPrototype.Zones = zones
-
-// 	return backupPolicyPlanClonePolicyPrototype
-// }
 
 func resourceIBMIsBackupPolicyPlanMapToZoneIdentity(zoneIdentityMap map[string]interface{}) vpcv1.ZoneIdentityIntf {
 	zoneIdentity := vpcv1.ZoneIdentity{}
@@ -330,6 +269,12 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 		}
 	}
 
+	if getBackupPolicyPlanOptions.ID != nil {
+		if err = d.Set("backup_policy_plan_id", getBackupPolicyPlanOptions.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting backup_policy_plan_id: %s", err))
+		}
+	}
+
 	if backupPolicyPlan.CronSpec != nil {
 		if err = d.Set("cron_spec", backupPolicyPlan.CronSpec); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting cron_spec: %s", err))
@@ -347,12 +292,6 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("Error setting attach_user_tags: %s", err))
 		}
 	}
-	// if backupPolicyPlan.ClonePolicy != nil {
-	// 	clonePolicyMap := resourceIBMIsBackupPolicyPlanBackupPolicyPlanClonePolicyPrototypeToMap(*backupPolicyPlan.ClonePolicy)
-	// 	if err = d.Set("clone_policy", []map[string]interface{}{clonePolicyMap}); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting clone_policy: %s", err))
-	// 	}
-	// }
 
 	if backupPolicyPlan.CopyUserTags != nil {
 		if err = d.Set("copy_user_tags", backupPolicyPlan.CopyUserTags); err != nil {
@@ -394,22 +333,6 @@ func resourceIBMIsBackupPolicyPlanRead(context context.Context, d *schema.Resour
 
 	return nil
 }
-
-// func resourceIBMIsBackupPolicyPlanBackupPolicyPlanClonePolicyPrototypeToMap(backupPolicyPlanClonePolicyPrototype vpcv1.BackupPolicyPlanClonePolicy) map[string]interface{} {
-// 	backupPolicyPlanClonePolicyPrototypeMap := map[string]interface{}{}
-
-// 	if backupPolicyPlanClonePolicyPrototype.MaxSnapshots != nil {
-// 		backupPolicyPlanClonePolicyPrototypeMap["max_snapshots"] = intValue(backupPolicyPlanClonePolicyPrototype.MaxSnapshots)
-// 	}
-// 	zones := []map[string]interface{}{}
-// 	for _, zonesItem := range backupPolicyPlanClonePolicyPrototype.Zones {
-// 		zonesItemMap := resourceIBMIsBackupPolicyPlanZoneIdentityToMap(zonesItem)
-// 		zones = append(zones, zonesItemMap)
-// 	}
-// 	backupPolicyPlanClonePolicyPrototypeMap["zones"] = zones
-
-// 	return backupPolicyPlanClonePolicyPrototypeMap
-// }
 
 func resourceIBMIsBackupPolicyPlanZoneIdentityToMap(zoneIdentity vpcv1.ZoneReference) map[string]interface{} {
 	zoneIdentityMap := map[string]interface{}{}
@@ -471,10 +394,6 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 	hasChange := false
 
 	patchVals := &vpcv1.BackupPolicyPlanPatch{}
-	// if d.HasChange("backup_policy_id") {
-	// 	return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-	// 		" The resource must be re-created to update this property.", "backup_policy_id"))
-	// }
 	if d.HasChange("cron_spec") {
 		patchVals.CronSpec = core.StringPtr(d.Get("cron_spec").(string))
 		hasChange = true
@@ -487,11 +406,6 @@ func resourceIBMIsBackupPolicyPlanUpdate(context context.Context, d *schema.Reso
 		patchVals.AttachUserTags = (flex.ExpandStringList((d.Get("attach_user_tags").(*schema.Set)).List()))
 		hasChange = true
 	}
-	// if d.HasChange("clone_policy") {
-	// 	clonePolicy := resourceIBMIsBackupPolicyPlanMapToBackupPolicyPlanClonePolicyPatch(d.Get("clone_policy.0").(map[string]interface{}))
-	// 	patchVals.ClonePolicy = &clonePolicy
-	// 	hasChange = true
-	// }
 	if d.HasChange("copy_user_tags") {
 		patchVals.CopyUserTags = core.BoolPtr(d.Get("copy_user_tags").(bool))
 		hasChange = true

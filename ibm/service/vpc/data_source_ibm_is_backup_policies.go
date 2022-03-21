@@ -21,6 +21,21 @@ func DataSourceIBMIsBackupPolicies() *schema.Resource {
 		ReadContext: dataSourceIBMIsBackupPoliciesRead,
 
 		Schema: map[string]*schema.Schema{
+			"resource_group": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources in the resource group with the specified identifier",
+				Optional:    true,
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources with the exact specified name",
+				Optional:    true,
+			},
+			"tag": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources with the exact tag value",
+				Optional:    true,
+			},
 
 			"backup_policies": &schema.Schema{
 				Type:        schema.TypeList,
@@ -154,11 +169,6 @@ func DataSourceIBMIsBackupPolicies() *schema.Resource {
 					},
 				},
 			},
-			"total_count": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The total number of resources across all pages.",
-			},
 		},
 	}
 }
@@ -169,20 +179,37 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	listBackupPoliciesOptions := &vpcv1.ListBackupPoliciesOptions{}
-
-	backupPolicyCollection, response, err := sess.ListBackupPoliciesWithContext(context, listBackupPoliciesOptions)
-	if err != nil {
-		log.Printf("[DEBUG] ListBackupPoliciesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListBackupPoliciesWithContext failed %s\n%s", err, response))
-	}
-
 	start := ""
 	matchBackupPolicies := []vpcv1.BackupPolicy{}
+
+	var resourceGroup string
+	if v, ok := d.GetOk("resource_group"); ok {
+		resourceGroup = v.(string)
+	}
+
+	var name string
+	if v, ok := d.GetOk("name"); ok {
+		name = v.(string)
+	}
+
+	var tag string
+	if v, ok := d.GetOk("tag"); ok {
+		tag = v.(string)
+	}
+
 	for {
 		listBackupPoliciesOptions := &vpcv1.ListBackupPoliciesOptions{}
 		if start != "" {
 			listBackupPoliciesOptions.Start = &start
+		}
+		if resourceGroup != "" {
+			listBackupPoliciesOptions.SetResourceGroupID(resourceGroup)
+		}
+		if name != "" {
+			listBackupPoliciesOptions.SetName(name)
+		}
+		if tag != "" {
+			listBackupPoliciesOptions.SetTag(tag)
 		}
 		backupPolicyCollection, response, err := sess.ListBackupPoliciesWithContext(context, listBackupPoliciesOptions)
 		if err != nil {
@@ -210,10 +237,6 @@ func dataSourceIBMIsBackupPoliciesRead(context context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting backup_policies %s", err))
 		}
-	}
-
-	if err = d.Set("total_count", flex.IntValue(backupPolicyCollection.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
 	return nil
@@ -251,7 +274,7 @@ func dataSourceBackupPolicyCollectionBackupPoliciesToMap(backupPoliciesItem vpcv
 		backupPoliciesMap["lifecycle_state"] = backupPoliciesItem.LifecycleState
 	}
 	if backupPoliciesItem.LastJobCompletedAt != nil {
-		backupPoliciesMap["last_job_completed_at"] = backupPoliciesItem.LastJobCompletedAt
+		backupPoliciesMap["last_job_completed_at"] = flex.DateTimeToString(backupPoliciesItem.LastJobCompletedAt)
 	}
 	if backupPoliciesItem.MatchResourceTypes != nil {
 		backupPoliciesMap["match_resource_types"] = backupPoliciesItem.MatchResourceTypes

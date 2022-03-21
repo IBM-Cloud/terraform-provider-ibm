@@ -5,36 +5,73 @@ package vpc_test
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMIsBackupPolicyJobsDataSourceBasic(t *testing.T) {
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	bakupPolicyName := fmt.Sprintf("tfbakuppolicyname%d", acctest.RandIntRange(10, 100))
+	bakupPolicyPlanName := fmt.Sprintf("tfbakuppolicyplanname%d", acctest.RandIntRange(10, 100))
+	cronSpec := strings.TrimSpace(strconv.Itoa(time.Now().UTC().Minute()+1) + " " + strconv.Itoa(time.Now().UTC().Second()) + " " + "*" + " " + "*" + " " + "*")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsBackupPolicyJobsDataSourceConfigBasic(),
+				Config: testAccCheckIBMIsBackupPolicyJobsDataSourceConfigBasic(bakupPolicyName, vpcname, subnetname, sshname, publicKey, volname, name, cronSpec, bakupPolicyPlanName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "backup_policy_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "first.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "limit"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "total_count"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.auto_delete"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.auto_delete_after"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.backup_policy_plan.0.deleted"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.backup_policy_plan.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.backup_policy_plan.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.backup_policy_plan.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.backup_policy_plan.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.completed_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.job_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.source_volume.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.source_volume.0.deleted"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.source_volume.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.source_volume.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.source_volume.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.status"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.status_reasons"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.deleted"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_backup_policy_jobs.is_backup_policy_jobs", "jobs.0.target_snapshot.0.resource_type"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsBackupPolicyJobsDataSourceConfigBasic() string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsBackupPolicyJobsDataSourceConfigBasic(backupPolicyName, vpcname, subnetname, sshname, publicKey, volName, name, cronSpec, bakupPolicyPlanName string) string {
+	return testAccCheckIBMIsBackupPolicyPlanConfigBasic(backupPolicyName, vpcname, subnetname, sshname, publicKey, volName, name, cronSpec, bakupPolicyPlanName) + fmt.Sprintf(`
 		data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
-			backup_policy_id = "backup_policy_id"
+			backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
 		}
 	`)
 }

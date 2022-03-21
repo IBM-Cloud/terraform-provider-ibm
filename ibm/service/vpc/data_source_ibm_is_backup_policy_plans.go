@@ -49,38 +49,6 @@ func DataSourceIBMIsBackupPolicyPlans() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"clone_policy": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"max_snapshots": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "The maximum number of recent snapshots (per source) that will keep clones.",
-									},
-									"zones": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "The zone this backup policy plan will create snapshot clones in.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"href": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The URL for this zone.",
-												},
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Computed:    true,
-													Description: "The globally unique name for this zone.",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
 						"copy_user_tags": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -172,14 +140,13 @@ func dataSourceIBMIsBackupPolicyPlansRead(context context.Context, d *schema.Res
 		suppliedFilter = true
 		for _, data := range backupPolicyPlanCollection.Plans {
 			if *data.Name == name {
+				log.Println("Hi I am inside if statement if *data.Name == name ")
 				matchPlans = append(matchPlans, data)
 			}
 		}
-	} else {
-		matchPlans = backupPolicyPlanCollection.Plans
+		log.Println(matchPlans)
+		backupPolicyPlanCollection.Plans = matchPlans
 	}
-	backupPolicyPlanCollection.Plans = matchPlans
-
 	if suppliedFilter {
 		if len(backupPolicyPlanCollection.Plans) == 0 {
 			return diag.FromErr(fmt.Errorf("no Plans found with name %s", name))

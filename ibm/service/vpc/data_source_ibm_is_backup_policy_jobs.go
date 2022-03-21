@@ -9,7 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -25,6 +24,21 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The backup policy identifier.",
+			},
+			"source_volume_id": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources with the source volume with the specified identifier",
+				Optional:    true,
+			},
+			"target_snapshot_id": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources with the target snapshot with the specified identifier",
+				Optional:    true,
+			},
+			"target_snapshot_crn": {
+				Type:        schema.TypeString,
+				Description: "Filters the collection to resources with the target snapshot with the specified CRN",
+				Optional:    true,
 			},
 			"jobs": &schema.Schema{
 				Type:        schema.TypeList,
@@ -238,16 +252,6 @@ func DataSourceIBMIsBackupPolicyJobs() *schema.Resource {
 					},
 				},
 			},
-			"limit": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The maximum number of resources that can be returned by the request.",
-			},
-			"total_count": &schema.Schema{
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The total number of resources across all pages.",
-			},
 		},
 	}
 }
@@ -261,6 +265,9 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 	listBackupPolicyJobsOptions := &vpcv1.ListBackupPolicyJobsOptions{}
 
 	listBackupPolicyJobsOptions.SetBackupPolicyID(d.Get("backup_policy_id").(string))
+	listBackupPolicyJobsOptions.SetSourceVolumeID(d.Get("source_volume_id").(string))
+	listBackupPolicyJobsOptions.SetTargetSnapshotID(d.Get("target_snapshot_id").(string))
+	listBackupPolicyJobsOptions.SetTargetSnapshotCRN(d.Get("target_snapshot_crn").(string))
 
 	backupPolicyJobCollection, response, err := vpcClient.ListBackupPolicyJobsWithContext(context, listBackupPolicyJobsOptions)
 	if err != nil {
@@ -275,13 +282,6 @@ func dataSourceIBMIsBackupPolicyJobsRead(context context.Context, d *schema.Reso
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting jobs %s", err))
 		}
-	}
-	if err = d.Set("limit", flex.IntValue(backupPolicyJobCollection.Limit)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting limit: %s", err))
-	}
-
-	if err = d.Set("total_count", flex.IntValue(backupPolicyJobCollection.TotalCount)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
 	}
 
 	return nil
