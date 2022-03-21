@@ -14,8 +14,8 @@ Provides a read-only data source for subscription. You can then reference the fi
 
 ```terraform
 data "ibm_en_subscription" "en_subscription" {
-  instance_guid = "my_instance_guid"
-  subscription_id = "subscription_id"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  subscription_id = ibm_en_subscription.subscriptionemailnew.subscription_id
 }
 ```
 

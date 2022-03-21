@@ -14,11 +14,11 @@ Create, update, or delete a SMS subscription by using IBM Cloud™ Event Notific
 
 ```terraform
 resource "ibm_en_subscription_sms" "sms_subscription" {
-  instance_guid    = "my_instance_guid"
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "News Subscription"
   description    = "SMS subscription for news alert"
   destination_id = "sms_destination_id"
-  topic_id       = "topic_id"
+  topic_id       = ibm_en_topic.topic1.topic_id
   attributes {
     to = ["+15678923404", "+19643567389"]
   }

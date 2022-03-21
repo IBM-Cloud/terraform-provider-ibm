@@ -43,11 +43,13 @@ func ResourceIBMEnFCMSubscription() *schema.Resource {
 			"destination_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Destination ID.",
 			},
 			"topic_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Topic ID.",
 			},
 			"subscription_id": {

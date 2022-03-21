@@ -14,11 +14,11 @@ Create, update, or delete a IOS subscription by using IBM Cloud™ Event Notific
 
 ```terraform
 resource "ibm_en_subscription_ios" "ios_subscription" {
-  instance_guid    = "my_instance_guid"
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "IOS Subscription"
   description    = "IOS device subscription"
-  destination_id = "destinationId"
-  topic_id       = "topicId"
+  destination_id = ibm_en_destination_ios.destinationiosp8.destination_id
+  topic_id       = ibm_en_topic.topic1.topic_id
 }
 ```
 

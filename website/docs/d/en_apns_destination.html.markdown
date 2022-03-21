@@ -14,8 +14,8 @@ Provides a read-only data source for destination. You can then reference the fie
 
 ```terraform
 data "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = "my_instance_id"
-  destination_id = "ios_destination_id"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  destination_id = ibm_en_destination_ios.destinationiosp8.destination_id
 }
 ```
 

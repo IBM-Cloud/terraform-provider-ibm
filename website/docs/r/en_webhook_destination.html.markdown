@@ -14,7 +14,7 @@ Create, update, or delete a Webhook destination by using IBM Cloud™ Event Noti
 
 ```terraform
 resource "ibm_en_destination_webhook" "webhook_en_destination" {
-  instance_guid = "my_instance_guid"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name        = "My Webhook Destination"
   type        = "webhook"
   description = "Destination webhook for event notification"

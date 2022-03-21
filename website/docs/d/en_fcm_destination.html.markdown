@@ -14,8 +14,8 @@ Provides a read-only data source for FCM destination. You can then reference the
 
 ```terraform
 data "ibm_en_destination_android" "android_en_destination" {
-  instance_guid = "my_instance_id"
-  destination_id = "fcm_destination_id"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  destination_id = ibm_en_destination_android.destinationandroidnew.destination_id
 }
 ```
 

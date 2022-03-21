@@ -14,11 +14,11 @@ Create, update, or delete a Email subscription by using IBM Cloud™ Event Notif
 
 ```terraform
 resource "ibm_en_subscription_email" "email_subscription" {
-  instance_guid    = "my_instance_guid"
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "Email Certificate Subscription"
   description    = "Subscription for Certificate expiration alert"
   destination_id = "email_destination_id"
-  topic_id       = "topicId"
+  topic_id       = ibm_en_topic.topic1.topic_id
   attributes {
       add_notification_payload = true
       reply_to_mail = "compliancealert@ibm.com"
@@ -71,8 +71,6 @@ Review the argument reference that you can specify for your resource.
   - `reply_to_mail` - (String) The email address to reply to.
 
   - `from_name` - (Optional, String) The email address user from which email is addressed.
-
-  - `signing_enabled`- (Boolean) Signing webhook attributes.
 
   - `to`- (List) The Email address to send the email to.
 

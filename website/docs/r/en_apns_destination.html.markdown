@@ -14,7 +14,7 @@ Create, update, or delete IOS destination by using IBM Cloud™ Event Notificati
 
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = "my_instance_guid"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name        = "IOS Destination Auth"
   type        = "push_ios"
   certificate_content_type = "p8"
@@ -35,7 +35,7 @@ resource "ibm_en_destination_ios" "ios_en_destination" {
 
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = "my_instance_guid"
+  instance_guid = "ibm_resource_instance.en_terraform_test_resource.guid"
   name        = "IOS Destination "
   type        = "push_ios"
   certificate_content_type = "p12"

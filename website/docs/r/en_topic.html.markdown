@@ -14,7 +14,7 @@ Create, update, or delete a topic by using IBM Cloud™ Event Notifications.
 
 ```terraform
 resource "ibm_en_topic" "en_topic" {
-  instance_guid = "my_instance_guid"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   name = "e2e topic"
   description = "Topic for EN events routing"
 }

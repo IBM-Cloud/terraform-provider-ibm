@@ -14,11 +14,11 @@ Create, update, or delete a FCM subscription by using IBM Cloud™ Event Notific
 
 ```terraform
 resource "ibm_en_subscription_android" "android_subscription" {
-  instance_guid    = "my_instance_guid"
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "Android Subscription"
   description    = "Android Subscription for Notification"
-  destination_id = "destinationId"
-  topic_id       = "topicId"
+  destination_id = ibm_en_destination_android.destinationandroidnew.destination_id
+  topic_id       = ibm_en_topic.topic1.topic_id
 }
 ```
 
