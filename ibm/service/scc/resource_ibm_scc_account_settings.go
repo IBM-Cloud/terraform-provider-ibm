@@ -35,11 +35,11 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 				Deprecated:   "use location instead",
 			},
 			"location": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Required:    true, // Made this Required to avoid drift
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Required:      true, // Made this Required to avoid drift
 				ConflictsWith: []string{"location_id"},
-				Description: "Location Settings.",
+				Description:   "Location Settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"location_id": &schema.Schema{
