@@ -37,7 +37,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamaccessgroup"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iampolicy"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/ibmtoolchainapi"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
@@ -49,6 +48,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/scc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/toolchain"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -936,17 +936,16 @@ func Provider() *schema.Provider {
 			"ibm_tekton_pipeline":                  continuousdeliverypipeline.ResourceIBMTektonPipeline(),
 
 			// Toolchain
-			"ibm_toolchain":                  ibmtoolchainapi.ResourceIbmToolchain(),
-			"ibm_toolchain_integration":      ibmtoolchainapi.ResourceIbmToolchainIntegration(),
-			"ibm_toolchain_tool_keyprotect":  ibmtoolchainapi.ResourceIbmToolchainToolKeyprotect(),
-			"ibm_toolchain_tool_git":         ibmtoolchainapi.ResourceIbmToolchainToolGit(),
-			"ibm_toolchain_tool_custom":      ibmtoolchainapi.ResourceIbmToolchainToolCustom(),
-			"ibm_toolchain_tool_artifactory": ibmtoolchainapi.ResourceIbmToolchainToolArtifactory(),
-			"ibm_toolchain_tool_pipeline":    ibmtoolchainapi.ResourceIbmToolchainToolPipeline(),
-			"ibm_toolchain_tool_orion":       ibmtoolchainapi.ResourceIbmToolchainToolOrion(),
-			"ibm_toolchain_tool_insights":    ibmtoolchainapi.ResourceIbmToolchainToolInsights(),
-			"ibm_toolchain_tool_slack":       ibmtoolchainapi.ResourceIbmToolchainToolSlack(),
-			"ibm_toolchain_tool_sonarqube":   ibmtoolchainapi.ResourceIbmToolchainToolSonarqube(),
+			"ibm_toolchain":                  toolchain.ResourceIbmToolchain(),
+			"ibm_toolchain_tool_keyprotect":  toolchain.ResourceIbmToolchainToolKeyprotect(),
+			"ibm_toolchain_tool_git":         toolchain.ResourceIbmToolchainToolGit(),
+			"ibm_toolchain_tool_artifactory": toolchain.ResourceIbmToolchainToolArtifactory(),
+			"ibm_toolchain_tool_custom":      toolchain.ResourceIbmToolchainToolCustom(),
+			"ibm_toolchain_tool_pipeline":    toolchain.ResourceIbmToolchainToolPipeline(),
+			"ibm_toolchain_tool_orion":       toolchain.ResourceIbmToolchainToolOrion(),
+			"ibm_toolchain_tool_insights":    toolchain.ResourceIbmToolchainToolInsights(),
+			"ibm_toolchain_tool_slack":       toolchain.ResourceIbmToolchainToolSlack(),
+			"ibm_toolchain_tool_sonarqube":   toolchain.ResourceIbmToolchainToolSonarqube(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1089,7 +1088,18 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
-				"ibm_toolchain":      ibmtoolchainapi.ResourceIbmToolchainValidator(),
+
+				// // Added for Toolchains
+				"ibm_toolchain":                  toolchain.ResourceIbmToolchainValidator(),
+				"ibm_toolchain_tool_keyprotect":  toolchain.ResourceIbmToolchainToolKeyprotectValidator(),
+				"ibm_toolchain_tool_git":         toolchain.ResourceIbmToolchainToolGitValidator(),
+				"ibm_toolchain_tool_artifactory": toolchain.ResourceIbmToolchainToolArtifactoryValidator(),
+				"ibm_toolchain_tool_custom":      toolchain.ResourceIbmToolchainToolCustomValidator(),
+				"ibm_toolchain_tool_orion":       toolchain.ResourceIbmToolchainToolOrionValidator(),
+				"ibm_toolchain_tool_pipeline":    toolchain.ResourceIbmToolchainToolPipelineValidator(),
+				"ibm_toolchain_tool_slack":       toolchain.ResourceIbmToolchainToolSlackValidator(),
+				"ibm_toolchain_tool_insights":    toolchain.ResourceIbmToolchainToolInsightsValidator(),
+				"ibm_toolchain_tool_sonarqube":   toolchain.ResourceIbmToolchainToolSonarqubeValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibmtoolchainapi_test
+package toolchain_test
 
 import (
 	"fmt"
@@ -13,14 +13,16 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.ibm.com/org-ids/toolchain-go-sdk/ibmtoolchainapiv2"
+	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
 func TestAccIbmToolchainBasic(t *testing.T) {
-	var conf ibmtoolchainapiv2.ToolchainResponse
+	var conf toolchainv2.GetToolchainByIdResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	generator := "API"
+	resourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	generator := fmt.Sprintf("tf_generator_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	generatorUpdate := fmt.Sprintf("tf_generator_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,18 +30,20 @@ func TestAccIbmToolchainBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmToolchainDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainConfigBasic(name, generator),
+				Config: testAccCheckIbmToolchainConfigBasic(name, resourceGroupID, generator),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmToolchainExists("ibm_toolchain.toolchain", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "name", name),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "resource_group_id", resourceGroupID),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generator),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainConfigBasic(nameUpdate, generator),
+				Config: testAccCheckIbmToolchainConfigBasic(nameUpdate, resourceGroupID, generatorUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generator),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "resource_group_id", resourceGroupID),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generatorUpdate),
 				),
 			},
 		},
@@ -47,12 +51,13 @@ func TestAccIbmToolchainBasic(t *testing.T) {
 }
 
 func TestAccIbmToolchainAllArgs(t *testing.T) {
-	var conf ibmtoolchainapiv2.ToolchainResponse
+	var conf toolchainv2.GetToolchainByIdResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	generator := "API"
+	resourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	generator := fmt.Sprintf("tf_generator_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	key := fmt.Sprintf("tf_key_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	generatorUpdate := fmt.Sprintf("tf_generator_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -61,22 +66,22 @@ func TestAccIbmToolchainAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmToolchainDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainConfig(name, generator, description, key),
+				Config: testAccCheckIbmToolchainConfig(name, resourceGroupID, generator, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmToolchainExists("ibm_toolchain.toolchain", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "name", name),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "resource_group_id", resourceGroupID),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generator),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "description", description),
-					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "key", key),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainConfig(nameUpdate, generator, descriptionUpdate, key),
+				Config: testAccCheckIbmToolchainConfig(nameUpdate, resourceGroupID, generatorUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generator),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "resource_group_id", resourceGroupID),
+					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "generator", generatorUpdate),
 					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "description", descriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_toolchain.toolchain", "key", key),
 				),
 			},
 			resource.TestStep{
@@ -88,33 +93,31 @@ func TestAccIbmToolchainAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainConfigBasic(name string, generator string) string {
+func testAccCheckIbmToolchainConfigBasic(name string, resourceGroupID string, generator string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain" "toolchain" {
 			name = "%s"
+			resource_group_id = "%s"
 			generator = "%s"
 		}
-	`, name, generator)
+	`, name, resourceGroupID, generator)
 }
 
-func testAccCheckIbmToolchainConfig(name string, generator string, description string, key string) string {
+func testAccCheckIbmToolchainConfig(name string, resourceGroupID string, generator string, description string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain" "toolchain" {
 			name = "%s"
+			resource_group_id = "%s"
 			generator = "%s"
 			description = "%s"
-			key = "%s"
-			container {
-				guid = "d02d29f1-e7bb-4977-8a6f-26d7b7bb893e"
-				type = "organization_guid"
-			}
+			template = "FIXME"
 		}
-	`, name, generator, description, key)
+	`, name, resourceGroupID, generator, description)
 }
 
-func testAccCheckIbmToolchainExists(n string, obj ibmtoolchainapiv2.ToolchainResponse) resource.TestCheckFunc {
+func testAccCheckIbmToolchainExists(n string, obj toolchainv2.GetToolchainByIdResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -122,27 +125,27 @@ func testAccCheckIbmToolchainExists(n string, obj ibmtoolchainapiv2.ToolchainRes
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		ibmToolchainApiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IbmToolchainApiV2()
+		toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 		if err != nil {
 			return err
 		}
 
-		getToolchainOptions := &ibmtoolchainapiv2.GetToolchainOptions{}
+		getToolchainByIdOptions := &toolchainv2.GetToolchainByIdOptions{}
 
-		getToolchainOptions.SetToolchainGuid(rs.Primary.ID)
+		getToolchainByIdOptions.SetToolchainID(rs.Primary.ID)
 
-		toolchainResponse, _, err := ibmToolchainApiClient.GetToolchain(getToolchainOptions)
+		getToolchainByIdResponse, _, err := toolchainClient.GetToolchainByID(getToolchainByIdOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *toolchainResponse
+		obj = *getToolchainByIdResponse
 		return nil
 	}
 }
 
 func testAccCheckIbmToolchainDestroy(s *terraform.State) error {
-	ibmToolchainApiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IbmToolchainApiV2()
+	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
 	}
@@ -151,12 +154,12 @@ func testAccCheckIbmToolchainDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getToolchainOptions := &ibmtoolchainapiv2.GetToolchainOptions{}
+		getToolchainByIdOptions := &toolchainv2.GetToolchainByIdOptions{}
 
-		getToolchainOptions.SetToolchainGuid(rs.Primary.ID)
+		getToolchainByIdOptions.SetToolchainID(rs.Primary.ID)
 
 		// Try to find the key
-		_, response, err := ibmToolchainApiClient.GetToolchain(getToolchainOptions)
+		_, response, err := toolchainClient.GetToolchainByID(getToolchainByIdOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain still exists: %s", rs.Primary.ID)

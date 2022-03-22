@@ -106,7 +106,7 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
-	"github.ibm.com/org-ids/toolchain-go-sdk/ibmtoolchainapiv2"
+	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -275,7 +275,7 @@ type ClientSession interface {
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
 	ContinuousDeliveryPipelineV2() (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error)
-	IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error)
+	ToolchainV2() (*toolchainv2.ToolchainV2, error)
 }
 
 type clientSession struct {
@@ -558,8 +558,8 @@ type clientSession struct {
 	continuousDeliveryPipelineClientErr error
 
 	// Toolchain
-	ibmToolchainApiClient    *ibmtoolchainapiv2.IbmToolchainApiV2
-	ibmToolchainApiClientErr error
+	toolchainClient    *toolchainv2.ToolchainV2
+	toolchainClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1057,10 +1057,9 @@ func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdelivery
 	return session.continuousDeliveryPipelineClient, session.continuousDeliveryPipelineClientErr
 }
 
-// IBM Toolchain API
-func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error) {
-	return session.ibmToolchainApiClient, session.ibmToolchainApiClientErr
-
+// Toolchain
+func (session clientSession) ToolchainV2() (*toolchainv2.ToolchainV2, error) {
+	return session.toolchainClient, session.toolchainClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -2816,39 +2815,38 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
-	// Construct an "options" struct for creating the toolchain service client.
-	var ibmToolchainApiClientURL string
+	// Construct an "options" struct for creating the service client.
+	var toolchainClientURL string
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion("private." + c.Region)
+		toolchainClientURL, err = toolchainv2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
-			ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion(c.Region)
+			toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
 		}
 	} else {
-		ibmToolchainApiClientURL, err = ibmtoolchainapiv2.GetServiceURLForRegion(c.Region)
+		toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
 	}
 	if err != nil {
-		ibmToolchainApiClientURL = ibmtoolchainapiv2.DefaultServiceURL
+		toolchainClientURL = toolchainv2.DefaultServiceURL
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		ibmToolchainApiClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, ibmToolchainApiClientURL)
+		toolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, toolchainClientURL)
 	}
-
-	ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, ibmToolchainApiClientURL),
+	toolchainClientOptions := &toolchainv2.ToolchainV2Options{
 		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, toolchainClientURL),
 	}
 
 	// Construct the service client.
-	session.ibmToolchainApiClient, err = ibmtoolchainapiv2.NewIbmToolchainApiV2(ibmToolchainApiClientOptions)
+	session.toolchainClient, err = toolchainv2.NewToolchainV2(toolchainClientOptions)
 	if err == nil {
 		// Enable retries for API calls
-		session.ibmToolchainApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.toolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
-		session.ibmToolchainApiClient.SetDefaultHeaders(gohttp.Header{
+		session.toolchainClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.ibmToolchainApiClientErr = fmt.Errorf("Error occurred while configuring IBM Toolchain API service: %q", err)
+		session.toolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the tekton pipeline service client.

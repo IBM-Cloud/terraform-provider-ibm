@@ -6,37 +6,42 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entry to `import`:
 ```
-	"github.ibm.com/cloudengineering/terraform-provider-template/ibm/service/ibmtoolchainapi"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/toolchain"
 ```
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_toolchain_tool_git": ibmtoolchainapi.ResourceIbmToolchainToolGit(),
+    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIbmToolchainToolSonarqube(),
+```
+
+- Add the following entries to `globalValidatorDict`:
+``` 
+    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIbmToolchainToolSonarqubeValidator(),
 ```
 
 ### Changes to `config.go`
 
 - Add an import for the generated Go SDK:
 ```
-    "github.ibm.com/org-ids/toolchain-go-sdk/ibmtoolchainapiv2"
+    "github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 ```
 
 - Add a method to the `ClientSession interface`:
 ```
-    IbmToolchainApiV2()   (*ibmtoolchainapiv2.IbmToolchainApiV2, error)
+    ToolchainV2()   (*toolchainv2.ToolchainV2, error)
 ```
 
 - Add two fields to the `clientSession struct`:
 ```
-    ibmToolchainApiClient     *ibmtoolchainapiv2.IbmToolchainApiV2
-    ibmToolchainApiClientErr  error
+    toolchainClient     *toolchainv2.ToolchainV2
+    toolchainClientErr  error
 ```
 
 - Implement a new method on the `clientSession struct`:
 ```
-// IBM Toolchain API
-func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchainApiV2, error) {
-    return session.ibmToolchainApiClient, session.ibmToolchainApiClientErr
+// Toolchain
+func (session clientSession) ToolchainV2() (*toolchainv2.ToolchainV2, error) {
+    return session.toolchainClient, session.toolchainClientErr
 }
 ```
 
@@ -47,21 +52,37 @@ func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchai
   add the code to initialize the service client
 ```
     // Construct an "options" struct for creating the service client.
-    ibmToolchainApiClientOptions := &ibmtoolchainapiv2.IbmToolchainApiV2Options{
+    var toolchainClientURL string
+    if c.Visibility == "private" || c.Visibility == "public-and-private" {
+        toolchainClientURL, err = toolchainv2.GetServiceURLForRegion("private." + c.Region)
+        if err != nil && c.Visibility == "public-and-private" {
+            toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
+        }
+    } else {
+        toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
+    }
+    if err != nil {
+        toolchainClientURL = toolchainv2.DefaultServiceURL
+    }
+    if fileMap != nil && c.Visibility != "public-and-private" {
+		toolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, toolchainClientURL)
+	}
+    toolchainClientOptions := &toolchainv2.ToolchainV2Options{
         Authenticator: authenticator,
+        URL: EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, toolchainClientURL),
     }
 
     // Construct the service client.
-    session.ibmToolchainApiClient, err = ibmtoolchainapiv2.NewIbmToolchainApiV2(ibmToolchainApiClientOptions)
+    session.toolchainClient, err = toolchainv2.NewToolchainV2(toolchainClientOptions)
     if err == nil {
         // Enable retries for API calls
-        session.ibmToolchainApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+        session.toolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
         // Add custom header for analytics
-        session.ibmToolchainApiClient.SetDefaultHeaders(gohttp.Header{
+        session.toolchainClient.SetDefaultHeaders(gohttp.Header{
             "X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
         })
     } else {
-        session.ibmToolchainApiClientErr = fmt.Errorf("Error occurred while configuring IBM Toolchain API service: %q", err)
+        session.toolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
     }
 ```
 
@@ -70,5 +91,5 @@ func (session clientSession) IbmToolchainApiV2() (*ibmtoolchainapiv2.IbmToolchai
 Insert the following line into the website/allowed-subcategories.txt file (in alphabetic order):
 
 ```
-IBM Toolchain API
+Toolchain
 ``` 
