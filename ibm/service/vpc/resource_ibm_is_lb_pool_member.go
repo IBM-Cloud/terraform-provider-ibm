@@ -213,9 +213,7 @@ func lbpMemberCreate(d *schema.ResourceData, meta interface{}, lbID, lbPoolID st
 	}
 	if w, ok := d.GetOkExists(isLBPoolMemberWeight); ok {
 		weight = int64(w.(int))
-		if ok {
-			options.Weight = &weight
-		}
+		options.Weight = &weight
 	}
 
 	lbPoolMember, response, err := sess.CreateLoadBalancerPoolMember(options)

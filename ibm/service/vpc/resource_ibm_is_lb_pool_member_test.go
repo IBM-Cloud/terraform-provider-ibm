@@ -70,8 +70,7 @@ func TestAccIBMISLBPoolMember_basic_network(t *testing.T) {
 	nlbName := fmt.Sprintf("tfnlbcreate%d", acctest.RandIntRange(10, 100))
 	nlbName1 := fmt.Sprintf("tfnlbupdate%d", acctest.RandIntRange(10, 100))
 
-	// sshname := "terraform-test-ssh-key"
-	sshname := "ssh-test-bhavesh"
+	sshname := "terraform-test-ssh-key"
 	vsiName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
