@@ -19,7 +19,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/keyprotect-go-client v0.7.0
-	github.com/IBM/networking-go-sdk v0.26.0
+	github.com/IBM/networking-go-sdk v0.27.0
 	github.com/IBM/platform-services-go-sdk v0.22.6
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.4
