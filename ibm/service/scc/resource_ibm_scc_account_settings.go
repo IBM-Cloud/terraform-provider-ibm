@@ -32,7 +32,7 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_scc_account_settings", "location_id"),
 				Description:  "The programatic ID of the location that you want to work in.",
-				Deprecated:   "use location instead",
+				Deprecated:   "The attribute location_id will soon be deprecated. Please use location instead. See https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/scc_account_settings for details",
 			},
 			"location": &schema.Schema{
 				Type:          schema.TypeList,
