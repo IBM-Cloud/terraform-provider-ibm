@@ -37,7 +37,7 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 			"location": &schema.Schema{
 				Type:          schema.TypeList,
 				MaxItems:      1,
-				Required:      true, // Made this Required to avoid drift
+				Optional:      true, // Made this Required to avoid drift
 				ConflictsWith: []string{"location_id"},
 				Description:   "Location Settings.",
 				Elem: &schema.Resource{
@@ -61,7 +61,6 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 						"instance_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "",
 							Description: "The Cloud Resource Name (CRN) of the Event Notifications instance that you want to connect.",
 						},
 					},
@@ -96,8 +95,22 @@ func resourceIbmSccAccountSettingsCreate(context context.Context, d *schema.Reso
 	accountSettings, response, err := adminServiceApiClient.GetSettingsWithContext(context, getSettingsOptions)
 
 	hasChange := false
-	// check from the local tf file is location is defined
-	if _, ok := d.GetOk("location"); ok {
+
+	// Handle the backwards compatibility
+	if _, ok := d.GetOk("location_id"); ok {
+		location_id, exists := d.Get("location_id").(string)
+		if !exists {
+			return diag.FromErr(fmt.Errorf("SCC Admin: Failed to insert location_id into CREATE payload"))
+		}
+		// if GetSettings is different than the terrafrom config file, prepare a PATCH call
+		if location_id != *accountSettings.Location.ID {
+			patchAccountSettingsOptions.SetLocation(&adminserviceapiv1.LocationID{
+				ID: core.StringPtr(location_id),
+			})
+			hasChange = true
+		}
+	} else if _, ok := d.GetOk("location"); ok {
+		// check from the local tf file is location is defined
 		location, err := resourceIbmSccAccountSettingsMapToLocationID(d.Get("location.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -130,9 +143,9 @@ func resourceIbmSccAccountSettingsCreate(context context.Context, d *schema.Reso
 			log.Printf("[DEBUG] PatchAccountSettingsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("PatchAccountSettingsWithContext failed %s\n%s", err, response))
 		}
-		// Set the ID of the Terraform object to the current timestamp
-		d.SetId(resourceIbmSccAccountSettingID(d))
 	}
+	// Set the ID of the Terraform object
+	d.SetId("scc_admin_account_settings")
 
 	return resourceIbmSccAccountSettingsRead(context, d, meta)
 }
@@ -175,8 +188,16 @@ func resourceIbmSccAccountSettingsRead(context context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set("location", []map[string]interface{}{locationMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+		// Handle backwards compatiability
+		if _, ok := d.GetOk("location_id"); ok {
+			log.Printf("[DEBUG] Found location_id for Operation %s \n", "Read")
+			if err = d.Set("location_id", locationMap["location_id"]); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting location_id: %s", err))
+			}
+		} else {
+			if err = d.Set("location", []map[string]interface{}{locationMap}); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+			}
 		}
 	}
 	if accountSettings.EventNotifications != nil {
@@ -211,7 +232,18 @@ func resourceIbmSccAccountSettingsUpdate(context context.Context, d *schema.Reso
 	// Flag to see if anything has been changed from the Update(terraform apply)
 	hasChange := false
 
-	if d.HasChange("location") {
+	// handle the backwards compatibility
+	if _, ok := d.GetOk("location_id"); ok && d.HasChange("location_id") {
+		location_id, exists := d.Get("location_id").(string)
+		if !exists {
+			return diag.FromErr(fmt.Errorf("SCC Admin: Failed to insert location_id into Update payload"))
+		}
+		// if location is different than the terrafrom config file, prepare a PATCH call
+		patchAccountSettingsOptions.SetLocation(&adminserviceapiv1.LocationID{
+			ID: core.StringPtr(location_id),
+		})
+		hasChange = true
+	} else if d.HasChange("location") {
 		location, err := resourceIbmSccAccountSettingsMapToLocationID(d.Get("location.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -235,8 +267,6 @@ func resourceIbmSccAccountSettingsUpdate(context context.Context, d *schema.Reso
 			log.Printf("[DEBUG] PatchAccountSettingsWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("PatchAccountSettingsWithContext failed %s\n%s", err, response))
 		}
-		// Change the id of the this object only if anything has changed
-		d.SetId(resourceIbmSccAccountSettingID(d))
 	}
 
 	return resourceIbmSccAccountSettingsRead(context, d, meta)
@@ -289,6 +319,9 @@ func resourceIbmSccAccountSettingsLocationIDToMap(model *adminserviceapiv1.Locat
 
 func resourceIbmSccAccountSettingsNotificationsRegistrationToMap(model *adminserviceapiv1.NotificationsRegistration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["instance_crn"] = model.InstanceCrn
+
+	if len(*model.InstanceCrn) > 0 {
+		modelMap["instance_crn"] = model.InstanceCrn
+	}
 	return modelMap, nil
 }

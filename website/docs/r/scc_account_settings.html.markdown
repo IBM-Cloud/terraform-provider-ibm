@@ -28,6 +28,8 @@ resource "ibm_scc_account_settings" "scc_account_settings" {
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
+
+> `location_id` will be Deprecated in the near future. Please adjust to using the argument `location`
 * `location_id` **Deprecated** - (Required, Forces new resource, String) The programatic ID of the location that you want to work in.
   * Constraints: Allowable values are: `us`, `eu`, `uk`.
 * `event_notifications` - (Required, List) The Event Notification settings to register.
