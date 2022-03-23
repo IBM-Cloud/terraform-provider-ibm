@@ -4,7 +4,7 @@ This example illustrates how to use the ToolchainV2
 
 These types of resources are supported:
 
-* toolchain_tool_secretsmanager
+* toolchain_tool_sonarqube
 
 ## Usage
 
@@ -21,14 +21,14 @@ Run `terraform destroy` when you don't need these resources.
 
 ## ToolchainV2 resources
 
-toolchain_tool_secretsmanager resource:
+toolchain_tool_sonarqube resource:
 
 ```hcl
-resource "toolchain_tool_secretsmanager" "toolchain_tool_secretsmanager_instance" {
-  toolchain_id = var.toolchain_tool_secretsmanager_toolchain_id
-  name = var.toolchain_tool_secretsmanager_name
-  parameters = var.toolchain_tool_secretsmanager_parameters
-  parameters_references = var.toolchain_tool_secretsmanager_parameters_references
+resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
+  toolchain_id = var.toolchain_tool_sonarqube_toolchain_id
+  name = var.toolchain_tool_sonarqube_name
+  parameters = var.toolchain_tool_sonarqube_parameters
+  parameters_references = var.toolchain_tool_sonarqube_parameters_references
 }
 ```
 
@@ -69,4 +69,4 @@ resource "toolchain_tool_secretsmanager" "toolchain_tool_secretsmanager_instance
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_secretsmanager | toolchain_tool_secretsmanager object |
+| toolchain_tool_sonarqube | toolchain_tool_sonarqube object |

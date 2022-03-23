@@ -27,6 +27,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `100` characters.
 * `initialization` - (Optional, List) 
 Nested scheme for **initialization**:
+	* `git_id` - (Optional, Forces new resource, String)
+	* `owner_id` - (Optional, Forces new resource, String)
 	* `private_repo` - (Optional, Forces new resource, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, Forces new resource, String)
@@ -38,7 +40,9 @@ Nested scheme for **initialization**:
 * `parameters` - (Optional, List) 
 Nested scheme for **parameters**:
 	* `enable_traceability` - (Optional, Boolean)
+	* `git_id` - (Optional, String)
 	* `has_issues` - (Optional, Boolean)
+	* `owner_id` - (Optional, String)
 	* `private_repo` - (Optional, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, String)

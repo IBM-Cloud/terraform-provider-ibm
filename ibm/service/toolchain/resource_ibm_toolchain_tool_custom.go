@@ -18,12 +18,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIbmToolchainToolCustom() *schema.Resource {
+func ResourceIBMToolchainToolCustom() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainToolCustomCreate,
-		ReadContext:   ResourceIbmToolchainToolCustomRead,
-		UpdateContext: ResourceIbmToolchainToolCustomUpdate,
-		DeleteContext: ResourceIbmToolchainToolCustomDelete,
+		CreateContext: ResourceIBMToolchainToolCustomCreate,
+		ReadContext:   ResourceIBMToolchainToolCustomRead,
+		UpdateContext: ResourceIBMToolchainToolCustomUpdate,
+		DeleteContext: ResourceIBMToolchainToolCustomDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -138,7 +138,7 @@ func ResourceIbmToolchainToolCustom() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainToolCustomValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolCustomValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -156,7 +156,7 @@ func ResourceIbmToolchainToolCustomValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIbmToolchainToolCustomCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolCustomCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -170,7 +170,7 @@ func ResourceIbmToolchainToolCustomCreate(context context.Context, d *schema.Res
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIbmToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parametersModel, err := ResourceIBMToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -188,26 +188,26 @@ func ResourceIbmToolchainToolCustomCreate(context context.Context, d *schema.Res
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIbmToolchainToolCustomRead(context, d, meta)
+	return ResourceIBMToolchainToolCustomRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolCustomRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolCustomRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+	getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions.SetToolchainID(parts[0])
-	getIntegrationByIdOptions.SetIntegrationID(parts[1])
+	getIntegrationByIDOptions.SetToolchainID(parts[0])
+	getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-	getIntegrationByIdResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIdOptions)
+	getIntegrationByIDResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -218,14 +218,14 @@ func ResourceIbmToolchainToolCustomRead(context context.Context, d *schema.Resou
 	}
 
 	// TODO: handle argument of type map[string]interface{}
-	if err = d.Set("toolchain_id", getIntegrationByIdResponse.ToolchainID); err != nil {
+	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	if err = d.Set("name", getIntegrationByIdResponse.Name); err != nil {
+	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if getIntegrationByIdResponse.Parameters != nil {
-		parametersMap, err := ResourceIbmToolchainToolCustomParametersToMap(getIntegrationByIdResponse.Parameters)
+	if getIntegrationByIDResponse.Parameters != nil {
+		parametersMap, err := ResourceIBMToolchainToolCustomParametersToMap(getIntegrationByIDResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -233,36 +233,36 @@ func ResourceIbmToolchainToolCustomRead(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
 	}
-	if err = d.Set("resource_group_id", getIntegrationByIdResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("crn", getIntegrationByIdResponse.Crn); err != nil {
+	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("toolchain_crn", getIntegrationByIdResponse.ToolchainCrn); err != nil {
+	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
-	if err = d.Set("href", getIntegrationByIdResponse.Href); err != nil {
+	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIbmToolchainToolCustomGetIntegrationByIdResponseReferentToMap(getIntegrationByIdResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolCustomGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("referent", []map[string]interface{}{referentMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting referent: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIdResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("state", getIntegrationByIdResponse.State); err != nil {
+	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIbmToolchainToolCustomUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolCustomUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -290,7 +290,7 @@ func ResourceIbmToolchainToolCustomUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIBMToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -310,10 +310,10 @@ func ResourceIbmToolchainToolCustomUpdate(context context.Context, d *schema.Res
 		}
 	}
 
-	return ResourceIbmToolchainToolCustomRead(context, d, meta)
+	return ResourceIBMToolchainToolCustomRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolCustomDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolCustomDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -340,7 +340,7 @@ func ResourceIbmToolchainToolCustomDelete(context context.Context, d *schema.Res
 	return nil
 }
 
-func ResourceIbmToolchainToolCustomMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolCustomMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
 	model["type"] = core.StringPtr(modelMap["type"].(string))
 	model["lifecyclePhase"] = core.StringPtr(modelMap["lifecycle_phase"].(string))
@@ -361,7 +361,7 @@ func ResourceIbmToolchainToolCustomMapToParameters(modelMap map[string]interface
 	return model, nil
 }
 
-func ResourceIbmToolchainToolCustomParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolCustomParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model["type"]
 	modelMap["lifecycle_phase"] = model["lifecyclePhase"]
@@ -382,13 +382,13 @@ func ResourceIbmToolchainToolCustomParametersToMap(model map[string]interface{})
 	return modelMap, nil
 }
 
-func ResourceIbmToolchainToolCustomGetIntegrationByIdResponseReferentToMap(model *toolchainv2.GetIntegrationByIdResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolCustomGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.UiHref != nil {
-		modelMap["ui_href"] = model.UiHref
+	if model.UIHref != nil {
+		modelMap["ui_href"] = model.UIHref
 	}
-	if model.ApiHref != nil {
-		modelMap["api_href"] = model.ApiHref
+	if model.APIHref != nil {
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

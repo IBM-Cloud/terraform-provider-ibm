@@ -17,19 +17,19 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolSonarqubeBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolSonarqubeBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolSonarqubeDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSonarqubeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSonarqubeConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolSonarqubeConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolSonarqubeExists("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", conf),
+					testAccCheckIBMToolchainToolSonarqubeExists("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", "toolchain_id", toolchainID),
 				),
 			},
@@ -37,8 +37,8 @@ func TestAccIbmToolchainToolSonarqubeBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolSonarqubeAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolSonarqubeAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,18 +46,18 @@ func TestAccIbmToolchainToolSonarqubeAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolSonarqubeDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSonarqubeDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSonarqubeConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolSonarqubeConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolSonarqubeExists("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", conf),
+					testAccCheckIBMToolchainToolSonarqubeExists("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSonarqubeConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolSonarqubeConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_sonarqube.toolchain_tool_sonarqube", "name", nameUpdate),
@@ -72,7 +72,7 @@ func TestAccIbmToolchainToolSonarqubeAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolSonarqubeConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolSonarqubeConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_sonarqube" "toolchain_tool_sonarqube" {
@@ -81,7 +81,7 @@ func testAccCheckIbmToolchainToolSonarqubeConfigBasic(toolchainID string) string
 	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolSonarqubeConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolSonarqubeConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_sonarqube" "toolchain_tool_sonarqube" {
@@ -99,7 +99,7 @@ func testAccCheckIbmToolchainToolSonarqubeConfig(toolchainID string, name string
 	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolSonarqubeExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolSonarqubeExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -112,27 +112,27 @@ func testAccCheckIbmToolchainToolSonarqubeExists(n string, obj toolchainv2.GetIn
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolSonarqubeDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolSonarqubeDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -142,18 +142,18 @@ func testAccCheckIbmToolchainToolSonarqubeDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_sonarqube still exists: %s", rs.Primary.ID)

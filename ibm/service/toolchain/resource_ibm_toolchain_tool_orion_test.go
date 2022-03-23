@@ -17,19 +17,19 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolOrionBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolOrionBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolOrionDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolOrionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolOrionConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolOrionConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolOrionExists("ibm_toolchain_tool_orion.toolchain_tool_orion", conf),
+					testAccCheckIBMToolchainToolOrionExists("ibm_toolchain_tool_orion.toolchain_tool_orion", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_orion.toolchain_tool_orion", "toolchain_id", toolchainID),
 				),
 			},
@@ -37,8 +37,8 @@ func TestAccIbmToolchainToolOrionBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolOrionAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolOrionAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,18 +46,18 @@ func TestAccIbmToolchainToolOrionAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolOrionDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolOrionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolOrionConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolOrionConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolOrionExists("ibm_toolchain_tool_orion.toolchain_tool_orion", conf),
+					testAccCheckIBMToolchainToolOrionExists("ibm_toolchain_tool_orion.toolchain_tool_orion", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_orion.toolchain_tool_orion", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_orion.toolchain_tool_orion", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolOrionConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolOrionConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_orion.toolchain_tool_orion", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_orion.toolchain_tool_orion", "name", nameUpdate),
@@ -72,7 +72,7 @@ func TestAccIbmToolchainToolOrionAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolOrionConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolOrionConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_orion" "toolchain_tool_orion" {
@@ -81,7 +81,7 @@ func testAccCheckIbmToolchainToolOrionConfigBasic(toolchainID string) string {
 	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolOrionConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolOrionConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_orion" "toolchain_tool_orion" {
@@ -91,7 +91,7 @@ func testAccCheckIbmToolchainToolOrionConfig(toolchainID string, name string) st
 	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolOrionExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolOrionExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -104,27 +104,27 @@ func testAccCheckIbmToolchainToolOrionExists(n string, obj toolchainv2.GetIntegr
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolOrionDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolOrionDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -134,18 +134,18 @@ func testAccCheckIbmToolchainToolOrionDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_orion still exists: %s", rs.Primary.ID)

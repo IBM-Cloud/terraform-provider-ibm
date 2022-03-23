@@ -17,19 +17,19 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolSlackBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolSlackBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolSlackDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSlackDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSlackConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolSlackConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolSlackExists("ibm_toolchain_tool_slack.toolchain_tool_slack", conf),
+					testAccCheckIBMToolchainToolSlackExists("ibm_toolchain_tool_slack.toolchain_tool_slack", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_slack.toolchain_tool_slack", "toolchain_id", toolchainID),
 				),
 			},
@@ -37,8 +37,8 @@ func TestAccIbmToolchainToolSlackBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolSlackAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolSlackAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,18 +46,18 @@ func TestAccIbmToolchainToolSlackAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolSlackDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSlackDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSlackConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolSlackConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolSlackExists("ibm_toolchain_tool_slack.toolchain_tool_slack", conf),
+					testAccCheckIBMToolchainToolSlackExists("ibm_toolchain_tool_slack.toolchain_tool_slack", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_slack.toolchain_tool_slack", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_slack.toolchain_tool_slack", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolSlackConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolSlackConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_slack.toolchain_tool_slack", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_slack.toolchain_tool_slack", "name", nameUpdate),
@@ -72,7 +72,7 @@ func TestAccIbmToolchainToolSlackAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolSlackConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolSlackConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_slack" "toolchain_tool_slack" {
@@ -81,7 +81,7 @@ func testAccCheckIbmToolchainToolSlackConfigBasic(toolchainID string) string {
 	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolSlackConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolSlackConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_slack" "toolchain_tool_slack" {
@@ -102,7 +102,7 @@ func testAccCheckIbmToolchainToolSlackConfig(toolchainID string, name string) st
 	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolSlackExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolSlackExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -115,27 +115,27 @@ func testAccCheckIbmToolchainToolSlackExists(n string, obj toolchainv2.GetIntegr
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolSlackDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolSlackDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -145,18 +145,18 @@ func testAccCheckIbmToolchainToolSlackDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_slack still exists: %s", rs.Primary.ID)

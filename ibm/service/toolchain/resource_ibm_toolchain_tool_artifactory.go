@@ -18,12 +18,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIbmToolchainToolArtifactory() *schema.Resource {
+func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainToolArtifactoryCreate,
-		ReadContext:   ResourceIbmToolchainToolArtifactoryRead,
-		UpdateContext: ResourceIbmToolchainToolArtifactoryUpdate,
-		DeleteContext: ResourceIbmToolchainToolArtifactoryDelete,
+		CreateContext: ResourceIBMToolchainToolArtifactoryCreate,
+		ReadContext:   ResourceIBMToolchainToolArtifactoryRead,
+		UpdateContext: ResourceIBMToolchainToolArtifactoryUpdate,
+		DeleteContext: ResourceIBMToolchainToolArtifactoryDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -152,7 +152,7 @@ func ResourceIbmToolchainToolArtifactory() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainToolArtifactoryValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolArtifactoryValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -170,7 +170,7 @@ func ResourceIbmToolchainToolArtifactoryValidator() *validate.ResourceValidator 
 	return &resourceValidator
 }
 
-func ResourceIbmToolchainToolArtifactoryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolArtifactoryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +184,7 @@ func ResourceIbmToolchainToolArtifactoryCreate(context context.Context, d *schem
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIbmToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parametersModel, err := ResourceIBMToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -202,26 +202,26 @@ func ResourceIbmToolchainToolArtifactoryCreate(context context.Context, d *schem
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIbmToolchainToolArtifactoryRead(context, d, meta)
+	return ResourceIBMToolchainToolArtifactoryRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolArtifactoryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolArtifactoryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+	getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions.SetToolchainID(parts[0])
-	getIntegrationByIdOptions.SetIntegrationID(parts[1])
+	getIntegrationByIDOptions.SetToolchainID(parts[0])
+	getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-	getIntegrationByIdResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIdOptions)
+	getIntegrationByIDResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -232,14 +232,14 @@ func ResourceIbmToolchainToolArtifactoryRead(context context.Context, d *schema.
 	}
 
 	// TODO: handle argument of type map[string]interface{}
-	if err = d.Set("toolchain_id", getIntegrationByIdResponse.ToolchainID); err != nil {
+	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	if err = d.Set("name", getIntegrationByIdResponse.Name); err != nil {
+	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if getIntegrationByIdResponse.Parameters != nil {
-		parametersMap, err := ResourceIbmToolchainToolArtifactoryParametersToMap(getIntegrationByIdResponse.Parameters, d)
+	if getIntegrationByIDResponse.Parameters != nil {
+		parametersMap, err := ResourceIBMToolchainToolArtifactoryParametersToMap(getIntegrationByIDResponse.Parameters, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -247,36 +247,36 @@ func ResourceIbmToolchainToolArtifactoryRead(context context.Context, d *schema.
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
 	}
-	if err = d.Set("resource_group_id", getIntegrationByIdResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("crn", getIntegrationByIdResponse.Crn); err != nil {
+	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("toolchain_crn", getIntegrationByIdResponse.ToolchainCrn); err != nil {
+	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
-	if err = d.Set("href", getIntegrationByIdResponse.Href); err != nil {
+	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIbmToolchainToolArtifactoryGetIntegrationByIdResponseReferentToMap(getIntegrationByIdResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolArtifactoryGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("referent", []map[string]interface{}{referentMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting referent: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIdResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("state", getIntegrationByIdResponse.State); err != nil {
+	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIbmToolchainToolArtifactoryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolArtifactoryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -304,7 +304,7 @@ func ResourceIbmToolchainToolArtifactoryUpdate(context context.Context, d *schem
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIBMToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -324,10 +324,10 @@ func ResourceIbmToolchainToolArtifactoryUpdate(context context.Context, d *schem
 		}
 	}
 
-	return ResourceIbmToolchainToolArtifactoryRead(context, d, meta)
+	return ResourceIBMToolchainToolArtifactoryRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolArtifactoryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolArtifactoryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -354,7 +354,7 @@ func ResourceIbmToolchainToolArtifactoryDelete(context context.Context, d *schem
 	return nil
 }
 
-func ResourceIbmToolchainToolArtifactoryMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolArtifactoryMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
 	model["name"] = core.StringPtr(modelMap["name"].(string))
 	if modelMap["dashboard_url"] != nil {
@@ -385,7 +385,7 @@ func ResourceIbmToolchainToolArtifactoryMapToParameters(modelMap map[string]inte
 	return model, nil
 }
 
-func ResourceIbmToolchainToolArtifactoryParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolArtifactoryParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model["name"]
 	if model["dashboard_url"] != nil {
@@ -420,13 +420,13 @@ func ResourceIbmToolchainToolArtifactoryParametersToMap(model map[string]interfa
 	return modelMap, nil
 }
 
-func ResourceIbmToolchainToolArtifactoryGetIntegrationByIdResponseReferentToMap(model *toolchainv2.GetIntegrationByIdResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolArtifactoryGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.UiHref != nil {
-		modelMap["ui_href"] = model.UiHref
+	if model.UIHref != nil {
+		modelMap["ui_href"] = model.UIHref
 	}
-	if model.ApiHref != nil {
-		modelMap["api_href"] = model.ApiHref
+	if model.APIHref != nil {
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

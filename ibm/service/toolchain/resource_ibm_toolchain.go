@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIbmToolchain() *schema.Resource {
+func ResourceIBMToolchain() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainCreate,
-		ReadContext:   ResourceIbmToolchainRead,
-		UpdateContext: ResourceIbmToolchainUpdate,
-		DeleteContext: ResourceIbmToolchainDelete,
+		CreateContext: ResourceIBMToolchainCreate,
+		ReadContext:   ResourceIBMToolchainRead,
+		UpdateContext: ResourceIBMToolchainUpdate,
+		DeleteContext: ResourceIBMToolchainDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -86,7 +86,7 @@ func ResourceIbmToolchain() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -110,7 +110,7 @@ func ResourceIbmToolchainValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIbmToolchainCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,20 +135,20 @@ func ResourceIbmToolchainCreate(context context.Context, d *schema.ResourceData,
 
 	d.SetId(*postToolchainResponse.ID)
 
-	return ResourceIbmToolchainRead(context, d, meta)
+	return ResourceIBMToolchainRead(context, d, meta)
 }
 
-func ResourceIbmToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getToolchainByIdOptions := &toolchainv2.GetToolchainByIdOptions{}
+	getToolchainByIDOptions := &toolchainv2.GetToolchainByIDOptions{}
 
-	getToolchainByIdOptions.SetToolchainID(d.Id())
+	getToolchainByIDOptions.SetToolchainID(d.Id())
 
-	getToolchainByIdResponse, response, err := toolchainClient.GetToolchainByIDWithContext(context, getToolchainByIdOptions)
+	getToolchainByIDResponse, response, err := toolchainClient.GetToolchainByIDWithContext(context, getToolchainByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -159,44 +159,44 @@ func ResourceIbmToolchainRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	// TODO: handle argument of type map[string]interface{}
-	if err = d.Set("name", getToolchainByIdResponse.Name); err != nil {
+	if err = d.Set("name", getToolchainByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if err = d.Set("resource_group_id", getToolchainByIdResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getToolchainByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("description", getToolchainByIdResponse.Description); err != nil {
+	if err = d.Set("description", getToolchainByIDResponse.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("account_id", getToolchainByIdResponse.AccountID); err != nil {
+	if err = d.Set("account_id", getToolchainByIDResponse.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
-	if err = d.Set("location", getToolchainByIdResponse.Location); err != nil {
+	if err = d.Set("location", getToolchainByIDResponse.Location); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
-	if err = d.Set("crn", getToolchainByIdResponse.Crn); err != nil {
+	if err = d.Set("crn", getToolchainByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("href", getToolchainByIdResponse.Href); err != nil {
+	if err = d.Set("href", getToolchainByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(getToolchainByIdResponse.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(getToolchainByIDResponse.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getToolchainByIdResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getToolchainByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("created_by", getToolchainByIdResponse.CreatedBy); err != nil {
+	if err = d.Set("created_by", getToolchainByIDResponse.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("tags", getToolchainByIdResponse.Tags); err != nil {
+	if err = d.Set("tags", getToolchainByIDResponse.Tags); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIbmToolchainUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -233,10 +233,10 @@ func ResourceIbmToolchainUpdate(context context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return ResourceIbmToolchainRead(context, d, meta)
+	return ResourceIBMToolchainRead(context, d, meta)
 }
 
-func ResourceIbmToolchainDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)

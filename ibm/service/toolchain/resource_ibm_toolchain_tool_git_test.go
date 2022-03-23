@@ -17,20 +17,20 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolGitBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolGitBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	gitProvider := fmt.Sprintf("tf_git_provider_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolGitDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolGitDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolGitConfigBasic(toolchainID, gitProvider),
+				Config: testAccCheckIBMToolchainToolGitConfigBasic(toolchainID, gitProvider),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
+					testAccCheckIBMToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "git_provider", gitProvider),
 				),
@@ -39,8 +39,8 @@ func TestAccIbmToolchainToolGitBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolGitAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolGitAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	gitProvider := fmt.Sprintf("tf_git_provider_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -49,19 +49,19 @@ func TestAccIbmToolchainToolGitAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolGitDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolGitDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolGitConfig(toolchainID, gitProvider, name),
+				Config: testAccCheckIBMToolchainToolGitConfig(toolchainID, gitProvider, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
+					testAccCheckIBMToolchainToolGitExists("ibm_toolchain_tool_git.toolchain_tool_git", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "git_provider", gitProvider),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolGitConfig(toolchainID, gitProvider, nameUpdate),
+				Config: testAccCheckIBMToolchainToolGitConfig(toolchainID, gitProvider, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_git.toolchain_tool_git", "git_provider", gitProvider),
@@ -77,7 +77,7 @@ func TestAccIbmToolchainToolGitAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolGitConfigBasic(toolchainID string, gitProvider string) string {
+func testAccCheckIBMToolchainToolGitConfigBasic(toolchainID string, gitProvider string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_git" "toolchain_tool_git" {
@@ -87,7 +87,7 @@ func testAccCheckIbmToolchainToolGitConfigBasic(toolchainID string, gitProvider 
 	`, toolchainID, gitProvider)
 }
 
-func testAccCheckIbmToolchainToolGitConfig(toolchainID string, gitProvider string, name string) string {
+func testAccCheckIBMToolchainToolGitConfig(toolchainID string, gitProvider string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_git" "toolchain_tool_git" {
@@ -102,6 +102,8 @@ func testAccCheckIbmToolchainToolGitConfig(toolchainID string, gitProvider strin
 				source_repo_url = "source_repo_url"
 				type = "new"
 				private_repo = true
+				git_id = "git_id"
+				owner_id = "owner_id"
 			}
 			initialization {
 				repo_name = "repo_name"
@@ -109,13 +111,15 @@ func testAccCheckIbmToolchainToolGitConfig(toolchainID string, gitProvider strin
 				source_repo_url = "source_repo_url"
 				type = "new"
 				private_repo = true
+				git_id = "git_id"
+				owner_id = "owner_id"
 			}
 			parameters_references = "FIXME"
 		}
 	`, toolchainID, gitProvider, name)
 }
 
-func testAccCheckIbmToolchainToolGitExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolGitExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -128,27 +132,27 @@ func testAccCheckIbmToolchainToolGitExists(n string, obj toolchainv2.GetIntegrat
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolGitDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolGitDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -158,18 +162,18 @@ func testAccCheckIbmToolchainToolGitDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_git still exists: %s", rs.Primary.ID)

@@ -18,12 +18,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIbmToolchainToolSlack() *schema.Resource {
+func ResourceIBMToolchainToolSlack() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainToolSlackCreate,
-		ReadContext:   ResourceIbmToolchainToolSlackRead,
-		UpdateContext: ResourceIbmToolchainToolSlackUpdate,
-		DeleteContext: ResourceIbmToolchainToolSlackDelete,
+		CreateContext: ResourceIBMToolchainToolSlackCreate,
+		ReadContext:   ResourceIBMToolchainToolSlackRead,
+		UpdateContext: ResourceIBMToolchainToolSlackUpdate,
+		DeleteContext: ResourceIBMToolchainToolSlackDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -138,7 +138,7 @@ func ResourceIbmToolchainToolSlack() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainToolSlackValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolSlackValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -156,7 +156,7 @@ func ResourceIbmToolchainToolSlackValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIbmToolchainToolSlackCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSlackCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -170,7 +170,7 @@ func ResourceIbmToolchainToolSlackCreate(context context.Context, d *schema.Reso
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIbmToolchainToolSlackMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parametersModel, err := ResourceIBMToolchainToolSlackMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -188,26 +188,26 @@ func ResourceIbmToolchainToolSlackCreate(context context.Context, d *schema.Reso
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIbmToolchainToolSlackRead(context, d, meta)
+	return ResourceIBMToolchainToolSlackRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolSlackRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSlackRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+	getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIdOptions.SetToolchainID(parts[0])
-	getIntegrationByIdOptions.SetIntegrationID(parts[1])
+	getIntegrationByIDOptions.SetToolchainID(parts[0])
+	getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-	getIntegrationByIdResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIdOptions)
+	getIntegrationByIDResponse, response, err := toolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -218,14 +218,14 @@ func ResourceIbmToolchainToolSlackRead(context context.Context, d *schema.Resour
 	}
 
 	// TODO: handle argument of type map[string]interface{}
-	if err = d.Set("toolchain_id", getIntegrationByIdResponse.ToolchainID); err != nil {
+	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	if err = d.Set("name", getIntegrationByIdResponse.Name); err != nil {
+	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if getIntegrationByIdResponse.Parameters != nil {
-		parametersMap, err := ResourceIbmToolchainToolSlackParametersToMap(getIntegrationByIdResponse.Parameters, d)
+	if getIntegrationByIDResponse.Parameters != nil {
+		parametersMap, err := ResourceIBMToolchainToolSlackParametersToMap(getIntegrationByIDResponse.Parameters, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -233,36 +233,36 @@ func ResourceIbmToolchainToolSlackRead(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
 	}
-	if err = d.Set("resource_group_id", getIntegrationByIdResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("crn", getIntegrationByIdResponse.Crn); err != nil {
+	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("toolchain_crn", getIntegrationByIdResponse.ToolchainCrn); err != nil {
+	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
-	if err = d.Set("href", getIntegrationByIdResponse.Href); err != nil {
+	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIbmToolchainToolSlackGetIntegrationByIdResponseReferentToMap(getIntegrationByIdResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolSlackGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("referent", []map[string]interface{}{referentMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting referent: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIdResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("state", getIntegrationByIdResponse.State); err != nil {
+	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIbmToolchainToolSlackUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSlackUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -290,7 +290,7 @@ func ResourceIbmToolchainToolSlackUpdate(context context.Context, d *schema.Reso
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolSlackMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIBMToolchainToolSlackMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -310,10 +310,10 @@ func ResourceIbmToolchainToolSlackUpdate(context context.Context, d *schema.Reso
 		}
 	}
 
-	return ResourceIbmToolchainToolSlackRead(context, d, meta)
+	return ResourceIBMToolchainToolSlackRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolSlackDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSlackDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -340,7 +340,7 @@ func ResourceIbmToolchainToolSlackDelete(context context.Context, d *schema.Reso
 	return nil
 }
 
-func ResourceIbmToolchainToolSlackMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSlackMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
 	model["api_token"] = core.StringPtr(modelMap["api_token"].(string))
 	model["channel_name"] = core.StringPtr(modelMap["channel_name"].(string))
@@ -365,7 +365,7 @@ func ResourceIbmToolchainToolSlackMapToParameters(modelMap map[string]interface{
 	return model, nil
 }
 
-func ResourceIbmToolchainToolSlackParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSlackParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model["api_token"] == "****" {
 		modelMap["api_token"] = d.Get("parameters.0.api_token").(string)
@@ -394,13 +394,13 @@ func ResourceIbmToolchainToolSlackParametersToMap(model map[string]interface{}, 
 	return modelMap, nil
 }
 
-func ResourceIbmToolchainToolSlackGetIntegrationByIdResponseReferentToMap(model *toolchainv2.GetIntegrationByIdResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSlackGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.UiHref != nil {
-		modelMap["ui_href"] = model.UiHref
+	if model.UIHref != nil {
+		modelMap["ui_href"] = model.UIHref
 	}
-	if model.ApiHref != nil {
-		modelMap["api_href"] = model.ApiHref
+	if model.APIHref != nil {
+		modelMap["api_href"] = model.APIHref
 	}
 	return modelMap, nil
 }

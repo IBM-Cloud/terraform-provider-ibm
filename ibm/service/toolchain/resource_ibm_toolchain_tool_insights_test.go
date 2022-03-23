@@ -17,19 +17,19 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolInsightsBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolInsightsBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolInsightsDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolInsightsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolInsightsConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolInsightsConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
+					testAccCheckIBMToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
 				),
 			},
@@ -37,8 +37,8 @@ func TestAccIbmToolchainToolInsightsBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolInsightsAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolInsightsAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,18 +46,18 @@ func TestAccIbmToolchainToolInsightsAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolInsightsDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolInsightsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolInsightsConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolInsightsConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
+					testAccCheckIBMToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolInsightsConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolInsightsConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "name", nameUpdate),
@@ -72,7 +72,7 @@ func TestAccIbmToolchainToolInsightsAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolInsightsConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolInsightsConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_insights" "toolchain_tool_insights" {
@@ -81,7 +81,7 @@ func testAccCheckIbmToolchainToolInsightsConfigBasic(toolchainID string) string 
 	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolInsightsConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolInsightsConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_insights" "toolchain_tool_insights" {
@@ -91,7 +91,7 @@ func testAccCheckIbmToolchainToolInsightsConfig(toolchainID string, name string)
 	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolInsightsExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolInsightsExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -104,27 +104,27 @@ func testAccCheckIbmToolchainToolInsightsExists(n string, obj toolchainv2.GetInt
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolInsightsDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolInsightsDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -134,18 +134,18 @@ func testAccCheckIbmToolchainToolInsightsDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_insights still exists: %s", rs.Primary.ID)

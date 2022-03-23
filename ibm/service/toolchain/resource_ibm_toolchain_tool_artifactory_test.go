@@ -17,19 +17,19 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolArtifactoryBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolArtifactoryBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolArtifactoryDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolArtifactoryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolArtifactoryConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolArtifactoryConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolArtifactoryExists("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", conf),
+					testAccCheckIBMToolchainToolArtifactoryExists("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", "toolchain_id", toolchainID),
 				),
 			},
@@ -37,8 +37,8 @@ func TestAccIbmToolchainToolArtifactoryBasic(t *testing.T) {
 	})
 }
 
-func TestAccIbmToolchainToolArtifactoryAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolArtifactoryAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,18 +46,18 @@ func TestAccIbmToolchainToolArtifactoryAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolArtifactoryDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolArtifactoryDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolArtifactoryConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolArtifactoryConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolArtifactoryExists("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", conf),
+					testAccCheckIBMToolchainToolArtifactoryExists("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolArtifactoryConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolArtifactoryConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", "toolchain_id", toolchainID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_artifactory.toolchain_tool_artifactory", "name", nameUpdate),
@@ -72,7 +72,7 @@ func TestAccIbmToolchainToolArtifactoryAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolArtifactoryConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolArtifactoryConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_artifactory" "toolchain_tool_artifactory" {
@@ -81,7 +81,7 @@ func testAccCheckIbmToolchainToolArtifactoryConfigBasic(toolchainID string) stri
 	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolArtifactoryConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolArtifactoryConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_artifactory" "toolchain_tool_artifactory" {
@@ -105,7 +105,7 @@ func testAccCheckIbmToolchainToolArtifactoryConfig(toolchainID string, name stri
 	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolArtifactoryExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolArtifactoryExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -118,27 +118,27 @@ func testAccCheckIbmToolchainToolArtifactoryExists(n string, obj toolchainv2.Get
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolArtifactoryDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolArtifactoryDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -148,18 +148,18 @@ func testAccCheckIbmToolchainToolArtifactoryDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_artifactory still exists: %s", rs.Primary.ID)

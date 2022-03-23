@@ -17,54 +17,49 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIbmToolchainToolKeyprotectBasic(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolKeyprotectBasic(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	serviceID := fmt.Sprintf("tf_service_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolKeyprotectDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolKeyprotectDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolKeyprotectConfigBasic(toolchainID, serviceID),
+				Config: testAccCheckIBMToolchainToolKeyprotectConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
+					testAccCheckIBMToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "service_id", serviceID),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIbmToolchainToolKeyprotectAllArgs(t *testing.T) {
-	var conf toolchainv2.GetIntegrationByIdResponse
+func TestAccIBMToolchainToolKeyprotectAllArgs(t *testing.T) {
+	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	serviceID := fmt.Sprintf("tf_service_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIbmToolchainToolKeyprotectDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolKeyprotectDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolKeyprotectConfig(toolchainID, serviceID, name),
+				Config: testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
+					testAccCheckIBMToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "service_id", serviceID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmToolchainToolKeyprotectConfig(toolchainID, serviceID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "service_id", serviceID),
 					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "name", nameUpdate),
 				),
 			},
@@ -77,22 +72,20 @@ func TestAccIbmToolchainToolKeyprotectAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmToolchainToolKeyprotectConfigBasic(toolchainID string, serviceID string) string {
+func testAccCheckIBMToolchainToolKeyprotectConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_keyprotect" "toolchain_tool_keyprotect" {
 			toolchain_id = "%s"
-			service_id = "%s"
 		}
-	`, toolchainID, serviceID)
+	`, toolchainID)
 }
 
-func testAccCheckIbmToolchainToolKeyprotectConfig(toolchainID string, serviceID string, name string) string {
+func testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_toolchain_tool_keyprotect" "toolchain_tool_keyprotect" {
 			toolchain_id = "%s"
-			service_id = "%s"
 			name = "%s"
 			parameters {
 				name = "name"
@@ -102,10 +95,10 @@ func testAccCheckIbmToolchainToolKeyprotectConfig(toolchainID string, serviceID 
 			}
 			parameters_references = "FIXME"
 		}
-	`, toolchainID, serviceID, name)
+	`, toolchainID, name)
 }
 
-func testAccCheckIbmToolchainToolKeyprotectExists(n string, obj toolchainv2.GetIntegrationByIdResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolKeyprotectExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -118,27 +111,27 @@ func testAccCheckIbmToolchainToolKeyprotectExists(n string, obj toolchainv2.GetI
 			return err
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
-		getIntegrationByIdResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		getIntegrationByIDResponse, _, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIdResponse
+		obj = *getIntegrationByIDResponse
 		return nil
 	}
 }
 
-func testAccCheckIbmToolchainToolKeyprotectDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolKeyprotectDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
@@ -148,18 +141,18 @@ func testAccCheckIbmToolchainToolKeyprotectDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIdOptions := &toolchainv2.GetIntegrationByIdOptions{}
+		getIntegrationByIDOptions := &toolchainv2.GetIntegrationByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIdOptions.SetToolchainID(parts[0])
-		getIntegrationByIdOptions.SetIntegrationID(parts[1])
+		getIntegrationByIDOptions.SetToolchainID(parts[0])
+		getIntegrationByIDOptions.SetIntegrationID(parts[1])
 
 		// Try to find the key
-		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIdOptions)
+		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("toolchain_tool_keyprotect still exists: %s", rs.Primary.ID)
