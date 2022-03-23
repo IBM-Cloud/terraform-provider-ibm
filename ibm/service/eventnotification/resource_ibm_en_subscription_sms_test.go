@@ -18,7 +18,7 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func TestAccIBMEnSubscriptionAllArgs(t *testing.T) {
+func TestAccIBMEnSMSSubscriptionAllArgs(t *testing.T) {
 	var conf en.Subscription
 	instanceName := fmt.Sprintf("tf_instance_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -29,34 +29,33 @@ func TestAccIBMEnSubscriptionAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMEnSubscriptionDestroy,
+		CheckDestroy: testAccCheckIBMEnSMSSubscriptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnSubscriptionConfig(instanceName, name, description),
+				Config: testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMEnSubscriptionExists("ibm_en_subscription.en_subscription_resource_1", conf),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "name"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "description"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "topic_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "updated_at"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "instance_guid"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "destination_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "destination_type"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "subscription_id"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "attributes.#"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "attributes.0.signing_enabled"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription.en_subscription_resource_1", "attributes.0.add_notification_payload"),
+					testAccCheckIBMEnSMSSubscriptionExists("ibm_en_subscription_sms.en_subscription_resource_1", conf),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "name"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "description"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "topic_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "updated_at"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "instance_guid"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "destination_type"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "subscription_id"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.#"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_sms.en_subscription_resource_1", "attributes.0.to"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnSubscriptionConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnSMSSubscriptionConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_en_subscription.en_subscription_resource_1", "name", newName),
-					resource.TestCheckResourceAttr("ibm_en_subscription.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "name", newName),
+					resource.TestCheckResourceAttr("ibm_en_subscription_sms.en_subscription_resource_1", "description", newDescription),
 				),
 			},
 			{
-				ResourceName:      "ibm_en_subscription.en_subscription_resource_1",
+				ResourceName:      "ibm_en_subscription_sms.en_subscription_resource_1",
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -64,7 +63,7 @@ func TestAccIBMEnSubscriptionAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnSubscriptionConfig(instanceName, name, description string) string {
+func testAccCheckIBMEnSMSSubscriptionConfig(instanceName, name, description string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_subscription_resource" {
 		name     = "%s"
@@ -79,33 +78,21 @@ func testAccCheckIBMEnSubscriptionConfig(instanceName, name, description string)
 		description = "tf_topic_description_0235"
 	}
 	
-	resource "ibm_en_destination" "en_destination_resource_2" {
-		instance_guid = ibm_resource_instance.en_subscription_resource.guid
-		name        = "tf_destination_name_02983"
-		type        = "webhook"
-		description = "tf_destinatios_description_0364"
-		config {
-			params {
-				verb = "POST"
-				url  = "https://demo.webhook.com"
-			}
-		}
-	}
 	
-	resource "ibm_en_subscription" "en_subscription_resource_1" {
+	resource "ibm_en_subscription_sms" "en_subscription_resource_1" {
 		name           = "%s"
 		description 	 = "%s"
 		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
-		destination_id = ibm_en_destination.en_destination_resource_2.destination_id
+		destination_id = "set sms destination id"
 		attributes {
-			signing_enabled          = true
+			to = ["+16382922821", "+18976569023"]
 		}
 	}
 	`, instanceName, name, description)
 }
 
-func testAccCheckIBMEnSubscriptionExists(n string, obj en.Subscription) resource.TestCheckFunc {
+func testAccCheckIBMEnSMSSubscriptionExists(n string, obj en.Subscription) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -138,7 +125,7 @@ func testAccCheckIBMEnSubscriptionExists(n string, obj en.Subscription) resource
 	}
 }
 
-func testAccCheckIBMEnSubscriptionDestroy(s *terraform.State) error {
+func testAccCheckIBMEnSMSSubscriptionDestroy(s *terraform.State) error {
 	enClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return err

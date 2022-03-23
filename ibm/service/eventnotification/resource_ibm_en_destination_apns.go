@@ -6,10 +6,11 @@ package eventnotification
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,12 +18,12 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnDestination() *schema.Resource {
+func ResourceIBMEnAPNSDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnDestinationCreate,
-		ReadContext:   resourceIBMEnDestinationRead,
-		UpdateContext: resourceIBMEnDestinationUpdate,
-		DeleteContext: resourceIBMEnDestinationDelete,
+		CreateContext: resourceIBMEnAPNSDestinationCreate,
+		ReadContext:   resourceIBMEnAPNSDestinationRead,
+		UpdateContext: resourceIBMEnAPNSDestinationUpdate,
+		DeleteContext: resourceIBMEnAPNSDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,15 +39,24 @@ func ResourceIBMEnDestination() *schema.Resource {
 				Description: "The Destintion name.",
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_en_destination", "type"),
-				Description:  "The type of Destination Webhook.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The type of Destination type push_ios.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Destination description.",
+			},
+			"certificate_content_type": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The Certificate Content Type to be set p8/p12.",
+			},
+			"certificate": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The Certificate File.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -61,27 +71,36 @@ func ResourceIBMEnDestination() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": {
+									"cert_type": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The Certificate Type for IOS, the values are p8/p12.",
+									},
+									"is_sandbox": {
+										Type:        schema.TypeBool,
+										Required:    true,
+										Description: "The flag to determine sandbox or production environment.",
+									},
+									"password": {
+										Type:        schema.TypeString,
+										Sensitive:   true,
+										Optional:    true,
+										Description: "The Password for APNS Certificate in case of P12 certificate",
+									},
+									"key_id": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "URL of webhook.",
+										Description: "The Key ID In case of P8 Certificate",
 									},
-									"verb": {
+									"team_id": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "HTTP method of webhook.",
+										Description: "The Team ID In case of P8 Certificate",
 									},
-									"custom_headers": {
-										Type:        schema.TypeMap,
+									"bundle_id": {
+										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Custom headers (Key-Value pair) for webhook call.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"sensitive_headers": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "List of sensitive headers from custom headers.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "The Bundle ID In case of P8 Certificate",
 									},
 								},
 							},
@@ -111,28 +130,10 @@ func ResourceIBMEnDestination() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
-		DeprecationMessage: "This resource will be deprecated. A new resource ibm_en_destination_webhook will replace the existing ibm_en_destination resource ",
 	}
 }
 
-func ResourceIBMEnDestinationValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "webhook",
-			MinValueLength:             1,
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_en_destination", Schema: validateSchema}
-	return &resourceValidator
-}
-
-func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnAPNSDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,13 +143,35 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
+
 	options.SetType(d.Get("type").(string))
+
+	options.SetCertificateContentType(d.Get("certificate_content_type").(string))
+
+	certificatetype := d.Get("certificate_content_type").(string)
+
+	if c, ok := d.GetOk("certificate"); ok {
+		path := c.(string)
+		file, err := os.Open(path)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error opening Certificate file (%s): %s", path, err))
+		}
+
+		certificate := file
+		options.SetCertificate(certificate)
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Printf("[WARN] Failed closing Certificate file (%s): %s", path, err)
+			}
+		}()
+	}
 
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+		config := APNSdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), certificatetype)
 		options.SetConfig(&config)
 	}
 
@@ -159,10 +182,10 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnDestinationRead(context, d, meta)
+	return resourceIBMEnAPNSDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnAPNSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -208,7 +231,7 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enAPNSDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -222,16 +245,14 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_count: %s", err))
 	}
 
-	if result.Config != nil {
-		if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
-		}
+	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnAPNSDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -247,14 +268,34 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	if ok := d.HasChanges("name", "description", "config"); ok {
+	if ok := d.HasChanges("name", "description", "certificate", "config"); ok {
 		options.SetName(d.Get("name").(string))
 
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+
+		certificatetype := d.Get("certificate_content_type").(string)
+
+		if c, ok := d.GetOk("certificate"); ok {
+			path := c.(string)
+			file, err := os.Open(path)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error opening Certificate file (%s): %s", path, err))
+			}
+
+			certificate := file
+			options.SetCertificate(certificate)
+			defer func() {
+				err := file.Close()
+				if err != nil {
+					log.Printf("[WARN] Failed closing Certificate file (%s): %s", path, err)
+				}
+			}()
+		}
+
 		if _, ok := d.GetOk("config"); ok {
-			config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+			config := APNSdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), certificatetype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -262,13 +303,13 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnDestinationRead(context, d, meta)
+		return resourceIBMEnAPNSDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnAPNSDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -298,31 +339,46 @@ func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func destinationConfigMapToDestinationConfig(configParams map[string]interface{}) en.DestinationConfig {
+func APNSdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, certificatetype string) en.DestinationConfig {
 	params := new(en.DestinationConfigParams)
-	if configParams["url"] != nil {
-		params.URL = core.StringPtr(configParams["url"].(string))
-	}
-
-	if configParams["verb"] != nil {
-		params.Verb = core.StringPtr(configParams["verb"].(string))
-	}
-
-	if configParams["custom_headers"] != nil {
-		var customHeaders = make(map[string]string)
-		for k, v := range configParams["custom_headers"].(map[string]interface{}) {
-			customHeaders[k] = v.(string)
+	if certificatetype == "p8" {
+		if configParams["cert_type"] != nil {
+			params.CertType = core.StringPtr(configParams["cert_type"].(string))
 		}
-		params.CustomHeaders = customHeaders
+
+		if configParams["is_sandbox"] != nil {
+			params.IsSandbox = core.BoolPtr(configParams["is_sandbox"].(bool))
+		}
+
+		if configParams["key_id"] != nil {
+			params.KeyID = core.StringPtr(configParams["key_id"].(string))
+		}
+
+		if configParams["team_id"] != nil {
+			params.TeamID = core.StringPtr(configParams["team_id"].(string))
+		}
+
+		if configParams["bundle_id"] != nil {
+			params.BundleID = core.StringPtr(configParams["bundle_id"].(string))
+		}
+
 	}
 
-	if configParams["sensitive_headers"] != nil {
-		sensitiveHeaders := []string{}
-		for _, sensitiveHeadersItem := range configParams["sensitive_headers"].([]interface{}) {
-			sensitiveHeaders = append(sensitiveHeaders, sensitiveHeadersItem.(string))
+	if certificatetype == "p12" {
+		if configParams["cert_type"] != nil {
+			params.CertType = core.StringPtr(configParams["cert_type"].(string))
 		}
-		params.SensitiveHeaders = sensitiveHeaders
+
+		if configParams["is_sandbox"] != nil {
+			params.IsSandbox = core.BoolPtr(configParams["is_sandbox"].(bool))
+		}
+
+		if configParams["password"] != nil {
+			params.Password = core.StringPtr(configParams["password"].(string))
+		}
+
 	}
+
 	destinationConfig := new(en.DestinationConfig)
 	destinationConfig.Params = params
 	return *destinationConfig

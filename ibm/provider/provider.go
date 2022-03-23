@@ -604,12 +604,20 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-			"ibm_en_destination":   eventnotification.DataSourceIBMEnDestination(),
-			"ibm_en_destinations":  eventnotification.DataSourceIBMEnDestinations(),
-			"ibm_en_topic":         eventnotification.DataSourceIBMEnTopic(),
-			"ibm_en_topics":        eventnotification.DataSourceIBMEnTopics(),
-			"ibm_en_subscription":  eventnotification.DataSourceIBMEnSubscription(),
-			"ibm_en_subscriptions": eventnotification.DataSourceIBMEnSubscriptions(),
+			"ibm_en_destination":          eventnotification.DataSourceIBMEnDestination(),
+			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
+			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
+			"ibm_en_topics":               eventnotification.DataSourceIBMEnTopics(),
+			"ibm_en_subscription":         eventnotification.DataSourceIBMEnSubscription(),
+			"ibm_en_subscriptions":        eventnotification.DataSourceIBMEnSubscriptions(),
+			"ibm_en_destination_webhook":  eventnotification.DataSourceIBMEnWebhookDestination(),
+			"ibm_en_destination_android":  eventnotification.DataSourceIBMEnFCMDestination(),
+			"ibm_en_destination_ios":      eventnotification.DataSourceIBMEnAPNSDestination(),
+			"ibm_en_subscription_sms":     eventnotification.DataSourceIBMEnSMSSubscription(),
+			"ibm_en_subscription_email":   eventnotification.DataSourceIBMEnEmailSubscription(),
+			"ibm_en_subscription_webhook": eventnotification.DataSourceIBMEnWebhookSubscription(),
+			"ibm_en_subscription_android": eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -943,9 +951,17 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-			"ibm_en_destination":  eventnotification.ResourceIBMEnDestination(),
-			"ibm_en_topic":        eventnotification.ResourceIBMEnTopic(),
-			"ibm_en_subscription": eventnotification.ResourceIBMEnSubscription(),
+			"ibm_en_destination":          eventnotification.ResourceIBMEnDestination(),
+			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
+			"ibm_en_subscription":         eventnotification.ResourceIBMEnSubscription(),
+			"ibm_en_destination_webhook":  eventnotification.ResourceIBMEnWebhookDestination(),
+			"ibm_en_destination_android":  eventnotification.ResourceIBMEnFCMDestination(),
+			"ibm_en_destination_ios":      eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_subscription_sms":     eventnotification.ResourceIBMEnSMSSubscription(),
+			"ibm_en_subscription_email":   eventnotification.ResourceIBMEnEmailSubscription(),
+			"ibm_en_subscription_webhook": eventnotification.ResourceIBMEnWebhookSubscription(),
+			"ibm_en_subscription_android": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,

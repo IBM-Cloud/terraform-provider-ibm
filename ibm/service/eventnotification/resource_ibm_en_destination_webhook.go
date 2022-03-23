@@ -9,7 +9,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,12 +16,12 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func ResourceIBMEnDestination() *schema.Resource {
+func ResourceIBMEnWebhookDestination() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnDestinationCreate,
-		ReadContext:   resourceIBMEnDestinationRead,
-		UpdateContext: resourceIBMEnDestinationUpdate,
-		DeleteContext: resourceIBMEnDestinationDelete,
+		CreateContext: resourceIBMEnWebhookDestinationCreate,
+		ReadContext:   resourceIBMEnWebhookDestinationRead,
+		UpdateContext: resourceIBMEnWebhookDestinationUpdate,
+		DeleteContext: resourceIBMEnWebhookDestinationDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,10 +37,9 @@ func ResourceIBMEnDestination() *schema.Resource {
 				Description: "The Destintion name.",
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_en_destination", "type"),
-				Description:  "The type of Destination Webhook.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The type of Destination Webhook.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -63,12 +61,12 @@ func ResourceIBMEnDestination() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"url": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "URL of webhook.",
 									},
 									"verb": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Required:    true,
 										Description: "HTTP method of webhook.",
 									},
 									"custom_headers": {
@@ -111,28 +109,10 @@ func ResourceIBMEnDestination() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
-		DeprecationMessage: "This resource will be deprecated. A new resource ibm_en_destination_webhook will replace the existing ibm_en_destination resource ",
 	}
 }
 
-func ResourceIBMEnDestinationValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "type",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "webhook",
-			MinValueLength:             1,
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_en_destination", Schema: validateSchema}
-	return &resourceValidator
-}
-
-func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookDestinationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,11 +124,12 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 	options.SetName(d.Get("name").(string))
 	options.SetType(d.Get("type").(string))
 
+	destinationtype := d.Get("type").(string)
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+		config := WebhookdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 		options.SetConfig(&config)
 	}
 
@@ -159,10 +140,10 @@ func resourceIBMEnDestinationCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnDestinationRead(context, d, meta)
+	return resourceIBMEnWebhookDestinationRead(context, d, meta)
 }
 
-func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -208,7 +189,7 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enWebhookDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -222,16 +203,15 @@ func resourceIBMEnDestinationRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_count: %s", err))
 	}
 
-	if result.Config != nil {
-		if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
-		}
+	if err = d.Set("subscription_names", result.SubscriptionNames); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_names: %s", err))
+
 	}
 
 	return nil
 }
 
-func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookDestinationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -253,8 +233,9 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 		if _, ok := d.GetOk("description"); ok {
 			options.SetDescription(d.Get("description").(string))
 		}
+		destinationtype := d.Get("type").(string)
 		if _, ok := d.GetOk("config"); ok {
-			config := destinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}))
+			config := WebhookdestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
 			options.SetConfig(&config)
 		}
 		_, response, err := enClient.UpdateDestinationWithContext(context, options)
@@ -262,13 +243,13 @@ func resourceIBMEnDestinationUpdate(context context.Context, d *schema.ResourceD
 			return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnDestinationRead(context, d, meta)
+		return resourceIBMEnWebhookDestinationRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -298,7 +279,7 @@ func resourceIBMEnDestinationDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func destinationConfigMapToDestinationConfig(configParams map[string]interface{}) en.DestinationConfig {
+func WebhookdestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
 	params := new(en.DestinationConfigParams)
 	if configParams["url"] != nil {
 		params.URL = core.StringPtr(configParams["url"].(string))

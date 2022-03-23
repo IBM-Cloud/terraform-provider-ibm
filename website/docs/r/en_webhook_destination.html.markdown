@@ -1,27 +1,27 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination'
+page_title: 'IBM : ibm_en_destination_webhook'
 description: |-
-  Manages Event Notifications destinations.
+  Manages Event Notification Webhook destinations.
 ---
 
-# ibm_en_destination
+# ibm_en_destination_webhook
 
-Create, update, or delete a destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Webhook destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination" "en_destination" {
+resource "ibm_en_destination_webhook" "webhook_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "Webhook Destination"
+  name        = "My Webhook Destination"
   type        = "webhook"
-  description = "This is en webhook destination"
+  description = "Destination webhook for event notification"
   config {
     params {
       verb = "POST"
-      url  = "webhook url"
+      url  = "https://testwebhook.com"
       custom_headers = {
         "authorization" = "authorization"
       }
@@ -41,9 +41,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) The type of destination.
-
-  - Constraints: Allowable values are: `webhook`.
+- `type` - (Required, String) Webhook.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -62,7 +60,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_destination`.
+- `id` - (String) The unique identifier of the `webhook_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -71,7 +69,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination` resource by using `id`.
+You can import the `ibm_en_destination_webhook` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -86,5 +84,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination.en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_webhook.webhook_en_destination <instance_guid>/<destination_id>
 ```

@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnDestination() *schema.Resource {
+func DataSourceIBMEnAPNSDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnDestinationRead,
+		ReadContext: dataSourceIBMEnAPNSDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -43,7 +43,17 @@ func DataSourceIBMEnDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type Email/SMS/Webhook.",
+				Description: "Destination type push_ios.",
+			},
+			"certificate_content_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Certificate Content Type to be set p8/p12.",
+			},
+			"certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Certificate File.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -56,31 +66,35 @@ func DataSourceIBMEnDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": {
+									"cert_type": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "URL of webhook.",
+										Description: "The Certificate Type for IOS, the values are p8/p12.",
 									},
-									"verb": {
+									"is_sandbox": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The flag to determine sandbox or production environment.",
+									},
+									"password": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "HTTP method of webhook.",
+										Description: "The Password for APNS Certificate in case of P12 certificate",
 									},
-									"custom_headers": {
-										Type:        schema.TypeMap,
+									"key_id": {
+										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Custom headers (Key-Value pair) for webhook call.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Description: "The Key ID In case of P8 Certificate",
 									},
-									"sensitive_headers": {
-										Type:        schema.TypeList,
+									"team_id": {
+										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "List of sensitive headers from custom headers.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Description: "The Team ID In case of P8 Certificate",
+									},
+									"bundle_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The Bundle ID In case of P8 Certificate",
 									},
 								},
 							},
@@ -107,11 +121,10 @@ func DataSourceIBMEnDestination() *schema.Resource {
 				},
 			},
 		},
-		DeprecationMessage: "This data source will be deprecated. A new data source ibm_en_destination_webhook will replace the existing ibm_en_destination data source",
 	}
 }
 
-func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnAPNSDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,8 +156,16 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
 	}
 
+	if err = d.Set("certificate_content_type", result.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting certificate content type: %s", err))
+	}
+
+	if err = d.Set("certificate", result.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting certifiacte: %s", err))
+	}
+
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enAPNSDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -168,20 +189,20 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func enDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enAPNSDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enDestinationConfigToMap(result)
+	finalMap := enAPNSDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enAPNSDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enAPNSDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -189,22 +210,28 @@ func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[st
 	return configMap
 }
 
-func enDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
+func enAPNSDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigParams)
 
-	if params.URL != nil {
-		paramsMap["url"] = params.URL
+	if params.CertType != nil {
+		paramsMap["cert_type"] = params.CertType
 	}
-	if params.Verb != nil {
-		paramsMap["verb"] = params.Verb
+	if params.IsSandbox != nil {
+		paramsMap["is_sandbox"] = params.IsSandbox
 	}
-	if params.CustomHeaders != nil {
-		paramsMap["custom_headers"] = params.CustomHeaders
+	if params.Password != nil {
+		paramsMap["password"] = params.Password
 	}
-	if params.SensitiveHeaders != nil {
-		paramsMap["sensitive_headers"] = params.SensitiveHeaders
+	if params.KeyID != nil {
+		paramsMap["key_id"] = params.KeyID
+	}
+	if params.TeamID != nil {
+		paramsMap["team_id"] = params.TeamID
+	}
+	if params.BundleID != nil {
+		paramsMap["bundle_id"] = params.BundleID
 	}
 
 	return paramsMap

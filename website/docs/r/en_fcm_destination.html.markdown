@@ -1,36 +1,32 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination'
+page_title: 'IBM : ibm_en_destination_android'
 description: |-
   Manages Event Notifications destinations.
 ---
 
-# ibm_en_destination
+# ibm_en_destination_android
 
-Create, update, or delete a destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a  FCM destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination" "en_destination" {
+resource "ibm_en_destination_android" "android_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "Webhook Destination"
-  type        = "webhook"
-  description = "This is en webhook destination"
+  name        = "Android Destination"
+  type        = "push_android"
+  description = "The Android Destination"
   config {
     params {
-      verb = "POST"
-      url  = "webhook url"
-      custom_headers = {
-        "authorization" = "authorization"
-      }
-      sensitive_headers = ["authorization"]
+      sender_id = "5237288990"
+      server_key  = "36228ghutwervhudokmk"
     }
   }
 }
 ```
-
+  
 ## Argument reference
 
 Review the argument reference that you can specify for your resource.
@@ -41,9 +37,8 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) The type of destination.
+- `type` - (Required, String) push_android.
 
-  - Constraints: Allowable values are: `webhook`.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -53,16 +48,14 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
-  - `url` - (Optional, String) URL of webhook.
-  - `verb` - (Optional, String) HTTP method of webhook. Allowable values are: `GET`, `POST`.
+  - `sender_id` - (String) Sender Id value for FCM project.
+  - `server_key` - (String) Server Key value for FCM project
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `en_destination`.
+- `id` - (String) The unique identifier of the `android_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -71,7 +64,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination` resource by using `id`.
+You can import the `ibm_en_destination_android` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -86,5 +79,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination.en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_android.fcm_en_destination <instance_guid>/<destination_id>
 ```

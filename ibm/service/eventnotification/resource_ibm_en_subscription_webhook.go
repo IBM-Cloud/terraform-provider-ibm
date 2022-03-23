@@ -16,12 +16,12 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMEnSubscription() *schema.Resource {
+func ResourceIBMEnWebhookSubscription() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMEnSubscriptionCreate,
-		ReadContext:   resourceIBMEnSubscriptionRead,
-		UpdateContext: resourceIBMEnSubscriptionUpdate,
-		DeleteContext: resourceIBMEnSubscriptionDelete,
+		CreateContext: resourceIBMEnWebhookSubscriptionCreate,
+		ReadContext:   resourceIBMEnWebhookSubscriptionRead,
+		UpdateContext: resourceIBMEnWebhookSubscriptionUpdate,
+		DeleteContext: resourceIBMEnWebhookSubscriptionDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -44,11 +44,13 @@ func ResourceIBMEnSubscription() *schema.Resource {
 			"destination_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Destination ID.",
 			},
 			"topic_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Topic ID.",
 			},
 			"attributes": {
@@ -57,42 +59,11 @@ func ResourceIBMEnSubscription() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"to": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The phone number to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"add_notification_payload": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Whether to add the notification payload to the email.",
-						},
-						"reply_to": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The email address to reply to.",
-						},
-						"reply_to_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The name of the email address user to reply to.",
-						},
-						"from_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The email address from.",
-						},
 						"signing_enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Default:     false,
 							Description: "Signing webhook attributes.",
-						},
-						"remove": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The Email address to remove the recepient from smtp_ibm.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -105,7 +76,7 @@ func ResourceIBMEnSubscription() *schema.Resource {
 			"destination_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The type of Destination Webhook.",
+				Description: "The type of Destination.",
 			},
 			"destination_name": {
 				Type:        schema.TypeString,
@@ -117,22 +88,16 @@ func ResourceIBMEnSubscription() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the topic.",
 			},
-			"from": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "From Email ID (it will be displayed only in case of smtp_ibm destination type).",
-			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Last updated time.",
 			},
 		},
-		DeprecationMessage: "This resource will be deprecated. To create subscription for email, sms, webhook destination kindly use ibm_en_subscription_email, ibm_en_subscription_sms, ibm_en_subscription_webhook subscription resources",
 	}
 }
 
-func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookSubscriptionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -150,7 +115,7 @@ func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.Resource
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	attributes, _ := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+	attributes, _ := webhookattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
 	options.SetAttributes(&attributes)
 
 	result, response, err := enClient.CreateSubscriptionWithContext(context, options)
@@ -160,10 +125,10 @@ func resourceIBMEnSubscriptionCreate(context context.Context, d *schema.Resource
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnSubscriptionRead(context, d, meta)
+	return resourceIBMEnWebhookSubscriptionRead(context, d, meta)
 }
 
-func resourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookSubscriptionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -243,7 +208,7 @@ func resourceIBMEnSubscriptionRead(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookSubscriptionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -259,8 +224,6 @@ func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.Resource
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	destinationtype := d.Get("destination_type").(string)
-
 	if ok := d.HasChanges("name", "description", "attributes"); ok {
 		options.SetName(d.Get("name").(string))
 
@@ -268,26 +231,21 @@ func resourceIBMEnSubscriptionUpdate(context context.Context, d *schema.Resource
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		if destinationtype == "smtp_ibm" {
-			attributes := attributesMapToEmailAttributes(d.Get("attributes.0").(map[string]interface{}))
-			options.SetAttributes(&attributes)
-		} else {
-			_, attributes := attributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
-			options.SetAttributes(&attributes)
-		}
+		_, attributes := webhookattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+		options.SetAttributes(&attributes)
 
 		_, response, err := enClient.UpdateSubscriptionWithContext(context, options)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("UpdateSubscriptionWithContext failed %s\n%s", err, response))
 		}
 
-		return resourceIBMEnSubscriptionRead(context, d, meta)
+		return resourceIBMEnWebhookSubscriptionRead(context, d, meta)
 	}
 
 	return nil
 }
 
-func resourceIBMEnSubscriptionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMEnWebhookSubscriptionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -317,89 +275,14 @@ func resourceIBMEnSubscriptionDelete(context context.Context, d *schema.Resource
 	return nil
 }
 
-func attributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributes) {
+func webhookattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributesWebhookAttributes) {
 	attributesCreate := en.SubscriptionCreateAttributes{}
-	attributesUpdate := en.SubscriptionUpdateAttributes{}
-
-	if attributeMap["to"] != nil {
-		to := []string{}
-		for _, toItem := range attributeMap["to"].([]interface{}) {
-			to = append(to, toItem.(string))
-		}
-		attributesCreate.To = to
-		attributesUpdate.To = to
-	}
-
-	if attributeMap["add_notification_payload"] != nil {
-		attributesCreate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-		attributesUpdate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-	}
-
-	if attributeMap["reply_to"] != nil {
-		attributesCreate.ReplyToMail = core.StringPtr(attributeMap["reply_to"].(string))
-	}
+	attributesUpdate := en.SubscriptionUpdateAttributesWebhookAttributes{}
 
 	if attributeMap["signing_enabled"] != nil {
 		attributesCreate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
 		attributesUpdate.SigningEnabled = core.BoolPtr(attributeMap["signing_enabled"].(bool))
 	}
 
-	if attributeMap["reply_to_name"] != nil {
-		attributesCreate.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
-	}
-
-	if attributeMap["from_name"] != nil {
-		attributesCreate.FromName = core.StringPtr(attributeMap["from_name"].(string))
-	}
-
 	return attributesCreate, attributesUpdate
-}
-
-func attributesMapToEmailAttributes(attributeMap map[string]interface{}) en.SubscriptionUpdateAttributesEmailUpdateAttributes {
-	updateattributes := en.SubscriptionUpdateAttributesEmailUpdateAttributes{}
-
-	addemail := new(en.EmailUpdateAttributesTo)
-	if attributeMap["to"] != nil {
-		to := []string{}
-		for _, toItem := range attributeMap["to"].([]interface{}) {
-			to = append(to, toItem.(string))
-		}
-		addemail.Add = to
-	}
-	updateattributes.To = addemail
-
-	if attributeMap["add_notification_payload"] != nil {
-		updateattributes.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
-	}
-
-	if attributeMap["reply_to"] != nil {
-		updateattributes.ReplyToMail = core.StringPtr(attributeMap["reply_to"].(string))
-	}
-
-	if attributeMap["reply_to_name"] != nil {
-		updateattributes.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
-	}
-
-	if attributeMap["from_name"] != nil {
-		updateattributes.FromName = core.StringPtr(attributeMap["from_name"].(string))
-	}
-
-	if attributeMap["remove"] != nil {
-		removed := []string{}
-		for _, removedItem := range attributeMap["remove"].([]interface{}) {
-			removed = append(removed, removedItem.(string))
-		}
-		addemail.Remove = removed
-	}
-	unsubscribed := new(en.EmailUpdateAttributesUnsubscribed)
-	if attributeMap["unsubscribed"] != nil {
-		unsubscribe := []string{}
-		for _, unsubscribeItem := range attributeMap["unsubscribed"].([]interface{}) {
-			unsubscribe = append(unsubscribe, unsubscribeItem.(string))
-		}
-		unsubscribed.Remove = unsubscribe
-	}
-	updateattributes.Unsubscribed = unsubscribed
-
-	return updateattributes
 }

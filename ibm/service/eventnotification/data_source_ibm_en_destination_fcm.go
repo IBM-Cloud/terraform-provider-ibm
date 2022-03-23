@@ -15,9 +15,9 @@ import (
 	en "github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 )
 
-func DataSourceIBMEnDestination() *schema.Resource {
+func DataSourceIBMEnFCMDestination() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMEnDestinationRead,
+		ReadContext: dataSourceIBMEnFCMDestinationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_guid": {
@@ -43,7 +43,7 @@ func DataSourceIBMEnDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type Email/SMS/Webhook.",
+				Description: "Destination type push_android.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -56,31 +56,15 @@ func DataSourceIBMEnDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": {
+									"sender_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "URL of webhook.",
+										Description: "The Sender_id value for FCM project.",
 									},
-									"verb": {
+									"server_key": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "HTTP method of webhook.",
-									},
-									"custom_headers": {
-										Type:        schema.TypeMap,
-										Computed:    true,
-										Description: "Custom headers (Key-Value pair) for webhook call.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"sensitive_headers": {
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "List of sensitive headers from custom headers.",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+										Description: "The Server_key value for FCM project.",
 									},
 								},
 							},
@@ -107,11 +91,10 @@ func DataSourceIBMEnDestination() *schema.Resource {
 				},
 			},
 		},
-		DeprecationMessage: "This data source will be deprecated. A new data source ibm_en_destination_webhook will replace the existing ibm_en_destination data source",
 	}
 }
 
-func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMEnFCMDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,7 +127,7 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	}
 
 	if result.Config != nil {
-		err = d.Set("config", enDestinationFlattenConfig(*result.Config))
+		err = d.Set("config", enFCMDestinationFlattenConfig(*result.Config))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting config %s", err))
 		}
@@ -168,20 +151,20 @@ func dataSourceIBMEnDestinationRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func enDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
+func enFCMDestinationFlattenConfig(result en.DestinationConfig) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
-	finalMap := enDestinationConfigToMap(result)
+	finalMap := enFCMDestinationConfigToMap(result)
 	finalList = append(finalList, finalMap)
 
 	return finalList
 }
 
-func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
+func enFCMDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[string]interface{}) {
 	configMap = map[string]interface{}{}
 
 	if configItem.Params != nil {
 		paramsList := []map[string]interface{}{}
-		paramsMap := enDestinationConfigParamsToMap(configItem.Params)
+		paramsMap := enFCMDestinationConfigParamsToMap(configItem.Params)
 		paramsList = append(paramsList, paramsMap)
 		configMap["params"] = paramsList
 	}
@@ -189,22 +172,16 @@ func enDestinationConfigToMap(configItem en.DestinationConfig) (configMap map[st
 	return configMap
 }
 
-func enDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
+func enFCMDestinationConfigParamsToMap(paramsItem en.DestinationConfigParamsIntf) (paramsMap map[string]interface{}) {
 	paramsMap = map[string]interface{}{}
 
 	params := paramsItem.(*en.DestinationConfigParams)
 
-	if params.URL != nil {
-		paramsMap["url"] = params.URL
+	if params.SenderID != nil {
+		paramsMap["sender_id"] = params.SenderID
 	}
-	if params.Verb != nil {
-		paramsMap["verb"] = params.Verb
-	}
-	if params.CustomHeaders != nil {
-		paramsMap["custom_headers"] = params.CustomHeaders
-	}
-	if params.SensitiveHeaders != nil {
-		paramsMap["sensitive_headers"] = params.SensitiveHeaders
+	if params.ServerKey != nil {
+		paramsMap["server_key"] = params.ServerKey
 	}
 
 	return paramsMap

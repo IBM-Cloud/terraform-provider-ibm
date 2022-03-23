@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination'
+page_title: 'IBM : ibm_en_destination_webhook'
 description: |-
-  Get information about a destination
+  Get information about a webhook destination
 ---
 
-# ibm_en_destination
+# ibm_en_destination_webhook
 
-Provides a read-only data source for destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Webhook destination. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_destination" "en_destination" {
+data "ibm_en_destination_webhook" "webhook_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  destination_id = ibm_en_destination.destination1.destination_id
+  destination_id = ibm_en_destination_webhook.destination1.destination_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the `en_destination`.
+- `id` - The unique identifier of the `webhook_en_destination`.
 
 - `name` - (String) Destination name.
 
@@ -41,7 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_names` - (List) List of subscriptions.
 
-- `type` - (String) Destination type Email/SMS/Webhook.
+- `type` - (String) Destination type Webhook.
 
 - `config` - (List) Payload describing a destination configuration.
   Nested scheme for **config**:
@@ -53,9 +53,5 @@ In addition to all argument references listed, you can access the following attr
   - `url` - (String) URL of webhook.
 
   - `verb` - (String) HTTP method of webhook. Allowable values are: `get`, `post`.
-
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
 
 - `updated_at` - (String) Last updated time.
