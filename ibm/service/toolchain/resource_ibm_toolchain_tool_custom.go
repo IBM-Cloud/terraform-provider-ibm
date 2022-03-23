@@ -165,7 +165,7 @@ func ResourceIbmToolchainToolCustomCreate(context context.Context, d *schema.Res
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("customtool")
+	postIntegrationOptions.SetToolID("customtool")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -277,7 +277,7 @@ func ResourceIbmToolchainToolCustomUpdate(context context.Context, d *schema.Res
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("customtool")
+	patchToolIntegrationOptions.SetToolID("customtool")
 
 	hasChange := false
 

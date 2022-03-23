@@ -109,7 +109,7 @@ func ResourceIbmToolchainToolOrionCreate(context context.Context, d *schema.Reso
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("orion")
+	postIntegrationOptions.SetToolID("orion")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -201,7 +201,7 @@ func ResourceIbmToolchainToolOrionUpdate(context context.Context, d *schema.Reso
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("orion")
+	patchToolIntegrationOptions.SetToolID("orion")
 
 	hasChange := false
 

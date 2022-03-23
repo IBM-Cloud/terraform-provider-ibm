@@ -139,7 +139,7 @@ func ResourceIbmToolchainToolPipelineCreate(context context.Context, d *schema.R
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("pipeline")
+	postIntegrationOptions.SetToolID("pipeline")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -251,7 +251,7 @@ func ResourceIbmToolchainToolPipelineUpdate(context context.Context, d *schema.R
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("pipeline")
+	patchToolIntegrationOptions.SetToolID("pipeline")
 
 	hasChange := false
 

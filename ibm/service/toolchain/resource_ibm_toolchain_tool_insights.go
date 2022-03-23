@@ -109,7 +109,7 @@ func ResourceIbmToolchainToolInsightsCreate(context context.Context, d *schema.R
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("draservicebroker")
+	postIntegrationOptions.SetToolID("draservicebroker")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -201,7 +201,7 @@ func ResourceIbmToolchainToolInsightsUpdate(context context.Context, d *schema.R
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("draservicebroker")
+	patchToolIntegrationOptions.SetToolID("draservicebroker")
 
 	hasChange := false
 

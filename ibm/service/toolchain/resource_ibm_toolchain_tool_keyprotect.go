@@ -141,7 +141,7 @@ func ResourceIbmToolchainToolKeyprotectCreate(context context.Context, d *schema
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("keyprotect")
+	postIntegrationOptions.SetToolID("keyprotect")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -253,7 +253,7 @@ func ResourceIbmToolchainToolKeyprotectUpdate(context context.Context, d *schema
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("keyprotect")
+	patchToolIntegrationOptions.SetToolID("keyprotect")
 
 	hasChange := false
 

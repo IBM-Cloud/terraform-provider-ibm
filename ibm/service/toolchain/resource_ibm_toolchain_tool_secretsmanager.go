@@ -18,12 +18,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIbmToolchainToolSonarqube() *schema.Resource {
+func ResourceIbmToolchainToolSecretsmanager() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIbmToolchainToolSonarqubeCreate,
-		ReadContext:   ResourceIbmToolchainToolSonarqubeRead,
-		UpdateContext: ResourceIbmToolchainToolSonarqubeUpdate,
-		DeleteContext: ResourceIbmToolchainToolSonarqubeDelete,
+		CreateContext: ResourceIbmToolchainToolSecretsmanagerCreate,
+		ReadContext:   ResourceIbmToolchainToolSecretsmanagerRead,
+		UpdateContext: ResourceIbmToolchainToolSecretsmanagerUpdate,
+		DeleteContext: ResourceIbmToolchainToolSecretsmanagerDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -31,7 +31,7 @@ func ResourceIbmToolchainToolSonarqube() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_sonarqube", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_secretsmanager", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -46,29 +46,20 @@ func ResourceIbmToolchainToolSonarqube() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.",
-						},
-						"dashboard_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.",
-						},
-						"user_login": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "If you are using an authentication token, leave this field empty.",
-						},
-						"user_password": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"blind_connection": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
+						"region": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"resource_group": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"instance_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
@@ -127,7 +118,7 @@ func ResourceIbmToolchainToolSonarqube() *schema.Resource {
 	}
 }
 
-func ResourceIbmToolchainToolSonarqubeValidator() *validate.ResourceValidator {
+func ResourceIbmToolchainToolSecretsmanagerValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -141,11 +132,11 @@ func ResourceIbmToolchainToolSonarqubeValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_sonarqube", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_secretsmanager", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIbmToolchainToolSonarqubeCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolSecretsmanagerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -154,12 +145,12 @@ func ResourceIbmToolchainToolSonarqubeCreate(context context.Context, d *schema.
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("sonarqube")
+	postIntegrationOptions.SetToolID("secretsmanager")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIbmToolchainToolSonarqubeMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parametersModel, err := ResourceIbmToolchainToolSecretsmanagerMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -177,10 +168,10 @@ func ResourceIbmToolchainToolSonarqubeCreate(context context.Context, d *schema.
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIbmToolchainToolSonarqubeRead(context, d, meta)
+	return ResourceIbmToolchainToolSecretsmanagerRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolSonarqubeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolSecretsmanagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,7 +205,7 @@ func ResourceIbmToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIdResponse.Parameters != nil {
-		parametersMap, err := ResourceIbmToolchainToolSonarqubeParametersToMap(getIntegrationByIdResponse.Parameters, d)
+		parametersMap, err := ResourceIbmToolchainToolSecretsmanagerParametersToMap(getIntegrationByIdResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -234,7 +225,7 @@ func ResourceIbmToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 	if err = d.Set("href", getIntegrationByIdResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIbmToolchainToolSonarqubeGetIntegrationByIdResponseReferentToMap(getIntegrationByIdResponse.Referent)
+	referentMap, err := ResourceIbmToolchainToolSecretsmanagerGetIntegrationByIdResponseReferentToMap(getIntegrationByIdResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -254,7 +245,7 @@ func ResourceIbmToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func ResourceIbmToolchainToolSonarqubeUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolSecretsmanagerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -269,7 +260,7 @@ func ResourceIbmToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("sonarqube")
+	patchToolIntegrationOptions.SetToolID("secretsmanager")
 
 	hasChange := false
 
@@ -282,7 +273,7 @@ func ResourceIbmToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIbmToolchainToolSonarqubeMapToParameters(d.Get("parameters.0").(map[string]interface{}))
+		parameters, err := ResourceIbmToolchainToolSecretsmanagerMapToParameters(d.Get("parameters.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -302,10 +293,10 @@ func ResourceIbmToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 		}
 	}
 
-	return ResourceIbmToolchainToolSonarqubeRead(context, d, meta)
+	return ResourceIbmToolchainToolSecretsmanagerRead(context, d, meta)
 }
 
-func ResourceIbmToolchainToolSonarqubeDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIbmToolchainToolSecretsmanagerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -332,43 +323,41 @@ func ResourceIbmToolchainToolSonarqubeDelete(context context.Context, d *schema.
 	return nil
 }
 
-func ResourceIbmToolchainToolSonarqubeMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolSecretsmanagerMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
 	model := make(map[string]interface{})
-	model["name"] = core.StringPtr(modelMap["name"].(string))
-	model["dashboard_url"] = core.StringPtr(modelMap["dashboard_url"].(string))
-	if modelMap["user_login"] != nil {
-		model["user_login"] = core.StringPtr(modelMap["user_login"].(string))
+	if modelMap["name"] != nil {
+		model["name"] = core.StringPtr(modelMap["name"].(string))
 	}
-	if modelMap["user_password"] != nil {
-		model["user_password"] = core.StringPtr(modelMap["user_password"].(string))
+	if modelMap["region"] != nil {
+		model["region"] = core.StringPtr(modelMap["region"].(string))
 	}
-	if modelMap["blind_connection"] != nil {
-		model["blind_connection"] = core.BoolPtr(modelMap["blind_connection"].(bool))
+	if modelMap["resource_group"] != nil {
+		model["resource-group"] = core.StringPtr(modelMap["resource_group"].(string))
+	}
+	if modelMap["instance_name"] != nil {
+		model["instance-name"] = core.StringPtr(modelMap["instance_name"].(string))
 	}
 	return model, nil
 }
 
-func ResourceIbmToolchainToolSonarqubeParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolSecretsmanagerParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model["name"]
-	modelMap["dashboard_url"] = model["dashboard_url"]
-	if model["user_login"] != nil {
-		if model["user_login"] == "****" {
-			modelMap["user_login"] = d.Get("parameters.0.user_login").(string)
-		} else {
-			modelMap["user_login"] = model["user_login"]
-		}
+	if model["name"] != nil {
+		modelMap["name"] = model["name"]
 	}
-	if model["user_password"] != nil {
-		modelMap["user_password"] = model["user_password"]
+	if model["region"] != nil {
+		modelMap["region"] = model["region"]
 	}
-	if model["blind_connection"] != nil {
-		modelMap["blind_connection"] = model["blind_connection"]
+	if model["resource-group"] != nil {
+		modelMap["resource_group"] = model["resource-group"]
+	}
+	if model["instance-name"] != nil {
+		modelMap["instance_name"] = model["instance-name"]
 	}
 	return modelMap, nil
 }
 
-func ResourceIbmToolchainToolSonarqubeGetIntegrationByIdResponseReferentToMap(model *toolchainv2.GetIntegrationByIdResponseReferent) (map[string]interface{}, error) {
+func ResourceIbmToolchainToolSecretsmanagerGetIntegrationByIdResponseReferentToMap(model *toolchainv2.GetIntegrationByIdResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UiHref != nil {
 		modelMap["ui_href"] = model.UiHref

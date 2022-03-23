@@ -179,7 +179,7 @@ func ResourceIbmToolchainToolArtifactoryCreate(context context.Context, d *schem
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID("artifactory")
+	postIntegrationOptions.SetToolID("artifactory")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -291,7 +291,7 @@ func ResourceIbmToolchainToolArtifactoryUpdate(context context.Context, d *schem
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID("artifactory")
+	patchToolIntegrationOptions.SetToolID("artifactory")
 
 	hasChange := false
 

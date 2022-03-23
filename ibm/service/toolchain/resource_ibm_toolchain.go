@@ -27,21 +27,16 @@ func ResourceIbmToolchain() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				//ValidateFunc: validate.InvokeValidator("ibm_toolchain", "name"),
-				Description: "Toolchain name.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain", "name"),
+				Description:  "Toolchain name.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_toolchain", "resource_group_id"),
-			},
-			"generator": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "A description of who generated the toolchain.",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -99,7 +94,7 @@ func ResourceIbmToolchainValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexp,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^([^u0000-\u007F]|[a-zA-Z0-9-._ ])+$`,
+			Regexp:                     `^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$`,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
@@ -125,7 +120,6 @@ func ResourceIbmToolchainCreate(context context.Context, d *schema.ResourceData,
 
 	postToolchainOptions.SetName(d.Get("name").(string))
 	postToolchainOptions.SetResourceGroupID(d.Get("resource_group_id").(string))
-	postToolchainOptions.SetGenerator(d.Get("generator").(string))
 	if _, ok := d.GetOk("description"); ok {
 		postToolchainOptions.SetDescription(d.Get("description").(string))
 	}

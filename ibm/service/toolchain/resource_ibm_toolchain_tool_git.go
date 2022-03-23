@@ -223,7 +223,7 @@ func ResourceIbmToolchainToolGitCreate(context context.Context, d *schema.Resour
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetServiceID(d.Get("git_provider").(string))
+	postIntegrationOptions.SetToolID(d.Get("git_provider").(string))
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
@@ -343,7 +343,7 @@ func ResourceIbmToolchainToolGitUpdate(context context.Context, d *schema.Resour
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetServiceID(d.Get("git_provider").(string))
+	patchToolIntegrationOptions.SetToolID(d.Get("git_provider").(string))
 
 	hasChange := false
 
