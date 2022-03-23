@@ -34,6 +34,7 @@ In addition to the argument reference list, you can access the following attribu
   
   - `description` - (String) The description of the IAM access group.
   - `iam_service_ids` - (Array of Strings) A list of service IDs that belong to the access group.
+  - `iam_profile_ids` - (Array of Strings) A list of trusted profile IDs that belong to the access group.
   - `ibm_ids` - (Array of Strings) A list of IBM ID that belong to the access group.
   - `id` - (String) The ID of the IAM access group.
   - `name` - (String) The name of the IAM access group.

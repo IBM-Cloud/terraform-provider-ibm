@@ -152,6 +152,12 @@ func dataSourceIBMPICloudConnectionRead(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("failed to perform get cloud connection operation for name %s", cloudConnectionName)
 	}
 
+	cloudConnection, err = client.Get(*cloudConnection.CloudConnectionID)
+	if err != nil {
+		log.Printf("[DEBUG] get cloud connection failed %v", err)
+		return diag.FromErr(err)
+	}
+
 	d.SetId(*cloudConnection.CloudConnectionID)
 	d.Set(helpers.PICloudConnectionName, cloudConnection.Name)
 	d.Set(PICloudConnectionGlobalRouting, cloudConnection.GlobalRouting)

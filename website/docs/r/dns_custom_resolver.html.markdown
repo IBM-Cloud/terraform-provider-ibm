@@ -84,6 +84,13 @@ In addition to all argument reference list, you can access the following attribu
   - `enabled`- (Bool) Whether the location is enabled.
   - `location_id`- (String) The location ID.
 
+ Nested scheme for `rules`:
+ - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
+ - `description`- (String) Descriptive text of the forwarding rule.
+ - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
+ - `match` - (String) The matching zone or hostname.
+ - `forward_to` - (List) The upstream DNS servers will be forwarded to.
+
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.
 The `id` property can be formed from `custom_resolver_id` and `instance_id` in the following format:
