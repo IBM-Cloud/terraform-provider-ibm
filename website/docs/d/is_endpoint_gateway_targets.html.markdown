@@ -29,11 +29,13 @@ data "ibm_is_endpoint_gateway_targets" "example" {
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
+- `resources` -  (List) Collection of resources to be set as endpoint gateway target. Nested `resources` blocks have the following structure.
 
-- `crn` - (String) The CRN for the specific object.	
-- `endpoint_type` - (String) The data endpoint type of the offering.
-- `full_qualified_domain_names` - (String) The fully qualified domain names.
-- `name` - (String) The display name in the requested language.
-- `parent` - (String) The parent for the specific object. 
-- `resource_type` - (String) The resource type of the offering. 
-- `service_location` - (String) The service location of the offering.
+  Nested scheme for `resources`:
+  - `crn` - (String) The CRN for the specific object.	
+  - `endpoint_type` - (String) The data endpoint type of the offering.
+  - `full_qualified_domain_names` - (String) The fully qualified domain names.
+  - `name` - (String) The display name in the requested language.
+  - `parent` - (String) The parent for the specific object. 
+  - `resource_type` - (String) The resource type of the offering. 
+  - `service_location` - (String) The service location of the offering.

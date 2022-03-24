@@ -33,6 +33,8 @@ func TestAccIBMISInstanceTemplate_dataBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_instance_template.instance_template_data", "name", templateName),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_instance_template.instance_template_data", "availability_policy.0.host_failure"),
 				),
 			},
 		},

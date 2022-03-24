@@ -99,7 +99,6 @@ func testAccCheckIBMEnSubscriptionConfig(instanceName, name, description string)
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
 		destination_id = ibm_en_destination.en_destination_resource_2.destination_id
 		attributes {
-			add_notification_payload = true
 			signing_enabled          = true
 		}
 	}

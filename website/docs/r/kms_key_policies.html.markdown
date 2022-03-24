@@ -10,6 +10,9 @@ description: |-
 
 Provides a resource to manage key policies for Key Protect and Hyper Protect Crypto Service (HPCS) services. This allows key policies to be created and updated. Key policies can be created for an existing kms key resource.
 
+**NOTE**
+: `terraform destroy` does not remove the policies of the Key but only clears the state file. Key Policies get deleted when the associated key resource is destroyed.
+
 
 ## Example usage to create a Key and associate a key policy.
 
@@ -38,9 +41,6 @@ resource "ibm_kms_key_policies" "key_policy" {
     }
 }
 ```
-
-**NOTE**
-1) `terraform destroy` does not remove the policies of the Key but only clears the state file. Key Policies get deleted when the associated key resource is destroyed.
 
 ## Argument reference
 

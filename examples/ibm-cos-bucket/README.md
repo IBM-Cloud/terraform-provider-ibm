@@ -4,20 +4,13 @@ The following example creates an instance of IBM Cloud Object Storage, IBM Cloud
 
 Following types of resources are supported:
 
-* [ Cloud Object Storage Resource](https://cloud.ibm.com/docs/terraform?topic=terraform-object-storage-resources#cos-bucket)
-
-
-## Terraform versions
-
-Terraform 0.12. Pin module version to `~> v1.7.1`. Branch - `master`.
-
-Terraform 0.11. Pin module version to `~> v0.29.1`. Branch - `terraform_v0.11.x`.
+* [Cloud Object Storage resource](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-index-of-terraform-on-ibm-cloud-resources-and-data-sources#ibm-object-storage_rd)
 
 ## Usage
 
 To run this example you need to execute:
 
-```bash
+```sh
 $ terraform init
 $ terraform plan
 $ terraform apply
@@ -29,7 +22,7 @@ Run `terraform destroy` when you don't need these resources.
 
 Create an IBM Cloud Object Storage bucket. The bucket is used to store your data:
 
-```hcl
+```terraform
 
 data "ibm_resource_group" "cos_group" {
   name = var.resource_group_name
@@ -181,7 +174,7 @@ resource "ibm_cos_bucket" "objectversioning" {
 
 ```
 
-```hcl
+```terraform
 data "ibm_resource_instance" "cos_instance" {
   name              = "cos-instance"
   resource_group_id = data.ibm_resource_group.cos_group.id
@@ -198,40 +191,41 @@ data "ibm_cos_bucket" "standard-ams03" {
 
 ## Examples
 
-* [ Cloud Objcet Storage  ](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cos-bucket)
+* [Cloud Object Storage](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cos-bucket)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12 |
+| terraform | >=1.0.0, <2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| ibm | n/a |
+| ibm | Latest |
 
 ## Inputs
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| bucket\_name | Name of the bucket. | `string` | yes |
-| resource\_group\_name | Name of the resource group. | `string` | yes |
-| storage | The storage class that you want to use for the bucket. Supported values are standard, vault, cold, flex, and smart.| `string` | no |
-| region | The location for a cross-regional bucket. Supported values are us, eu, and ap. | `string` | no |
-| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events.. | `array` | no
-| write_data_events | all object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
+| bucket_name | Name of the bucket. | `string` | yes |
+| resource_group_name | Name of the resource group. | `string` | yes |
+| storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
+| region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
+| read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `array` | no
+| write_data_events | All object write events (i.e. uploads) will be sent to Activity Tracker. | `bool` | no
 | activity_tracker_crn | Required the first time activity_tracking is configured. | `string` | yes
-| usage_metrics_enabled | Specify true or false to set usage metrics (i.e. bytes_used). | `bool` | no
-| request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get,put,post request). | `bool` | no
+| usage_metrics_enabled | Specify **true or false** to set usage metrics (i.e. bytes_used). | `bool` | no
+| request_metrics_enabled | Specify true or false to set cos request metrics (i.e. get, put, or post request). | `bool` | no
 | metrics_monitoring_crn | Required the first time metrics_monitoring is configured. The instance of IBM Cloud Monitoring that will receive the bucket metrics. | `string` | yes
-| regional_loc | The location for a regional bucket. Supported values are au-syd, eu-de, eu-gb, jp-tok,,us-east,us-south. | `string` | no
-| type | Specifies the archive type to which you want the object to transition. Supported values are  Glacier or Accelerated. | `string` |yes
+| regional_loc | The location for a regional bucket. Supported values are **au-syd, eu-de, eu-gb, jp-tok, us-east, or us-south**. | `string` | no
+| type | Specifies the archive type to which you want the object to transition. Supported values are  **Glacier or Accelerated**. | `string` |yes
 | rule_id | Unique identifier for the rule. | `string` | no
 | days | Specifies the number of days when the specific expire rule action takes effect. | `int` | no
-| date | After the specifies date , the current version of objects in your bucket expires.. | `string` | no
+| date | After the specifies date , the current version of objects in your bucket expires. | `string` | no
 | expired_object_delete_marker | Expired object delete markers can be automatically cleaned up to improve performance in bucket. This cannot be used alongside version expiration. | `bool` | no
 | prefix | Specifies a prefix filter to apply to only a subset of objects with names that match the prefix. | `string` | no
 | noncurrent_days | Configuration parameter in your policy that says how long to retain a non-current version before deleting it. | `int` | no
@@ -240,5 +234,6 @@ data "ibm_cos_bucket" "standard-ams03" {
 | maximum | Specifies maximum duration of time an object can be kept unmodified in the bucket. | `int` | yes
 | minimum | Specifies minimum duration of time an object must be kept unmodified in the bucket. | `int` | yes
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
-| enable | Specifies Versioning status either enable or Suspended for the objects in the bucket. | `bool` | no
+| enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
 | hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
+{: caption="inputs"}

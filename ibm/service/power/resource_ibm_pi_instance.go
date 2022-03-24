@@ -220,9 +220,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "PIN Policy of the Instance",
 			},
 			helpers.PIInstanceImageId: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "PI instance image id",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "PI instance image id",
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			helpers.PIInstanceProcessors: {
 				Type:          schema.TypeFloat,
@@ -1093,6 +1094,10 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 			}
 		}
 		body.StorageAffinity = affinity
+	}
+
+	if pg, ok := d.GetOk(helpers.PIPlacementGroupID); ok {
+		body.PlacementGroup = pg.(string)
 	}
 
 	pvmList, err := sapClient.Create(body)

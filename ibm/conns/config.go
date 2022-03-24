@@ -23,10 +23,12 @@ import (
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -69,9 +71,9 @@ import (
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
-	"github.com/IBM/scc-go-sdk/posturemanagementv2"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -106,7 +108,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -208,6 +210,7 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
+	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -234,6 +237,7 @@ type ClientSession interface {
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
+	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
@@ -335,6 +339,9 @@ type clientSession struct {
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
 
+	cloudDatabasesClientErr error
+	cloudDatabasesClient    *clouddatabasesv5.CloudDatabasesV5
+
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
 
@@ -393,6 +400,10 @@ type clientSession struct {
 	// CIS Zones
 	cisZonesErr      error
 	cisZonesV1Client *ciszonesv1.ZonesV1
+
+	// CIS Alerts
+	cisAlertsClient *cisalertsv1.AlertsV1
+	cisAlertsErr    error
 
 	// CIS dns service options
 	cisDNSErr           error
@@ -661,6 +672,11 @@ func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
 }
 
+// The IBM Cloud Databases API
+func (session clientSession) CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error) {
+	return session.cloudDatabasesClient, session.cloudDatabasesClientErr
+}
+
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
 func (sess clientSession) MccpAPI() (mccpv2.MccpServiceAPI, error) {
 	return sess.cfServiceAPI, sess.cfConfigErr
@@ -736,7 +752,7 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 			}
 		}
 
-		kpClient, err := kp.New(*clientConfig, kp.DefaultTransport())
+		kpClient, err := kp.New(*clientConfig, DefaultTransport())
 		if err != nil {
 			sess.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 		}
@@ -883,6 +899,14 @@ func (sess clientSession) CisDomainSettingsClientSession() (*cisdomainsettingsv1
 		return sess.cisDomainSettingsClient, sess.cisDomainSettingsErr
 	}
 	return sess.cisDomainSettingsClient.Clone(), nil
+}
+
+// CIS Alerts
+func (sess clientSession) CisAlertsSession() (*cisalertsv1.AlertsV1, error) {
+	if sess.cisAlertsErr != nil {
+		return sess.cisAlertsClient, sess.cisAlertsErr
+	}
+	return sess.cisAlertsClient.Clone(), nil
 }
 
 // CIS Routing
@@ -1118,6 +1142,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.transitgatewayErr = errEmptyBluemixCredentials
 		session.functionIAMNamespaceErr = errEmptyBluemixCredentials
 		session.cisDNSErr = errEmptyBluemixCredentials
+		session.cisAlertsErr = errEmptyBluemixCredentials
 		session.cisDNSBulkErr = errEmptyBluemixCredentials
 		session.cisGLBPoolErr = errEmptyBluemixCredentials
 		session.cisGLBErr = errEmptyBluemixCredentials
@@ -1295,7 +1320,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			Verbose: kp.VerboseFailOnly,
 		}
 	}
-	kpAPIclient, err := kp.New(options, kp.DefaultTransport())
+	kpAPIclient, err := kp.New(options, DefaultTransport())
 	if err != nil {
 		session.kpErr = fmt.Errorf("[ERROR] Error occured while configuring Key Protect Service: %q", err)
 	}
@@ -1767,6 +1792,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.icdServiceAPI = icdAPI
 
+	var cloudDatabasesEndpoint string
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.private.databases.cloud.ibm.com/v5/ibm", c.Region)
+	} else {
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
+	}
+
+	// Construct an "options" struct for creating the service client.
+	cloudDatabasesClientOptions := &clouddatabasesv5.CloudDatabasesV5Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.cloudDatabasesClient, err = clouddatabasesv5.NewCloudDatabasesV5(cloudDatabasesClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudDatabasesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudDatabasesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudDatabasesClientErr = fmt.Errorf("Error occurred while configuring The IBM Cloud Databases API service: %q", err)
+	}
+
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {
 		session.resourceCatalogConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Resource Catalog service: %q", err)
@@ -2123,6 +2175,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
 		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisRLClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	// IBM Network CIS Alerts
+	cisAlertsOpt := &cisalertsv1.AlertsV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisAlertsClient, session.cisAlertsErr = cisalertsv1.NewAlertsV1(cisAlertsOpt)
+	if session.cisAlertsErr != nil {
+		session.cisAlertsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS Alerts : %s",
+				session.cisAlertsErr)
+	}
+	if session.cisAlertsClient != nil && session.cisAlertsClient.Service != nil {
+		session.cisAlertsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisAlertsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

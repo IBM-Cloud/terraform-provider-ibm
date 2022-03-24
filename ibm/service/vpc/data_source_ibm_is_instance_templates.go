@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -96,9 +97,19 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isInstanceAvailablePolicyHostFailure: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
+						},
 						isInstanceTemplatesName: {
 							Type:     schema.TypeString,
 							Computed: true,
+						},
+						isInstanceTemplateMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 						},
 						isInstanceTemplatesHref: {
 							Type:     schema.TypeString,
@@ -129,6 +140,16 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
+						},
+						isInstanceDefaultTrustedProfileAutoLink: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
+						},
+						isInstanceDefaultTrustedProfileTarget: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
 						},
 						isInstanceTemplateVolumeAttachments: {
 							Type:     schema.TypeList,
@@ -324,11 +345,38 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 		template[isInstanceTemplateName] = instance.Name
 		template[isInstanceTemplateUserData] = instance.UserData
 
+		if instance.DefaultTrustedProfile != nil {
+			if instance.DefaultTrustedProfile.AutoLink != nil {
+				template[isInstanceDefaultTrustedProfileAutoLink] = instance.DefaultTrustedProfile.AutoLink
+			}
+			if instance.DefaultTrustedProfile.Target != nil {
+				switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
+				case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
+					{
+						target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByID)
+						template[isInstanceDefaultTrustedProfileTarget] = target.ID
+					}
+				case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
+					{
+						target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByCRN)
+						template[isInstanceDefaultTrustedProfileTarget] = target.CRN
+					}
+				}
+			}
+		}
+
 		if instance.PlacementTarget != nil {
 			placementTargetMap := resourceIbmIsInstanceTemplateInstancePlacementTargetPrototypeToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTargetPrototype))
 			template["placement_target"] = []map[string]interface{}{placementTargetMap}
 		}
 
+		if instance.MetadataService != nil {
+			template[isInstanceTemplateMetadataServiceEnabled] = *instance.MetadataService.Enabled
+		}
+
+		if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+			template[isInstanceTemplateAvailablePolicyHostFailure] = *instance.AvailabilityPolicy.HostFailure
+		}
 		if instance.Keys != nil {
 			keys := []string{}
 			for _, intfc := range instance.Keys {

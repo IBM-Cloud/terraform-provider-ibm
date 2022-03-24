@@ -29,3 +29,25 @@ variable "image_operating_system" {
 variable "cidr1" {
   default = "10.120.0.0/24"
 }
+
+
+// Data source arguments for is_security_groups
+
+// Data source arguments for is_security_group_rule
+variable "is_security_group_rule_security_group_id" {
+  description = "The security group identifier."
+  type        = string
+  default     = "r134-4d5db1a7-ca45-4c29-80d1-2a90cf94d11a"
+}
+variable "is_security_group_rule_id" {
+  description = "The rule identifier."
+  type        = string
+  default     = "r134-5b206956-0990-4337-bab4-02005315db0a"
+}
+
+// Data source arguments for is_security_group_rules
+variable "is_security_group_rules_security_group_id" {
+  description = "The security group identifier."
+  type        = string
+  default     = "r134-4d5db1a7-ca45-4c29-80d1-2a90cf94d11a"
+}
