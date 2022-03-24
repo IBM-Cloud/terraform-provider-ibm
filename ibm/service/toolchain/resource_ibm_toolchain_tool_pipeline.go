@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -108,6 +109,10 @@ func ResourceIBMToolchainToolPipeline() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"pipeline_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -161,6 +166,10 @@ func ResourceIBMToolchainToolPipelineCreate(context context.Context, d *schema.R
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
+
+	// Delay to allow pipeline to be created before creating tekton resources
+	sleep := 3 * time.Second
+	time.Sleep(sleep)
 
 	return ResourceIBMToolchainToolPipelineRead(context, d, meta)
 }
@@ -231,6 +240,9 @@ func ResourceIBMToolchainToolPipelineRead(context context.Context, d *schema.Res
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("pipeline_id", parts[1]); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
 
 	return nil
