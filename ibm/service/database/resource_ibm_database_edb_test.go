@@ -40,6 +40,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -60,6 +61,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -82,6 +84,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
@@ -119,6 +122,10 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		  password = "password12"
 		}
 		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
@@ -162,6 +169,14 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		  description = "desc1"
 		}
 		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}

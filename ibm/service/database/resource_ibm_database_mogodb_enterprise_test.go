@@ -40,6 +40,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -60,6 +61,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -82,6 +84,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "43008"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "122880"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
@@ -119,6 +122,10 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		  password = "password12"
 		}
 		whitelist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
@@ -161,6 +168,14 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		  description = "desc1"
 		}
 		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}

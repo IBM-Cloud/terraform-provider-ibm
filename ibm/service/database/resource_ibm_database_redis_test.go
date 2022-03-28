@@ -39,6 +39,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
@@ -55,6 +56,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 				),
 			},
 			{
@@ -67,6 +69,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 				),
 			},
 		},
@@ -165,6 +168,10 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
 	  }
 				`, databaseResourceGroup, name)
 }
@@ -190,6 +197,14 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		  description = "desc1"
 		}
 		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}

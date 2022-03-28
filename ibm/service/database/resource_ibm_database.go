@@ -423,6 +423,27 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
+				Deprecated: "This field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description:  "Allowlist IP address in CIDR notation",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateCIDR,
+						},
+						"description": {
+							Description:  "Unique allow list description",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 32),
+						},
+					},
+				},
 			},
 			"groups": {
 				Type:     schema.TypeList,
@@ -1180,6 +1201,28 @@ func resourceIBMDatabaseInstanceCreate(d *schema.ResourceData, meta interface{})
 			}
 		}
 	}
+
+	if al, ok := d.GetOk("allowlist"); ok {
+		allowlist := flex.ExpandWhitelist(al.(*schema.Set))
+		for _, alEntry := range allowlist {
+			allowlistReq := icdv4.WhitelistReq{
+				WhitelistEntry: icdv4.WhitelistEntry{
+					Address:     alEntry.Address,
+					Description: alEntry.Description,
+				},
+			}
+			task, err := icdClient.Whitelists().CreateWhitelist(icdId, allowlistReq)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error updating database allowlist entry: %s", err)
+			}
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return fmt.Errorf(
+					"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", icdId, err)
+			}
+		}
+	}
+
 	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
 		params := icdv4.AutoscalingSetGroup{}
 		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
@@ -1383,9 +1426,10 @@ func resourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) e
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database allowlist (formerly whitelist): %s", err)
 	}
 	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+	d.Set("allowlist", flex.FlattenWhitelist(whitelist))
 
 	var connectionStrings []flex.CsEntry
 	//ICD does not implement a GetUsers API. Users populated from tf configuration.
@@ -1686,6 +1730,65 @@ func resourceIBMDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{})
 				if err != nil {
 					return fmt.Errorf(
 						"[ERROR] Error waiting for database (%s) whitelist delete task to complete for ipAddress %s : %s", icdId, ipAddress, err)
+				}
+
+			}
+		}
+	}
+
+	if d.HasChange("allowlist") {
+		oldList, newList := d.GetChange("allowlist")
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+
+		if len(add) > 0 {
+			for _, entry := range add {
+				newEntry := entry.(map[string]interface{})
+				alEntry := icdv4.WhitelistEntry{
+					Address:     newEntry["address"].(string),
+					Description: newEntry["description"].(string),
+				}
+				allowlistReq := icdv4.WhitelistReq{
+					WhitelistEntry: alEntry,
+				}
+				task, err := icdClient.Whitelists().CreateWhitelist(icdId, allowlistReq)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error updating database allowlist entry %v : %s", alEntry.Address, err)
+				}
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) allowlist create task to complete for entry %s : %s", icdId, alEntry.Address, err)
+				}
+
+			}
+
+		}
+
+		if len(remove) > 0 {
+			for _, entry := range remove {
+				newEntry := entry.(map[string]interface{})
+				wlEntry := icdv4.WhitelistEntry{
+					Address:     newEntry["address"].(string),
+					Description: newEntry["description"].(string),
+				}
+				ipAddress := wlEntry.Address
+				task, err := icdClient.Whitelists().DeleteWhitelist(icdId, ipAddress)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error deleting database allowlist entry: %s", err)
+				}
+				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) allowlist delete task to complete for ipAddress %s : %s", icdId, ipAddress, err)
 				}
 
 			}

@@ -225,6 +225,25 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
+				Deprecated: "This field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description: "Allowlist IP address in CIDR notation",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"description": {
+							Description: "Unique allow list description",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
 			},
 			"groups": {
 				Type:     schema.TypeList,
@@ -700,9 +719,10 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+		return fmt.Errorf("[ERROR] Error getting database allowlist (formerly whitelist): %s", err)
 	}
 	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+	d.Set("allowlist", flex.FlattenWhitelist(whitelist))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {

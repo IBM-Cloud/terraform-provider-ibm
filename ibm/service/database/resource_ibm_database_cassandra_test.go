@@ -38,6 +38,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "36864"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -55,6 +56,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "38400"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -71,6 +73,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "36864"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -107,6 +110,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
 
 					resource.TestCheckResourceAttr(name, "whitelist.#", "1"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "1"),
 					resource.TestCheckResourceAttr(name, "users.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.1.name", "admin"),
@@ -127,6 +131,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
@@ -145,6 +150,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -162,6 +168,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "20480"),
 					resource.TestCheckResourceAttr(name, "node_cpu_allocation_count", "6"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "allowlist.#", "0"),
 					resource.TestCheckResourceAttr(name, "users.#", "0"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
 				),
@@ -237,6 +244,10 @@ func testAccCheckIBMDatabaseInstanceCassandraBasic(databaseResourceGroup string,
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
 
 		timeouts {
 			create = "480m"
@@ -276,6 +287,14 @@ func testAccCheckIBMDatabaseInstanceCassandraFullyspecified(databaseResourceGrou
 		  description = "desc1"
 		}
 		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
@@ -343,6 +362,10 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeBasic(databaseResourceGroup str
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
 
 		timeouts {
 			create = "480m"
@@ -385,6 +408,14 @@ func testAccCheckIBMDatabaseInstanceCassandraNodeFullyspecified(databaseResource
 		  description = "desc1"
 		}
 		whitelist {
+		  address     = "172.168.1.1/32"
+		  description = "desc"
+		}
+		allowlist {
+		  address     = "172.168.1.2/32"
+		  description = "desc1"
+		}
+		allowlist {
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
