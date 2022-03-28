@@ -13,5 +13,4 @@ resource "ibm_toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
     user_password = "user_password"
     blind_connection = true
   }
-  parameters_references = var.toolchain_tool_sonarqube_parameters_references
 }

@@ -100,7 +100,6 @@ func testAccCheckIBMToolchainToolArtifactoryConfig(toolchainID string, name stri
 				repository_url = "repository_url"
 				docker_config_json = "docker_config_json"
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }

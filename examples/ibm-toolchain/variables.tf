@@ -14,8 +14,3 @@ variable "toolchain_tool_sonarqube_name" {
   type        = string
   default     = "name"
 }
-variable "toolchain_tool_sonarqube_parameters_references" {
-  description = "Decoded values used on provision in the broker that reference fields in the parameters."
-  type        = map()
-  default     = { "key": null }
-}

@@ -25,7 +25,6 @@ Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
 * `parameters` - (Optional, Map) Arbitrary JSON data.
-* `parameters_references` - (Optional, Map) Decoded values used on provision in the broker that reference fields in the parameters.
 * `service_id` - (Required, Forces new resource, String) The unique short name of the integration that should be provisioned.
   * Constraints: The maximum length is `100` characters.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.

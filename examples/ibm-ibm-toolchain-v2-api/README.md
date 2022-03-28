@@ -37,7 +37,6 @@ resource "toolchain_integration" "toolchain_integration_instance" {
   service_id = var.toolchain_integration_service_id
   name = var.toolchain_integration_name
   parameters = var.toolchain_integration_parameters
-  parameters_references = var.toolchain_integration_parameters_references
 }
 ```
 
@@ -74,7 +73,6 @@ resource "toolchain_integration" "toolchain_integration_instance" {
 | service_id | The unique short name of the service that should be provisioned. | `string` | true |
 | name | Name of tool integration. | `string` | false |
 | parameters | Arbitrary JSON data. | `map()` | false |
-| parameters_references | Decoded values used on provision in the broker that reference fields in the parameters. | `map()` | false |
 
 ## Outputs
 

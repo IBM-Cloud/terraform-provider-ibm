@@ -28,7 +28,6 @@ resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
   toolchain_id = var.toolchain_tool_sonarqube_toolchain_id
   name = var.toolchain_tool_sonarqube_name
   parameters = var.toolchain_tool_sonarqube_parameters
-  parameters_references = var.toolchain_tool_sonarqube_parameters_references
 }
 ```
 
@@ -63,7 +62,6 @@ resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
 | toolchain_id | ID of the toolchain to bind integration to. | `string` | true |
 | name | Name of tool integration. | `string` | false |
 | parameters |  | `` | false |
-| parameters_references | Decoded values used on provision in the broker that reference fields in the parameters. | `map()` | false |
 
 ## Outputs
 

@@ -148,12 +148,6 @@ func ResourceIBMToolchainToolGit() *schema.Resource {
 					},
 				},
 			},
-			"parameters_references": &schema.Schema{
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Decoded values used on provision in the broker that reference fields in the parameters.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
 			"resource_group_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -242,10 +236,6 @@ func ResourceIBMToolchainToolGitCreate(context context.Context, d *schema.Resour
 		parameters["legal"] = true
 	}
 	postIntegrationOptions.SetParameters(parameters)
-
-	if _, ok := d.GetOk("parameters_references"); ok {
-		// TODO: Add code to handle map container: ParametersReferences
-	}
 
 	postIntegrationResponse, response, err := toolchainClient.PostIntegrationWithContext(context, postIntegrationOptions)
 	if err != nil {
@@ -370,10 +360,6 @@ func ResourceIBMToolchainToolGitUpdate(context context.Context, d *schema.Resour
 			parameters["legal"] = true
 		}
 		patchToolIntegrationOptions.SetParameters(parameters)
-		hasChange = true
-	}
-	if d.HasChange("parameters_references") {
-		// TODO: handle ParametersReferences of type TypeMap -- not primitive, not model
 		hasChange = true
 	}
 

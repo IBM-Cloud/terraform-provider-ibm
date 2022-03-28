@@ -29,7 +29,6 @@ Nested scheme for **parameters**:
 	* `name` - (Optional, String)
 	* `region` - (Optional, String)
 	* `resource_group` - (Optional, String)
-* `parameters_references` - (Optional, Map) Decoded values used on provision in the broker that reference fields in the parameters.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

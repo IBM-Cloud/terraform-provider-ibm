@@ -93,7 +93,6 @@ func testAccCheckIBMToolchainToolSecretsmanagerConfig(toolchainID string, name s
 				resource_group = "resource_group"
 				instance_name = "instance_name"
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }

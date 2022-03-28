@@ -114,7 +114,6 @@ func testAccCheckIBMToolchainToolGitConfig(toolchainID string, gitProvider strin
 				git_id = "git_id"
 				owner_id = "owner_id"
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, gitProvider, name)
 }

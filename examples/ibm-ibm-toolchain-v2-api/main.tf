@@ -19,5 +19,4 @@ resource "ibm_toolchain_integration" "toolchain_integration_instance" {
   service_id = var.toolchain_integration_service_id
   name = var.toolchain_integration_name
   parameters = var.toolchain_integration_parameters
-  parameters_references = var.toolchain_integration_parameters_references
 }

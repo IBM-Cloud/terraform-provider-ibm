@@ -94,7 +94,6 @@ func testAccCheckIBMToolchainToolSonarqubeConfig(toolchainID string, name string
 				user_password = "user_password"
 				blind_connection = true
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }

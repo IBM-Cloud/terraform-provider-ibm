@@ -92,7 +92,6 @@ func testAccCheckIBMToolchainToolPipelineConfig(toolchainID string, name string)
 				type = "classic"
 				ui_pipeline = true
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }

@@ -97,7 +97,6 @@ func testAccCheckIBMToolchainToolCustomConfig(toolchainID string, name string) s
 				description = "description"
 				additional-properties = "additional-properties"
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }

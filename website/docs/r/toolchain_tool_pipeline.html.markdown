@@ -30,7 +30,6 @@ Nested scheme for **parameters**:
 	  * Constraints: Allowable values are: `classic`, `tekton`.
 	* `ui_pipeline` - (Optional, Boolean) When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.
 	  * Constraints: The default value is `false`.
-* `parameters_references` - (Optional, Map) Decoded values used on provision in the broker that reference fields in the parameters.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

@@ -26,8 +26,3 @@ variable "toolchain_integration_parameters" {
   type        = map()
   default     = { "key": null }
 }
-variable "toolchain_integration_parameters_references" {
-  description = "Decoded values used on provision in the broker that reference fields in the parameters."
-  type        = map()
-  default     = { "key": null }
-}

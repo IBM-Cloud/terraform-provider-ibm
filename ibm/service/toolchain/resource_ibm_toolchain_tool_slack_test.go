@@ -97,7 +97,6 @@ func testAccCheckIBMToolchainToolSlackConfig(toolchainID string, name string) st
 				toolchain_bind = true
 				toolchain_unbind = true
 			}
-			parameters_references = "FIXME"
 		}
 	`, toolchainID, name)
 }
