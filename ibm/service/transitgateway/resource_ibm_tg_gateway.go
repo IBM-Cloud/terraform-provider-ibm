@@ -335,7 +335,7 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 	tgw, resp, err := client.GetTransitGateway(tgOptions)
 
 	if err != nil {
-		log.Printf("Error fetching Tranisit  Gateway: %s", resp)
+		log.Printf("Error fetching Transit Gateway: %s", resp)
 		return err
 	}
 
