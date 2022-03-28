@@ -137,11 +137,14 @@ var Tg_cross_network_id string
 //Enterprise Management
 var Account_to_be_imported string
 
+// Secuity and Complinace Center, Governance
+var Scc_gov_account_id string
+var Scc_resource_group_id string
+
 //Security and Compliance Center, SI
 var Scc_si_account string
 
 //Security and Compliance Center, Posture Management
-var Scc_gov_account_id string
 var Scc_posture_scope_id string
 var Scc_posture_scan_id string
 var Scc_posture_profile_id string
@@ -769,7 +772,7 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
 
-	Scc_gov_account_id  = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
+	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
 	if Scc_gov_account_id == "" {
 		fmt.Println("[WARN] Set the environment variable SCC_GOVERNANCE_ACCOUNT_ID with a VALID account name")
 	}
