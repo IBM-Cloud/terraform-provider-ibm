@@ -42,8 +42,8 @@ func TestAccIBMSccTemplateAttachmentBasic(t *testing.T) {
 }
 
 func testAccCheckIBMSccTemplateAttachmentConfigBasic() string {
-	account_id := os.Getenv("TF_ACC")
-	resource_group_id := os.Getenv("TF_RESOURCE_GROUP_ID")
+	account_id := os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
+	resource_group_id := os.Getenv("IBM_SCC_RESOURCE_GROUP")
 	return fmt.Sprintf(`
 	resource "ibm_scc_template" "scc_template" {
 		account_id = "%s"
@@ -113,7 +113,7 @@ func testAccCheckIBMSccTemplateAttachmentExists(n string, obj configurationgover
 		}
 
 		if *templateAttachment.TemplateID != templateID {
-			fmt.Errorf(
+			return fmt.Errorf(
 				"ibm_scc_template_attachment.scc_template_attachment: Attribute 'template_id' expected %#v, got %#v",
 				templateID,
 				templateAttachment.TemplateID,

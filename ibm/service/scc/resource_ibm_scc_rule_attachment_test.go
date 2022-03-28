@@ -41,8 +41,8 @@ func TestAccIBMSccRuleAttachmentBasic(t *testing.T) {
 }
 
 func testAccCheckIBMSccRuleAttachmentConfigBasic() string {
-	account_id := os.Getenv("TF_ACC")
-	resource_group_id := os.Getenv("TF_RESOURCE_GROUP_ID")
+	account_id := os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
+	resource_group_id := os.Getenv("IBM_SCC_RESOURCE_GROUP")
 	return fmt.Sprintf(`
 
 	resource "ibm_scc_rule" "scc_rule" {
@@ -126,7 +126,7 @@ func testAccCheckIBMSccRuleAttachmentExists(n string, obj configurationgovernanc
 		}
 
 		if *ruleAttachment.RuleID != ruleID {
-			fmt.Errorf(
+			return fmt.Errorf(
 				"ibm_scc_rule_attachment.scc_rule_attachment: Attribute 'rule_id' expected %#v, got %#v",
 				ruleID,
 				ruleAttachment.RuleID,

@@ -40,7 +40,8 @@ func TestAccIBMSccRuleBasic(t *testing.T) {
 }
 
 func testAccCheckIBMSccRuleConfigBasic() string {
-	account_id := os.Getenv("TF_ACC")
+	// Check if the user has a SCC_GOVERANCE_ACCOUNT_ID
+	account_id := os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
 	return fmt.Sprintf(`
 
 	resource "ibm_scc_rule" "scc_rule" {

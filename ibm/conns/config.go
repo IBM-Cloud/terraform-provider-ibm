@@ -2857,7 +2857,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	configServiceApiClientOptions := &configurationgovernancev1.ConfigurationGovernanceV1Options{
 		Authenticator: authenticator,
-		URL:           envFallBack([]string{"IBMCLOUD_CONFIGURATION_GOVERNANCE_API_ENDPOINT"}, configServiceApiClientURL),
+		URL:           EnvFallBack([]string{"IBMCLOUD_CONFIGURATION_GOVERNANCE_API_ENDPOINT"}, configServiceApiClientURL),
 	}
 	session.configServiceApiClient, err = configurationgovernancev1.NewConfigurationGovernanceV1(configServiceApiClientOptions)
 	if err == nil {

@@ -40,7 +40,7 @@ func TestAccIBMSccTemplateBasic(t *testing.T) {
 }
 
 func testAccCheckIBMSccTemplateConfigBasic() string {
-	account_id := os.Getenv("TF_ACC")
+	account_id := os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
 	return fmt.Sprintf(`
 	
 	resource "ibm_scc_template" "scc_template" {
