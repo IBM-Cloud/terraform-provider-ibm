@@ -579,17 +579,20 @@ func Provider() *schema.Provider {
 			"ibm_atracker_routes":    atracker.DataSourceIBMAtrackerRoutes(),
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
-			//Security and Compliance Center
-			"ibm_scc_si_providers":      scc.DataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":           scc.DataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":          scc.DataSourceIBMSccSiNotes(),
+			/* SCC */
+			// SCC Addon
+			"ibm_scc_addon_insights": scc.DataSourceIBMSccAddonInsights(),
+			// SCC Admin
 			"ibm_scc_account_location":  scc.DataSourceIBMSccAccountLocation(),
 			"ibm_scc_account_locations": scc.DataSourceIBMSccAccountLocations(),
 			"ibm_scc_account_settings":  scc.DataSourceIBMSccAccountLocationSettings(),
-			"ibm_scc_si_occurrence":     scc.DataSourceIBMSccSiOccurrence(),
-			"ibm_scc_si_occurrences":    scc.DataSourceIBMSccSiOccurrences(),
-
-			// Compliance Posture Management
+			// SCC Findings
+			"ibm_scc_si_providers":   scc.DataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":        scc.DataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":       scc.DataSourceIBMSccSiNotes(),
+			"ibm_scc_si_occurrence":  scc.DataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences": scc.DataSourceIBMSccSiOccurrences(),
+			// SCC Posture v1
 			"ibm_scc_posture_scopes":            scc.DataSourceIBMSccPostureScopes(),
 			"ibm_scc_posture_latest_scans":      scc.DataSourceIBMSccPostureLatestScans(),
 			"ibm_scc_posture_profiles":          scc.DataSourceIBMSccPostureProfiles(),
@@ -598,6 +601,8 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profile":           scc.DataSourceIBMSccPostureProfileDetails(),
 			"ibm_scc_posture_group_profile":     scc.DataSourceIBMSccPostureGroupProfileDetails(),
 			"ibm_scc_posture_scope_correlation": scc.DataSourceIBMSccPostureScopeCorrelation(),
+			// SCC Posture v2
+			/* SCC */
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
@@ -621,6 +626,24 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			/* SCC */
+			// SCC Addon
+			"ibm_scc_addon_network_insights_cos_details":    scc.ResourceIBMSccAddonNetworkInsightsCosDetails(),
+			"ibm_scc_addon_activity_insights_cos_details":   scc.ResourceIBMSccAddonActivityInsightsCosDetails(),
+			"ibm_scc_addon_network_insights_configuration":  scc.ResourceIBMSccAddonNetworkInsightsConfiguration(),
+			"ibm_scc_addon_activity_insights_configuration": scc.ResourceIBMSccAddonActivityInsightsConfiguration(),
+			// SCC Admin
+			// SCC Findings
+			"ibm_scc_si_note":          scc.ResourceIBMSccSiNote(),
+			"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettings(),
+			"ibm_scc_si_occurrence":    scc.ResourceIBMSccSiOccurrence(),
+			// SCC Posture v1
+			"ibm_scc_posture_collector":  scc.ResourceIBMSccPostureCollectors(),
+			"ibm_scc_posture_scope":      scc.ResourceIBMSccPostureScopes(),
+			"ibm_scc_posture_credential": scc.ResourceIBMSccPostureCredentials(),
+			// SCC Posture v2
+			/* SCC */
+
 			"ibm_api_gateway_endpoint":              apigateway.ResourceIBMApiGatewayEndPoint(),
 			"ibm_api_gateway_endpoint_subscription": apigateway.ResourceIBMApiGatewayEndpointSubscription(),
 			"ibm_app":                               cloudfoundry.ResourceIBMApp(),
@@ -936,16 +959,6 @@ func Provider() *schema.Provider {
 			"ibm_atracker_target": atracker.ResourceIBMAtrackerTarget(),
 			"ibm_atracker_route":  atracker.ResourceIBMAtrackerRoute(),
 
-			// //Security and Compliance Center
-			"ibm_scc_si_note":          scc.ResourceIBMSccSiNote(),
-			"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettings(),
-			"ibm_scc_si_occurrence":    scc.ResourceIBMSccSiOccurrence(),
-
-			//Security and Compliance Center - PostureManagement
-			"ibm_scc_posture_collector":  scc.ResourceIBMSccPostureCollectors(),
-			"ibm_scc_posture_scope":      scc.ResourceIBMSccPostureScopes(),
-			"ibm_scc_posture_credential": scc.ResourceIBMSccPostureCredentials(),
-
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.ResourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
@@ -1086,15 +1099,25 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                     atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
-				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
-				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),
-				"ibm_scc_si_occurrence":                   scc.ResourceIBMSccSiOccurrenceValidator(),
-				"ibm_scc_posture_collector":               scc.ResourceIBMSccPostureCollectorsValidator(),
-				"ibm_scc_posture_scope":                   scc.ResourceIBMSccPostureScopesValidator(),
-				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
-				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
-				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
-				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+				/* SCC */
+				// SCC Addon
+				"ibm_scc_addon_network_insights_configuration":  scc.ResourceIBMSccAddonNetworkInsightsConfigurationValidator(),
+				"ibm_scc_addon_activity_insights_configuration": scc.ResourceIBMSccAddonActivityInsightsConfigurationValidator(),
+				// SCC Admin
+				"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettingsValidator(),
+				// SCC Findings
+				"ibm_scc_si_note":       scc.ResourceIBMSccSiNoteValidator(),
+				"ibm_scc_si_occurrence": scc.ResourceIBMSccSiOccurrenceValidator(),
+				// SCC Posture v1
+				"ibm_scc_posture_collector":  scc.ResourceIBMSccPostureCollectorsValidator(),
+				"ibm_scc_posture_scope":      scc.ResourceIBMSccPostureScopesValidator(),
+				"ibm_scc_posture_credential": scc.ResourceIBMSccPostureCredentialsValidator(),
+				// SCC Posture v2
+				/* SCC */
+
+				"ibm_cbr_zone":       contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
+				"ibm_cbr_rule":       contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
+				"ibm_satellite_host": satellite.ResourceIBMSatelliteHostValidator(),
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
@@ -1108,10 +1131,17 @@ func Validator() validate.ValidatorDict {
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
 
-				"ibm_is_vpc":                  vpc.DataSourceIBMISVpcValidator(),
-				"ibm_is_volume":               vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_scc_si_notes":            scc.DataSourceIBMSccSiNotesValidator(),
-				"ibm_scc_si_occurrences":      scc.DataSourceIBMSccSiOccurrencesValidator(),
+				"ibm_is_vpc":    vpc.DataSourceIBMISVpcValidator(),
+				"ibm_is_volume": vpc.DataSourceIBMISVolumeValidator(),
+				/* SCC */
+				// SCC Addon
+				// SCC Admin
+				// SCC Findings
+				"ibm_scc_si_notes":       scc.DataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_si_occurrences": scc.DataSourceIBMSccSiOccurrencesValidator(),
+				// SCC Posture v1
+				// SCC Posture v2
+				/* SCC */
 				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 			},

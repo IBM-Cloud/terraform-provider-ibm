@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/findingsv1"
+	"github.com/IBM/scc-go-sdk/v4/findingsv1"
 )
 
 func ValidatePageSize(val interface{}, key string) (warns []string, errs []error) {
