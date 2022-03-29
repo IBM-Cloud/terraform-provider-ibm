@@ -18,6 +18,19 @@ import (
 
 	// Added code for the Power Colo Offering
 
+	/* SCC */
+	// SCC Addon
+	"github.com/IBM/scc-go-sdk/v4/addonmanagerv1"
+	// SCC Admin
+	"github.com/IBM/scc-go-sdk/v4/adminserviceapiv1"
+	// SCC Findings
+	"github.com/IBM/scc-go-sdk/v4/findingsv1"
+	// SCC Posture v1
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
+	// SCC Posture v2
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
+	/* SCC */
+
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
@@ -70,9 +83,6 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
-	"github.com/IBM/scc-go-sdk/findingsv1"
-	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -107,7 +117,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -196,6 +205,18 @@ type Session struct {
 
 // ClientSession ...
 type ClientSession interface {
+	/* SCC */
+	// SCC Addon
+	AddonManagerV1() (*addonmanagerv1.AddonManagerV1, error)
+	// SCC Admin
+	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
+	// SCC Findings
+	FindingsV1() (*findingsv1.FindingsV1, error)
+	// SCC Posture v1
+	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
+	// SCC Posture v2
+	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
+	/* SCC */
 	AppIDAPI() (*appid.AppIDManagementV4, error)
 	BluemixSession() (*bxsession.Session, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
@@ -273,15 +294,29 @@ type ClientSession interface {
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
-	FindingsV1() (*findingsv1.FindingsV1, error)
-	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
-	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
-	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
 }
 
 type clientSession struct {
 	session *Session
+
+	/* SCC */
+	// SCC Addon
+	addonManagerClient    *addonmanagerv1.AddonManagerV1
+	addonManagerClientErr error
+	// SCC Findings
+	findingsClient    *findingsv1.FindingsV1
+	findingsClientErr error
+	// SCC Admin
+	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
+	adminServiceApiClientErr error
+	// SCC Posture v1
+	postureManagementClient    *posturemanagementv1.PostureManagementV1
+	postureManagementClientErr error
+	// SCC Posture v2
+	postureManagementClientv2    *posturemanagementv2.PostureManagementV2
+	postureManagementClientErrv2 error
+	/* SCC */
 
 	appidErr error
 	appidAPI *appid.AppIDManagementV4
@@ -546,26 +581,53 @@ type clientSession struct {
 	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
 	esSchemaRegistryErr    error
 
-	// Security and Compliance Center (SCC)
-	findingsClient    *findingsv1.FindingsV1
-	findingsClientErr error
-
-	// Security and Compliance Center (SCC) Admin
-	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
-	adminServiceApiClientErr error
-
-	//Security and Compliance Center (SCC) Compliance posture
-	postureManagementClientErr error
-	postureManagementClient    *posturemanagementv1.PostureManagementV1
-
-	//Security and Compliance Center (SCC) Compliance posture v2
-	postureManagementClientv2    *posturemanagementv2.PostureManagementV2
-	postureManagementClientErrv2 error
-
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
 }
+
+/* SCC */
+// SCC Addon
+func (session clientSession) AddonManagerV1() (*addonmanagerv1.AddonManagerV1, error) {
+	if session.addonManagerClientErr != nil {
+		return session.addonManagerClient, session.addonManagerClientErr
+	}
+	return session.addonManagerClient.Clone(), nil
+}
+
+// SCC Findings
+func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
+	if session.findingsClientErr != nil {
+		return session.findingsClient, session.findingsClientErr
+	}
+	return session.findingsClient.Clone(), nil
+}
+
+// SCC Admin
+func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
+	if session.adminServiceApiClientErr != nil {
+		return session.adminServiceApiClient, session.adminServiceApiClientErr
+	}
+	return session.adminServiceApiClient.Clone(), nil
+}
+
+// SCC Posture v1
+func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
+	if session.postureManagementClientErr != nil {
+		return session.postureManagementClient, session.postureManagementClientErr
+	}
+	return session.postureManagementClient.Clone(), nil
+}
+
+// SCC Posture v2
+func (session clientSession) PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error) {
+	if session.postureManagementClientErrv2 != nil {
+		return session.postureManagementClientv2, session.postureManagementClientErrv2
+	}
+	return session.postureManagementClientv2.Clone(), nil
+}
+
+/* SCC */
 
 // AppIDAPI provides AppID Service APIs ...
 func (session clientSession) AppIDAPI() (*appid.AppIDManagementV4, error) {
@@ -1044,35 +1106,6 @@ func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.Schema
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
 
-// Security and Compliance center Findings API
-func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
-	if session.findingsClientErr != nil {
-		return session.findingsClient, session.findingsClientErr
-	}
-	return session.findingsClient.Clone(), nil
-}
-
-//Security and Compliance center Admin API
-func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
-	return session.adminServiceApiClient, session.adminServiceApiClientErr
-}
-
-// Security and Compliance center Posture Management
-func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
-	if session.postureManagementClientErr != nil {
-		return session.postureManagementClient, session.postureManagementClientErr
-	}
-	return session.postureManagementClient.Clone(), nil
-}
-
-//Security and Compliance center Posture Management v2
-func (session clientSession) PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error) {
-	if session.postureManagementClientErrv2 != nil {
-		return session.postureManagementClientv2, session.postureManagementClientErrv2
-	}
-	return session.postureManagementClientv2.Clone(), nil
-}
-
 // Context Based Restrictions
 func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
@@ -1092,6 +1125,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if sess.BluemixSession == nil {
 		//Can be nil only  if bluemix_api_key is not provided
 		log.Println("Skipping Bluemix Clients configuration")
+		/* SCC */
+		// SCC Addon
+		session.addonManagerClientErr = errEmptyBluemixCredentials
+		// SCC Admin
+		session.adminServiceApiClientErr = errEmptyBluemixCredentials
+		// SCC Findings
+		session.findingsClientErr = errEmptyBluemixCredentials
+		// SCC Posture v1
+		session.postureManagementClientErr = errEmptyBluemixCredentials
+		// SCC Posture v2
+		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
+		/* SCC */
 		session.bluemixSessionErr = errEmptyBluemixCredentials
 		session.accountConfigErr = errEmptyBluemixCredentials
 		session.accountV1ConfigErr = errEmptyBluemixCredentials
@@ -1164,9 +1209,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.satelliteLinkClientErr = errEmptyBluemixCredentials
 		session.esSchemaRegistryErr = errEmptyBluemixCredentials
 		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
-		session.postureManagementClientErr = errEmptyBluemixCredentials
-		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
-
 		return session, nil
 	}
 
@@ -1387,6 +1429,170 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	/* SCC */
+
+	// SCC Addon Manager
+	var addonManagerClientURL string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		addonManagerClientURL, err = addonmanagerv1.GetServiceURLForRegion(c.Region)
+		if err != nil {
+			session.addonManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Addon Manager API service: `%s` region not supported", c.Region)
+		}
+	} else {
+		session.addonManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Addon Manager API service: `%v` visibility not supported", c.Visibility)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		addonManagerClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ADDON_MANAGER_API_ENDPOINT", c.Region, addonManagerClientURL)
+	}
+	addonManagerClientOptions := &addonmanagerv1.AddonManagerV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_ADDON_MANAGER_API_ENDPOINT"}, addonManagerClientURL),
+		AccountID:     core.StringPtr(userConfig.UserAccount),
+	}
+
+	// Construct the service client.
+	session.addonManagerClient, err = addonmanagerv1.NewAddonManagerV1(addonManagerClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.addonManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.addonManagerClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.addonManagerClientErr = fmt.Errorf("Error occurred while configuring Security and Compliance Center Addon Manager API service: %q", err)
+	}
+
+	// SCC Findings
+	var findingsClientURL string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
+		if err != nil {
+			session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Findings API service: `%s` region not supported", c.Region)
+		}
+	} else {
+		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Findings API service: `%v` visibility not supported", c.Visibility)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
+	}
+	findingsClientOptions := &findingsv1.FindingsV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
+		AccountID:     core.StringPtr(userConfig.UserAccount),
+	}
+	// Construct the service client.
+	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
+	if err != nil {
+		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Findings API service: %q", err)
+	}
+	if session.findingsClient != nil && session.findingsClient.Service != nil {
+		// Enable retries for API calls
+		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.findingsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// SCC Admin
+	var adminServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		adminServiceApiClientURL = adminserviceapiv1.DefaultServiceURL
+	}
+	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
+	}
+
+	// Construct the service client.
+	session.adminServiceApiClient, err = adminserviceapiv1.NewAdminServiceApiV1(adminServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.adminServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.adminServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.adminServiceApiClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Admin API service: %q", err)
+	}
+
+	// SCC Posture v1
+	var postureManagementClientURL string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
+	} else {
+		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Posture Management v1 API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		postureManagementClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_POSTURE_V1_API_ENDPOINT", c.Region, postureManagementClientURL)
+	}
+	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_POSTURE_V1_API_ENDPOINT"}, postureManagementClientURL),
+		AccountID:     core.StringPtr(userConfig.UserAccount),
+	}
+
+	// Construct the service client.
+	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
+	if err != nil {
+		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Posture Management v1 API service: %q", err)
+	}
+	if session.postureManagementClient != nil && session.postureManagementClient.Service != nil {
+		// Enable retries for API calls
+		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// SCC Posture v2
+	var postureManagementClientURLv2 string
+	if c.Visibility == "public" || c.Visibility == "public-and-private" {
+		postureManagementClientURLv2, err = posturemanagementv2.GetServiceURLForRegion(c.Region)
+	} else {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Posture Management v2 API service: `%v` visibility not supported", c.Visibility)
+	}
+	if err != nil {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Posture Management v2 API service: `%s` region not supported", c.Region)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_POSTURE_V2_API_ENDPOINT", c.Region, postureManagementClientURLv2)
+	}
+	postureManagementClientOptionsv2 := &posturemanagementv2.PostureManagementV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_POSTURE_V2_API_ENDPOINT"}, postureManagementClientURLv2),
+	}
+
+	// Construct the service client.
+	session.postureManagementClientv2, err = posturemanagementv2.NewPostureManagementV2(postureManagementClientOptionsv2)
+	if err != nil {
+		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security and Compliance Center Posture Management v2 API service: %q", err)
+	}
+	if session.postureManagementClientv2 != nil && session.postureManagementClientv2.Service != nil {
+		// Enable retries for API calls
+		session.postureManagementClientv2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	/* SCC */
+
 	// APPID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
 	if c.Visibility == "private" {
@@ -1497,69 +1703,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
-	}
-
-	// SCC FINDINGS Service
-	var findingsClientURL string
-	if c.Visibility == "public" || c.Visibility == "public-and-private" {
-		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
-		if err != nil {
-			session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
-		}
-	} else {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
-	}
-	findingsClientOptions := &findingsv1.FindingsV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
-		AccountID:     core.StringPtr(userConfig.UserAccount),
-	}
-	// Construct the service client.
-	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
-	if err != nil {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: %q", err)
-	}
-	if session.findingsClient != nil && session.findingsClient.Service != nil {
-		// Enable retries for API calls
-		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.findingsClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	// SCC ADMIN Service
-	var adminServiceApiClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
-		}
-	} else {
-		adminServiceApiClientURL, err = adminserviceapiv1.GetServiceURLForRegion(c.Region)
-	}
-	if err != nil {
-		adminServiceApiClientURL = adminserviceapiv1.DefaultServiceURL
-	}
-	adminServiceApiClientOptions := &adminserviceapiv1.AdminServiceApiV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_ADMIN_API_ENDPOINT"}, adminServiceApiClientURL),
-	}
-
-	// Construct the service client.
-	session.adminServiceApiClient, err = adminserviceapiv1.NewAdminServiceApiV1(adminServiceApiClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.adminServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.adminServiceApiClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.adminServiceApiClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Admin Service API service: %q", err)
 	}
 
 	// SCHEMATICS Service
@@ -2827,73 +2970,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.esSchemaRegistryClient != nil && session.esSchemaRegistryClient.Service != nil {
 		session.esSchemaRegistryClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	//COMPLIANCE Service
-	// Construct an "options" struct for creating the service client.
-	var postureManagementClientURL string
-	if c.Visibility == "public" || c.Visibility == "public-and-private" {
-		postureManagementClientURL, err = posturemanagementv1.GetServiceURLForRegion(c.Region)
-	} else {
-		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
-	}
-	if err != nil {
-		postureManagementClientURL = posturemanagementv1.DefaultServiceURL
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		postureManagementClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_API_ENDPOINT", c.Region, postureManagementClientURL)
-	}
-	postureManagementClientOptions := &posturemanagementv1.PostureManagementV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURL),
-		AccountID:     core.StringPtr(userConfig.UserAccount),
-	}
-
-	// Construct the service client.
-	session.postureManagementClient, err = posturemanagementv1.NewPostureManagementV1(postureManagementClientOptions)
-	if err != nil {
-		session.postureManagementClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Posture Management service: %q", err)
-	}
-	if session.postureManagementClient != nil && session.postureManagementClient.Service != nil {
-		// Enable retries for API calls
-		session.postureManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.postureManagementClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	//COMPLIANCE Service v2 version
-	// Construct an "options" struct for creating the service client.
-	var postureManagementClientURLv2 string
-	if c.Visibility == "public" || c.Visibility == "public-and-private" {
-		postureManagementClientURLv2, err = posturemanagementv2.GetServiceURLForRegion(c.Region)
-	} else {
-		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security Compliance Centre API service: `%v` visibility not supported", c.Visibility)
-	}
-	if err != nil {
-		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Security Posture Management API service:  `%s` region not supported", c.Region)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		postureManagementClientURLv2 = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_COMPLIANCE_API_ENDPOINT", c.Region, postureManagementClientURLv2)
-	}
-	postureManagementClientOptionsv2 := &posturemanagementv2.PostureManagementV2Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_COMPLIANCE_API_ENDPOINT"}, postureManagementClientURLv2),
-	}
-
-	// Construct the service client.
-	session.postureManagementClientv2, err = posturemanagementv2.NewPostureManagementV2(postureManagementClientOptionsv2)
-	if err != nil {
-		session.postureManagementClientErrv2 = fmt.Errorf("[ERROR] Error occurred while configuring Posture Management v2 service: %q", err)
-	}
-	if session.postureManagementClientv2 != nil && session.postureManagementClientv2.Service != nil {
-		// Enable retries for API calls
-		session.postureManagementClientv2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
