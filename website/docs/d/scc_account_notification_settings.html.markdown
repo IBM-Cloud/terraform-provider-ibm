@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_account_notification_settings"
 description: |-
   Get information about scc_account_notification_settings
-subcategory: "Admin Service API"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_account_notification_settings

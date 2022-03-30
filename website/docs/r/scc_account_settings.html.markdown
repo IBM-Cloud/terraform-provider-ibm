@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_account_settings"
 description: |-
   Manages the account settings scc_account_settings
-subcategory: "SCC Admin Service API"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_account_settings
