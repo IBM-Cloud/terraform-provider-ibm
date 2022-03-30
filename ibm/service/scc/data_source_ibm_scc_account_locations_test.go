@@ -19,7 +19,6 @@ func TestAccIbmSccAccountLocationsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmSccAccountLocationsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_account_locations.scc_account_locations", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_account_locations.scc_account_locations", "locations.#"),
 				),
 			},

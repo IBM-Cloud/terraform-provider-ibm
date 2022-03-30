@@ -54,16 +54,30 @@ func ResourceIBMSccAccountSettings() *schema.Resource {
 			"event_notifications": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Required:    true, // Made this Required to avoid drift during testing
+				Optional:    true,
 				Description: "The Event Notification settings to register.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instance_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Default:     "",
 							Description: "The Cloud Resource Name (CRN) of the Event Notifications instance that you want to connect.",
 						},
 					},
+				},
+				// Made a custom DiffSuppressFunc in order to prevent resource drift due to it being Optional
+				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+					if _, ok := d.GetOk("event_notifications"); ok {
+						// oldValue being 1 vs newValue being 0 means the schema field is now missing the *.tf files
+						if oldValue == "1" && newValue == "0" {
+							return true
+						} else {
+							return oldValue == newValue
+						}
+					} else {
+						return false
+					}
 				},
 			},
 		},
@@ -205,9 +219,12 @@ func resourceIbmSccAccountSettingsRead(context context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		// if _, ok := d.GetOk("event_notifications"); ok {
+		log.Println("[DEBUG] event_notifications was found from the resource")
 		if err = d.Set("event_notifications", []map[string]interface{}{eventNotificationsMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting event_notifications during the read: %s", err))
 		}
+		// }
 	}
 
 	return nil
@@ -258,6 +275,9 @@ func resourceIbmSccAccountSettingsUpdate(context context.Context, d *schema.Reso
 			return diag.FromErr(err)
 		}
 		patchAccountSettingsOptions.SetEventNotifications(eventNotifications)
+		// if eventNotifications.InstanceCrn != nil && len(*eventNotifications.InstanceCrn) != 0 {
+		// 	hasChange = true
+		// }
 		hasChange = true
 	}
 
@@ -320,8 +340,8 @@ func resourceIbmSccAccountSettingsLocationIDToMap(model *adminserviceapiv1.Locat
 func resourceIbmSccAccountSettingsNotificationsRegistrationToMap(model *adminserviceapiv1.NotificationsRegistration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 
-	if len(*model.InstanceCrn) > 0 {
-		modelMap["instance_crn"] = model.InstanceCrn
-	}
+	// if len(*model.InstanceCrn) > 0 {
+	modelMap["instance_crn"] = model.InstanceCrn
+	// }
 	return modelMap, nil
 }

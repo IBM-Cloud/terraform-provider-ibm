@@ -55,9 +55,8 @@ func dataSourceIbmSccAccountNotificationSettingsRead(context context.Context, d 
 	if err = d.Set("instance_crn", notificationsSettings.InstanceCrn); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting instance_crn: %s", err))
 	}
-	if d.HasChanges() {
-		d.SetId(dataSourceIbmSccAccountNotificationSettingsID(d))
-	}
+
+	d.SetId("scc_admin_notification_settings")
 
 	return nil
 }

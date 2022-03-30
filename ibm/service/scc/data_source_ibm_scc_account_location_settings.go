@@ -52,6 +52,7 @@ func dataSourceIbmSccAccountLocationSettingsRead(context context.Context, d *sch
 	}
 
 	locationSettings := accountSettings.Location
+	d.SetId(*accountSettings.Location.ID)
 
 	if err = d.Set("id", locationSettings.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
