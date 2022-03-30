@@ -101,7 +101,7 @@ func ResourceIBMSccAddonActivityInsightsCosDetailsCreate(context context.Context
 	addActivityInsightsCosDetailsV2Options := &addonmanagerv1.AddActivityInsightsCosDetailsV2Options{}
 
 	addActivityInsightsCosDetailsV2Options.SetRegionID(d.Get("region_id").(string))
-	var cosDetails []addonmanagerv1.AiCosDetailsV2InputCosDetailsItem
+	var cosDetails []addonmanagerv1.CosDetails
 	for _, e := range d.Get("cos_details").([]interface{}) {
 		value := e.(map[string]interface{})
 		cosDetailsItem, err := ResourceIBMSccAddonActivityInsightsCosDetailsMapToAiCosDetailsV2InputCosDetailsItem(value)
@@ -150,7 +150,7 @@ func ResourceIBMSccAddonActivityInsightsCosDetailsRead(context context.Context, 
 
 	for _, cosDetail := range aiCosDetailsV2Output.CosDetails {
 		if *cosDetail.ID == parts[1] {
-			if err = d.Set("region_id", aiCosDetailsV2Output.RegionID); err != nil {
+			if err = d.Set("region_id", d.Get("region_id")); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting region_id: %s", err))
 			}
 
@@ -199,7 +199,7 @@ func ResourceIBMSccAddonActivityInsightsCosDetailsUpdate(context context.Context
 
 	if d.HasChange("region_id") || d.HasChange("cos_details") {
 		addActivityInsightsCosDetailsV2Options.SetRegionID(d.Get("region_id").(string))
-		var cosDetails []addonmanagerv1.AiCosDetailsV2InputCosDetailsItem
+		var cosDetails []addonmanagerv1.CosDetails
 		for _, e := range d.Get("cos_details").([]interface{}) {
 			value := e.(map[string]interface{})
 			cosDetailsItem, err := ResourceIBMSccAddonActivityInsightsCosDetailsMapToAiCosDetailsV2InputCosDetailsItem(value)
@@ -253,8 +253,8 @@ func ResourceIBMSccAddonActivityInsightsCosDetailsDelete(context context.Context
 	return nil
 }
 
-func ResourceIBMSccAddonActivityInsightsCosDetailsMapToAiCosDetailsV2InputCosDetailsItem(modelMap map[string]interface{}) (*addonmanagerv1.AiCosDetailsV2InputCosDetailsItem, error) {
-	model := &addonmanagerv1.AiCosDetailsV2InputCosDetailsItem{}
+func ResourceIBMSccAddonActivityInsightsCosDetailsMapToAiCosDetailsV2InputCosDetailsItem(modelMap map[string]interface{}) (*addonmanagerv1.CosDetails, error) {
+	model := &addonmanagerv1.CosDetails{}
 	model.CosInstance = core.StringPtr(modelMap["cos_instance"].(string))
 	model.BucketName = core.StringPtr(modelMap["bucket_name"].(string))
 	model.Description = core.StringPtr(modelMap["description"].(string))
@@ -263,7 +263,7 @@ func ResourceIBMSccAddonActivityInsightsCosDetailsMapToAiCosDetailsV2InputCosDet
 	return model, nil
 }
 
-func ResourceIBMSccAddonActivityInsightsCosDetailsAiCosDetailsV2OutputCosDetailsItemToMap(model *addonmanagerv1.AiCosDetailsV2OutputCosDetailsItem) (map[string]interface{}, error) {
+func ResourceIBMSccAddonActivityInsightsCosDetailsAiCosDetailsV2OutputCosDetailsItemToMap(model *addonmanagerv1.CosDetailsWithID) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["cos_instance"] = model.CosInstance
