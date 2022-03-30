@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_template"
 description: |-
   Manages scc_template.
-subcategory: "Configuration Governance API"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_template

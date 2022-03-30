@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_rule"
 description: |-
   Manages scc_rule.
-subcategory: "Configuration Governance API"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_rule
