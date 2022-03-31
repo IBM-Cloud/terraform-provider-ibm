@@ -137,6 +137,10 @@ var Tg_cross_network_id string
 //Enterprise Management
 var Account_to_be_imported string
 
+// Secuity and Complinace Center, Governance
+var Scc_gov_account_id string
+var Scc_resource_group_id string
+
 //Security and Compliance Center, SI
 var Scc_si_account string
 
@@ -767,6 +771,17 @@ func init() {
 	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
+
+	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
+	if Scc_gov_account_id == "" {
+		fmt.Println("[WARN] Set the environment variable SCC_GOVERNANCE_ACCOUNT_ID with a VALID account name")
+	}
+
+	Scc_resource_group_id = os.Getenv("IBM_SCC_RESOURCE_GROUP")
+	if Scc_resource_group_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_SCC_RESOURCE_GROUP with a VALID resource group id")
+	}
+
 	Scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
 	if Scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")

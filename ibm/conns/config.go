@@ -72,6 +72,7 @@ import (
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
+	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
@@ -275,6 +276,7 @@ type ClientSession interface {
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
+	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
@@ -553,6 +555,10 @@ type clientSession struct {
 	// Security and Compliance Center (SCC) Admin
 	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
 	adminServiceApiClientErr error
+
+	// Security and Compliance Center (SCC) Governance
+	configServiceApiClient    *configurationgovernancev1.ConfigurationGovernanceV1
+	configServiceApiClientErr error
 
 	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr error
@@ -1057,6 +1063,10 @@ func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServic
 	return session.adminServiceApiClient, session.adminServiceApiClientErr
 }
 
+func (session clientSession) ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error) {
+	return session.configServiceApiClient, session.configServiceApiClientErr
+}
+
 // Security and Compliance center Posture Management
 func (session clientSession) PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error) {
 	if session.postureManagementClientErr != nil {
@@ -1166,6 +1176,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
+		session.configServiceApiClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -2829,6 +2840,35 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// Governance Service
+	var configServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		configServiceApiClientURL = configurationgovernancev1.DefaultServiceURL
+	}
+	configServiceApiClientOptions := &configurationgovernancev1.ConfigurationGovernanceV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_CONFIGURATION_GOVERNANCE_API_ENDPOINT"}, configServiceApiClientURL),
+	}
+	session.configServiceApiClient, err = configurationgovernancev1.NewConfigurationGovernanceV1(configServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.configServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.configServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.configServiceApiClientErr = fmt.Errorf("Error occurred while configuring Config Service API service: %q", err)
 	}
 
 	//COMPLIANCE Service
