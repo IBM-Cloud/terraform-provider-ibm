@@ -1,3 +1,58 @@
+# 1.40.0 (Mar31, 2022)
+Features
+* Support VPC Infrastructure
+    - **DataSources**
+        - ibm_is_lb_listener
+        - ibm_is_lb_listeners
+        - ibm_is_lb_listener_policies
+        - ibm_is_lb_listener_policy
+        - ibm_is_lb_listener_policy_rule
+        - ibm_is_lb_listener_policy_rules
+        - ibm_is_security_groups
+        - ibm_is_security_group_rule
+        - ibm_is_security_group_rules
+        - ibm_is_ipsec_policy
+        - ibm_is_ipsec_policies
+        - ibm_is_ike_policies
+        - ibm_is_ike_policy
+    - **Resources**
+        - ibm_is_subnet_public_gateway_attachment
+        - ibm_is_subnet_routing_table_attachment
+* Support Transist Gateway
+    - **DataSources**
+        - ibm_tg_route_report
+        - ibm_tg_route_reports
+    - **Resources**
+        - ibm_tg_route_report
+* Support CIS
+    - **DataSources**
+        - ibm_cis_alerts
+    - **Resources**
+        - ibm_cis_alerts
+
+* Support Power Instance
+    - **Datasources**
+        - ibm_pi_storage_pool_capacity
+        - ibm_pi_storage_pools_capacity
+        - ibm_pi_storage_type_capacity
+        - ibm_pi_storage_types_capacity
+
+ENHANCEMENTS:
+* Support resize boot volume for VPC instance ([2205](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/2205))
+* Support to allow SAP create with a placement group ([3633](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3633))
+* Support VM Host Failure - Available Policy Development ([3604](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3604))
+* Support default forwarding rule in custom resolver ([3588](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3588))
+* Support trusted-profiles for access group members ([3651](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3651))
+* Authorization policy to support any service specific attributes ([3482](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3482))
+* Move `name` as optional argument in ibm_is_region datasource ([3431](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3431))
+* Add note for disabled VTL creation ([3693](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3693))
+
+BUGFIXES:
+* resource_ibm_is_virtual_endpoint_gateway does not allow for full name character limit ([3606](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3606))
+* Added the doc support for endpoint gateway identifier ([3649](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3649))
+* Fixing resource_attributes to support the service specific roles  ([3648](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3648))
+* endpoint gateways target datasource fix, interchanging the order and including other targets ([3492](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3492))
+
 # 1.40.0-beta0 (Mar17, 2022)
 Features
 * Support VPC Infrastructure
