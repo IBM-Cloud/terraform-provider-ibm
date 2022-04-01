@@ -23,18 +23,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
-const (
-	//Added timeout values for warning  and active status
-	warningTimeOut = 60 * time.Second
-	activeTimeOut  = 2 * time.Minute
-	// power service instance capabilities
-	CUSTOM_VIRTUAL_CORES          = "custom-virtualcores"
-	PIInstanceNetwork             = "pi_network"
-	PIInstanceStoragePool         = "pi_storage_pool"
-	PISAPInstanceProfileID        = "pi_sap_profile_id"
-	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
-)
-
 func ResourceIBMPIInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIInstanceCreate,

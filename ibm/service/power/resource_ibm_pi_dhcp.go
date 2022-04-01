@@ -21,19 +21,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIDhcpStatusBuilding = "Building"
-	PIDhcpStatusActive   = "ACTIVE"
-	PIDhcpDeleting       = "Deleting"
-	PIDhcpDeleted        = "Deleted"
-	PIDhcpId             = "dhcp_id"
-	PIDhcpStatus         = "status"
-	PIDhcpNetwork        = "network"
-	PIDhcpLeases         = "leases"
-	PIDhcpInstanceIp     = "instance_ip"
-	PIDhcpInstanceMac    = "instance_mac"
-)
-
 func ResourceIBMPIDhcp() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIDhcpCreate,
