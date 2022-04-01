@@ -1017,7 +1017,7 @@ data "ibm_is_ssh_keys" "example" {
 
 # List ssh keys by Resource group id
 data "ibm_is_ssh_keys" "example" {
-  resource_group = "8302a7a06e7440d6927383cd7c06e7d2"
+  resource_group = data.ibm_resource_group.default.id
 }
 
 # List volumes
