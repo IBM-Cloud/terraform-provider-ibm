@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -32,41 +31,40 @@ func ResourceIBMPIImageExport() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			//required attributes
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 				ForceNew:    true,
 			},
-			helpers.PIImageId: {
+			PIImageID: {
 				Type:             schema.TypeString,
 				Required:         true,
 				Description:      "Instance image id",
 				DiffSuppressFunc: flex.ApplyOnce,
 				ForceNew:         true,
 			},
-			helpers.PIImageBucketName: {
+			PIImageBucketName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cloud Object Storage bucket name; bucket-name[/optional/folder]",
 				ForceNew:    true,
 			},
-			helpers.PIImageAccessKey: {
+			PIImageAccessKey: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cloud Object Storage access key; required for buckets with private access",
 				Sensitive:   true,
 				ForceNew:    true,
 			},
-
-			helpers.PIImageSecretKey: {
+			PIImageSecretKey: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cloud Object Storage secret key; required for buckets with private access",
 				Sensitive:   true,
 				ForceNew:    true,
 			},
-			helpers.PIImageBucketRegion: {
+			PIImageBucketRegion: {
 				Type:        schema.TypeString,
 				Description: "Cloud Object Storage region",
 				ForceNew:    true,
@@ -83,10 +81,10 @@ func resourceIBMPIImageExportCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
-	imageid := d.Get(helpers.PIImageId).(string)
-	bucketName := d.Get(helpers.PIImageBucketName).(string)
-	accessKey := d.Get(helpers.PIImageAccessKey).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
+	imageid := d.Get(PIImageID).(string)
+	bucketName := d.Get(PIImageBucketName).(string)
+	accessKey := d.Get(PIImageAccessKey).(string)
 
 	client := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 
@@ -94,15 +92,15 @@ func resourceIBMPIImageExportCreate(ctx context.Context, d *schema.ResourceData,
 	var body = &models.ExportImage{
 		BucketName: &bucketName,
 		AccessKey:  &accessKey,
-		Region:     d.Get(helpers.PIImageBucketRegion).(string),
-		SecretKey:  d.Get(helpers.PIImageSecretKey).(string),
+		Region:     d.Get(PIImageBucketRegion).(string),
+		SecretKey:  d.Get(PIImageSecretKey).(string),
 	}
 
 	imageResponse, err := client.ExportImage(imageid, body)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(fmt.Sprintf("%s/%s/%s", imageid, bucketName, d.Get(helpers.PIImageBucketRegion).(string)))
+	d.SetId(fmt.Sprintf("%s/%s/%s", imageid, bucketName, d.Get(PIImageBucketRegion).(string)))
 
 	jobClient := st.NewIBMPIJobClient(ctx, sess, cloudInstanceID)
 	_, err = waitForIBMPIJobCompleted(ctx, jobClient, *imageResponse.ID, d.Timeout(schema.TimeoutCreate))

@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	consts "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -31,8 +31,8 @@ func TestAccIBMPICaptureBasic(t *testing.T) {
 				Config: testAccCheckIBMPICaptureConfigBasic(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICaptureExists(captureRes),
-					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
-					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, consts.PICaptureName, name),
+					resource.TestCheckResourceAttrSet(captureRes, consts.CaptureImageID),
 				),
 			},
 		},
@@ -47,11 +47,11 @@ func TestAccIBMPICaptureWithVolume(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPICaptureDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, helpers.PIInstanceHealthOk),
+				Config: testAccCheckIBMPICaptureWithVolumeConfig(name, consts.HealthOk),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICaptureExists(captureRes),
-					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
-					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, consts.PICaptureName, name),
+					resource.TestCheckResourceAttrSet(captureRes, consts.CaptureImageID),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -69,7 +69,7 @@ func TestAccIBMPICaptureCloudStorage(t *testing.T) {
 			{
 				Config: testAccCheckIBMPICaptureCloudStorageConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
+					resource.TestCheckResourceAttr(captureRes, consts.PICaptureName, name),
 				),
 			},
 		},
@@ -86,8 +86,8 @@ func TestAccIBMPICaptureBoth(t *testing.T) {
 			{
 				Config: testAccCheckIBMPICaptureBothConfig(name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(captureRes, "pi_capture_name", name),
-					resource.TestCheckResourceAttrSet(captureRes, "image_id"),
+					resource.TestCheckResourceAttr(captureRes, consts.PICaptureName, name),
+					resource.TestCheckResourceAttrSet(captureRes, consts.CaptureImageID),
 				),
 			},
 		},

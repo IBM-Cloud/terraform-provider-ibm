@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -26,85 +25,85 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 		ReadContext: dataSourceIBMPICatalogImagesRead,
 		Schema: map[string]*schema.Schema{
 
-			helpers.PICloudInstanceId: {
+			PICloudInstanceID: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.NoZeroValues,
 			},
-			"sap": {
+			CatalogImagesSAP: {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"vtl": {
+			CatalogImagesVTL: {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"images": {
+			CatalogImages: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"image_id": {
+						ImageID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						ImageName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
+						ImageState: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"description": {
+						ImageDescription: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_type": {
+						ImageStorageType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"storage_pool": {
+						ImageStoragePool: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"creation_date": {
+						ImageCreationDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"last_update_date": {
+						ImageLastUpdateDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"image_type": {
+						ImageType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"container_format": {
+						ImageContainerFormat: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"disk_format": {
+						ImageDiskFormat: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"operating_system": {
+						CatalogImageOperatingSystem: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"hypervisor_type": {
+						ImageHypervisorType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"architecture": {
+						ImageArchitecture: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"endianness": {
+						ImageEndianness: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"href": {
+						ImageHref: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -121,13 +120,13 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	cloudInstanceID := d.Get(PICloudInstanceID).(string)
 	includeSAP := false
-	if s, ok := d.GetOk("sap"); ok {
+	if s, ok := d.GetOk(CatalogImagesSAP); ok {
 		includeSAP = s.(bool)
 	}
 	includeVTL := false
-	if v, ok := d.GetOk("vtl"); ok {
+	if v, ok := d.GetOk(CatalogImagesVTL); ok {
 		includeVTL = v.(bool)
 	}
 	imageC := instance.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
@@ -139,57 +138,57 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 	images := make([]map[string]interface{}, 0)
 	for _, i := range stockImages.Images {
 		image := make(map[string]interface{})
-		image["image_id"] = *i.ImageID
-		image["name"] = *i.Name
+		image[ImageID] = *i.ImageID
+		image[ImageName] = *i.Name
 		if i.State != nil {
-			image["state"] = *i.State
+			image[ImageState] = *i.State
 		}
 		if i.Description != nil {
-			image["description"] = *i.Description
+			image[ImageDescription] = *i.Description
 		}
 		if i.StorageType != nil {
-			image["storage_type"] = *i.StorageType
+			image[ImageStorageType] = *i.StorageType
 		}
 		if i.StoragePool != nil {
-			image["storage_pool"] = *i.StoragePool
+			image[ImageStoragePool] = *i.StoragePool
 		}
 		if i.CreationDate != nil {
-			image["creation_date"] = i.CreationDate.String()
+			image[ImageCreationDate] = i.CreationDate.String()
 		}
 		if i.LastUpdateDate != nil {
-			image["last_update_date"] = i.LastUpdateDate.String()
+			image[ImageLastUpdateDate] = i.LastUpdateDate.String()
 		}
 		if i.Href != nil {
-			image["href"] = *i.Href
+			image[ImageHref] = *i.Href
 		}
 		if i.Specifications != nil {
 			s := i.Specifications
 			if &s.ImageType != nil {
-				image["image_type"] = s.ImageType
+				image[ImageType] = s.ImageType
 			}
 			if &s.ContainerFormat != nil {
-				image["container_format"] = s.ContainerFormat
+				image[ImageContainerFormat] = s.ContainerFormat
 			}
 			if &s.DiskFormat != nil {
-				image["disk_format"] = s.DiskFormat
+				image[ImageDiskFormat] = s.DiskFormat
 			}
 			if &s.OperatingSystem != nil {
-				image["operating_system"] = s.OperatingSystem
+				image[CatalogImageOperatingSystem] = s.OperatingSystem
 			}
 			if &s.HypervisorType != nil {
-				image["hypervisor_type"] = s.HypervisorType
+				image[ImageHypervisorType] = s.HypervisorType
 			}
 			if &s.Architecture != nil {
-				image["architecture"] = s.Architecture
+				image[ImageArchitecture] = s.Architecture
 			}
 			if &s.Endianness != nil {
-				image["endianness"] = s.Endianness
+				image[ImageEndianness] = s.Endianness
 			}
 		}
 		images = append(images, image)
 	}
 	d.SetId(time.Now().UTC().String())
-	d.Set("images", images)
+	d.Set(CatalogImages, images)
 	return nil
 
 }
