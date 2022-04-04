@@ -1101,8 +1101,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				/* SCC */
 				// SCC Addon
-				"ibm_scc_addon_network_insights_configuration":  scc.ResourceIBMSccAddonNetworkInsightsConfigurationValidator(),
-				"ibm_scc_addon_activity_insights_configuration": scc.ResourceIBMSccAddonActivityInsightsConfigurationValidator(),
 				// SCC Admin
 				"ibm_scc_account_settings": scc.ResourceIBMSccAccountSettingsValidator(),
 				// SCC Findings

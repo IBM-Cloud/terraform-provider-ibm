@@ -18,7 +18,6 @@ resource "ibm_scc_addon_activity_insights_cos_details" "scc_addon_activity_insig
     cos_instance = "cos_instance_1"
     bucket_name = "us-south-collection"
     description = "Holds SCC Insights"
-    type = "activity-insights"
     cos_bucket_url = "https://webhook.site/96cf2ebe-7caa-409b-89be-edf89a25f5db"
   }
   region_id = "us"
@@ -36,8 +35,6 @@ Nested scheme for **cos_details**:
 	* `cos_bucket_url` - (Required, String) cos bucket url.
 	* `cos_instance` - (Required, String)
 	* `description` - (Required, String)
-	* `type` - (Required, String) Insights type.
-	  * Constraints: Allowable values are: `network-insights`, `activity-insights`.
 * `region_id` - (Required, String) Region for example - us-south, eu-gb.
 
 ## Attribute Reference

@@ -63,11 +63,6 @@ func ResourceIBMSccAddonNetworkInsightsCosDetails() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Insights type.",
-						},
 						"cos_bucket_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
@@ -260,7 +255,6 @@ func ResourceIBMSccAddonNetworkInsightsCosDetailsMapToNiCosDetailsV2InputCosDeta
 	model.CosInstance = core.StringPtr(modelMap["cos_instance"].(string))
 	model.BucketName = core.StringPtr(modelMap["bucket_name"].(string))
 	model.Description = core.StringPtr(modelMap["description"].(string))
-	model.Type = core.StringPtr(modelMap["type"].(string))
 	model.CosBucketURL = core.StringPtr(modelMap["cos_bucket_url"].(string))
 	return model, nil
 }
@@ -271,7 +265,6 @@ func ResourceIBMSccAddonNetworkInsightsCosDetailsNiCosDetailsV2OutputCosDetailsI
 	modelMap["cos_instance"] = model.CosInstance
 	modelMap["bucket_name"] = model.BucketName
 	modelMap["description"] = model.Description
-	modelMap["type"] = model.Type
 	modelMap["cos_bucket_url"] = model.CosBucketURL
 	return modelMap, nil
 }

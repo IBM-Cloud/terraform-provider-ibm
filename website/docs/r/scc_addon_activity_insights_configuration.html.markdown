@@ -15,7 +15,7 @@ Provides a resource for scc_addon_activity_insights_configuration. This allows s
 ```hcl
 resource "ibm_scc_addon_activity_insights_configuration" "scc_addon_activity_insights_configuration" {
   region_id = "us"
-  status = "enable"
+  enabled = true
 }
 ```
 
@@ -25,15 +25,14 @@ Review the argument reference that you can specify for your resource.
 
 * `account_id` - (Optional, Forces new resource, String) Account ID is optional, if not provided value will be inferred from the token retrieved from the IBM Cloud API key.
 * `region_id` - (Required, String) Region id for example - us.
-* `status` - (Required, String) Enable or Disable.
-  * Constraints: Allowable values are: `enable`, `disable`.
+* `enabled` - (Required, Boolean) Enabled or Disabled.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the scc_addon_activity_insights_configuration.
-* `addon` - Type of addon.
+* `enabled` - Enabled or Disabled.
 
 ## Import
 

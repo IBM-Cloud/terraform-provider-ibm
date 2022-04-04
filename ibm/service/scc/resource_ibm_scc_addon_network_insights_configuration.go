@@ -13,7 +13,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/scc-go-sdk/v4/addonmanagerv1"
 )
 
@@ -39,35 +38,13 @@ func ResourceIBMSccAddonNetworkInsightsConfiguration() *schema.Resource {
 				Required:         true,
 				Description:      "Region id for example - us.",
 			},
-			"addon": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Region id for example - us.",
-			},
-			"status": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_scc_addon_network_insights_configuration", "status"),
-				Description:  "Enable or Disable.",
+			"enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "Enabled or Disabled.",
 			},
 		},
 	}
-}
-
-func ResourceIBMSccAddonNetworkInsightsConfigurationValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "status",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "disable, enable",
-		},
-	)
-
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_scc_addon_network_insights_configuration", Schema: validateSchema}
-	return &resourceValidator
 }
 
 func ResourceIBMSccAddonNetworkInsightsConfigurationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -92,7 +69,7 @@ func ResourceIBMSccAddonNetworkInsightsConfigurationCreate(context context.Conte
 	updateNetworkInsightStatusV2Options := &addonmanagerv1.UpdateNetworkInsightStatusV2Options{}
 
 	updateNetworkInsightStatusV2Options.SetRegionID(d.Get("region_id").(string))
-	updateNetworkInsightStatusV2Options.SetStatus(d.Get("status").(string))
+	updateNetworkInsightStatusV2Options.SetEnabled(d.Get("enabled").(bool))
 
 	response, err := addonManagerClient.UpdateNetworkInsightStatusV2WithContext(context, updateNetworkInsightStatusV2Options)
 	if err != nil {
@@ -130,10 +107,7 @@ func ResourceIBMSccAddonNetworkInsightsConfigurationRead(context context.Context
 		return diag.FromErr(fmt.Errorf("GetNetworkInsightStatusV2WithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("addon", niEnableAddOn.Addon); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting region_id: %s", err))
-	}
-	if err = d.Set("status", niEnableAddOn.Status); err != nil {
+	if err = d.Set("status", niEnableAddOn.Enabled); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
 
@@ -165,7 +139,7 @@ func ResourceIBMSccAddonNetworkInsightsConfigurationUpdate(context context.Conte
 
 	if d.HasChange("region_id") || d.HasChange("status") {
 		updateNetworkInsightStatusV2Options.SetRegionID(d.Get("region_id").(string))
-		updateNetworkInsightStatusV2Options.SetStatus(d.Get("status").(string))
+		updateNetworkInsightStatusV2Options.SetEnabled(d.Get("enabled").(bool))
 		hasChange = true
 	}
 
