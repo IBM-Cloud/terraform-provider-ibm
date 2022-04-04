@@ -114,7 +114,12 @@ func resourceIBMSccPostureScopesCreate(context context.Context, d *schema.Resour
 
 	createScopeOptions.SetName(d.Get("name").(string))
 	createScopeOptions.SetDescription(d.Get("description").(string))
-	createScopeOptions.SetCollectorIds([]string{"4188"}) //[]string{
+	collector_ids_int := d.Get("collector_ids").([]interface{})
+        collector_ids := make([]string, len(collector_ids_int))
+        for i, collector_id := range collector_ids_int {
+                collector_ids[i] = collector_id.(string)
+        }
+        createScopeOptions.SetCollectorIds(collector_ids) //[]string{
 	createScopeOptions.SetCredentialID(d.Get("credential_id").(string))
 	createScopeOptions.SetCredentialType(d.Get("credential_type").(string))
 
