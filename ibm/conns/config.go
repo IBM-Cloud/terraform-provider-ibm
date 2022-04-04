@@ -43,6 +43,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
@@ -245,6 +246,7 @@ type ClientSession interface {
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisIPClientSession() (*cisipv1.CisIpApiV1, error)
 	CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error)
+	CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJobsApiV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
@@ -480,6 +482,10 @@ type clientSession struct {
 	// CIS Firewall Lockdwon Rule service option
 	cisLockdownErr    error
 	cisLockdownClient *cislockdownv1.ZoneLockdownV1
+
+	// CIS LogpushJobs service option
+	cisLogpushJobsClient *cislogpushjobsapiv1.LogpushJobsApiV1
+	cisLogpushJobsErr    error
 
 	// CIS Range app service option
 	cisRangeAppErr    error
@@ -1017,6 +1023,14 @@ func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.Kube
 	return sess.satelliteClient, sess.satelliteClientErr
 }
 
+// CIS LogPushJob
+func (sess clientSession) CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJobsApiV1, error) {
+	if sess.cisLogpushJobsErr != nil {
+		return sess.cisLogpushJobsClient, sess.cisLogpushJobsErr
+	}
+	return sess.cisLogpushJobsClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1168,6 +1182,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
 		session.cisWebhooksErr = errEmptyBluemixCredentials
+		session.cisLogpushJobsErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
@@ -2487,6 +2502,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
 		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisWAFRuleClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS LogpushJobs
+	cisLogpushJobOpt := &cislogpushjobsapiv1.LogpushJobsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Dataset:       core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisLogpushJobsClient, session.cisLogpushJobsErr = cislogpushjobsapiv1.NewLogpushJobsApiV1(cisLogpushJobOpt)
+	if session.cisLogpushJobsErr != nil {
+		session.cisLogpushJobsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS LogpushJobs : %s",
+				session.cisLogpushJobsErr)
+	}
+	if session.cisLogpushJobsClient != nil && session.cisLogpushJobsClient.Service != nil {
+		session.cisLogpushJobsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisLogpushJobsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
