@@ -23,6 +23,7 @@ import (
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/container-registry-go-sdk/containerregistryv1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
@@ -42,6 +43,7 @@ import (
 	cisglbhealthcheckv1 "github.com/IBM/networking-go-sdk/globalloadbalancermonitorv1"
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
+	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
@@ -71,6 +73,7 @@ import (
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/findingsv1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
+	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
@@ -208,6 +211,7 @@ type ClientSession interface {
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
+	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
 	IAMAccessGroupsV2() (*iamaccessgroups.IamAccessGroupsV2, error)
 	MccpAPI() (mccpv2.MccpServiceAPI, error)
@@ -242,6 +246,7 @@ type ClientSession interface {
 	CisGLBHealthCheckClientSession() (*cisglbhealthcheckv1.GlobalLoadBalancerMonitorV1, error)
 	CisIPClientSession() (*cisipv1.CisIpApiV1, error)
 	CisPageRuleClientSession() (*cispagerulev1.PageRuleApiV1, error)
+	CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJobsApiV1, error)
 	CisRLClientSession() (*cisratelimitv1.ZoneRateLimitsV1, error)
 	CisEdgeFunctionClientSession() (*cisedgefunctionv1.EdgeFunctionsApiV1, error)
 	CisSSLClientSession() (*cissslv1.SslCertificateApiV1, error)
@@ -273,6 +278,7 @@ type ClientSession interface {
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
+	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
@@ -334,6 +340,9 @@ type clientSession struct {
 
 	icdConfigErr  error
 	icdServiceAPI icdv4.ICDServiceAPI
+
+	cloudDatabasesClientErr error
+	cloudDatabasesClient    *clouddatabasesv5.CloudDatabasesV5
 
 	resourceControllerConfigErr  error
 	resourceControllerServiceAPI controller.ResourceControllerAPI
@@ -474,6 +483,10 @@ type clientSession struct {
 	cisLockdownErr    error
 	cisLockdownClient *cislockdownv1.ZoneLockdownV1
 
+	// CIS LogpushJobs service option
+	cisLogpushJobsClient *cislogpushjobsapiv1.LogpushJobsApiV1
+	cisLogpushJobsErr    error
+
 	// CIS Range app service option
 	cisRangeAppErr    error
 	cisRangeAppClient *cisrangeappv1.RangeApplicationsV1
@@ -548,6 +561,10 @@ type clientSession struct {
 	// Security and Compliance Center (SCC) Admin
 	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
 	adminServiceApiClientErr error
+
+	// Security and Compliance Center (SCC) Governance
+	configServiceApiClient    *configurationgovernancev1.ConfigurationGovernanceV1
+	configServiceApiClientErr error
 
 	//Security and Compliance Center (SCC) Compliance posture
 	postureManagementClientErr error
@@ -659,6 +676,11 @@ func (session clientSession) IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1
 // IcdAPI provides IBM Cloud Databases APIs ...
 func (sess clientSession) ICDAPI() (icdv4.ICDServiceAPI, error) {
 	return sess.icdServiceAPI, sess.icdConfigErr
+}
+
+// The IBM Cloud Databases API
+func (session clientSession) CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error) {
+	return session.cloudDatabasesClient, session.cloudDatabasesClientErr
 }
 
 // MccpAPI provides Multi Cloud Controller Proxy APIs ...
@@ -1001,6 +1023,14 @@ func (sess clientSession) SatelliteClientSession() (*kubernetesserviceapiv1.Kube
 	return sess.satelliteClient, sess.satelliteClientErr
 }
 
+// CIS LogPushJob
+func (sess clientSession) CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJobsApiV1, error) {
+	if sess.cisLogpushJobsErr != nil {
+		return sess.cisLogpushJobsClient, sess.cisLogpushJobsErr
+	}
+	return sess.cisLogpushJobsClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1045,6 +1075,10 @@ func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
 //Security and Compliance center Admin API
 func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
 	return session.adminServiceApiClient, session.adminServiceApiClientErr
+}
+
+func (session clientSession) ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error) {
+	return session.configServiceApiClient, session.configServiceApiClientErr
 }
 
 // Security and Compliance center Posture Management
@@ -1148,6 +1182,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
 		session.cisWebhooksErr = errEmptyBluemixCredentials
+		session.cisLogpushJobsErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
 		session.iamPolicyManagementErr = errEmptyBluemixCredentials
@@ -1156,6 +1191,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.contextBasedRestrictionsClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
+		session.configServiceApiClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1770,6 +1806,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.icdConfigErr = fmt.Errorf("[ERROR] Error occured while configuring IBM Cloud Database Services: %q", err)
 	}
 	session.icdServiceAPI = icdAPI
+
+	var cloudDatabasesEndpoint string
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.private.databases.cloud.ibm.com/v5/ibm", c.Region)
+	} else {
+		cloudDatabasesEndpoint = fmt.Sprintf("https://api.%s.databases.cloud.ibm.com/v5/ibm", c.Region)
+	}
+
+	// Construct an "options" struct for creating the service client.
+	cloudDatabasesClientOptions := &clouddatabasesv5.CloudDatabasesV5Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_DATABASES_API_ENDPOINT"}, cloudDatabasesEndpoint),
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.cloudDatabasesClient, err = clouddatabasesv5.NewCloudDatabasesV5(cloudDatabasesClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cloudDatabasesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cloudDatabasesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cloudDatabasesClientErr = fmt.Errorf("Error occurred while configuring The IBM Cloud Databases API service: %q", err)
+	}
 
 	resourceCatalogAPI, err := catalog.New(sess.BluemixSession)
 	if err != nil {
@@ -2443,6 +2506,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM Network CIS LogpushJobs
+	cisLogpushJobOpt := &cislogpushjobsapiv1.LogpushJobsApiV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		ZoneID:        core.StringPtr(""),
+		Dataset:       core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisLogpushJobsClient, session.cisLogpushJobsErr = cislogpushjobsapiv1.NewLogpushJobsApiV1(cisLogpushJobOpt)
+	if session.cisLogpushJobsErr != nil {
+		session.cisLogpushJobsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS LogpushJobs : %s",
+				session.cisLogpushJobsErr)
+	}
+	if session.cisLogpushJobsClient != nil && session.cisLogpushJobsClient.Service != nil {
+		session.cisLogpushJobsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisLogpushJobsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IBM Network CIS Webhooks
 	cisWebhooksOpt := &ciswebhooksv1.WebhooksV1Options{
 		URL:           cisEndPoint,
@@ -2792,6 +2876,35 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.esSchemaRegistryClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// Governance Service
+	var configServiceApiClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		configServiceApiClientURL, err = configurationgovernancev1.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		configServiceApiClientURL = configurationgovernancev1.DefaultServiceURL
+	}
+	configServiceApiClientOptions := &configurationgovernancev1.ConfigurationGovernanceV1Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_CONFIGURATION_GOVERNANCE_API_ENDPOINT"}, configServiceApiClientURL),
+	}
+	session.configServiceApiClient, err = configurationgovernancev1.NewConfigurationGovernanceV1(configServiceApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.configServiceApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.configServiceApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.configServiceApiClientErr = fmt.Errorf("Error occurred while configuring Config Service API service: %q", err)
 	}
 
 	//COMPLIANCE Service
