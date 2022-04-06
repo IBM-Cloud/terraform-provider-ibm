@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -110,7 +109,12 @@ func resourceIBMSccPostureScopesCreate(context context.Context, d *schema.Resour
 	}
 
 	createScopeOptions := &posturemanagementv2.CreateScopeOptions{}
-	createScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	createScopeOptions.SetAccountID(userDetails.UserAccount)
 
 	createScopeOptions.SetName(d.Get("name").(string))
 	createScopeOptions.SetDescription(d.Get("description").(string))
@@ -140,24 +144,24 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	listScopesOptions := &posturemanagementv2.ListScopesOptions{}
+	getScopesOptions := &posturemanagementv2.GetScopeDetailsOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount
-	listScopesOptions.SetAccountID(accountID)
+	getScopesOptions.SetAccountID(accountID)
 
-	scopeList, response, err := postureManagementClient.ListScopesWithContext(context, listScopesOptions)
-	d.SetId(*(scopeList.Scopes[0].ID))
+	scope, response, err := postureManagementClient.GetScopeDetailsWithContext(context, getScopesOptions)
+	d.SetId(*(scope.ID))
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] ListScopesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListScopesWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetScopeDetailsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetScopeDetailsWithContext failed %s\n%s", err, response))
 	}
 
 	return nil
@@ -170,7 +174,12 @@ func resourceIBMSccPostureScopesUpdate(context context.Context, d *schema.Resour
 	}
 
 	updateScopeDetailsOptions := &posturemanagementv2.UpdateScopeDetailsOptions{}
-	updateScopeDetailsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	updateScopeDetailsOptions.SetAccountID(userDetails.UserAccount)
 
 	hasChange := false
 
@@ -203,7 +212,12 @@ func resourceIBMSccPostureScopesDelete(context context.Context, d *schema.Resour
 	}
 
 	deleteScopeOptions := &posturemanagementv2.DeleteScopeOptions{}
-	deleteScopeOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+	
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	deleteScopeOptions.SetAccountID(userDetails.UserAccount)
 
 	deleteScopeOptions.SetID(d.Id())
 
