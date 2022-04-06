@@ -23,7 +23,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	resourceName := "ibm_database.db"
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{

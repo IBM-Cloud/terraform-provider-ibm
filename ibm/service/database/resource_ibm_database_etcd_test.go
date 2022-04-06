@@ -24,7 +24,7 @@ func TestAccIBMDatabaseInstance_Etcd_Basic(t *testing.T) {
 	name := "ibm_database." + testName
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -96,7 +96,7 @@ func TestAccIBMDatabaseInstanceEtcdImport(t *testing.T) {
 	resourceName := "ibm_database." + serviceName
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{

@@ -23,7 +23,7 @@ func TestAccIBMCassandraDatabaseInstanceBasic(t *testing.T) {
 	name := "ibm_database." + testName
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -93,7 +93,7 @@ func TestAccIBMDatabaseInstance_Cassandra_Node(t *testing.T) {
 	name := "ibm_database." + testName
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -195,7 +195,7 @@ func TestAccIBMDatabaseInstanceCassandraImport(t *testing.T) {
 	resourceName := "ibm_database." + serviceName
 	location := os.Getenv("ICD_DB_REGION")
 	if location == "" {
-		location = "us-south"
+		location = "eu-gb"
 	}
 
 	resource.Test(t, resource.TestCase{
