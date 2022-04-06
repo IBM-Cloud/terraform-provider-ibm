@@ -16,21 +16,21 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 )
 
-func DataSourceIBMSccAccountLocationSettings() *schema.Resource {
+func DataSourceIBMSccNotificationSettings() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmSccAccountLocationSettingsRead,
+		ReadContext: dataSourceIbmSccAccountNotificationSettingsRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"instance_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The programatic ID of the location that you want to work in.",
+				Description: "The Cloud Resource Name (CRN) of the Event Notifications instance that you want to connect.",
 			},
 		},
 	}
 }
 
-func dataSourceIbmSccAccountLocationSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIbmSccAccountNotificationSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	adminServiceApiClient, err := meta.(conns.ClientSession).AdminServiceApiV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -50,21 +50,18 @@ func dataSourceIbmSccAccountLocationSettingsRead(context context.Context, d *sch
 		log.Printf("[DEBUG] GetSettingsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetSettingsWithContext failed %s\n%s", err, response))
 	}
+	notificationsSettings := accountSettings.EventNotifications
 
-	locationSettings := accountSettings.Location
-	d.SetId(*accountSettings.Location.ID)
-
-	if err = d.Set("id", locationSettings.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+	if err = d.Set("instance_crn", notificationsSettings.InstanceCrn); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_crn: %s", err))
 	}
 
-	if d.HasChanges() {
-		d.SetId(dataSourceIbmSccAccountLocationSettingsID(d))
-	}
+	d.SetId("scc_admin_notification_settings")
 
 	return nil
 }
 
-func dataSourceIbmSccAccountLocationSettingsID(d *schema.ResourceData) string {
+// dataSourceIbmSccAccountNotificationSettingsID returns a reasonable ID for the list.
+func dataSourceIbmSccAccountNotificationSettingsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

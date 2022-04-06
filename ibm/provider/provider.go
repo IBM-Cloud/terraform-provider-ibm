@@ -581,14 +581,15 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers":      scc.DataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":           scc.DataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":          scc.DataSourceIBMSccSiNotes(),
-			"ibm_scc_account_location":  scc.DataSourceIBMSccAccountLocation(),
-			"ibm_scc_account_locations": scc.DataSourceIBMSccAccountLocations(),
-			"ibm_scc_account_settings":  scc.DataSourceIBMSccAccountLocationSettings(),
-			"ibm_scc_si_occurrence":     scc.DataSourceIBMSccSiOccurrence(),
-			"ibm_scc_si_occurrences":    scc.DataSourceIBMSccSiOccurrences(),
+			"ibm_scc_si_providers":                  scc.DataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":                       scc.DataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":                      scc.DataSourceIBMSccSiNotes(),
+			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
+			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
+			"ibm_scc_account_location_settings":     scc.DataSourceIBMSccAccountLocationSettings(),
+			"ibm_scc_account_notification_settings": scc.DataSourceIBMSccNotificationSettings(),
+			"ibm_scc_si_occurrence":                 scc.DataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences":                scc.DataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":            scc.DataSourceIBMSccPostureScopes(),

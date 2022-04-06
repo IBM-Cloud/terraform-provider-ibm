@@ -11,24 +11,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIbmSccAccountLocationsDataSourceBasic(t *testing.T) {
+func TestAccIbmSccAccountNotificationSettingsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSccAccountLocationsDataSourceConfigBasic(),
+				Config: testAccCheckIbmSccAccountNotificationSettingsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_scc_account_locations.scc_account_locations", "locations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_scc_account_notification_settings.scc_account_notification_settings", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmSccAccountLocationsDataSourceConfigBasic() string {
+func testAccCheckIbmSccAccountNotificationSettingsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_scc_account_locations" "scc_account_locations" {
+		data "ibm_scc_account_notification_settings" "scc_account_notification_settings" {
 		}
 	`)
 }
