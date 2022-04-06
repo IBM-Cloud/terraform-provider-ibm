@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -21,6 +22,10 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 	rnd := fmt.Sprintf("tf-redis-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,7 +33,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -46,7 +51,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
@@ -58,7 +63,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
@@ -82,6 +87,10 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-redis-%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -89,7 +98,7 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup, serviceName),
+				Config: testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup, serviceName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -123,6 +132,10 @@ func TestAccIBMDatabaseInstanceRedisKP_Encrypt(t *testing.T) {
 	kpKeyName := fmt.Sprintf("tf_kp_key_%d", acctest.RandIntRange(10, 100))
 	kpByokName := fmt.Sprintf("tf_kp_byok_key_%d", acctest.RandIntRange(10, 100))
 	// name := "ibm_database." + testName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -130,7 +143,7 @@ func TestAccIBMDatabaseInstanceRedisKP_Encrypt(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, testName),
+				Config: testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists("ibm_database.database", &databaseInstanceOne),
 					resource.TestCheckResourceAttr("ibm_database.database", "name", testName),
@@ -145,7 +158,7 @@ func TestAccIBMDatabaseInstanceRedisKP_Encrypt(t *testing.T) {
 
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
-func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -157,7 +170,7 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		name                         = "%[2]s"
 		service                      = "databases-for-redis"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 2048
@@ -166,10 +179,10 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		  description = "desc1"
 		}
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -181,7 +194,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		name                         = "%[2]s"
 		service                      = "databases-for-redis"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 4096
 		members_disk_allocation_mb   = 4096
@@ -194,10 +207,10 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		  description = "desc"
 		}
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -209,15 +222,15 @@ func testAccCheckIBMDatabaseInstanceRedisReduced(databaseResourceGroup string, n
 		name                         = "%[2]s"
 		service                      = "databases-for-redis"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 4096
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -229,7 +242,7 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 		name              = "%[2]s"
 		service           = "databases-for-redis"
 		plan              = "standard"
-		location          = "us-south"
+		location          = "%[3]s"
 		auto_scaling {
 			cpu {
 			  rate_increase_percent       = 20
@@ -259,9 +272,9 @@ func testAccCheckIBMDatabaseInstanceRedisImport(databaseResourceGroup string, na
 			}
 		}
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
-func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, kpByokName, name string) string {
+func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, kpByokName, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -288,10 +301,10 @@ func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string,
 		name              			= "%s"
 		service           			= "databases-for-redis"
 		plan              			= "standard"
-		location         			= "us-south"
+		location         			= "%[3]s"
 		key_protect_instance        = ibm_resource_instance.kp_instance.guid
 		key_protect_key             = ibm_kp_key.test.id
 		backup_encryption_key_crn   = ibm_kp_key.test1.id
 	}
-				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name)
+				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name, location)
 }

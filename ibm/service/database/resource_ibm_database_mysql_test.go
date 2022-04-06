@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -20,6 +21,10 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 	rnd := fmt.Sprintf("tf-mysql-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,7 +32,7 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -48,7 +53,7 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -81,7 +86,7 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -92,7 +97,7 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 		name                         = "%[2]s"
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 61440
@@ -111,10 +116,10 @@ func testAccCheckIBMDatabaseInstanceMysqlBasic(databaseResourceGroup string, nam
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -125,7 +130,7 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		name                         = "%[2]s"
 		service                      = "databases-for-mysql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 92160
@@ -154,5 +159,5 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }

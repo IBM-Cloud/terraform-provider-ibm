@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -21,6 +22,10 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 	rnd := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,7 +33,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -47,7 +52,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -64,7 +69,7 @@ func TestAccIBMDatabaseInstanceMongodbBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup, testName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -96,6 +101,10 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-Mongo-%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -103,7 +112,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup, serviceName),
+				Config: testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup, serviceName, location),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
@@ -123,7 +132,7 @@ func TestAccIBMDatabaseInstanceMongodbImport(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -134,7 +143,7 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 30720
@@ -147,10 +156,10 @@ func testAccCheckIBMDatabaseInstanceMongodbBasic(databaseResourceGroup string, n
 		  description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -161,7 +170,7 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 30720
@@ -182,10 +191,10 @@ func testAccCheckIBMDatabaseInstanceMongodbFullyspecified(databaseResourceGroup 
 		  description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -196,16 +205,16 @@ func testAccCheckIBMDatabaseInstanceMongodbReduced(databaseResourceGroup string,
 		name                         = "%[2]s"
 		service                      = "databases-for-mongodb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 30720
 	}
 	  
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
 
-func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -217,8 +226,8 @@ func testAccCheckIBMDatabaseInstanceMongodbImport(databaseResourceGroup string, 
 		name              = "%[2]s"
 		service           = "databases-for-mongodb"
 		plan              = "standard"
-		location          = "us-south"
+		location          = "%[3]s"
 	}
 	  
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
