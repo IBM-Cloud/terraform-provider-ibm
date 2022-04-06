@@ -834,6 +834,7 @@ type GroupLimit struct {
 	Maximum      int
 	StepSize     int
 	IsAdjustable bool
+	IsOptional   bool
 	CanScaleDown bool
 }
 
@@ -844,7 +845,9 @@ func checkGroupValue(name string, limits GroupLimit, divider int, diff *schema.R
 		new := newSetting.(int)
 
 		if new < limits.Minimum/divider || new > limits.Maximum/divider || new%(limits.StepSize/divider) != 0 {
-			return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
+			if !(new == 0 && limits.IsOptional) {
+				return fmt.Errorf("%s must be >= %d and <= %d in increments of %d", name, limits.Minimum/divider, limits.Maximum/divider/divider, limits.StepSize/divider)
+			}
 		}
 		if old != new && !limits.IsAdjustable {
 			return fmt.Errorf("%s can not change value after create", name)
@@ -864,6 +867,7 @@ type CountLimit struct {
 	MaximumCount    int
 	StepSizeCount   int
 	IsAdjustable    bool
+	IsOptional      bool
 	CanScaleDown    bool
 }
 
@@ -875,6 +879,7 @@ func checkCountValue(name string, limits CountLimit, divider int, diff *schema.R
 		Maximum:      limits.MaximumCount,
 		StepSize:     limits.StepSizeCount,
 		IsAdjustable: limits.IsAdjustable,
+		IsOptional:   limits.IsOptional,
 		CanScaleDown: limits.CanScaleDown,
 	}
 	return checkGroupValue(name, groupLimit, divider, diff)
@@ -887,6 +892,7 @@ type MbLimit struct {
 	MaximumMb    int
 	StepSizeMb   int
 	IsAdjustable bool
+	IsOptional   bool
 	CanScaleDown bool
 }
 
@@ -898,6 +904,7 @@ func checkMbValue(name string, limits MbLimit, divider int, diff *schema.Resourc
 		Maximum:      limits.MaximumMb,
 		StepSize:     limits.StepSizeMb,
 		IsAdjustable: limits.IsAdjustable,
+		IsOptional:   limits.IsOptional,
 		CanScaleDown: limits.CanScaleDown,
 	}
 	return checkGroupValue(name, groupLimit, divider, diff)
