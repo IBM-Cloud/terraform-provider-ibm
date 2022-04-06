@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -20,13 +21,17 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
 	dataName := "data.ibm_database." + testName
 	resourceName := "ibm_database.db"
+	location := os.Getenv("ICD_DB_REGION")
+	if location == "" {
+		location = "us-south"
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup, testName),
+				Config:  testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup, testName, location),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
@@ -51,7 +56,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name string, location string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -67,9 +72,9 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		name              = "%[2]s"
 		service           = "databases-for-postgresql"
 		plan              = "standard"
-		location          = "us-south"
+		location          = "%[3]s"
 		tags              = ["one:two"]
 	}
 
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, location)
 }
