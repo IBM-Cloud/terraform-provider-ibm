@@ -13,17 +13,44 @@ Create, update, or delete a subscription by using IBM Cloud™ Event Notificatio
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription" "en_subscription" {
-  instance_guid    = "instance_guid"
-  name           = "name"
-  description    = "description"
-  destination_id = "destinationId"
-  topic_id       = "topicId"
+resource "ibm_en_subscription" "en_subscription_webhook" {
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  name           = "Webhook Subscription"
+  description    = "Subscription for Webhook destination"
+  destination_id = ibm_en_destination.destinationwebhook.destination_id
+  topic_id       = ibm_en_topic.topic1.topic_id
   attributes {
-    add_notification_payload = true
     signing_enabled          = true
   }
 }
+
+resource "ibm_en_subscription" "en_subscription_sms" {
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  name           = "SMS Subscription"
+  description    = "Subscription for SMS destination"
+  destination_id = "destination_id"
+  topic_id       = ibm_en_topic.topic1.topic_id
+  attributes {
+    to = ["+15678923404", "+19643567389"]
+  }
+}
+
+resource "ibm_en_subscription" "en_subscription_email" {
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  name           = "Email Subscription"
+  description    = "Subscription for Email destination"
+  destination_id = "destination_id"
+  topic_id       = ibm_en_topic.topic1.topic_id
+  attributes {
+    add_notification_payload = true
+    reply_to_mail = "compliancealert@ibm.com"
+    reply_to_name = "Compliance User"
+    from_name="en@ibm.com"
+    to = ["usernew1@gmail.com","testuser@gamil.com"]
+  }
+}
+
+
 ```
 
 ## Argument reference
@@ -43,15 +70,19 @@ Review the argument reference that you can specify for your resource.
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
-  - `add_notification_payload` - (Optional, Boolean) Add notification payload.
-
   - `signing_enabled` - (Optional, Boolean) Signing enabled.
 
   - `add_notification_payload` - (Optional, Boolean) Whether to add the notification payload to the email.
 
   - `reply_to` - (Optional, String) The email address to reply to.
 
-  - `to` - (Optional, List) The phone number to send the SMS to.
+  - `reply_to_name` - (Optional, String) The Email User Name to reply to.
+
+  - `from_name` - (Optional, String) The email address user from which email is addressed.
+
+  - `to` - (Optional, List) The phone number to send the SMS to or email id in case of Email subscription.
+
+  - `remove` - (Optional, List)  The Email address list to be provided in case of removing the email addresses from subscription.
 
 ## Attribute reference
 

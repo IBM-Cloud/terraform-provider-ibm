@@ -1337,6 +1337,24 @@ func FlattenPolicyResourceAttributes(list []iampolicymanagementv1.PolicyResource
 	return result
 }
 
+func FlattenPolicyResourceTags(resources []iampolicymanagementv1.PolicyResource) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0)
+
+	for _, resource := range resources {
+		if resource.Tags != nil {
+			for _, tags := range resource.Tags {
+				tag := map[string]interface{}{
+					"name":     tags.Name,
+					"value":    tags.Value,
+					"operator": tags.Operator,
+				}
+				result = append(result, tag)
+			}
+		}
+	}
+	return result
+}
+
 // Cloud Internet Services
 func FlattenHealthMonitors(list []datatypes.Network_LBaaS_Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
@@ -1381,9 +1399,10 @@ func StringContains(s []string, str string) bool {
 	return false
 }
 
-func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) ([]string, []string) {
+func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID, profileids []iamidentityv1.TrustedProfile) ([]string, []string, []string) {
 	var ibmid []string
 	var serviceid []string
+	var profileid []string
 	for _, m := range list {
 		if *m.Type == "user" {
 			for _, user := range users {
@@ -1392,19 +1411,24 @@ func FlattenMembersData(list []iamaccessgroupsv2.ListGroupMembersResponseMember,
 					break
 				}
 			}
+		} else if *m.Type == "profile" {
+			for _, prid := range profileids {
+				if *prid.IamID == *m.IamID {
+					profileid = append(profileid, *prid.ID)
+					break
+				}
+			}
 		} else {
-
 			for _, srid := range serviceids {
 				if *srid.IamID == *m.IamID {
 					serviceid = append(serviceid, *srid.ID)
 					break
 				}
 			}
-
 		}
 
 	}
-	return ibmid, serviceid
+	return ibmid, serviceid, profileid
 }
 
 func FlattenAccessGroupMembers(list []iamaccessgroupsv2.ListGroupMembersResponseMember, users []usermanagementv2.UserInfo, serviceids []iamidentityv1.ServiceID) []map[string]interface{} {
@@ -2884,6 +2908,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			name := a["name"].(string)
 			value := a["value"].(string)
 			operator := a["operator"].(string)
+			if name == "serviceName" {
+				serviceName = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -2953,6 +2980,26 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 	}
 
 	return iampolicymanagementv1.CreatePolicyOptions{Roles: policyRoles, Resources: []iampolicymanagementv1.PolicyResource{policyResources}}, nil
+}
+
+func SetTags(d *schema.ResourceData) []iampolicymanagementv1.ResourceTag {
+	resourceAttributes := []iampolicymanagementv1.ResourceTag{}
+	if r, ok := d.GetOk("resource_tags"); ok {
+		for _, attribute := range r.(*schema.Set).List() {
+			a := attribute.(map[string]interface{})
+			name := a["name"].(string)
+			value := a["value"].(string)
+			operator := a["operator"].(string)
+			tag := iampolicymanagementv1.ResourceTag{
+				Name:     &name,
+				Value:    &value,
+				Operator: &operator,
+			}
+			resourceAttributes = append(resourceAttributes, tag)
+		}
+		return resourceAttributes
+	}
+	return []iampolicymanagementv1.ResourceTag{}
 }
 
 func GetIBMUniqueId(accountID, userEmail string, meta interface{}) (string, error) {

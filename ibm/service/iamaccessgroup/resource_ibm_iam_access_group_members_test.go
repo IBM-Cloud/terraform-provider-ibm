@@ -22,6 +22,8 @@ func TestAccIBMIAMAccessGroupMember_Basic(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	sname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	sname1 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	pname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	pname1 := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -50,10 +52,24 @@ func TestAccIBMIAMAccessGroupMember_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1),
+				Config: testAccCheckIBMIAMAccessGroupMemberAddProfileID(name, sname, sname1, pname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "4"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupMemberAddAnotherProfileID(name, sname, sname1, pname, pname1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "5"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMAccessGroupMemberRemoveUserSIDAndProfileID(name, sname, sname1, pname, pname1),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_access_group.accgroup", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_members.accgroupmem", "members.#", "2"),
 				),
 			},
 		},
@@ -63,6 +79,7 @@ func TestAccIBMIAMAccessGroupMember_Basic(t *testing.T) {
 func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	sname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	pname := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	resourceName := "ibm_iam_access_group.accgroup"
 
 	resource.Test(t, resource.TestCase{
@@ -71,7 +88,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMAccessGroupMemberDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMAccessGroupMemberImport(name, sname),
+				Config: testAccCheckIBMIAMAccessGroupMemberImport(name, sname, pname),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 				),
@@ -83,6 +100,7 @@ func TestAccIBMIAMAccessGroupMember_import(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"iam_ids",
 					"iam_service_ids",
+					"iam_profile_ids",
 				},
 			},
 		},
@@ -156,24 +174,82 @@ func testAccCheckIBMIAMAccessGroupMemberAddAnotherServiceID(name, sname, sname1 
 
 	resource "ibm_iam_access_group" "accgroup" {
 		name = "%s"
-	  }
+	}
 	  
 	  resource "ibm_iam_service_id" "serviceID" {
 		name = "%s"
-	  }
+	}
 	  
 	  resource "ibm_iam_service_id" "serviceID2" {
 		name = "%s"
-	  }
+	}
 	  
 	  resource "ibm_iam_access_group_members" "accgroupmem" {
 		access_group_id = ibm_iam_access_group.accgroup.id
 		ibm_ids         = ["%s"]
 		iam_service_ids = [ibm_iam_service_id.serviceID.id, ibm_iam_service_id.serviceID2.id]
-	  }`, name, sname, sname1, acc.IAMUser)
+	}`, name, sname, sname1, acc.IAMUser)
 }
 
-func testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1 string) string {
+func testAccCheckIBMIAMAccessGroupMemberAddProfileID(name, sname, sname1, pname string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_iam_access_group" "accgroup" {
+  		name = "%s"
+	}
+	
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	}
+	  
+	resource "ibm_iam_service_id" "serviceID2" {
+		name = "%s"
+	}
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+  		name = "%s"
+	}
+
+	resource "ibm_iam_access_group_members" "accgroupmem" {
+  		access_group_id = ibm_iam_access_group.accgroup.id
+  		ibm_ids         = ["%s"]
+		iam_service_ids = [ibm_iam_service_id.serviceID.id, ibm_iam_service_id.serviceID2.id]
+  		iam_profile_ids = [ibm_iam_trusted_profile.profileID.id]
+	}`, name, sname, sname1, pname, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMAccessGroupMemberAddAnotherProfileID(name, sname, sname1, pname, pname1 string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_iam_access_group" "accgroup" {
+  		name = "%s"
+	}
+
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	}
+	  
+	resource "ibm_iam_service_id" "serviceID2" {
+		name = "%s"
+	}
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+  		name = "%s"
+	}
+
+	resource "ibm_iam_trusted_profile" "profileID2" {
+		name = "%s"
+    }
+
+	resource "ibm_iam_access_group_members" "accgroupmem" {
+  		access_group_id = ibm_iam_access_group.accgroup.id
+  		ibm_ids         = ["%s"]
+		iam_service_ids = [ibm_iam_service_id.serviceID.id, ibm_iam_service_id.serviceID2.id]
+  		iam_profile_ids = [ibm_iam_trusted_profile.profileID.id, ibm_iam_trusted_profile.profileID2.id]
+	}`, name, sname, sname1, pname, pname1, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMAccessGroupMemberRemoveUserSIDAndProfileID(name, sname, sname1, pname, pname1 string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_iam_access_group" "accgroup" {
@@ -188,13 +264,22 @@ func testAccCheckIBMIAMAccessGroupMemberRemoveUserAndSID(name, sname, sname1 str
  		name = "%s"
 	}
 
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name = "%s"
+    }
+
+	resource "ibm_iam_trusted_profile" "profileID2" {
+		name = "%s"
+    }
+	
 	resource "ibm_iam_access_group_members" "accgroupmem" {
   		access_group_id = ibm_iam_access_group.accgroup.id
   		iam_service_ids = [ibm_iam_service_id.serviceID.id]
-	}`, name, sname, sname1)
+		iam_profile_ids = [ibm_iam_trusted_profile.profileID.id]
+	}`, name, sname, sname1, pname, pname1)
 }
 
-func testAccCheckIBMIAMAccessGroupMemberImport(name, sname string) string {
+func testAccCheckIBMIAMAccessGroupMemberImport(name, sname, pname string) string {
 	return fmt.Sprintf(`
 
 	resource "ibm_iam_access_group" "accgroup" {
@@ -204,10 +289,15 @@ func testAccCheckIBMIAMAccessGroupMemberImport(name, sname string) string {
 	resource "ibm_iam_service_id" "serviceID" {
 		name = "%s"
 	}
+
+	resource "ibm_iam_trusted_profile" "profileID" {
+		name = "%s"
+	}
 	  
 	resource "ibm_iam_access_group_members" "accgroupmem" {
 		access_group_id = ibm_iam_access_group.accgroup.id
 		ibm_ids         = ["%s"]
 		iam_service_ids = [ibm_iam_service_id.serviceID.id]
-	}`, name, sname, acc.IAMUser)
+		iam_profile_ids = [ibm_iam_trusted_profile.profileID.id]
+	}`, name, sname, pname, acc.IAMUser)
 }

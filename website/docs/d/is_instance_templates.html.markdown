@@ -33,6 +33,7 @@ data "ibm_is_instance_templates" "example" {
 You can access the following attribute references after your data source is created. 
 
 - `templates` - (List of Objects) List of templates.
+	- `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
 	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:
@@ -43,10 +44,13 @@ You can access the following attribute references after your data source is crea
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
 	- `crn` - (String) The CRN of the instance template.
+	- `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
+	- `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
 	- `href` - (String) The URL of the instance template.
 	- `id` - (String) The ID of the instance template.
 	- `image` - (String) The ID of the image to create the template.
 	- `keys` - (String) List of SSH key IDs used to allow log in user to the instances.
+	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 	- `name` - (String) The name of the instance template.
 	- `network_interfaces` - (List) A nested block describes the network interfaces for the template.
 

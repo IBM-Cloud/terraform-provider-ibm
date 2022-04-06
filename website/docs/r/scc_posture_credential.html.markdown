@@ -62,6 +62,10 @@ Nested scheme for **display_fields**:
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 	* `password` - (Optional, String) password of the user.This is mandatory for DataBase(ie type=database), Kerbros(ie type=kerberos_windows),OpenStack(ie type=openstack_cloud) and Username-Password(type=username_password) Credentials.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
+	* `pem_data` - (Optional, String) The base64 encoded data to associate with the PEM file.
+	  * Constraints: The maximum length is `4000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
+	* `pem_file_name` - (Optional, String) The name of the PEM file.
+	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.  
 	* `project_domain_name` - (Optional, String) project domain name of the Open Stack cloud.This is mandatory for Open Stack Credential type ie when type=openstack_cloud.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.\\*,_\\s]*$/`.
 	* `project_name` - (Optional, String) Project name of the Open Stack cloud.This is mandatory for Open Stack Credential type ie when type=openstack_cloud.
@@ -88,7 +92,7 @@ Nested scheme for **group**:
 * `purpose` - (Required, String) Purpose for which the credential is created.
   * Constraints: Allowable values are: `discovery_collection`, `discovery_fact_collection`, `remediation`, `discovery_collection_remediation`, `discovery_fact_collection_remediation`. The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-\\.,_\\s]*$/`.
 * `type` - (Required, String) Credentials type.
-  * Constraints: Allowable values are: `username_password`, `aws_cloud`, `azure_cloud`, `database`, `kerberos_windows`, `ms_365`, `openstack_cloud`, `ibm_cloud`.
+  * Constraints: Allowable values are: `username_password`, `aws_cloud`, `azure_cloud`, `database`, `kerberos_windows`, `ms_365`, `openstack_cloud`, `ibm_cloud`, `user_name_pem`.
 
 ## Attribute Reference
 
