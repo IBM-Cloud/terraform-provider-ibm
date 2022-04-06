@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/scc-go-sdk/findingsv1"
+	"github.com/IBM/scc-go-sdk/v4/findingsv1"
 )
 
 func TestAccIBMSccSiNoteCardNumeric(t *testing.T) {

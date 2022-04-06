@@ -72,7 +72,12 @@ provider "ibm" {
 |Global Catalog|IBMCLOUD_RESOURCE_CATALOG_API_ENDPOINT|
 |Satellite|IBMCLOUD_SATELLITE_API_ENDPOINT|
 |Satellite Link|IBMCLOUD_SATELLITE_LINK_API_ENDPOINT|
-|Security and Compliance Center Findings|IBMCLOUD_SCC_FINDINGS_API_ENDPOINT|
+|Security and Compliance Center - Addon Manager API|IBMCLOUD_ADDON_MANAGER_API_ENDPOINT|
+|Security and Compliance Center - Admin API|IBMCLOUD_SCC_ADMIN_API_ENDPOINT|
+|Security and Compliance Center - Configuration Governance API|IBMCLOUD_SCC_CONFIGURATION_GOVERNANCE_API_ENDPOINT|
+|Security and Compliance Center - Findings API|IBMCLOUD_SCC_FINDINGS_API_ENDPOINT|
+|Security and Compliance Center - Posture v1 API|IBMCLOUD_SCC_POSTURE_V1_API_ENDPOINT|
+|Security and Compliance Center - Posture v2 API|IBMCLOUD_SCC_POSTURE_V2_API_ENDPOINT|
 |Schematics|IBMCLOUD_SCHEMATICS_API_ENDPOINT|
 |Secrets Manager|IBMCLOUD_SECRETS_MANAGER_API_ENDPOINT|
 |Transit Gateway|IBMCLOUD_TG_API_ENDPOINT|

@@ -13,7 +13,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
+	"github.com/IBM/scc-go-sdk/v4/configurationgovernancev1"
 )
 
 func TestAccIBMSccRuleBasic(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
+	"github.com/IBM/scc-go-sdk/v4/configurationgovernancev1"
 )
 
 func ResourceIBMSccTemplate() *schema.Resource {
