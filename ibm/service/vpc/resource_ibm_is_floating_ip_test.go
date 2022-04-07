@@ -154,7 +154,6 @@ func testAccCheckIBMISFloatingIPConfig(vpcname, subnetname, sshname, publicKey, 
 		image   = "%s"
 		profile = "%s"
 		primary_network_interface {
-		  port_speed = "100"
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
 		user_data = "%s"

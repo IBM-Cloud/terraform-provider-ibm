@@ -320,7 +320,6 @@ Review the argument references that you can specify for your resource.
     `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances. Use this only if you have **IP spoofing operator** access.
 
   - `name` - (Optional, String) The name of the network interface.
-  - `port_speed` - (Deprecated, Integer) Speed of the network interface.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
