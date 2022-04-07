@@ -135,7 +135,7 @@ func testAccCheckIBMSccPostureScopesExists(n string, obj posturemanagementv2.Sco
 		}
 
 		listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err
@@ -163,7 +163,7 @@ func testAccCheckIBMSccPostureScopesDestroy(s *terraform.State) error {
 		}
 
 		listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err

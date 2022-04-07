@@ -100,7 +100,7 @@ func testAccCheckIBMSccPostureCredentialsExists(n string, obj posturemanagementv
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err
@@ -129,7 +129,7 @@ func testAccCheckIBMSccPostureCredentialsDestroy(s *terraform.State) error {
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err

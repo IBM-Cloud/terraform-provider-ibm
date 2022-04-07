@@ -147,7 +147,7 @@ func resourceIBMSccPostureCredentialsCreate(context context.Context, d *schema.R
 	}
 
 	createCredentialOptions := &posturemanagementv2.CreateCredentialOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
@@ -258,7 +258,7 @@ func resourceIBMSccPostureCredentialsUpdate(context context.Context, d *schema.R
 	}
 
 	updateCredentialOptions := &posturemanagementv2.UpdateCredentialOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
@@ -299,7 +299,7 @@ func resourceIBMSccPostureCredentialsDelete(context context.Context, d *schema.R
 	}
 
 	deleteCredentialOptions := &posturemanagementv2.DeleteCredentialOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))

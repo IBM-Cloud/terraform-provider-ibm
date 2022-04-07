@@ -142,7 +142,7 @@ func testAccCheckIBMSccPostureCollectorsExists(n string, obj posturemanagementv2
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err
@@ -171,7 +171,7 @@ func testAccCheckIBMSccPostureCollectorsDestroy(s *terraform.State) error {
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		
+
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err

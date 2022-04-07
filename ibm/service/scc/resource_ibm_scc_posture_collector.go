@@ -114,7 +114,7 @@ func resourceIBMSccPostureCollectorsCreate(context context.Context, d *schema.Re
 	}
 
 	createCollectorOptions := &posturemanagementv2.CreateCollectorOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
@@ -180,7 +180,7 @@ func resourceIBMSccPostureCollectorsUpdate(context context.Context, d *schema.Re
 	}
 
 	updateCollectorOptions := &posturemanagementv2.UpdateCollectorOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
@@ -210,7 +210,7 @@ func resourceIBMSccPostureCollectorsDelete(context context.Context, d *schema.Re
 	}
 
 	deleteCollectorOptions := &posturemanagementv2.DeleteCollectorOptions{}
-	
+
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
