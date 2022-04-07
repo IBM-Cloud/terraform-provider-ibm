@@ -33,6 +33,8 @@ func TestAccIBMISInstanceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						resName, "tags.#", "1"),
 					resource.TestCheckResourceAttrSet(
+						resName, "primary_network_interface.0.port_speed"),
+					resource.TestCheckResourceAttrSet(
 						resName, "availability_policy.#"),
 				),
 			},
@@ -63,7 +65,6 @@ resource "ibm_is_instance" "testacc_instance" {
   image   = "%s"
   profile = "%s"
   primary_network_interface {
-    port_speed = "100"
     subnet     = ibm_is_subnet.testacc_subnet.id
   }
   vpc  = ibm_is_vpc.testacc_vpc.id
