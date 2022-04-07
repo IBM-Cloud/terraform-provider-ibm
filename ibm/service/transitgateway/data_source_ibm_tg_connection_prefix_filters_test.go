@@ -24,7 +24,7 @@ func TestAccIBMTransitGatewayConnectionPrefixFiltersDataSource_basic(t *testing.
 			resource.TestStep{
 				Config: testAccCheckIBMTransitGatewayDataConnectionPrefixFiltersSourceConfig(gatewayName, location, connectionName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_tg_connection_prefix_filters.ds_tg_prefix_filters", "prefix_filters.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_tg_connection_prefix_filters.ds_tg_prefix_filters", "prefix_filters.#"),
 				),
 			},
 		},
