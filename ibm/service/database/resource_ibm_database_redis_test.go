@@ -52,7 +52,7 @@ func TestAccIBMDatabaseInstance_Redis_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service", "databases-for-redis"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
 					resource.TestCheckResourceAttr(name, "location", "us-south"),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "4096"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2304"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 				),
@@ -80,7 +80,6 @@ func TestAccIBMDatabaseInstanceRedisImport(t *testing.T) {
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	serviceName := fmt.Sprintf("tf-redis-%d", acctest.RandIntRange(10, 100))
-	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
 
 	resource.Test(t, resource.TestCase{
@@ -183,7 +182,7 @@ func testAccCheckIBMDatabaseInstanceRedisFullyspecified(databaseResourceGroup st
 		plan                         = "standard"
 		location                     = "us-south"
 		adminpassword                = "password12"
-		members_memory_allocation_mb = 4096
+		members_memory_allocation_mb = 2304
 		members_disk_allocation_mb   = 4096
 		whitelist {
 		  address     = "172.168.1.2/32"
@@ -292,6 +291,11 @@ func testAccCheckIBMDatabaseInstanceRedisKPEncrypt(databaseResourceGroup string,
 		key_protect_instance        = ibm_resource_instance.kp_instance.guid
 		key_protect_key             = ibm_kp_key.test.id
 		backup_encryption_key_crn   = ibm_kp_key.test1.id
+		timeouts {
+			create = "480m"
+			update = "480m"
+			delete = "15m"
+		}
 	}
 				`, databaseResourceGroup, kpInstanceName, kpKeyName, kpByokName, name)
 }
