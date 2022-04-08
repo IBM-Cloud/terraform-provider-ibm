@@ -1,3 +1,7 @@
+# 1.40.1 (Apr08, 2022)
+BUGFIXES:
+ Allow 0 allocation for optional scaling group types ([3714](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3714))
+
 # 1.40.0 (Mar31, 2022)
 Features
 * Support VPC Infrastructure
