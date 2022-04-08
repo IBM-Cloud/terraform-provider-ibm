@@ -51,8 +51,9 @@ func dataSourceIBMDatabasePitrRead(context context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(dataSourceIBMDatabasePitrID(d))
+	pitr := pointInTimeRecoveryData.PointInTimeRecoveryData.EarliestPointInTimeRecoveryTime
 
-	if err = d.Set("earliest_point_in_time_recovery_time", pointInTimeRecoveryData); err != nil {
+	if err = d.Set("earliest_point_in_time_recovery_time", pitr); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting earliest_point_in_time_recovery_time: %s", err))
 	}
 
