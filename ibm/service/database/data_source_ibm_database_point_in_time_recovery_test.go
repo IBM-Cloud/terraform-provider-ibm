@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabasePitrDataSourceBasic(t *testing.T) {
+func TestAccIBMDatabasePointInTimeRecoveryDataSourceBasic(t *testing.T) {
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
 
 	resource.Test(t, resource.TestCase{
@@ -22,8 +22,7 @@ func TestAccIBMDatabasePitrDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMDatabasePitrDataSourceConfigBasic(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_pitr.database_pitr", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_pitr.database_pitr", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_point_in_time_recovery.database_pitr", "deployment_id"),
 				),
 			},
 		},
@@ -55,8 +54,8 @@ func testAccCheckIBMDatabaseDataSourceConfig3(name string) string {
 
 func testAccCheckIBMDatabasePitrDataSourceConfigBasic(name string) string {
 	return testAccCheckIBMDatabaseDataSourceConfig3(name) + `
-		data "ibm_database_pitr" "database_pitr" {
-			id = ibm_database.db.id
+		data "ibm_database_point_in_time_recovery" "database_pitr" {
+			deployment_id = ibm_database.db.id
 		}
 	`
 }

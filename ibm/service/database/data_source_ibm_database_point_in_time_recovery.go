@@ -16,12 +16,12 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
 
-func DataSourceIBMDatabasePitr() *schema.Resource {
+func DataSourceIBMDatabasePointInTimeRecovery() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMDatabasePitrRead,
+		ReadContext: DataSourceIBMDatabasePointInTimeRecoveryRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"deployment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Deployment ID.",
@@ -34,7 +34,7 @@ func DataSourceIBMDatabasePitr() *schema.Resource {
 	}
 }
 
-func dataSourceIBMDatabasePitrRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMDatabasePointInTimeRecoveryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return diag.FromErr(err)
@@ -42,7 +42,7 @@ func dataSourceIBMDatabasePitrRead(context context.Context, d *schema.ResourceDa
 
 	getPitrDataOptions := &clouddatabasesv5.GetPitrDataOptions{}
 
-	getPitrDataOptions.SetID(d.Get("id").(string))
+	getPitrDataOptions.SetID(d.Get("deployment_id").(string))
 
 	pointInTimeRecoveryData, response, err := cloudDatabasesClient.GetPitrDataWithContext(context, getPitrDataOptions)
 	if err != nil {
@@ -50,7 +50,7 @@ func dataSourceIBMDatabasePitrRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("GetPitrDataWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMDatabasePitrID(d))
+	d.SetId(DataSourceIBMDatabasePointInTimeRecoveryID(d))
 	pitr := pointInTimeRecoveryData.PointInTimeRecoveryData.EarliestPointInTimeRecoveryTime
 
 	if err = d.Set("earliest_point_in_time_recovery_time", pitr); err != nil {
@@ -60,7 +60,7 @@ func dataSourceIBMDatabasePitrRead(context context.Context, d *schema.ResourceDa
 	return nil
 }
 
-// dataSourceIBMDatabasePitrID returns a reasonable ID for the list.
-func dataSourceIBMDatabasePitrID(d *schema.ResourceData) string {
+// DataSourceIBMDatabasePointInTimeRecoveryID returns a reasonable ID for the list.
+func DataSourceIBMDatabasePointInTimeRecoveryID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
