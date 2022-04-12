@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -21,10 +20,6 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 	rnd := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
-	location := os.Getenv("ICD_DB_REGION")
-	if location == "" {
-		location = "eu-gb"
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -32,13 +27,13 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup, testName, location),
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "3072"),
@@ -51,13 +46,13 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup, testName, location),
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
@@ -67,13 +62,13 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup, testName, location),
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup, testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
@@ -99,10 +94,6 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 	serviceName := fmt.Sprintf("tf-Rmq-%d", acctest.RandIntRange(10, 100))
 	//serviceName := "test_acc"
 	resourceName := "ibm_database." + serviceName
-	location := os.Getenv("ICD_DB_REGION")
-	if location == "" {
-		location = "eu-gb"
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -110,13 +101,13 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup, serviceName, location),
+				Config: testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup, serviceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
 				),
 			},
 			{
@@ -132,7 +123,7 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 
 // func testAccCheckIBMDatabaseInstanceDestroy(s *terraform.State) etc in resource_ibm_database_postgresql_test.go
 
-func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, name string, location string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -157,10 +148,10 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		  description = "desc1"
 		}
 	  }
-				`, databaseResourceGroup, name, location)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup string, name string, location string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -194,10 +185,10 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		}
 	  }
 	  
-				`, databaseResourceGroup, name, location)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string, name string, location string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -214,10 +205,10 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 6144
 	  }
-				`, databaseResourceGroup, name, location)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string, name string, location string) string {
+func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -231,5 +222,5 @@ func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string,
 		plan              = "standard"
 		location          = "%[3]s"
 	  }
-				`, databaseResourceGroup, name, location)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

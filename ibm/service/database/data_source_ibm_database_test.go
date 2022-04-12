@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -21,17 +20,13 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
 	dataName := "data.ibm_database." + testName
 	resourceName := "ibm_database.db"
-	location := os.Getenv("ICD_DB_REGION")
-	if location == "" {
-		location = "eu-gb"
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup, testName, location),
+				Config:  testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup, testName),
 				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
@@ -39,7 +34,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "name", testName),
 					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(dataName, "plan", "standard"),
-					resource.TestCheckResourceAttr(dataName, "location", "us-south"),
+					resource.TestCheckResourceAttr(dataName, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(dataName, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(dataName, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(dataName, "members_disk_allocation_mb", "10240"),
@@ -56,7 +51,7 @@ func TestAccIBMDatabaseDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name string, location string) string {
+func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -76,5 +71,5 @@ func testAccCheckIBMDatabaseDataSourceConfig(databaseResourceGroup string, name 
 		tags              = ["one:two"]
 	}
 
-				`, databaseResourceGroup, name, location)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
