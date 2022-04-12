@@ -218,6 +218,7 @@ func resourceIBMSccPostureCredentialsRead(context context.Context, d *schema.Res
 
 	accountID := userDetails.UserAccount
 	getCredentialsOptions.SetAccountID(accountID)
+	getCredentialsOptions.SetID(d.Id())
 
 	credential, response, err := postureManagementClient.GetCredentialWithContext(context, getCredentialsOptions)
 	if err != nil {

@@ -152,9 +152,10 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 
 	accountID := userDetails.UserAccount
 	getScopesOptions.SetAccountID(accountID)
+	getScopesOptions.SetID(d.Id())
 
 	scope, response, err := postureManagementClient.GetScopeDetailsWithContext(context, getScopesOptions)
-	d.SetId(*(scope.ID))
+
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -163,6 +164,7 @@ func resourceIBMSccPostureScopesRead(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG] GetScopeDetailsWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetScopeDetailsWithContext failed %s\n%s", err, response))
 	}
+	d.SetId(*scope.ID)
 
 	return nil
 }

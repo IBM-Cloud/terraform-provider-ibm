@@ -159,6 +159,7 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 
 	accountID := userDetails.UserAccount
 	getCollectorsOptions.SetAccountID(accountID)
+	getCollectorsOptions.SetID(d.Id())
 
 	collector, response, err := postureManagementClient.GetCollectorWithContext(context, getCollectorsOptions)
 	if err != nil {
