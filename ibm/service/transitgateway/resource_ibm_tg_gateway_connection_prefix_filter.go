@@ -202,16 +202,6 @@ func resourceIBMTransitGatewayConnectionPrefixFilterUpdate(d *schema.ResourceDat
 	connectionId := parts[1]
 	filterId := parts[2]
 
-	// Get the prefix filter (to compare changes)
-	getPrefixFilterOptions := &transitgatewayapisv1.GetTransitGatewayConnectionPrefixFilterOptions{}
-	getPrefixFilterOptions.SetTransitGatewayID(gatewayId)
-	getPrefixFilterOptions.SetID(connectionId)
-	getPrefixFilterOptions.SetFilterID(filterId)
-	_, response, err := client.GetTransitGatewayConnectionPrefixFilter(getPrefixFilterOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error while retrieving transit gateway connection prefix filter (%s): %s\n%s", filterId, err, response)
-	}
-
 	updatePrefixFilterOptions := &transitgatewayapisv1.UpdateTransitGatewayConnectionPrefixFilterOptions{}
 	updatePrefixFilterOptions.SetTransitGatewayID(gatewayId)
 	updatePrefixFilterOptions.SetID(connectionId)
@@ -248,7 +238,7 @@ func resourceIBMTransitGatewayConnectionPrefixFilterUpdate(d *schema.ResourceDat
 		}
 	}
 
-	_, response, err = client.UpdateTransitGatewayConnectionPrefixFilter(updatePrefixFilterOptions)
+	_, response, err := client.UpdateTransitGatewayConnectionPrefixFilter(updatePrefixFilterOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in Update Transit Gateway Connection Prefix Filter (%s): %s\n%s", filterId, err, response)
 	}
