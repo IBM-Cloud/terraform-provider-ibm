@@ -93,6 +93,7 @@ var IksSa string
 var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
+var IcdDbRegion string
 
 // For Power Colo
 
@@ -517,6 +518,12 @@ func init() {
 	if ISRouteNextHop == "" {
 		ISRouteNextHop = "10.240.0.0"
 		fmt.Println("[INFO] Set the environment variable SL_ROUTE_NEXTHOP for testing ibm_is_vpc_route else it is set to default value '10.0.0.4'")
+	}
+
+	IcdDbRegion = os.Getenv("ICD_DB_REGION")
+	if IcdDbRegion == "" {
+		IcdDbRegion = "eu-gb"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
 	}
 
 	// Added for Power Colo Testing

@@ -283,6 +283,7 @@ func Provider() *schema.Provider {
 			"ibm_cloudant":                          cloudant.DataSourceIBMCloudant(),
 			"ibm_database":                          database.DataSourceIBMDatabaseInstance(),
 			"ibm_database_connection":               database.DataSourceIBMDatabaseConnection(),
+			"ibm_database_remotes":                  database.DataSourceIBMDatabaseRemotes(),
 			"ibm_compute_bare_metal":                classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":            classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":           classicinfrastructure.DataSourceIBMComputePlacementGroup(),
