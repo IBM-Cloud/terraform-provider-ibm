@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -781,12 +782,10 @@ func deleteAllSnapshots(sess *vpcv1.VpcV1, id string) error {
 func isWaitForVolAttInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for instance (%s) to be available.", id)
 
-	communicator := make(chan interface{})
-
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceStatusRunning, "available", "failed", ""},
-		Refresh:    isVolAttInstanceRefreshFunc(instanceC, id, d, communicator),
+		Refresh:    isVolAttInstanceRefreshFunc(instanceC, id, d),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -795,7 +794,7 @@ func isWaitForVolAttInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout
 	return stateConf.WaitForState()
 }
 
-func isVolAttInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isVolAttInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
@@ -805,19 +804,15 @@ func isVolAttInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Re
 			return nil, "", fmt.Errorf("Error Getting Instance: %s\n%s", err, response)
 		}
 
-		select {
-		case data := <-communicator:
-			return nil, "", data.(error)
-		default:
-			fmt.Println("no message sent")
-		}
-
 		if *instance.Status == "available" || *instance.Status == "failed" || *instance.Status == "running" {
-			// let know the isRestartStartAction() to stop
-			close(communicator)
 			// taint the instance if status is failed
 			if *instance.Status == "failed" {
-				return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+				instanceStatusReason := instance.StatusReasons
+				out, err := json.MarshalIndent(instanceStatusReason, "", " ")
+				if err != nil {
+					return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+				}
+				return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
 			}
 			return instance, *instance.Status, nil
 
