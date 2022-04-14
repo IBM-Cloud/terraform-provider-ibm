@@ -32,7 +32,6 @@ resource "ibm_is_instance" "example" {
   profile = "bc1-2x8"
 
   primary_network_interface {
-    port_speed = "1000"
     subnet     = ibm_is_subnet.example.id
   }
 
@@ -45,8 +44,8 @@ resource "ibm_is_floating_ip" "example" {
   name   = "example-floating-ip"
   target = ibm_is_instance.example.primary_network_interface[0].id
 }
-
 ```
+  -> **Note:** To access the instance using floating ip, make sure the target security group has the respective inbound rule
 
 ## Timeouts
 The `ibm_is_instance` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -60,12 +59,15 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, String) Enter a name for the floating IP address. 
 - `resource_group` - (Optional, String) The resource group ID where you want to create the floating IP.
-- `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. ~> **Note:** conflicts with `zone`. A change in `target` which is in a different `zone` will show a change to replace current floating ip with a new one.
-- `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
-- `zone` - (Optional, Force New Resource, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. ~>**Note:** Conflicts with `target` and one of `target`, or `zone` is mandatory.
+- `target` - (Optional, String) Enter the ID of the network interface that you want to use to allocate the IP address. If you specify this option, do not specify `zone` at the same time. 
 
-~> **Note**
-  - `target` cannot be used in conjunction with the `floating_ip` argument of `ibm_is_instance_network_interface` resource and might cause cyclic dependency/unexpected issues if used used both ways.
+  ~> **Note:** `target` conflicts with `zone`. A change in `target` which is in a different `zone` will show a change to replace current floating ip with a new one.
+- `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).
+- `zone` - (Optional, Force New Resource, String) Enter the name of the zone where you want to create the floating IP address. To list available zones, run `ibmcloud is zones`. If you specify this option, do not specify `target` at the same time. 
+  
+  ~> **Note:** Conflicts with `target` and one of `target`, or `zone` is mandatory.
+
+  ~> **Note**  `target` cannot be used in conjunction with the `floating_ip` argument of `ibm_is_instance_network_interface` resource and might cause cyclic dependency/unexpected issues if used used both ways.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -74,7 +76,24 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN for this floating IP. 
 - `id` - (String) The unique identifier of the floating IP address. 
 - `status` - (String) The provisioning status of the floating IP address.
-
+- `target_list` - (List) The target of this floating IP.
+    Nested scheme for **target_list**:
+    - `crn` - (String) The CRN if target is a public gateway.
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+		    
+			Nested scheme for **deleted**:
+  			- `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this target.
+    - `id` - (String) The unique identifier for this target.
+    - `name` - (String) The user-defined name for this target.
+    - `primary_ip` - (List) The reserved ip reference.
+    
+      Nested scheme for **primary_ip**:
+        - `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+        - `href`- (String) The URL for this reserved IP
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
+        - `reserved_ip`- (String) The unique identifier for this reserved IP
+        - `resource_type`- (String) The resource type.
 
 ## Import
 The `ibm_is_floating_ip` resource can be imported by using floating IP ID.

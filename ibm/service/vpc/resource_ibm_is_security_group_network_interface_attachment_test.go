@@ -61,11 +61,11 @@ func testAccCheckIBMISSecurityGroupNwInterfaceAttachmentDestroy(s *terraform.Sta
 
 		sgID := parts[0]
 		nicID := parts[1]
-		getsgnicptions := &vpcv1.GetSecurityGroupNetworkInterfaceOptions{
+		getsgnicptions := &vpcv1.GetSecurityGroupTargetOptions{
 			SecurityGroupID: &sgID,
 			ID:              &nicID,
 		}
-		_, _, err1 := sess.GetSecurityGroupNetworkInterface(getsgnicptions)
+		_, _, err1 := sess.GetSecurityGroupTarget(getsgnicptions)
 		if err1 == nil {
 			return fmt.Errorf("network interface still exists: %s", rs.Primary.ID)
 		}

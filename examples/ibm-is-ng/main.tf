@@ -692,6 +692,41 @@ data "ibm_is_instance_disks" "disk1" {
   instance = ibm_is_instance.instance1.id
 }
 
+// reserved ips
+
+resource "ibm_is_instance" "instance7" {
+  name    = "instance5"
+  profile = var.profile
+  boot_volume {
+    name     = "boot-restore"
+    snapshot = ibm_is_snapshot.b_snapshot.id
+  }
+  auto_delete_volume = true
+  primary_network_interface {
+    primary_ip {
+      address = "10.0.0.5"
+      auto_delete = true
+    } 
+    name        = "test-reserved-ip"
+    subnet      = ibm_is_subnet.subnet2.id
+  }
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+}
+
+
+data "ibm_is_instance_network_interface_reserved_ip" "data_reserved_ip" {
+  instance = ibm_is_instance.test_instance.id
+  network_interface = ibm_is_instance.test_instance.network_interfaces.0.id
+  reserved_ip = ibm_is_instance.test_instance.network_interfaces.0.ips.0.id
+}
+
+data "ibm_is_instance_network_interface_reserved_ips" "data_reserved_ips" {
+  instance = ibm_is_instance.test_instance.id
+  network_interface = ibm_is_instance.test_instance.network_interfaces.0.id
+}
+
 data "ibm_is_instance_disk" "disk1" {
   instance = ibm_is_instance.instance1.id
   disk = data.ibm_is_instance_disks.disk1.disks.0.id
