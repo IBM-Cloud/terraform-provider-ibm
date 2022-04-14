@@ -56,23 +56,6 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "value"),
 				Description:  "String format property value.",
-			},
-			"enum": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Options for SINGLE_SELECT property type.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Default option for SINGLE_SELECT property type.",
-			},
-			"type": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "type"),
-				Description:  "Property type.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
 						segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string), d.Get("name").(string)}
@@ -92,6 +75,23 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 						return false
 					}
 				},
+			},
+			"enum": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Options for SINGLE_SELECT property type.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"default": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Default option for SINGLE_SELECT property type.",
+			},
+			"type": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "type"),
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
 				Type:         schema.TypeString,
