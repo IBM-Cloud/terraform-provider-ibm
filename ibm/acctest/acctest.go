@@ -62,6 +62,8 @@ var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
 var InstanceProfileNameUpdate string
+var IsBareMetalServerProfileName string
+var IsBareMetalServerImage string
 var DedicatedHostProfileName string
 var DedicatedHostGroupID string
 var InstanceDiskProfileName string
@@ -95,6 +97,7 @@ var IksClusterResourceGroupID string
 // For Power Colo
 
 var Pi_image string
+var Pi_sap_image string
 var Pi_image_bucket_name string
 var Pi_image_bucket_file_name string
 var Pi_image_bucket_access_key string
@@ -109,6 +112,8 @@ var Pi_dhcp_id string
 var PiCloudConnectionName string
 var PiSAPProfileID string
 var Pi_placement_group_name string
+var PiStoragePool string
+var PiStorageType string
 
 var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
@@ -131,6 +136,10 @@ var Tg_cross_network_id string
 
 //Enterprise Management
 var Account_to_be_imported string
+
+// Secuity and Complinace Center, Governance
+var Scc_gov_account_id string
+var Scc_resource_group_id string
 
 //Security and Compliance Center, SI
 var Scc_si_account string
@@ -443,6 +452,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE_UPDATE for testing ibm_is_instance resource else it is set to default value 'cx2-4x8'")
 	}
 
+	IsBareMetalServerProfileName = os.Getenv("IS_BARE_METAL_SERVER_PROFILE")
+	if IsBareMetalServerProfileName == "" {
+		IsBareMetalServerProfileName = "bx2-metal-192x768" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IS_BARE_METAL_SERVER_PROFILE for testing ibm_is_bare_metal_server resource else it is set to default value 'bx2-metal-192x768'")
+	}
+
+	IsBareMetalServerImage = os.Getenv("IS_BARE_METAL_SERVER_IMAGE")
+	if IsBareMetalServerImage == "" {
+		IsBareMetalServerImage = "r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1" // for next gen infrastructure
+		fmt.Println("[INFO] Set the environment variable IsBareMetalServerImage for testing ibm_is_bare_metal_server resource else it is set to default value 'r006-2d1f36b0-df65-4570-82eb-df7ae5f778b1'")
+	}
+
 	DedicatedHostName = os.Getenv("IS_DEDICATED_HOST_NAME")
 	if DedicatedHostName == "" {
 		DedicatedHostName = "tf-dhost-01" // for next gen infrastructure
@@ -503,6 +524,11 @@ func init() {
 	if Pi_image == "" {
 		Pi_image = "c93dc4c6-e85a-4da2-9ea6-f24576256122"
 		fmt.Println("[INFO] Set the environment variable PI_IMAGE for testing ibm_pi_image resource else it is set to default value '7200-03-03'")
+	}
+	Pi_sap_image = os.Getenv("PI_SAP_IMAGE")
+	if Pi_sap_image == "" {
+		Pi_sap_image = "2e29d6d2-e5ed-4ff8-8fad-64e4be90e023"
+		fmt.Println("[INFO] Set the environment variable PI_SAP_IMAGE for testing ibm_pi_image resource else it is set to default value 'Linux-RHEL-SAP-8-2'")
 	}
 	Pi_image_bucket_name = os.Getenv("PI_IMAGE_BUCKET_NAME")
 	if Pi_image_bucket_name == "" {
@@ -584,6 +610,16 @@ func init() {
 	if Pi_placement_group_name == "" {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
+	}
+	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
+	if PiStoragePool == "" {
+		PiStoragePool = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_STORAGE_POOL for testing ibm_pi_storage_pool_capacity else it is set to default value 'terraform-test-power'")
+	}
+	PiStorageType = os.Getenv("PI_STORAGE_TYPE")
+	if PiStorageType == "" {
+		PiStorageType = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_STORAGE_TYPE for testing ibm_pi_storage_type_capacity else it is set to default value 'terraform-test-power'")
 	}
 	// Added for resource capture instance testing
 	Pi_capture_storage_image_path = os.Getenv("PI_CAPTURE_STORAGE_IMAGE_PATH")
@@ -735,6 +771,17 @@ func init() {
 	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
 	}
+
+	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
+	if Scc_gov_account_id == "" {
+		fmt.Println("[WARN] Set the environment variable SCC_GOVERNANCE_ACCOUNT_ID with a VALID account name")
+	}
+
+	Scc_resource_group_id = os.Getenv("IBM_SCC_RESOURCE_GROUP")
+	if Scc_resource_group_id == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_SCC_RESOURCE_GROUP with a VALID resource group id")
+	}
+
 	Scc_si_account = os.Getenv("SCC_SI_ACCOUNT")
 	if Scc_si_account == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_SI_ACCOUNT for testing SCC SI resources resource else  tests will fail if this is not set correctly")

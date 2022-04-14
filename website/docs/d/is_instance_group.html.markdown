@@ -24,8 +24,8 @@ provider "ibm" {
 The following example gets an instance group information.
 
 ```terraform
-data "ibm_is_instance_group" "instance_group_data" {
-	name =  ibm_is_instance_group.instance_group.name
+data "ibm_is_instance_group" "example" {
+  name = ibm_is_instance_group.example.name
 }
 
 ```

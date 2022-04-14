@@ -24,8 +24,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_network_acl_rules" "testacc_dsrulelist"{
-  network_acl = xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
+data "ibm_is_network_acl_rules" "example"{
+  network_acl = ibm_is_network_acl.example.id
 }
 ```
 

@@ -6,6 +6,8 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -47,6 +49,9 @@ const (
 	isInstanceTemplateDedicatedHostGroup           = "dedicated_host_group"
 	isInstanceTemplateResourceType                 = "resource_type"
 	isInstanceTemplateVolumeDeleteOnInstanceDelete = "delete_volume_on_instance_delete"
+	isInstanceTemplateMetadataServiceEnabled       = "metadata_service_enabled"
+	isInstanceTemplateAvailablePolicyHostFailure   = "availability_policy_host_failure"
+	isInstanceTemplateHostFailure                  = "host_failure"
 )
 
 func ResourceIBMISInstanceTemplate() *schema.Resource {
@@ -72,12 +77,28 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+			isInstanceTemplateAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+			},
+
 			isInstanceTemplateName: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     false,
 				ValidateFunc: validate.ValidateISName,
 				Description:  "Instance Template name",
+			},
+
+			isInstanceTemplateMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
 			},
 
 			isInstanceTemplateVPC: {
@@ -99,6 +120,21 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 				Description: "Profile info",
+			},
+
+			isInstanceDefaultTrustedProfileAutoLink: {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				RequiredWith: []string{isInstanceDefaultTrustedProfileTarget},
+				Description:  "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
+			},
+			isInstanceDefaultTrustedProfileTarget: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
 			},
 
 			isInstanceTotalVolumeBandwidth: {
@@ -371,7 +407,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 }
 
 func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
-
+	host_failure := "restart, stop"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -389,6 +425,13 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeInt,
 			Optional:                   true,
 			MinValue:                   "500"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceTemplateAvailablePolicyHostFailure,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              host_failure})
 
 	ibmISInstanceTemplateValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
@@ -470,6 +513,36 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 		instanceproto.Name = &name
 	}
 
+	metadataServiceEnabled := d.Get(isInstanceTemplateMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
+	}
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
+		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &availablePolicyHostFailure,
+		}
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -734,14 +807,40 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 	instance := instanceIntf.(*vpcv1.InstanceTemplate)
 	d.Set(isInstanceTemplateName, *instance.Name)
 	d.Set(isInstanceTemplateCRN, *instance.CRN)
+	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+		d.Set(isInstanceTemplateAvailablePolicyHostFailure, instance.AvailabilityPolicy.HostFailure)
+	}
 	if instance.Profile != nil {
 		instanceProfileIntf := instance.Profile
 		identity := instanceProfileIntf.(*vpcv1.InstanceProfileIdentity)
 		d.Set(isInstanceTemplateProfile, *identity.Name)
 	}
 
+	if instance.DefaultTrustedProfile != nil {
+		if instance.DefaultTrustedProfile.AutoLink != nil {
+			d.Set(isInstanceDefaultTrustedProfileAutoLink, instance.DefaultTrustedProfile.AutoLink)
+		}
+		if instance.DefaultTrustedProfile.Target != nil {
+			switch reflect.TypeOf(instance.DefaultTrustedProfile.Target).String() {
+			case "*vpcv1.TrustedProfileIdentityTrustedProfileByID":
+				{
+					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByID)
+					d.Set(isInstanceDefaultTrustedProfileTarget, target.ID)
+				}
+			case "*vpcv1.TrustedProfileIdentityTrustedProfileByCRN":
+				{
+					target := instance.DefaultTrustedProfile.Target.(*vpcv1.TrustedProfileIdentityTrustedProfileByCRN)
+					d.Set(isInstanceDefaultTrustedProfileTarget, target.CRN)
+				}
+			}
+		}
+	}
+
 	if instance.TotalVolumeBandwidth != nil {
 		d.Set(isInstanceTotalVolumeBandwidth, int(*instance.TotalVolumeBandwidth))
+	}
+	if instance.MetadataService != nil {
+		d.Set(isInstanceTemplateMetadataServiceEnabled, instance.MetadataService.Enabled)
 	}
 
 	var placementTargetMap map[string]interface{}

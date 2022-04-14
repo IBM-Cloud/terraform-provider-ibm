@@ -6,6 +6,7 @@ package dnsservices
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -59,6 +60,7 @@ func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
 			},
 			pdnsCRFRMatch: {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The matching zone or hostname.",
 			},
@@ -85,7 +87,7 @@ func ResourceIBMPrivateDNSForwardingRuleValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "hostname, zone",
+			AllowedValues:              "hostname, zone, Default",
 		},
 	)
 
@@ -160,24 +162,27 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	opt := dnsSvcsClient.NewUpdateForwardingRuleOptions(instanceID, resolverID, ruleID)
+
 	if d.HasChange(pdnsCRFRDesctiption) ||
 		d.HasChange(pdnsCRFRMatch) ||
 		d.HasChange(pdnsCRFRForwardTo) {
-
 		if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
-			frdes := des.(string)
-			opt.SetDescription(frdes)
-		}
-		if ma, ok := d.GetOk(pdnsCRFRMatch); ok {
-			frmatch := ma.(string)
-			opt.SetMatch(frmatch)
+			frdesc := des.(string)
+			opt.SetDescription(frdesc)
 		}
 		if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
 			opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
 		}
-
+		if ty, ok := d.GetOk(pdnsCRFRType); ok {
+			crtype := ty.(string)
+			if strings.ToLower(crtype) == "Default" {
+				if match, ok := d.GetOk(pdnsCRFRMatch); ok {
+					frmatch := match.(string)
+					opt.SetMatch(frmatch)
+				}
+			}
+		}
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error updating the forwarding rule %s:%s", err, resp))

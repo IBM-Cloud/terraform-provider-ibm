@@ -27,46 +27,47 @@ Create, update, or delete a Virtual Servers for VPC instance. For more informati
 ### Sample for creating an instance in a VPC.
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "testacc_subnet" {
-  name            = "testsubnet"
-  vpc             = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
 }
 
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
+  metadata_service_enabled  = false
 
   boot_volume {
     encryption = "crn:v1:bluemix:public:kms:us-south:a/dffc98a0f1f0f95f6613b3b752286b87:e4a29d1a-2ef0-42a6-8fd2-350deb1c647e:key:5437653b-c4b1-447f-9646-b2a2a4cd6179"
   }
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     primary_ipv4_address = "10.240.0.6"
     allow_ip_spoofing = true
   }
 
   network_interfaces {
     name   = "eth1"
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     allow_ip_spoofing = false
   }
 
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
 
   //User can configure timeouts
   timeouts {
@@ -83,70 +84,70 @@ The following example shows how you can create a virtual server instance with cu
 
 ```terraform
 
-resource "ibm_is_vpc" "testacc_vpc" {
-    name = "test"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_security_group" "testacc_security_group" {
-    name = "test"
-    vpc = ibm_is_vpc.testacc_vpc.id
+resource "ibm_is_security_group" "example" {
+  name = "example-security-group"
+  vpc  = ibm_is_vpc.example.id
 }
 
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    depends_on = [ibm_is_security_group.testacc_security_group]
- }
+resource "ibm_is_security_group_rule" "example1" {
+  group      = ibm_is_security_group.example.id
+  direction  = "inbound"
+  remote     = "127.0.0.1"
+  depends_on = [ibm_is_security_group.example]
+}
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    icmp {
-        code = 20
-        type = 30
-    }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_all]
+resource "ibm_is_security_group_rule" "example2" {
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  icmp {
+    code = 20
+    type = 30
+  }
+  depends_on = [ibm_is_security_group_rule.example1]
 
- }
+}
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "inbound"
-    remote = "127.0.0.1"
-    udp {
-        port_min = 805
-        port_max = 807
-    }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_icmp]
- }
+resource "ibm_is_security_group_rule" "example3" {
+  group     = ibm_is_security_group.example.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+  udp {
+    port_min = 805
+    port_max = 807
+  }
+  depends_on = [ibm_is_security_group_rule.example2]
+}
 
- resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "outbound"
-    remote = "127.0.0.1"
-    tcp {
-        port_min = 8080
-        port_max = 8080
-    }
-    depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_udp]
- }
+resource "ibm_is_security_group_rule" "example3" {
+  group     = ibm_is_security_group.example.id
+  direction = "outbound"
+  remote    = "127.0.0.1"
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
+  depends_on = [ibm_is_security_group_rule.example2]
+}
 
-resource "ibm_is_instance" "testacc_instance" {
-  name    = "testinstance"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = ibm_is_image.example.id
   profile = "bc1-2x8"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet          = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
 
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  vpc        = ibm_is_vpc.example.id
+  zone       = "us-south-1"
+  keys       = [ibm_is_ssh_key.example.id]
+  depends_on = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -156,40 +157,40 @@ resource "ibm_is_instance" "testacc_instance" {
   }
 }
 
-data "ibm_resource_group" "default" {
-  name = "Default" ///give your resource grp
+resource "ibm_resource_group" "example" {
+  name = "example-resource-group" 
 }
 
-resource "ibm_is_dedicated_host_group" "dh_group01" {
-  family = "compute"
-  class = "cx2"
-  zone = "us-south-1"
-  name = "my-dh-group-01"
-  resource_group = data.ibm_resource_group.default.id
+resource "ibm_is_dedicated_host_group" "example" {
+  family         = "compute"
+  class          = "cx2"
+  zone           = "us-south-1"
+  name           = "example-dh-group-01"
+  resource_group = ibm_resource_group.example.id
 }
 
-resource "ibm_is_dedicated_host" "is_dedicated_host" {
-  profile = "bx2d-host-152x608"
-  name = "my-dedicated-host-01"
-	host_group = ibm_is_dedicated_host_group.dh_group01.id
-  resource_group = data.ibm_resource_group.default.id
+resource "ibm_is_dedicated_host" "example" {
+  profile        = "bx2d-host-152x608"
+  name           = "example-dedicated-host-01"
+  host_group     = ibm_is_dedicated_host_group.example.id
+  resource_group = ibm_resource_group.example.id
 }
 
 // Example to provision instance in a dedicated host
-resource "ibm_is_instance" "testacc_instance1" {
-  name    = "testinstance1"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example1" {
+  name    = "example-instance-1"
+  image   = ibm_is_image.example.id
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet          = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
-  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  dedicated_host = ibm_is_dedicated_host.example.id
+  vpc            = ibm_is_vpc.example.id
+  zone           = "us-south-1"
+  keys           = [ibm_is_ssh_key.example.id]
+  depends_on     = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -200,20 +201,20 @@ resource "ibm_is_instance" "testacc_instance1" {
 }
 
 // Example to provision instance in a dedicated host that belongs to the provided dedicated host group
-resource "ibm_is_instance" "testacc_instance2" {
-  name    = "testinstance2"
-  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+resource "ibm_is_instance" "example2" {
+  name    = "example-instance-2"
+  image   = ibm_is_image.example.id
   profile = "cx2-2x4"
 
   primary_network_interface {
-    subnet = ibm_is_subnet.testacc_subnet.id
-    security_groups = [ibm_is_security_group.testacc_security_group.id]
+    subnet          = ibm_is_subnet.example.id
+    security_groups = [ibm_is_security_group.example.id]
   }
-  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-  depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+  dedicated_host_group = ibm_is_dedicated_host_group.example.id
+  vpc                  = ibm_is_vpc.example.id
+  zone                 = "us-south-1"
+  keys                 = [ibm_is_ssh_key.example.id]
+  depends_on           = [ibm_is_security_group_rule.example3]
 
   //User can configure timeouts
   timeouts {
@@ -225,26 +226,26 @@ resource "ibm_is_instance" "testacc_instance2" {
 
 // Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
 
-resource "ibm_is_snapshot" "testacc_snapshot" {
-  name 		      	= "testsnapshot"
-  source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+resource "ibm_is_snapshot" "example" {
+  name          = "example-snapshot"
+  source_volume = ibm_is_instance.example.volume_attachments[0].volume_id
 }
 
-resource "ibm_is_instance" "testacc_instance_restore" {
-  name    = "vsirestore"
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi-restore"
   profile = "cx2-2x4"
   boot_volume {
     name     = "boot-restore"
-    snapshot = ibm_is_snapshot.testacc_snapshot.id
+    snapshot = ibm_is_snapshot.example.id
   }
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
+  vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys = [ibm_is_ssh_key.example.id]
   network_interfaces {
-    subnet = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.example.id
     name   = "eth1"
   }
 }
@@ -268,32 +269,42 @@ Review the argument references that you can specify for your resource.
   ~> **Note** 
     `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
+- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
+  - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.
+
+    ~> **NOTE:**
+    Supports only expansion on update (must be attached to a running instance and must not be less than the current volume size)
   - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
-    **Note** 
     
-     - `snapshot` conflicts with `image` id and `instance_template`
+    ~> **Note:**
+    `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
+- `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
+- `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
 - `force_action` - (Optional, Boolean) Required with `action`. If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
-- `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access. **Note** The force_recovery_time is used to retry multiple times until timeout.
-- `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images`.
-  **Note** 
-    
-  - `image` conflicts with `boot_volume.0.snapshot`  
+- `force_recovery_time` - (Optional, Integer) Define timeout (in minutes), to force the `is_instance` to recover from a perpetual "starting" state, during provisioning. And to force the is_instance to recover from a perpetual "stopping" state, during removal of user access.
+
+  ~>**Note:** The force_recovery_time is used to retry multiple times until timeout.
+- `image` - (Optional, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images` or use `ibm_is_images` datasource.
+  
+  ~> **Note:**
+  `image` conflicts with `boot_volume.0.snapshot`  
 - `keys` - (Optional, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
-  Nested scheme for `network_interaces`:
+  Nested scheme for `network_interfaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
-    **NOTE**:
-      - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
-      - Use this only if you have **IP spoofing operator** access.
+      
+      ~> **NOTE:**
+      `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances. Use this only if you have **IP spoofing operator** access.
 
   - `name` - (Optional, String) The name of the network interface.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
@@ -304,26 +315,25 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `primary_network_interface`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
-    **NOTE**:
-      - `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances.
-      - Use this only if you have **IP spoofing operator** access.
+
+    ~> **NOTE:**
+    `allow_ip_spoofing` requires **IP spoofing operator** access under VPC infrastructure Services. As the **IP spoofing operator**, you can enable or disable the IP spoofing check on virtual server instances. Use this only if you have **IP spoofing operator** access.
 
   - `name` - (Optional, String) The name of the network interface.
-  - `port_speed` - (Deprecated, Integer) Speed of the network interface.
   - `primary_ipv4_address` - (Optional, Forces new resource, String) The IPV4 address of the interface.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
 - `profile` - (Optional, String) The name of the profile that you want to use for your instance. To list supported profiles, run `ibmcloud is instance-profiles`.
 
-  ~>**NOTE:**
-      When the `profile` is changed, the VSI is restarted. The new profile must:                                                                                                                                          
-          1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
-          2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
+  **NOTE:**
+  When the `profile` is changed, the VSI is restarted. The new profile must:
+    1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
+    2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the source template.
-  **Note** 
-    
-  - `instance_template` conflicts with `boot_volume.0.snapshot`  
+  
+  ~> **Note:**
+  `instance_template` conflicts with `boot_volume.0.snapshot`  
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
 - `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance.
@@ -334,7 +344,6 @@ Review the argument references that you can specify for your resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
-
 - `bandwidth` - The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume`- (List of Strings) A list of boot volumes that the instance uses.
 

@@ -25,15 +25,15 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
-resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
-  vpc = ibm_is_vpc.testacc_vpc.id
-  name = "routTabletest"
-  route_direct_link_ingress = true
+resource "ibm_is_vpc_routing_table" "example" {
+  vpc                           = ibm_is_vpc.example.id
+  name                          = "example-vpc-routing-table"
+  route_direct_link_ingress     = true
   route_transit_gateway_ingress = false
-  route_vpc_zone_ingress = false
+  route_vpc_zone_ingress        = false
 }
 
 ```
@@ -41,6 +41,7 @@ resource "ibm_is_vpc_routing_table" "test_ibm_is_vpc_routing_table" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `created_at` - (Timestamp)  The date and time when the routing table was created.
 - `name` - (Optional, String) The routing table name.
 - `route_direct_link_ingress` - (Optional, Bool)  If set to **true**, the routing table is used to route traffic that originates from Direct Link to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
 - `route_transit_gateway_ingress` - (Optional, Bool) If set to **true**, the routing table is used to route traffic that originates from Transit Gateway to the VPC. To succeed, the VPC must not already have a routing table with the property set to **true**.
@@ -51,11 +52,11 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `href` - (String) The routing table URL.
-- `id` - (String) The routing table ID. The ID is composed of `<vpc_id>/<vpc_route_table_id>` of the VPC route.
+- `id` - (String) The unique identifier of the routing table. The ID is composed of `<vpc_id>/<vpc_routing_table_id>`.
 - `is_default` - (String)  Indicates the default routing table for this VPC.
 - `lifecycle_state` - (String) The lifecycle state of the routing table.
 - `resource_type` - (String) The resource type.
-- `routing_table` - (String) The generated routing table ID.
+- `routing_table` - (String) The unique routing table identifier.
 - `routes` - (List) The routes for the routing table.
 
   Nested scheme for `routes`:

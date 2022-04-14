@@ -24,9 +24,9 @@ provider "ibm" {
 The following example can retrieve instance group manager info.
 
 ```terraform
-data "ibm_is_instance_group_manager" "instance_group_manager" {
-  instance_group = "r006-76740f94-fcc4-11e9-96e7-a77723715315"
-  name = "testmanager"
+data "ibm_is_instance_group_manager" "example" {
+  instance_group = ibm_is_instance_group.example.id
+  name = "example-instance-group-manager"
 }
 ```
 

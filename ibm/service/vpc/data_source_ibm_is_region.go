@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -27,7 +28,7 @@ func DataSourceIBMISRegion() *schema.Resource {
 
 			isRegionName: {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 
 			isRegionStatus: {
@@ -41,6 +42,13 @@ func DataSourceIBMISRegion() *schema.Resource {
 func dataSourceIBMISRegionRead(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
 
+	if name == "" {
+		bmxSess, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			return err
+		}
+		name = bmxSess.Config.Region
+	}
 	return regionGet(d, meta, name)
 }
 

@@ -24,8 +24,8 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_dedicated_host_profile" "is_dedicated_host_profile" {
-	name = "dh2-56x464"
+data "ibm_is_dedicated_host_profile" "example" {
+  name = "dh2-56x464"
 }
 ```
 

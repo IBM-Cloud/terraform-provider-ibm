@@ -66,7 +66,6 @@ func testAccCheckIBMISFloatingIPDataSourceConfig(vpcname, subnetname, sshname, p
 		image   = "%s"
 		profile = "%s"
 		primary_network_interface {
-		  port_speed = "100"
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
 		vpc  = ibm_is_vpc.testacc_vpc.id

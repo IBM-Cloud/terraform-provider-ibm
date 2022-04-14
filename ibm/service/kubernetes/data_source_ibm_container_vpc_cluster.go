@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
@@ -255,7 +255,11 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Computed:    true,
 				Description: "email id of the key owner",
 			},
-
+			"image_security_enforcement": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True if image security enforcement is enabled",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -402,6 +406,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 			d.Set("api_key_owner_email", apikeyConfig.Email)
 		}
 	}
+	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set(flex.ResourceControllerURL, controller+"/kubernetes/clusters")
 	d.Set(flex.ResourceName, cls.Name)
 	d.Set(flex.ResourceCRN, cls.CRN)

@@ -21,12 +21,12 @@ provider "ibm" {
 ```
 
 ## Example usage
-The following example retrieves information about the `b-2x8` instance profile. 
+The following example retrieves information about the `cx2-2x4` instance profile. 
 
 ```terraform
 
-data "ibm_is_instance_profile" "profile" {
-  name = "b-2x8"
+data "ibm_is_instance_profile" "example" {
+  name = "cx2-2x4"
 }
 
 ```

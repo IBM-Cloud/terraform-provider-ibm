@@ -1,10 +1,11 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -311,6 +312,11 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 				Computed:    true,
 				Description: "email id of the key owner",
 			},
+			"image_security_enforcement": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True if image security enforcement is enabled",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -437,11 +443,12 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	apikeyAPI := csClient.Apikeys()
 	apikeyConfig, err := apikeyAPI.GetApiKeyInfo(name, targetEnv)
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Error in GetApiKeyInfo, %s", err)
 	}
 	d.Set("api_key_id", apikeyConfig.ID)
 	d.Set("api_key_owner_name", apikeyConfig.Name)
 	d.Set("api_key_owner_email", apikeyConfig.Email)
+	d.Set("image_security_enforcement", clusterFields.ImageSecurityEnabled)
 	d.Set(flex.ResourceName, clusterFields.Name)
 	d.Set(flex.ResourceCRN, clusterFields.CRN)
 	d.Set(flex.ResourceStatus, clusterFields.State)

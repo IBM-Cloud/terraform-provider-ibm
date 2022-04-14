@@ -47,6 +47,12 @@ func ResourceIBMIAMAccessGroupMembers() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
+			"iam_profile_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"members": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -82,13 +88,14 @@ func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.R
 
 	accountID := userDetails.UserAccount
 
-	var userids, serviceids []string
+	var userids, serviceids, profileids []string
 
 	users := flex.ExpandStringList(d.Get("ibm_ids").(*schema.Set).List())
 	services := flex.ExpandStringList(d.Get("iam_service_ids").(*schema.Set).List())
+	profiles := flex.ExpandStringList(d.Get("iam_profile_ids").(*schema.Set).List())
 
-	if len(users) == 0 && len(services) == 0 {
-		return diag.FromErr(fmt.Errorf("ERROR] Provide either `ibm_ids` or `iam_service_ids`"))
+	if len(users) == 0 && len(services) == 0 && len(profiles) == 0 {
+		return diag.FromErr(fmt.Errorf("ERROR] Provide either `ibm_ids` or `iam_service_ids` or `iam_profile_ids`"))
 
 	}
 
@@ -102,7 +109,12 @@ func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	members := prepareMemberAddRequest(iamAccessGroupsClient, userids, serviceids)
+	profileids, err = FlattenProfileIds(profiles, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	members := prepareMemberAddRequest(iamAccessGroupsClient, userids, serviceids, profileids)
 
 	addMembersToAccessGroupOptions := iamAccessGroupsClient.NewAddMembersToAccessGroupOptions(grpID)
 	addMembersToAccessGroupOptions.SetMembers(members)
@@ -196,13 +208,39 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 		}
 	}
 
+	profileStart := ""
+	allprofiles := []iamidentityv1.TrustedProfile{}
+	var plimit int64 = 100
+	for {
+		listProfilesOptions := iamidentityv1.ListProfilesOptions{
+			AccountID: &userDetails.UserAccount,
+			Pagesize:  &plimit,
+		}
+		if profileStart != "" {
+			listProfilesOptions.Pagetoken = &profileStart
+		}
+
+		profileIDs, resp, err := iamClient.ListProfiles(&listProfilesOptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp))
+		}
+		profileStart = flex.GetNextIAM(profileIDs.Next)
+		allprofiles = append(allprofiles, profileIDs.Profiles...)
+		if profileStart == "" {
+			break
+		}
+	}
+
 	d.Set("members", flex.FlattenAccessGroupMembers(allMembers, res, allrecs))
-	ibmID, serviceID := flex.FlattenMembersData(allMembers, res, allrecs)
+	ibmID, serviceID, profileID := flex.FlattenMembersData(allMembers, res, allrecs, allprofiles)
 	if len(ibmID) > 0 {
 		d.Set("ibm_ids", ibmID)
 	}
 	if len(serviceID) > 0 {
 		d.Set("iam_service_ids", serviceID)
+	}
+	if len(profileID) > 0 {
+		d.Set("iam_profile_ids", profileID)
 	}
 	return nil
 }
@@ -227,7 +265,7 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 
 	accountID := userDetails.UserAccount
 
-	var removeUsers, addUsers, removeServiceids, addServiceids []string
+	var removeUsers, addUsers, removeServiceids, addServiceids, removeProfileids, addProfileids []string
 	o, n := d.GetChange("ibm_ids")
 	ou := o.(*schema.Set)
 	nu := n.(*schema.Set)
@@ -242,8 +280,15 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 	removeServiceids = flex.ExpandStringList(osi.Difference(nsi).List())
 	addServiceids = flex.ExpandStringList(nsi.Difference(osi).List())
 
-	if len(addUsers) > 0 || len(addServiceids) > 0 && !d.IsNewResource() {
-		var userids, serviceids []string
+	op, np := d.GetChange("iam_profile_ids")
+	opi := op.(*schema.Set)
+	npi := np.(*schema.Set)
+
+	removeProfileids = flex.ExpandStringList(opi.Difference(npi).List())
+	addProfileids = flex.ExpandStringList(npi.Difference(opi).List())
+
+	if len(addUsers) > 0 || len(addServiceids) > 0 || len(addProfileids) > 0 && !d.IsNewResource() {
+		var userids, serviceids, profileids []string
 		userids, err = flex.FlattenUserIds(accountID, addUsers, meta)
 		if err != nil {
 			return diag.FromErr(err)
@@ -253,7 +298,13 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		members := prepareMemberAddRequest(iamAccessGroupsClient, userids, serviceids)
+
+		profileids, err = FlattenProfileIds(addProfileids, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		members := prepareMemberAddRequest(iamAccessGroupsClient, userids, serviceids, profileids)
 
 		addMembersToAccessGroupOptions := iamAccessGroupsClient.NewAddMembersToAccessGroupOptions(grpID)
 		addMembersToAccessGroupOptions.SetMembers(members)
@@ -263,7 +314,7 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 		}
 
 	}
-	if len(removeUsers) > 0 || len(removeServiceids) > 0 && !d.IsNewResource() {
+	if len(removeUsers) > 0 || len(removeServiceids) > 0 || len(removeProfileids) > 0 && !d.IsNewResource() {
 		iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 		if err != nil {
 			return diag.FromErr(err)
@@ -290,6 +341,22 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 				return diag.FromErr(fmt.Errorf("ERROR] Error Getting Service Ids %s %s", err, resp))
 			}
 			removeMembersFromAccessGroupOptions := iamAccessGroupsClient.NewRemoveMemberFromAccessGroupOptions(grpID, *serviceID.IamID)
+			detailResponse, err := iamAccessGroupsClient.RemoveMemberFromAccessGroup(removeMembersFromAccessGroupOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
+			}
+
+		}
+
+		for _, p := range removeProfileids {
+			getProfileOptions := iamidentityv1.GetProfileOptions{
+				ProfileID: &p,
+			}
+			profileID, resp, err := iamClient.GetProfile(&getProfileOptions)
+			if err != nil || profileID == nil {
+				return diag.FromErr(fmt.Errorf("ERROR] Error Getting Profile Ids %s %s", err, resp))
+			}
+			removeMembersFromAccessGroupOptions := iamAccessGroupsClient.NewRemoveMemberFromAccessGroupOptions(grpID, *profileID.IamID)
 			detailResponse, err := iamAccessGroupsClient.RemoveMemberFromAccessGroup(removeMembersFromAccessGroupOptions)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
@@ -355,16 +422,36 @@ func resourceIBMIAMAccessGroupMembersDelete(context context.Context, d *schema.R
 		}
 	}
 
+	profiles := flex.ExpandStringList(d.Get("iam_profile_ids").(*schema.Set).List())
+
+	for _, id := range profiles {
+		profileID, err := getProfileID(id, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		removeMembersFromAccessGroupOptions := &iamaccessgroupsv2.RemoveMemberFromAccessGroupOptions{
+			AccessGroupID: &grpID,
+			IamID:         profileID.IamID,
+		}
+		_, err = iamAccessGroupsClient.RemoveMemberFromAccessGroup(removeMembersFromAccessGroupOptions)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId("")
 
 	return nil
 }
 
-func prepareMemberAddRequest(iamAccessGroupsClient *iamaccessgroupsv2.IamAccessGroupsV2, userIds, serviceIds []string) (members []iamaccessgroupsv2.AddGroupMembersRequestMembersItem) {
-	members = make([]iamaccessgroupsv2.AddGroupMembersRequestMembersItem, len(userIds)+len(serviceIds))
+func prepareMemberAddRequest(iamAccessGroupsClient *iamaccessgroupsv2.IamAccessGroupsV2, userIds, serviceIds, profileIds []string) (members []iamaccessgroupsv2.AddGroupMembersRequestMembersItem) {
+	members = make([]iamaccessgroupsv2.AddGroupMembersRequestMembersItem, len(userIds)+len(serviceIds)+len(profileIds))
 	var i = 0
 	userType := "user"
 	serviceType := "service"
+	profileType := "profile"
+
 	for _, id := range userIds {
 		membersItem, err := iamAccessGroupsClient.NewAddGroupMembersRequestMembersItem(id, userType)
 		if err != nil {
@@ -376,6 +463,15 @@ func prepareMemberAddRequest(iamAccessGroupsClient *iamaccessgroupsv2.IamAccessG
 
 	for _, id := range serviceIds {
 		membersItem, err := iamAccessGroupsClient.NewAddGroupMembersRequestMembersItem(id, serviceType)
+		if err != nil || membersItem == nil {
+			log.Printf("Error in preparing membership data. %s", err)
+		}
+		members[i] = *membersItem
+		i++
+	}
+
+	for _, id := range profileIds {
+		membersItem, err := iamAccessGroupsClient.NewAddGroupMembersRequestMembersItem(id, profileType)
 		if err != nil || membersItem == nil {
 			log.Printf("Error in preparing membership data. %s", err)
 		}
@@ -410,4 +506,32 @@ func FlattenServiceIds(services []string, meta interface{}) ([]string, error) {
 		serviceids[i] = *serviceID.IamID
 	}
 	return serviceids, nil
+}
+
+func FlattenProfileIds(profiles []string, meta interface{}) ([]string, error) {
+	profileids := make([]string, len(profiles))
+	for i, id := range profiles {
+		profileID, err := getProfileID(id, meta)
+		if err != nil {
+			return nil, err
+		}
+		profileids[i] = *profileID.IamID
+	}
+	return profileids, nil
+}
+
+func getProfileID(id string, meta interface{}) (iamidentityv1.TrustedProfile, error) {
+	profileids := iamidentityv1.TrustedProfile{}
+	iamClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+	if err != nil {
+		return profileids, err
+	}
+	getProfileOptions := iamidentityv1.GetProfileOptions{
+		ProfileID: &id,
+	}
+	profileID, resp, err := iamClient.GetProfile(&getProfileOptions)
+	if err != nil || profileID == nil {
+		return profileids, fmt.Errorf("ERROR] Error Getting Profile Ids %s %s", err, resp)
+	}
+	return *profileID, nil
 }

@@ -192,7 +192,7 @@ func isIBMPIVolumeAttachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInsta
 			return nil, "", err
 		}
 
-		if vol.State == "in-use" && flex.StringContains(vol.PvmInstanceIds, pvmInstanceID) {
+		if vol.State == "in-use" && flex.StringContains(vol.PvmInstanceIDs, pvmInstanceID) {
 			return vol, helpers.PIVolumeAllowableAttachStatus, nil
 		}
 
@@ -231,7 +231,7 @@ func isIBMPIVolumeDetachRefreshFunc(client *st.IBMPIVolumeClient, id, cloudInsta
 		// Check if Instance ID is in the Volume's Instance list
 		// Also validate the Volume state is 'available' when it is not Sharable
 		// In case of Sharable Volume it can be `in-use` state
-		if !flex.StringContains(vol.PvmInstanceIds, pvmInstanceID) &&
+		if !flex.StringContains(vol.PvmInstanceIDs, pvmInstanceID) &&
 			(*vol.Shareable || (!*vol.Shareable && vol.State == "available")) {
 			return vol, helpers.PIVolumeProvisioningDone, nil
 		}

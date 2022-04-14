@@ -14,7 +14,7 @@ Provides a read-only data source for en_subscriptions. You can then reference th
 
 ```terraform
 data "ibm_en_subscriptions" "en_subscriptions" {
-  instance_guid = "instance_guid"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
 }
 ```
 

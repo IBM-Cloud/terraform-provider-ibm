@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes_test
@@ -102,6 +102,27 @@ func TestAccIBMContainerOpenshiftClusterBasic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMContainerVpcClusterImageSecuritySetting(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterImageSecuritySetting(clusterName, "true"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_vpc_cluster", "name", clusterName),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_vpc_cluster", "image_security_enforcement", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -327,4 +348,20 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }
   `, name, openshiftFlavour, openShiftworkerCount)
 
+}
+
+func testAccCheckIBMContainerVpcClusterImageSecuritySetting(name, setting string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "testacc_vpc_cluster" {
+		name              = "%s"
+		vpc_id            = "%s"
+		flavor            = "bx2.2x8"
+		worker_count      = "1"
+		resource_group_id = "%s"
+		zones {
+			subnet_id = "%s"
+			name      = "us-south-1"
+		  }
+		image_security_enforcement = %s
+	  }`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.SubnetID, setting)
 }

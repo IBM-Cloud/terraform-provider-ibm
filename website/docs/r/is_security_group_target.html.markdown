@@ -12,6 +12,8 @@ description: |-
 This request adds a resource to an existing security group. The supplied target identifier can be:
   - A network interface identifier.
   - An application load balancer identifier.
+  - An endpoint gateway identifier.
+  
 When a target is added to a security group, the security group rules are applied to the target. A request body is not required, and if supplied, is ignored. For more information, about security group target, see [required permissions](https://cloud.ibm.com/docs/vpc?topic=vpc-resource-authorizations-required-for-api-and-cli-calls).
 
 **Note**
@@ -30,17 +32,21 @@ When a target is added to a security group, the security group rules are applied
 Sample to create a security group target.
 
 ```terraform
-resource "ibm_is_security_group_target" "testacc_security_group_target" {
-    security_group = ibm_is_security_group.testacc_security_group.id
-    target = "r006-5b77aa07-7dfb-4c74-a1bd-904b23cbe198"
-  }
+resource "ibm_is_security_group_target" "example" {
+  security_group = ibm_is_security_group.example.id
+  target         = ibm_is_lb.example.id
+}
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `security_group` - (Required, Force new resource, String) The security group identifier.
-- `target` - (Required, Force new resource, String) The security group target identifier.
+- `target` - (Required, Force new resource, String) The security group target identifier. Could be one of the below:
+  - A network interface identifier.
+  - An application load balancer identifier.
+  - An endpoint gateway identifier.
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

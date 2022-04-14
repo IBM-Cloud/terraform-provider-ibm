@@ -24,66 +24,66 @@ provider "ibm" {
 Sample to create a reserved IP:
 
 ```terraform
-    // Create a VPC
-    resource "ibm_is_vpc" "vpc1" {
-        name = "my-vpc"
-    }
+// Create a VPC
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
 
-    // Create a subnet
-    resource "ibm_is_subnet" "subnet1" {
-        name                     = "my-subnet"
-        vpc                      = ibm_is_vpc.vpc1.id
-        zone                     = "us-south-1"
-        total_ipv4_address_count = 256
-    }
+// Create a subnet
+resource "ibm_is_subnet" "example" {
+  name                     = "example-subnet"
+  vpc                      = ibm_is_vpc.example.id
+  zone                     = "us-south-1"
+  total_ipv4_address_count = 256
+}
 
-    // Create the resrved IP in the following ways
+// Create the resrved IP in the following ways
 
-    // Only with Subnet ID
-    resource "ibm_is_subnet_reserved_ip" "res_ip" {
-        subnet = ibm_is_subnet.subnet1.id
-    }
+// Only with Subnet ID
+resource "ibm_is_subnet_reserved_ip" "example" {
+  subnet = ibm_is_subnet.example.id
+}
 
-    // Subnet ID with a given name
-    resource "ibm_is_subnet_reserved_ip" "res_ip_name" {
-        subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet-reserved-ip"
-    }
+// Subnet ID with a given name
+resource "ibm_is_subnet_reserved_ip" "example1" {
+  subnet = ibm_is_subnet.example.id
+  name   = "example-subnet-reserved-ip"
+}
 
-    // Subnet ID with auto_delete
-    resource "ibm_is_subnet_reserved_ip" "res_ip_auto_delete" {
-        subnet = ibm_is_subnet.subnet1.id
-        auto_delete = true
-    }
+// Subnet ID with auto_delete
+resource "ibm_is_subnet_reserved_ip" "example2" {
+  subnet      = ibm_is_subnet.example.id
+  auto_delete = true
+}
 
-    // Subnet ID with both name and auto_delete
-    resource "ibm_is_subnet_reserved_ip" "res_ip_auto_delete_name" {
-        subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet-reserved-ip"
-        auto_delete = true
-    }
+// Subnet ID with both name and auto_delete
+resource "ibm_is_subnet_reserved_ip" "example3" {
+  subnet      = ibm_is_subnet.example.id
+  name        = "example-subnet-reserved-ip"
+  auto_delete = true
+}
 
-        // Create a virtual endpoint gateway and set as a target for reserved IP
-    resource "ibm_is_virtual_endpoint_gateway" "endpoint_gateway" {
-        name = "my-endpoint-gateway-1"
-        target {
-            name          = "ibm-ntp-server"
-            resource_type = "provider_infrastructure_service"
-        }
-        vpc = ibm_is_vpc.vpc1.id
-    }
-    resource "ibm_is_subnet_reserved_ip" "reserved_ip_1" {
-        subnet = ibm_is_subnet.subnet1.id
-        name = "my-subnet-reserved-ip1"
-        target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
-    }
+// Create a virtual endpoint gateway and set as a target for reserved IP
+resource "ibm_is_virtual_endpoint_gateway" "example" {
+  name = "example-endpoint-gateway"
+  target {
+    name          = "ibm-ntp-server"
+    resource_type = "provider_infrastructure_service"
+  }
+  vpc = ibm_is_vpc.example.id
+}
+resource "ibm_is_subnet_reserved_ip" "example4" {
+  subnet = ibm_is_subnet.example.id
+  name   = "example-subnet-reserved-ip"
+  target = ibm_is_virtual_endpoint_gateway.example.id
+}
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `auto_delete`- (Optional, Bool)  If reserved IP is auto deleted.
-- `name` - (Optional, String) The name of the reserved IP. **NOTE** raise  error if name is given with a prefix `ibm- `.
+- `name` - (Optional, String) The name of the reserved IP. ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
 - `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
 - `target` - (Optional, string) The ID for the target endpoint gateway for the reserved IP.
 

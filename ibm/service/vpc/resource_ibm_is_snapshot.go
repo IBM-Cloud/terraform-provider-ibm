@@ -43,6 +43,7 @@ const (
 	isSnapshotSuspended       = "suspended"
 	isSnapshotUpdating        = "updating"
 	isSnapshotWaiting         = "waiting"
+	isSnapshotCapturedAt      = "captured_at"
 )
 
 func ResourceIBMSnapshot() *schema.Resource {
