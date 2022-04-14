@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker
@@ -8,21 +8,21 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func ResourceIBMAtrackerRoute() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMAtrackerRouteCreate,
-		ReadContext:   resourceIBMAtrackerRouteRead,
-		UpdateContext: resourceIBMAtrackerRouteUpdate,
-		DeleteContext: resourceIBMAtrackerRouteDelete,
+		CreateContext: ResourceIBMAtrackerRouteCreate,
+		ReadContext:   ResourceIBMAtrackerRouteRead,
+		UpdateContext: ResourceIBMAtrackerRouteUpdate,
+		DeleteContext: ResourceIBMAtrackerRouteDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -34,7 +34,8 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 			},
 			"receive_global_events": {
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
+				Deprecated:  "use rules.locations instead",
 				Description: "Indicates whether or not all global events should be forwarded to this region.",
 			},
 			"rules": {
@@ -46,7 +47,13 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 						"target_ids": {
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The target ID List. Only 1 target id is supported.",
+							Description: "The target ID List. All the events will be send to all targets listed in the rule. You can include targets from other regions.  ",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"locations": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -65,19 +72,36 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 			"created": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "use created_at instead",
+				Description: "The timestamp of the route creation time.",
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "The timestamp of the route creation time.",
 			},
 			"updated": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "use updated_at instead",
 				Description: "The timestamp of the route last updated time.",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The timestamp of the route last updated time.",
+			},
+			"api_version": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The API version of the route.",
 			},
 		},
 	}
 }
 
 func ResourceIBMAtrackerRouteValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",
@@ -94,22 +118,22 @@ func ResourceIBMAtrackerRouteValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func ResourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	createRouteOptions := &atrackerv1.CreateRouteOptions{}
+	createRouteOptions := &atrackerv2.CreateRouteOptions{}
 
 	createRouteOptions.SetName(d.Get("name").(string))
-	createRouteOptions.SetReceiveGlobalEvents(d.Get("receive_global_events").(bool))
-	var rules []atrackerv1.Rule
+	var rules []atrackerv2.RulePrototype
 	for _, e := range d.Get("rules").([]interface{}) {
 		value := e.(map[string]interface{})
 		rulesItem := resourceIBMAtrackerRouteMapToRule(value)
 		rules = append(rules, rulesItem)
 	}
+
 	createRouteOptions.SetRules(rules)
 
 	route, response, err := atrackerClient.CreateRouteWithContext(context, createRouteOptions)
@@ -120,28 +144,16 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(*route.ID)
 
-	return resourceIBMAtrackerRouteRead(context, d, meta)
+	return ResourceIBMAtrackerRouteRead(context, d, meta)
 }
 
-func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}) atrackerv1.Rule {
-	rule := atrackerv1.Rule{}
-
-	targetIds := []string{}
-	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
-		targetIds = append(targetIds, targetIdsItem.(string))
-	}
-	rule.TargetIds = targetIds
-
-	return rule
-}
-
-func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func ResourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getRouteOptions := &atrackerv1.GetRouteOptions{}
+	getRouteOptions := &atrackerv2.GetRouteOptions{}
 
 	getRouteOptions.SetID(d.Id())
 
@@ -156,55 +168,48 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if err = d.Set("name", route.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
-	}
-	if err = d.Set("receive_global_events", route.ReceiveGlobalEvents); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting receive_global_events: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	rules := []map[string]interface{}{}
 	for _, rulesItem := range route.Rules {
-		rulesItemMap := resourceIBMAtrackerRouteRuleToMap(rulesItem)
+		rulesItemMap, _ := ResourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
 		rules = append(rules, rulesItemMap)
 	}
 	if err = d.Set("rules", rules); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting rules: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
 	}
 	if err = d.Set("crn", route.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 	if err = d.Set("version", flex.IntValue(route.Version)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting version: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
 	}
-	if err = d.Set("created", flex.DateTimeToString(route.Created)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created: %s", err))
+	if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated", flex.DateTimeToString(route.Updated)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated: %s", err))
+	if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
+	if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
+	}
+	d.Set("receive_global_events", false)
 
 	return nil
 }
 
-func resourceIBMAtrackerRouteRuleToMap(rule atrackerv1.Rule) map[string]interface{} {
-	ruleMap := map[string]interface{}{}
-
-	ruleMap["target_ids"] = rule.TargetIds
-
-	return ruleMap
-}
-
-func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func ResourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	replaceRouteOptions := &atrackerv1.ReplaceRouteOptions{}
+	replaceRouteOptions := &atrackerv2.ReplaceRouteOptions{}
 
 	replaceRouteOptions.SetID(d.Id())
 	replaceRouteOptions.SetName(d.Get("name").(string))
-	replaceRouteOptions.SetReceiveGlobalEvents(d.Get("receive_global_events").(bool))
-	var rules []atrackerv1.Rule
+
+	var rules []atrackerv2.RulePrototype
 	for _, e := range d.Get("rules").([]interface{}) {
 		value := e.(map[string]interface{})
 		rulesItem := resourceIBMAtrackerRouteMapToRule(value)
@@ -218,16 +223,16 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMAtrackerRouteRead(context, d, meta)
+	return ResourceIBMAtrackerRouteRead(context, d, meta)
 }
 
-func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func ResourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	deleteRouteOptions := &atrackerv1.DeleteRouteOptions{}
+	deleteRouteOptions := &atrackerv2.DeleteRouteOptions{}
 
 	deleteRouteOptions.SetID(d.Id())
 
@@ -240,4 +245,31 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_ids"] = model.TargetIds
+	if model.Locations != nil {
+		modelMap["locations"] = model.Locations
+	}
+	return modelMap, nil
+}
+
+func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}) atrackerv2.RulePrototype {
+	rule := atrackerv2.RulePrototype{}
+
+	targetIds := []string{}
+	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
+		targetIds = append(targetIds, targetIdsItem.(string))
+	}
+	rule.TargetIds = targetIds
+
+	locations := []string{}
+	for _, locationsItem := range ruleMap["locations"].([]interface{}) {
+		locations = append(locations, locationsItem.(string))
+	}
+	rule.Locations = locations
+
+	return rule
 }

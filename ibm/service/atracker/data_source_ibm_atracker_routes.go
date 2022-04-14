@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker
@@ -9,16 +9,16 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func DataSourceIBMAtrackerRoutes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAtrackerRoutesRead,
+		ReadContext: DataSourceIBMAtrackerRoutesRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -55,18 +55,27 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 						"receive_global_events": {
 							Type:        schema.TypeBool,
 							Computed:    true,
+							Deprecated:  "use rules.locations instead",
 							Description: "Indicates whether or not all global events should be forwarded to this region.",
 						},
 						"rules": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The routing rules that will be evaluated in their order of the array.",
+							Description: "The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"target_ids": {
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The target ID List. Only 1 target id is supported.",
+										Description: "The target ID List. All the events will be send to all targets listed in the rule. You can include targets from other regions.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"locations": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -77,12 +86,23 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 						"created": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Deprecated:  "use created_at instead",
 							Description: "The timestamp of the route creation time.",
 						},
-						"updated": {
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The timestamp of the route creation time.",
+						},
+						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the route last updated time.",
+						},
+						"api_version": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The API version of the route.",
 						},
 					},
 				},
@@ -91,13 +111,13 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func DataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listRoutesOptions := &atrackerv1.ListRoutesOptions{}
+	listRoutesOptions := &atrackerv2.ListRoutesOptions{}
 
 	routeList, response, err := atrackerClient.ListRoutesWithContext(context, listRoutesOptions)
 	if err != nil {
@@ -106,7 +126,7 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchRoutes []atrackerv1.Route
+	var matchRoutes []atrackerv2.Route
 	var name string
 	var suppliedFilter bool
 
@@ -129,73 +149,75 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 		}
 		d.SetId(name)
 	} else {
-		d.SetId(dataSourceIBMAtrackerRoutesID(d))
+		d.SetId(DataSourceIBMAtrackerRoutesID(d))
 	}
 
+	routes := []map[string]interface{}{}
 	if routeList.Routes != nil {
-		err = d.Set("routes", dataSourceRouteListFlattenRoutes(routeList.Routes))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting routes %s", err))
+		for _, modelItem := range routeList.Routes {
+			modelMap, err := DataSourceIBMAtrackerRoutesRouteToMap(&modelItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			routes = append(routes, modelMap)
 		}
+	}
+	if err = d.Set("routes", routes); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting routes %s", err))
 	}
 
 	return nil
 }
 
-// dataSourceIBMAtrackerRoutesID returns a reasonable ID for the list.
-func dataSourceIBMAtrackerRoutesID(d *schema.ResourceData) string {
+// DataSourceIBMAtrackerRoutesID returns a reasonable ID for the list.
+func DataSourceIBMAtrackerRoutesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceRouteListFlattenRoutes(result []atrackerv1.Route) (routes []map[string]interface{}) {
-	for _, routesItem := range result {
-		routes = append(routes, dataSourceRouteListRoutesToMap(routesItem))
+func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
-
-	return routes
-}
-
-func dataSourceRouteListRoutesToMap(routesItem atrackerv1.Route) (routesMap map[string]interface{}) {
-	routesMap = map[string]interface{}{}
-
-	if routesItem.ID != nil {
-		routesMap["id"] = routesItem.ID
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
-	if routesItem.Name != nil {
-		routesMap["name"] = routesItem.Name
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
 	}
-	if routesItem.CRN != nil {
-		routesMap["crn"] = routesItem.CRN
+	if model.Version != nil {
+		modelMap["version"] = *model.Version
 	}
-	if routesItem.Version != nil {
-		routesMap["version"] = routesItem.Version
-	}
-	if routesItem.ReceiveGlobalEvents != nil {
-		routesMap["receive_global_events"] = routesItem.ReceiveGlobalEvents
-	}
-	if routesItem.Rules != nil {
-		rulesList := []map[string]interface{}{}
-		for _, rulesItem := range routesItem.Rules {
-			rulesList = append(rulesList, dataSourceRouteListRoutesRulesToMap(rulesItem))
+	if model.Rules != nil {
+		rules := []map[string]interface{}{}
+		for _, rulesItem := range model.Rules {
+			rulesItemMap, err := DataSourceIBMAtrackerRoutesRuleToMap(&rulesItem)
+			if err != nil {
+				return modelMap, err
+			}
+			rules = append(rules, rulesItemMap)
 		}
-		routesMap["rules"] = rulesList
+		modelMap["rules"] = rules
 	}
-	if routesItem.Created != nil {
-		routesMap["created"] = routesItem.Created.String()
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
 	}
-	if routesItem.Updated != nil {
-		routesMap["updated"] = routesItem.Updated.String()
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
-
-	return routesMap
+	if model.APIVersion != nil {
+		modelMap["api_version"] = *model.APIVersion
+	}
+	return modelMap, nil
 }
 
-func dataSourceRouteListRoutesRulesToMap(rulesItem atrackerv1.Rule) (rulesMap map[string]interface{}) {
-	rulesMap = map[string]interface{}{}
-
-	if rulesItem.TargetIds != nil {
-		rulesMap["target_ids"] = rulesItem.TargetIds
+func DataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetIds != nil {
+		modelMap["target_ids"] = model.TargetIds
 	}
-
-	return rulesMap
+	if model.Locations != nil {
+		modelMap["locations"] = model.Locations
+	}
+	return modelMap, nil
 }

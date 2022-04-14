@@ -18,8 +18,8 @@ import (
 
 func DataSourceIBMAtrackerEndpoints() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAtrackerEndpointsRead,
-
+		ReadContext:        dataSourceIBMAtrackerEndpointsRead,
+		DeprecationMessage: "use Settings instead",
 		Schema: map[string]*schema.Schema{
 			"api_endpoint": {
 				Type:        schema.TypeList,
