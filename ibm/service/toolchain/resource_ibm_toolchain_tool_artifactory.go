@@ -66,9 +66,10 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 							Description: "Type the User ID or email for your Artifactory repository.",
 						},
 						"token": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Type the API key for your Artifactory repository.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Description:      "Type the API key for your Artifactory repository.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -230,7 +231,7 @@ func ResourceIBMToolchainToolArtifactoryRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolArtifactoryParametersToMap(getIntegrationByIDResponse.Parameters, d)
+		parametersMap, err := ResourceIBMToolchainToolArtifactoryParametersToMap(getIntegrationByIDResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -372,7 +373,7 @@ func ResourceIBMToolchainToolArtifactoryMapToParameters(modelMap map[string]inte
 	return model, nil
 }
 
-func ResourceIBMToolchainToolArtifactoryParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolArtifactoryParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model["name"]
 	if model["dashboard_url"] != nil {
@@ -383,11 +384,7 @@ func ResourceIBMToolchainToolArtifactoryParametersToMap(model map[string]interfa
 		modelMap["user_id"] = model["user_id"]
 	}
 	if model["token"] != nil {
-		if model["token"] == "****" {
-			modelMap["token"] = d.Get("parameters.0.token").(string)
-		} else {
-			modelMap["token"] = model["token"]
-		}
+		modelMap["token"] = model["token"]
 	}
 	if model["release_url"] != nil {
 		modelMap["release_url"] = model["release_url"]

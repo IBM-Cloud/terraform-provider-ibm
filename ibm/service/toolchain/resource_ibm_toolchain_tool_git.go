@@ -61,40 +61,33 @@ func ResourceIBMToolchainToolGit() *schema.Resource {
 						},
 						"repo_name": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"repo_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Type the URL of the repository that you are linking to.",
 						},
 						"source_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Type the URL of the repository that you are forking or cloning.",
 						},
 						"type": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Select this check box to make this repository private.",
 						},
 						"git_id": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"owner_id": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 					},

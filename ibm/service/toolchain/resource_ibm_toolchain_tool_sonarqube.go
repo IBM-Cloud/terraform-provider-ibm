@@ -56,9 +56,10 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 							Description: "Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.",
 						},
 						"user_login": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "If you are using an authentication token, leave this field empty.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Description:      "If you are using an authentication token, leave this field empty.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"user_password": &schema.Schema{
 							Type:     schema.TypeString,
@@ -201,7 +202,7 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolSonarqubeParametersToMap(getIntegrationByIDResponse.Parameters, d)
+		parametersMap, err := ResourceIBMToolchainToolSonarqubeParametersToMap(getIntegrationByIDResponse.Parameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -328,16 +329,12 @@ func ResourceIBMToolchainToolSonarqubeMapToParameters(modelMap map[string]interf
 	return model, nil
 }
 
-func ResourceIBMToolchainToolSonarqubeParametersToMap(model map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSonarqubeParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["name"] = model["name"]
 	modelMap["dashboard_url"] = model["dashboard_url"]
 	if model["user_login"] != nil {
-		if model["user_login"] == "****" {
-			modelMap["user_login"] = d.Get("parameters.0.user_login").(string)
-		} else {
-			modelMap["user_login"] = model["user_login"]
-		}
+		modelMap["user_login"] = model["user_login"]
 	}
 	if model["user_password"] != nil {
 		modelMap["user_password"] = model["user_password"]
