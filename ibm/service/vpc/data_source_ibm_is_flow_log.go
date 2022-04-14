@@ -321,7 +321,7 @@ func dataSourceFlowLogCollectorResourceGroupToMap(resourceGroupItem vpcv1.Resour
 	return resourceGroupMap
 }
 
-func dataSourceFlowLogCollectorFlattenStorageBucket(result vpcv1.CloudObjectStorageBucketReference) (finalList []map[string]interface{}) {
+func dataSourceFlowLogCollectorFlattenStorageBucket(result vpcv1.LegacyCloudObjectStorageBucketReference) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceFlowLogCollectorStorageBucketToMap(result)
 	finalList = append(finalList, finalMap)
@@ -329,7 +329,7 @@ func dataSourceFlowLogCollectorFlattenStorageBucket(result vpcv1.CloudObjectStor
 	return finalList
 }
 
-func dataSourceFlowLogCollectorStorageBucketToMap(storageBucketItem vpcv1.CloudObjectStorageBucketReference) (storageBucketMap map[string]interface{}) {
+func dataSourceFlowLogCollectorStorageBucketToMap(storageBucketItem vpcv1.LegacyCloudObjectStorageBucketReference) (storageBucketMap map[string]interface{}) {
 	storageBucketMap = map[string]interface{}{}
 
 	if storageBucketItem.Name != nil {

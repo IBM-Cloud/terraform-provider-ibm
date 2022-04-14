@@ -26,34 +26,72 @@ provider "ibm" {
 
 In the following example, you can create a Bare Metal Server:
 
+### Basic Example Using AMI Lookup
 ```terraform
 
-resource "ibm_is_vpc" "vpc" {
-  name = "testvpc"
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
 }
 
-resource "ibm_is_subnet" "subnet" {
-  name            = "testsubnet"
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
   vpc             = ibm_is_vpc.vpc.id
   zone            = "us-south-3"
   ipv4_cidr_block = "10.240.129.0/24"
 }
 
-resource "ibm_is_ssh_key" "ssh" {
-  name       = "testssh"
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+}
+
+resource "ibm_is_bare_metal_server" "example" {
+  profile = "mx2d-metal-32x192"
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
+  primary_network_interface {
+    subnet     = ibm_is_subnet.example.id
+  }
+  vpc   = ibm_is_vpc.example.id
+}
+
+```
+### Reserved ip example
+```terraform
+
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.example.id
+  zone            = "us-south-3"
+  ipv4_cidr_block = "10.240.129.0/24"
+}
+
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
 }
 
 resource "ibm_is_bare_metal_server" "bms" {
   profile = "mx2d-metal-32x192"
-  name  = "my-bms"
-  image = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
-  zone  = "us-south-3"
-  keys  = [ibm_is_ssh_key.ssh.id]
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
   primary_network_interface {
-    subnet     = ibm_is_subnet.subnet.id
+    subnet     = ibm_is_subnet.example.id
+    primary_ip {
+      auto_delete = true
+      name        = "example-reserved-ip"
+      address     = "${replace(ibm_is_subnet.example.ipv4_cidr_block, "0/28", "14")}"
+    }
   }
-  vpc   = ibm_is_vpc.vpc.id
+  vpc   = ibm_is_vpc.example.id
 }
 
 ```
@@ -75,7 +113,7 @@ Review the argument references that you can specify for your resource.
 - `keys` - (Required, List) Comma separated IDs of ssh keys.  
 - `name` - (Optional, String) The bare metal server name.
 
-  ~> **NOTE:**
+  -> **NOTE:**
     a bare metal server can take up to 30 mins to clean up on delete, replacement/re-creation using the same name will return error
 
 - `primary_network_interface` - (Required, List) A nested block describing the primary network interface of this bare metal server. We can have only one primary network interface.
@@ -89,6 +127,9 @@ Review the argument references that you can specify for your resource.
 
       Nested scheme for `primary_ip`:
         - `address` - (Optional, String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+        - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+        - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP. `reserved_ip` is mutually exclusive with rest of the `primary_ip` attributes.
+        - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
         
     - `security_groups` - (Optional, Array) Comma separated IDs of security groups.
     - `subnet` -  (Required, String) ID of the subnet to associate with.
@@ -128,6 +169,8 @@ In addition to all argument reference list, you can access the following attribu
 
       Nested scheme for `primary_ip`:
         - `address` - (String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+        - `reserved_ip`- (String) The unique identifier for this reserved IP.
+        - `name`- (String) The user-defined or system-provided name for this reserved IP
       
     - `security_groups` - (Array) Comma separated IDs of security groups.
     - `subnet` -  (String) ID of the subnet to associate with.
