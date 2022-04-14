@@ -69,6 +69,35 @@ func TestAccIBMISLBListener_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBListener_basic_udp(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
+
+	protocol1 := "udp"
+	port1 := "8080"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBListenerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBUdpListenerConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port1, protocol1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBListenerExists("ibm_is_lb_listener.testacc_lb_listener", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "port", port1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_listener.testacc_lb_listener", "protocol", protocol1),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISNLBRouteModeListener_basic(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
@@ -306,6 +335,31 @@ func testAccCheckIBMISLBListenerConfig(vpcname, subnetname, zone, cidr, lbname, 
 		port = %s
 		protocol = "%s"
 		accept_proxy_protocol = true
+    }`, vpcname, subnetname, zone, cidr, lbname, port, protocol)
+
+}
+func testAccCheckIBMISLBUdpListenerConfig(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name 		= "%s"
+		vpc 		= "${ibm_is_vpc.testacc_vpc.id}"
+		zone 		= "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name 	= "%s"
+		subnets = ["${ibm_is_subnet.testacc_subnet.id}"]
+		profile = "network-fixed"
+		type 	= "public"
+	}
+	resource "ibm_is_lb_listener" "testacc_lb_listener" {
+		lb 			= "${ibm_is_lb.testacc_LB.id}"
+		port 		= %s
+		protocol 	= "%s"
     }`, vpcname, subnetname, zone, cidr, lbname, port, protocol)
 
 }

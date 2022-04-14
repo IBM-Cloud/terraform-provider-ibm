@@ -57,6 +57,12 @@ func DataSourceIBMISLB() *schema.Resource {
 				Description: "Load Balancer type",
 			},
 
+			isLBUdpSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports UDP.",
+			},
+
 			isLBStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -334,6 +340,9 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			d.Set(isLBStatus, *lb.ProvisioningStatus)
 			if lb.RouteMode != nil {
 				d.Set(isLBRouteMode, *lb.RouteMode)
+			}
+			if lb.UDPSupported != nil {
+				d.Set(isLBUdpSupported, *lb.UDPSupported)
 			}
 			d.Set(isLBCrn, *lb.CRN)
 			d.Set(isLBOperatingStatus, *lb.OperatingStatus)

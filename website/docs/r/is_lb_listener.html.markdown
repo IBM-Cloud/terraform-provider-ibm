@@ -178,7 +178,7 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE**
     Only load balancers in the `network` family support more than one port per listener. When `route mode` is enabled, only a value of `65535` is supported for port_max.
 
-- `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, and `https`. Network load balancer supports only `tcp` protocol.
+- `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, `https` and `udp`. Network load balancer supports only `tcp` and `udp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
