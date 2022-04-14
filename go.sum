@@ -104,6 +104,8 @@ github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJ
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
 github.com/IBM/vpc-go-sdk v0.17.0 h1:H9qsEx1UJoAR79s1R7n3bGPdOPW6+wLNEUyCjnesaxs=
 github.com/IBM/vpc-go-sdk v0.17.0/go.mod h1:+fTuJIR/SWXru/B5XEANwV4GCLV5fRppFEzlYGwGm7k=
+github.com/IBM/vpc-go-sdk v0.19.0 h1:f6fqF4W1h3dtAk+U8XLEUv1lPZ8jnvRoEFkTgOBPw8Q=
+github.com/IBM/vpc-go-sdk v0.19.0/go.mod h1:KCdyxbJdWtN4pyWC1SqLH0Jk/y4ed8nv9gZb4ZxfepQ=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=

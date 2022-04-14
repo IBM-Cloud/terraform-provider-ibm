@@ -4,36 +4,44 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Define all the constants that matches with the given terrafrom attribute
 const (
 	// Request Param Constants
-	isReservedIPLimit  = "limit"
-	isReservedIPSort   = "sort"
-	isReservedIPs      = "reserved_ips"
-	isReservedIPsCount = "total_count"
+	isInstanceNICReservedIPLimit  = "limit"
+	isInstanceNICReservedIPSort   = "sort"
+	isInstanceNICReservedIPs      = "reserved_ips"
+	isInstanceNICReservedIPsCount = "total_count"
 )
 
-func DataSourceIBMISReservedIPs() *schema.Resource {
+func DataSourceIBMISInstanceNICReservedIPs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSdataSourceIBMISReservedIPsRead,
+		ReadContext: dataSourceIBMISInstanceNICReservedIPsRead,
 		Schema: map[string]*schema.Schema{
 			/*
 				Request Parameters
 				==================
 				These are mandatory req parameters
 			*/
-			isSubNetID: {
+			isInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The subnet identifier.",
+				Description: "The instance identifier.",
+			},
+			isInstanceNICID: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The instance network interface identifier.",
 			},
 			/*
 				Response Parameters
@@ -42,58 +50,53 @@ func DataSourceIBMISReservedIPs() *schema.Resource {
 				these from outside.
 			*/
 
-			isReservedIPs: {
+			isInstanceNICReservedIPs: {
 				Type:        schema.TypeList,
 				Description: "Collection of reserved IPs in this subnet.",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						isReservedIPAddress: {
+						isInstanceNICReservedIPAddress: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The IP address",
 						},
-						isReservedIPAutoDelete: {
+						isInstanceNICReservedIPAutoDelete: {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "If reserved ip shall be deleted automatically",
 						},
-						isReservedIPCreatedAt: {
+						isInstanceNICReservedIPCreatedAt: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time that the reserved IP was created.",
 						},
-						isReservedIPhref: {
+						isInstanceNICReservedIPhref: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The URL for this reserved IP.",
 						},
-						isReservedIPID: {
+						isInstanceNICReservedIPID: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The unique identifier for this reserved IP",
 						},
-						isReservedIPLifecycleState: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The lifecycle state of the reserved IP",
-						},
-						isReservedIPName: {
+						isInstanceNICReservedIPName: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The user-defined or system-provided name for this reserved IP.",
 						},
-						isReservedIPOwner: {
+						isInstanceNICReservedIPOwner: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The owner of a reserved IP, defining whether it is managed by the user or the provider.",
 						},
-						isReservedIPType: {
+						isInstanceNICReservedIPType: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The resource type.",
 						},
-						isReservedIPTarget: {
+						isInstanceNICReservedIPTarget: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Reserved IP target id",
@@ -101,7 +104,7 @@ func DataSourceIBMISReservedIPs() *schema.Resource {
 					},
 				},
 			},
-			isReservedIPsCount: {
+			isInstanceNICReservedIPsCount: {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The total number of resources across all pages",
@@ -110,48 +113,49 @@ func DataSourceIBMISReservedIPs() *schema.Resource {
 	}
 }
 
-func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{}) error {
-	sess, err := vpcClient(meta)
+func dataSourceIBMISInstanceNICReservedIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	subnetID := d.Get(isSubNetID).(string)
+	instanceID := d.Get(isInstanceID).(string)
+	nicID := d.Get(isInstanceNICID).(string)
 
 	// Flatten all the reserved IPs
 	start := ""
 	allrecs := []vpcv1.ReservedIP{}
 	for {
-		options := &vpcv1.ListSubnetReservedIpsOptions{SubnetID: &subnetID}
-
+		options := &vpcv1.ListInstanceNetworkInterfaceIpsOptions{
+			InstanceID:         &instanceID,
+			NetworkInterfaceID: &nicID,
+		}
 		if start != "" {
 			options.Start = &start
 		}
 
-		result, response, err := sess.ListSubnetReservedIps(options)
+		result, response, err := sess.ListInstanceNetworkInterfaceIpsWithContext(context, options)
 		if err != nil || response == nil || result == nil {
-			return fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error fetching reserved ips %s\n%s", err, response))
 		}
 		start = flex.GetNext(result.Next)
-		allrecs = append(allrecs, result.ReservedIps...)
+		allrecs = append(allrecs, result.Ips...)
 		if start == "" {
 			break
 		}
 	}
-
 	// Now store all the reserved IP info with their response tags
 	reservedIPs := []map[string]interface{}{}
 	for _, data := range allrecs {
 		ipsOutput := map[string]interface{}{}
-		ipsOutput[isReservedIPAddress] = *data.Address
-		ipsOutput[isReservedIPAutoDelete] = *data.AutoDelete
-		ipsOutput[isReservedIPCreatedAt] = (*data.CreatedAt).String()
-		ipsOutput[isReservedIPhref] = *data.Href
-		ipsOutput[isReservedIPID] = *data.ID
-		ipsOutput[isReservedIPLifecycleState] = data.LifecycleState
-		ipsOutput[isReservedIPName] = *data.Name
-		ipsOutput[isReservedIPOwner] = *data.Owner
-		ipsOutput[isReservedIPType] = *data.ResourceType
+		ipsOutput[isInstanceNICReservedIPAddress] = *data.Address
+		ipsOutput[isInstanceNICReservedIPAutoDelete] = *data.AutoDelete
+		ipsOutput[isInstanceNICReservedIPCreatedAt] = (*data.CreatedAt).String()
+		ipsOutput[isInstanceNICReservedIPhref] = *data.Href
+		ipsOutput[isInstanceNICReservedIPID] = *data.ID
+		ipsOutput[isInstanceNICReservedIPName] = *data.Name
+		ipsOutput[isInstanceNICReservedIPOwner] = *data.Owner
+		ipsOutput[isInstanceNICReservedIPType] = *data.ResourceType
 		target, ok := data.Target.(*vpcv1.ReservedIPTarget)
 		if ok {
 			ipsOutput[isReservedIPTarget] = target.ID
@@ -159,9 +163,10 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 		reservedIPs = append(reservedIPs, ipsOutput)
 	}
 
-	d.SetId(time.Now().UTC().String()) // This is not any reserved ip or subnet id but state id
-	d.Set(isReservedIPs, reservedIPs)
-	d.Set(isReservedIPsCount, len(reservedIPs))
-	d.Set(isSubNetID, subnetID)
+	d.SetId(time.Now().UTC().String()) // This is not any reserved ip or instance id but state id
+	d.Set(isInstanceNICReservedIPs, reservedIPs)
+	d.Set(isInstanceNICReservedIPsCount, len(reservedIPs))
+	d.Set(isInstanceID, instanceID)
+	d.Set(isInstanceNICID, nicID)
 	return nil
 }

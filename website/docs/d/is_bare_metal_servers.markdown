@@ -66,6 +66,11 @@ Review the attribute references that you can access after you retrieve your data
       - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
         Nested scheme for `primary_ip`:
           - `address` - (String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+          - `href`- (String) The URL for this reserved IP
+          - `reserved_ip`- (String) The unique identifier for this reserved IP
+          - `name`- (String) The user-defined or system-provided name for this reserved IP
+          - `resource_type`- (String) The resource type.
+
       - `security_groups` -  (Array) List of security groups.
       - `subnet` -  (String) ID of the subnet.
   - `primary_network_interface` - (List) A nested block describing the primary network interface of this bare metal server.
@@ -77,6 +82,11 @@ Review the attribute references that you can access after you retrieve your data
       - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
         Nested scheme for `primary_ip`:
           - `address` - (String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+          - `href`- (String) The URL for this reserved IP
+          - `reserved_ip`- (String) The unique identifier for this reserved IP
+          - `name`- (String) The user-defined or system-provided name for this reserved IP
+          - `resource_type`- (String) The resource type.
+
       - `security_groups` -  (Array) List of security groups.
       - `subnet` -  (String) ID of the subnet.
   - `profile` - (String) The name for this bare metal server profile
