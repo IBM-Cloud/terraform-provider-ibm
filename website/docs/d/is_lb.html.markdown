@@ -110,3 +110,4 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of load balancer.
 - `tags` - (String) The tags associated with the load balancer.
 - `type` - (String) The type of the load balancer.
+- `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.

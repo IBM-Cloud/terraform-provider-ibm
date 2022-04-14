@@ -80,3 +80,4 @@ Review the attribute references that you can access after you retrieve your data
 	- `status` - (String) The status of the load balancers.
 	- `type` - (String) The type of the load balancer.
 	- `tags` - (String) Tags associated with the load balancer.
+	- `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.

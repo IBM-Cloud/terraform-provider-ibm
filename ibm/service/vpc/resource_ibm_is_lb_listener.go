@@ -181,7 +181,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 func ResourceIBMISLBListenerValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	protocol := "https, http, tcp"
+	protocol := "https, http, tcp, udp"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isLBListenerProtocol,

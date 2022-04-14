@@ -40,3 +40,6 @@ You can access the following attribute references after your data source is crea
 	- `name` - (String) The name for this load balancer profile.
 	- `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
 	- `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]
+	- `udp_supported` - (Bool) The UDP support for a load balancer with this profile.
+	- `udp_supported_type` - (String) The UDP support type for a load balancer with this profile, one of [fixed, dependent]
+
