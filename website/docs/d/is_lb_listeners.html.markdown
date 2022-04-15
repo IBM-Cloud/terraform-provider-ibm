@@ -66,5 +66,5 @@ In addition to all argument references listed, you can access the following attr
 	- `port` - (Integer) The listener port number, or the inclusive lower bound of the port range. Each listener in the load balancer must have a unique `port` and `protocol` combination.
 	- `port_max` - (Integer) The inclusive upper bound of the range of ports used by this listener.Only load balancers in the `network` family support more than one port per listener.
 	- `port_min` - (Integer) The inclusive lower bound of the range of ports used by this listener.Only load balancers in the `network` family support more than one port per listener.
-	- `protocol` - (String) The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application` family support `tcp`, `http`, and `https`. Each listener in the load balancer must have a unique `port` and `protocol` combination.
+	- `protocol` - (String) The listener protocol. Load balancers in the `network` family support `tcp` and `udp`. Load balancers in the `application` family support `tcp`, `http`, and `https`. Each listener in the load balancer must have a unique `port` and `protocol` combination.
 	- `provisioning_status` - (String) The provisioning status of this listener.
