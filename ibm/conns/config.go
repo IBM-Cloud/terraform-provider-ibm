@@ -1564,7 +1564,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
 	}
-	fmt.Printf("[DEBUG] VAN %s\n", authenticator.(*core.IamAuthenticator).URL)
 
 	// SCC FINDINGS Service
 	var findingsClientURL string
