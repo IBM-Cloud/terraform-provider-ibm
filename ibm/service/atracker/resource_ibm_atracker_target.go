@@ -425,7 +425,7 @@ func ResourceIBMAtrackerTargetMapToCosEndpointPrototype(modelMap map[string]inte
 func ResourceIBMAtrackerTargetMapToLogdnaEndpointPrototype(modelMap map[string]interface{}) (*atrackerv2.LogdnaEndpointPrototype, error) {
 	model := &atrackerv2.LogdnaEndpointPrototype{}
 	model.TargetCRN = core.StringPtr(modelMap["target_crn"].(string))
-	model.IngestionKey = core.StringPtr(modelMap["ingestion_key"].(string))  // pragma: whitelist secret
+	model.IngestionKey = core.StringPtr(modelMap["ingestion_key"].(string)) // pragma: whitelist secret
 	return model, nil
 }
 
@@ -445,7 +445,7 @@ func ResourceIBMAtrackerTargetLogdnaEndpointPrototypeToMap(model *atrackerv2.Log
 
 	modelMap := make(map[string]interface{})
 	modelMap["target_crn"] = model.TargetCRN
-	modelMap["ingestion_key"] = model.IngestionKey  // pragma: whitelist secret
+	modelMap["ingestion_key"] = model.IngestionKey // pragma: whitelist secret
 	return modelMap, nil
 }
 
