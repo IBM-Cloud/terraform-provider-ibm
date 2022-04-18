@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -18,10 +17,9 @@ import (
 
 func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 	var conf atrackerv2.Settings
-	metadataRegionPrimary := fmt.Sprintf("tf_metadata_region_primary_%d", acctest.RandIntRange(10, 100))
+	metadataRegionPrimary := "us-east"
 	privateAPIEndpointOnly := "false"
-	metadataRegionPrimaryUpdate := fmt.Sprintf("tf_metadata_region_primary_%d", acctest.RandIntRange(10, 100))
-	privateAPIEndpointOnlyUpdate := "true"
+	metadataRegionPrimaryUpdate := "us-south"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -37,49 +35,11 @@ func TestAccIBMAtrackerSettingsBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimaryUpdate, privateAPIEndpointOnlyUpdate),
+				Config: testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimaryUpdate, privateAPIEndpointOnly),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimaryUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMAtrackerSettingsAllArgs(t *testing.T) {
-	var conf atrackerv2.Settings
-	metadataRegionPrimary := "us-south"
-	privateAPIEndpointOnly := "false"
-	metadataRegionPrimaryUpdate := "us-east"
-	privateAPIEndpointOnlyUpdate := "true"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMAtrackerSettingsDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary, privateAPIEndpointOnly),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMAtrackerSettingsExists("ibm_atracker_settings.atracker_settings", conf),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimary),
 					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnly),
-					// resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_backup", metadataRegionBackup),
 				),
-			},
-			{
-				Config: testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimaryUpdate, privateAPIEndpointOnlyUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_primary", metadataRegionPrimaryUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
-					// resource.TestCheckResourceAttr("ibm_atracker_settings.atracker_settings", "metadata_region_backup", metadataRegionBackupUpdate),
-				),
-			},
-			{
-				ResourceName:      "ibm_atracker_settings.atracker_settings",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -90,6 +50,13 @@ func testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary string, pr
 		resource "ibm_atracker_target" "atracker_target" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+				service_to_service_enabled = false
+			}
 		}
 
 		resource "ibm_atracker_settings" "atracker_settings" {
@@ -105,6 +72,13 @@ func testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary string, private
 		resource "ibm_atracker_target" "atracker_target" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+				service_to_service_enabled = false
+			}
 		}
 
 		resource "ibm_atracker_settings" "atracker_settings" {
@@ -149,10 +123,14 @@ func testAccCheckIBMAtrackerSettingsDestroy(s *terraform.State) error {
 		getSettingsOptions := &atrackerv2.GetSettingsOptions{}
 
 		// Try to find the key
-		_, response, err := atrackerClient.GetSettings(getSettingsOptions)
+		settings, response, err := atrackerClient.GetSettings(getSettingsOptions)
 
 		if err == nil {
-			return fmt.Errorf("[ERROR] Activity Tracker Settings still exists: %s", rs.Primary.ID)
+			// Settings can never really truely be deleted (at least for MetaRegionPrimary) but the other fields will be cleared
+			if *settings.MetadataRegionPrimary == rs.Primary.ID && len(*&settings.DefaultTargets) == 0 && len(*&settings.DefaultTargets) == 0 {
+				return nil
+			}
+			return fmt.Errorf("[ERROR] Activity Tracker Settings still exists but other fields not deleted: %s, Targets: %v, PermittedRegions: %v", rs.Primary.ID, *&settings.DefaultTargets, *&settings.PermittedTargetRegions)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("[ERROR] Error checking for Activity Tracker Settings (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

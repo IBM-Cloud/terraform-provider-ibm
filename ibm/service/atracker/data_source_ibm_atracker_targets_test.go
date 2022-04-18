@@ -37,7 +37,7 @@ func TestAccIBMAtrackerTargetsDataSourceBasic(t *testing.T) {
 func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 	targetName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	targetTargetType := "cloud_object_storage"
-	targetRegion := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	targetRegion := "us-south"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -53,11 +53,10 @@ func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets", "targets.0.name", targetName),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.0.crn"),
 					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets", "targets.0.target_type", targetTargetType),
-					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets", "targets.0.region", targetRegion),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.0.encryption_key"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.0.updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets", "targets.0.api_version"),
+					resource.TestCheckResourceAttr("data.ibm_atracker_targets.atracker_targets", "targets.0.api_version", "2"),
 				),
 			},
 		},
@@ -95,15 +94,10 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
 			}
-			logdna_endpoint {
-				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				ingestion_key = "xxxxxxxxxxxxxx"
-			}
-			region = "%s"
 		}
 
 		data "ibm_atracker_targets" "atracker_targets" {
 			name = ibm_atracker_target.atracker_target.name
 		}
-	`, targetName, targetTargetType, targetRegion)
+	`, targetName, targetTargetType)
 }

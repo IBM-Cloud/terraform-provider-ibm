@@ -57,6 +57,12 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 							Computed:    true,
 							Description: "Included this optional field if you used it to create a target in a different region other than the one you are connected.",
 						},
+						"encrypt_key": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Deprecated:  "use encryption_key instead",
+							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
+						},
 						"encryption_key": {
 							Type:        schema.TypeString,
 							Sensitive:   true,

@@ -203,12 +203,13 @@ func ResourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.Resour
 	// }
 
 	if hasChange {
-		_, response, err := atrackerClient.PutSettingsWithContext(context, putSettingsOptions)
+		setting, response, err := atrackerClient.PutSettingsWithContext(context, putSettingsOptions)
 		if err != nil {
 			log.Printf("[DEBUG] PutSettingsWithContext failed %s\n%s", err, response)
 			log.Printf("[DEBUG] PutSettingsWithContext failed %v\n", putSettingsOptions)
 			return diag.FromErr(fmt.Errorf("PutSettingsWithContext failed %s\n%s", err, response))
 		}
+		d.SetId(*setting.MetadataRegionPrimary)
 	}
 
 	return ResourceIBMAtrackerSettingsRead(context, d, meta)

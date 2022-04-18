@@ -94,6 +94,12 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "The timestamp of the route creation time.",
 						},
+						"updated": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Deprecated:  "use updated_at instead",
+							Description: "The timestamp of the target last updated time.",
+						},
 						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,

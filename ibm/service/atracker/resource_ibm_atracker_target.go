@@ -110,6 +110,12 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Computed:    true,
 				Description: "The crn of the target resource.",
 			},
+			"encrypt_key": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Deprecated:  "use encryption_key instead",
+				Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
+			},
 			"encryption_key": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -118,6 +124,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 			"cos_write_status": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Optional:    true,
 				Deprecated:  "use write_status instead",
 				Description: "The status of the write attempt with the provided cos_endpoint parameters.",
 				Elem: &schema.Resource{
