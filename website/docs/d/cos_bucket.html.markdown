@@ -6,9 +6,10 @@ description: |-
   Get information about IBM Cloud Object Storage bucket.
 ---
 
+
 # ibm_cos_bucket
 
-Creates an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
+Retrive an IBM Cloud Object Storage bucket. It also allows object storage buckets to be updated and deleted. The ibmcloud_api_key used by Terraform must have been granted sufficient IAM rights to create and modify IBM Cloud Object Storage buckets and have access to the Resource Group the Cloud Object Storage bucket will be associated with. See https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-iam for more details on setting IAM and Access Group rights to manage COS buckets.
 
 ## Example usage
 
@@ -35,15 +36,35 @@ output "bucket_private_endpoint" {
 }
 ```
 
+# cos satellite bucket
+
+Retrive a cos satellite bucket. See the architecture https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite for more details. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. Cos satellite does not support all features see the section **What features are currently supported?** in https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite.
+IBM Satellite documentation https://cloud.ibm.com/docs/satellite?topic=satellite-getting-started . We are supporting object versioning and expiration features as of now. Firewall is not supported yet.
+
+## Example usage
+
+```terraform
+data "ibm_satellite_location" "location" {
+  location  = var.location
+}
+
+data "ibm_cos_bucket" "cos-bucket-sat" {
+  bucket_name           = "cos-sat-terraform"
+  resource_instance_id  = data.ibm_resource_instance.cos_instance.id
+  satellite_location_id  = data.ibm_satellite_location.location.id
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
 - `bucket_name` - (Required, String) The name of the bucket.
-- `bucket_region` - (Required, String) The region of the bucket.
-- `bucket_type` - (Required, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
+- `bucket_region` - (Optional, String) The region of the bucket.
+- `bucket_type` - (Optional, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
 - `endpoint_type` - (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for the buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
-- `storage_class`- (Required, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart`.
+- `storage_class`- (Optional, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart`.
+- `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
