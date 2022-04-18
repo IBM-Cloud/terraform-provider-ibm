@@ -55,3 +55,4 @@ In addition to all argument reference list, you can access the following attribu
   Nested `status_reasons`:
     - `code` - (String) The status reason code
     - `message` - (String) An explanation of the status reason
+    - `more_info` - (String) Link to documentation about this status reason

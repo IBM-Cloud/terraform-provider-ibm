@@ -350,6 +350,12 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
+
+						isBareMetalServerStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
+						},
 					},
 				},
 			},
@@ -648,6 +654,9 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
 				currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}

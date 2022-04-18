@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -51,6 +52,7 @@ const (
 	isBareMetalServerZone                    = "zone"
 	isBareMetalServerStatusReasonsCode       = "code"
 	isBareMetalServerStatusReasonsMessage    = "message"
+	isBareMetalServerStatusReasonsMoreInfo   = "more_info"
 	isBareMetalServerDeleteType              = "delete_type"
 	isBareMetalServerImage                   = "image"
 	isBareMetalServerKeys                    = "keys"
@@ -531,6 +533,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
+						isBareMetalServerStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
+						},
 					},
 				},
 			},
@@ -591,7 +598,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	if image, ok := d.GetOk(isBareMetalServerImage); ok {
 		imageStr = image.(string)
 	}
-	keySet := d.Get(isInstanceKeys).(*schema.Set)
+	keySet := d.Get(isBareMetalServerKeys).(*schema.Set)
 	if keySet.Len() != 0 {
 		keyobjs := make([]vpcv1.KeyIdentityIntf, keySet.Len())
 		for i, key := range keySet.List() {
@@ -1051,7 +1058,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
 			{
 				primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByPci)
-				currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+				currentPrimNic[isBareMetalServerNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
 				currentPrimNic[isBareMetalServerNicEnableInfraNAT] = *primNic.EnableInfrastructureNat
 				currentPrimNic[isBareMetalServerNicPortSpeed] = *primNic.PortSpeed
 				if len(primNic.SecurityGroups) != 0 {
@@ -1059,7 +1066,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 					for i := 0; i < len(primNic.SecurityGroups); i++ {
 						secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
 					}
-					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					currentPrimNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 				}
 
 				if primNic.AllowedVlans != nil {
@@ -1073,7 +1080,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
 			{
 				primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
-				currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+				currentPrimNic[isBareMetalServerNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
 				currentPrimNic[isBareMetalServerNicEnableInfraNAT] = *primNic.EnableInfrastructureNat
 
 				if len(primNic.SecurityGroups) != 0 {
@@ -1081,7 +1088,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 					for i := 0; i < len(primNic.SecurityGroups); i++ {
 						secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
 					}
-					currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					currentPrimNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 				}
 			}
 		}
@@ -1191,6 +1198,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
 				currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
@@ -1502,7 +1512,30 @@ func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.Reso
 			// let know the isRestartStartAction() to stop
 			close(communicator)
 			if *bms.Status == "failed" {
-				return bms, *bms.Status, fmt.Errorf("The Bare Metal Server went into failed state")
+				bmsStatusReason := bms.StatusReasons
+
+				//set the status reasons
+				if bms.StatusReasons != nil {
+					statusReasonsList := make([]map[string]interface{}, 0)
+					for _, sr := range bms.StatusReasons {
+						currentSR := map[string]interface{}{}
+						if sr.Code != nil && sr.Message != nil {
+							currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
+							currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
+							if sr.MoreInfo != nil {
+								currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
+							}
+							statusReasonsList = append(statusReasonsList, currentSR)
+						}
+					}
+					d.Set(isBareMetalServerStatusReasons, statusReasonsList)
+				}
+
+				out, err := json.MarshalIndent(bmsStatusReason, "", "    ")
+				if err != nil {
+					return bms, *bms.Status, fmt.Errorf("[ERROR] The Bare Metal Server (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted bare metal server and attempt to create the bare metal server again replacing the previous configuration", *bms.ID)
+				}
+				return bms, *bms.Status, fmt.Errorf("[ERROR] Bare Metal Server (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted Bare Metal Server and attempt to create the Bare Metal Server again replacing the previous configuration", *bms.ID, string(out))
 			}
 			return bms, *bms.Status, nil
 

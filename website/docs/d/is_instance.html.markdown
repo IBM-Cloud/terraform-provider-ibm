@@ -172,6 +172,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String)  A snake case string identifying the status reason.
   - `message` - (String)  An explanation of the status reason
+  - `more_info` - (String) Link to documentation about this status reason
 - `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 - `vpc` - (String) The ID of the VPC that the instance belongs to.

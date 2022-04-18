@@ -67,6 +67,7 @@ const (
 	isInstanceStatusReasons           = "status_reasons"
 	isInstanceStatusReasonsCode       = "code"
 	isInstanceStatusReasonsMessage    = "message"
+	isInstanceStatusReasonsMoreInfo   = "more_info"
 	isEnableCleanDelete               = "wait_before_delete"
 	isInstanceProvisioning            = "provisioning"
 	isInstanceProvisioningDone        = "done"
@@ -699,6 +700,12 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An explanation of the status reason",
+						},
+
+						isInstanceStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
 						},
 					},
 				},
@@ -2045,6 +2052,9 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 						if sr.Code != nil && sr.Message != nil {
 							currentSR[isInstanceStatusReasonsCode] = *sr.Code
 							currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+							if sr.MoreInfo != nil {
+								currentSR[isInstanceStatusReasonsMoreInfo] = *sr.MoreInfo
+							}
 							statusReasonsList = append(statusReasonsList, currentSR)
 						}
 					}
@@ -2327,6 +2337,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isInstanceStatusReasonsCode] = *sr.Code
 				currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isInstanceStatusReasonsMoreInfo] = *sr.MoreInfo
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
