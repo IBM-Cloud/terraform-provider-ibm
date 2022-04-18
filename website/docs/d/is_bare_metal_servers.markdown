@@ -97,6 +97,7 @@ Review the attribute references that you can access after you retrieve your data
     Nested scheme for `status_reasons`:
       - `code` - (String) The status reason code
       - `message` - (String) An explanation of the status reason
+      - `more_info` - (String) Link to documentation about this status reason
   - `tags` - (Array) Tags associated with the instance.
   - `vpc` - (String) The VPC this bare metal server resides in.
   - `zone` - (String) The zone this bare metal server resides in.

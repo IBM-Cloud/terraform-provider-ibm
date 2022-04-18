@@ -103,6 +103,12 @@ func DataSourceIBMISVolume() *schema.Resource {
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
+
+						isVolumeStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
+						},
 					},
 				},
 			},
@@ -229,6 +235,9 @@ func volumeGet(d *schema.ResourceData, meta interface{}, name string) error {
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isVolumeStatusReasonsCode] = *sr.Code
 				currentSR[isVolumeStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isVolumeStatusReasonsMoreInfo] = *sr.Message
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}

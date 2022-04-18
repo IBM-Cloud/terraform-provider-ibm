@@ -418,6 +418,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
+  - `more_info` - (String) Link to documentation about this status reason
 - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 
