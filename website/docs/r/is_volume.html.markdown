@@ -105,6 +105,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_reasons`:
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
+  - `more_info` - (String) Link to documentation about this status reason
 - `crn` - (String) The CRN for the volume.
 
 ## Import

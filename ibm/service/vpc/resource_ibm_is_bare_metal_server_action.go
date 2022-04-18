@@ -80,6 +80,11 @@ func ResourceIBMIsBareMetalServerAction() *schema.Resource {
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
+						isBareMetalServerStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
+						},
 					},
 				},
 			},
@@ -214,6 +219,9 @@ func bareMetalServerActionGet(context context.Context, sess *vpcv1.VpcV1, id str
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isBareMetalServerStatusReasonsCode] = *sr.Code
 				currentSR[isBareMetalServerStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isBareMetalServerStatusReasonsMoreInfo] = *sr.MoreInfo
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
