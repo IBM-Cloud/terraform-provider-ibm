@@ -33,7 +33,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "3072"),
@@ -52,7 +52,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
@@ -68,7 +68,7 @@ func TestAccIBMDatabaseInstance_Rabbitmq_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
@@ -107,7 +107,7 @@ func TestAccIBMDatabaseInstanceRabbitmqImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "messages-for-rabbitmq"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
 				),
 			},
 			{
@@ -135,7 +135,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 3072
@@ -148,7 +148,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		  description = "desc1"
 		}
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup string, name string) string {
@@ -163,7 +163,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 6144
@@ -185,7 +185,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqFullyspecified(databaseResourceGroup
 		}
 	  }
 	  
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string, name string) string {
@@ -200,12 +200,12 @@ func testAccCheckIBMDatabaseInstanceRabbitmqReduced(databaseResourceGroup string
 		name                         = "%[2]s"
 		service                      = "messages-for-rabbitmq"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 6144
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string, name string) string {
@@ -220,7 +220,7 @@ func testAccCheckIBMDatabaseInstanceRabbitmqImport(databaseResourceGroup string,
 		name              = "%[2]s"
 		service           = "messages-for-rabbitmq"
 		plan              = "standard"
-		location          = "us-south"
+		location          = "%[3]s"
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
