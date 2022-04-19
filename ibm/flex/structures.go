@@ -2408,6 +2408,111 @@ func ResourceIBMISLBPoolCookieValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func ResourceSharesValidate(diff *schema.ResourceDiff) error {
+
+	profile := ""
+	var size, iops int
+
+	if iopsIntf, ok := diff.GetOk("iops"); ok {
+		iops = iopsIntf.(int)
+	}
+
+	if sizeIntf, ok := diff.GetOk("size"); ok {
+		size = sizeIntf.(int)
+	}
+
+	if profileIntf, ok := diff.GetOk("profile"); ok {
+		profile = profileIntf.(string)
+	}
+	if profile != "custom-iops" {
+		if iops != 0 && diff.NewValueKnown("iops") && diff.HasChange("iops") {
+			return fmt.Errorf("The Share profile specified in the request cannot accept IOPS values")
+		}
+	} else {
+		if iops == 0 {
+			return nil
+		}
+		if size >= 10 && size <= 39 {
+			min := 100
+			max := 1000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 40 && size <= 79 {
+			min := 100
+			max := 2000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 80 && size <= 99 {
+			min := 100
+			max := 4000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 100 && size <= 499 {
+			min := 100
+			max := 6000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 500 && size <= 999 {
+			min := 100
+			max := 10000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 1000 && size <= 1999 {
+			min := 100
+			max := 20000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 2000 && size <= 3999 {
+			min := 200
+			max := 40000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 4000 && size <= 7999 {
+			min := 300
+			max := 40000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 8000 && size <= 9999 {
+			min := 500
+			max := 48000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+		if size >= 10000 && size <= 16000 {
+			min := 1000
+			max := 48000
+			if !(iops >= min && iops <= max) {
+				return fmt.Errorf("Shares Error: Allowed iops range for size %d is [%d-%d] ", size, min, max)
+			}
+		}
+	}
+
+	if diff.HasChange("size") {
+		oldSize, newSize := diff.GetChange("size")
+		if newSize.(int) < oldSize.(int) {
+			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
+		}
+	}
+	return nil
+}
+
 func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 
 	if volsintf, ok := diff.GetOk("volume_attachments"); ok {
