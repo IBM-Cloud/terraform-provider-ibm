@@ -55,7 +55,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "10240"),
@@ -77,7 +77,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "4096"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "14336"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
@@ -100,7 +100,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "14336"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
@@ -138,7 +138,7 @@ func TestAccIBMDatabaseInstancePostgresNode(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "node_count", "2"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
@@ -161,7 +161,7 @@ func TestAccIBMDatabaseInstancePostgresNode(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "2"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "7168"),
@@ -186,7 +186,7 @@ func TestAccIBMDatabaseInstancePostgresNode(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "2"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "7168"),
@@ -204,7 +204,7 @@ func TestAccIBMDatabaseInstancePostgresNode(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "node_count", "3"),
 					resource.TestCheckResourceAttr(name, "node_memory_allocation_mb", "1024"),
 					resource.TestCheckResourceAttr(name, "node_disk_allocation_mb", "7168"),
@@ -244,7 +244,7 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
@@ -267,7 +267,7 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2304"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
@@ -292,7 +292,7 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
@@ -310,7 +310,7 @@ func TestAccIBMDatabaseInstancePostgresGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "21504"),
@@ -347,7 +347,7 @@ func TestAccIBMDatabaseInstancePostgresImport(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", serviceName),
 					resource.TestCheckResourceAttr(resourceName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(resourceName, "plan", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "location", "us-south"),
+					resource.TestCheckResourceAttr(resourceName, "location", acc.IcdDbRegion),
 				),
 			},
 			{
@@ -495,7 +495,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 10240
@@ -509,7 +509,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 			description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup string, name string) string {
@@ -523,7 +523,7 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 4096
 		members_disk_allocation_mb   = 14336
@@ -547,7 +547,7 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 			description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup string, name string) string {
@@ -561,14 +561,14 @@ func testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup string
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 2048
 		members_disk_allocation_mb   = 14336
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
-	}
-				`, databaseResourceGroup, name)
+	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresNodeBasic(databaseResourceGroup string, name string) string {
@@ -582,7 +582,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeBasic(databaseResourceGroup stri
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		node_count                   = 2
 		node_memory_allocation_mb    = 1024
@@ -598,7 +598,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeBasic(databaseResourceGroup stri
 			description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresNodeFullyspecified(databaseResourceGroup string, name string) string {
@@ -612,7 +612,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeFullyspecified(databaseResourceG
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		node_count                   = 2
 		node_memory_allocation_mb    = 1024
@@ -637,7 +637,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeFullyspecified(databaseResourceG
 			description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresNodeReduced(databaseResourceGroup string, name string) string {
@@ -651,7 +651,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeReduced(databaseResourceGroup st
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		node_count                   = 2
 		node_memory_allocation_mb    = 1024
@@ -659,8 +659,8 @@ func testAccCheckIBMDatabaseInstancePostgresNodeReduced(databaseResourceGroup st
 		node_cpu_allocation_count    = 3
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
-	}
-				`, databaseResourceGroup, name)
+	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 func testAccCheckIBMDatabaseInstancePostgresNodeScaleOut(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
@@ -673,7 +673,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeScaleOut(databaseResourceGroup s
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		node_count                   = 3
 		node_memory_allocation_mb    = 1024
@@ -682,7 +682,7 @@ func testAccCheckIBMDatabaseInstancePostgresNodeScaleOut(databaseResourceGroup s
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup string, name string) string {
@@ -696,7 +696,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		tags                         = ["one:two"]
 		group {
@@ -723,7 +723,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupBasic(databaseResourceGroup str
 			description = "desc1"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResourceGroup string, name string) string {
@@ -737,7 +737,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		service_endpoints            = "public-and-private"
 		tags                         = ["one:two"]
@@ -773,7 +773,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupFullyspecified(databaseResource
 			description = "desc"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup string, name string) string {
@@ -787,7 +787,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
@@ -807,7 +807,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 			}
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup string, name string) string {
@@ -821,7 +821,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		group {
 			group_id = "member"
@@ -841,7 +841,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupScaleOut(databaseResourceGroup 
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string, name string) string {
@@ -856,7 +856,7 @@ func testAccCheckIBMDatabaseInstancePostgresImport(databaseResourceGroup string,
 		name              = "%[2]s"
 		service           = "databases-for-postgresql"
 		plan              = "standard"
-		location          = "us-south"
-	}
-				`, databaseResourceGroup, name)
+		location          = "%[3]s"
+	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
