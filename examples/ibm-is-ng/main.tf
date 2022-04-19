@@ -1168,3 +1168,40 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+resource "ibm_is_vpc" "vpc" {
+  name = "my-vpc"
+}
+resource "ibm_is_share" "is_share" {
+  name = "myshare"
+	profile = "tier-3iops"
+	resource_group = data.ibm_resource_group.default.id
+	size = 32000
+	share_target_prototype {
+		vpc = ibm_is_vpc.vpc.id
+	}
+	zone = "us-south-2"
+  tags = ["tag1", "tag2"]
+  access_tags = ["accesstag1", "accesstag2"]
+}
+
+resource "ibm_is_share_target" "is_share_target" {
+  share = ibm_is_share.is_share.id
+  vpc = ibm_is_vpc.vpc1.id
+  name = "my-share-target"
+}
+
+data "ibm_is_share_target" "is_share_target" {
+	share = ibm_is_share.is_share.id
+	share_target = ibm_is_share_target.is_share_target.share_target
+}
+
+data "ibm_is_share_targets" "is_share_targets" {
+	share = ibm_is_share.is_share.id
+}
+
+data "ibm_is_share" "is_share" {
+	share = ibm_is_share.is_share.id
+}
+
+data "is_shares" "is_shares" {
+}
