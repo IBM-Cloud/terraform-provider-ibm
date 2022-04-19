@@ -324,6 +324,32 @@ resource "ibm_is_instance" "example" {
     name   = "eth1"
   }
 }
+
+// Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
+
+resource "ibm_is_volume" "example" {
+  name    = "example-volume"
+  profile = "10iops-tier"
+  zone    = "us-south-1"
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi-restore"
+  profile = "cx2-2x4"
+  boot_volume {
+    volume = ibm_is_volume.example.id
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
 ```
 
 ## Timeouts
@@ -366,6 +392,10 @@ Review the argument references that you can specify for your resource.
     ~> **Note:**
     `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
     `snapshot` conflicts with `image` id and `instance_template`
+- `volume_id` - (Optional, Forces new resource, String) The ID of the volume to be used for creating boot volume attachment
+    ~> **Note:** 
+
+     - `volume_id` conflicts with `image` id, `instance_template` ,`boot_volume.snapshot`, `boot_volume.name`, `boot_volume.encryption`, 
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 
