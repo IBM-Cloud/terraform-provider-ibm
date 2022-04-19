@@ -43,7 +43,6 @@ const (
 	isInstanceVPC                     = "vpc"
 	isInstanceZone                    = "zone"
 	isInstanceBootVolume              = "boot_volume"
-	isInstanceBootVolumeID            = "volume_id"
 	isInstanceVolumeSnapshot          = "snapshot"
 	isInstanceSourceTemplate          = "instance_template"
 	isInstanceBandwidth               = "bandwidth"
@@ -2507,7 +2506,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
-		volumeId, ok := bootvol[isInstanceBootVolumeID]
+		volumeId, ok := bootvol[isInstanceBootVolumeId]
 		volumeIdStr := volumeId.(string)
 
 		if ok && volumeIdStr != "" {
