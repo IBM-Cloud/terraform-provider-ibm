@@ -92,7 +92,7 @@ func ResourceIBMResourceTagValidator() *validate.ResourceValidator {
 			Required:                   true,
 			Regexp:                     `^crn:v1(:[a-zA-Z0-9 \-\._~\*\+,;=!$&'\(\)\/\?#\[\]@]*){8}$|^[0-9]+$`,
 			MinValueLength:             1,
-			MaxValueLength:             128})
+			MaxValueLength:             1024})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 tags,
