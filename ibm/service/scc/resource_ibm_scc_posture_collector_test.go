@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -143,7 +142,13 @@ func testAccCheckIBMSccPostureCollectorsExists(n string, obj posturemanagementv2
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+
+		listCollectorsOptions.SetAccountID(userDetails.UserAccount)
 
 		newCollector, _, err := postureManagementClient.ListCollectors(listCollectorsOptions)
 		if err != nil {
@@ -166,7 +171,13 @@ func testAccCheckIBMSccPostureCollectorsDestroy(s *terraform.State) error {
 		}
 
 		listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
-		listCollectorsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+
+		listCollectorsOptions.SetAccountID(userDetails.UserAccount)
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListCollectors(listCollectorsOptions)

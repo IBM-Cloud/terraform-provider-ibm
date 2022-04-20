@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -136,7 +135,12 @@ func testAccCheckIBMSccPostureScopesExists(n string, obj posturemanagementv2.Sco
 		}
 
 		listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-		listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+		listScopesOptions.SetAccountID(userDetails.UserAccount)
 
 		newScope, _, err := postureManagementClient.ListScopes(listScopesOptions)
 		if err != nil {
@@ -159,7 +163,13 @@ func testAccCheckIBMSccPostureScopesDestroy(s *terraform.State) error {
 		}
 
 		listScopesOptions := &posturemanagementv2.ListScopesOptions{}
-		listScopesOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+
+		listScopesOptions.SetAccountID(userDetails.UserAccount)
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListScopes(listScopesOptions)
