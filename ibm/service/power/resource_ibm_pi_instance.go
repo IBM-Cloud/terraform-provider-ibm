@@ -253,6 +253,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				ConflictsWith: []string{helpers.PIInstanceProcessors, helpers.PIInstanceMemory, helpers.PIInstanceProcType},
 				Description:   "SAP Profile ID for the amount of cores and memory",
 			},
+			PISAPInstanceDeploymentType: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Custom SAP Deployment Type Information",
+			},
 			helpers.PIInstanceSystemType: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -1026,6 +1031,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *st.IBMPISAPInstanceCli
 		ProfileID: &profileID,
 	}
 
+	if v, ok := d.GetOk(PISAPInstanceDeploymentType); ok {
+		body.DeploymentType = v.(string)
+	}
 	if v, ok := d.GetOk(helpers.PIInstanceVolumeIds); ok {
 		volids := flex.ExpandStringList((v.(*schema.Set)).List())
 		if len(volids) > 0 {

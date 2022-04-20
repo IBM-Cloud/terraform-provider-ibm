@@ -40,6 +40,7 @@ const (
 	PIInstanceNetwork             = "pi_network"
 	PIInstanceStoragePool         = "pi_storage_pool"
 	PISAPInstanceProfileID        = "pi_sap_profile_id"
+	PISAPInstanceDeploymentType   = "pi_sap_deployment_type"
 	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
 
 	// Placement Group
