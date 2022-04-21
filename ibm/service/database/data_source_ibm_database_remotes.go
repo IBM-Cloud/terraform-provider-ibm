@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -59,23 +58,19 @@ func dataSourceIBMDatabaseRemotesRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("ListRemotesWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMDatabaseRemotesID(d))
+	d.SetId(d.Get("deployment_id").(string))
 
-	remotesLeader := remotes.Remotes.Leader
-	remotesReplicas := remotes.Remotes.Replicas
-
-	if err = d.Set("leader", remotesLeader); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting leader: %s", err))
+	if remotes.Remotes.Leader != nil {
+		if err = d.Set("leader", remotes.Remotes.Leader); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting leader: %s", err))
+		}
 	}
 
-	if err = d.Set("replicas", remotesReplicas); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting replicas: %s", err))
+	if remotes.Remotes.Replicas != nil {
+		if err = d.Set("replicas", remotes.Remotes.Replicas); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting replicas: %s", err))
+		}
 	}
 
 	return nil
-}
-
-// dataSourceIBMDatabaseRemotesID returns a reasonable ID for the list.
-func dataSourceIBMDatabaseRemotesID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }

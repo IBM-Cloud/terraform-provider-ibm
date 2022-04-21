@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_remotes"
 description: |-
   Get information about database_remotes
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_remotes
@@ -13,8 +13,13 @@ Provides a read-only data source for database_remotes. You can then reference th
 ## Example Usage
 
 ```hcl
+data "ibm_database" "database" {
+  name = "mydatabase"
+  location = "us-east"
+}
+
 data "ibm_database_remotes" "database_remotes" {
-	deployment_id = "id"
+	deployment_id = data.ibm_database.database.id
 }
 ```
 
