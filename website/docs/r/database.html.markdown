@@ -198,8 +198,8 @@ resource "ibm_database" "autoscale" {
     }
 }
 ```
-### Sample cassandra database instance
-Cassandra takes more time than expected. It is always advisible to extend timeouts using timeouts block
+### Sample Cassandra database instance
+Cassandra takes more time than expected to provision. It is always advisible to extend timeouts using timeouts block
 
 ```terraform
 data "ibm_resource_group" "test_acc" {
@@ -231,10 +231,10 @@ resource "ibm_database" "cassandra" {
   }
 }
 ```
-### Sample enterprise mongo database instance
-* Enterprise MongoDB takes more time than expected. It is always advisible to extend timeouts using timeouts block.
+### Sample MongoDB Enterprise database instance
+* MongoDB Enterprise takes more time than expected to provision. It is always advisible to extend timeouts using timeouts block.
 * Please make sure your resources meet minimum requirements of scaling. Please refer [docs](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pricing#scaling-per-member) for more info.
-* `serive_endpoints` cannot be updated on this instance.
+* `service_endpoints` cannot be updated on this instance.
 
 ```terraform
 data "ibm_resource_group" "test_acc" {
@@ -266,6 +266,61 @@ resource "ibm_database" "mongodb" {
   }
 }
 ```
+
+### Sample MongoDB Enterprise database instance with BI Connector and Analytics
+* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for each group type with `members` scaled to at exactly `1`.
+* MongoDB Enterprise provisioning takes more time than expected to provision. It is always advisible to extend timeouts using `timeouts` block.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongodb_enterprise" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "test"
+  service                      = "databases-for-mongodb"
+  plan                         = "enterprise"
+  location                     = "us-south"
+  adminpassword                = "password12"
+  tags                         = ["one:two"]
+
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+  }
+  
+  group {
+    group_id = "analytics"
+    
+    members { 
+      allocation_count = 1
+    }
+  }
+  
+  group {
+    group_id = "bi_connector"
+    
+    members { 
+      allocation_count = 1
+    }
+  }
+    
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
+
 ### Sample EDB instance
 EDB takes more time than expected. It is always advisible to extend timeouts using timeouts block
 
