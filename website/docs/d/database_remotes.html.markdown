@@ -27,7 +27,7 @@ data "ibm_database_remotes" "database_remotes" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) Deployment ID.
+* `deployment_id` - (Required, Forces new resource, String) Deployment ID.
 
 ## Attribute Reference
 
