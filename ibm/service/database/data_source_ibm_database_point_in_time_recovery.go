@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -50,17 +49,14 @@ func DataSourceIBMDatabasePointInTimeRecoveryRead(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("GetPitrDataWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(DataSourceIBMDatabasePointInTimeRecoveryID(d))
-	pitr := pointInTimeRecoveryData.PointInTimeRecoveryData.EarliestPointInTimeRecoveryTime
+	d.SetId(d.Get("deployment_id").(string))
 
-	if err = d.Set("earliest_point_in_time_recovery_time", pitr); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting earliest_point_in_time_recovery_time: %s", err))
+	if pointInTimeRecoveryData.PointInTimeRecoveryData.EarliestPointInTimeRecoveryTime != nil {
+		pitr := pointInTimeRecoveryData.PointInTimeRecoveryData.EarliestPointInTimeRecoveryTime
+		if err = d.Set("earliest_point_in_time_recovery_time", pitr); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting earliest_point_in_time_recovery_time: %s", err))
+		}
 	}
 
 	return nil
-}
-
-// DataSourceIBMDatabasePointInTimeRecoveryID returns a reasonable ID for the list.
-func DataSourceIBMDatabasePointInTimeRecoveryID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }
