@@ -988,6 +988,222 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 					},
 				},
 			},
+			"bi_connector": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of connection being described.",
+						},
+						"composed": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"scheme": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Scheme/protocol for URI connection.",
+						},
+						"hosts": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"hostname": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Hostname for connection.",
+									},
+									"port": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Port number for connection.",
+									},
+								},
+							},
+						},
+						"path": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Path for URI connection.",
+						},
+						"query_options": &schema.Schema{
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "Query options to add to the URI connection.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"authentication": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Authentication data for Connection String.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Authentication method for this credential.",
+									},
+									"username": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Username part of credential.",
+									},
+									"password": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Password part of credential.",
+									},
+								},
+							},
+						},
+						"certificate": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name associated with the certificate.",
+									},
+									"certificate_base64": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Base64 encoded version of the certificate.",
+									},
+								},
+							},
+						},
+						"ssl": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates ssl is required for the connection.",
+						},
+						"browser_accessible": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates the address is accessible by browser.",
+						},
+					},
+				},
+			},
+			"analytics": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of connection being described.",
+						},
+						"composed": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"scheme": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Scheme/protocol for URI connection.",
+						},
+						"hosts": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"hostname": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Hostname for connection.",
+									},
+									"port": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Port number for connection.",
+									},
+								},
+							},
+						},
+						"path": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Path for URI connection.",
+						},
+						"query_options": &schema.Schema{
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "Query options to add to the URI connection.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"authentication": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Authentication data for Connection String.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"method": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Authentication method for this credential.",
+									},
+									"username": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Username part of credential.",
+									},
+									"password": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Password part of credential.",
+									},
+								},
+							},
+						},
+						"certificate": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name associated with the certificate.",
+									},
+									"certificate_base64": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Base64 encoded version of the certificate.",
+									},
+								},
+							},
+						},
+						"ssl": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates ssl is required for the connection.",
+						},
+						"browser_accessible": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates the address is accessible by browser.",
+						},
+					},
+				},
+			},
 			"ops_manager": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -1517,6 +1733,30 @@ func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.Reso
 	}
 	if err = d.Set("mongodb", mongodb); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting mongodb %s", err))
+	}
+
+	biConnector := []map[string]interface{}{}
+	if conn.BiConnector != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.BiConnector)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		biConnector = append(biConnector, modelMap)
+	}
+	if err = d.Set("bi_connector", biConnector); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting bi_connector %s", err))
+	}
+
+	analytics := []map[string]interface{}{}
+	if conn.Analytics != nil {
+		modelMap, err := DataSourceIBMDatabaseConnectionConnectionURIToMap(conn.Analytics)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		analytics = append(analytics, modelMap)
+	}
+	if err = d.Set("analytics", analytics); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting analytics %s", err))
 	}
 
 	opsManager := []map[string]interface{}{}

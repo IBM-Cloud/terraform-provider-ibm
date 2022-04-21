@@ -19,27 +19,28 @@ import (
 )
 
 const (
-	isVolumeName                 = "name"
-	isVolumeProfileName          = "profile"
-	isVolumeZone                 = "zone"
-	isVolumeEncryptionKey        = "encryption_key"
-	isVolumeEncryptionType       = "encryption_type"
-	isVolumeCapacity             = "capacity"
-	isVolumeIops                 = "iops"
-	isVolumeCrn                  = "crn"
-	isVolumeTags                 = "tags"
-	isVolumeStatus               = "status"
-	isVolumeStatusReasons        = "status_reasons"
-	isVolumeStatusReasonsCode    = "code"
-	isVolumeStatusReasonsMessage = "message"
-	isVolumeDeleting             = "deleting"
-	isVolumeDeleted              = "done"
-	isVolumeProvisioning         = "provisioning"
-	isVolumeProvisioningDone     = "done"
-	isVolumeResourceGroup        = "resource_group"
-	isVolumeSourceSnapshot       = "source_snapshot"
-	isVolumeDeleteAllSnapshots   = "delete_all_snapshots"
-	isVolumeBandwidth            = "bandwidth"
+	isVolumeName                  = "name"
+	isVolumeProfileName           = "profile"
+	isVolumeZone                  = "zone"
+	isVolumeEncryptionKey         = "encryption_key"
+	isVolumeEncryptionType        = "encryption_type"
+	isVolumeCapacity              = "capacity"
+	isVolumeIops                  = "iops"
+	isVolumeCrn                   = "crn"
+	isVolumeTags                  = "tags"
+	isVolumeStatus                = "status"
+	isVolumeStatusReasons         = "status_reasons"
+	isVolumeStatusReasonsCode     = "code"
+	isVolumeStatusReasonsMessage  = "message"
+	isVolumeStatusReasonsMoreInfo = "more_info"
+	isVolumeDeleting              = "deleting"
+	isVolumeDeleted               = "done"
+	isVolumeProvisioning          = "provisioning"
+	isVolumeProvisioningDone      = "done"
+	isVolumeResourceGroup         = "resource_group"
+	isVolumeSourceSnapshot        = "source_snapshot"
+	isVolumeDeleteAllSnapshots    = "delete_all_snapshots"
+	isVolumeBandwidth             = "bandwidth"
 )
 
 func ResourceIBMISVolume() *schema.Resource {
@@ -152,6 +153,12 @@ func ResourceIBMISVolume() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "An explanation of the status reason",
+						},
+
+						isVolumeStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
 						},
 					},
 				},
@@ -396,6 +403,9 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isVolumeStatusReasonsCode] = *sr.Code
 				currentSR[isVolumeStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isVolumeStatusReasonsMoreInfo] = *sr.Message
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}

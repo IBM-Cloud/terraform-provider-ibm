@@ -34,6 +34,39 @@ func TestAccIBMISLBDatasource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLBDatasource_ReservedIp(t *testing.T) {
+	name := fmt.Sprintf("tflb-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	routeMode := "false"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testDSCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_lb.ds_lb", "name", name),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_lb.ds_lb", "route_mode", routeMode),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.#"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.0.address"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.0.href"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.0.name"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet(
+						"data.ibm_is_lb.ds_lb", "private_ip.0.resource_type"),
+				),
+			},
+		},
+	})
+}
 
 func testDSCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) string {
 	return fmt.Sprintf(`

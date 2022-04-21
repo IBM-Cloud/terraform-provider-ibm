@@ -117,7 +117,7 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN for this endpoint gateway.
 - `health_state` - (String) The health state of the endpoint gateway.
 - `id` - (String) The unique identifier of the VPE Gateway. The ID is composed of `<gateway_id>`.
-- `ips`  (List) The endpoint gateway resource group.
+- `ips`  (List) The endpoint gateway reserved ips.
 
   Nested scheme for `ips`:
   - `address` -  The endpoint gateway IPs Address.

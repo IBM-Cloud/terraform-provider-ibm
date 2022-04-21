@@ -46,6 +46,11 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_floating_ip.testacc_floatingip", "name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_is_floating_ip.testacc_floatingip", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.resource_type"),
 				),
 			},
 			{
@@ -58,6 +63,11 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_floating_ip.testacc_floatingip", "name", name),
 					resource.TestCheckResourceAttr(
 						"ibm_is_floating_ip.testacc_floatingip", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet("ibm_is_floating_ip.testacc_floatingip", "target_list.0.primary_ip.0.resource_type"),
 				),
 			},
 		},
@@ -154,7 +164,6 @@ func testAccCheckIBMISFloatingIPConfig(vpcname, subnetname, sshname, publicKey, 
 		image   = "%s"
 		profile = "%s"
 		primary_network_interface {
-		  port_speed = "100"
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
 		user_data = "%s"

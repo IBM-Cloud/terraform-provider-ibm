@@ -50,6 +50,12 @@ func TestAccIBMIsFlowLogDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log", "storage_bucket.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log", "target.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log", "vpc.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "vpc.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "target.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_flow_log.is_flow_log_name", "crn"),
 				),
 			},
 		},
@@ -104,16 +110,20 @@ func testAccCheckIBMISFlowLogDataSourceConfig(vpcname, name, flowlogname, sshnam
 	}	  
 
 	resource "ibm_is_flow_log" "test_flow_log" {
-        name    = "%s"
-		target = ibm_is_instance.testacc_instance.id
-		storage_bucket = ibm_cos_bucket.bucket2.bucket_name
-		active = %v
+        name    		= "%s"
+		target 			= ibm_is_instance.testacc_instance.id
+		storage_bucket 	= ibm_cos_bucket.bucket2.bucket_name
+		active 			= %v
 	  } 
 
 	  data "ibm_is_flow_log" "is_flow_log" {
 		identifier = ibm_is_flow_log.test_flow_log.id
-	}
+	  }
+
+	  data "ibm_is_flow_log" "is_flow_log_name" {
+		name = ibm_is_flow_log.test_flow_log.name
+	  }
 	  
-	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, "r006-13938c0a-89e4-4370-b59b-55cd1402562d", acc.InstanceProfileName, acc.ISZoneName, serviceName, bucketName, bucketRegion, bucketClass, flowlogname, isActive)
+	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, serviceName, bucketName, bucketRegion, bucketClass, flowlogname, isActive)
 
 }
