@@ -199,7 +199,7 @@ resource "ibm_database" "autoscale" {
 }
 ```
 ### Sample Cassandra database instance
-Cassandra takes more time than expected to provision. It is always advisible to extend timeouts using timeouts block
+* Cassandra provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
 ```terraform
 data "ibm_resource_group" "test_acc" {
@@ -232,7 +232,7 @@ resource "ibm_database" "cassandra" {
 }
 ```
 ### Sample MongoDB Enterprise database instance
-* MongoDB Enterprise takes more time than expected to provision. It is always advisible to extend timeouts using timeouts block.
+* MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 * Please make sure your resources meet minimum requirements of scaling. Please refer [docs](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pricing#scaling-per-member) for more info.
 * `service_endpoints` cannot be updated on this instance.
 
@@ -268,8 +268,8 @@ resource "ibm_database" "mongodb" {
 ```
 
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
-* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for each group type with `members` scaled to at exactly `1`.
-* MongoDB Enterprise provisioning takes more time than expected to provision. It is always advisible to extend timeouts using `timeouts` block.
+* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`.
+* MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
 ```terraform
 data "ibm_resource_group" "test_acc" {
@@ -277,13 +277,13 @@ data "ibm_resource_group" "test_acc" {
 }
 
 resource "ibm_database" "mongodb_enterprise" {
-  resource_group_id            = data.ibm_resource_group.test_acc.id
-  name                         = "test"
-  service                      = "databases-for-mongodb"
-  plan                         = "enterprise"
-  location                     = "us-south"
-  adminpassword                = "password12"
-  tags                         = ["one:two"]
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = "test"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise"
+  location          = "us-south"
+  adminpassword     = "password12"
+  tags              = ["one:two"]
 
   group {
     group_id = "member"
@@ -319,6 +319,24 @@ resource "ibm_database" "mongodb_enterprise" {
     delete = "15m"
   }
 }
+
+data "ibm_database_connection" "mongodb_conn" {
+  deployment_id = ibm_database.mongodb_enterprise.id
+  user_type     = "database"
+  user_id       = "admin"
+  endpoint_type = "public"
+}
+
+output "bi_connector_connection" {
+  description = "BI Connector connection string"
+  value       = data.ibm_database_connection.mongodb_conn.bi_connector.0.composed.0
+}
+
+output "analytics_connection" {
+  description = "Analytics Node connection string"
+  value       = data.ibm_database_connection.mongodb_conn.analytics.0.composed.0
+}
+
 ```
 
 ### Sample EDB instance
