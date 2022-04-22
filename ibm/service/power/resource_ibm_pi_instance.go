@@ -41,6 +41,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
+				ForceNew:    true,
 				Required:    true,
 				Description: "This is the Power Instance id that is assigned to the account",
 			},
@@ -234,9 +235,10 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description:   "Instance processor type",
 			},
 			helpers.PIInstanceSSHKeyName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "SSH key name",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "SSH key name",
 			},
 			helpers.PIInstanceMemory: {
 				Type:          schema.TypeFloat,
@@ -810,7 +812,12 @@ func isPIInstanceRefreshFunc(client *st.IBMPIInstanceClient, id, instanceReadySt
 			return pvm, helpers.PIInstanceAvailable, nil
 		}
 		if *pvm.Status == "ERROR" {
-			return pvm, *pvm.Status, fmt.Errorf("failed to create the lpar")
+			if pvm.Fault != nil {
+				err = fmt.Errorf("failed to create the lpar: %s", pvm.Fault.Message)
+			} else {
+				err = fmt.Errorf("failed to create the lpar")
+			}
+			return pvm, *pvm.Status, err
 		}
 
 		return pvm, helpers.PIInstanceBuilding, nil
