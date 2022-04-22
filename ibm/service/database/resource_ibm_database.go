@@ -2742,7 +2742,6 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 				if err != nil {
 					return err
 				}
-				nodeCount = group.Members.Allocation
 			}
 
 			if group.Memory != nil {
