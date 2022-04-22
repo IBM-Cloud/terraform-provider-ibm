@@ -19,10 +19,10 @@ import (
 
 func ResourceIBMAtrackerRoute() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMAtrackerRouteCreate,
-		ReadContext:   ResourceIBMAtrackerRouteRead,
-		UpdateContext: ResourceIBMAtrackerRouteUpdate,
-		DeleteContext: ResourceIBMAtrackerRouteDelete,
+		CreateContext: resourceIBMAtrackerRouteCreate,
+		ReadContext:   resourceIBMAtrackerRouteRead,
+		UpdateContext: resourceIBMAtrackerRouteUpdate,
+		DeleteContext: resourceIBMAtrackerRouteDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -118,7 +118,7 @@ func ResourceIBMAtrackerRouteValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,10 +144,10 @@ func ResourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(*route.ID)
 
-	return ResourceIBMAtrackerRouteRead(context, d, meta)
+	return resourceIBMAtrackerRouteRead(context, d, meta)
 }
 
-func ResourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -172,7 +172,7 @@ func ResourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 	}
 	rules := []map[string]interface{}{}
 	for _, rulesItem := range route.Rules {
-		rulesItemMap, _ := ResourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
+		rulesItemMap, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
 		rules = append(rules, rulesItemMap)
 	}
 	if err = d.Set("rules", rules); err != nil {
@@ -198,7 +198,7 @@ func ResourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -223,10 +223,10 @@ func ResourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
 	}
 
-	return ResourceIBMAtrackerRouteRead(context, d, meta)
+	return resourceIBMAtrackerRouteRead(context, d, meta)
 }
 
-func ResourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -247,7 +247,7 @@ func ResourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func ResourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
+func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_ids"] = model.TargetIds
 	if model.Locations != nil {

@@ -19,10 +19,10 @@ import (
 
 func ResourceIBMAtrackerSettings() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMAtrackerSettingsCreate,
-		ReadContext:   ResourceIBMAtrackerSettingsRead,
-		UpdateContext: ResourceIBMAtrackerSettingsUpdate,
-		DeleteContext: ResourceIBMAtrackerSettingsDelete,
+		CreateContext: resourceIBMAtrackerSettingsCreate,
+		ReadContext:   resourceIBMAtrackerSettingsRead,
+		UpdateContext: resourceIBMAtrackerSettingsUpdate,
+		DeleteContext: resourceIBMAtrackerSettingsDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -93,7 +93,7 @@ func ResourceIBMAtrackerSettingsValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIBMAtrackerSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,10 +122,10 @@ func ResourceIBMAtrackerSettingsCreate(context context.Context, d *schema.Resour
 
 	d.SetId(*settings.MetadataRegionPrimary)
 
-	return ResourceIBMAtrackerSettingsRead(context, d, meta)
+	return resourceIBMAtrackerSettingsRead(context, d, meta)
 }
 
-func ResourceIBMAtrackerSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -170,7 +170,7 @@ func ResourceIBMAtrackerSettingsRead(context context.Context, d *schema.Resource
 	return nil
 }
 
-func ResourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -212,7 +212,7 @@ func ResourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.Resour
 		d.SetId(*setting.MetadataRegionPrimary)
 	}
 
-	return ResourceIBMAtrackerSettingsRead(context, d, meta)
+	return resourceIBMAtrackerSettingsRead(context, d, meta)
 }
 
 func resourceInterfaceToStringArray(resources []interface{}) (result []string) {
@@ -223,7 +223,7 @@ func resourceInterfaceToStringArray(resources []interface{}) (result []string) {
 	return result
 }
 
-func ResourceIBMAtrackerSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMAtrackerSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return diag.FromErr(err)
