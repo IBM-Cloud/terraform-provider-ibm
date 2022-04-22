@@ -15,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
@@ -143,10 +142,7 @@ func ResourceIBMToolchainToolPipelineCreate(context context.Context, d *schema.R
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIBMToolchainToolPipelineMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolPipeline(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -199,10 +195,7 @@ func ResourceIBMToolchainToolPipelineRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolPipelineParametersToMap(getIntegrationByIDResponse.Parameters)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolPipeline(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -267,10 +260,7 @@ func ResourceIBMToolchainToolPipelineUpdate(context context.Context, d *schema.R
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIBMToolchainToolPipelineMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolPipeline(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -311,26 +301,6 @@ func ResourceIBMToolchainToolPipelineDelete(context context.Context, d *schema.R
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMToolchainToolPipelineMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
-	model := make(map[string]interface{})
-	model["name"] = core.StringPtr(modelMap["name"].(string))
-	model["type"] = core.StringPtr(modelMap["type"].(string))
-	if modelMap["ui_pipeline"] != nil {
-		model["ui_pipeline"] = core.BoolPtr(modelMap["ui_pipeline"].(bool))
-	}
-	return model, nil
-}
-
-func ResourceIBMToolchainToolPipelineParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model["name"]
-	modelMap["type"] = model["type"]
-	if model["ui_pipeline"] != nil {
-		modelMap["ui_pipeline"] = model["ui_pipeline"]
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMToolchainToolPipelineGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {

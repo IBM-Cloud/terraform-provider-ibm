@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
@@ -140,10 +139,11 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIBMToolchainToolKeyprotectMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		remapFields := map[string]string{
+			"resource_group": "resource-group",
+			"instance_name":  "instance-name",
 		}
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -192,10 +192,11 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolKeyprotectParametersToMap(getIntegrationByIDResponse.Parameters)
-		if err != nil {
-			return diag.FromErr(err)
+		remapFields := map[string]string{
+			"resource-group": "resource_group",
+			"instance-name":  "instance_name",
 		}
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolKeyprotect(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -257,10 +258,11 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIBMToolchainToolKeyprotectMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		remapFields := map[string]string{
+			"resource_group": "resource-group",
+			"instance_name":  "instance-name",
 		}
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -301,40 +303,6 @@ func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMToolchainToolKeyprotectMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
-	model := make(map[string]interface{})
-	if modelMap["name"] != nil {
-		model["name"] = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["region"] != nil {
-		model["region"] = core.StringPtr(modelMap["region"].(string))
-	}
-	if modelMap["resource_group"] != nil {
-		model["resource-group"] = core.StringPtr(modelMap["resource_group"].(string))
-	}
-	if modelMap["instance_name"] != nil {
-		model["instance-name"] = core.StringPtr(modelMap["instance_name"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMToolchainToolKeyprotectParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model["name"] != nil {
-		modelMap["name"] = model["name"]
-	}
-	if model["region"] != nil {
-		modelMap["region"] = model["region"]
-	}
-	if model["resource-group"] != nil {
-		modelMap["resource_group"] = model["resource-group"]
-	}
-	if model["instance-name"] != nil {
-		modelMap["instance_name"] = model["instance-name"]
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {

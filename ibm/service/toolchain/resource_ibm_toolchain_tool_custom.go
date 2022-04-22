@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
@@ -164,10 +163,7 @@ func ResourceIBMToolchainToolCustomCreate(context context.Context, d *schema.Res
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIBMToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolCustom(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -216,10 +212,7 @@ func ResourceIBMToolchainToolCustomRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolCustomParametersToMap(getIntegrationByIDResponse.Parameters)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolCustom(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -281,10 +274,7 @@ func ResourceIBMToolchainToolCustomUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIBMToolchainToolCustomMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolCustom(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -325,48 +315,6 @@ func ResourceIBMToolchainToolCustomDelete(context context.Context, d *schema.Res
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMToolchainToolCustomMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
-	model := make(map[string]interface{})
-	model["type"] = core.StringPtr(modelMap["type"].(string))
-	model["lifecyclePhase"] = core.StringPtr(modelMap["lifecycle_phase"].(string))
-	if modelMap["image_url"] != nil {
-		model["imageUrl"] = core.StringPtr(modelMap["image_url"].(string))
-	}
-	if modelMap["documentation_url"] != nil {
-		model["documentationUrl"] = core.StringPtr(modelMap["documentation_url"].(string))
-	}
-	model["name"] = core.StringPtr(modelMap["name"].(string))
-	model["dashboard_url"] = core.StringPtr(modelMap["dashboard_url"].(string))
-	if modelMap["description"] != nil {
-		model["description"] = core.StringPtr(modelMap["description"].(string))
-	}
-	if modelMap["additional_properties"] != nil {
-		model["additional-properties"] = core.StringPtr(modelMap["additional_properties"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMToolchainToolCustomParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["type"] = model["type"]
-	modelMap["lifecycle_phase"] = model["lifecyclePhase"]
-	if model["imageUrl"] != nil {
-		modelMap["image_url"] = model["imageUrl"]
-	}
-	if model["documentationUrl"] != nil {
-		modelMap["documentation_url"] = model["documentationUrl"]
-	}
-	modelMap["name"] = model["name"]
-	modelMap["dashboard_url"] = model["dashboard_url"]
-	if model["description"] != nil {
-		modelMap["description"] = model["description"]
-	}
-	if model["additional-properties"] != nil {
-		modelMap["additional_properties"] = model["additional-properties"]
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMToolchainToolCustomGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {

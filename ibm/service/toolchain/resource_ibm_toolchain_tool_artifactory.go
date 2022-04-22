@@ -14,7 +14,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
@@ -68,6 +67,7 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 						"token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							Sensitive:        true,
 							Description:      "Type the API key for your Artifactory repository.",
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
@@ -179,10 +179,7 @@ func ResourceIBMToolchainToolArtifactoryCreate(context context.Context, d *schem
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel, err := ResourceIBMToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolArtifactory(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -231,10 +228,7 @@ func ResourceIBMToolchainToolArtifactoryRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap, err := ResourceIBMToolchainToolArtifactoryParametersToMap(getIntegrationByIDResponse.Parameters)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolArtifactory(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -296,10 +290,7 @@ func ResourceIBMToolchainToolArtifactoryUpdate(context context.Context, d *schem
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters, err := ResourceIBMToolchainToolArtifactoryMapToParameters(d.Get("parameters.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolArtifactory(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -340,68 +331,6 @@ func ResourceIBMToolchainToolArtifactoryDelete(context context.Context, d *schem
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMToolchainToolArtifactoryMapToParameters(modelMap map[string]interface{}) (map[string]interface{}, error) {
-	model := make(map[string]interface{})
-	model["name"] = core.StringPtr(modelMap["name"].(string))
-	if modelMap["dashboard_url"] != nil {
-		model["dashboard_url"] = core.StringPtr(modelMap["dashboard_url"].(string))
-	}
-	model["type"] = core.StringPtr(modelMap["type"].(string))
-	if modelMap["user_id"] != nil {
-		model["user_id"] = core.StringPtr(modelMap["user_id"].(string))
-	}
-	if modelMap["token"] != nil {
-		model["token"] = core.StringPtr(modelMap["token"].(string))
-	}
-	if modelMap["release_url"] != nil {
-		model["release_url"] = core.StringPtr(modelMap["release_url"].(string))
-	}
-	if modelMap["mirror_url"] != nil {
-		model["mirror_url"] = core.StringPtr(modelMap["mirror_url"].(string))
-	}
-	if modelMap["snapshot_url"] != nil {
-		model["snapshot_url"] = core.StringPtr(modelMap["snapshot_url"].(string))
-	}
-	if modelMap["repository_name"] != nil {
-		model["repository_name"] = core.StringPtr(modelMap["repository_name"].(string))
-	}
-	if modelMap["repository_url"] != nil {
-		model["repository_url"] = core.StringPtr(modelMap["repository_url"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMToolchainToolArtifactoryParametersToMap(model map[string]interface{}) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = model["name"]
-	if model["dashboard_url"] != nil {
-		modelMap["dashboard_url"] = model["dashboard_url"]
-	}
-	modelMap["type"] = model["type"]
-	if model["user_id"] != nil {
-		modelMap["user_id"] = model["user_id"]
-	}
-	if model["token"] != nil {
-		modelMap["token"] = model["token"]
-	}
-	if model["release_url"] != nil {
-		modelMap["release_url"] = model["release_url"]
-	}
-	if model["mirror_url"] != nil {
-		modelMap["mirror_url"] = model["mirror_url"]
-	}
-	if model["snapshot_url"] != nil {
-		modelMap["snapshot_url"] = model["snapshot_url"]
-	}
-	if model["repository_name"] != nil {
-		modelMap["repository_name"] = model["repository_name"]
-	}
-	if model["repository_url"] != nil {
-		modelMap["repository_url"] = model["repository_url"]
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMToolchainToolArtifactoryGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {

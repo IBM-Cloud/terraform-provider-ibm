@@ -4,7 +4,7 @@ This example illustrates how to use the ToolchainV2
 
 These types of resources are supported:
 
-* toolchain_tool_sonarqube
+* toolchain_tool_hashicorpvault
 
 ## Usage
 
@@ -21,13 +21,14 @@ Run `terraform destroy` when you don't need these resources.
 
 ## ToolchainV2 resources
 
-toolchain_tool_sonarqube resource:
+toolchain_tool_hashicorpvault resource:
 
 ```hcl
-resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
-  toolchain_id = var.toolchain_tool_sonarqube_toolchain_id
-  name = var.toolchain_tool_sonarqube_name
-  parameters = var.toolchain_tool_sonarqube_parameters
+resource "toolchain_tool_hashicorpvault" "toolchain_tool_hashicorpvault_instance" {
+  toolchain_id = var.toolchain_tool_hashicorpvault_toolchain_id
+  name = var.toolchain_tool_hashicorpvault_name
+  parameters = var.toolchain_tool_hashicorpvault_parameters
+  parameters_references = var.toolchain_tool_hashicorpvault_parameters_references
 }
 ```
 
@@ -61,10 +62,11 @@ resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | toolchain_id | ID of the toolchain to bind integration to. | `string` | true |
 | name | Name of tool integration. | `string` | false |
-| parameters |  | `` | false |
+| parameters | Arbitrary JSON data. | `` | false |
+| parameters_references | Decoded values used on provision in the broker that reference fields in the parameters. | `map()` | false |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_sonarqube | toolchain_tool_sonarqube object |
+| toolchain_tool_hashicorpvault | toolchain_tool_hashicorpvault object |

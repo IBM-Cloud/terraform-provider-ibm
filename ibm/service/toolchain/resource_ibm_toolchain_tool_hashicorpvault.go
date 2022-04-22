@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolSonarqube() *schema.Resource {
+func ResourceIBMToolchainToolHashicorpvault() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolSonarqubeCreate,
-		ReadContext:   ResourceIBMToolchainToolSonarqubeRead,
-		UpdateContext: ResourceIBMToolchainToolSonarqubeUpdate,
-		DeleteContext: ResourceIBMToolchainToolSonarqubeDelete,
+		CreateContext: ResourceIBMToolchainToolHashicorpvaultCreate,
+		ReadContext:   ResourceIBMToolchainToolHashicorpvaultRead,
+		UpdateContext: ResourceIBMToolchainToolHashicorpvaultUpdate,
+		DeleteContext: ResourceIBMToolchainToolHashicorpvaultDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_sonarqube", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_hashicorpvault", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -39,37 +39,79 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Arbitrary JSON data.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.",
+							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type the server URL for your HashiCorp Vault instance.",
+						},
+						"authentication_method": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Choose the authentication method for your HashiCorp Vault instance.",
+						},
+						"token": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							Sensitive:        true,
+							Description:      "Type or select the authentication token for your HashiCorp Vault instance.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+						},
+						"role_id": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							Sensitive:        true,
+							Description:      "Type or select the authentication role ID for your HashiCorp Vault instance.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+						},
+						"secret_id": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							Sensitive:        true,
+							Description:      "Type or select the authentication secret ID for your HashiCorp Vault instance.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.",
+							Description: "Type the URL that you want to navigate to when you click the HashiCorp Vault integration tile.",
 						},
-						"user_login": &schema.Schema{
+						"path": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type the mount path where your secrets are stored in your HashiCorp Vault instance.",
+						},
+						"secret_filter": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type a regular expression to filter the list of secret names returned from your HashiCorp Vault instance.",
+						},
+						"default_secret": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type a default secret name that will be selected or used if no list of secret names are returned from your HashiCorp Vault instance.",
+						},
+						"username": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type or select the authentication username for your HashiCorp Vault instance.",
+						},
+						"password": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
 							Sensitive:        true,
-							Description:      "If you are using an authentication token, leave this field empty.",
+							Description:      "Type or select the authentication password for your HashiCorp Vault instance.",
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-						},
-						"user_password": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"blind_connection": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
 						},
 					},
 				},
@@ -118,7 +160,7 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 	}
 }
 
-func ResourceIBMToolchainToolSonarqubeValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolHashicorpvaultValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -132,11 +174,11 @@ func ResourceIBMToolchainToolSonarqubeValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_sonarqube", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_hashicorpvault", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolSonarqubeCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolHashicorpvaultCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -145,12 +187,13 @@ func ResourceIBMToolchainToolSonarqubeCreate(context context.Context, d *schema.
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("sonarqube")
+	postIntegrationOptions.SetToolID("hashicorpvault")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
+
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolSonarqube(), nil)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolHashicorpvault(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -162,10 +205,10 @@ func ResourceIBMToolchainToolSonarqubeCreate(context context.Context, d *schema.
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolSonarqubeRead(context, d, meta)
+	return ResourceIBMToolchainToolHashicorpvaultRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolHashicorpvaultRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +242,7 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSonarqube(), nil)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolHashicorpvault(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -216,7 +259,7 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolSonarqubeGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolHashicorpvaultGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,7 +276,7 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func ResourceIBMToolchainToolSonarqubeUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolHashicorpvaultUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,7 +291,7 @@ func ResourceIBMToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("sonarqube")
+	patchToolIntegrationOptions.SetToolID("hashicorpvault")
 
 	hasChange := false
 
@@ -261,7 +304,7 @@ func ResourceIBMToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolSonarqube(), nil)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolHashicorpvault(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -274,10 +317,10 @@ func ResourceIBMToolchainToolSonarqubeUpdate(context context.Context, d *schema.
 		}
 	}
 
-	return ResourceIBMToolchainToolSonarqubeRead(context, d, meta)
+	return ResourceIBMToolchainToolHashicorpvaultRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolSonarqubeDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolHashicorpvaultDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -304,7 +347,7 @@ func ResourceIBMToolchainToolSonarqubeDelete(context context.Context, d *schema.
 	return nil
 }
 
-func ResourceIBMToolchainToolSonarqubeGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolHashicorpvaultGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref
