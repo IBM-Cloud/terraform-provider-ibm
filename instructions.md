@@ -11,12 +11,12 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_toolchain_tool_security_compliance": toolchain.ResourceIBMToolchainToolSecurityCompliance(),
+    "ibm_toolchain_tool_private_worker": toolchain.ResourceIBMToolchainToolPrivateWorker(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
 ``` 
-    "ibm_toolchain_tool_security_compliance": toolchain.ResourceIBMToolchainToolSecurityComplianceValidator(),
+    "ibm_toolchain_tool_private_worker": toolchain.ResourceIBMToolchainToolPrivateWorkerValidator(),
 ```
 
 ### Changes to `config.go`

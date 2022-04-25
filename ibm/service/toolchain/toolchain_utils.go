@@ -32,8 +32,9 @@ func GetParametersFromRead(readParams map[string]interface{}, resource *schema.R
 	params := make(map[string]interface{})
 	parametersSchema := resource.Schema["parameters"].Elem.(*schema.Resource).Schema
 	for key := range parametersSchema {
-		if readParams[key] != nil {
-			params[getTargetField(key, remapFields)] = readParams[key]
+		readKey := getTargetField(key, remapFields)
+		if readParams[readKey] != nil {
+			params[key] = readParams[readKey]
 		}
 	}
 	return params

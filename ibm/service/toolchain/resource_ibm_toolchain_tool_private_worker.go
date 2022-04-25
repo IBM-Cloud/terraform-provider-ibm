@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
+func ResourceIBMToolchainToolPrivateWorker() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolKeyprotectCreate,
-		ReadContext:   ResourceIBMToolchainToolKeyprotectRead,
-		UpdateContext: ResourceIBMToolchainToolKeyprotectUpdate,
-		DeleteContext: ResourceIBMToolchainToolKeyprotectDelete,
+		CreateContext: ResourceIBMToolchainToolPrivateWorkerCreate,
+		ReadContext:   ResourceIBMToolchainToolPrivateWorkerRead,
+		UpdateContext: ResourceIBMToolchainToolPrivateWorkerUpdate,
+		DeleteContext: ResourceIBMToolchainToolPrivateWorkerDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_keyprotect", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_private_worker", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -39,24 +39,25 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Arbitrary JSON data.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.",
 						},
-						"region": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+						"worker_queue_credentials": &schema.Schema{
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							Description:      "Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.",
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
-						"resource_group": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"instance_name": &schema.Schema{
+						"worker_queue_identifier": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -107,7 +108,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolPrivateWorkerValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -121,11 +122,11 @@ func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_keyprotect", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_private_worker", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPrivateWorkerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,16 +135,16 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("keyprotect")
+	postIntegrationOptions.SetToolID("private_worker")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"worker_queue_credentials": "workerQueueCredentials",
+			"worker_queue_identifier":  "workerQueueIdentifier",
 		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolPrivateWorker(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -155,10 +156,10 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolPrivateWorkerRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -193,10 +194,10 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"worker_queue_credentials": "workerQueueCredentials",
+			"worker_queue_identifier":  "workerQueueIdentifier",
 		}
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolPrivateWorker(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -213,7 +214,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolPrivateWorkerGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,7 +231,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPrivateWorkerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -245,7 +246,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("keyprotect")
+	patchToolIntegrationOptions.SetToolID("private_worker")
 
 	hasChange := false
 
@@ -259,10 +260,10 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"worker_queue_credentials": "workerQueueCredentials",
+			"worker_queue_identifier":  "workerQueueIdentifier",
 		}
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolPrivateWorker(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -275,10 +276,10 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		}
 	}
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolPrivateWorkerRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPrivateWorkerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -305,7 +306,7 @@ func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolPrivateWorkerGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

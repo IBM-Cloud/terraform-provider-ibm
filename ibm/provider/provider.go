@@ -999,6 +999,7 @@ func Provider() *schema.Provider {
 			"ibm_toolchain_tool_sonarqube":           toolchain.ResourceIBMToolchainToolSonarqube(),
 			"ibm_toolchain_tool_hashicorpvault":      toolchain.ResourceIBMToolchainToolHashicorpvault(),
 			"ibm_toolchain_tool_security_compliance": toolchain.ResourceIBMToolchainToolSecurityCompliance(),
+			"ibm_toolchain_tool_private_worker":      toolchain.ResourceIBMToolchainToolPrivateWorker(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1160,6 +1161,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_toolchain_tool_sonarqube":           toolchain.ResourceIBMToolchainToolSonarqubeValidator(),
 				"ibm_toolchain_tool_hashicorpvault":      toolchain.ResourceIBMToolchainToolHashicorpvaultValidator(),
 				"ibm_toolchain_tool_security_compliance": toolchain.ResourceIBMToolchainToolSecurityComplianceValidator(),
+				"ibm_toolchain_tool_private_worker":      toolchain.ResourceIBMToolchainToolPrivateWorkerValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

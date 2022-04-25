@@ -193,8 +193,8 @@ func ResourceIBMToolchainToolSecretsmanagerRead(context context.Context, d *sche
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource-group": "resource_group",
-			"instance-name":  "instance_name",
+			"resource_group": "resource_group",
+			"instance_name":  "instance_name",
 		}
 		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSecretsmanager(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {

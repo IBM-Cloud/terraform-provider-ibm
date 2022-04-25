@@ -4,7 +4,7 @@ This example illustrates how to use the ToolchainV2
 
 These types of resources are supported:
 
-* toolchain_tool_security_compliance
+* toolchain_tool_private_worker
 
 ## Usage
 
@@ -21,14 +21,14 @@ Run `terraform destroy` when you don't need these resources.
 
 ## ToolchainV2 resources
 
-toolchain_tool_security_compliance resource:
+toolchain_tool_private_worker resource:
 
 ```hcl
-resource "toolchain_tool_security_compliance" "toolchain_tool_security_compliance_instance" {
-  toolchain_id = var.toolchain_tool_security_compliance_toolchain_id
-  name = var.toolchain_tool_security_compliance_name
-  parameters = var.toolchain_tool_security_compliance_parameters
-  parameters_references = var.toolchain_tool_security_compliance_parameters_references
+resource "toolchain_tool_private_worker" "toolchain_tool_private_worker_instance" {
+  toolchain_id = var.toolchain_tool_private_worker_toolchain_id
+  name = var.toolchain_tool_private_worker_name
+  parameters = var.toolchain_tool_private_worker_parameters
+  parameters_references = var.toolchain_tool_private_worker_parameters_references
 }
 ```
 
@@ -69,4 +69,4 @@ resource "toolchain_tool_security_compliance" "toolchain_tool_security_complianc
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_security_compliance | toolchain_tool_security_compliance object |
+| toolchain_tool_private_worker | toolchain_tool_private_worker object |
