@@ -52,7 +52,7 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 						},
 						"locations": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
