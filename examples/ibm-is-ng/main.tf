@@ -1168,3 +1168,17 @@ data "ibm_is_vpn_server_client" "is_vpn_server_client" {
 	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
 	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
+resource "ibm_is_image_export" "example" {
+  image = ibm_is_image.image1.id
+  name = "my-image-export"
+  storage_bucket_name = "bucket-27200-lwx4cfvcue"
+}
+
+data "ibm_is_image_exports" "example" {
+  image = ibm_is_image_export.example.image
+}
+
+data "ibm_is_image_export" "example" {
+  image = ibm_is_image_export.example.image
+  image_export_job = ibm_is_image_export.example.image_export_job
+}

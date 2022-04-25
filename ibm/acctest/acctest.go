@@ -151,6 +151,7 @@ var IsImage string
 var IsImageEncryptedDataKey string
 var IsImageEncryptionKey string
 var IsWinImage string
+var IsCosBucketName string
 var Image_cos_url string
 var Image_cos_url_encrypted string
 var Image_operating_system string
@@ -525,6 +526,12 @@ func init() {
 		//IsWinImage = "a7a0626c-f97e-4180-afbe-0331ec62f32a" // classic windows machine: ibm-windows-server-2012-full-standard-amd64-1
 		IsWinImage = "r006-5f9568ae-792e-47e1-a710-5538b2bdfca7" // next gen windows machine: ibm-windows-server-2012-full-standard-amd64-3
 		fmt.Println("[INFO] Set the environment variable IS_WIN_IMAGE for testing ibm_is_instance data source else it is set to default value 'r006-5f9568ae-792e-47e1-a710-5538b2bdfca7'")
+	}
+
+	IsCosBucketName = os.Getenv("IS_COS_BUCKET_NAME")
+	if IsCosBucketName == "" {
+		IsCosBucketName = "bucket-27200-lwx4cfvcue"
+		fmt.Println("[INFO] Set the environment variable IS_COS_BUCKET_NAME for testing ibm_is_image_export else it is set to default value 'bucket-27200-lwx4cfvcue'")
 	}
 
 	InstanceName = os.Getenv("IS_INSTANCE_NAME")

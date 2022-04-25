@@ -68,8 +68,10 @@ github.com/IBM/eventstreams-go-sdk v1.2.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMw
 github.com/IBM/go-sdk-core/v3 v3.0.0/go.mod h1:JI5NS2+iCoY/D8Oq3JNEZNA7qO42agu6fnaUmDsRcJA=
 github.com/IBM/go-sdk-core/v3 v3.2.4 h1:WKYJYYKlZnw1y/gM+Qbf5EQVAL9xaoD54+ooJZz/iBQ=
 github.com/IBM/go-sdk-core/v3 v3.2.4/go.mod h1:lk9eOzNbNltPf3CBpcg1Ewkhw4qC3u2QCCKDRsUA2M0=
+github.com/IBM/go-sdk-core/v4 v4.5.1/go.mod h1:lTUXbqIX6/aAbSCkP6q59+dyFsTwZAc0ewRS2vJWVbg=
 github.com/IBM/go-sdk-core/v5 v5.0.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
 github.com/IBM/go-sdk-core/v5 v5.1.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
+github.com/IBM/go-sdk-core/v5 v5.4.2/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723y8GsfLV8e0=
 github.com/IBM/go-sdk-core/v5 v5.5.1/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723y8GsfLV8e0=
 github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
