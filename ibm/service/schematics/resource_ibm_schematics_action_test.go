@@ -128,7 +128,7 @@ func testAccCheckIBMSchematicsActionConfig(name string, description string, loca
 			resource_group = "%s"
 			bastion_connection_type = "%s"
 			inventory_connection_type = "%s"
-			tags = "FIXME"
+			tags = ["FIXME"]
 			user_state {
 				state = "draft"
 				set_by = "set_by"

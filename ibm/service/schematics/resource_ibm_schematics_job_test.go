@@ -113,7 +113,7 @@ func testAccCheckIBMSchematicsJobConfig(refreshToken string, commandObject strin
 			command_object_id = "%s"
 			command_name = "%s"
 			command_parameter = "%s"
-			command_options = "FIXME"
+			// command_options = ["FIXME"]
 			job_inputs {
 				name = "name"
 				value = "value"
@@ -168,7 +168,7 @@ func testAccCheckIBMSchematicsJobConfig(refreshToken string, commandObject strin
 				}
 				link = "link"
 			}
-			tags = "FIXME"
+			tags = ["FIXME"]
 			location = "%s"
 			status {
 				position_in_queue = 1.0

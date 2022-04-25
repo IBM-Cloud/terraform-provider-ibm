@@ -81,7 +81,7 @@ func testAccCheckIBMSchematicsInventoryDataSourceConfig(inventoryResourceRecordN
 			location = "%s"
 			resource_group = "%s"
 			inventories_ini = "%s"
-			resource_queries = "FIXME"
+			// resource_queries = "FIXME"
 		}
 
 		data "ibm_schematics_inventory" "schematics_inventory" {

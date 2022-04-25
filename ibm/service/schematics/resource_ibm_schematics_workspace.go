@@ -622,7 +622,7 @@ func ResourceIBMSchematicsWorkspaceValidator() *validate.ResourceValidator {
 			Regexp:                     `^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             128,
-			Required:                   true})
+			Required:                   false})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 schematicsWorkspaceDescription,

@@ -99,7 +99,7 @@ func testAccCheckIBMSchematicsInventoryConfig(name string, description string, l
 			location = "%s"
 			resource_group = "%s"
 			inventories_ini = "%s"
-			resource_queries = "FIXME"
+			// resource_queries = ["FIXME"]
 		}
 	`, name, description, location, resourceGroup, inventoriesIni)
 }

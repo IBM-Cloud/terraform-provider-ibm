@@ -98,7 +98,7 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, location strin
 	return fmt.Sprintf(`
 
 		resource "ibm_schematics_workspace" "schematics_workspace" {
-			applied_shareddata_ids = "FIXME"
+			// applied_shareddata_ids = "FIXME"
 			catalog_ref {
 				dry_run = true
 				owning_account = "owning_account"
@@ -130,7 +130,7 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, location strin
 				worker_count = 1
 				worker_machine_type = "worker_machine_type"
 			}
-			tags = "FIXME"
+			tags = ["FIXME"]
 			template_data {
 				env_values = [ null ]
 				env_values_metadata {
@@ -173,7 +173,7 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, location strin
 				repo_url = "repo_url"
 				url = "url"
 			}
-			type = "FIXME"
+			type = "terraform_v1.1"
 			workspace_status {
 				frozen = true
 				frozen_at = "2021-01-31T09:44:12Z"
