@@ -34,7 +34,7 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the database_remotes.
-* `leader` - (Optional, String) Leader ID, if applicable.
+* `leader` - (String) Leader ID, if applicable.
 
-* `replicas` - (Optional, List) Replica IDs, if applicable.
+* `replicas` - (List) Replica IDs, if applicable.
 
