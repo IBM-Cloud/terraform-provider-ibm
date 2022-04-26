@@ -283,6 +283,10 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		*servicePolicy.ID,
 	)
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		policy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
@@ -359,7 +363,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 	if conns.IsResourceTimeoutError(err) {
 		servicePolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil || servicePolicy == nil {
+	if err != nil || servicePolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving servicePolicy: %s %s", err, res)
 	}
 	if strings.HasPrefix(serviceIDUUID, "iam-") {
@@ -397,7 +401,7 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		d.Set("description", *servicePolicy.Description)
 	}
 
-	if res.Headers["Transaction-Id"][0] != "" {
+	if len(res.Headers["Transaction-Id"]) > 0 && res.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", res.Headers["Transaction-Id"][0])
 	}
 

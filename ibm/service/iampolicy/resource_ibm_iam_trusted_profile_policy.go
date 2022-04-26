@@ -283,6 +283,10 @@ func resourceIBMIAMTrustedProfilePolicyCreate(d *schema.ResourceData, meta inter
 		*trustedProfilePolicy.ID,
 	)
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		policy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
@@ -358,7 +362,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 	if conns.IsResourceTimeoutError(err) {
 		trustedProfilePolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil || trustedProfilePolicy == nil {
+	if err != nil || trustedProfilePolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving trusted profile policy: %s %s", err, res)
 	}
 	if strings.HasPrefix(profileIDUUID, "iam-") {
@@ -395,7 +399,7 @@ func resourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta interfa
 	if trustedProfilePolicy.Description != nil {
 		d.Set("description", *trustedProfilePolicy.Description)
 	}
-	if res.Headers["Transaction-Id"][0] != "" {
+	if len(res.Headers["Transaction-Id"]) > 0 && res.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", res.Headers["Transaction-Id"][0])
 	}
 
@@ -496,6 +500,10 @@ func resourceIBMIAMTrustedProfilePolicyUpdate(d *schema.ResourceData, meta inter
 		if desc, ok := d.GetOk("description"); ok {
 			des := desc.(string)
 			updatePolicyOptions.Description = &des
+		}
+
+		if transactionID, ok := d.GetOk("transaction_id"); ok {
+			updatePolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 		}
 
 		_, resp, err := iamPolicyManagementClient.UpdatePolicy(updatePolicyOptions)

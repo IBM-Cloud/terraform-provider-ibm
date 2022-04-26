@@ -262,6 +262,10 @@ func resourceIBMIAMUserPolicyCreate(d *schema.ResourceData, meta interface{}) er
 		PolicyID: userPolicy.ID,
 	}
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		policy, res, err := iamPolicyManagementClient.GetPolicy(getPolicyOptions)
@@ -301,10 +305,6 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	userEmail := parts[0]
 	userPolicyID := parts[1]
 
-	if err != nil {
-		return err
-	}
-
 	getPolicyOptions := &iampolicymanagementv1.GetPolicyOptions{
 		PolicyID: core.StringPtr(userPolicyID),
 	}
@@ -331,7 +331,7 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	if conns.IsResourceTimeoutError(err) {
 		userPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil || userPolicy == nil {
+	if err != nil || userPolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving userPolicy: %s %s", err, res)
 	}
 	d.Set("ibm_id", userEmail)
@@ -363,7 +363,7 @@ func resourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) erro
 	if userPolicy.Description != nil {
 		d.Set("description", *userPolicy.Description)
 	}
-	if res.Headers["Transaction-Id"][0] != "" {
+	if len(res.Headers["Transaction-Id"]) > 0 && res.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", res.Headers["Transaction-Id"][0])
 	}
 

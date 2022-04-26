@@ -158,7 +158,7 @@ func dataSourceIBMIAMAuthorizationPoliciesRead(d *schema.ResourceData, meta inte
 
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
-	if err != nil {
+	if err != nil || resp == nil {
 		return fmt.Errorf("[ERROR] Error listing authorization policies: %s, %s", err, resp)
 	}
 
@@ -195,7 +195,7 @@ func dataSourceIBMIAMAuthorizationPoliciesRead(d *schema.ResourceData, meta inte
 	d.SetId(time.Now().UTC().String())
 	d.Set("account_id", accountID)
 
-	if resp.Headers["Transaction-Id"][0] != "" {
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 

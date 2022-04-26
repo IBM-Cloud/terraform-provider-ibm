@@ -161,7 +161,7 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
-	if err != nil {
+	if err != nil || resp == nil {
 		return fmt.Errorf("Error listing access group policies: %s, %s", err, resp)
 	}
 
@@ -186,7 +186,7 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 	}
 	d.SetId(accessGroupId)
 
-	if resp.Headers["Transaction-Id"][0] != "" {
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 

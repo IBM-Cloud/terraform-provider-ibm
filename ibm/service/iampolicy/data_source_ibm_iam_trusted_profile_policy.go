@@ -188,7 +188,7 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
-	if err != nil {
+	if err != nil || resp == nil {
 		return fmt.Errorf("Error listing trusted profile policies: %s, %s", err, resp)
 	}
 
@@ -225,7 +225,7 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		iamID := v.(string)
 		d.SetId(iamID)
 	}
-	if resp.Headers["Transaction-Id"][0] != "" {
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.Set("policies", profilePolicies)

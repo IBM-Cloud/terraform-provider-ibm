@@ -327,7 +327,7 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 	if conns.IsResourceTimeoutError(err) {
 		accessGroupPolicy, res, err = iamPolicyManagementClient.GetPolicy(getPolicyOptions)
 	}
-	if err != nil || accessGroupPolicy == nil {
+	if err != nil || accessGroupPolicy == nil || res == nil {
 		return fmt.Errorf("[ERROR] Error retrieving access group policy: %s\n%s", err, res)
 	}
 
@@ -366,6 +366,10 @@ func resourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interface{
 
 	if accessGroupPolicy.Description != nil {
 		d.Set("description", *accessGroupPolicy.Description)
+	}
+
+	if len(res.Headers["Transaction-Id"]) > 0 && res.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", res.Headers["Transaction-Id"][0])
 	}
 
 	return nil

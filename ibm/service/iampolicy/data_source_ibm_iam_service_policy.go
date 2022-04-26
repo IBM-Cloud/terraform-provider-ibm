@@ -153,7 +153,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 			ID: &serviceIDUUID,
 		}
 		serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
-		if err != nil {
+		if err != nil || resp == nil {
 			return fmt.Errorf("[ERROR] Error] Error Getting Service Id %s %s", err, resp)
 		}
 		iamID = *serviceID.IamID
@@ -225,7 +225,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		iamID := v.(string)
 		d.SetId(iamID)
 	}
-	if resp.Headers["Transaction-Id"][0] != "" {
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.Set("policies", servicePolicies)

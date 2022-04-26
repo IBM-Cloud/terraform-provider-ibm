@@ -26,6 +26,7 @@ resource "ibm_iam_trusted_profile_policy" "policy" {
 
 data "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+  transaction_id = "terrformTrustedPolicy"
 }
 
 ```

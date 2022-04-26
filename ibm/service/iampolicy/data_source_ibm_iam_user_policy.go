@@ -156,10 +156,6 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		Type:      core.StringPtr("access"),
 	}
 
-	if transactionID, ok := d.GetOk("transaction_id"); ok {
-		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
-	}
-
 	if v, ok := d.GetOk("sort"); ok {
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
@@ -170,7 +166,7 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
 
-	if err != nil {
+	if err != nil || resp == nil {
 		return fmt.Errorf("Error listing user policies: %s, %s", err, resp)
 	}
 
@@ -193,7 +189,7 @@ func dataSourceIBMIAMUserPolicyRead(d *schema.ResourceData, meta interface{}) er
 		}
 		userPolicies = append(userPolicies, p)
 	}
-	if resp.Headers["Transaction-Id"][0] != "" {
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
 		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.SetId(userEmail)

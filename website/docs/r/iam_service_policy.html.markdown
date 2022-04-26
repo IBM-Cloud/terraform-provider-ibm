@@ -249,7 +249,7 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) The key of an access management tag. 
   - `value` - (Required, String) The value of an access management tag.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
-- `tags`  - (Optional, List of Strings) A list of tags with the service policy instance. **Note** Tags are managed locally and not stored in the IBM Cloud service endpoint at this moment.
+  
 - `transaction_id`- (Optional, String) The TransactionID can be passed to your request for tracking the calls.
 
 ## Attribute reference
