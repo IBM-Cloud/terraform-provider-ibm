@@ -43,7 +43,7 @@ func DataSourceIBMEnChromeDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type Webhook.",
+				Description: "Destination type push_chrome.",
 			},
 			"config": {
 				Type:        schema.TypeList,

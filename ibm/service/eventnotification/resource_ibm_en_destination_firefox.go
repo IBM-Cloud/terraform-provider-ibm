@@ -39,7 +39,7 @@ func ResourceIBMEnFirefoxDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The type of Destination type push_chrome.",
+				Description: "The type of Destination type push_firefox.",
 			},
 			"description": {
 				Type:        schema.TypeString,

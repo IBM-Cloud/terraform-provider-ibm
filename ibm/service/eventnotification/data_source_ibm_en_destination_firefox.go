@@ -43,7 +43,7 @@ func DataSourceIBMEnFirefoxDestination() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Destination type Webhook.",
+				Description: "Destination type push_firefox.",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -56,12 +56,6 @@ func DataSourceIBMEnFirefoxDestination() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"api_key": {
-										Type:        schema.TypeString,
-										Sensitive:   true,
-										Optional:    true,
-										Description: "The api key for chrome app authorization",
-									},
 									"website_url": {
 										Type:        schema.TypeString,
 										Optional:    true,
