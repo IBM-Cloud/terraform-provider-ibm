@@ -12,7 +12,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
 	github.com/IBM/cloudant-go-sdk v0.0.36
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/event-notifications-go-admin-sdk v0.0.7
+	github.com/IBM/event-notifications-go-admin-sdk v0.0.8
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.9.2
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
@@ -57,6 +57,8 @@ require (
 	google.golang.org/api v0.34.0 // indirect
 	gotest.tools v2.2.0+incompatible
 )
+
+replace github.com/IBM/event-notifications-go-admin-sdk => /Users/divyasingh/Documents/Terraform-old/event-notifications-go-admin-sdk
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
