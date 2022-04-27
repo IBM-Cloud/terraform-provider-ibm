@@ -198,8 +198,8 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 
 		for _, r := range allrecs {
 			if *r.Name == routeName {
-				temp := r
-				route = &temp
+				route = &r
+				break
 			}
 		}
 	}
