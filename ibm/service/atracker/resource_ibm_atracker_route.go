@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
@@ -130,7 +132,7 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 	var rules []atrackerv2.RulePrototype
 	for _, e := range d.Get("rules").([]interface{}) {
 		value := e.(map[string]interface{})
-		rulesItem := resourceIBMAtrackerRouteMapToRule(value)
+		rulesItem := resourceIBMAtrackerRouteMapToRule(value, d.Get("receive_global_events").(bool))
 		rules = append(rules, rulesItem)
 	}
 
@@ -149,51 +151,101 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 
 func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	atrackerClientv1, errV1 := meta.(conns.ClientSession).AtrackerV1()
+	// We need both route methods to ensure backwards compatibility and the ability to migrate
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getRouteOptions := &atrackerv2.GetRouteOptions{}
+	if errV1 != nil {
+		return diag.FromErr(errV1)
+	}
 
-	getRouteOptions.SetID(d.Id())
+	getRouteV1Options := &atrackerv1.GetRouteOptions{}
+	getRouteV1Options.SetID(d.Id())
+	// Try v1 first, otherwise try v2
+	routeV1, responseV1, err := atrackerClientv1.GetRouteWithContext(context, getRouteV1Options)
+	if err != nil && responseV1 != nil && responseV1.StatusCode != 404 {
+		log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, responseV1)
+		return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, responseV1))
+	}
+	if err == nil && responseV1 != nil {
+		getRouteOptions := &atrackerv1.GetRouteOptions{}
+		getRouteOptions.SetID(d.Id())
 
-	route, response, err := atrackerClient.GetRouteWithContext(context, getRouteOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+		if err = d.Set("name", routeV1.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 		}
-		log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, response))
-	}
+		rules := []map[string]interface{}{}
+		for _, rulesItem := range routeV1.Rules {
+			rulesItemMap, _ := resourceIBMAtrackerRouteRulePrototypeToMapV1(&rulesItem)
+			rules = append(rules, rulesItemMap)
+		}
+		if err = d.Set("rules", rules); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
+		}
+		if err = d.Set("crn", routeV1.CRN); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+		if err = d.Set("receive_global_events", routeV1.ReceiveGlobalEvents); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+		if err = d.Set("version", flex.IntValue(routeV1.Version)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(routeV1.Created)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+		if err = d.Set("updated_at", flex.DateTimeToString(routeV1.Updated)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+		if err = d.Set("api_version", 1); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
+		}
+	} else {
+		getRouteOptions := &atrackerv2.GetRouteOptions{}
 
-	if err = d.Set("name", route.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		getRouteOptions.SetID(d.Id())
+		route, response, err := atrackerClient.GetRouteWithContext(context, getRouteOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, response))
+		}
+
+		if err = d.Set("name", route.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		rules := []map[string]interface{}{}
+		receiveGlobalEvents := false
+		for _, rulesItem := range route.Rules {
+			rulesItemMap, foundGlobal, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
+			receiveGlobalEvents = foundGlobal
+			rules = append(rules, rulesItemMap)
+		}
+		if err = d.Set("rules", rules); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
+		}
+		if err = d.Set("crn", route.CRN); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+		if err = d.Set("version", flex.IntValue(route.Version)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+		if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+		if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
+		}
+		d.Set("receive_global_events", receiveGlobalEvents)
 	}
-	rules := []map[string]interface{}{}
-	for _, rulesItem := range route.Rules {
-		rulesItemMap, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
-		rules = append(rules, rulesItemMap)
-	}
-	if err = d.Set("rules", rules); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
-	}
-	if err = d.Set("crn", route.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-	}
-	if err = d.Set("version", flex.IntValue(route.Version)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
-	}
-	if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-	}
-	if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-	}
-	if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
-	}
-	d.Set("receive_global_events", false)
 
 	return nil
 }
@@ -212,7 +264,7 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 	var rules []atrackerv2.RulePrototype
 	for _, e := range d.Get("rules").([]interface{}) {
 		value := e.(map[string]interface{})
-		rulesItem := resourceIBMAtrackerRouteMapToRule(value)
+		rulesItem := resourceIBMAtrackerRouteMapToRule(value, d.Get("receive_global_events").(bool))
 		rules = append(rules, rulesItem)
 	}
 	replaceRouteOptions.SetRules(rules)
@@ -247,16 +299,31 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
+func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, bool, error) {
+	receives_global_events := false
 	modelMap := make(map[string]interface{})
 	modelMap["target_ids"] = model.TargetIds
 	if model.Locations != nil {
 		modelMap["locations"] = model.Locations
+		if model.Locations != nil {
+			for _, location := range model.Locations {
+				if strings.Contains(location, "*") || strings.Contains(location, "global") {
+					receives_global_events = true
+					break
+				}
+			}
+		}
 	}
+	return modelMap, receives_global_events, nil
+}
+
+func resourceIBMAtrackerRouteRulePrototypeToMapV1(model *atrackerv1.Rule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_ids"] = model.TargetIds
 	return modelMap, nil
 }
 
-func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}) atrackerv2.RulePrototype {
+func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}, addGlobalFlag bool) atrackerv2.RulePrototype {
 	rule := atrackerv2.RulePrototype{}
 
 	targetIds := []string{}
@@ -266,8 +333,16 @@ func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}) atrackerv
 	rule.TargetIds = targetIds
 
 	locations := []string{}
+	globalDetected := false
 	for _, locationsItem := range ruleMap["locations"].([]interface{}) {
+		if strings.Contains(locationsItem.(string), "*") || strings.Contains(locationsItem.(string), "global") {
+			globalDetected = true
+		}
 		locations = append(locations, locationsItem.(string))
+	}
+
+	if addGlobalFlag && !globalDetected {
+		locations = append(locations, "global")
 	}
 	rule.Locations = locations
 
