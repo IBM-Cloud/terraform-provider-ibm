@@ -73,6 +73,11 @@ func DataSourceIBMISReservedIPs() *schema.Resource {
 							Computed:    true,
 							Description: "The unique identifier for this reserved IP",
 						},
+						isReservedIPLifecycleState: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The lifecycle state of the reserved IP",
+						},
 						isReservedIPName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -143,6 +148,7 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 		ipsOutput[isReservedIPCreatedAt] = (*data.CreatedAt).String()
 		ipsOutput[isReservedIPhref] = *data.Href
 		ipsOutput[isReservedIPID] = *data.ID
+		ipsOutput[isReservedIPLifecycleState] = data.LifecycleState
 		ipsOutput[isReservedIPName] = *data.Name
 		ipsOutput[isReservedIPOwner] = *data.Owner
 		ipsOutput[isReservedIPType] = *data.ResourceType

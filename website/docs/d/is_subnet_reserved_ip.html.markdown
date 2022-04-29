@@ -42,6 +42,7 @@ In addition to all argument reference list, you can access the following attribu
 - `created_at` -  (String) The creation timestamp for the reserved IP.
 - `href` -  (String) The unique reference for the reserved IP.
 - `id` -  (String) The ID for the reserved IP.
+- `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
 - `name` -  (String) The name for the reserved IP.
 - `owner` -  (String) The owner of the reserved IP.
 - `reserved_ip` -  (String) The ID for the reserved IP.

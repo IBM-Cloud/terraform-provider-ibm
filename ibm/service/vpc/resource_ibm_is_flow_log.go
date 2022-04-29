@@ -225,7 +225,7 @@ func resourceIBMISFlowLogCreate(d *schema.ResourceData, meta interface{}) error 
 	createFlowLogCollectorOptionsModel.Target = FlowLogCollectorTargetModel
 
 	bucketname := d.Get(isFlowLogStorageBucket).(string)
-	cloudObjectStorageBucketIdentityModel := new(vpcv1.CloudObjectStorageBucketIdentityByName)
+	cloudObjectStorageBucketIdentityModel := new(vpcv1.LegacyCloudObjectStorageBucketIdentityCloudObjectStorageBucketIdentityByName)
 	cloudObjectStorageBucketIdentityModel.Name = &bucketname
 	createFlowLogCollectorOptionsModel.StorageBucket = cloudObjectStorageBucketIdentityModel
 

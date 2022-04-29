@@ -58,6 +58,11 @@ func DataSourceIBMISReservedIP() *schema.Resource {
 				Computed:    true,
 				Description: "The IP address",
 			},
+			isReservedIPLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the reserved IP",
+			},
 			isReservedIPAutoDelete: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -117,10 +122,14 @@ func dataSdataSourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}
 
 	d.SetId(*reserveIP.ID)
 	d.Set(isReservedIPAutoDelete, *reserveIP.AutoDelete)
+	d.Set(isReservedIPAddress, *reserveIP.Address)
 	d.Set(isReservedIPCreatedAt, (*reserveIP.CreatedAt).String())
 	d.Set(isReservedIPhref, *reserveIP.Href)
 	d.Set(isReservedIPName, *reserveIP.Name)
 	d.Set(isReservedIPOwner, *reserveIP.Owner)
+	if reserveIP.LifecycleState != nil {
+		d.Set(isReservedIPLifecycleState, *reserveIP.LifecycleState)
+	}
 	d.Set(isReservedIPType, *reserveIP.ResourceType)
 	if reserveIP.Target != nil {
 		target, ok := reserveIP.Target.(*vpcv1.ReservedIPTarget)

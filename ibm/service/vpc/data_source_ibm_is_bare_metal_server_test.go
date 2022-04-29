@@ -37,6 +37,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						resName, "name", name),
 					resource.TestCheckResourceAttr(
 						"data.ibm_is_bare_metal_server.test1", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_bare_metal_server.test1", "profile", acc.IsBareMetalServerProfileName),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.primary_ip.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.primary_ip.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.primary_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.primary_ip.0.resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_bare_metal_server.test1", "primary_network_interface.0.port_speed"),
 				),
 			},
 		},

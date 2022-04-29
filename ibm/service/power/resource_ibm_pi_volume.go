@@ -22,14 +22,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
-const (
-	PIAffinityPolicy        = "pi_affinity_policy"
-	PIAffinityVolume        = "pi_affinity_volume"
-	PIAffinityInstance      = "pi_affinity_instance"
-	PIAntiAffinityInstances = "pi_anti_affinity_instances"
-	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
-)
-
 func ResourceIBMPIVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIVolumeCreate,
