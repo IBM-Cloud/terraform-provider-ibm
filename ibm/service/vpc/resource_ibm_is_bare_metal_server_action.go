@@ -145,7 +145,7 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), bareMetalServerId, d)
+		_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutCreate), bareMetalServerId, d)
 		if waitErr != nil {
 			return diag.FromErr(waitErr)
 		}
@@ -259,7 +259,7 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), bareMetalServerId, d)
+			_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutUpdate), bareMetalServerId, d)
 			if waitErr != nil {
 				return diag.FromErr(waitErr)
 			}
