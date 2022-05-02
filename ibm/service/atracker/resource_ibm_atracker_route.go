@@ -271,8 +271,30 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 
 	_, response, err := atrackerClient.ReplaceRouteWithContext(context, replaceRouteOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ReplaceRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
+		// TODO: to remove once version 1 is fully deprecated
+		atrackerClientV1, err := meta.(conns.ClientSession).AtrackerV1()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		replaceRouteOptionsV1 := &atrackerv1.ReplaceRouteOptions{}
+		replaceRouteOptionsV1.SetID(d.Id())
+		replaceRouteOptionsV1.SetName(d.Get("name").(string))
+		replaceRouteOptionsV1.SetReceiveGlobalEvents(d.Get("receive_global_events").(bool))
+
+		var rules []atrackerv1.Rule
+		for _, e := range d.Get("rules").([]interface{}) {
+			value := e.(map[string]interface{})
+			rulesItem := resourceIBMAtrackerRouteMapToRuleV1(value)
+			rules = append(rules, rulesItem)
+		}
+		replaceRouteOptionsV1.SetRules(rules)
+
+		_, _, err = atrackerClientV1.ReplaceRouteWithContext(context, replaceRouteOptionsV1)
+		if err != nil {
+			log.Printf("[DEBUG] ReplaceRouteWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
+		}
 	}
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
@@ -290,8 +312,26 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 
 	response, err := atrackerClient.DeleteRouteWithContext(context, deleteRouteOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteRouteWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteRouteWithContext failed %s\n%s", err, response))
+		// TODO: to remove once version 1 is fully deprecated
+		// Try v1 then v2
+		atrackerClientV1, err := meta.(conns.ClientSession).AtrackerV1()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		deleteRouteOptions := &atrackerv1.DeleteRouteOptions{}
+
+		deleteRouteOptions.SetID(d.Id())
+
+		_, err = atrackerClientV1.DeleteRouteWithContext(context, deleteRouteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] DeleteRouteWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("DeleteRouteWithContext failed %s\n%s", err, response))
+		}
+
+		d.SetId("")
+
+		return nil
 	}
 
 	d.SetId("")
@@ -345,6 +385,18 @@ func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}, addGlobal
 		locations = append(locations, "global")
 	}
 	rule.Locations = locations
+
+	return rule
+}
+
+func resourceIBMAtrackerRouteMapToRuleV1(ruleMap map[string]interface{}) atrackerv1.Rule {
+	rule := atrackerv1.Rule{}
+
+	targetIds := []string{}
+	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
+		targetIds = append(targetIds, targetIdsItem.(string))
+	}
+	rule.TargetIds = targetIds
 
 	return rule
 }

@@ -213,6 +213,8 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 	}
 	if model.APIVersion != nil {
 		modelMap["api_version"] = *model.APIVersion
+	} else {
+		modelMap["api_version"] = 1
 	}
 	return modelMap, nil
 }
