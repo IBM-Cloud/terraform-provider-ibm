@@ -39,9 +39,10 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -67,9 +68,9 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 						"token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
 							Description:      "Type the API key for your Artifactory repository.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -97,8 +98,10 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 							Description: "Type the URL of your artifactory repository where your docker images are located.",
 						},
 						"docker_config_json": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
 						},
 					},
 				},
@@ -140,6 +143,10 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 				Computed: true,
 			},
 			"state": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"instance_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -220,7 +227,6 @@ func ResourceIBMToolchainToolArtifactoryRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -257,6 +263,9 @@ func ResourceIBMToolchainToolArtifactoryRead(context context.Context, d *schema.
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	return nil

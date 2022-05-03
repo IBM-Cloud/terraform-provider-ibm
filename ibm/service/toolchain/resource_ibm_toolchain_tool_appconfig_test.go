@@ -17,27 +17,27 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIBMToolchainToolPrivateWorkerBasic(t *testing.T) {
+func TestAccIBMToolchainToolAppconfigBasic(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolPrivateWorkerDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolAppconfigDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolPrivateWorkerConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolAppconfigConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolPrivateWorkerExists("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", "toolchain_id", toolchainID),
+					testAccCheckIBMToolchainToolAppconfigExists("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", "toolchain_id", toolchainID),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMToolchainToolPrivateWorkerAllArgs(t *testing.T) {
+func TestAccIBMToolchainToolAppconfigAllArgs(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,25 +46,25 @@ func TestAccIBMToolchainToolPrivateWorkerAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolPrivateWorkerDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolAppconfigDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolPrivateWorkerConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolAppconfigConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolPrivateWorkerExists("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", "name", name),
+					testAccCheckIBMToolchainToolAppconfigExists("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolPrivateWorkerConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolAppconfigConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_private_worker.toolchain_tool_private_worker", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_appconfig.toolchain_tool_appconfig", "name", nameUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_toolchain_tool_private_worker.toolchain_tool_private_worker",
+				ResourceName:      "ibm_toolchain_tool_appconfig.toolchain_tool_appconfig",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -72,31 +72,35 @@ func TestAccIBMToolchainToolPrivateWorkerAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMToolchainToolPrivateWorkerConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolAppconfigConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_private_worker" "toolchain_tool_private_worker" {
+		resource "ibm_toolchain_tool_appconfig" "toolchain_tool_appconfig" {
 			toolchain_id = "%s"
 		}
 	`, toolchainID)
 }
 
-func testAccCheckIBMToolchainToolPrivateWorkerConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolAppconfigConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_private_worker" "toolchain_tool_private_worker" {
+		resource "ibm_toolchain_tool_appconfig" "toolchain_tool_appconfig" {
 			toolchain_id = "%s"
 			name = "%s"
 			parameters {
 				name = "name"
-				workerQueueCredentials = "workerQueueCredentials"
-				workerQueueIdentifier = "workerQueueIdentifier"
+				region = "region"
+				resource-group = "resource-group"
+				instance-name = "instance-name"
+				environment-name = "environment-name"
+				collection-name = "collection-name"
+				integration-status = "integration-status"
 			}
 		}
 	`, toolchainID, name)
 }
 
-func testAccCheckIBMToolchainToolPrivateWorkerExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolAppconfigExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -129,13 +133,13 @@ func testAccCheckIBMToolchainToolPrivateWorkerExists(n string, obj toolchainv2.G
 	}
 }
 
-func testAccCheckIBMToolchainToolPrivateWorkerDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolAppconfigDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_toolchain_tool_private_worker" {
+		if rs.Type != "ibm_toolchain_tool_appconfig" {
 			continue
 		}
 
@@ -153,9 +157,9 @@ func testAccCheckIBMToolchainToolPrivateWorkerDestroy(s *terraform.State) error 
 		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
-			return fmt.Errorf("toolchain_tool_private_worker still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("toolchain_tool_appconfig still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for toolchain_tool_private_worker (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for toolchain_tool_appconfig (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

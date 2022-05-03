@@ -11,12 +11,12 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_toolchain_tool_private_worker": toolchain.ResourceIBMToolchainToolPrivateWorker(),
+    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIBMToolchainToolSonarqube(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
 ``` 
-    "ibm_toolchain_tool_private_worker": toolchain.ResourceIBMToolchainToolPrivateWorkerValidator(),
+    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIBMToolchainToolSonarqubeValidator(),
 ```
 
 ### Changes to `config.go`

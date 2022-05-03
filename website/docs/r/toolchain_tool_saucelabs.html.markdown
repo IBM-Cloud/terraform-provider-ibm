@@ -1,19 +1,23 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_toolchain_tool_orion"
+page_title: "IBM : ibm_toolchain_tool_saucelabs"
 description: |-
-  Manages toolchain_tool_orion.
+  Manages toolchain_tool_saucelabs.
 subcategory: "Toolchain"
 ---
 
-# ibm_toolchain_tool_orion
+# ibm_toolchain_tool_saucelabs
 
-Provides a resource for toolchain_tool_orion. This allows toolchain_tool_orion to be created, updated and deleted.
+Provides a resource for toolchain_tool_saucelabs. This allows toolchain_tool_saucelabs to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_toolchain_tool_orion" "toolchain_tool_orion" {
+resource "ibm_toolchain_tool_saucelabs" "toolchain_tool_saucelabs" {
+  parameters {
+		username = "username"
+		key = "key"
+  }
   toolchain_id = "toolchain_id"
 }
 ```
@@ -23,6 +27,10 @@ resource "ibm_toolchain_tool_orion" "toolchain_tool_orion" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
+* `parameters` - (Optional, List) Tool integration parameters.
+Nested scheme for **parameters**:
+	* `key` - (Required, String) Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.
+	* `username` - (Required, String) Type the user name for your Sauce Labs account.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -30,7 +38,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the toolchain_tool_orion.
+* `id` - The unique identifier of the toolchain_tool_saucelabs.
 * `crn` - (Required, String) 
 * `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
@@ -46,7 +54,7 @@ Nested scheme for **referent**:
 
 ## Import
 
-You can import the `ibm_toolchain_tool_orion` resource by using `id`.
+You can import the `ibm_toolchain_tool_saucelabs` resource by using `id`.
 The `id` property can be formed from `toolchain_id`, and `integration_id` in the following format:
 
 ```
@@ -57,5 +65,5 @@ The `id` property can be formed from `toolchain_id`, and `integration_id` in the
 
 # Syntax
 ```
-$ terraform import ibm_toolchain_tool_orion.toolchain_tool_orion <toolchain_id>/<integration_id>
+$ terraform import ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs <toolchain_id>/<integration_id>
 ```

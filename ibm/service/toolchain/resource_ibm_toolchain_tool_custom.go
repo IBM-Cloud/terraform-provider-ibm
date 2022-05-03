@@ -39,9 +39,10 @@ func ResourceIBMToolchainToolCustom() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -127,6 +128,10 @@ func ResourceIBMToolchainToolCustom() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -163,7 +168,13 @@ func ResourceIBMToolchainToolCustomCreate(context context.Context, d *schema.Res
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolCustom(), nil)
+		remapFields := map[string]string{
+			"lifecycle_phase":       "lifecyclePhase",
+			"image_url":             "imageUrl",
+			"documentation_url":     "documentationUrl",
+			"additional_properties": "additional-properties",
+		}
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolCustom(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -204,7 +215,6 @@ func ResourceIBMToolchainToolCustomRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -212,7 +222,13 @@ func ResourceIBMToolchainToolCustomRead(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolCustom(), nil)
+		remapFields := map[string]string{
+			"lifecycle_phase":       "lifecyclePhase",
+			"image_url":             "imageUrl",
+			"documentation_url":     "documentationUrl",
+			"additional_properties": "additional-properties",
+		}
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolCustom(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -241,6 +257,9 @@ func ResourceIBMToolchainToolCustomRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	return nil
@@ -274,7 +293,13 @@ func ResourceIBMToolchainToolCustomUpdate(context context.Context, d *schema.Res
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolCustom(), nil)
+		remapFields := map[string]string{
+			"lifecycle_phase":       "lifecyclePhase",
+			"image_url":             "imageUrl",
+			"documentation_url":     "documentationUrl",
+			"additional_properties": "additional-properties",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolCustom(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}

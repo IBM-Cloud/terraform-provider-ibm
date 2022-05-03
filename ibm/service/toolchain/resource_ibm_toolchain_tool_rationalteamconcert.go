@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolSecurityCompliance() *schema.Resource {
+func ResourceIBMToolchainToolRationalteamconcert() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolSecurityComplianceCreate,
-		ReadContext:   ResourceIBMToolchainToolSecurityComplianceRead,
-		UpdateContext: ResourceIBMToolchainToolSecurityComplianceUpdate,
-		DeleteContext: ResourceIBMToolchainToolSecurityComplianceDelete,
+		CreateContext: ResourceIBMToolchainToolRationalteamconcertCreate,
+		ReadContext:   ResourceIBMToolchainToolRationalteamconcertRead,
+		UpdateContext: ResourceIBMToolchainToolRationalteamconcertUpdate,
+		DeleteContext: ResourceIBMToolchainToolRationalteamconcertDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolSecurityCompliance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_security_compliance", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_rationalteamconcert", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -42,44 +42,45 @@ func ResourceIBMToolchainToolSecurityCompliance() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Arbitrary JSON data.",
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"server_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Give this tool integration a name, for example: my-security-compliance.",
+							Description: "Type the server URL for your Rational Team Concert instance.",
 						},
-						"evidence_repo_name": &schema.Schema{
+						"user_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "To collect and store evidence for all tasks performed, a Git repository is required as an evidence locker.",
+							Description: "Type your user id for Rational Team Concert (Jazz) server access.",
 						},
-						"trigger_scan": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Enabling trigger validation scans provides details for a pipeline task to trigger a scan.",
-						},
-						"location": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"api_key": &schema.Schema{
+						"password": &schema.Schema{
 							Type:             schema.TypeString,
-							Optional:         true,
-							Sensitive:        true,
-							Description:      "The IBM Cloud API key is used to access the Security and Compliance API. You can obtain your API key with 'ibmcloud iam api-key-create' or via the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).",
+							Required:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "Type your password for Rational Team Concert (Jazz) server access.",
 						},
-						"scope": &schema.Schema{
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"project_area": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type the name of the Rational Team Concert project area to add to the toolchain.",
+						},
+						"process_template": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Select an existing scope name to narrow the focus of the validation scan. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes).",
+							Description: "Type the Rational Team Concert process template to use to create the project.",
 						},
-						"profile": &schema.Schema{
-							Type:        schema.TypeString,
+						"enable_traceability": &schema.Schema{
+							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
+							Default:     false,
+							Description: "Select this check box to track the deployment of code changes by creating tags, comments on work items.",
 						},
 					},
 				},
@@ -124,11 +125,15 @@ func ResourceIBMToolchainToolSecurityCompliance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func ResourceIBMToolchainToolSecurityComplianceValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolRationalteamconcertValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -142,11 +147,11 @@ func ResourceIBMToolchainToolSecurityComplianceValidator() *validate.ResourceVal
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_security_compliance", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_rationalteamconcert", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolSecurityComplianceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolRationalteamconcertCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,12 +160,12 @@ func ResourceIBMToolchainToolSecurityComplianceCreate(context context.Context, d
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("security_compliance")
+	postIntegrationOptions.SetToolID("rationalteamconcert")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolSecurityCompliance(), nil)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolRationalteamconcert(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -172,10 +177,10 @@ func ResourceIBMToolchainToolSecurityComplianceCreate(context context.Context, d
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolSecurityComplianceRead(context, d, meta)
+	return ResourceIBMToolchainToolRationalteamconcertRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolSecurityComplianceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolRationalteamconcertRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,7 +206,6 @@ func ResourceIBMToolchainToolSecurityComplianceRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -209,7 +213,7 @@ func ResourceIBMToolchainToolSecurityComplianceRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSecurityCompliance(), nil)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolRationalteamconcert(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -226,7 +230,7 @@ func ResourceIBMToolchainToolSecurityComplianceRead(context context.Context, d *
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolSecurityComplianceGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolRationalteamconcertGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,11 +243,14 @@ func ResourceIBMToolchainToolSecurityComplianceRead(context context.Context, d *
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
 
 	return nil
 }
 
-func ResourceIBMToolchainToolSecurityComplianceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolRationalteamconcertUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -258,7 +265,7 @@ func ResourceIBMToolchainToolSecurityComplianceUpdate(context context.Context, d
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("security_compliance")
+	patchToolIntegrationOptions.SetToolID("rationalteamconcert")
 
 	hasChange := false
 
@@ -271,7 +278,7 @@ func ResourceIBMToolchainToolSecurityComplianceUpdate(context context.Context, d
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolSecurityCompliance(), nil)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolRationalteamconcert(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -284,10 +291,10 @@ func ResourceIBMToolchainToolSecurityComplianceUpdate(context context.Context, d
 		}
 	}
 
-	return ResourceIBMToolchainToolSecurityComplianceRead(context, d, meta)
+	return ResourceIBMToolchainToolRationalteamconcertRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolSecurityComplianceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolRationalteamconcertDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -314,7 +321,7 @@ func ResourceIBMToolchainToolSecurityComplianceDelete(context context.Context, d
 	return nil
 }
 
-func ResourceIBMToolchainToolSecurityComplianceGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolRationalteamconcertGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

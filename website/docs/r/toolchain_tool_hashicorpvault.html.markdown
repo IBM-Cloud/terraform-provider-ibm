@@ -37,7 +37,7 @@ resource "ibm_toolchain_tool_hashicorpvault" "toolchain_tool_hashicorpvault" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
-* `parameters` - (Optional, List) Arbitrary JSON data.
+* `parameters` - (Optional, List) Tool integration parameters.
 Nested scheme for **parameters**:
 	* `authentication_method` - (Required, String) Choose the authentication method for your HashiCorp Vault instance.
 	  * Constraints: Allowable values are: `token`, `approle`, `userpass`, `github`.
@@ -52,7 +52,6 @@ Nested scheme for **parameters**:
 	* `server_url` - (Required, String) Type the server URL for your HashiCorp Vault instance.
 	* `token` - (Optional, String) Type or select the authentication token for your HashiCorp Vault instance.
 	* `username` - (Optional, String) Type or select the authentication username for your HashiCorp Vault instance.
-* `parameters_references` - (Optional, Map) Decoded values used on provision in the broker that reference fields in the parameters.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

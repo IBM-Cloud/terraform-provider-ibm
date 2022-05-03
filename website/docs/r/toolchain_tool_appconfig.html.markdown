@@ -1,23 +1,27 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_toolchain_tool_pipeline"
+page_title: "IBM : ibm_toolchain_tool_appconfig"
 description: |-
-  Manages toolchain_tool_pipeline.
+  Manages toolchain_tool_appconfig.
 subcategory: "Toolchain"
 ---
 
-# ibm_toolchain_tool_pipeline
+# ibm_toolchain_tool_appconfig
 
-Provides a resource for toolchain_tool_pipeline. This allows toolchain_tool_pipeline to be created, updated and deleted.
+Provides a resource for toolchain_tool_appconfig. This allows toolchain_tool_appconfig to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_toolchain_tool_pipeline" "toolchain_tool_pipeline" {
+resource "ibm_toolchain_tool_appconfig" "toolchain_tool_appconfig" {
   parameters {
 		name = "name"
-		type = "classic"
-		ui_pipeline = true
+		region = "region"
+		resource-group = "resource-group"
+		instance-name = "instance-name"
+		environment-name = "environment-name"
+		collection-name = "collection-name"
+		integration-status = "integration-status"
   }
   toolchain_id = "toolchain_id"
 }
@@ -30,11 +34,16 @@ Review the argument reference that you can specify for your resource.
 * `name` - (Optional, String) Name of tool integration.
 * `parameters` - (Optional, List) Tool integration parameters.
 Nested scheme for **parameters**:
-	* `name` - (Optional, String)
-	* `type` - (Optional, String)
-	  * Constraints: Allowable values are: `classic`, `tekton`.
-	* `ui_pipeline` - (Optional, Boolean) When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.
-	  * Constraints: The default value is `false`.
+	* `collection_name` - (Required, String) App Configuration collection.
+	  * Constraints: The value must match regular expression `/\\S/`.
+	* `environment_name` - (Required, String) App Configuration environment.
+	  * Constraints: The value must match regular expression `/\\S/`.
+	* `instance_name` - (Required, String) The name of your App Configuration instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: App Configuration-01.
+	  * Constraints: The value must match regular expression `/\\S/`.
+	* `integration_status` - (Optional, String)
+	* `name` - (Required, String) Type a name for this tool integration, for example: my-appconfig. This name displays on your toolchain.
+	* `region` - (Required, String) Region.
+	* `resource_group` - (Required, String) Resource group.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -42,7 +51,7 @@ Nested scheme for **parameters**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the toolchain_tool_pipeline.
+* `id` - The unique identifier of the toolchain_tool_appconfig.
 * `crn` - (Required, String) 
 * `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
@@ -58,7 +67,7 @@ Nested scheme for **referent**:
 
 ## Import
 
-You can import the `ibm_toolchain_tool_pipeline` resource by using `id`.
+You can import the `ibm_toolchain_tool_appconfig` resource by using `id`.
 The `id` property can be formed from `toolchain_id`, and `integration_id` in the following format:
 
 ```
@@ -69,5 +78,5 @@ The `id` property can be formed from `toolchain_id`, and `integration_id` in the
 
 # Syntax
 ```
-$ terraform import ibm_toolchain_tool_pipeline.toolchain_tool_pipeline <toolchain_id>/<integration_id>
+$ terraform import ibm_toolchain_tool_appconfig.toolchain_tool_appconfig <toolchain_id>/<integration_id>
 ```

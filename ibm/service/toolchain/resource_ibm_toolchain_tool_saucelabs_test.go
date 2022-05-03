@@ -17,27 +17,27 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIBMToolchainToolInsightsBasic(t *testing.T) {
+func TestAccIBMToolchainToolSaucelabsBasic(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolInsightsDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSaucelabsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolInsightsConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolSaucelabsConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
+					testAccCheckIBMToolchainToolSaucelabsExists("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", "toolchain_id", toolchainID),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMToolchainToolInsightsAllArgs(t *testing.T) {
+func TestAccIBMToolchainToolSaucelabsAllArgs(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,25 +46,25 @@ func TestAccIBMToolchainToolInsightsAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolInsightsDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolSaucelabsDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolInsightsConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolSaucelabsConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolInsightsExists("ibm_toolchain_tool_insights.toolchain_tool_insights", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "name", name),
+					testAccCheckIBMToolchainToolSaucelabsExists("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolInsightsConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolSaucelabsConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_insights.toolchain_tool_insights", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs", "name", nameUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_toolchain_tool_insights.toolchain_tool_insights",
+				ResourceName:      "ibm_toolchain_tool_saucelabs.toolchain_tool_saucelabs",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -72,26 +72,30 @@ func TestAccIBMToolchainToolInsightsAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMToolchainToolInsightsConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolSaucelabsConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_insights" "toolchain_tool_insights" {
+		resource "ibm_toolchain_tool_saucelabs" "toolchain_tool_saucelabs" {
 			toolchain_id = "%s"
 		}
 	`, toolchainID)
 }
 
-func testAccCheckIBMToolchainToolInsightsConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolSaucelabsConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_insights" "toolchain_tool_insights" {
+		resource "ibm_toolchain_tool_saucelabs" "toolchain_tool_saucelabs" {
 			toolchain_id = "%s"
 			name = "%s"
+			parameters {
+				username = "username"
+				key = "key"
+			}
 		}
 	`, toolchainID, name)
 }
 
-func testAccCheckIBMToolchainToolInsightsExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolSaucelabsExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -124,13 +128,13 @@ func testAccCheckIBMToolchainToolInsightsExists(n string, obj toolchainv2.GetInt
 	}
 }
 
-func testAccCheckIBMToolchainToolInsightsDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolSaucelabsDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_toolchain_tool_insights" {
+		if rs.Type != "ibm_toolchain_tool_saucelabs" {
 			continue
 		}
 
@@ -148,9 +152,9 @@ func testAccCheckIBMToolchainToolInsightsDestroy(s *terraform.State) error {
 		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
-			return fmt.Errorf("toolchain_tool_insights still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("toolchain_tool_saucelabs still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for toolchain_tool_insights (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for toolchain_tool_saucelabs (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

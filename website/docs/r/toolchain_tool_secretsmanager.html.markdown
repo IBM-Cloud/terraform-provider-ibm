@@ -14,6 +14,13 @@ Provides a resource for toolchain_tool_secretsmanager. This allows toolchain_too
 
 ```hcl
 resource "ibm_toolchain_tool_secretsmanager" "toolchain_tool_secretsmanager" {
+  parameters {
+		name = "name"
+		region = "region"
+		resource-group = "resource-group"
+		instance-name = "instance-name"
+		integration-status = "integration-status"
+  }
   toolchain_id = "toolchain_id"
 }
 ```
@@ -23,12 +30,14 @@ resource "ibm_toolchain_tool_secretsmanager" "toolchain_tool_secretsmanager" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
-* `parameters` - (Optional, List) 
+* `parameters` - (Optional, List) Tool integration parameters.
 Nested scheme for **parameters**:
-	* `instance_name` - (Optional, String)
-	* `name` - (Optional, String)
-	* `region` - (Optional, String)
-	* `resource_group` - (Optional, String)
+	* `instance_name` - (Required, String) The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.
+	  * Constraints: The value must match regular expression `/\\S/`.
+	* `integration_status` - (Optional, String)
+	* `name` - (Required, String) Enter a name for this tool integration. This name is displayed on your toolchain.
+	* `region` - (Required, String) Region.
+	* `resource_group` - (Required, String) Resource group.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -38,6 +47,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the toolchain_tool_secretsmanager.
 * `crn` - (Required, String) 
+* `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
 * `referent` - (Required, List) 
 Nested scheme for **referent**:

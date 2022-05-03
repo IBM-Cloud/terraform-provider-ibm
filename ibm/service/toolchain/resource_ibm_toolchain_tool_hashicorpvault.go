@@ -42,7 +42,7 @@ func ResourceIBMToolchainToolHashicorpvault() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Arbitrary JSON data.",
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -63,23 +63,23 @@ func ResourceIBMToolchainToolHashicorpvault() *schema.Resource {
 						"token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
 							Description:      "Type or select the authentication token for your HashiCorp Vault instance.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"role_id": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
 							Description:      "Type or select the authentication role ID for your HashiCorp Vault instance.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"secret_id": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
 							Description:      "Type or select the authentication secret ID for your HashiCorp Vault instance.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -109,9 +109,9 @@ func ResourceIBMToolchainToolHashicorpvault() *schema.Resource {
 						"password": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
 							Description:      "Type or select the authentication password for your HashiCorp Vault instance.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 						},
 					},
 				},
@@ -156,6 +156,10 @@ func ResourceIBMToolchainToolHashicorpvault() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -191,7 +195,6 @@ func ResourceIBMToolchainToolHashicorpvaultCreate(context context.Context, d *sc
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
-
 	if _, ok := d.GetOk("parameters"); ok {
 		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolHashicorpvault(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
@@ -234,7 +237,6 @@ func ResourceIBMToolchainToolHashicorpvaultRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -271,6 +273,9 @@ func ResourceIBMToolchainToolHashicorpvaultRead(context context.Context, d *sche
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	return nil

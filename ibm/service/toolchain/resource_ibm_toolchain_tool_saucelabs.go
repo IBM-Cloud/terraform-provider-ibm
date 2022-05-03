@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
+func ResourceIBMToolchainToolSaucelabs() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolKeyprotectCreate,
-		ReadContext:   ResourceIBMToolchainToolKeyprotectRead,
-		UpdateContext: ResourceIBMToolchainToolKeyprotectUpdate,
-		DeleteContext: ResourceIBMToolchainToolKeyprotectDelete,
+		CreateContext: ResourceIBMToolchainToolSaucelabsCreate,
+		ReadContext:   ResourceIBMToolchainToolSaucelabsRead,
+		UpdateContext: ResourceIBMToolchainToolSaucelabsUpdate,
+		DeleteContext: ResourceIBMToolchainToolSaucelabsDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_keyprotect", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_saucelabs", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -45,29 +45,17 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"username": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+							Description: "Type the user name for your Sauce Labs account.",
 						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Resource group.",
-						},
-						"instance_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
-						},
-						"integration_status": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+						"key": &schema.Schema{
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.",
 						},
 					},
 				},
@@ -120,7 +108,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolSaucelabsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -134,11 +122,11 @@ func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_keyprotect", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_saucelabs", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSaucelabsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -147,17 +135,12 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("keyprotect")
+	postIntegrationOptions.SetToolID("saucelabs")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolSaucelabs(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -169,10 +152,10 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolSaucelabsRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSaucelabsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -205,12 +188,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSaucelabs(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -227,7 +205,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolSaucelabsGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,7 +225,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSaucelabsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -262,7 +240,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("keyprotect")
+	patchToolIntegrationOptions.SetToolID("saucelabs")
 
 	hasChange := false
 
@@ -275,12 +253,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolSaucelabs(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -293,10 +266,10 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		}
 	}
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolSaucelabsRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSaucelabsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -323,7 +296,7 @@ func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSaucelabsGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

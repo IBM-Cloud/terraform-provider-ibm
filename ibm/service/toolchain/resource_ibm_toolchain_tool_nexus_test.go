@@ -17,27 +17,27 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func TestAccIBMToolchainToolKeyprotectBasic(t *testing.T) {
+func TestAccIBMToolchainToolNexusBasic(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolKeyprotectDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolNexusDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolKeyprotectConfigBasic(toolchainID),
+				Config: testAccCheckIBMToolchainToolNexusConfigBasic(toolchainID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
+					testAccCheckIBMToolchainToolNexusExists("ibm_toolchain_tool_nexus.toolchain_tool_nexus", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_nexus.toolchain_tool_nexus", "toolchain_id", toolchainID),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMToolchainToolKeyprotectAllArgs(t *testing.T) {
+func TestAccIBMToolchainToolNexusAllArgs(t *testing.T) {
 	var conf toolchainv2.GetIntegrationByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -46,25 +46,25 @@ func TestAccIBMToolchainToolKeyprotectAllArgs(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMToolchainToolKeyprotectDestroy,
+		CheckDestroy: testAccCheckIBMToolchainToolNexusDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID, name),
+				Config: testAccCheckIBMToolchainToolNexusConfig(toolchainID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMToolchainToolKeyprotectExists("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", conf),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "name", name),
+					testAccCheckIBMToolchainToolNexusExists("ibm_toolchain_tool_nexus.toolchain_tool_nexus", conf),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_nexus.toolchain_tool_nexus", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_nexus.toolchain_tool_nexus", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMToolchainToolNexusConfig(toolchainID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "toolchain_id", toolchainID),
-					resource.TestCheckResourceAttr("ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_nexus.toolchain_tool_nexus", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttr("ibm_toolchain_tool_nexus.toolchain_tool_nexus", "name", nameUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_toolchain_tool_keyprotect.toolchain_tool_keyprotect",
+				ResourceName:      "ibm_toolchain_tool_nexus.toolchain_tool_nexus",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -72,33 +72,36 @@ func TestAccIBMToolchainToolKeyprotectAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMToolchainToolKeyprotectConfigBasic(toolchainID string) string {
+func testAccCheckIBMToolchainToolNexusConfigBasic(toolchainID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_keyprotect" "toolchain_tool_keyprotect" {
+		resource "ibm_toolchain_tool_nexus" "toolchain_tool_nexus" {
 			toolchain_id = "%s"
 		}
 	`, toolchainID)
 }
 
-func testAccCheckIBMToolchainToolKeyprotectConfig(toolchainID string, name string) string {
+func testAccCheckIBMToolchainToolNexusConfig(toolchainID string, name string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_toolchain_tool_keyprotect" "toolchain_tool_keyprotect" {
+		resource "ibm_toolchain_tool_nexus" "toolchain_tool_nexus" {
 			toolchain_id = "%s"
 			name = "%s"
 			parameters {
 				name = "name"
-				region = "region"
-				resource-group = "resource-group"
-				instance-name = "instance-name"
-				integration-status = "integration-status"
+				dashboard_url = "dashboard_url"
+				type = "npm"
+				user_id = "user_id"
+				token = "token"
+				release_url = "release_url"
+				mirror_url = "mirror_url"
+				snapshot_url = "snapshot_url"
 			}
 		}
 	`, toolchainID, name)
 }
 
-func testAccCheckIBMToolchainToolKeyprotectExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
+func testAccCheckIBMToolchainToolNexusExists(n string, obj toolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -131,13 +134,13 @@ func testAccCheckIBMToolchainToolKeyprotectExists(n string, obj toolchainv2.GetI
 	}
 }
 
-func testAccCheckIBMToolchainToolKeyprotectDestroy(s *terraform.State) error {
+func testAccCheckIBMToolchainToolNexusDestroy(s *terraform.State) error {
 	toolchainClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_toolchain_tool_keyprotect" {
+		if rs.Type != "ibm_toolchain_tool_nexus" {
 			continue
 		}
 
@@ -155,9 +158,9 @@ func testAccCheckIBMToolchainToolKeyprotectDestroy(s *terraform.State) error {
 		_, response, err := toolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
 
 		if err == nil {
-			return fmt.Errorf("toolchain_tool_keyprotect still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("toolchain_tool_nexus still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for toolchain_tool_keyprotect (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for toolchain_tool_nexus (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

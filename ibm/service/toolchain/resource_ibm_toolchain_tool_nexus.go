@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolInsights() *schema.Resource {
+func ResourceIBMToolchainToolNexus() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolInsightsCreate,
-		ReadContext:   ResourceIBMToolchainToolInsightsRead,
-		UpdateContext: ResourceIBMToolchainToolInsightsUpdate,
-		DeleteContext: ResourceIBMToolchainToolInsightsDelete,
+		CreateContext: ResourceIBMToolchainToolNexusCreate,
+		ReadContext:   ResourceIBMToolchainToolNexusRead,
+		UpdateContext: ResourceIBMToolchainToolNexusUpdate,
+		DeleteContext: ResourceIBMToolchainToolNexusDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,13 +30,65 @@ func ResourceIBMToolchainToolInsights() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_insights", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_nexus", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Name of tool integration.",
+			},
+			"parameters": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Tool integration parameters.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.",
+						},
+						"dashboard_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL that you want to navigate to when you click the Nexus integration tile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Choose the type of repository for your Nexus integration.",
+						},
+						"user_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the User ID or email for your Nexus repository.",
+						},
+						"token": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "Type the password or authentication token for your Nexus repository.",
+						},
+						"release_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Nexus release repository.",
+						},
+						"mirror_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+						},
+						"snapshot_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL for your Nexus snapshot repository.",
+						},
+					},
+				},
 			},
 			"resource_group_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -78,11 +130,15 @@ func ResourceIBMToolchainToolInsights() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func ResourceIBMToolchainToolInsightsValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolNexusValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -96,11 +152,11 @@ func ResourceIBMToolchainToolInsightsValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_insights", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_nexus", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolInsightsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolNexusCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,9 +165,13 @@ func ResourceIBMToolchainToolInsightsCreate(context context.Context, d *schema.R
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("draservicebroker")
+	postIntegrationOptions.SetToolID("nexus")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
+	}
+	if _, ok := d.GetOk("parameters"); ok {
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolNexus(), nil)
+		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
 	postIntegrationResponse, response, err := toolchainClient.PostIntegrationWithContext(context, postIntegrationOptions)
@@ -122,10 +182,10 @@ func ResourceIBMToolchainToolInsightsCreate(context context.Context, d *schema.R
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolInsightsRead(context, d, meta)
+	return ResourceIBMToolchainToolNexusRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolInsightsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolNexusRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -157,6 +217,12 @@ func ResourceIBMToolchainToolInsightsRead(context context.Context, d *schema.Res
 	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+	if getIntegrationByIDResponse.Parameters != nil {
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolNexus(), nil)
+		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
+		}
+	}
 	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
@@ -169,7 +235,7 @@ func ResourceIBMToolchainToolInsightsRead(context context.Context, d *schema.Res
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolInsightsGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolNexusGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,11 +248,14 @@ func ResourceIBMToolchainToolInsightsRead(context context.Context, d *schema.Res
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
 
 	return nil
 }
 
-func ResourceIBMToolchainToolInsightsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolNexusUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,7 +270,7 @@ func ResourceIBMToolchainToolInsightsUpdate(context context.Context, d *schema.R
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("draservicebroker")
+	patchToolIntegrationOptions.SetToolID("nexus")
 
 	hasChange := false
 
@@ -213,6 +282,11 @@ func ResourceIBMToolchainToolInsightsUpdate(context context.Context, d *schema.R
 		patchToolIntegrationOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
+	if d.HasChange("parameters") {
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolNexus(), nil)
+		patchToolIntegrationOptions.SetParameters(parameters)
+		hasChange = true
+	}
 
 	if hasChange {
 		_, response, err := toolchainClient.PatchToolIntegrationWithContext(context, patchToolIntegrationOptions)
@@ -222,10 +296,10 @@ func ResourceIBMToolchainToolInsightsUpdate(context context.Context, d *schema.R
 		}
 	}
 
-	return ResourceIBMToolchainToolInsightsRead(context, d, meta)
+	return ResourceIBMToolchainToolNexusRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolInsightsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolNexusDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -252,7 +326,7 @@ func ResourceIBMToolchainToolInsightsDelete(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMToolchainToolInsightsGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolNexusGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

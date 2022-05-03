@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolPrivateWorker() *schema.Resource {
+func ResourceIBMToolchainToolAppconfig() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolPrivateWorkerCreate,
-		ReadContext:   ResourceIBMToolchainToolPrivateWorkerRead,
-		UpdateContext: ResourceIBMToolchainToolPrivateWorkerUpdate,
-		DeleteContext: ResourceIBMToolchainToolPrivateWorkerDelete,
+		CreateContext: ResourceIBMToolchainToolAppconfigCreate,
+		ReadContext:   ResourceIBMToolchainToolAppconfigRead,
+		UpdateContext: ResourceIBMToolchainToolAppconfigUpdate,
+		DeleteContext: ResourceIBMToolchainToolAppconfigDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolPrivateWorker() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_private_worker", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_appconfig", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -42,22 +42,40 @@ func ResourceIBMToolchainToolPrivateWorker() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Arbitrary JSON data.",
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.",
+							Description: "Type a name for this tool integration, for example: my-appconfig. This name displays on your toolchain.",
 						},
-						"worker_queue_credentials": &schema.Schema{
-							Type:             schema.TypeString,
-							Required:         true,
-							Sensitive:        true,
-							Description:      "Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+						"region": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Region.",
 						},
-						"worker_queue_identifier": &schema.Schema{
+						"resource_group": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Resource group.",
+						},
+						"instance_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of your App Configuration instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: App Configuration-01.",
+						},
+						"environment_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "App Configuration environment.",
+						},
+						"collection_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "App Configuration collection.",
+						},
+						"integration_status": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -104,11 +122,15 @@ func ResourceIBMToolchainToolPrivateWorker() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func ResourceIBMToolchainToolPrivateWorkerValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolAppconfigValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -122,11 +144,11 @@ func ResourceIBMToolchainToolPrivateWorkerValidator() *validate.ResourceValidato
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_private_worker", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_appconfig", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolPrivateWorkerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolAppconfigCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,16 +157,19 @@ func ResourceIBMToolchainToolPrivateWorkerCreate(context context.Context, d *sch
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("private_worker")
+	postIntegrationOptions.SetToolID("appconfig")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		remapFields := map[string]string{
-			"worker_queue_credentials": "workerQueueCredentials",
-			"worker_queue_identifier":  "workerQueueIdentifier",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"environment_name":   "environment-name",
+			"collection_name":    "collection-name",
+			"integration_status": "integration-status",
 		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolPrivateWorker(), remapFields)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolAppconfig(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -156,10 +181,10 @@ func ResourceIBMToolchainToolPrivateWorkerCreate(context context.Context, d *sch
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolPrivateWorkerRead(context, d, meta)
+	return ResourceIBMToolchainToolAppconfigRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolAppconfigRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -185,7 +210,6 @@ func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -194,10 +218,13 @@ func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schem
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"worker_queue_credentials": "workerQueueCredentials",
-			"worker_queue_identifier":  "workerQueueIdentifier",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"environment_name":   "environment-name",
+			"collection_name":    "collection-name",
+			"integration_status": "integration-status",
 		}
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolPrivateWorker(), remapFields)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolAppconfig(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -214,7 +241,7 @@ func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schem
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolPrivateWorkerGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolAppconfigGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -227,11 +254,14 @@ func ResourceIBMToolchainToolPrivateWorkerRead(context context.Context, d *schem
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	}
 
 	return nil
 }
 
-func ResourceIBMToolchainToolPrivateWorkerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolAppconfigUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -246,7 +276,7 @@ func ResourceIBMToolchainToolPrivateWorkerUpdate(context context.Context, d *sch
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("private_worker")
+	patchToolIntegrationOptions.SetToolID("appconfig")
 
 	hasChange := false
 
@@ -260,10 +290,13 @@ func ResourceIBMToolchainToolPrivateWorkerUpdate(context context.Context, d *sch
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"worker_queue_credentials": "workerQueueCredentials",
-			"worker_queue_identifier":  "workerQueueIdentifier",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"environment_name":   "environment-name",
+			"collection_name":    "collection-name",
+			"integration_status": "integration-status",
 		}
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolPrivateWorker(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolAppconfig(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -276,10 +309,10 @@ func ResourceIBMToolchainToolPrivateWorkerUpdate(context context.Context, d *sch
 		}
 	}
 
-	return ResourceIBMToolchainToolPrivateWorkerRead(context, d, meta)
+	return ResourceIBMToolchainToolAppconfigRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolPrivateWorkerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolAppconfigDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -306,7 +339,7 @@ func ResourceIBMToolchainToolPrivateWorkerDelete(context context.Context, d *sch
 	return nil
 }
 
-func ResourceIBMToolchainToolPrivateWorkerGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolAppconfigGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

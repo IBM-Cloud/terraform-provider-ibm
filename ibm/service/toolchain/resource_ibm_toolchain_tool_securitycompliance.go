@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
+func ResourceIBMToolchainToolSecuritycompliance() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolKeyprotectCreate,
-		ReadContext:   ResourceIBMToolchainToolKeyprotectRead,
-		UpdateContext: ResourceIBMToolchainToolKeyprotectUpdate,
-		DeleteContext: ResourceIBMToolchainToolKeyprotectDelete,
+		CreateContext: ResourceIBMToolchainToolSecuritycomplianceCreate,
+		ReadContext:   ResourceIBMToolchainToolSecuritycomplianceRead,
+		UpdateContext: ResourceIBMToolchainToolSecuritycomplianceUpdate,
+		DeleteContext: ResourceIBMToolchainToolSecuritycomplianceDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_keyprotect", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_securitycompliance", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -48,26 +48,38 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+							Description: "Give this tool integration a name, for example: my-security-compliance.",
 						},
-						"region": &schema.Schema{
+						"evidence_repo_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Region.",
+							Description: "To collect and store evidence for all tasks performed, a Git repository is required as an evidence locker.",
 						},
-						"resource_group": &schema.Schema{
+						"trigger_scan": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Resource group.",
+							Optional:    true,
+							Description: "Enabling trigger validation scans provides details for a pipeline task to trigger a scan.",
 						},
-						"instance_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
-						},
-						"integration_status": &schema.Schema{
+						"location": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+						},
+						"api_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The IBM Cloud API key is used to access the Security and Compliance API. You can obtain your API key with 'ibmcloud iam api-key-create' or via the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).",
+						},
+						"scope": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Select an existing scope name to narrow the focus of the validation scan. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes).",
+						},
+						"profile": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
 						},
 					},
 				},
@@ -120,7 +132,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolSecuritycomplianceValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -134,11 +146,11 @@ func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_keyprotect", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_securitycompliance", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSecuritycomplianceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -147,17 +159,15 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("keyprotect")
+	postIntegrationOptions.SetToolID("security_compliance")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"api_key": "api-key",
 		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolSecuritycompliance(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -169,10 +179,10 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolSecuritycomplianceRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSecuritycomplianceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -206,11 +216,9 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"api_key": "api-key",
 		}
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSecuritycompliance(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -227,7 +235,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolSecuritycomplianceGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,7 +255,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSecuritycomplianceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -262,7 +270,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("keyprotect")
+	patchToolIntegrationOptions.SetToolID("security_compliance")
 
 	hasChange := false
 
@@ -276,11 +284,9 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"api_key": "api-key",
 		}
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolSecuritycompliance(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -293,10 +299,10 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		}
 	}
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolSecuritycomplianceRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolSecuritycomplianceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -323,7 +329,7 @@ func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolSecuritycomplianceGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

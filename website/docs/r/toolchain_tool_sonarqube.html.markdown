@@ -14,6 +14,13 @@ Provides a resource for toolchain_tool_sonarqube. This allows toolchain_tool_son
 
 ```hcl
 resource "ibm_toolchain_tool_sonarqube" "toolchain_tool_sonarqube" {
+  parameters {
+		name = "name"
+		dashboard_url = "dashboard_url"
+		user_login = "user_login"
+		user_password = "user_password"
+		blind_connection = true
+  }
   toolchain_id = "toolchain_id"
 }
 ```
@@ -23,7 +30,7 @@ resource "ibm_toolchain_tool_sonarqube" "toolchain_tool_sonarqube" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
-* `parameters` - (Optional, List) 
+* `parameters` - (Optional, List) Tool integration parameters.
 Nested scheme for **parameters**:
 	* `blind_connection` - (Optional, Boolean) Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
 	  * Constraints: The default value is `false`.
@@ -40,6 +47,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the toolchain_tool_sonarqube.
 * `crn` - (Required, String) 
+* `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
 * `referent` - (Required, List) 
 Nested scheme for **referent**:

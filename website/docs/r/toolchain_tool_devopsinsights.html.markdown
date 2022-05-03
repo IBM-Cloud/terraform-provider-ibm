@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_toolchain_tool_orion"
+page_title: "IBM : ibm_toolchain_tool_devopsinsights"
 description: |-
-  Manages toolchain_tool_orion.
+  Manages toolchain_tool_devopsinsights.
 subcategory: "Toolchain"
 ---
 
-# ibm_toolchain_tool_orion
+# ibm_toolchain_tool_devopsinsights
 
-Provides a resource for toolchain_tool_orion. This allows toolchain_tool_orion to be created, updated and deleted.
+Provides a resource for toolchain_tool_devopsinsights. This allows toolchain_tool_devopsinsights to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_toolchain_tool_orion" "toolchain_tool_orion" {
+resource "ibm_toolchain_tool_devopsinsights" "toolchain_tool_devopsinsights" {
   toolchain_id = "toolchain_id"
 }
 ```
@@ -30,7 +30,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the toolchain_tool_orion.
+* `id` - The unique identifier of the toolchain_tool_devopsinsights.
 * `crn` - (Required, String) 
 * `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
@@ -46,7 +46,7 @@ Nested scheme for **referent**:
 
 ## Import
 
-You can import the `ibm_toolchain_tool_orion` resource by using `id`.
+You can import the `ibm_toolchain_tool_devopsinsights` resource by using `id`.
 The `id` property can be formed from `toolchain_id`, and `integration_id` in the following format:
 
 ```
@@ -57,5 +57,5 @@ The `id` property can be formed from `toolchain_id`, and `integration_id` in the
 
 # Syntax
 ```
-$ terraform import ibm_toolchain_tool_orion.toolchain_tool_orion <toolchain_id>/<integration_id>
+$ terraform import ibm_toolchain_tool_devopsinsights.toolchain_tool_devopsinsights <toolchain_id>/<integration_id>
 ```

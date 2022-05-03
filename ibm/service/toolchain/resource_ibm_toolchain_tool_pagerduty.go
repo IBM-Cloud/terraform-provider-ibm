@@ -17,12 +17,12 @@ import (
 	"github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
 )
 
-func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
+func ResourceIBMToolchainToolPagerduty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMToolchainToolKeyprotectCreate,
-		ReadContext:   ResourceIBMToolchainToolKeyprotectRead,
-		UpdateContext: ResourceIBMToolchainToolKeyprotectUpdate,
-		DeleteContext: ResourceIBMToolchainToolKeyprotectDelete,
+		CreateContext: ResourceIBMToolchainToolPagerdutyCreate,
+		ReadContext:   ResourceIBMToolchainToolPagerdutyRead,
+		UpdateContext: ResourceIBMToolchainToolPagerdutyUpdate,
+		DeleteContext: ResourceIBMToolchainToolPagerdutyDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_keyprotect", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_pagerduty", "toolchain_id"),
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
@@ -45,29 +45,49 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"key_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+							Description: "Select whether to integrate at the account level with an API key or at the service level with an integration key.",
 						},
-						"region": &schema.Schema{
+						"api_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "Type your API access key. You can find or create this key on the Configuration/API Access section of the PagerDuty website. [PagerDuty Support article on how to get API Key](https://support.pagerduty.com/hc/en-us/articles/202829310-Generating-an-API-Key).",
+						},
+						"service_name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Region.",
+							Optional:    true,
+							Description: "Type the name of the PagerDuty service to post alerts to. If you want alerts to be posted to a new service, type a new name. PagerDuty will create the service.",
 						},
-						"resource_group": &schema.Schema{
+						"user_email": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Resource group.",
+							Optional:    true,
+							Description: "Type the email address of the user to contact when an alert is posted. If you want alerts to be sent to a new email address, type the address and PagerDuty will create a user.",
 						},
-						"instance_name": &schema.Schema{
+						"user_phone": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
+							Optional:    true,
+							Description: "Type the phone number of the user to contact when an alert is posted. Include the national code followed by a space and a 10-digit number; for example: +1 1234567890. If you omit the national code, it is set to +1 by default.",
 						},
-						"integration_status": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+						"service_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Type the URL of the PagerDuty service to post alerts to.",
+						},
+						"service_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "Type your integration key. You can find or create this key in the Integrations section of the PagerDuty service page.",
+						},
+						"service_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "service_id.",
 						},
 					},
 				},
@@ -120,7 +140,7 @@ func ResourceIBMToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
+func ResourceIBMToolchainToolPagerdutyValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -134,11 +154,11 @@ func ResourceIBMToolchainToolKeyprotectValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_keyprotect", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_pagerduty", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPagerdutyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -147,17 +167,12 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("keyprotect")
+	postIntegrationOptions.SetToolID("pagerduty")
 	if _, ok := d.GetOk("name"); ok {
 		postIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolPagerduty(), nil)
 		postIntegrationOptions.SetParameters(parametersModel)
 	}
 
@@ -169,10 +184,10 @@ func ResourceIBMToolchainToolKeyprotectCreate(context context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolPagerdutyRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPagerdutyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -205,12 +220,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolPagerduty(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
@@ -227,7 +237,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMToolchainToolPagerdutyGetIntegrationByIDResponseReferentToMap(getIntegrationByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,7 +257,7 @@ func ResourceIBMToolchainToolKeyprotectRead(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPagerdutyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -262,7 +272,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 
 	patchToolIntegrationOptions.SetToolchainID(parts[0])
 	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("keyprotect")
+	patchToolIntegrationOptions.SetToolID("pagerduty")
 
 	hasChange := false
 
@@ -275,12 +285,7 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
-		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
-		}
-		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolKeyprotect(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolPagerduty(), nil)
 		patchToolIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
@@ -293,10 +298,10 @@ func ResourceIBMToolchainToolKeyprotectUpdate(context context.Context, d *schema
 		}
 	}
 
-	return ResourceIBMToolchainToolKeyprotectRead(context, d, meta)
+	return ResourceIBMToolchainToolPagerdutyRead(context, d, meta)
 }
 
-func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMToolchainToolPagerdutyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	toolchainClient, err := meta.(conns.ClientSession).ToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -323,7 +328,7 @@ func ResourceIBMToolchainToolKeyprotectDelete(context context.Context, d *schema
 	return nil
 }
 
-func ResourceIBMToolchainToolKeyprotectGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
+func ResourceIBMToolchainToolPagerdutyGetIntegrationByIDResponseReferentToMap(model *toolchainv2.GetIntegrationByIDResponseReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

@@ -14,6 +14,19 @@ Provides a resource for toolchain_tool_artifactory. This allows toolchain_tool_a
 
 ```hcl
 resource "ibm_toolchain_tool_artifactory" "toolchain_tool_artifactory" {
+  parameters {
+		name = "name"
+		dashboard_url = "dashboard_url"
+		type = "npm"
+		user_id = "user_id"
+		token = "token"
+		release_url = "release_url"
+		mirror_url = "mirror_url"
+		snapshot_url = "snapshot_url"
+		repository_name = "repository_name"
+		repository_url = "repository_url"
+		docker_config_json = "docker_config_json"
+  }
   toolchain_id = "toolchain_id"
 }
 ```
@@ -23,7 +36,7 @@ resource "ibm_toolchain_tool_artifactory" "toolchain_tool_artifactory" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
-* `parameters` - (Optional, List) 
+* `parameters` - (Optional, List) Tool integration parameters.
 Nested scheme for **parameters**:
 	* `dashboard_url` - (Optional, String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
 	* `docker_config_json` - (Optional, String)
@@ -46,6 +59,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the toolchain_tool_artifactory.
 * `crn` - (Required, String) 
+* `get_integration_by_id_response_id` - (Required, String) 
 * `href` - (Required, String) 
 * `referent` - (Required, List) 
 Nested scheme for **referent**:

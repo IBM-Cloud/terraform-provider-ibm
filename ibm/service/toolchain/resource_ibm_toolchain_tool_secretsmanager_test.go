@@ -90,8 +90,9 @@ func testAccCheckIBMToolchainToolSecretsmanagerConfig(toolchainID string, name s
 			parameters {
 				name = "name"
 				region = "region"
-				resource_group = "resource_group"
-				instance_name = "instance_name"
+				resource-group = "resource-group"
+				instance-name = "instance-name"
+				integration-status = "integration-status"
 			}
 		}
 	`, toolchainID, name)

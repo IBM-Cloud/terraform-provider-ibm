@@ -39,24 +39,33 @@ func ResourceIBMToolchainToolSecretsmanager() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
 						},
 						"region": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Region.",
 						},
 						"resource_group": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Resource group.",
 						},
 						"instance_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.",
+						},
+						"integration_status": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -103,6 +112,10 @@ func ResourceIBMToolchainToolSecretsmanager() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"instance_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -140,8 +153,9 @@ func ResourceIBMToolchainToolSecretsmanagerCreate(context context.Context, d *sc
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"integration_status": "integration-status",
 		}
 		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolSecretsmanager(), remapFields)
 		postIntegrationOptions.SetParameters(parametersModel)
@@ -184,7 +198,6 @@ func ResourceIBMToolchainToolSecretsmanagerRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -193,8 +206,9 @@ func ResourceIBMToolchainToolSecretsmanagerRead(context context.Context, d *sche
 	}
 	if getIntegrationByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group": "resource_group",
-			"instance_name":  "instance_name",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"integration_status": "integration-status",
 		}
 		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMToolchainToolSecretsmanager(), remapFields)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -225,6 +239,9 @@ func ResourceIBMToolchainToolSecretsmanagerRead(context context.Context, d *sche
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	return nil
@@ -259,8 +276,9 @@ func ResourceIBMToolchainToolSecretsmanagerUpdate(context context.Context, d *sc
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"resource_group":     "resource-group",
+			"instance_name":      "instance-name",
+			"integration_status": "integration-status",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolSecretsmanager(), remapFields)
 		patchToolIntegrationOptions.SetParameters(parameters)

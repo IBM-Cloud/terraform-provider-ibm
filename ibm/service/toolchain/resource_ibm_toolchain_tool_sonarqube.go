@@ -39,9 +39,10 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 				Description: "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Tool integration parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -55,15 +56,15 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 							Description: "Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.",
 						},
 						"user_login": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							Sensitive:        true,
-							Description:      "If you are using an authentication token, leave this field empty.",
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "If you are using an authentication token, leave this field empty.",
 						},
 						"user_password": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -111,6 +112,10 @@ func ResourceIBMToolchainToolSonarqube() *schema.Resource {
 				Computed: true,
 			},
 			"state": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"instance_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -191,7 +196,6 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
@@ -228,6 +232,9 @@ func ResourceIBMToolchainToolSonarqubeRead(context context.Context, d *schema.Re
 	}
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 
 	return nil
