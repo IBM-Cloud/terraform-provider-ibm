@@ -71,7 +71,6 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
-	"github.com/IBM/scc-go-sdk/findingsv1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
@@ -276,7 +275,6 @@ type ClientSession interface {
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
-	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
@@ -553,10 +551,6 @@ type clientSession struct {
 
 	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
 	esSchemaRegistryErr    error
-
-	// Security and Compliance Center (SCC)
-	findingsClient    *findingsv1.FindingsV1
-	findingsClientErr error
 
 	// Security and Compliance Center (SCC) Admin
 	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
@@ -1064,14 +1058,6 @@ func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.Schema
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
 
-// Security and Compliance center Findings API
-func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
-	if session.findingsClientErr != nil {
-		return session.findingsClient, session.findingsClientErr
-	}
-	return session.findingsClient.Clone(), nil
-}
-
 //Security and Compliance center Admin API
 func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
 	return session.adminServiceApiClient, session.adminServiceApiClientErr
@@ -1521,38 +1507,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	// SCC FINDINGS Service
-	var findingsClientURL string
-	if c.Visibility == "public" || c.Visibility == "public-and-private" {
-		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
-		if err != nil {
-			session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
-		}
-	} else {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
-	}
-	findingsClientOptions := &findingsv1.FindingsV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
-		AccountID:     core.StringPtr(userConfig.UserAccount),
-	}
-	// Construct the service client.
-	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
-	if err != nil {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: %q", err)
-	}
-	if session.findingsClient != nil && session.findingsClient.Service != nil {
-		// Enable retries for API calls
-		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.findingsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
