@@ -417,7 +417,7 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 				currentMemberIP["status"] = *memberIP.Status
 				vpcMembersIpsList = append(vpcMembersIpsList, currentMemberIP)
 			}
-			if memberIP.PrivateIP != nil {
+			if memberIP.PrivateIP != nil && memberIP.PrivateIP.Address != nil {
 				currentMemberIP["private_address"] = *memberIP.PrivateIP.Address
 			}
 		}

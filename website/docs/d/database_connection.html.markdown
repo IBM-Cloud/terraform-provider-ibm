@@ -59,6 +59,52 @@ Nested scheme for **amqps**:
 	* `ssl` - (Optional, Boolean) Indicates ssl is required for the connection.
 	* `type` - (Optional, String) Type of connection being described.
 
+* `analytics` - (Optional, List)
+Nested scheme for **analytics**:
+	* `authentication` - (Optional, List) Authentication data for Connection String.
+	Nested scheme for **authentication**:
+		* `method` - (Optional, String) Authentication method for this credential.
+		* `password` - (Optional, String) Password part of credential.
+		* `username` - (Optional, String) Username part of credential.
+	* `browser_accessible` - (Optional, Boolean) Indicates the address is accessible by browser.
+	* `certificate` - (Optional, List)
+	Nested scheme for **certificate**:
+		* `certificate_base64` - (Optional, String) Base64 encoded version of the certificate.
+		* `name` - (Optional, String) Name associated with the certificate.
+	* `composed` - (Optional, List)
+	* `hosts` - (Optional, List)
+	Nested scheme for **hosts**:
+		* `hostname` - (Optional, String) Hostname for connection.
+		* `port` - (Optional, Integer) Port number for connection.
+	* `path` - (Optional, String) Path for URI connection.
+	* `query_options` - (Optional, Map) Query options to add to the URI connection.
+	* `scheme` - (Optional, String) Scheme/protocol for URI connection.
+	* `ssl` - (Optional, Boolean) Indicates ssl is required for the connection.
+	* `type` - (Optional, String) Type of connection being described.
+
+* `bi_connector` - (Optional, List)
+Nested scheme for **bi_connector**:
+	* `authentication` - (Optional, List) Authentication data for Connection String.
+	Nested scheme for **authentication**:
+		* `method` - (Optional, String) Authentication method for this credential.
+		* `password` - (Optional, String) Password part of credential.
+		* `username` - (Optional, String) Username part of credential.
+	* `browser_accessible` - (Optional, Boolean) Indicates the address is accessible by browser.
+	* `certificate` - (Optional, List)
+	Nested scheme for **certificate**:
+		* `certificate_base64` - (Optional, String) Base64 encoded version of the certificate.
+		* `name` - (Optional, String) Name associated with the certificate.
+	* `composed` - (Optional, List)
+	* `hosts` - (Optional, List)
+	Nested scheme for **hosts**:
+		* `hostname` - (Optional, String) Hostname for connection.
+		* `port` - (Optional, Integer) Port number for connection.
+	* `path` - (Optional, String) Path for URI connection.
+	* `query_options` - (Optional, Map) Query options to add to the URI connection.
+	* `scheme` - (Optional, String) Scheme/protocol for URI connection.
+	* `ssl` - (Optional, Boolean) Indicates ssl is required for the connection.
+	* `type` - (Optional, String) Type of connection being described.
+
 * `cli` - (Optional, List) CLI Connection.
 Nested scheme for **cli**:
 	* `arguments` - (Optional, List) Sets of arguments to call the executable with. The outer array corresponds to a possible way to call the CLI; the inner array is the set of arguments to use with that call.

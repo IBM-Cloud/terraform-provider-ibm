@@ -44,7 +44,14 @@ In addition to all argument reference list, you can access the following attribu
     Nested scheme for `members`:
 	  - `address` - (String) The public IP address assigned to the VPN gateway member.
 	  - `role`-  (String) The high availability role assigned to the VPN gateway member.
-	  - `private_address` - (String) The private IP address assigned to the VPN gateway member.
+    - `private_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+      Nested scheme for `private_ip`:
+      - `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+      - `href`- (String) The URL for this reserved IP
+      - `name`- (String) The user-defined or system-provided name for this reserved IP
+      - `reserved_ip`- (String) The unique identifier for this reserved IP
+      - `resource_type`- (String) The resource type.
+	  - `private_address` - (String) The private IP address assigned to the VPN gateway member. Same as `private_ip.0.address`
 	  - `status` - (String) The status of the VPN gateway member.
   - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.
   - `status` - (String) The status of the VPN gateway, supported values are **available**, **deleting**, **failed**, **pending**.

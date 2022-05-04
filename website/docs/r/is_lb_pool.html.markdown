@@ -130,7 +130,7 @@ Review the argument references that you can specify for your resource.
 - `health_monitor_port` - (Optional, Integer) The health check port number.
 - `lb`  - (Required, Forces new resource, String) The load balancer unique identifier.
 - `name` - (Required, String) The name of the pool.
-- `protocol` - (Required, String) The pool protocol. Enumeration type: `http`, `https`, `tcp` are supported.
+- `protocol` - (Required, String) The pool protocol. Enumeration type: `http`, `https`, `tcp`, `udp` are supported.
 - `proxy_protocol` - (Optional, String) The proxy protocol setting for the pool that is supported by the load balancers in the application family. Valid values are `disabled`, `v1`, and `v2`. Default value is `disabled`.
 - `session_persistence_type` - (Optional, String) The session persistence type, Enumeration type: source_ip, app_cookie, http_cookie
 - `session_persistence_app_cookie_name` - (Optional, String) Session persistence app cookie name. This is applicable only to app_cookie type.

@@ -91,6 +91,9 @@ Review the argument references that you can specify for your resource.
 - `name` - (Optional, String) The user-defined name for this network interface
 - `primary_ip` - (Optional, List)
 	- `address` - (Optional, String) title: IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+  - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+  - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP. `reserved_ip` is mutually exclusive with rest of the `primary_ip` attributes.
+  - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
 
 - `security_groups` - (Optional, List) Collection of security groups
 - `subnet` - (Required, String) The associated subnet id

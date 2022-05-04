@@ -5,12 +5,14 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -19,6 +21,7 @@ const (
 	isReservedIPProvisioningDone = "done"
 	isReservedIP                 = "reserved_ip"
 	isReservedIPTarget           = "target"
+	isReservedIPLifecycleState   = "lifecycle_state"
 )
 
 func ResourceIBMISReservedIP() *schema.Resource {
@@ -65,6 +68,11 @@ func ResourceIBMISReservedIP() *schema.Resource {
 				Optional:    true,
 				Description: "The unique identifier for target.",
 			},
+			isReservedIPLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the reserved IP",
+			},
 			/*
 				Response Parameters
 				===================
@@ -74,8 +82,10 @@ func ResourceIBMISReservedIP() *schema.Resource {
 
 			isReservedIPAddress: {
 				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
 				Computed:    true,
-				Description: "The user-defined or system-provided name for this reserved IP.",
+				Description: "The address for this reserved IP.",
 			},
 			isReservedIP: {
 				Type:        schema.TypeString,
@@ -139,6 +149,13 @@ func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) err
 	if nameStr != "" {
 		options.Name = &nameStr
 	}
+	addStr := ""
+	if address, ok := d.GetOk(isReservedIPAddress); ok {
+		addStr = address.(string)
+	}
+	if addStr != "" {
+		options.Address = &addStr
+	}
 
 	autoDeleteBool := d.Get(isReservedIPAutoDelete).(bool)
 	options.AutoDelete = &autoDeleteBool
@@ -155,6 +172,10 @@ func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) err
 
 	// Set id for the reserved IP as combination of subnet ID and reserved IP ID
 	d.SetId(fmt.Sprintf("%s/%s", subnetID, *rip.ID))
+	_, err = isWaitForReservedIpAvailable(sess, subnetID, *rip.ID, d.Timeout(schema.TimeoutCreate), d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+	}
 
 	return resourceIBMISReservedIPRead(d, meta)
 }
@@ -175,6 +196,9 @@ func resourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error
 		d.Set(isReservedIPAddress, *rip.Address)
 		d.Set(isReservedIP, *rip.ID)
 		d.Set(isSubNetID, subnetID)
+		if rip.LifecycleState != nil {
+			d.Set(isReservedIPLifecycleState, *rip.LifecycleState)
+		}
 		d.Set(isReservedIPAutoDelete, *rip.AutoDelete)
 		d.Set(isReservedIPCreatedAt, (*rip.CreatedAt).String())
 		d.Set(isReservedIPhref, *rip.Href)
@@ -302,4 +326,42 @@ func get(d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, error) {
 		return nil, fmt.Errorf("[ERROR] Error Getting Reserved IP : %s\n%s", err, response)
 	}
 	return rip, nil
+}
+
+func isWaitForReservedIpAvailable(sess *vpcv1.VpcV1, subnetid, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
+	log.Printf("Waiting for reseved ip (%s/%s) to be available.", subnetid, id)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"done", "failed", ""},
+		Refresh:    isReserveIpRefreshFunc(sess, subnetid, id, d),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+
+func isReserveIpRefreshFunc(sess *vpcv1.VpcV1, subnetid, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getreservedipOptions := &vpcv1.GetSubnetReservedIPOptions{
+			ID:       &id,
+			SubnetID: &subnetid,
+		}
+		rsip, response, err := sess.GetSubnetReservedIP(getreservedipOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error Getting reserved ip(%s/%s) : %s\n%s", subnetid, id, err, response)
+		}
+		if rsip.LifecycleState != nil {
+			d.Set(isReservedIPLifecycleState, *rsip.LifecycleState)
+		}
+		d.Set(isReservedIPAddress, *rsip.Address)
+
+		if rsip.LifecycleState != nil && *rsip.LifecycleState == "failed" {
+			return rsip, "failed", fmt.Errorf("[ERROR] Error Reserved ip(%s/%s) creation failed : %s\n%s", subnetid, id, err, response)
+		}
+		if rsip.LifecycleState != nil && *rsip.LifecycleState == "stable" {
+			return rsip, "done", nil
+		}
+		return rsip, "pending", nil
+	}
 }
