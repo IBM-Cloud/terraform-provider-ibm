@@ -182,20 +182,15 @@ func resourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.Resour
 	newMetaDataRegionPrimary := d.Get("metadata_region_primary").(string)
 	putSettingsOptions.SetMetadataRegionPrimary(newMetaDataRegionPrimary)
 	putSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
-	hasChange = hasChange || d.HasChange("metadata_region_primary") || d.HasChange("private_api_endpoint_only")
+	hasChange = hasChange || d.HasChange("metadata_region_primary") || d.HasChange("private_api_endpoint_only") || d.HasChange("metadata_region_primary") || d.HasChange("permitted_target_regions")
 
 	if d.HasChange("metadata_region_primary") {
 		d.SetId(newMetaDataRegionPrimary)
 	}
+	putSettingsOptions.DefaultTargets = resourceInterfaceToStringArray(d.Get("default_targets").([]interface{}))
 
-	if d.HasChange("default_targets") {
-		putSettingsOptions.DefaultTargets = resourceInterfaceToStringArray(d.Get("default_targets").([]interface{}))
-		hasChange = true
-	}
-	if d.HasChange("permitted_target_regions") {
-		putSettingsOptions.PermittedTargetRegions = resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{}))
-		hasChange = true
-	}
+	putSettingsOptions.PermittedTargetRegions = resourceInterfaceToStringArray(d.Get("permitted_target_regions").([]interface{}))
+
 	// Future planned support
 	// if d.HasChange("metadata_region_backup") {
 	// 	putSettingsOptions.SetMetadataRegionBackup(d.Get("metadata_region_backup").(string))
