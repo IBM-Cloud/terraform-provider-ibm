@@ -23,6 +23,16 @@ resource "ibm_atracker_target" "atracker_target" {
   name = "my-cos-target"
   target_type = "cloud_object_storage"
 }
+
+resource "ibm_atracker_target" "atracker_logdna_target" {
+  target_type = "logdna"
+  logdna_endpoint {
+    target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+    ingestion_key = "xxxxxxxxxxxxxx"
+  }
+  name = "my-logdna-target"
+  target_type = "logdna"
+}
 ```
 
 ## Argument reference
