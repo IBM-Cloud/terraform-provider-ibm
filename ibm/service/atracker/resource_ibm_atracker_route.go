@@ -220,10 +220,8 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 		}
 		rules := []map[string]interface{}{}
-		receiveGlobalEvents := false
 		for _, rulesItem := range route.Rules {
-			rulesItemMap, foundGlobal, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
-			receiveGlobalEvents = foundGlobal
+			rulesItemMap, _, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
 			rules = append(rules, rulesItemMap)
 		}
 		if err = d.Set("rules", rules); err != nil {
@@ -244,9 +242,7 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
 		}
-		if _, ok := d.GetOkExists("receive_global_events"); ok {
-			d.Set("receive_global_events", receiveGlobalEvents)
-		}
+		d.Set("receive_global_events", false)
 	}
 
 	return nil
