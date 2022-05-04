@@ -1,6 +1,6 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_database_pitr"
+page_title: "IBM : ibm_database_point_in_time_recovery"
 description: |-
   Get information about database_pitr
 subcategory: "Cloud Databases"
@@ -29,5 +29,5 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `deployment_id` - The unique identifier of the database_pitr.
-* `earliest_point_in_time_recovery_time` - (Optional, String) 
+* `earliest_point_in_time_recovery_time` - (String) - The earliest point in time recovery
 
