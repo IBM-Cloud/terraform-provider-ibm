@@ -244,7 +244,9 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
 		}
-		d.Set("receive_global_events", receiveGlobalEvents)
+		if _, ok := d.GetOkExists("receive_global_events"); ok {
+			d.Set("receive_global_events", receiveGlobalEvents)
+		}
 	}
 
 	return nil
