@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,6 +18,8 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
+
+const COS_CRN_PARTS = 8
 
 func ResourceIBMAtrackerTarget() *schema.Resource {
 	return &schema.Resource{
@@ -302,6 +305,23 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 	}
 	if target.CosEndpoint != nil {
 		cosEndpointMap, err := resourceIBMAtrackerTargetCosEndpointPrototypeToMap(target.CosEndpoint)
+		if cosInterface, ok := d.GetOk("cos_endpoint.0"); ok {
+			targetCrnExisting := cosInterface.(map[string]interface{})["target_crn"].(string)
+			targetCrnIncoming := cosEndpointMap["target_crn"].(*string)
+			if len(targetCrnExisting) > 0 && targetCrnIncoming != nil {
+				targetCrnExistingParts := strings.Split(targetCrnExisting, ":")
+				targetCrnIncomingParts := strings.Split(*targetCrnIncoming, ":")
+				isDifferent := false
+				for i := 0; i < COS_CRN_PARTS && len(targetCrnExistingParts) > COS_CRN_PARTS-1 && len(targetCrnIncomingParts) > COS_CRN_PARTS-1; i++ {
+					if targetCrnExistingParts[i] != targetCrnIncomingParts[i] {
+						isDifferent = true
+					}
+				}
+				if !isDifferent {
+					cosEndpointMap["target_crn"] = targetCrnExisting
+				}
+			}
+		}
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -318,11 +338,17 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("Error setting logdna_endpoint: %s", err))
 		}
 	}
-	if err = d.Set("region", target.Region); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
-	}
-	if err = d.Set("crn", target.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+
+	if target.CRN != nil {
+		if err = d.Set("crn", target.CRN); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+		crnParts := strings.Split(*target.CRN, ":")
+		if len(crnParts) > 4 {
+			if err = d.Set("region", crnParts[5]); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+			}
+		}
 	}
 
 	// TODO: will be removed
