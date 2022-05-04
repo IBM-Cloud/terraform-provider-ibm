@@ -439,3 +439,25 @@ resource "ibm_cis_alert" "test" {
 data "ibm_cis_alerts" "test1" {
   cis_id = data.ibm_cis.cis.id
 }
+# CIS Logpush Job
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = data.ibm_cis.cis.id
+    domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+    name            = "MylogpushjobUpdate"
+    enabled         = true
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    logdna =<<LOG
+        {
+                        "hostname": "cistest-load.com",
+            "ingress_key": "e2f7xxxxx73a251caxxxxxxxxxxxx",
+            "region": "in-che"
+        }
+        LOG
+}
+# CIS Logpush Job Data source
+data "ibm_cis_logpush_jobs" "test" {
+    cis_id          = data.ibm_cis.cis.id
+    domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+}

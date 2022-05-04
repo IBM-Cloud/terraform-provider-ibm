@@ -14,10 +14,10 @@ Create, update, or delete a destination by using IBM Cloud™ Event Notification
 
 ```terraform
 resource "ibm_en_destination" "en_destination" {
-  instance_guid = "instance_guid"
-  name        = "name"
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  name        = "Webhook Destination"
   type        = "webhook"
-  description = "descriptions"
+  description = "This is en webhook destination"
   config {
     params {
       verb = "POST"

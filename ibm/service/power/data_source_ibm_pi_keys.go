@@ -17,13 +17,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIKeys    = "keys"
-	PIKeyName = "name"
-	PIKey     = "ssh_key"
-	PIKeyDate = "creation_date"
-)
-
 func DataSourceIBMPIKeys() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIKeysRead,

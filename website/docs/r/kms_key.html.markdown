@@ -13,6 +13,11 @@ This resource can be used for management of keys in both Key Protect and Hyper P
 After creating an  Hyper Protect Crypto Service instance you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see [Initialize Hyper Protect Crypto](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm) only for HPCS instance.
 
 
+~> **Deprecated:**
+
+The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been removed in favor of a dedicated ibm_kms_key_policies resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy)
+
+
 ## Example usage to provision Key Protect service and key management
 
 ```terraform
@@ -69,60 +74,6 @@ resource "ibm_kms_key" "key" {
   force_delete = true
 }
 ```
-## Example usage to provision KMS key with key policies
-
-Set policies for a key, as an automatic rotation policy or a dual authorization policy to protect against the accidental deletion of keys.
-
-~> **Deprecated:**
-
-The ability to use the ibm_kms_key resource to create or update key policies in Terraform has been deprecated and it is scheduled to be removed soon in favor of a dedicated ibm_kms_key_policies resource. For more information, check out [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key_policies#example-usage-to-create-a-[…]and-associate-a-key-policy)
-
-Until the deprecation is released:
-- For new key policies, start using ibm_kms_key_policies
-- For existing policies already created through ibm_kms_key resource, add lifecycle ignore block to ibm_kms_key resource to ignore any state change to the policies (see example below)
-
-```terraform
-resource "ibm_resource_instance" "kp_instance" {
-  name     = "test_kp"
-  service  = "kms"
-  plan     = "tiered-pricing"
-  location = "us-south"
-}
-resource "ibm_kms_key" "key" {
-  instance_id = ibm_resource_instance.kp_instance.guid
-  key_name       = "key"
-  standard_key   = false
-  expiration_date = "2020-12-05T15:43:46Z"
-  policies {
-    rotation {
-      interval_month = 3
-    }
-    dual_auth_delete {
-      enabled = false
-    }
-  }
-}
-```
-
-## Lifecycle Ignore Block Example
-
-```terraform
-resource "ibm_kms_key" "kms_tf_test_key1" {
- instance_id = ibm_resource_instance.kms_tf_test1.guid
- key_name   = "kms_tf_test_key1"
- standard_key = false
- force_delete = true
- policies {
-     rotation {
-         interval_month = 8
-     }
- }
-   lifecycle {
-    ignore_changes = [
-      policies,
-    ]
-  }
-  ```
 
 ## Example usage to provision KMS and import a key
 

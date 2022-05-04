@@ -126,91 +126,6 @@ func TestAccIBMKMSResource_InvalidExpDate(t *testing.T) {
 	})
 }
 
-func TestAccIBMKMSKeyPolicy_basic(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	rotation_interval := 3
-	dual_auth_delete := false
-	rotation_interval_new := 5
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval, dual_auth_delete),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "3"),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
-				),
-			},
-			{
-				Config: testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval_new, dual_auth_delete),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "5"),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMKMSKeyPolicy_rotation(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	rotation_interval := 3
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMKmsKeyPolicyRotation(instanceName, keyName, rotation_interval),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "3"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMKMSKeyPolicy_dualAuth(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	dual_auth_delete := false
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMKmsKeyPolicyDualAuth(instanceName, keyName, dual_auth_delete),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMKMSKeyPolicy_invalid_interval(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	rotation_interval := 13
-	dual_auth_delete := false
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval, dual_auth_delete),
-				ExpectError: regexp.MustCompile("config is invalid:"),
-			},
-		},
-	})
-}
-
 func testAccCheckIBMKmsResourceStandardConfig(instanceName, KeyName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
@@ -225,7 +140,6 @@ func testAccCheckIBMKmsResourceStandardConfig(instanceName, KeyName string) stri
 		standard_key =  true
 		force_delete = true
 	}
-	
 `, instanceName, KeyName)
 }
 
@@ -252,7 +166,7 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 	return fmt.Sprintf(`
 	provider "ibm" {
 		region = "us-south"
-	}	
+	}
 	resource "ibm_resource_instance" "kms_instance1" {
 		name              = "%s"
 		service           = "kms"
@@ -272,13 +186,11 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 		plan     = "standard"
 		location = "global"
 	}
-	
 	resource "ibm_iam_authorization_policy" "policy" {
 		source_service_name = "cloud-object-storage"
 		target_service_name = "kms"
 		roles               = ["Reader"]
 	}
-	
 	resource "ibm_cos_bucket" "smart-us-south" {
 		depends_on           = [ibm_iam_authorization_policy.policy]
 		bucket_name          = "%s"
@@ -287,7 +199,6 @@ func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, KeyName, cosIn
 		storage_class        = "smart"
 		key_protect          = ibm_kms_key.test.id
 	}
-	
 `, instanceName, KeyName, cosInstanceName, bucketName)
 }
 
@@ -318,7 +229,6 @@ func testAccCheckIBMKmsCreateStandardKeyConfig(instanceName, KeyName, expiration
 		force_delete = true
 		expiration_date = "%s"
 	}
-	
 `, instanceName, KeyName, expirationDate)
 }
 
@@ -337,7 +247,6 @@ func testAccCheckIBMKmsCreateRootKeyConfig(instanceName, KeyName, expirationDate
 		force_delete = true
 		expiration_date = "%s"
 	}
-	
 `, instanceName, KeyName, expirationDate)
 }
 
@@ -349,7 +258,7 @@ func testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, KeyName string, rot
 		plan     = "tiered-pricing"
 		location = "us-south"
 	  }
-	  
+
 	  resource "ibm_kms_key" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_name       = "%s"
@@ -374,7 +283,7 @@ func testAccCheckIBMKmsKeyPolicyRotation(instanceName, KeyName string, rotation_
 		plan     = "tiered-pricing"
 		location = "us-south"
 	  }
-	  
+
 	  resource "ibm_kms_key" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_name       = "%s"
@@ -396,7 +305,7 @@ func testAccCheckIBMKmsKeyPolicyDualAuth(instanceName, KeyName string, dual_auth
 		plan     = "tiered-pricing"
 		location = "us-south"
 	  }
-	  
+
 	  resource "ibm_kms_key" "test" {
 		instance_id = ibm_resource_instance.kp_instance.guid
 		key_name       = "%s"
