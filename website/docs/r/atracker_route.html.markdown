@@ -19,6 +19,10 @@ resource "ibm_atracker_route" "atracker_route" {
     target_ids = [ ibm_atracker_target.atracker_target.id ]
     locations = [ "us-south", "global" ]
   }
+  lifecycle {
+    # Recommended to ensure that if a target ID is removed here and destroyed in a plan, this is updated first
+    create_before_destroy = true
+  }
 }
 ```
 
