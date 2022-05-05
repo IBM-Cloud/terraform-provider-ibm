@@ -44,7 +44,12 @@ func DataSourceIBMTektonPipelineDefinition() *schema.Resource {
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The branch of the repo.",
+							Description: "A branch of the repo.",
+						},
+						"tag": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A tag of the repo.",
 						},
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
@@ -108,6 +113,9 @@ func DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *contin
 	}
 	if model.Branch != nil {
 		modelMap["branch"] = *model.Branch
+	}
+	if model.Tag != nil {
+		modelMap["tag"] = *model.Tag
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path

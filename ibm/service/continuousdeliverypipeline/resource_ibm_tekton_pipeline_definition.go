@@ -48,8 +48,13 @@ func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 						},
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The branch of the repo.",
+							Optional:    true,
+							Description: "A branch of the repo.",
+						},
+						"tag": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A tag of the repo.",
 						},
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
@@ -242,6 +247,7 @@ func ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(modelMap map[st
 	model := &continuousdeliverypipelinev2.DefinitionScmSource{}
 	model.URL = core.StringPtr(modelMap["url"].(string))
 	model.Branch = core.StringPtr(modelMap["branch"].(string))
+	model.Tag = core.StringPtr(modelMap["tag"].(string))
 	model.Path = core.StringPtr(modelMap["path"].(string))
 	return model, nil
 }
@@ -250,6 +256,7 @@ func ResourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *continuo
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	modelMap["branch"] = model.Branch
+	modelMap["tag"] = model.Tag
 	modelMap["path"] = model.Path
 	return modelMap, nil
 }

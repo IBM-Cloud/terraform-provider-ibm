@@ -134,7 +134,12 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 									"branch": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Needed only for git trigger type. Branch name of the repo.",
+										Description: "Needed only for git trigger type. Branch name of the repo, Branch field doesn't coexist with pattern field",
+									},
+									"pattern": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Needed only for git trigger type. Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax",
 									},
 									"blind_connection": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -559,6 +564,9 @@ func ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string]i
 	if modelMap["branch"] != nil {
 		model.Branch = core.StringPtr(modelMap["branch"].(string))
 	}
+	if modelMap["pattern"] != nil {
+		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
+	}
 	return model, nil
 }
 
@@ -703,6 +711,9 @@ func ResourceIBMTektonPipelineTriggerTriggerScmSourceToMap(model *continuousdeli
 	}
 	if model.Branch != nil {
 		modelMap["branch"] = model.Branch
+	}
+	if model.Pattern != nil {
+		modelMap["pattern"] = model.Pattern
 	}
 	if model.BlindConnection != nil {
 		modelMap["blind_connection"] = model.BlindConnection

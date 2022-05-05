@@ -157,7 +157,12 @@ func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Needed only for git trigger type. Branch name of the repo.",
+							Description: "Needed only for git trigger type. Branch name of the repo. Branch field doesn't coexist with pattern field",
+						},
+						"pattern": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Needed only for git trigger type. Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -435,6 +440,9 @@ func DataSourceIBMTektonPipelineTriggerTriggerScmSourceToMap(model *continuousde
 	}
 	if model.Branch != nil {
 		modelMap["branch"] = *model.Branch
+	}
+	if model.Pattern != nil {
+		modelMap["pattern"] = *model.Pattern
 	}
 	if model.BlindConnection != nil {
 		modelMap["blind_connection"] = *model.BlindConnection
