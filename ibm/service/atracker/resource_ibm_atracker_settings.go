@@ -181,7 +181,7 @@ func resourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.Resour
 	newMetaDataRegionPrimary := d.Get("metadata_region_primary").(string)
 	putSettingsOptions.SetMetadataRegionPrimary(newMetaDataRegionPrimary)
 	putSettingsOptions.SetPrivateAPIEndpointOnly(d.Get("private_api_endpoint_only").(bool))
-	hasChange = hasChange || d.HasChange("metadata_region_primary") || d.HasChange("private_api_endpoint_only") || d.HasChange("metadata_region_primary") || d.HasChange("permitted_target_regions")
+	hasChange = hasChange || d.HasChange("metadata_region_primary") || d.HasChange("private_api_endpoint_only") || d.HasChange("metadata_region_primary") || d.HasChange("permitted_target_regions") || d.HasChange("default_targets")
 
 	if d.HasChange("metadata_region_primary") {
 		d.SetId(newMetaDataRegionPrimary)
@@ -212,7 +212,11 @@ func resourceIBMAtrackerSettingsUpdate(context context.Context, d *schema.Resour
 func resourceInterfaceToStringArray(resources []interface{}) (result []string) {
 	result = make([]string, 0)
 	for _, item := range resources {
-		result = append(result, item.(string))
+		if item != nil {
+			result = append(result, item.(string))
+		} else {
+			result = append(result, "")
+		}
 	}
 	return result
 }
