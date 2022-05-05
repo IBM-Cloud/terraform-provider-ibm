@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,7 +43,7 @@ func ResourceIBMToolchainToolPipeline() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Tool integration parameters.",
+				Description: "Parameters to be used to create the integration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -153,6 +154,10 @@ func ResourceIBMToolchainToolPipelineCreate(context context.Context, d *schema.R
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
+
+	// Delay to allow pipeline to be created before creating tekton resources
+	sleep := 3 * time.Second
+	time.Sleep(sleep)
 
 	return ResourceIBMToolchainToolPipelineRead(context, d, meta)
 }

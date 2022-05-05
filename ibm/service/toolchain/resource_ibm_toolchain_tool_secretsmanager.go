@@ -42,7 +42,7 @@ func ResourceIBMToolchainToolSecretsmanager() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Tool integration parameters.",
+				Description: "Parameters to be used to create the integration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{

@@ -61,7 +61,7 @@ resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | toolchain_id | ID of the toolchain to bind integration to. | `string` | true |
 | name | Name of tool integration. | `string` | false |
-| parameters | Tool integration parameters. | `` | false |
+| parameters | Parameters to be used to create the integration. | `` | false |
 
 ## Outputs
 

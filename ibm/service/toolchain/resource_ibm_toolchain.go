@@ -43,12 +43,6 @@ func ResourceIBMToolchain() *schema.Resource {
 				Optional:    true,
 				Description: "Describes the toolchain.",
 			},
-			"template": &schema.Schema{
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Identifies the template used to create the toolchain.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
 			"account_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -123,9 +117,6 @@ func ResourceIBMToolchainCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("description"); ok {
 		postToolchainOptions.SetDescription(d.Get("description").(string))
 	}
-	if _, ok := d.GetOk("template"); ok {
-		// TODO: Add code to handle map container: Template
-	}
 
 	postToolchainResponse, response, err := toolchainClient.PostToolchainWithContext(context, postToolchainOptions)
 	if err != nil {
@@ -158,7 +149,6 @@ func ResourceIBMToolchainRead(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("GetToolchainByIDWithContext failed %s\n%s", err, response))
 	}
 
-	// TODO: handle argument of type map[string]interface{}
 	if err = d.Set("name", getToolchainByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
@@ -218,10 +208,6 @@ func ResourceIBMToolchainUpdate(context context.Context, d *schema.ResourceData,
 	}
 	if d.HasChange("description") {
 		patchToolchainOptions.SetDescription(d.Get("description").(string))
-		hasChange = true
-	}
-	if d.HasChange("template") {
-		// TODO: handle Template of type TypeMap -- not primitive, not model
 		hasChange = true
 	}
 

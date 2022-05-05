@@ -102,7 +102,6 @@ func testAccCheckIBMToolchainConfig(name string, resourceGroupID string, descrip
 			name = "%s"
 			resource_group_id = "%s"
 			description = "%s"
-			template = "FIXME"
 		}
 	`, name, resourceGroupID, description)
 }
