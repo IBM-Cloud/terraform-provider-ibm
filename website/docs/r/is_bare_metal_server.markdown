@@ -60,23 +60,6 @@ resource "ibm_is_bare_metal_server" "example" {
 ```
 ### Reserved ip example
 ```terraform
-
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
-resource "ibm_is_subnet" "example" {
-  name            = "example-subnet"
-  vpc             = ibm_is_vpc.example.id
-  zone            = "us-south-3"
-  ipv4_cidr_block = "10.240.129.0/24"
-}
-
-resource "ibm_is_ssh_key" "example" {
-  name       = "example-ssh"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
-}
-
 resource "ibm_is_bare_metal_server" "bms" {
   profile = "mx2d-metal-32x192"
   name    = "example-bms"

@@ -882,7 +882,7 @@ type GroupResource struct {
 	CanScaleDown bool
 }
 
-func getDefaultScalingGroups(_service string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
+func getDefaultScalingGroups(_service string, _plan string, meta interface{}) (groups []clouddatabasesv5.Group, err error) {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return groups, fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
@@ -899,6 +899,10 @@ func getDefaultScalingGroups(_service string, meta interface{}) (groups []cloudd
 
 	if service == "cassandra" {
 		service = "datastax_enterprise_full"
+	}
+
+	if service == "mongodb" && _plan == "enterprise" {
+		service = "mongodbee"
 	}
 
 	getDefaultScalingGroupsOptions := cloudDatabasesClient.NewGetDefaultScalingGroupsOptions(service)
@@ -933,8 +937,8 @@ func getDatabaseServiceDefaults(service string, meta interface{}) (*icdv4.Group,
 	return &groupDefaults.Groups[0], nil
 }
 
-func getInitialNodeCount(service string, meta interface{}) (int, error) {
-	groups, err := getDefaultScalingGroups(service, meta)
+func getInitialNodeCount(service string, plan string, meta interface{}) (int, error) {
+	groups, err := getDefaultScalingGroups(service, plan, meta)
 
 	if err != nil {
 		return 0, err
@@ -1196,7 +1200,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	initialNodeCount, err := getInitialNodeCount(serviceName, meta)
+	initialNodeCount, err := getInitialNodeCount(serviceName, plan, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1311,44 +1315,59 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if group, ok := d.GetOk("group"); ok {
 		groups := expandGroups(group.(*schema.Set).List())
+		groupsResponse, err := getGroups(*instance.ID, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		currentGroups := normalizeGroups(groupsResponse)
+
 		for _, g := range groups {
 			groupScaling := &clouddatabasesv5.GroupScaling{}
-			nodeCount := initialNodeCount
+			var currentGroup *Group
+			var nodeCount int
 
-			if (g.ID == "member") &&
-				(g.Members != nil) &&
-				(nodeCount == g.Members.Allocation) {
+			for _, cg := range currentGroups {
+				if cg.ID == g.ID {
+					currentGroup = &cg
+					nodeCount = currentGroup.Members.Allocation
+				}
+			}
+
+			if g.ID == "member" && (g.Members == nil || g.Members.Allocation == nodeCount) {
 				// No Horizontal Scaling needed
 				continue
 			}
-			if g.Members != nil {
+
+			if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
 				nodeCount = g.Members.Allocation
 			}
-			if g.Memory != nil {
+			if g.Memory != nil && g.Memory.Allocation != currentGroup.Memory.Allocation {
 				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(g.Memory.Allocation * nodeCount))}
 			}
-			if g.Disk != nil {
+			if g.Disk != nil && g.Disk.Allocation != currentGroup.Disk.Allocation {
 				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
 			}
-			if g.CPU != nil {
+			if g.CPU != nil && g.CPU.Allocation != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
 
-			setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
-				ID:      instance.ID,
-				GroupID: &g.ID,
-				Group:   groupScaling,
-			}
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil {
+				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
+					ID:      instance.ID,
+					GroupID: &g.ID,
+					Group:   groupScaling,
+				}
 
-			setDeploymentScalingGroupResponse, _, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
+				setDeploymentScalingGroupResponse, _, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
 
-			taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
+				taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
 
-			_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+				_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
 
-			if err != nil {
-				return diag.FromErr(err)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
@@ -2666,6 +2685,7 @@ func expandGroups(_groups []interface{}) []*Group {
 func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
+	plan := diff.Get("plan").(string)
 
 	if group, ok := diff.GetOk("group"); ok {
 		var currentGroups []Group
@@ -2675,7 +2695,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			groupList, err = getDefaultScalingGroups(service, meta)
+			groupList, err = getDefaultScalingGroups(service, plan, meta)
 		}
 
 		if err != nil {

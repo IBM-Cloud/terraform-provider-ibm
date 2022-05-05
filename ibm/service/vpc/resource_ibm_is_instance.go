@@ -2629,7 +2629,7 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("primary_network_interface.0.primary_ip.0.name") || d.HasChange("primary_network_interface.0.primary_ip.0.auto_delete") {
-		subnetId := d.Get(isBareMetalServerNicSubnet).(string)
+		subnetId := d.Get("primary_network_interface.0.subnet").(string)
 		ripId := d.Get("primary_network_interface.0.primary_ip.0.reserved_ip").(string)
 		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
 			SubnetID: &subnetId,
@@ -2689,12 +2689,13 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		for i := range nics {
 			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
 			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+			subnetKey := fmt.Sprintf("network_interfaces.%d.subnet", i)
 			ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
 			primaryipname := fmt.Sprintf("network_interfaces.%d.primary_ip.0.name", i)
 			primaryipauto := fmt.Sprintf("network_interfaces.%d.primary_ip.0.auto_delete", i)
 			primaryiprip := fmt.Sprintf("network_interfaces.%d.primary_ip.0.reserved_ip", i)
 			if d.HasChange(primaryipname) || d.HasChange(primaryipauto) {
-				subnetId := d.Get(isBareMetalServerNicSubnet).(string)
+				subnetId := d.Get(subnetKey).(string)
 				ripId := d.Get(primaryiprip).(string)
 				updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
 					SubnetID: &subnetId,
