@@ -5,16 +5,20 @@ package continuousdeliverypipeline
 
 import (
 	"context"
+	"crypto/hmac"
+	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/sha3"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
 )
 
@@ -204,6 +208,18 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Secret value, not needed if secret type is \"internalValidation\".",
+										DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+											segs := []string{d.Get("pipeline_id").(string), d.Get("trigger.0.id").(string)}
+											secret := strings.Join(segs, ".")
+											mac := hmac.New(sha3.New512, []byte(secret))
+											mac.Write([]byte(new))
+											secureHmac := hex.EncodeToString(mac.Sum(nil))
+											hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
+											if hasEnvChange {
+												return false
+											}
+											return true
+										},
 									},
 									"source": &schema.Schema{
 										Type:        schema.TypeString,
