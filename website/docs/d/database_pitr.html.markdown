@@ -6,7 +6,7 @@ description: |-
 subcategory: "Cloud Databases"
 ---
 
-# ibm_database_pitr
+# ibm_database_point_in_time_recovery
 
 Provides a read-only data source for database_pitr. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
