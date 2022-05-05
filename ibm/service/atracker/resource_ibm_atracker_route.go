@@ -150,15 +150,10 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
-	atrackerClientv1, errV1 := meta.(conns.ClientSession).AtrackerV1()
+	atrackerClientv1, atrackerClient, err := getAtrackerClients(meta)
 	// We need both route methods to ensure backwards compatibility and the ability to migrate
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	if errV1 != nil {
-		return diag.FromErr(errV1)
 	}
 
 	getRouteV1Options := &atrackerv1.GetRouteOptions{}

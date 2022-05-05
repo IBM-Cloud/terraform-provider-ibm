@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -239,7 +238,7 @@ func ResourceIBMAtrackerTargetValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -278,7 +277,7 @@ func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.Resource
 }
 
 func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -344,9 +343,9 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
 		if _, exists := d.GetOk("region"); exists {
-			crnParts := strings.Split(*target.CRN, ":")
-			if len(crnParts) > 4 {
-				if err = d.Set("region", crnParts[5]); err != nil {
+			if target.Region != nil && len(*target.Region) > 0 {
+				d.Set("region", *target.Region)
+				if err = d.Set("region", *target.Region); err != nil {
 					return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 				}
 			}
@@ -388,7 +387,7 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -436,7 +435,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 }
 
 func resourceIBMAtrackerTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
@@ -208,7 +207,7 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 }
 
 func DataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -126,11 +126,10 @@ func resourceIBMAtrackerSettingsCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMAtrackerSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	getSettingsOptions := &atrackerv2.GetSettingsOptions{}
 
 	settings, response, err := atrackerClient.GetSettingsWithContext(context, getSettingsOptions)

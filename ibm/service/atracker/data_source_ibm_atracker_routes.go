@@ -12,13 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/platform-services-go-sdk/atrackerv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func DataSourceIBMAtrackerRoutes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMAtrackerRoutesRead,
+		ReadContext: dataSourceIBMAtrackerRoutesRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -117,15 +117,21 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 	}
 }
 
-func DataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	atrackerClientv1, atrackerClientv2, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	listRoutesOptions := &atrackerv2.ListRoutesOptions{}
 
-	routeList, response, err := atrackerClient.ListRoutesWithContext(context, listRoutesOptions)
+	routeList, response, err := atrackerClientv2.ListRoutesWithContext(context, listRoutesOptions)
+	if err != nil {
+		log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
+	}
+	listRoutesOptionsV1 := &atrackerv1.ListRoutesOptions{}
+	routeListV1, response, err := atrackerClientv1.ListRoutesWithContext(context, listRoutesOptionsV1)
 	if err != nil {
 		log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
@@ -133,6 +139,7 @@ func DataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
 	var matchRoutes []atrackerv2.Route
+	var matchRoutesV1 []atrackerv1.Route
 	var name string
 	var suppliedFilter bool
 
@@ -144,11 +151,16 @@ func DataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 				matchRoutes = append(matchRoutes, data)
 			}
 		}
+		for _, data := range routeListV1.Routes {
+			if *data.Name == name {
+				matchRoutesV1 = append(matchRoutesV1, data)
+			}
+		}
 	} else {
 		matchRoutes = routeList.Routes
 	}
 	routeList.Routes = matchRoutes
-
+	routeListV1.Routes = matchRoutesV1
 	if suppliedFilter {
 		if len(routeList.Routes) == 0 {
 			return diag.FromErr(fmt.Errorf("no Routes found with name %s", name))
@@ -161,7 +173,16 @@ func DataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 	routes := []map[string]interface{}{}
 	if routeList.Routes != nil {
 		for _, modelItem := range routeList.Routes {
-			modelMap, err := DataSourceIBMAtrackerRoutesRouteToMap(&modelItem)
+			modelMap, err := dataSourceIBMAtrackerRoutesRouteToMap(&modelItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			routes = append(routes, modelMap)
+		}
+	}
+	if routeListV1.Routes != nil {
+		for _, modelItem := range routeListV1.Routes {
+			modelMap := dataSourceRouteListRoutesToMapV1(modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -180,7 +201,7 @@ func DataSourceIBMAtrackerRoutesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]interface{}, error) {
+func dataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -197,7 +218,7 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 	if model.Rules != nil {
 		rules := []map[string]interface{}{}
 		for _, rulesItem := range model.Rules {
-			rulesItemMap, err := DataSourceIBMAtrackerRoutesRuleToMap(&rulesItem)
+			rulesItemMap, err := dataSourceIBMAtrackerRoutesRuleToMap(&rulesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -219,7 +240,7 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 	return modelMap, nil
 }
 
-func DataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
+func dataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TargetIds != nil {
 		modelMap["target_ids"] = model.TargetIds
@@ -228,4 +249,49 @@ func DataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]in
 		modelMap["locations"] = model.Locations
 	}
 	return modelMap, nil
+}
+
+func dataSourceRouteListRoutesToMapV1(routesItem atrackerv1.Route) (routesMap map[string]interface{}) {
+	routesMap = map[string]interface{}{}
+
+	if routesItem.ID != nil {
+		routesMap["id"] = routesItem.ID
+	}
+	if routesItem.Name != nil {
+		routesMap["name"] = routesItem.Name
+	}
+	if routesItem.CRN != nil {
+		routesMap["crn"] = routesItem.CRN
+	}
+	if routesItem.Version != nil {
+		routesMap["version"] = routesItem.Version
+	}
+	if routesItem.ReceiveGlobalEvents != nil {
+		routesMap["receive_global_events"] = routesItem.ReceiveGlobalEvents
+	}
+	if routesItem.Rules != nil {
+		rulesList := []map[string]interface{}{}
+		for _, rulesItem := range routesItem.Rules {
+			rulesList = append(rulesList, dataSourceRouteListRoutesRulesToMapV1(rulesItem))
+		}
+		routesMap["rules"] = rulesList
+	}
+	if routesItem.Created != nil {
+		routesMap["created"] = routesItem.Created.String()
+	}
+	if routesItem.Updated != nil {
+		routesMap["updated"] = routesItem.Updated.String()
+	}
+
+	return routesMap
+}
+
+func dataSourceRouteListRoutesRulesToMapV1(rulesItem atrackerv1.Rule) (rulesMap map[string]interface{}) {
+	rulesMap = map[string]interface{}{}
+
+	if rulesItem.TargetIds != nil {
+		rulesMap["target_ids"] = rulesItem.TargetIds
+	}
+
+	return rulesMap
 }
