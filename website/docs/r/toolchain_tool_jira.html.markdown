@@ -54,7 +54,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the toolchain_tool_jira.
 * `crn` - (Required, String) 
-* `get_integration_by_id_response_id` - (Required, String) 
+* `instance_id` - (Required, String) 
 * `href` - (Required, String) 
 * `referent` - (Required, List) 
 Nested scheme for **referent**:
