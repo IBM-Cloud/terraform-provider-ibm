@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
@@ -121,7 +120,7 @@ func ResourceIBMAtrackerRouteValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,7 +243,7 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 }
 
 func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	atrackerClientV1, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -265,7 +264,6 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 	_, response, err := atrackerClient.ReplaceRouteWithContext(context, replaceRouteOptions)
 	if err != nil {
 		// TODO: to remove once version 1 is fully deprecated
-		atrackerClientV1, err := meta.(conns.ClientSession).AtrackerV1()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -294,7 +292,7 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV2()
+	atrackerClientV1, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -307,7 +305,6 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 	if err != nil {
 		// TODO: to remove once version 1 is fully deprecated
 		// Try v1 then v2
-		atrackerClientV1, err := meta.(conns.ClientSession).AtrackerV1()
 		if err != nil {
 			return diag.FromErr(err)
 		}
