@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your resource.
 * `rules` - (Required, List) Routing rules that will be evaluated in their order of the array.
 Nested scheme for **rules**:
 	* `target_ids` - (Required, List) The target ID List. All the events will be send to all targets listed in the rule. You can include targets from other regions.
-	* `locations` - (Required, List) Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.
+	* `locations` - (Optional, List) Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.
 
 ## Attribute reference
 

@@ -1547,7 +1547,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		atrackerClientV2URL = atrackerv2.DefaultServiceURL
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		atrackerClientV2URL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, atrackerClientV2URL)
+		atrackerClientV2URL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientV2URL)
 	}
 	atrackerClientV2Options := &atrackerv2.AtrackerV2Options{
 		Authenticator: authenticator,
