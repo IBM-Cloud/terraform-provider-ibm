@@ -342,12 +342,13 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		if err = d.Set("crn", target.CRN); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 		}
-		if _, exists := d.GetOk("region"); exists {
-			if target.Region != nil && len(*target.Region) > 0 {
-				d.Set("region", *target.Region)
-				if err = d.Set("region", *target.Region); err != nil {
-					return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
-				}
+	}
+
+	if _, exists := d.GetOk("region"); exists {
+		if target.Region != nil && len(*target.Region) > 0 {
+			d.Set("region", *target.Region)
+			if err = d.Set("region", *target.Region); err != nil {
+				return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 			}
 		}
 	}
