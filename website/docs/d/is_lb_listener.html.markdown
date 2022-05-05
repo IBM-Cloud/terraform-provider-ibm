@@ -77,6 +77,6 @@ Nested scheme for `policies`:
 
 - `port_min` - (Integer) The inclusive lower bound of the range of ports used by this listener.Only load balancers in the `network` family support more than one port per listener.
 
-- `protocol` - (String) The listener protocol. Load balancers in the `network` family support `tcp`. Load balancers in the `application` family support `tcp`, `http`, and `https`. Each listener in the load balancer must have a unique `port` and `protocol` combination.
+- `protocol` - (String) The listener protocol. Load balancers in the `network` family support `tcp` and `udp`. Load balancers in the `application` family support `tcp`, `http`, and `https`. Each listener in the load balancer must have a unique `port` and `protocol` combination.
 
 - `provisioning_status` - (String) The provisioning status of this listener.

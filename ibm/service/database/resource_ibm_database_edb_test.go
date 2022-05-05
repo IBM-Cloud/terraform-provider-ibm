@@ -34,7 +34,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "61440"),
@@ -55,7 +55,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "6144"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
@@ -78,7 +78,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-enterprisedb"),
 					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", "us-south"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
 					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "3072"),
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "92160"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
@@ -109,7 +109,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 		name                         = "%[2]s"
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 61440
@@ -128,7 +128,7 @@ func testAccCheckIBMDatabaseInstanceEDBBasic(databaseResourceGroup string, name 
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup string, name string) string {
@@ -142,7 +142,7 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 		name                         = "%[2]s"
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 6144
 		members_disk_allocation_mb   = 92160
@@ -171,7 +171,7 @@ func testAccCheckIBMDatabaseInstanceEDBFullyspecified(databaseResourceGroup stri
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, name string) string {
@@ -185,7 +185,7 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 		name                         = "%[2]s"
 		service                      = "databases-for-enterprisedb"
 		plan                         = "standard"
-		location                     = "us-south"
+		location                     = "%[3]s"
 		adminpassword                = "password12"
 		members_memory_allocation_mb = 3072
 		members_disk_allocation_mb   = 92160
@@ -197,5 +197,5 @@ func testAccCheckIBMDatabaseInstanceEDBReduced(databaseResourceGroup string, nam
 			delete = "15m"
 		}
 	  }
-				`, databaseResourceGroup, name)
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

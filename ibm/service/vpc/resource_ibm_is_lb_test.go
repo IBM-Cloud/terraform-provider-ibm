@@ -17,6 +17,69 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+func testAccCheckIBMISLBUdpConfig(vpcname, subnetname, zone, cidr, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name 	= "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		profile = "network-fixed"
+		type 	= "public"
+}`, vpcname, subnetname, zone, cidr, name)
+
+}
+func TestAccIBMISLB_basic_udp(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBUdpConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "hostname"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "udp_supported", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "udp_supported"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBUdpConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "udp_supported", "true"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "udp_supported"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISLB_basic(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
@@ -46,6 +109,50 @@ func TestAccIBMISLB_basic(t *testing.T) {
 					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
 					resource.TestCheckResourceAttr(
 						"ibm_is_lb.testacc_LB", "name", name1),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISLB_basic_rip(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "hostname"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "private_ip.0.address"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "private_ip.0.href"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "private_ip.0.name"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "private_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "private_ip.0.resource_type"),
 				),
 			},
 		},

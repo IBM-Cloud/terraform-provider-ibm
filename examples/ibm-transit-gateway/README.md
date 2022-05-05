@@ -54,6 +54,18 @@ resource "ibm_tg_connection" "test_ibm_tg_connection"{
 }  
 ```
 
+Create a transit gateway connection prefix filter:
+```hcl
+resource "ibm_tg_connection_prefix_filter" "test_tg_prefix_filter" {
+    gateway = ibm_tg_gateway.new_tg_gw.id
+    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+    action = "permit"
+    prefix = "192.168.100.0/24"
+    le = 0
+    ge = 32
+}
+```
+
 Create a transit gateway route report:
 
 ```hcl
@@ -88,6 +100,21 @@ Get the details of a Transit Gateway Location.
 data "ibm_tg_location" "tg_location" {
 	name = var.location
 } 
+```
+List all prefix filters for a Transit Gateway Connection
+````
+data "ibm_tg_connection_prefix_filters" "tg_prefix_filters" {
+    gateway = ibm_tg_gateway.new_tg_gw.id
+    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+}
+```
+Retrieve specified Transit Gateway Connection Prefix Filter
+```
+data "ibm_tg_connection_prefix_filter" "tg_prefix_filter" {
+    gateway = ibm_tg_gateway.new_tg_gw.id
+    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+	filter_id = ibm_tg_connection_prefix_filter.test_tg_prefix_filter.filter_id
+}
 ```
 List all route reports for a Transit Gateway
 ```

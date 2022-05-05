@@ -45,6 +45,7 @@ In addition to the argument reference list, you can access the following attribu
   - `auto_delete` -  (String) If reserved IP shall be deleted automatically.
   - `created_at` -  (String) The date and time that the reserved IP was created.
   - `href` -  (String) The URL for this reserved IP.
+  - `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
   - `reserved_ip` -  (String) The unique identifier for this reserved IP.
   - `name` -  (String) The user defined or system provided name for this reserved IP.
   - `owner` -  (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
