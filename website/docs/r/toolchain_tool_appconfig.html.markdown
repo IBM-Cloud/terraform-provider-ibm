@@ -40,7 +40,6 @@ Nested scheme for **parameters**:
 	  * Constraints: The value must match regular expression `/\\S/`.
 	* `instance_name` - (Required, String) The name of your App Configuration instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: App Configuration-01.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `integration_status` - (Optional, String)
 	* `name` - (Required, String) Type a name for this tool integration, for example: my-appconfig. This name displays on your toolchain.
 	* `region` - (Required, String) Region.
 	* `resource_group` - (Required, String) Resource group.

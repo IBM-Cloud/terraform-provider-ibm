@@ -34,7 +34,6 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **parameters**:
 	* `instance_name` - (Required, String) The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `integration_status` - (Optional, String)
 	* `name` - (Required, String) Enter a name for this tool integration. This name is displayed on your toolchain.
 	* `region` - (Required, String) Region.
 	* `resource_group` - (Required, String) Resource group.

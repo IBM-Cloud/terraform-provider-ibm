@@ -39,7 +39,6 @@ Review the argument reference that you can specify for your resource.
 * `parameters` - (Optional, List) Parameters to be used to create the integration.
 Nested scheme for **parameters**:
 	* `dashboard_url` - (Optional, String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
-	* `docker_config_json` - (Optional, String)
 	* `mirror_url` - (Optional, String) Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
 	* `name` - (Required, String) Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.
 	* `release_url` - (Optional, String) Type the URL for your Artifactory release repository.

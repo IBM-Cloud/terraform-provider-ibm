@@ -65,10 +65,6 @@ func ResourceIBMToolchainToolSecretsmanager() *schema.Resource {
 							Required:    true,
 							Description: "The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.",
 						},
-						"integration_status": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 					},
 				},
 			},

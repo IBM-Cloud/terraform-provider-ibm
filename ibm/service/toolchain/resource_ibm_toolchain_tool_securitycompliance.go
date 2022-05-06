@@ -81,6 +81,12 @@ func ResourceIBMToolchainToolSecuritycompliance() *schema.Resource {
 							Optional:    true,
 							Description: "Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).",
 						},
+						"trigger_info": &schema.Schema{
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Computed:    true,
+							Description: "trigger_info.",
+						},
 					},
 				},
 			},

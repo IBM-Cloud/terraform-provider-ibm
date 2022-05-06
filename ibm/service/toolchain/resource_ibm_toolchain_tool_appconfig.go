@@ -75,10 +75,6 @@ func ResourceIBMToolchainToolAppconfig() *schema.Resource {
 							Required:    true,
 							Description: "App Configuration collection.",
 						},
-						"integration_status": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 					},
 				},
 			},

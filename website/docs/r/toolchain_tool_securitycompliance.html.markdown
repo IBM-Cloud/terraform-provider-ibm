@@ -41,6 +41,7 @@ Nested scheme for **parameters**:
 	* `name` - (Required, String) Give this tool integration a name, for example: my-security-compliance.
 	* `profile` - (Optional, String) Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles).
 	* `scope` - (Optional, String) Select an existing scope name to narrow the focus of the validation scan. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes).
+	* `trigger_info` - (Optional, Map) trigger_info.
 	* `trigger_scan` - (Optional, String) Enabling trigger validation scans provides details for a pipeline task to trigger a scan.
 	  * Constraints: Allowable values are: `disabled`, `enabled`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.

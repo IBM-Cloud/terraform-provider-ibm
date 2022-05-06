@@ -97,12 +97,6 @@ func ResourceIBMToolchainToolArtifactory() *schema.Resource {
 							Optional:    true,
 							Description: "Type the URL of your artifactory repository where your docker images are located.",
 						},
-						"docker_config_json": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-							Sensitive:        true,
-						},
 					},
 				},
 			},
