@@ -2,39 +2,41 @@
 
 subcategory: "Schematics"
 layout: "ibm"
-page_title: "IBM: ibm_schematics_workspace"
+page_title: "IBM : ibm_schematics_workspace"
 sidebar_current: "docs-ibm-datasource-schematics-workspace"
 description: |-
-  Get information about Schematics workspace.
+  Get information about schematics_workspace
+subcategory: "Schematics Service API"
 ---
 
 # ibm_schematics_workspace
-Retrieve information about a Schematics workspace. For more details about the Schematics and Schematics workspace, see [setting up workspaces](https://cloud.ibm.com/docs/schematics?topic=schematics-getting-started).
 
-## Example usage
+Provides a read-only data source for schematics_workspace. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-```terraform
+## Example Usage
+
+```hcl
 data "ibm_schematics_workspace" "schematics_workspace" {
 	workspace_id = "workspace_id"
 }
 ```
 
-## Argument reference
+## Argument Reference
 
 Review the argument reference that you can specify for your data source.
 
 * `workspace_id` - (Required, Forces new resource, String) The ID of the workspace.  To find the workspace ID, use the `GET /v1/workspaces` API.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `applied_shareddata_ids` - (Optional, List) List of applied shared dataset ID.
+* `id` - The unique identifier of the schematics_workspace.
+* `cart_id` - (Optional, String) The associate cart order ID.
 
 * `catalog_ref` - (Optional, List) Information about the software template that you chose from the IBM Cloud catalog. This information is returned for IBM Cloud catalog offerings only.
 Nested scheme for **catalog_ref**:
 	* `dry_run` - (Optional, Boolean) Dry run.
-	* `owning_account` - (Optional, String) Owning account ID of the catalog.
 	* `item_icon_url` - (Optional, String) The URL to the icon of the software template in the IBM Cloud catalog.
 	* `item_id` - (Optional, String) The ID of the software template that you chose to install from the IBM Cloud catalog. This software is provisioned with Schematics.
 	* `item_name` - (Optional, String) The name of the software that you chose to install from the IBM Cloud catalog.
@@ -42,6 +44,7 @@ Nested scheme for **catalog_ref**:
 	* `item_url` - (Optional, String) The URL to the software template in the IBM Cloud catalog.
 	* `launch_url` - (Optional, String) The URL to the dashboard to access your software.
 	* `offering_version` - (Optional, String) The version of the software template that you chose to install from the IBM Cloud catalog.
+	* `owning_account` - (Optional, String) Owning account ID of the catalog.
 
 * `created_at` - (Optional, String) The timestamp when the workspace was created.
 
@@ -49,11 +52,26 @@ Nested scheme for **catalog_ref**:
 
 * `crn` - (Optional, String) The workspace CRN.
 
+* `dependencies` - (Optional, List) Workspace dependencies.
+Nested scheme for **dependencies**:
+	* `children` - (Optional, List) List of workspace children CRN identifiers.
+	* `parents` - (Optional, List) List of workspace parents CRN identifiers.
+
 * `description` - (Optional, String) The description of the workspace.
 
 * `id` - (Optional, String) The unique identifier of the workspace.
 
+* `last_action_name` - (Optional, String) Name of the last Action performed on workspace.
+
+* `last_activity_id` - (Optional, String) ID of last Activity performed.
+
 * `last_health_check_at` - (Optional, String) The timestamp when the last health check was performed by Schematics.
+
+* `last_job` - (Optional, List) Last job details.
+Nested scheme for **last_job**:
+	* `job_id` - (Optional, String) ID of last job.
+	* `job_name` - (Optional, String) Name of the last job.
+	* `job_status` - (Optional, String) Status of the last job.
 
 * `location` - (Optional, String) The IBM Cloud location where your workspace was provisioned.
 
@@ -85,46 +103,42 @@ Nested scheme for **shared_data**:
 
 * `tags` - (Optional, List) A list of tags that are associated with the workspace.
 
-* `template_env_settings` - (Optional, List) List of environment values.
-Nested scheme for **env_values**:
-	* `hidden` - (Optional, Boolean) Environment variable is hidden.
-	* `name` - (Optional, String) Environment variable name.
-	* `secure` - (Optional, Boolean) Environment variable is secure.
-	* `value` - (Optional, String) Value for environment variable.
-
-* `template_git_folder` - (Optional, String) The subfolder in your GitHub or GitLab repository where your Terraform template is stored. If your template is stored in the root directory, `.` is returned.
-
-* `template_type` - (Optional, String) The Terraform version that was used to run your Terraform code.
-
-* `template_uninstall_script_name` - (Optional, String) Uninstall script name.
-
-* `template_values` - (Optional, String) A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `"autoscaling: enabled: true minReplicas: 2"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.
-
-* `template_values_metadata` - (Optional, List) A list of input variables that are associated with the workspace.
-
-* `template_inputs` - (Optional, List) Information about the input variables that your template uses.
-Nested scheme for **variablestore**:
-	* `description` - (Optional, String) The description of your input variable.
-	* `name` - (Optional, String) The name of the variable.
-	* `secure` - (Optional, Boolean) If set to `true`, the value of your input variable is protected and not returned in your API response.
-	* `type` - (Optional, String) `Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html).<br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`,`object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).
-	* `value` - (Optional, String) Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](https://cloud.ibm.com/docs/schematics?topic=schematics-create-tf-config#declare-variable).
+* `template_data` - (Optional, List) Information about the Terraform or IBM Cloud software template that you want to use.
+Nested scheme for **template_data**:
+	* `compact` - (Optional, Boolean) True, to use the files from the specified folder & subfolder in your GitHub or GitLab repository and ignore the other folders in the repository.
+	* `env_values` - (Optional, List) List of environment values.
+	Nested scheme for **env_values**:
+		* `hidden` - (Optional, Boolean) Environment variable is hidden.
+		* `name` - (Optional, String) Environment variable name.
+		* `secure` - (Optional, Boolean) Environment variable is secure.
+		* `value` - (Optional, String) Value for environment variable.
+	* `folder` - (Optional, String) The subfolder in your GitHub or GitLab repository where your Terraform template is stored. If your template is stored in the root directory, `.` is returned.
+	* `has_githubtoken` - (Optional, Boolean) Has github token.
+	* `id` - (Optional, String) The ID that was assigned to your Terraform template or IBM Cloud catalog software template.
+	* `type` - (Optional, String) The Terraform version that was used to run your Terraform code.
+	* `uninstall_script_name` - (Optional, String) Uninstall script name.
+	* `values` - (Optional, String) A list of variable values that you want to apply during the Helm chart installation. The list must be provided in JSON format, such as `"autoscaling: enabled: true minReplicas: 2"`. The values that you define here override the default Helm chart values. This field is supported only for IBM Cloud catalog offerings that are provisioned by using the Terraform Helm provider.
+	* `values_metadata` - (Optional, List) A list of input variables that are associated with the workspace.
+	* `values_url` - (Optional, String) The API endpoint to access the input variables that you defined for your template.
+	* `variablestore` - (Optional, List) Information about the input variables that your template uses.
+	Nested scheme for **variablestore**:
+		* `description` - (Optional, String) The description of your input variable.
+		* `name` - (Optional, String) The name of the variable.
+		* `secure` - (Optional, Boolean) If set to `true`, the value of your input variable is protected and not returned in your API response.
+		* `type` - (Optional, String) `Terraform v0.11` supports `string`, `list`, `map` data type. For more information, about the syntax, see [Configuring input variables](https://www.terraform.io/docs/configuration-0-11/variables.html).<br> `Terraform v0.12` additionally, supports `bool`, `number` and complex data types such as `list(type)`, `map(type)`,`object({attribute name=type,..})`, `set(type)`, `tuple([type])`. For more information, about the syntax to use the complex data type, see [Configuring variables](https://www.terraform.io/docs/configuration/variables.html#type-constraints).
+		* `value` - (Optional, String) Enter the value as a string for the primitive types such as `bool`, `number`, `string`, and `HCL` format for the complex variables, as you provide in a `.tfvars` file. **You need to enter escaped string of `HCL` format for the complex variable value**. For more information, about how to declare variables in a terraform configuration file and provide value to schematics, see [Providing values for the declared variables](https://cloud.ibm.com/docs/schematics?topic=schematics-create-tf-config#declare-variable).
 
 * `template_ref` - (Optional, String) Workspace template reference.
 
-* `template_git_branch` - (Optional, String) The repository branch.
-
-* `template_git_full_url` - (Optional, String) Full repository URL.
-
-* `template_git_has_uploadedgitrepotar` - (Optional, Boolean) Has uploaded Git repository tar.
-
-* `template_git_release` - (Optional, String) The repository release.
-
-* `template_git_repo_sha_value` - (Optional, String) The repository SHA value.
-
-* `template_git_repo_url` - (Optional, String) The repository URL.
-
-* `template_git_url` - (Optional, String) The source URL.
+* `template_repo` - (Optional, List) Information about the Template repository used by the workspace.
+Nested scheme for **template_repo**:
+	* `branch` - (Optional, String) The repository branch.
+	* `full_url` - (Optional, String) Full repository URL.
+	* `has_uploadedgitrepotar` - (Optional, Boolean) Has uploaded Git repository tar.
+	* `release` - (Optional, String) The repository release.
+	* `repo_sha_value` - (Optional, String) The repository SHA value.
+	* `repo_url` - (Optional, String) The repository URL. For more information, about using `.netrc` in `env_values`, see [Usage of private module template](https://cloud.ibm.com/docs/schematics?topic=schematics-download-modules-pvt-git).
+	* `url` - (Optional, String) The source URL.
 
 * `type` - (Optional, List) The Terraform version that was used to run your Terraform code.
 
@@ -132,18 +146,18 @@ Nested scheme for **variablestore**:
 
 * `updated_by` - (Optional, String) The user ID that updated the workspace.
 
-* `frozen` - (Optional, Boolean) If set to true, the workspace is frozen and changes to the workspace are disabled.
-	
-* `frozen_at` - (Optional, String) The timestamp when the workspace was frozen.
-	
-* `frozen_by` - (Optional, String) The user ID that froze the workspace.
-	
-* `locked` - (Optional, Boolean) If set to true, the workspace is locked and disabled for changes.
+* `workspace_status` - (Optional, List) Response that indicate the status of the workspace as either frozen or locked.
+Nested scheme for **workspace_status**:
+	* `frozen` - (Optional, Boolean) If set to true, the workspace is frozen and changes to the workspace are disabled.
+	* `frozen_at` - (Optional, String) The timestamp when the workspace was frozen.
+	* `frozen_by` - (Optional, String) The user ID that froze the workspace.
+	* `locked` - (Optional, Boolean) If set to true, the workspace is locked and disabled for changes.
+	* `locked_by` - (Optional, String) The user ID that initiated a resource-related job, such as applying or destroying resources, that locked the workspace.
+	* `locked_time` - (Optional, String) The timestamp when the workspace was locked.
 
-* `locked_by` - (Optional, String) The user ID that initiated a resource-related job, such as applying or destroying resources, that locked the workspace.
+* `workspace_status_msg` - (Optional, List) Information about the last job that ran against the workspace. -.
+Nested scheme for **workspace_status_msg**:
+	* `status_code` - (Optional, String) The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.
+	* `status_msg` - (Optional, String) The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.
 
-* `locked_time` - (Optional, String) The timestamp when the workspace was locked.
 
-* `status_code` - (Optional, String) The success or error code that was returned for the last plan, apply, or destroy job that ran against your workspace.
-
-* `status_msg` - (Optional, String) The success or error message that was returned for the last plan, apply, or destroy job that ran against your workspace.

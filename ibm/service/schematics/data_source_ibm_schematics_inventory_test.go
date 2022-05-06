@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package schematics_test
@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMSchematicsInventoryDataSourceBasic(t *testing.T) {
@@ -18,7 +18,7 @@ func TestAccIBMSchematicsInventoryDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMSchematicsInventoryDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "id"),
@@ -40,7 +40,7 @@ func TestAccIBMSchematicsInventoryDataSourceAllArgs(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMSchematicsInventoryDataSourceConfig(inventoryResourceRecordName, inventoryResourceRecordDescription, inventoryResourceRecordLocation, inventoryResourceRecordResourceGroup, inventoryResourceRecordInventoriesIni),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "id"),
@@ -53,6 +53,9 @@ func TestAccIBMSchematicsInventoryDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "updated_by"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "inventories_ini"),
+					resource.TestCheckResourceAttrSet("data.ibm_schematics_inventory.schematics_inventory", "resource_queries.#"),
 				),
 			},
 		},
@@ -60,16 +63,14 @@ func TestAccIBMSchematicsInventoryDataSourceAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMSchematicsInventoryDataSourceConfigBasic() string {
-	return `
+	return fmt.Sprintf(`
 		resource "ibm_schematics_inventory" "schematics_inventory" {
-			name = "test_inventory"
-			location = "us-south"
 		}
 
 		data "ibm_schematics_inventory" "schematics_inventory" {
-			inventory_id = ibm_schematics_inventory.schematics_inventory.id
+			inventory_id = "inventory_id"
 		}
-	`
+	`)
 }
 
 func testAccCheckIBMSchematicsInventoryDataSourceConfig(inventoryResourceRecordName string, inventoryResourceRecordDescription string, inventoryResourceRecordLocation string, inventoryResourceRecordResourceGroup string, inventoryResourceRecordInventoriesIni string) string {
@@ -79,10 +80,12 @@ func testAccCheckIBMSchematicsInventoryDataSourceConfig(inventoryResourceRecordN
 			description = "%s"
 			location = "%s"
 			resource_group = "%s"
+			inventories_ini = "%s"
+			// resource_queries = "FIXME"
 		}
 
 		data "ibm_schematics_inventory" "schematics_inventory" {
-			inventory_id = ibm_schematics_inventory.schematics_inventory.id
+			inventory_id = "inventory_id"
 		}
-	`, inventoryResourceRecordName, inventoryResourceRecordDescription, inventoryResourceRecordLocation, inventoryResourceRecordResourceGroup)
+	`, inventoryResourceRecordName, inventoryResourceRecordDescription, inventoryResourceRecordLocation, inventoryResourceRecordResourceGroup, inventoryResourceRecordInventoriesIni)
 }

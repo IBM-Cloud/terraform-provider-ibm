@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package schematics
@@ -8,385 +8,442 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
 func ResourceIBMSchematicsJob() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSchematicsJobCreate,
-		ReadContext:   resourceIBMSchematicsJobRead,
-		UpdateContext: resourceIBMSchematicsJobUpdate,
-		DeleteContext: resourceIBMSchematicsJobDelete,
+		CreateContext: ResourceIBMSchematicsJobCreate,
+		ReadContext:   ResourceIBMSchematicsJobRead,
+		UpdateContext: ResourceIBMSchematicsJobUpdate,
+		DeleteContext: ResourceIBMSchematicsJobDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"command_object": {
+			"refresh_token": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The IAM refresh token for the user or service identity.  **Retrieving refresh token**:   * Use `export IBMCLOUD_API_KEY=<ibmcloud_api_key>`, and execute `curl -X POST \"https://iam.cloud.ibm.com/identity/token\" -H \"Content-Type: application/x-www-form-urlencoded\" -d \"grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=$IBMCLOUD_API_KEY\" -u bx:bx`.   * For more information, about creating IAM access token and API Docs, refer, [IAM access token](/apidocs/iam-identity-token-api#gettoken-password) and [Create API key](/apidocs/iam-identity-token-api#create-api-key).    **Limitation**:   * If the token is expired, you can use `refresh token` to get a new IAM access token.   * The `refresh_token` parameter cannot be used to retrieve a new IAM access token.   * When the IAM access token is about to expire, use the API key to create a new access token.",
+			},
+			"command_object": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_schematics_job", "command_object"),
 				Description:  "Name of the Schematics automation resource.",
 			},
-			"command_object_id": {
+			"command_object_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Job command object id (workspace-id, action-id).",
 			},
-			"command_name": {
+			"command_name": &schema.Schema{
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_schematics_job", "command_name"),
 				Description:  "Schematics job command name.",
 			},
-			"command_parameter": {
+			"command_parameter": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Schematics job command parameter (playbook-name).",
 			},
-			"command_options": {
+			"command_options": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Command line options for the command.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"job_inputs": {
+			"job_inputs": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Job inputs used by Action or Workspace.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the variable.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Value for the variable or reference to the value.",
-						},
-						"metadata": {
-							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "User editable metadata for the variables.",
+							Description: "The name of the variable. For example, `name = \"inventory username\"`.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
+						},
+						"use_default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+						},
+						"metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "An user editable metadata for the variables.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"type": {
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
 										Description: "Type of the variable.",
 									},
-									"aliases": {
+									"aliases": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "List of aliases for the variable name.",
+										Description: "The list of aliases for the variable name.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"description": {
+									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Description of the meta data.",
+										Description: "The description of the meta data.",
 									},
-									"default_value": {
+									"cloud_data_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Default value for the variable, if the override value is not specified.",
+										Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 									},
-									"secure": {
+									"default_value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Default value for the variable only if the override value is not specified.",
+									},
+									"link_status": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The status of the link.",
+									},
+									"secure": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Is the variable secure or sensitive ?.",
 									},
-									"immutable": {
+									"immutable": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Is the variable readonly ?.",
 									},
-									"hidden": {
+									"hidden": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Description: "If true, the variable will not be displayed on UI or CLI.",
+										Description: "If **true**, the variable is not displayed on UI or Command line.",
 									},
-									"options": {
+									"required": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If the variable required?.",
+									},
+									"options": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+										Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"min_value": {
+									"min_value": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minimum value of the variable. Applicable for integer type.",
+										Description: "The minimum value of the variable. Applicable for the integer type.",
 									},
-									"max_value": {
+									"max_value": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Maximum value of the variable. Applicable for integer type.",
+										Description: "The maximum value of the variable. Applicable for the integer type.",
 									},
-									"min_length": {
+									"min_length": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minimum length of the variable value. Applicable for string type.",
+										Description: "The minimum length of the variable value. Applicable for the string type.",
 									},
-									"max_length": {
+									"max_length": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Maximum length of the variable value. Applicable for string type.",
+										Description: "The maximum length of the variable value. Applicable for the string type.",
 									},
-									"matches": {
+									"matches": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Regex for the variable value.",
+										Description: "The regex for the variable value.",
 									},
-									"position": {
+									"position": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Relative position of this variable in a list.",
+										Description: "The relative position of this variable in a list.",
 									},
-									"group_by": {
+									"group_by": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Display name of the group this variable belongs to.",
+										Description: "The display name of the group this variable belongs to.",
 									},
-									"source": {
+									"source": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Source of this meta-data.",
+										Description: "The source of this meta-data.",
 									},
 								},
 							},
 						},
-						"link": {
+						"link": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Reference link to the variable value By default the expression will point to self.value.",
+							Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 						},
 					},
 				},
 			},
-			"job_env_settings": {
+			"job_env_settings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Environment variables used by the Job while performing Action or Workspace.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Name of the variable.",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Value for the variable or reference to the value.",
-						},
-						"metadata": {
-							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "User editable metadata for the variables.",
+							Description: "The name of the variable. For example, `name = \"inventory username\"`.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
+						},
+						"use_default": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+						},
+						"metadata": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "An user editable metadata for the variables.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"type": {
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Required:    true,
+										Optional:    true,
 										Description: "Type of the variable.",
 									},
-									"aliases": {
+									"aliases": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "List of aliases for the variable name.",
+										Description: "The list of aliases for the variable name.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"description": {
+									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Description of the meta data.",
+										Description: "The description of the meta data.",
 									},
-									"default_value": {
+									"cloud_data_type": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Default value for the variable, if the override value is not specified.",
+										Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 									},
-									"secure": {
+									"default_value": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Default value for the variable only if the override value is not specified.",
+									},
+									"link_status": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The status of the link.",
+									},
+									"secure": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Is the variable secure or sensitive ?.",
 									},
-									"immutable": {
+									"immutable": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Description: "Is the variable readonly ?.",
 									},
-									"hidden": {
+									"hidden": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Description: "If true, the variable will not be displayed on UI or CLI.",
+										Description: "If **true**, the variable is not displayed on UI or Command line.",
 									},
-									"options": {
+									"required": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If the variable required?.",
+									},
+									"options": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+										Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"min_value": {
+									"min_value": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minimum value of the variable. Applicable for integer type.",
+										Description: "The minimum value of the variable. Applicable for the integer type.",
 									},
-									"max_value": {
+									"max_value": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Maximum value of the variable. Applicable for integer type.",
+										Description: "The maximum value of the variable. Applicable for the integer type.",
 									},
-									"min_length": {
+									"min_length": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minimum length of the variable value. Applicable for string type.",
+										Description: "The minimum length of the variable value. Applicable for the string type.",
 									},
-									"max_length": {
+									"max_length": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Maximum length of the variable value. Applicable for string type.",
+										Description: "The maximum length of the variable value. Applicable for the string type.",
 									},
-									"matches": {
+									"matches": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Regex for the variable value.",
+										Description: "The regex for the variable value.",
 									},
-									"position": {
+									"position": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Relative position of this variable in a list.",
+										Description: "The relative position of this variable in a list.",
 									},
-									"group_by": {
+									"group_by": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Display name of the group this variable belongs to.",
+										Description: "The display name of the group this variable belongs to.",
 									},
-									"source": {
+									"source": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Source of this meta-data.",
+										Description: "The source of this meta-data.",
 									},
 								},
 							},
 						},
-						"link": {
+						"link": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "Reference link to the variable value By default the expression will point to self.value.",
+							Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 						},
 					},
 				},
 			},
-			"tags": {
+			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "User defined tags, while running the job.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"location": {
+			"location": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_schematics_job", "location"),
 				Description:  "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 			},
-			"status": {
+			"status": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				MaxItems:    1,
+				Optional:    true,
 				Description: "Job Status.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"workspace_job_status": {
+						"position_in_queue": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "Position of job in pending queue.",
+						},
+						"total_in_queue": &schema.Schema{
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "Total no. of jobs in pending queue.",
+						},
+						"workspace_job_status": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Workspace Job Status.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"workspace_name": {
+									"workspace_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Workspace name.",
 									},
-									"status_code": {
+									"status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Jobs.",
 									},
-									"status_message": {
+									"status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Workspace job status message (eg. App1_Setup_Pending, for a 'Setup' flow in the 'App1' Workspace).",
 									},
-									"flow_status": {
+									"flow_status": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
 										Description: "Environment Flow JOB Status.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"flow_id": {
+												"flow_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "flow id.",
 												},
-												"flow_name": {
+												"flow_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "flow name.",
 												},
-												"status_code": {
+												"status_code": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Status of Jobs.",
 												},
-												"status_message": {
+												"status_message": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Flow Job status message - to be displayed along with the status_code;.",
 												},
-												"workitems": {
+												"workitems": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Environment's individual workItem status details;.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"workspace_id": {
+															"workspace_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Workspace id.",
 															},
-															"workspace_name": {
+															"workspace_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "workspace name.",
 															},
-															"job_id": {
+															"job_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "workspace job id.",
 															},
-															"status_code": {
+															"status_code": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Status of Jobs.",
 															},
-															"status_message": {
+															"status_message": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "workitem job status message;.",
 															},
-															"updated_at": {
+															"updated_at": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "workitem job status updation timestamp.",
@@ -394,7 +451,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 														},
 													},
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Job status updation timestamp.",
@@ -402,38 +459,38 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"template_status": {
+									"template_status": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Workspace Flow Template job status.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"template_id": {
+												"template_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Template Id.",
 												},
-												"template_name": {
+												"template_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Template name.",
 												},
-												"flow_index": {
+												"flow_index": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
 													Description: "Index of the template in the Flow.",
 												},
-												"status_code": {
+												"status_code": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Status of Jobs.",
 												},
-												"status_message": {
+												"status_message": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Template job status message (eg. VPCt1_Apply_Pending, for a 'VPCt1' Template).",
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Job status updation timestamp.",
@@ -441,56 +498,77 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
 									},
+									"commands": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Computed:    true,
+										Description: "List of terraform commands executed and their status.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Name of the command.",
+												},
+												"outcome": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "outcome of the command.",
+												},
+											},
+										},
+									},
 								},
 							},
 						},
-						"action_job_status": {
+						"action_job_status": &schema.Schema{
 							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
 							Description: "Action Job Status.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"action_name": {
+									"action_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Action name.",
 									},
-									"status_code": {
+									"status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Jobs.",
 									},
-									"status_message": {
+									"status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Action Job status message - to be displayed along with the action_status_code.",
 									},
-									"bastion_status_code": {
+									"bastion_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Resources.",
 									},
-									"bastion_status_message": {
+									"bastion_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Bastion status message - to be displayed along with the bastion_status_code;.",
 									},
-									"targets_status_code": {
+									"targets_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Resources.",
 									},
-									"targets_status_message": {
+									"targets_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Aggregated status message for all target resources,  to be displayed along with the targets_status_code;.",
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -498,45 +576,45 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"system_job_status": {
+						"system_job_status": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "System Job Status.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"system_status_message": {
+									"system_status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "System job message.",
 									},
-									"system_status_code": {
+									"system_status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Jobs.",
 									},
-									"schematics_resource_status": {
+									"schematics_resource_status": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "job staus for each schematics resource.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"status_code": {
+												"status_code": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Status of Jobs.",
 												},
-												"status_message": {
+												"status_message": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "system job status message.",
 												},
-												"schematics_resource_id": {
+												"schematics_resource_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "id for each resource which is targeted as a part of system job.",
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Job status updation timestamp.",
@@ -544,7 +622,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -552,65 +630,65 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"flow_job_status": {
+						"flow_job_status": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Environment Flow JOB Status.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"flow_id": {
+									"flow_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "flow id.",
 									},
-									"flow_name": {
+									"flow_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "flow name.",
 									},
-									"status_code": {
+									"status_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Status of Jobs.",
 									},
-									"status_message": {
+									"status_message": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow Job status message - to be displayed along with the status_code;.",
 									},
-									"workitems": {
+									"workitems": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Environment's individual workItem status details;.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"workspace_id": {
+												"workspace_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Workspace id.",
 												},
-												"workspace_name": {
+												"workspace_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workspace name.",
 												},
-												"job_id": {
+												"job_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workspace job id.",
 												},
-												"status_code": {
+												"status_code": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Status of Jobs.",
 												},
-												"status_message": {
+												"status_message": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workitem job status message;.",
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workitem job status updation timestamp.",
@@ -618,7 +696,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -629,763 +707,884 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 					},
 				},
 			},
-			"data": {
+			"data": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
 				Description: "Job data.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"job_type": {
+						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Type of Job.",
 						},
-						"workspace_job_data": {
+						"workspace_job_data": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Workspace Job data.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"workspace_name": {
+									"workspace_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Workspace name.",
 									},
-									"flow_id": {
+									"flow_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow Id.",
 									},
-									"flow_name": {
+									"flow_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow name.",
 									},
-									"inputs": {
+									"inputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Input variables data used by the Workspace Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"outputs": {
+									"outputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Output variables data from the Workspace Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"settings": {
+									"settings": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Environment variables used by all the templates in the Workspace.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"template_data": {
+									"template_data": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Input / output data of the Template in the Workspace Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"template_id": {
+												"template_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Template Id.",
 												},
-												"template_name": {
+												"template_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Template name.",
 												},
-												"flow_index": {
+												"flow_index": &schema.Schema{
 													Type:        schema.TypeInt,
 													Optional:    true,
 													Description: "Index of the template in the Flow.",
 												},
-												"inputs": {
+												"inputs": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Job inputs used by the Templates.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"outputs": {
+												"outputs": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Job output from the Templates.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"settings": {
+												"settings": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Environment variables used by the template.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Job status updation timestamp.",
@@ -1393,7 +1592,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -1401,433 +1600,497 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"action_job_data": {
+						"action_job_data": &schema.Schema{
 							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
 							Description: "Action Job data.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"action_name": {
+									"action_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow name.",
 									},
-									"inputs": {
+									"inputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Input variables data used by the Action Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
+													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"outputs": {
+									"outputs": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Output variables data from the Action Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
+													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"settings": {
+									"settings": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Environment variables used by all the templates in the Action.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Name of the variable.",
+													Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 												},
-												"value": {
+												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Value for the variable or reference to the value.",
+													Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 												},
-												"metadata": {
+												"use_default": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+												},
+												"metadata": &schema.Schema{
 													Type:        schema.TypeList,
+													MaxItems:    1,
 													Optional:    true,
-													Description: "User editable metadata for the variables.",
+													Description: "An user editable metadata for the variables.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"type": {
+															"type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Type of the variable.",
 															},
-															"aliases": {
+															"aliases": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of aliases for the variable name.",
+																Description: "The list of aliases for the variable name.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"description": {
+															"description": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Description of the meta data.",
+																Description: "The description of the meta data.",
 															},
-															"default_value": {
+															"cloud_data_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Default value for the variable, if the override value is not specified.",
+																Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 															},
-															"secure": {
+															"default_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Default value for the variable only if the override value is not specified.",
+															},
+															"link_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The status of the link.",
+															},
+															"secure": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable secure or sensitive ?.",
 															},
-															"immutable": {
+															"immutable": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
 																Description: "Is the variable readonly ?.",
 															},
-															"hidden": {
+															"hidden": &schema.Schema{
 																Type:        schema.TypeBool,
 																Optional:    true,
-																Description: "If true, the variable will not be displayed on UI or CLI.",
+																Description: "If **true**, the variable is not displayed on UI or Command line.",
 															},
-															"options": {
+															"required": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "If the variable required?.",
+															},
+															"options": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
-																Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
-															"min_value": {
+															"min_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum value of the variable. Applicable for integer type.",
+																Description: "The minimum value of the variable. Applicable for the integer type.",
 															},
-															"max_value": {
+															"max_value": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum value of the variable. Applicable for integer type.",
+																Description: "The maximum value of the variable. Applicable for the integer type.",
 															},
-															"min_length": {
+															"min_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Minimum length of the variable value. Applicable for string type.",
+																Description: "The minimum length of the variable value. Applicable for the string type.",
 															},
-															"max_length": {
+															"max_length": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Maximum length of the variable value. Applicable for string type.",
+																Description: "The maximum length of the variable value. Applicable for the string type.",
 															},
-															"matches": {
+															"matches": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Regex for the variable value.",
+																Description: "The regex for the variable value.",
 															},
-															"position": {
+															"position": &schema.Schema{
 																Type:        schema.TypeInt,
 																Optional:    true,
-																Description: "Relative position of this variable in a list.",
+																Description: "The relative position of this variable in a list.",
 															},
-															"group_by": {
+															"group_by": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Display name of the group this variable belongs to.",
+																Description: "The display name of the group this variable belongs to.",
 															},
-															"source": {
+															"source": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Source of this meta-data.",
+																Description: "The source of this meta-data.",
 															},
 														},
 													},
 												},
-												"link": {
+												"link": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
-													Description: "Reference link to the variable value By default the expression will point to self.value.",
+													Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 												},
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
 									},
-									"inventory_record": {
+									"inventory_record": &schema.Schema{
 										Type:        schema.TypeList,
 										MaxItems:    1,
 										Optional:    true,
 										Description: "Complete inventory resource details with user inputs and system generated data.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"name": {
+												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "The unique name of your Inventory.  The name can be up to 128 characters long and can include alphanumeric  characters, spaces, dashes, and underscores.",
 												},
-												"id": {
+												"id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Inventory id.",
 												},
-												"description": {
+												"description": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "The description of your Inventory.  The description can be up to 2048 characters long in size.",
 												},
-												"location": {
+												"location": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.",
 												},
-												"resource_group": {
+												"resource_group": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Resource-group name for the Inventory definition.  By default, Inventory will be created in Default Resource Group.",
 												},
-												"created_at": {
+												"created_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Inventory creation time.",
 												},
-												"created_by": {
+												"created_by": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Email address of user who created the Inventory.",
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Inventory updation time.",
 												},
-												"updated_by": {
+												"updated_by": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Computed:    true,
 													Description: "Email address of user who updated the Inventory.",
 												},
-												"inventories_ini": {
+												"inventories_ini": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Input inventory of host and host group for the playbook,  in the .ini file format.",
 												},
-												"resource_queries": {
+												"resource_queries": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Input resource queries that is used to dynamically generate  the inventory of host and host group for the playbook.",
@@ -1836,7 +2099,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"materialized_inventory": {
+									"materialized_inventory": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Materialized inventory details used by the Action Job, in .ini format.",
@@ -1844,25 +2107,25 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"system_job_data": {
+						"system_job_data": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Controls Job data.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"key_id": {
+									"key_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Key ID for which key event is generated.",
 									},
-									"schematics_resource_id": {
+									"schematics_resource_id": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "List of the schematics resource id.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -1870,156 +2133,142 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"flow_job_data": {
+						"flow_job_data": &schema.Schema{
 							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
 							Description: "Flow Job data.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"flow_id": {
+									"flow_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow ID.",
 									},
-									"flow_name": {
+									"flow_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Flow Name.",
 									},
-									"workitems": {
+									"workitems": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
 										Description: "Job data used by each workitem Job.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"command_object_id": {
+												"command_object_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "command object id.",
 												},
-												"command_object_name": {
+												"command_object_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "command object name.",
 												},
-												"layers": {
+												"layers": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "layer name.",
 												},
-												"source_type": {
+												"source_type": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Type of source for the Template.",
 												},
-												"source": {
+												"source": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
 													Description: "Source of templates, playbooks, or controls.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"source_type": {
+															"source_type": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
 																Description: "Type of source for the Template.",
 															},
-															"git": {
+															"git": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "Connection details to Git source.",
+																Description: "The connection details to the Git source repository.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"computed_git_repo_url": {
+																		"computed_git_repo_url": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "The Complete URL which is computed by git_repo_url, git_repo_folder and branch.",
+																			Description: "The complete URL which is computed by the **git_repo_url**, **git_repo_folder**, and **branch**.",
 																		},
-																		"git_repo_url": {
+																		"git_repo_url": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "URL to the GIT Repo that can be used to clone the template.",
+																			Description: "The URL to the Git repository that can be used to clone the template.",
 																		},
-																		"git_token": {
+																		"git_token": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Personal Access Token to connect to Git URLs.",
+																			Description: "The Personal Access Token (PAT) to connect to the Git URLs.",
 																		},
-																		"git_repo_folder": {
+																		"git_repo_folder": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Name of the folder in the Git Repo, that contains the template.",
+																			Description: "The name of the folder in the Git repository, that contains the template.",
 																		},
-																		"git_release": {
+																		"git_release": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Name of the release tag, used to fetch the Git Repo.",
+																			Description: "The name of the release tag that are used to fetch the Git repository.",
 																		},
-																		"git_branch": {
+																		"git_branch": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Name of the branch, used to fetch the Git Repo.",
+																			Description: "The name of the branch that are used to fetch the Git repository.",
 																		},
 																	},
 																},
 															},
-															"catalog": {
+															"catalog": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "Connection details to IBM Cloud Catalog source.",
+																Description: "The connection details to the IBM Cloud Catalog source.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"catalog_name": {
+																		"catalog_name": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "name of the private catalog.",
+																			Description: "The name of the private catalog.",
 																		},
-																		"offering_name": {
+																		"offering_name": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Name of the offering in the IBM Catalog.",
+																			Description: "The name of an offering in the IBM Cloud Catalog.",
 																		},
-																		"offering_version": {
+																		"offering_version": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Version string of the offering in the IBM Catalog.",
+																			Description: "The version string of an offering in the IBM Cloud Catalog.",
 																		},
-																		"offering_kind": {
+																		"offering_kind": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Type of the offering, in the IBM Catalog.",
+																			Description: "The type of an offering, in the IBM Cloud Catalog.",
 																		},
-																		"offering_id": {
+																		"offering_id": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Id of the offering the IBM Catalog.",
+																			Description: "The ID of an offering in the IBM Cloud Catalog.",
 																		},
-																		"offering_version_id": {
+																		"offering_version_id": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Id of the offering version the IBM Catalog.",
+																			Description: "The ID of an offering version the IBM Cloud Catalog.",
 																		},
-																		"offering_repo_url": {
+																		"offering_repo_url": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Repo Url of the offering, in the IBM Catalog.",
-																		},
-																	},
-																},
-															},
-															"cos_bucket": {
-																Type:        schema.TypeList,
-																MaxItems:    1,
-																Optional:    true,
-																Description: "Connection details to a IBM Cloud Object Storage bucket.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"cos_bucket_url": {
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Description: "COS Bucket Url.",
+																			Description: "The repository URL of an offering, in the IBM Cloud Catalog.",
 																		},
 																	},
 																},
@@ -2027,390 +2276,450 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 														},
 													},
 												},
-												"inputs": {
+												"inputs": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Input variables data for the workItem used in FlowJob.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"outputs": {
+												"outputs": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Output variables for the workItem.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"settings": {
+												"settings": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "Environment variables for the workItem.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"name": {
+															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Name of the variable.",
+																Description: "The name of the variable. For example, `name = \"inventory username\"`.",
 															},
-															"value": {
+															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Value for the variable or reference to the value.",
+																Description: "The value for the variable or reference to the value. For example, `value = \"<provide your ssh_key_value with \n>\"`. **Note** The SSH key should contain `\n` at the end of the key details in case of command line or API calls.",
 															},
-															"metadata": {
+															"use_default": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "True, will ignore the data in the value attribute, instead the data in metadata.default_value will be used.",
+															},
+															"metadata": &schema.Schema{
 																Type:        schema.TypeList,
 																MaxItems:    1,
 																Optional:    true,
-																Description: "User editable metadata for the variables.",
+																Description: "An user editable metadata for the variables.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"type": {
+																		"type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Type of the variable.",
 																		},
-																		"aliases": {
+																		"aliases": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of aliases for the variable name.",
+																			Description: "The list of aliases for the variable name.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"description": {
+																		"description": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Description of the meta data.",
+																			Description: "The description of the meta data.",
 																		},
-																		"default_value": {
+																		"cloud_data_type": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Default value for the variable, if the override value is not specified.",
+																			Description: "Cloud data type of the variable. eg. resource_group_id, region, vpc_id.",
 																		},
-																		"secure": {
+																		"default_value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Default value for the variable only if the override value is not specified.",
+																		},
+																		"link_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The status of the link.",
+																		},
+																		"secure": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable secure or sensitive ?.",
 																		},
-																		"immutable": {
+																		"immutable": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
 																			Description: "Is the variable readonly ?.",
 																		},
-																		"hidden": {
+																		"hidden": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "If true, the variable will not be displayed on UI or CLI.",
+																			Description: "If **true**, the variable is not displayed on UI or Command line.",
 																		},
-																		"options": {
+																		"required": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "If the variable required?.",
+																		},
+																		"options": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
-																			Description: "List of possible values for this variable.  If type is integer or date, then the array of string will be  converted to array of integers or date during runtime.",
+																			Description: "The list of possible values for this variable.  If type is **integer** or **date**, then the array of string is  converted to array of integers or date during the runtime.",
 																			Elem:        &schema.Schema{Type: schema.TypeString},
 																		},
-																		"min_value": {
+																		"min_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum value of the variable. Applicable for integer type.",
+																			Description: "The minimum value of the variable. Applicable for the integer type.",
 																		},
-																		"max_value": {
+																		"max_value": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum value of the variable. Applicable for integer type.",
+																			Description: "The maximum value of the variable. Applicable for the integer type.",
 																		},
-																		"min_length": {
+																		"min_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Minimum length of the variable value. Applicable for string type.",
+																			Description: "The minimum length of the variable value. Applicable for the string type.",
 																		},
-																		"max_length": {
+																		"max_length": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Maximum length of the variable value. Applicable for string type.",
+																			Description: "The maximum length of the variable value. Applicable for the string type.",
 																		},
-																		"matches": {
+																		"matches": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Regex for the variable value.",
+																			Description: "The regex for the variable value.",
 																		},
-																		"position": {
+																		"position": &schema.Schema{
 																			Type:        schema.TypeInt,
 																			Optional:    true,
-																			Description: "Relative position of this variable in a list.",
+																			Description: "The relative position of this variable in a list.",
 																		},
-																		"group_by": {
+																		"group_by": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Display name of the group this variable belongs to.",
+																			Description: "The display name of the group this variable belongs to.",
 																		},
-																		"source": {
+																		"source": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "Source of this meta-data.",
+																			Description: "The source of this meta-data.",
 																		},
 																	},
 																},
 															},
-															"link": {
+															"link": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Computed:    true,
-																Description: "Reference link to the variable value By default the expression will point to self.value.",
+																Description: "The reference link to the variable value By default the expression points to `$self.value`.",
 															},
 														},
 													},
 												},
-												"last_job": {
+												"last_job": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
 													Description: "Status of the last job executed by the workitem.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"command_object": {
+															"command_object": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Name of the Schematics automation resource.",
 															},
-															"command_object_name": {
+															"command_object_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "command object name (workspace_name/action_name).",
 															},
-															"command_object_id": {
+															"command_object_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Workitem command object id, maps to workspace_id or action_id.",
 															},
-															"command_name": {
+															"command_name": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Schematics job command name.",
 															},
-															"job_id": {
+															"job_id": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Workspace job id.",
 															},
-															"job_status": {
+															"job_status": &schema.Schema{
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Status of Jobs.",
@@ -2418,7 +2727,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 														},
 													},
 												},
-												"updated_at": {
+												"updated_at": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Job status updation timestamp.",
@@ -2426,7 +2735,7 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 											},
 										},
 									},
-									"updated_at": {
+									"updated_at": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Job status updation timestamp.",
@@ -2437,19 +2746,19 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 					},
 				},
 			},
-			"bastion": {
+			"bastion": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
 				Description: "Describes a bastion resource.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Bastion Name(Unique).",
 						},
-						"host": {
+						"host": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Reference to the Inventory resource definition.",
@@ -2457,60 +2766,60 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 					},
 				},
 			},
-			"log_summary": {
+			"log_summary": &schema.Schema{
 				Type:        schema.TypeList,
+				MaxItems:    1,
 				Optional:    true,
-				Computed:    true,
 				Description: "Job log summary record.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"job_id": {
+						"job_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "Workspace Id.",
 						},
-						"job_type": {
+						"job_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Type of Job.",
 						},
-						"log_start_at": {
+						"log_start_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "Job log start timestamp.",
 						},
-						"log_analyzed_till": {
+						"log_analyzed_till": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "Job log update timestamp.",
 						},
-						"elapsed_time": {
+						"elapsed_time": &schema.Schema{
 							Type:        schema.TypeFloat,
 							Optional:    true,
 							Computed:    true,
 							Description: "Job log elapsed time (log_analyzed_till - log_start_at).",
 						},
-						"log_errors": {
+						"log_errors": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
 							Description: "Job log errors.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"error_code": {
+									"error_code": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Error code in the Log.",
 									},
-									"error_msg": {
+									"error_msg": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Summary error message in the log.",
 									},
-									"error_count": {
+									"error_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Description: "Number of occurrence.",
@@ -2518,37 +2827,38 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"repo_download_job": {
+						"repo_download_job": &schema.Schema{
 							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
 							Description: "Repo download Job log summary.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"scanned_file_count": {
+									"scanned_file_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of files scanned.",
 									},
-									"quarantined_file_count": {
+									"quarantined_file_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of files quarantined.",
 									},
-									"detected_filetype": {
+									"detected_filetype": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
 										Description: "Detected template or data file type.",
 									},
-									"inputs_count": {
+									"inputs_count": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of inputs detected.",
 									},
-									"outputs_count": {
+									"outputs_count": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
@@ -2557,26 +2867,26 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"workspace_job": {
+						"workspace_job": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Workspace Job log summary.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"resources_add": {
+									"resources_add": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of resources add.",
 									},
-									"resources_modify": {
+									"resources_modify": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of resources modify.",
 									},
-									"resources_destroy": {
+									"resources_destroy": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
@@ -2585,65 +2895,65 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"flow_job": {
+						"flow_job": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "Flow Job log summary.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"workitems_completed": {
+									"workitems_completed": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of workitems completed successfully.",
 									},
-									"workitems_pending": {
+									"workitems_pending": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of workitems pending in the flow.",
 									},
-									"workitems_failed": {
+									"workitems_failed": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "Number of workitems failed.",
 									},
-									"workitems": {
+									"workitems": &schema.Schema{
 										Type:     schema.TypeList,
 										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"workspace_id": {
+												"workspace_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workspace ID.",
 												},
-												"job_id": {
+												"job_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "workspace JOB ID.",
 												},
-												"resources_add": {
+												"resources_add": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Computed:    true,
 													Description: "Number of resources add.",
 												},
-												"resources_modify": {
+												"resources_modify": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Computed:    true,
 													Description: "Number of resources modify.",
 												},
-												"resources_destroy": {
+												"resources_destroy": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Computed:    true,
 													Description: "Number of resources destroy.",
 												},
-												"log_url": {
+												"log_url": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Log url for job.",
@@ -2654,63 +2964,65 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"action_job": {
+						"action_job": &schema.Schema{
 							Type:        schema.TypeList,
+							MaxItems:    1,
 							Optional:    true,
 							Description: "Flow Job log summary.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"target_count": {
+									"target_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "number of targets or hosts.",
 									},
-									"task_count": {
+									"task_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "number of tasks in playbook.",
 									},
-									"play_count": {
+									"play_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "number of plays in playbook.",
 									},
-									"recap": {
+									"recap": &schema.Schema{
 										Type:        schema.TypeList,
+										MaxItems:    1,
 										Optional:    true,
 										Description: "Recap records.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"target": {
+												"target": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
 													Description: "List of target or host name.",
 													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
-												"ok": {
+												"ok": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Description: "Number of OK.",
 												},
-												"changed": {
+												"changed": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Description: "Number of changed.",
 												},
-												"failed": {
+												"failed": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Description: "Number of failed.",
 												},
-												"skipped": {
+												"skipped": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Description: "Number of skipped.",
 												},
-												"unreachable": {
+												"unreachable": &schema.Schema{
 													Type:        schema.TypeFloat,
 													Optional:    true,
 													Description: "Number of unreachable.",
@@ -2721,25 +3033,25 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 								},
 							},
 						},
-						"system_job": {
+						"system_job": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "System Job log summary.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"target_count": {
+									"target_count": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Computed:    true,
 										Description: "number of targets or hosts.",
 									},
-									"success": {
+									"success": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Description: "Number of passed.",
 									},
-									"failed": {
+									"failed": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
 										Description: "Number of failed.",
@@ -2750,65 +3062,70 @@ func ResourceIBMSchematicsJob() *schema.Resource {
 					},
 				},
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job name, uniquely derived from the related Workspace or Action.",
 			},
-			"description": {
+			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The description of your job is derived from the related action or workspace.  The description can be up to 2048 characters long in size.",
 			},
-			"resource_group": {
+			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resource-group name derived from the related Workspace or Action.",
 			},
-			"submitted_at": {
+			"submitted_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job submission time.",
 			},
-			"submitted_by": {
+			"submitted_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Email address of user who submitted the job.",
 			},
-			"start_at": {
+			"start_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job start time.",
 			},
-			"end_at": {
+			"end_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job end time.",
 			},
-			"duration": {
+			"duration": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Duration of job execution; example 40 sec.",
 			},
-			"log_store_url": {
+			"log_store_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job log store URL.",
 			},
-			"state_store_url": {
+			"state_store_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job state store URL.",
 			},
-			"results_url": {
+			"results_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job results store URL.",
 			},
-			"updated_at": {
+			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Job status updation timestamp.",
+			},
+			"job_runner_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the Job Runner.",
 			},
 		},
 	}
@@ -2829,36 +3146,30 @@ func ResourceIBMSchematicsJobValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "ansible_playbook_check, ansible_playbook_run, create_action, create_cart, create_environment, create_workspace, delete_action, delete_environment, delete_workspace, environment_init, environment_install, environment_uninstall, patch_action, patch_workspace, put_action, put_environment, put_workspace, repository_process, system_key_delete, system_key_disable, system_key_enable, system_key_restore, system_key_rotate, workspace_apply, workspace_destroy, workspace_plan, workspace_refresh",
+			AllowedValues:              "ansible_playbook_check, ansible_playbook_run, create_action, create_cart, create_environment, create_workspace, delete_action, delete_environment, delete_workspace, environment_init, environment_install, environment_uninstall, patch_action, patch_workspace, put_action, put_environment, put_workspace, repository_process, system_key_delete, system_key_disable, system_key_enable, system_key_restore, system_key_rotate, terraform_commands, workspace_apply, workspace_destroy, workspace_plan, workspace_refresh",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "location",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "us, eu, eu-de, eu-gb, us-east, us-south",
-		})
+			AllowedValues:              "eu-de, eu-gb, us-east, us-south",
+		},
+	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_schematics_job", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	session, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	iamRefreshToken := session.Config.IAMRefreshToken
-
 	createJobOptions := &schematicsv1.CreateJobOptions{}
-	createJobOptions.SetRefreshToken(iamRefreshToken)
 
+	createJobOptions.SetRefreshToken(d.Get("refresh_token").(string))
 	if _, ok := d.GetOk("command_object"); ok {
 		createJobOptions.SetCommandObject(d.Get("command_object").(string))
 	}
@@ -2878,8 +3189,11 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		var jobInputs []schematicsv1.VariableData
 		for _, e := range d.Get("job_inputs").([]interface{}) {
 			value := e.(map[string]interface{})
-			jobInputsItem := resourceIBMSchematicsJobMapToVariableData(value)
-			jobInputs = append(jobInputs, jobInputsItem)
+			jobInputsItem, err := ResourceIBMSchematicsJobMapToVariableData(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			jobInputs = append(jobInputs, *jobInputsItem)
 		}
 		createJobOptions.SetInputs(jobInputs)
 	}
@@ -2887,44 +3201,47 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 		var jobEnvSettings []schematicsv1.VariableData
 		for _, e := range d.Get("job_env_settings").([]interface{}) {
 			value := e.(map[string]interface{})
-			jobEnvSettingsItem := resourceIBMSchematicsJobMapToVariableData(value)
-			jobEnvSettings = append(jobEnvSettings, jobEnvSettingsItem)
+			jobEnvSettingsItem, err := ResourceIBMSchematicsJobMapToVariableData(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			jobEnvSettings = append(jobEnvSettings, *jobEnvSettingsItem)
 		}
 		createJobOptions.SetSettings(jobEnvSettings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createJobOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
+		createJobOptions.SetTags(d.Get("tags").([]string))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		createJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		statusAttr := d.Get("status").([]interface{})
-		if len(statusAttr) > 0 {
-			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-			createJobOptions.SetStatus(&status)
+		statusModel, err := ResourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		createJobOptions.SetStatus(statusModel)
 	}
 	if _, ok := d.GetOk("data"); ok {
-		dataAttr := d.Get("data").([]interface{})
-		if len(dataAttr) > 0 {
-			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-			createJobOptions.SetData(&data)
+		dataModel, err := ResourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		createJobOptions.SetData(dataModel)
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastionAttr := d.Get("bastion").([]interface{})
-		if len(bastionAttr) > 0 {
-			bastion := resourceIBMSchematicsJobMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
-			createJobOptions.SetBastion(&bastion)
+		bastionModel, err := ResourceIBMSchematicsJobMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		createJobOptions.SetBastion(bastionModel)
 	}
 	if _, ok := d.GetOk("log_summary"); ok {
-		logSummaryAttr := d.Get("log_summary").([]interface{})
-		if len(logSummaryAttr) > 0 {
-			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("log_summary.0").(map[string]interface{}))
-			createJobOptions.SetLogSummary(&logSummary)
+		logSummaryModel, err := ResourceIBMSchematicsJobMapToJobLogSummary(d.Get("log_summary.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		createJobOptions.SetLogSummary(logSummaryModel)
 	}
 
 	job, response, err := schematicsClient.CreateJobWithContext(context, createJobOptions)
@@ -2935,925 +3252,10 @@ func resourceIBMSchematicsJobCreate(context context.Context, d *schema.ResourceD
 
 	d.SetId(*job.ID)
 
-	return resourceIBMSchematicsJobRead(context, d, meta)
+	return ResourceIBMSchematicsJobRead(context, d, meta)
 }
 
-func resourceIBMSchematicsJobMapToVariableData(variableDataMap map[string]interface{}) schematicsv1.VariableData {
-	variableData := schematicsv1.VariableData{}
-
-	if variableDataMap["name"] != nil {
-		variableData.Name = core.StringPtr(variableDataMap["name"].(string))
-	}
-	if variableDataMap["value"] != nil {
-		variableData.Value = core.StringPtr(variableDataMap["value"].(string))
-	}
-	if variableDataMap["metadata"] != nil && len(variableDataMap["metadata"].([]interface{})) != 0 {
-		variableMetaData := resourceIBMSchematicsJobMapToVariableMetadata(variableDataMap["metadata"].([]interface{})[0].(map[string]interface{}))
-		variableData.Metadata = &variableMetaData
-	}
-	if variableDataMap["link"] != nil {
-		variableData.Link = core.StringPtr(variableDataMap["link"].(string))
-	}
-
-	return variableData
-}
-
-func resourceIBMSchematicsJobMapToVariableMetadata(variableMetadataMap map[string]interface{}) schematicsv1.VariableMetadata {
-	variableMetadata := schematicsv1.VariableMetadata{}
-
-	if variableMetadataMap["type"] != nil {
-		variableMetadata.Type = core.StringPtr(variableMetadataMap["type"].(string))
-	}
-	if variableMetadataMap["aliases"] != nil {
-		aliases := []string{}
-		for _, aliasesItem := range variableMetadataMap["aliases"].([]interface{}) {
-			aliases = append(aliases, aliasesItem.(string))
-		}
-		variableMetadata.Aliases = aliases
-	}
-	if variableMetadataMap["description"] != nil {
-		variableMetadata.Description = core.StringPtr(variableMetadataMap["description"].(string))
-	}
-	if variableMetadataMap["default_value"] != nil {
-		variableMetadata.DefaultValue = core.StringPtr(variableMetadataMap["default_value"].(string))
-	}
-	if variableMetadataMap["secure"] != nil {
-		variableMetadata.Secure = core.BoolPtr(variableMetadataMap["secure"].(bool))
-	}
-	if variableMetadataMap["immutable"] != nil {
-		variableMetadata.Immutable = core.BoolPtr(variableMetadataMap["immutable"].(bool))
-	}
-	if variableMetadataMap["hidden"] != nil {
-		variableMetadata.Hidden = core.BoolPtr(variableMetadataMap["hidden"].(bool))
-	}
-	if variableMetadataMap["options"] != nil {
-		options := []string{}
-		for _, optionsItem := range variableMetadataMap["options"].([]interface{}) {
-			options = append(options, optionsItem.(string))
-		}
-		variableMetadata.Options = options
-	}
-	if variableMetadataMap["min_value"] != nil {
-		variableMetadata.MinValue = core.Int64Ptr(int64(variableMetadataMap["min_value"].(int)))
-	}
-	if variableMetadataMap["max_value"] != nil {
-		variableMetadata.MaxValue = core.Int64Ptr(int64(variableMetadataMap["max_value"].(int)))
-	}
-	if variableMetadataMap["min_length"] != nil {
-		variableMetadata.MinLength = core.Int64Ptr(int64(variableMetadataMap["min_length"].(int)))
-	}
-	if variableMetadataMap["max_length"] != nil {
-		variableMetadata.MaxLength = core.Int64Ptr(int64(variableMetadataMap["max_length"].(int)))
-	}
-	if variableMetadataMap["matches"] != nil {
-		variableMetadata.Matches = core.StringPtr(variableMetadataMap["matches"].(string))
-	}
-	if variableMetadataMap["position"] != nil {
-		variableMetadata.Position = core.Int64Ptr(int64(variableMetadataMap["position"].(int)))
-	}
-	if variableMetadataMap["group_by"] != nil {
-		variableMetadata.GroupBy = core.StringPtr(variableMetadataMap["group_by"].(string))
-	}
-	if variableMetadataMap["source"] != nil {
-		variableMetadata.Source = core.StringPtr(variableMetadataMap["source"].(string))
-	}
-
-	return variableMetadata
-}
-
-func resourceIBMSchematicsJobMapToJobStatus(jobStatusMap map[string]interface{}) schematicsv1.JobStatus {
-	jobStatus := schematicsv1.JobStatus{}
-
-	if jobStatusMap["workspace_job_status"] != nil {
-		// TODO: handle WorkspaceJobStatus of type JobStatusWorkspace -- not primitive type, not list
-	}
-	if jobStatusMap["action_job_status"] != nil {
-		actionJobStatus := resourceIBMSchematicsJobMapToJobStatusAction(jobStatusMap["action_job_status"].([]interface{})[0].(map[string]interface{}))
-		jobStatus.ActionJobStatus = &actionJobStatus
-	}
-
-	return jobStatus
-}
-
-func resourceIBMSchematicsJobMapToJobStatusWorkspace(jobStatusWorkspaceMap map[string]interface{}) schematicsv1.JobStatusWorkspace {
-	jobStatusWorkspace := schematicsv1.JobStatusWorkspace{}
-
-	if jobStatusWorkspaceMap["workspace_name"] != nil {
-		jobStatusWorkspace.WorkspaceName = core.StringPtr(jobStatusWorkspaceMap["workspace_name"].(string))
-	}
-	if jobStatusWorkspaceMap["status_code"] != nil {
-		jobStatusWorkspace.StatusCode = core.StringPtr(jobStatusWorkspaceMap["status_code"].(string))
-	}
-	if jobStatusWorkspaceMap["status_message"] != nil {
-		jobStatusWorkspace.StatusMessage = core.StringPtr(jobStatusWorkspaceMap["status_message"].(string))
-	}
-	if jobStatusWorkspaceMap["flow_status"] != nil {
-		// TODO: handle FlowStatus of type JobStatusFlow -- not primitive type, not list
-	}
-	if jobStatusWorkspaceMap["template_status"] != nil {
-		templateStatus := []schematicsv1.JobStatusTemplate{}
-		for _, templateStatusItem := range jobStatusWorkspaceMap["template_status"].([]interface{}) {
-			templateStatusItemModel := resourceIBMSchematicsJobMapToJobStatusTemplate(templateStatusItem.(map[string]interface{}))
-			templateStatus = append(templateStatus, templateStatusItemModel)
-		}
-		jobStatusWorkspace.TemplateStatus = templateStatus
-	}
-	if jobStatusWorkspaceMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusWorkspace
-}
-
-func resourceIBMSchematicsJobMapToJobStatusFlow(jobStatusFlowMap map[string]interface{}) schematicsv1.JobStatusFlow {
-	jobStatusFlow := schematicsv1.JobStatusFlow{}
-
-	if jobStatusFlowMap["flow_id"] != nil {
-		jobStatusFlow.FlowID = core.StringPtr(jobStatusFlowMap["flow_id"].(string))
-	}
-	if jobStatusFlowMap["flow_name"] != nil {
-		jobStatusFlow.FlowName = core.StringPtr(jobStatusFlowMap["flow_name"].(string))
-	}
-	if jobStatusFlowMap["status_code"] != nil {
-		jobStatusFlow.StatusCode = core.StringPtr(jobStatusFlowMap["status_code"].(string))
-	}
-	if jobStatusFlowMap["status_message"] != nil {
-		jobStatusFlow.StatusMessage = core.StringPtr(jobStatusFlowMap["status_message"].(string))
-	}
-	if jobStatusFlowMap["workitems"] != nil {
-		workitems := []schematicsv1.JobStatusWorkitem{}
-		for _, workitemsItem := range jobStatusFlowMap["workitems"].([]interface{}) {
-			workitemsItemModel := resourceIBMSchematicsJobMapToJobStatusWorkitem(workitemsItem.(map[string]interface{}))
-			workitems = append(workitems, workitemsItemModel)
-		}
-		jobStatusFlow.Workitems = workitems
-	}
-	if jobStatusFlowMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusFlow
-}
-
-func resourceIBMSchematicsJobMapToJobStatusWorkitem(jobStatusWorkitemMap map[string]interface{}) schematicsv1.JobStatusWorkitem {
-	jobStatusWorkitem := schematicsv1.JobStatusWorkitem{}
-
-	if jobStatusWorkitemMap["workspace_id"] != nil {
-		jobStatusWorkitem.WorkspaceID = core.StringPtr(jobStatusWorkitemMap["workspace_id"].(string))
-	}
-	if jobStatusWorkitemMap["workspace_name"] != nil {
-		jobStatusWorkitem.WorkspaceName = core.StringPtr(jobStatusWorkitemMap["workspace_name"].(string))
-	}
-	if jobStatusWorkitemMap["job_id"] != nil {
-		jobStatusWorkitem.JobID = core.StringPtr(jobStatusWorkitemMap["job_id"].(string))
-	}
-	if jobStatusWorkitemMap["status_code"] != nil {
-		jobStatusWorkitem.StatusCode = core.StringPtr(jobStatusWorkitemMap["status_code"].(string))
-	}
-	if jobStatusWorkitemMap["status_message"] != nil {
-		jobStatusWorkitem.StatusMessage = core.StringPtr(jobStatusWorkitemMap["status_message"].(string))
-	}
-	if jobStatusWorkitemMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusWorkitem
-}
-
-func resourceIBMSchematicsJobMapToJobStatusTemplate(jobStatusTemplateMap map[string]interface{}) schematicsv1.JobStatusTemplate {
-	jobStatusTemplate := schematicsv1.JobStatusTemplate{}
-
-	if jobStatusTemplateMap["template_id"] != nil {
-		jobStatusTemplate.TemplateID = core.StringPtr(jobStatusTemplateMap["template_id"].(string))
-	}
-	if jobStatusTemplateMap["template_name"] != nil {
-		jobStatusTemplate.TemplateName = core.StringPtr(jobStatusTemplateMap["template_name"].(string))
-	}
-	if jobStatusTemplateMap["flow_index"] != nil {
-		jobStatusTemplate.FlowIndex = core.Int64Ptr(int64(jobStatusTemplateMap["flow_index"].(int)))
-	}
-	if jobStatusTemplateMap["status_code"] != nil {
-		jobStatusTemplate.StatusCode = core.StringPtr(jobStatusTemplateMap["status_code"].(string))
-	}
-	if jobStatusTemplateMap["status_message"] != nil {
-		jobStatusTemplate.StatusMessage = core.StringPtr(jobStatusTemplateMap["status_message"].(string))
-	}
-	if jobStatusTemplateMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusTemplate
-}
-
-func resourceIBMSchematicsJobMapToJobStatusAction(jobStatusActionMap map[string]interface{}) schematicsv1.JobStatusAction {
-	jobStatusAction := schematicsv1.JobStatusAction{}
-
-	if jobStatusActionMap["action_name"] != nil {
-		jobStatusAction.ActionName = core.StringPtr(jobStatusActionMap["action_name"].(string))
-	}
-	if jobStatusActionMap["status_code"] != nil {
-		jobStatusAction.StatusCode = core.StringPtr(jobStatusActionMap["status_code"].(string))
-	}
-	if jobStatusActionMap["status_message"] != nil {
-		jobStatusAction.StatusMessage = core.StringPtr(jobStatusActionMap["status_message"].(string))
-	}
-	if jobStatusActionMap["bastion_status_code"] != nil {
-		jobStatusAction.BastionStatusCode = core.StringPtr(jobStatusActionMap["bastion_status_code"].(string))
-	}
-	if jobStatusActionMap["bastion_status_message"] != nil {
-		jobStatusAction.BastionStatusMessage = core.StringPtr(jobStatusActionMap["bastion_status_message"].(string))
-	}
-	if jobStatusActionMap["targets_status_code"] != nil {
-		jobStatusAction.TargetsStatusCode = core.StringPtr(jobStatusActionMap["targets_status_code"].(string))
-	}
-	if jobStatusActionMap["targets_status_message"] != nil {
-		jobStatusAction.TargetsStatusMessage = core.StringPtr(jobStatusActionMap["targets_status_message"].(string))
-	}
-	if jobStatusActionMap["updated_at"] != nil {
-		updatedAt, err := strfmt.ParseDateTime(jobStatusActionMap["updated_at"].(string))
-		if err != nil {
-			jobStatusAction.UpdatedAt = &updatedAt
-		}
-	}
-
-	return jobStatusAction
-}
-
-func resourceIBMSchematicsJobMapToJobStatusSystem(jobStatusSystemMap map[string]interface{}) schematicsv1.JobStatusSystem {
-	jobStatusSystem := schematicsv1.JobStatusSystem{}
-
-	if jobStatusSystemMap["system_status_message"] != nil {
-		jobStatusSystem.SystemStatusMessage = core.StringPtr(jobStatusSystemMap["system_status_message"].(string))
-	}
-	if jobStatusSystemMap["system_status_code"] != nil {
-		jobStatusSystem.SystemStatusCode = core.StringPtr(jobStatusSystemMap["system_status_code"].(string))
-	}
-	if jobStatusSystemMap["schematics_resource_status"] != nil {
-		schematicsResourceStatus := []schematicsv1.JobStatusSchematicsResources{}
-		for _, schematicsResourceStatusItem := range jobStatusSystemMap["schematics_resource_status"].([]interface{}) {
-			schematicsResourceStatusItemModel := resourceIBMSchematicsJobMapToJobStatusSchematicsResources(schematicsResourceStatusItem.(map[string]interface{}))
-			schematicsResourceStatus = append(schematicsResourceStatus, schematicsResourceStatusItemModel)
-		}
-		jobStatusSystem.SchematicsResourceStatus = schematicsResourceStatus
-	}
-	if jobStatusSystemMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusSystem
-}
-
-func resourceIBMSchematicsJobMapToJobStatusSchematicsResources(jobStatusSchematicsResourcesMap map[string]interface{}) schematicsv1.JobStatusSchematicsResources {
-	jobStatusSchematicsResources := schematicsv1.JobStatusSchematicsResources{}
-
-	if jobStatusSchematicsResourcesMap["status_code"] != nil {
-		jobStatusSchematicsResources.StatusCode = core.StringPtr(jobStatusSchematicsResourcesMap["status_code"].(string))
-	}
-	if jobStatusSchematicsResourcesMap["status_message"] != nil {
-		jobStatusSchematicsResources.StatusMessage = core.StringPtr(jobStatusSchematicsResourcesMap["status_message"].(string))
-	}
-	if jobStatusSchematicsResourcesMap["schematics_resource_id"] != nil {
-		jobStatusSchematicsResources.SchematicsResourceID = core.StringPtr(jobStatusSchematicsResourcesMap["schematics_resource_id"].(string))
-	}
-	if jobStatusSchematicsResourcesMap["updated_at"] != nil {
-
-	}
-
-	return jobStatusSchematicsResources
-}
-
-func resourceIBMSchematicsJobMapToJobData(jobDataMap map[string]interface{}) schematicsv1.JobData {
-	jobData := schematicsv1.JobData{}
-
-	jobData.JobType = core.StringPtr(jobDataMap["job_type"].(string))
-	if jobDataMap["workspace_job_data"] != nil {
-		workspaceJobData := resourceIBMSchematicsJobMapToJobDataWorkspace(jobDataMap["workspace_job_data"].([]interface{})[0].(map[string]interface{}))
-		jobData.WorkspaceJobData = &workspaceJobData
-	}
-	if jobDataMap["action_job_data"] != nil {
-		actionJobData := resourceIBMSchematicsJobMapToJobDataAction(jobDataMap["action_job_data"].([]interface{})[0].(map[string]interface{}))
-		jobData.ActionJobData = &actionJobData
-	}
-	if jobDataMap["system_job_data"] != nil {
-		systemJobData := resourceIBMSchematicsJobMapToJobDataSystem(jobDataMap["system_job_data"].([]interface{})[0].(map[string]interface{}))
-		jobData.SystemJobData = &systemJobData
-	}
-	if jobDataMap["flow_job_data"] != nil {
-		flowJobData := resourceIBMSchematicsJobMapToJobDataFlow(jobDataMap["flow_job_data"].([]interface{})[0].(map[string]interface{}))
-		jobData.FlowJobData = &flowJobData
-	}
-
-	return jobData
-}
-
-func resourceIBMSchematicsJobMapToJobDataWorkspace(jobDataWorkspaceMap map[string]interface{}) schematicsv1.JobDataWorkspace {
-	jobDataWorkspace := schematicsv1.JobDataWorkspace{}
-
-	if jobDataWorkspaceMap["workspace_name"] != nil {
-		jobDataWorkspace.WorkspaceName = core.StringPtr(jobDataWorkspaceMap["workspace_name"].(string))
-	}
-	if jobDataWorkspaceMap["flow_id"] != nil {
-		jobDataWorkspace.FlowID = core.StringPtr(jobDataWorkspaceMap["flow_id"].(string))
-	}
-	if jobDataWorkspaceMap["flow_name"] != nil {
-		jobDataWorkspace.FlowName = core.StringPtr(jobDataWorkspaceMap["flow_name"].(string))
-	}
-	if jobDataWorkspaceMap["inputs"] != nil {
-		inputs := []schematicsv1.VariableData{}
-		for _, inputsItem := range jobDataWorkspaceMap["inputs"].([]interface{}) {
-			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
-			inputs = append(inputs, inputsItemModel)
-		}
-		jobDataWorkspace.Inputs = inputs
-	}
-	if jobDataWorkspaceMap["outputs"] != nil {
-		outputs := []schematicsv1.VariableData{}
-		for _, outputsItem := range jobDataWorkspaceMap["outputs"].([]interface{}) {
-			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
-			outputs = append(outputs, outputsItemModel)
-		}
-		jobDataWorkspace.Outputs = outputs
-	}
-	if jobDataWorkspaceMap["settings"] != nil {
-		settings := []schematicsv1.VariableData{}
-		for _, settingsItem := range jobDataWorkspaceMap["settings"].([]interface{}) {
-			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
-			settings = append(settings, settingsItemModel)
-		}
-		jobDataWorkspace.Settings = settings
-	}
-	if jobDataWorkspaceMap["template_data"] != nil {
-		templateData := []schematicsv1.JobDataTemplate{}
-		for _, templateDataItem := range jobDataWorkspaceMap["template_data"].([]interface{}) {
-			templateDataItemModel := resourceIBMSchematicsJobMapToJobDataTemplate(templateDataItem.(map[string]interface{}))
-			templateData = append(templateData, templateDataItemModel)
-		}
-		jobDataWorkspace.TemplateData = templateData
-	}
-	if jobDataWorkspaceMap["updated_at"] != nil {
-
-	}
-
-	return jobDataWorkspace
-}
-
-func resourceIBMSchematicsJobMapToJobDataTemplate(jobDataTemplateMap map[string]interface{}) schematicsv1.JobDataTemplate {
-	jobDataTemplate := schematicsv1.JobDataTemplate{}
-
-	if jobDataTemplateMap["template_id"] != nil {
-		jobDataTemplate.TemplateID = core.StringPtr(jobDataTemplateMap["template_id"].(string))
-	}
-	if jobDataTemplateMap["template_name"] != nil {
-		jobDataTemplate.TemplateName = core.StringPtr(jobDataTemplateMap["template_name"].(string))
-	}
-	if jobDataTemplateMap["flow_index"] != nil {
-		jobDataTemplate.FlowIndex = core.Int64Ptr(int64(jobDataTemplateMap["flow_index"].(int)))
-	}
-	if jobDataTemplateMap["inputs"] != nil {
-		inputs := []schematicsv1.VariableData{}
-		for _, inputsItem := range jobDataTemplateMap["inputs"].([]interface{}) {
-			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
-			inputs = append(inputs, inputsItemModel)
-		}
-		jobDataTemplate.Inputs = inputs
-	}
-	if jobDataTemplateMap["outputs"] != nil {
-		outputs := []schematicsv1.VariableData{}
-		for _, outputsItem := range jobDataTemplateMap["outputs"].([]interface{}) {
-			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
-			outputs = append(outputs, outputsItemModel)
-		}
-		jobDataTemplate.Outputs = outputs
-	}
-	if jobDataTemplateMap["settings"] != nil {
-		settings := []schematicsv1.VariableData{}
-		for _, settingsItem := range jobDataTemplateMap["settings"].([]interface{}) {
-			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
-			settings = append(settings, settingsItemModel)
-		}
-		jobDataTemplate.Settings = settings
-	}
-	if jobDataTemplateMap["updated_at"] != nil {
-
-	}
-
-	return jobDataTemplate
-}
-
-func resourceIBMSchematicsJobMapToJobDataAction(jobDataActionMap map[string]interface{}) schematicsv1.JobDataAction {
-	jobDataAction := schematicsv1.JobDataAction{}
-
-	if jobDataActionMap["action_name"] != nil {
-		jobDataAction.ActionName = core.StringPtr(jobDataActionMap["action_name"].(string))
-	}
-	if jobDataActionMap["inputs"] != nil {
-		inputs := []schematicsv1.VariableData{}
-		for _, inputsItem := range jobDataActionMap["inputs"].([]interface{}) {
-			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
-			inputs = append(inputs, inputsItemModel)
-		}
-		jobDataAction.Inputs = inputs
-	}
-	if jobDataActionMap["outputs"] != nil {
-		outputs := []schematicsv1.VariableData{}
-		for _, outputsItem := range jobDataActionMap["outputs"].([]interface{}) {
-			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
-			outputs = append(outputs, outputsItemModel)
-		}
-		jobDataAction.Outputs = outputs
-	}
-	if jobDataActionMap["settings"] != nil {
-		settings := []schematicsv1.VariableData{}
-		for _, settingsItem := range jobDataActionMap["settings"].([]interface{}) {
-			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
-			settings = append(settings, settingsItemModel)
-		}
-		jobDataAction.Settings = settings
-	}
-	if jobDataActionMap["updated_at"] != nil {
-
-	}
-	if jobDataActionMap["inventory_record"] != nil {
-		// TODO: handle InventoryRecord of type InventoryResourceRecord -- not primitive type, not list
-	}
-	if jobDataActionMap["materialized_inventory"] != nil {
-		jobDataAction.MaterializedInventory = core.StringPtr(jobDataActionMap["materialized_inventory"].(string))
-	}
-
-	return jobDataAction
-}
-
-func resourceIBMSchematicsJobMapToInventoryResourceRecord(inventoryResourceRecordMap map[string]interface{}) schematicsv1.InventoryResourceRecord {
-	inventoryResourceRecord := schematicsv1.InventoryResourceRecord{}
-
-	if inventoryResourceRecordMap["name"] != nil {
-		inventoryResourceRecord.Name = core.StringPtr(inventoryResourceRecordMap["name"].(string))
-	}
-	if inventoryResourceRecordMap["id"] != nil {
-		inventoryResourceRecord.ID = core.StringPtr(inventoryResourceRecordMap["id"].(string))
-	}
-	if inventoryResourceRecordMap["description"] != nil {
-		inventoryResourceRecord.Description = core.StringPtr(inventoryResourceRecordMap["description"].(string))
-	}
-	if inventoryResourceRecordMap["location"] != nil {
-		inventoryResourceRecord.Location = core.StringPtr(inventoryResourceRecordMap["location"].(string))
-	}
-	if inventoryResourceRecordMap["resource_group"] != nil {
-		inventoryResourceRecord.ResourceGroup = core.StringPtr(inventoryResourceRecordMap["resource_group"].(string))
-	}
-	if inventoryResourceRecordMap["created_at"] != nil {
-
-	}
-	if inventoryResourceRecordMap["created_by"] != nil {
-		inventoryResourceRecord.CreatedBy = core.StringPtr(inventoryResourceRecordMap["created_by"].(string))
-	}
-	if inventoryResourceRecordMap["updated_at"] != nil {
-
-	}
-	if inventoryResourceRecordMap["updated_by"] != nil {
-		inventoryResourceRecord.UpdatedBy = core.StringPtr(inventoryResourceRecordMap["updated_by"].(string))
-	}
-	if inventoryResourceRecordMap["inventories_ini"] != nil {
-		inventoryResourceRecord.InventoriesIni = core.StringPtr(inventoryResourceRecordMap["inventories_ini"].(string))
-	}
-	if inventoryResourceRecordMap["resource_queries"] != nil {
-		resourceQueries := []string{}
-		for _, resourceQueriesItem := range inventoryResourceRecordMap["resource_queries"].([]interface{}) {
-			resourceQueries = append(resourceQueries, resourceQueriesItem.(string))
-		}
-		inventoryResourceRecord.ResourceQueries = resourceQueries
-	}
-
-	return inventoryResourceRecord
-}
-
-func resourceIBMSchematicsJobMapToJobDataSystem(jobDataSystemMap map[string]interface{}) schematicsv1.JobDataSystem {
-	jobDataSystem := schematicsv1.JobDataSystem{}
-
-	if jobDataSystemMap["key_id"] != nil {
-		jobDataSystem.KeyID = core.StringPtr(jobDataSystemMap["key_id"].(string))
-	}
-	if jobDataSystemMap["schematics_resource_id"] != nil {
-		schematicsResourceID := []string{}
-		for _, schematicsResourceIDItem := range jobDataSystemMap["schematics_resource_id"].([]interface{}) {
-			schematicsResourceID = append(schematicsResourceID, schematicsResourceIDItem.(string))
-		}
-		jobDataSystem.SchematicsResourceID = schematicsResourceID
-	}
-	if jobDataSystemMap["updated_at"] != nil {
-
-	}
-
-	return jobDataSystem
-}
-
-func resourceIBMSchematicsJobMapToJobDataFlow(jobDataFlowMap map[string]interface{}) schematicsv1.JobDataFlow {
-	jobDataFlow := schematicsv1.JobDataFlow{}
-
-	if jobDataFlowMap["flow_id"] != nil {
-		jobDataFlow.FlowID = core.StringPtr(jobDataFlowMap["flow_id"].(string))
-	}
-	if jobDataFlowMap["flow_name"] != nil {
-		jobDataFlow.FlowName = core.StringPtr(jobDataFlowMap["flow_name"].(string))
-	}
-	if jobDataFlowMap["workitems"] != nil {
-		workitems := []schematicsv1.JobDataWorkItem{}
-		for _, workitemsItem := range jobDataFlowMap["workitems"].([]interface{}) {
-			workitemsItemModel := resourceIBMSchematicsJobMapToJobDataWorkItem(workitemsItem.(map[string]interface{}))
-			workitems = append(workitems, workitemsItemModel)
-		}
-		jobDataFlow.Workitems = workitems
-	}
-	if jobDataFlowMap["updated_at"] != nil {
-
-	}
-
-	return jobDataFlow
-}
-
-func resourceIBMSchematicsJobMapToJobDataWorkItem(jobDataWorkItemMap map[string]interface{}) schematicsv1.JobDataWorkItem {
-	jobDataWorkItem := schematicsv1.JobDataWorkItem{}
-
-	if jobDataWorkItemMap["command_object_id"] != nil {
-		jobDataWorkItem.CommandObjectID = core.StringPtr(jobDataWorkItemMap["command_object_id"].(string))
-	}
-	if jobDataWorkItemMap["command_object_name"] != nil {
-		jobDataWorkItem.CommandObjectName = core.StringPtr(jobDataWorkItemMap["command_object_name"].(string))
-	}
-	if jobDataWorkItemMap["layers"] != nil {
-		jobDataWorkItem.Layers = core.StringPtr(jobDataWorkItemMap["layers"].(string))
-	}
-	if jobDataWorkItemMap["source_type"] != nil {
-		jobDataWorkItem.SourceType = core.StringPtr(jobDataWorkItemMap["source_type"].(string))
-	}
-	if jobDataWorkItemMap["source"] != nil {
-		// TODO: handle Source of type ExternalSource -- not primitive type, not list
-	}
-	if jobDataWorkItemMap["inputs"] != nil {
-		inputs := []schematicsv1.VariableData{}
-		for _, inputsItem := range jobDataWorkItemMap["inputs"].([]interface{}) {
-			inputsItemModel := resourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
-			inputs = append(inputs, inputsItemModel)
-		}
-		jobDataWorkItem.Inputs = inputs
-	}
-	if jobDataWorkItemMap["outputs"] != nil {
-		outputs := []schematicsv1.VariableData{}
-		for _, outputsItem := range jobDataWorkItemMap["outputs"].([]interface{}) {
-			outputsItemModel := resourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
-			outputs = append(outputs, outputsItemModel)
-		}
-		jobDataWorkItem.Outputs = outputs
-	}
-	if jobDataWorkItemMap["settings"] != nil {
-		settings := []schematicsv1.VariableData{}
-		for _, settingsItem := range jobDataWorkItemMap["settings"].([]interface{}) {
-			settingsItemModel := resourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
-			settings = append(settings, settingsItemModel)
-		}
-		jobDataWorkItem.Settings = settings
-	}
-	if jobDataWorkItemMap["updated_at"] != nil {
-
-	}
-
-	return jobDataWorkItem
-}
-
-func resourceIBMSchematicsJobMapToExternalSource(externalSourceMap map[string]interface{}) schematicsv1.ExternalSource {
-	externalSource := schematicsv1.ExternalSource{}
-
-	externalSource.SourceType = core.StringPtr(externalSourceMap["source_type"].(string))
-	if externalSourceMap["git"] != nil {
-		// TODO: handle Git of type ExternalSourceGit -- not primitive type, not list
-	}
-	if externalSourceMap["catalog"] != nil {
-		// TODO: handle Catalog of type ExternalSourceCatalog -- not primitive type, not list
-	}
-
-	return externalSource
-}
-
-func resourceIBMSchematicsJobMapToExternalSourceGit(externalSourceGitMap map[string]interface{}) schematicsv1.ExternalSourceGit {
-	externalSourceGit := schematicsv1.ExternalSourceGit{}
-
-	if externalSourceGitMap["computed_git_repo_url"] != nil {
-		externalSourceGit.ComputedGitRepoURL = core.StringPtr(externalSourceGitMap["computed_git_repo_url"].(string))
-	}
-	if externalSourceGitMap["git_repo_url"] != nil {
-		externalSourceGit.GitRepoURL = core.StringPtr(externalSourceGitMap["git_repo_url"].(string))
-	}
-	if externalSourceGitMap["git_token"] != nil {
-		externalSourceGit.GitToken = core.StringPtr(externalSourceGitMap["git_token"].(string))
-	}
-	if externalSourceGitMap["git_repo_folder"] != nil {
-		externalSourceGit.GitRepoFolder = core.StringPtr(externalSourceGitMap["git_repo_folder"].(string))
-	}
-	if externalSourceGitMap["git_release"] != nil {
-		externalSourceGit.GitRelease = core.StringPtr(externalSourceGitMap["git_release"].(string))
-	}
-	if externalSourceGitMap["git_branch"] != nil {
-		externalSourceGit.GitBranch = core.StringPtr(externalSourceGitMap["git_branch"].(string))
-	}
-
-	return externalSourceGit
-}
-
-func resourceIBMSchematicsJobMapToExternalSourceCatalog(externalSourceCatalogMap map[string]interface{}) schematicsv1.ExternalSourceCatalog {
-	externalSourceCatalog := schematicsv1.ExternalSourceCatalog{}
-
-	if externalSourceCatalogMap["catalog_name"] != nil {
-		externalSourceCatalog.CatalogName = core.StringPtr(externalSourceCatalogMap["catalog_name"].(string))
-	}
-	if externalSourceCatalogMap["offering_name"] != nil {
-		externalSourceCatalog.OfferingName = core.StringPtr(externalSourceCatalogMap["offering_name"].(string))
-	}
-	if externalSourceCatalogMap["offering_version"] != nil {
-		externalSourceCatalog.OfferingVersion = core.StringPtr(externalSourceCatalogMap["offering_version"].(string))
-	}
-	if externalSourceCatalogMap["offering_kind"] != nil {
-		externalSourceCatalog.OfferingKind = core.StringPtr(externalSourceCatalogMap["offering_kind"].(string))
-	}
-	if externalSourceCatalogMap["offering_id"] != nil {
-		externalSourceCatalog.OfferingID = core.StringPtr(externalSourceCatalogMap["offering_id"].(string))
-	}
-	if externalSourceCatalogMap["offering_version_id"] != nil {
-		externalSourceCatalog.OfferingVersionID = core.StringPtr(externalSourceCatalogMap["offering_version_id"].(string))
-	}
-	if externalSourceCatalogMap["offering_repo_url"] != nil {
-		externalSourceCatalog.OfferingRepoURL = core.StringPtr(externalSourceCatalogMap["offering_repo_url"].(string))
-	}
-
-	return externalSourceCatalog
-}
-
-func resourceIBMSchematicsJobMapToExternalSourceCosBucket(externalSourceCosBucketMap map[string]interface{}) schematicsv1.ExternalSourceCosBucket {
-	externalSourceCosBucket := schematicsv1.ExternalSourceCosBucket{}
-
-	if externalSourceCosBucketMap["cos_bucket_url"] != nil {
-		externalSourceCosBucket.CosBucketURL = core.StringPtr(externalSourceCosBucketMap["cos_bucket_url"].(string))
-	}
-
-	return externalSourceCosBucket
-}
-
-func resourceIBMSchematicsJobMapToJobDataWorkItemLastJob(jobDataWorkItemLastJobMap map[string]interface{}) schematicsv1.JobDataWorkItemLastJob {
-	jobDataWorkItemLastJob := schematicsv1.JobDataWorkItemLastJob{}
-
-	if jobDataWorkItemLastJobMap["command_object"] != nil {
-		jobDataWorkItemLastJob.CommandObject = core.StringPtr(jobDataWorkItemLastJobMap["command_object"].(string))
-	}
-	if jobDataWorkItemLastJobMap["command_object_name"] != nil {
-		jobDataWorkItemLastJob.CommandObjectName = core.StringPtr(jobDataWorkItemLastJobMap["command_object_name"].(string))
-	}
-	if jobDataWorkItemLastJobMap["command_object_id"] != nil {
-		jobDataWorkItemLastJob.CommandObjectID = core.StringPtr(jobDataWorkItemLastJobMap["command_object_id"].(string))
-	}
-	if jobDataWorkItemLastJobMap["command_name"] != nil {
-		jobDataWorkItemLastJob.CommandName = core.StringPtr(jobDataWorkItemLastJobMap["command_name"].(string))
-	}
-	if jobDataWorkItemLastJobMap["job_id"] != nil {
-		jobDataWorkItemLastJob.JobID = core.StringPtr(jobDataWorkItemLastJobMap["job_id"].(string))
-	}
-	if jobDataWorkItemLastJobMap["job_status"] != nil {
-		jobDataWorkItemLastJob.JobStatus = core.StringPtr(jobDataWorkItemLastJobMap["job_status"].(string))
-	}
-
-	return jobDataWorkItemLastJob
-}
-
-func resourceIBMSchematicsJobMapToBastionResourceDefinition(bastionResourceDefinitionMap map[string]interface{}) schematicsv1.BastionResourceDefinition {
-	bastionResourceDefinition := schematicsv1.BastionResourceDefinition{}
-
-	if bastionResourceDefinitionMap["name"] != nil {
-		bastionResourceDefinition.Name = core.StringPtr(bastionResourceDefinitionMap["name"].(string))
-	}
-	if bastionResourceDefinitionMap["host"] != nil {
-		bastionResourceDefinition.Host = core.StringPtr(bastionResourceDefinitionMap["host"].(string))
-	}
-
-	return bastionResourceDefinition
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummary(jobLogSummaryMap map[string]interface{}) schematicsv1.JobLogSummary {
-	jobLogSummary := schematicsv1.JobLogSummary{}
-
-	if jobLogSummaryMap["job_id"] != nil {
-		jobLogSummary.JobID = core.StringPtr(jobLogSummaryMap["job_id"].(string))
-	}
-	if jobLogSummaryMap["job_type"] != nil {
-		jobLogSummary.JobType = core.StringPtr(jobLogSummaryMap["job_type"].(string))
-	}
-	if jobLogSummaryMap["log_start_at"] != nil {
-
-	}
-	if jobLogSummaryMap["log_analyzed_till"] != nil {
-
-	}
-	if jobLogSummaryMap["elapsed_time"] != nil {
-		jobLogSummary.ElapsedTime = core.Float64Ptr(jobLogSummaryMap["elapsed_time"].(float64))
-	}
-	if jobLogSummaryMap["log_errors"] != nil {
-		logErrors := []schematicsv1.JobLogSummaryLogErrors{}
-		for _, logErrorsItem := range jobLogSummaryMap["log_errors"].([]interface{}) {
-			logErrorsItemModel := resourceIBMSchematicsJobMapToJobLogSummaryLogErrors(logErrorsItem.(map[string]interface{}))
-			logErrors = append(logErrors, logErrorsItemModel)
-		}
-		jobLogSummary.LogErrors = logErrors
-	}
-	if jobLogSummaryMap["repo_download_job"] != nil && jobLogSummaryMap["repo_download_job"].([]interface{})[0] != nil {
-		repoDownloadJob := resourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(jobLogSummaryMap["repo_download_job"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummary.RepoDownloadJob = &repoDownloadJob
-	}
-	if jobLogSummaryMap["workspace_job"] != nil && jobLogSummaryMap["workspace_job"].([]interface{})[0] != nil {
-		workspaceJob := resourceIBMSchematicsJobMapToJobLogSummaryWorkspaceJob(jobLogSummaryMap["workspace_job"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummary.WorkspaceJob = &workspaceJob
-	}
-	if jobLogSummaryMap["flow_job"] != nil && jobLogSummaryMap["flow_job"].([]interface{})[0] != nil {
-		flowJob := resourceIBMSchematicsJobMapToJobLogSummaryFlowJob(jobLogSummaryMap["flow_job"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummary.FlowJob = &flowJob
-	}
-	if jobLogSummaryMap["action_job"] != nil && jobLogSummaryMap["action_job"].([]interface{})[0] != nil {
-		actionJob := resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryMap["action_job"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummary.ActionJob = &actionJob
-	}
-	if jobLogSummaryMap["system_job"] != nil && jobLogSummaryMap["system_job"].([]interface{})[0] != nil {
-		systemJob := resourceIBMSchematicsJobMapToJobLogSummarySystemJob(jobLogSummaryMap["system_job"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummary.SystemJob = &systemJob
-	}
-
-	return jobLogSummary
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryLogErrors(jobLogSummaryLogErrorsMap map[string]interface{}) schematicsv1.JobLogSummaryLogErrors {
-	jobLogSummaryLogErrors := schematicsv1.JobLogSummaryLogErrors{}
-
-	if jobLogSummaryLogErrorsMap["error_code"] != nil {
-		jobLogSummaryLogErrors.ErrorCode = core.StringPtr(jobLogSummaryLogErrorsMap["error_code"].(string))
-	}
-	if jobLogSummaryLogErrorsMap["error_msg"] != nil {
-		jobLogSummaryLogErrors.ErrorMsg = core.StringPtr(jobLogSummaryLogErrorsMap["error_msg"].(string))
-	}
-	if jobLogSummaryLogErrorsMap["error_count"] != nil {
-		jobLogSummaryLogErrors.ErrorCount = core.Float64Ptr(jobLogSummaryLogErrorsMap["error_count"].(float64))
-	}
-
-	return jobLogSummaryLogErrors
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(jobLogSummaryRepoDownloadJobMap map[string]interface{}) schematicsv1.JobLogSummaryRepoDownloadJob {
-	jobLogSummaryRepoDownloadJob := schematicsv1.JobLogSummaryRepoDownloadJob{}
-
-	if jobLogSummaryRepoDownloadJobMap["scanned_file_count"] != nil {
-		jobLogSummaryRepoDownloadJob.ScannedFileCount = core.Float64Ptr(jobLogSummaryRepoDownloadJobMap["scanned_file_count"].(float64))
-	}
-	if jobLogSummaryRepoDownloadJobMap["quarantined_file_count"] != nil {
-		jobLogSummaryRepoDownloadJob.QuarantinedFileCount = core.Float64Ptr(jobLogSummaryRepoDownloadJobMap["quarantined_file_count"].(float64))
-	}
-	if jobLogSummaryRepoDownloadJobMap["detected_filetype"] != nil {
-		jobLogSummaryRepoDownloadJob.DetectedFiletype = core.StringPtr(jobLogSummaryRepoDownloadJobMap["detected_filetype"].(string))
-	}
-	if jobLogSummaryRepoDownloadJobMap["inputs_count"] != nil {
-		jobLogSummaryRepoDownloadJob.InputsCount = core.StringPtr(jobLogSummaryRepoDownloadJobMap["inputs_count"].(string))
-	}
-	if jobLogSummaryRepoDownloadJobMap["outputs_count"] != nil {
-		jobLogSummaryRepoDownloadJob.OutputsCount = core.StringPtr(jobLogSummaryRepoDownloadJobMap["outputs_count"].(string))
-	}
-
-	return jobLogSummaryRepoDownloadJob
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryWorkspaceJob(jobLogSummaryWorkspaceJobMap map[string]interface{}) schematicsv1.JobLogSummaryWorkspaceJob {
-	jobLogSummaryWorkspaceJob := schematicsv1.JobLogSummaryWorkspaceJob{}
-
-	if jobLogSummaryWorkspaceJobMap["resources_add"] != nil {
-		jobLogSummaryWorkspaceJob.ResourcesAdd = core.Float64Ptr(jobLogSummaryWorkspaceJobMap["resources_add"].(float64))
-	}
-	if jobLogSummaryWorkspaceJobMap["resources_modify"] != nil {
-		jobLogSummaryWorkspaceJob.ResourcesModify = core.Float64Ptr(jobLogSummaryWorkspaceJobMap["resources_modify"].(float64))
-	}
-	if jobLogSummaryWorkspaceJobMap["resources_destroy"] != nil {
-		jobLogSummaryWorkspaceJob.ResourcesDestroy = core.Float64Ptr(jobLogSummaryWorkspaceJobMap["resources_destroy"].(float64))
-	}
-
-	return jobLogSummaryWorkspaceJob
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryFlowJob(jobLogSummaryFlowJobMap map[string]interface{}) schematicsv1.JobLogSummaryFlowJob {
-	jobLogSummaryFlowJob := schematicsv1.JobLogSummaryFlowJob{}
-
-	if jobLogSummaryFlowJobMap["workitems_completed"] != nil {
-		jobLogSummaryFlowJob.WorkitemsCompleted = core.Float64Ptr(jobLogSummaryFlowJobMap["workitems_completed"].(float64))
-	}
-	if jobLogSummaryFlowJobMap["workitems_pending"] != nil {
-		jobLogSummaryFlowJob.WorkitemsPending = core.Float64Ptr(jobLogSummaryFlowJobMap["workitems_pending"].(float64))
-	}
-	if jobLogSummaryFlowJobMap["workitems_failed"] != nil {
-		jobLogSummaryFlowJob.WorkitemsFailed = core.Float64Ptr(jobLogSummaryFlowJobMap["workitems_failed"].(float64))
-	}
-	if jobLogSummaryFlowJobMap["workitems"] != nil {
-		workitems := []schematicsv1.JobLogSummaryWorkitems{}
-		for _, workitemsItem := range jobLogSummaryFlowJobMap["workitems"].([]interface{}) {
-			workitemsItemModel := resourceIBMSchematicsJobMapToJobLogSummaryWorkitems(workitemsItem.(map[string]interface{}))
-			workitems = append(workitems, workitemsItemModel)
-		}
-		jobLogSummaryFlowJob.Workitems = workitems
-	}
-
-	return jobLogSummaryFlowJob
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryWorkitems(jobLogSummaryWorkitemsMap map[string]interface{}) schematicsv1.JobLogSummaryWorkitems {
-	jobLogSummaryWorkitems := schematicsv1.JobLogSummaryWorkitems{}
-
-	if jobLogSummaryWorkitemsMap["workspace_id"] != nil {
-		jobLogSummaryWorkitems.WorkspaceID = core.StringPtr(jobLogSummaryWorkitemsMap["workspace_id"].(string))
-	}
-	if jobLogSummaryWorkitemsMap["job_id"] != nil {
-		jobLogSummaryWorkitems.JobID = core.StringPtr(jobLogSummaryWorkitemsMap["job_id"].(string))
-	}
-	if jobLogSummaryWorkitemsMap["resources_add"] != nil {
-		jobLogSummaryWorkitems.ResourcesAdd = core.Float64Ptr(jobLogSummaryWorkitemsMap["resources_add"].(float64))
-	}
-	if jobLogSummaryWorkitemsMap["resources_modify"] != nil {
-		jobLogSummaryWorkitems.ResourcesModify = core.Float64Ptr(jobLogSummaryWorkitemsMap["resources_modify"].(float64))
-	}
-	if jobLogSummaryWorkitemsMap["resources_destroy"] != nil {
-		jobLogSummaryWorkitems.ResourcesDestroy = core.Float64Ptr(jobLogSummaryWorkitemsMap["resources_destroy"].(float64))
-	}
-	if jobLogSummaryWorkitemsMap["log_url"] != nil {
-		jobLogSummaryWorkitems.LogURL = core.StringPtr(jobLogSummaryWorkitemsMap["log_url"].(string))
-	}
-
-	return jobLogSummaryWorkitems
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryActionJob(jobLogSummaryActionJobMap map[string]interface{}) schematicsv1.JobLogSummaryActionJob {
-	jobLogSummaryActionJob := schematicsv1.JobLogSummaryActionJob{}
-
-	if jobLogSummaryActionJobMap["target_count"] != nil {
-		jobLogSummaryActionJob.TargetCount = core.Float64Ptr(jobLogSummaryActionJobMap["target_count"].(float64))
-	}
-	if jobLogSummaryActionJobMap["task_count"] != nil {
-		jobLogSummaryActionJob.TaskCount = core.Float64Ptr(jobLogSummaryActionJobMap["task_count"].(float64))
-	}
-	if jobLogSummaryActionJobMap["play_count"] != nil {
-		jobLogSummaryActionJob.PlayCount = core.Float64Ptr(jobLogSummaryActionJobMap["play_count"].(float64))
-	}
-	if jobLogSummaryActionJobMap["recap"] != nil && jobLogSummaryActionJobMap["recap"].([]interface{})[0] != nil {
-		recap := resourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(jobLogSummaryActionJobMap["recap"].([]interface{})[0].(map[string]interface{}))
-		jobLogSummaryActionJob.Recap = &recap
-	}
-
-	return jobLogSummaryActionJob
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(jobLogSummaryActionJobRecapMap map[string]interface{}) schematicsv1.JobLogSummaryActionJobRecap {
-	jobLogSummaryActionJobRecap := schematicsv1.JobLogSummaryActionJobRecap{}
-
-	if jobLogSummaryActionJobRecapMap["target"] != nil {
-		target := []string{}
-		for _, targetItem := range jobLogSummaryActionJobRecapMap["target"].([]interface{}) {
-			target = append(target, targetItem.(string))
-		}
-		jobLogSummaryActionJobRecap.Target = target
-	}
-	if jobLogSummaryActionJobRecapMap["ok"] != nil {
-		jobLogSummaryActionJobRecap.Ok = core.Float64Ptr(jobLogSummaryActionJobRecapMap["ok"].(float64))
-	}
-	if jobLogSummaryActionJobRecapMap["changed"] != nil {
-		jobLogSummaryActionJobRecap.Changed = core.Float64Ptr(jobLogSummaryActionJobRecapMap["changed"].(float64))
-	}
-	if jobLogSummaryActionJobRecapMap["failed"] != nil {
-		jobLogSummaryActionJobRecap.Failed = core.Float64Ptr(jobLogSummaryActionJobRecapMap["failed"].(float64))
-	}
-	if jobLogSummaryActionJobRecapMap["skipped"] != nil {
-		jobLogSummaryActionJobRecap.Skipped = core.Float64Ptr(jobLogSummaryActionJobRecapMap["skipped"].(float64))
-	}
-	if jobLogSummaryActionJobRecapMap["unreachable"] != nil {
-		jobLogSummaryActionJobRecap.Unreachable = core.Float64Ptr(jobLogSummaryActionJobRecapMap["unreachable"].(float64))
-	}
-
-	return jobLogSummaryActionJobRecap
-}
-
-func resourceIBMSchematicsJobMapToJobLogSummarySystemJob(jobLogSummarySystemJobMap map[string]interface{}) schematicsv1.JobLogSummarySystemJob {
-	jobLogSummarySystemJob := schematicsv1.JobLogSummarySystemJob{}
-
-	if jobLogSummarySystemJobMap["target_count"] != nil {
-		jobLogSummarySystemJob.TargetCount = core.Float64Ptr(jobLogSummarySystemJobMap["target_count"].(float64))
-	}
-	if jobLogSummarySystemJobMap["success"] != nil {
-		jobLogSummarySystemJob.Success = core.Float64Ptr(jobLogSummarySystemJobMap["success"].(float64))
-	}
-	if jobLogSummarySystemJobMap["failed"] != nil {
-		jobLogSummarySystemJob.Failed = core.Float64Ptr(jobLogSummarySystemJobMap["failed"].(float64))
-	}
-
-	return jobLogSummarySystemJob
-}
-
-func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -3874,1067 +3276,145 @@ func resourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceDat
 	}
 
 	if err = d.Set("command_object", job.CommandObject); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_object: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting command_object: %s", err))
 	}
 	if err = d.Set("command_object_id", job.CommandObjectID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_object_id: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting command_object_id: %s", err))
 	}
 	if err = d.Set("command_name", job.CommandName); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_name: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting command_name: %s", err))
 	}
-	if _, ok := d.GetOk("command_parameter"); ok {
-		if err = d.Set("command_parameter", d.Get("command_parameter").(string)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_parameter: %s", err))
-		}
+	if err = d.Set("command_parameter", job.CommandParameter); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting command_parameter: %s", err))
 	}
 	if job.CommandOptions != nil {
 		if err = d.Set("command_options", job.CommandOptions); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting command_options: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting command_options: %s", err))
 		}
 	}
+	jobInputs := []map[string]interface{}{}
 	if job.Inputs != nil {
-		jobInputs := []map[string]interface{}{}
 		for _, jobInputsItem := range job.Inputs {
-			jobInputsItemMap := resourceIBMSchematicsJobVariableDataToMap(jobInputsItem)
+			jobInputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&jobInputsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			jobInputs = append(jobInputs, jobInputsItemMap)
 		}
-		if err = d.Set("job_inputs", jobInputs); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting job_inputs: %s", err))
-		}
 	}
+	if err = d.Set("job_inputs", jobInputs); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting job_inputs: %s", err))
+	}
+	jobEnvSettings := []map[string]interface{}{}
 	if job.Settings != nil {
-		jobEnvSettings := []map[string]interface{}{}
 		for _, jobEnvSettingsItem := range job.Settings {
-			jobEnvSettingsItemMap := resourceIBMSchematicsJobVariableDataToMap(jobEnvSettingsItem)
+			jobEnvSettingsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&jobEnvSettingsItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			jobEnvSettings = append(jobEnvSettings, jobEnvSettingsItemMap)
 		}
-		if err = d.Set("job_env_settings", jobEnvSettings); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting job_env_settings: %s", err))
-		}
+	}
+	if err = d.Set("job_env_settings", jobEnvSettings); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting job_env_settings: %s", err))
 	}
 	if job.Tags != nil {
 		if err = d.Set("tags", job.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting tags: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 		}
 	}
 	if err = d.Set("location", job.Location); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting location: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
 	if job.Status != nil {
-		statusMap := resourceIBMSchematicsJobJobStatusToMap(*job.Status)
+		statusMap, err := ResourceIBMSchematicsJobJobStatusToMap(job.Status)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		if err = d.Set("status", []map[string]interface{}{statusMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting status: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 		}
 	}
 	if job.Data != nil {
-		dataMap := resourceIBMSchematicsJobJobDataToMap(*job.Data)
+		dataMap, err := ResourceIBMSchematicsJobJobDataToMap(job.Data)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		if err = d.Set("data", []map[string]interface{}{dataMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting data: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting data: %s", err))
 		}
 	}
 	if job.Bastion != nil {
-		bastionMap := resourceIBMSchematicsJobBastionResourceDefinitionToMap(*job.Bastion)
+		bastionMap, err := ResourceIBMSchematicsJobBastionResourceDefinitionToMap(job.Bastion)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		if err = d.Set("bastion", []map[string]interface{}{bastionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting bastion: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting bastion: %s", err))
 		}
 	}
 	if job.LogSummary != nil {
-		logSummaryMap := resourceIBMSchematicsJobJobLogSummaryToMap(*job.LogSummary)
+		logSummaryMap, err := ResourceIBMSchematicsJobJobLogSummaryToMap(job.LogSummary)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		if err = d.Set("log_summary", []map[string]interface{}{logSummaryMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting log_summary: %s", err))
+			return diag.FromErr(fmt.Errorf("Error setting log_summary: %s", err))
 		}
 	}
 	if err = d.Set("name", job.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 	if err = d.Set("description", job.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 	if err = d.Set("resource_group", job.ResourceGroup); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
 	}
 	if err = d.Set("submitted_at", flex.DateTimeToString(job.SubmittedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting submitted_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting submitted_at: %s", err))
 	}
 	if err = d.Set("submitted_by", job.SubmittedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting submitted_by: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting submitted_by: %s", err))
 	}
 	if err = d.Set("start_at", flex.DateTimeToString(job.StartAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting start_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting start_at: %s", err))
 	}
 	if err = d.Set("end_at", flex.DateTimeToString(job.EndAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting end_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting end_at: %s", err))
 	}
 	if err = d.Set("duration", job.Duration); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting duration: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting duration: %s", err))
 	}
 	if err = d.Set("log_store_url", job.LogStoreURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting log_store_url: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting log_store_url: %s", err))
 	}
 	if err = d.Set("state_store_url", job.StateStoreURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting state_store_url: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting state_store_url: %s", err))
 	}
 	if err = d.Set("results_url", job.ResultsURL); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting results_url: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting results_url: %s", err))
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(job.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	}
+	if err = d.Set("job_runner_id", job.JobRunnerID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting job_runner_id: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMSchematicsJobVariableDataToMap(variableData schematicsv1.VariableData) map[string]interface{} {
-	variableDataMap := map[string]interface{}{}
-
-	if variableData.Name != nil {
-		variableDataMap["name"] = variableData.Name
-	}
-	if variableData.Value != nil {
-		variableDataMap["value"] = variableData.Value
-	}
-	if variableData.Metadata != nil {
-		MetadataMap := resourceIBMSchematicsJobVariableMetadataToMap(*variableData.Metadata)
-		variableDataMap["metadata"] = []map[string]interface{}{MetadataMap}
-	}
-	if variableData.Link != nil {
-		variableDataMap["link"] = variableData.Link
-	}
-
-	return variableDataMap
-}
-
-func resourceIBMSchematicsJobVariableMetadataToMap(variableMetadata schematicsv1.VariableMetadata) map[string]interface{} {
-	variableMetadataMap := map[string]interface{}{}
-
-	if variableMetadata.Type != nil {
-		variableMetadataMap["type"] = variableMetadata.Type
-	}
-	if variableMetadata.Aliases != nil {
-		variableMetadataMap["aliases"] = variableMetadata.Aliases
-	}
-	if variableMetadata.Description != nil {
-		variableMetadataMap["description"] = variableMetadata.Description
-	}
-	if variableMetadata.DefaultValue != nil {
-		variableMetadataMap["default_value"] = variableMetadata.DefaultValue
-	}
-	if variableMetadata.Secure != nil {
-		variableMetadataMap["secure"] = variableMetadata.Secure
-	}
-	if variableMetadata.Immutable != nil {
-		variableMetadataMap["immutable"] = variableMetadata.Immutable
-	}
-	if variableMetadata.Hidden != nil {
-		variableMetadataMap["hidden"] = variableMetadata.Hidden
-	}
-	if variableMetadata.Options != nil {
-		variableMetadataMap["options"] = variableMetadata.Options
-	}
-	if variableMetadata.MinValue != nil {
-		variableMetadataMap["min_value"] = flex.IntValue(variableMetadata.MinValue)
-	}
-	if variableMetadata.MaxValue != nil {
-		variableMetadataMap["max_value"] = flex.IntValue(variableMetadata.MaxValue)
-	}
-	if variableMetadata.MinLength != nil {
-		variableMetadataMap["min_length"] = flex.IntValue(variableMetadata.MinLength)
-	}
-	if variableMetadata.MaxLength != nil {
-		variableMetadataMap["max_length"] = flex.IntValue(variableMetadata.MaxLength)
-	}
-	if variableMetadata.Matches != nil {
-		variableMetadataMap["matches"] = variableMetadata.Matches
-	}
-	if variableMetadata.Position != nil {
-		variableMetadataMap["position"] = flex.IntValue(variableMetadata.Position)
-	}
-	if variableMetadata.GroupBy != nil {
-		variableMetadataMap["group_by"] = variableMetadata.GroupBy
-	}
-	if variableMetadata.Source != nil {
-		variableMetadataMap["source"] = variableMetadata.Source
-	}
-
-	return variableMetadataMap
-}
-
-func resourceIBMSchematicsJobJobStatusToMap(jobStatus schematicsv1.JobStatus) map[string]interface{} {
-	jobStatusMap := map[string]interface{}{}
-
-	if jobStatus.WorkspaceJobStatus != nil {
-		WorkspaceJobStatusMap := resourceIBMSchematicsJobJobStatusWorkspaceToMap(*jobStatus.WorkspaceJobStatus)
-		jobStatusMap["workspace_job_status"] = []map[string]interface{}{WorkspaceJobStatusMap}
-	}
-	if jobStatus.ActionJobStatus != nil {
-		ActionJobStatusMap := resourceIBMSchematicsJobJobStatusActionToMap(*jobStatus.ActionJobStatus)
-		jobStatusMap["action_job_status"] = []map[string]interface{}{ActionJobStatusMap}
-	}
-	if jobStatus.SystemJobStatus != nil {
-		SystemJobStatusMap := resourceIBMSchematicsJobJobStatusSystemToMap(*jobStatus.SystemJobStatus)
-		jobStatusMap["system_job_status"] = []map[string]interface{}{SystemJobStatusMap}
-	}
-	if jobStatus.FlowJobStatus != nil {
-		FlowJobStatusMap := resourceIBMSchematicsJobJobStatusFlowToMap(*jobStatus.FlowJobStatus)
-		jobStatusMap["flow_job_status"] = []map[string]interface{}{FlowJobStatusMap}
-	}
-
-	return jobStatusMap
-}
-
-func resourceIBMSchematicsJobJobStatusWorkspaceToMap(jobStatusWorkspace schematicsv1.JobStatusWorkspace) map[string]interface{} {
-	jobStatusWorkspaceMap := map[string]interface{}{}
-
-	if jobStatusWorkspace.WorkspaceName != nil {
-		jobStatusWorkspaceMap["workspace_name"] = jobStatusWorkspace.WorkspaceName
-	}
-	if jobStatusWorkspace.StatusCode != nil {
-		jobStatusWorkspaceMap["status_code"] = jobStatusWorkspace.StatusCode
-	}
-	if jobStatusWorkspace.StatusMessage != nil {
-		jobStatusWorkspaceMap["status_message"] = jobStatusWorkspace.StatusMessage
-	}
-	if jobStatusWorkspace.FlowStatus != nil {
-		FlowStatusMap := resourceIBMSchematicsJobJobStatusFlowToMap(*jobStatusWorkspace.FlowStatus)
-		jobStatusWorkspaceMap["flow_status"] = []map[string]interface{}{FlowStatusMap}
-	}
-	if jobStatusWorkspace.TemplateStatus != nil {
-		templateStatus := []map[string]interface{}{}
-		for _, templateStatusItem := range jobStatusWorkspace.TemplateStatus {
-			templateStatusItemMap := resourceIBMSchematicsJobJobStatusTemplateToMap(templateStatusItem)
-			templateStatus = append(templateStatus, templateStatusItemMap)
-			// TODO: handle TemplateStatus of type TypeList -- list of non-primitive, not model items
-		}
-		jobStatusWorkspaceMap["template_status"] = templateStatus
-	}
-	if jobStatusWorkspace.UpdatedAt != nil {
-		jobStatusWorkspaceMap["updated_at"] = jobStatusWorkspace.UpdatedAt.String()
-	}
-
-	return jobStatusWorkspaceMap
-}
-
-func resourceIBMSchematicsJobJobStatusFlowToMap(jobStatusFlow schematicsv1.JobStatusFlow) map[string]interface{} {
-	jobStatusFlowMap := map[string]interface{}{}
-
-	if jobStatusFlow.FlowID != nil {
-		jobStatusFlowMap["flow_id"] = jobStatusFlow.FlowID
-	}
-	if jobStatusFlow.FlowName != nil {
-		jobStatusFlowMap["flow_name"] = jobStatusFlow.FlowName
-	}
-	if jobStatusFlow.StatusCode != nil {
-		jobStatusFlowMap["status_code"] = jobStatusFlow.StatusCode
-	}
-	if jobStatusFlow.StatusMessage != nil {
-		jobStatusFlowMap["status_message"] = jobStatusFlow.StatusMessage
-	}
-	if jobStatusFlow.Workitems != nil {
-		workitems := []map[string]interface{}{}
-		for _, workitemsItem := range jobStatusFlow.Workitems {
-			workitemsItemMap := resourceIBMSchematicsJobJobStatusWorkitemToMap(workitemsItem)
-			workitems = append(workitems, workitemsItemMap)
-			// TODO: handle Workitems of type TypeList -- list of non-primitive, not model items
-		}
-		jobStatusFlowMap["workitems"] = workitems
-	}
-	if jobStatusFlow.UpdatedAt != nil {
-		jobStatusFlowMap["updated_at"] = jobStatusFlow.UpdatedAt.String()
-	}
-
-	return jobStatusFlowMap
-}
-
-func resourceIBMSchematicsJobJobStatusWorkitemToMap(jobStatusWorkitem schematicsv1.JobStatusWorkitem) map[string]interface{} {
-	jobStatusWorkitemMap := map[string]interface{}{}
-
-	if jobStatusWorkitem.WorkspaceID != nil {
-		jobStatusWorkitemMap["workspace_id"] = jobStatusWorkitem.WorkspaceID
-	}
-	if jobStatusWorkitem.WorkspaceName != nil {
-		jobStatusWorkitemMap["workspace_name"] = jobStatusWorkitem.WorkspaceName
-	}
-	if jobStatusWorkitem.JobID != nil {
-		jobStatusWorkitemMap["job_id"] = jobStatusWorkitem.JobID
-	}
-	if jobStatusWorkitem.StatusCode != nil {
-		jobStatusWorkitemMap["status_code"] = jobStatusWorkitem.StatusCode
-	}
-	if jobStatusWorkitem.StatusMessage != nil {
-		jobStatusWorkitemMap["status_message"] = jobStatusWorkitem.StatusMessage
-	}
-	if jobStatusWorkitem.UpdatedAt != nil {
-		jobStatusWorkitemMap["updated_at"] = jobStatusWorkitem.UpdatedAt.String()
-	}
-
-	return jobStatusWorkitemMap
-}
-
-func resourceIBMSchematicsJobJobStatusTemplateToMap(jobStatusTemplate schematicsv1.JobStatusTemplate) map[string]interface{} {
-	jobStatusTemplateMap := map[string]interface{}{}
-
-	if jobStatusTemplate.TemplateID != nil {
-		jobStatusTemplateMap["template_id"] = jobStatusTemplate.TemplateID
-	}
-	if jobStatusTemplate.TemplateName != nil {
-		jobStatusTemplateMap["template_name"] = jobStatusTemplate.TemplateName
-	}
-	if jobStatusTemplate.FlowIndex != nil {
-		jobStatusTemplateMap["flow_index"] = flex.IntValue(jobStatusTemplate.FlowIndex)
-	}
-	if jobStatusTemplate.StatusCode != nil {
-		jobStatusTemplateMap["status_code"] = jobStatusTemplate.StatusCode
-	}
-	if jobStatusTemplate.StatusMessage != nil {
-		jobStatusTemplateMap["status_message"] = jobStatusTemplate.StatusMessage
-	}
-	if jobStatusTemplate.UpdatedAt != nil {
-		jobStatusTemplateMap["updated_at"] = jobStatusTemplate.UpdatedAt.String()
-	}
-
-	return jobStatusTemplateMap
-}
-
-func resourceIBMSchematicsJobJobStatusActionToMap(jobStatusAction schematicsv1.JobStatusAction) map[string]interface{} {
-	jobStatusActionMap := map[string]interface{}{}
-
-	if jobStatusAction.ActionName != nil {
-		jobStatusActionMap["action_name"] = jobStatusAction.ActionName
-	}
-	if jobStatusAction.StatusCode != nil {
-		jobStatusActionMap["status_code"] = jobStatusAction.StatusCode
-	}
-	if jobStatusAction.StatusMessage != nil {
-		jobStatusActionMap["status_message"] = jobStatusAction.StatusMessage
-	}
-	if jobStatusAction.BastionStatusCode != nil {
-		jobStatusActionMap["bastion_status_code"] = jobStatusAction.BastionStatusCode
-	}
-	if jobStatusAction.BastionStatusMessage != nil {
-		jobStatusActionMap["bastion_status_message"] = jobStatusAction.BastionStatusMessage
-	}
-	if jobStatusAction.TargetsStatusCode != nil {
-		jobStatusActionMap["targets_status_code"] = jobStatusAction.TargetsStatusCode
-	}
-	if jobStatusAction.TargetsStatusMessage != nil {
-		jobStatusActionMap["targets_status_message"] = jobStatusAction.TargetsStatusMessage
-	}
-	if jobStatusAction.UpdatedAt != nil {
-		jobStatusActionMap["updated_at"] = jobStatusAction.UpdatedAt.String()
-	}
-
-	return jobStatusActionMap
-}
-
-func resourceIBMSchematicsJobJobStatusSystemToMap(jobStatusSystem schematicsv1.JobStatusSystem) map[string]interface{} {
-	jobStatusSystemMap := map[string]interface{}{}
-
-	if jobStatusSystem.SystemStatusMessage != nil {
-		jobStatusSystemMap["system_status_message"] = jobStatusSystem.SystemStatusMessage
-	}
-	if jobStatusSystem.SystemStatusCode != nil {
-		jobStatusSystemMap["system_status_code"] = jobStatusSystem.SystemStatusCode
-	}
-	if jobStatusSystem.SchematicsResourceStatus != nil {
-		schematicsResourceStatus := []map[string]interface{}{}
-		for _, schematicsResourceStatusItem := range jobStatusSystem.SchematicsResourceStatus {
-			schematicsResourceStatusItemMap := resourceIBMSchematicsJobJobStatusSchematicsResourcesToMap(schematicsResourceStatusItem)
-			schematicsResourceStatus = append(schematicsResourceStatus, schematicsResourceStatusItemMap)
-			// TODO: handle SchematicsResourceStatus of type TypeList -- list of non-primitive, not model items
-		}
-		jobStatusSystemMap["schematics_resource_status"] = schematicsResourceStatus
-	}
-	if jobStatusSystem.UpdatedAt != nil {
-		jobStatusSystemMap["updated_at"] = jobStatusSystem.UpdatedAt.String()
-	}
-
-	return jobStatusSystemMap
-}
-
-func resourceIBMSchematicsJobJobStatusSchematicsResourcesToMap(jobStatusSchematicsResources schematicsv1.JobStatusSchematicsResources) map[string]interface{} {
-	jobStatusSchematicsResourcesMap := map[string]interface{}{}
-
-	if jobStatusSchematicsResources.StatusCode != nil {
-		jobStatusSchematicsResourcesMap["status_code"] = jobStatusSchematicsResources.StatusCode
-	}
-	if jobStatusSchematicsResources.StatusMessage != nil {
-		jobStatusSchematicsResourcesMap["status_message"] = jobStatusSchematicsResources.StatusMessage
-	}
-	if jobStatusSchematicsResources.SchematicsResourceID != nil {
-		jobStatusSchematicsResourcesMap["schematics_resource_id"] = jobStatusSchematicsResources.SchematicsResourceID
-	}
-	if jobStatusSchematicsResources.UpdatedAt != nil {
-		jobStatusSchematicsResourcesMap["updated_at"] = jobStatusSchematicsResources.UpdatedAt.String()
-	}
-
-	return jobStatusSchematicsResourcesMap
-}
-
-func resourceIBMSchematicsJobJobDataToMap(jobData schematicsv1.JobData) map[string]interface{} {
-	jobDataMap := map[string]interface{}{}
-
-	jobDataMap["job_type"] = jobData.JobType
-	if jobData.WorkspaceJobData != nil {
-		WorkspaceJobDataMap := resourceIBMSchematicsJobJobDataWorkspaceToMap(*jobData.WorkspaceJobData)
-		jobDataMap["workspace_job_data"] = []map[string]interface{}{WorkspaceJobDataMap}
-	}
-	if jobData.ActionJobData != nil {
-		ActionJobDataMap := resourceIBMSchematicsJobJobDataActionToMap(*jobData.ActionJobData)
-		jobDataMap["action_job_data"] = []map[string]interface{}{ActionJobDataMap}
-	}
-	if jobData.SystemJobData != nil {
-		SystemJobDataMap := resourceIBMSchematicsJobJobDataSystemToMap(*jobData.SystemJobData)
-		jobDataMap["system_job_data"] = []map[string]interface{}{SystemJobDataMap}
-	}
-	if jobData.FlowJobData != nil {
-		FlowJobDataMap := resourceIBMSchematicsJobJobDataFlowToMap(*jobData.FlowJobData)
-		jobDataMap["flow_job_data"] = []map[string]interface{}{FlowJobDataMap}
-	}
-
-	return jobDataMap
-}
-
-func resourceIBMSchematicsJobJobDataWorkspaceToMap(jobDataWorkspace schematicsv1.JobDataWorkspace) map[string]interface{} {
-	jobDataWorkspaceMap := map[string]interface{}{}
-
-	if jobDataWorkspace.WorkspaceName != nil {
-		jobDataWorkspaceMap["workspace_name"] = jobDataWorkspace.WorkspaceName
-	}
-	if jobDataWorkspace.FlowID != nil {
-		jobDataWorkspaceMap["flow_id"] = jobDataWorkspace.FlowID
-	}
-	if jobDataWorkspace.FlowName != nil {
-		jobDataWorkspaceMap["flow_name"] = jobDataWorkspace.FlowName
-	}
-	if jobDataWorkspace.Inputs != nil {
-		inputs := []map[string]interface{}{}
-		for _, inputsItem := range jobDataWorkspace.Inputs {
-			inputsItemMap := resourceIBMSchematicsJobVariableDataToMap(inputsItem)
-			inputs = append(inputs, inputsItemMap)
-			// TODO: handle Inputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkspaceMap["inputs"] = inputs
-	}
-	if jobDataWorkspace.Outputs != nil {
-		outputs := []map[string]interface{}{}
-		for _, outputsItem := range jobDataWorkspace.Outputs {
-			outputsItemMap := resourceIBMSchematicsJobVariableDataToMap(outputsItem)
-			outputs = append(outputs, outputsItemMap)
-			// TODO: handle Outputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkspaceMap["outputs"] = outputs
-	}
-	if jobDataWorkspace.Settings != nil {
-		settings := []map[string]interface{}{}
-		for _, settingsItem := range jobDataWorkspace.Settings {
-			settingsItemMap := resourceIBMSchematicsJobVariableDataToMap(settingsItem)
-			settings = append(settings, settingsItemMap)
-			// TODO: handle Settings of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkspaceMap["settings"] = settings
-	}
-	if jobDataWorkspace.TemplateData != nil {
-		templateData := []map[string]interface{}{}
-		for _, templateDataItem := range jobDataWorkspace.TemplateData {
-			templateDataItemMap := resourceIBMSchematicsJobJobDataTemplateToMap(templateDataItem)
-			templateData = append(templateData, templateDataItemMap)
-			// TODO: handle TemplateData of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkspaceMap["template_data"] = templateData
-	}
-	if jobDataWorkspace.UpdatedAt != nil {
-		jobDataWorkspaceMap["updated_at"] = jobDataWorkspace.UpdatedAt.String()
-	}
-
-	return jobDataWorkspaceMap
-}
-
-func resourceIBMSchematicsJobJobDataTemplateToMap(jobDataTemplate schematicsv1.JobDataTemplate) map[string]interface{} {
-	jobDataTemplateMap := map[string]interface{}{}
-
-	if jobDataTemplate.TemplateID != nil {
-		jobDataTemplateMap["template_id"] = jobDataTemplate.TemplateID
-	}
-	if jobDataTemplate.TemplateName != nil {
-		jobDataTemplateMap["template_name"] = jobDataTemplate.TemplateName
-	}
-	if jobDataTemplate.FlowIndex != nil {
-		jobDataTemplateMap["flow_index"] = flex.IntValue(jobDataTemplate.FlowIndex)
-	}
-	if jobDataTemplate.Inputs != nil {
-		inputs := []map[string]interface{}{}
-		for _, inputsItem := range jobDataTemplate.Inputs {
-			inputsItemMap := resourceIBMSchematicsJobVariableDataToMap(inputsItem)
-			inputs = append(inputs, inputsItemMap)
-			// TODO: handle Inputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataTemplateMap["inputs"] = inputs
-	}
-	if jobDataTemplate.Outputs != nil {
-		outputs := []map[string]interface{}{}
-		for _, outputsItem := range jobDataTemplate.Outputs {
-			outputsItemMap := resourceIBMSchematicsJobVariableDataToMap(outputsItem)
-			outputs = append(outputs, outputsItemMap)
-			// TODO: handle Outputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataTemplateMap["outputs"] = outputs
-	}
-	if jobDataTemplate.Settings != nil {
-		settings := []map[string]interface{}{}
-		for _, settingsItem := range jobDataTemplate.Settings {
-			settingsItemMap := resourceIBMSchematicsJobVariableDataToMap(settingsItem)
-			settings = append(settings, settingsItemMap)
-			// TODO: handle Settings of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataTemplateMap["settings"] = settings
-	}
-	if jobDataTemplate.UpdatedAt != nil {
-		jobDataTemplateMap["updated_at"] = jobDataTemplate.UpdatedAt.String()
-	}
-
-	return jobDataTemplateMap
-}
-
-func resourceIBMSchematicsJobJobDataActionToMap(jobDataAction schematicsv1.JobDataAction) map[string]interface{} {
-	jobDataActionMap := map[string]interface{}{}
-
-	if jobDataAction.ActionName != nil {
-		jobDataActionMap["action_name"] = jobDataAction.ActionName
-	}
-	if jobDataAction.Inputs != nil {
-		inputs := []map[string]interface{}{}
-		for _, inputsItem := range jobDataAction.Inputs {
-			inputsItemMap := resourceIBMSchematicsJobVariableDataToMap(inputsItem)
-			inputs = append(inputs, inputsItemMap)
-			// TODO: handle Inputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataActionMap["inputs"] = inputs
-	}
-	if jobDataAction.Outputs != nil {
-		outputs := []map[string]interface{}{}
-		for _, outputsItem := range jobDataAction.Outputs {
-			outputsItemMap := resourceIBMSchematicsJobVariableDataToMap(outputsItem)
-			outputs = append(outputs, outputsItemMap)
-			// TODO: handle Outputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataActionMap["outputs"] = outputs
-	}
-	if jobDataAction.Settings != nil {
-		settings := []map[string]interface{}{}
-		for _, settingsItem := range jobDataAction.Settings {
-			settingsItemMap := resourceIBMSchematicsJobVariableDataToMap(settingsItem)
-			settings = append(settings, settingsItemMap)
-			// TODO: handle Settings of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataActionMap["settings"] = settings
-	}
-	if jobDataAction.UpdatedAt != nil {
-		jobDataActionMap["updated_at"] = jobDataAction.UpdatedAt.String()
-	}
-	if jobDataAction.InventoryRecord != nil {
-		InventoryRecordMap := resourceIBMSchematicsJobInventoryResourceRecordToMap(*jobDataAction.InventoryRecord)
-		jobDataActionMap["inventory_record"] = []map[string]interface{}{InventoryRecordMap}
-	}
-	if jobDataAction.MaterializedInventory != nil {
-		jobDataActionMap["materialized_inventory"] = jobDataAction.MaterializedInventory
-	}
-
-	return jobDataActionMap
-}
-
-func resourceIBMSchematicsJobInventoryResourceRecordToMap(inventoryResourceRecord schematicsv1.InventoryResourceRecord) map[string]interface{} {
-	inventoryResourceRecordMap := map[string]interface{}{}
-
-	if inventoryResourceRecord.Name != nil {
-		inventoryResourceRecordMap["name"] = inventoryResourceRecord.Name
-	}
-	if inventoryResourceRecord.ID != nil {
-		inventoryResourceRecordMap["id"] = inventoryResourceRecord.ID
-	}
-	if inventoryResourceRecord.Description != nil {
-		inventoryResourceRecordMap["description"] = inventoryResourceRecord.Description
-	}
-	if inventoryResourceRecord.Location != nil {
-		inventoryResourceRecordMap["location"] = inventoryResourceRecord.Location
-	}
-	if inventoryResourceRecord.ResourceGroup != nil {
-		inventoryResourceRecordMap["resource_group"] = inventoryResourceRecord.ResourceGroup
-	}
-	if inventoryResourceRecord.CreatedAt != nil {
-		inventoryResourceRecordMap["created_at"] = inventoryResourceRecord.CreatedAt.String()
-	}
-	if inventoryResourceRecord.CreatedBy != nil {
-		inventoryResourceRecordMap["created_by"] = inventoryResourceRecord.CreatedBy
-	}
-	if inventoryResourceRecord.UpdatedAt != nil {
-		inventoryResourceRecordMap["updated_at"] = inventoryResourceRecord.UpdatedAt.String()
-	}
-	if inventoryResourceRecord.UpdatedBy != nil {
-		inventoryResourceRecordMap["updated_by"] = inventoryResourceRecord.UpdatedBy
-	}
-	if inventoryResourceRecord.InventoriesIni != nil {
-		inventoryResourceRecordMap["inventories_ini"] = inventoryResourceRecord.InventoriesIni
-	}
-	if inventoryResourceRecord.ResourceQueries != nil {
-		inventoryResourceRecordMap["resource_queries"] = inventoryResourceRecord.ResourceQueries
-	}
-
-	return inventoryResourceRecordMap
-}
-
-func resourceIBMSchematicsJobJobDataSystemToMap(jobDataSystem schematicsv1.JobDataSystem) map[string]interface{} {
-	jobDataSystemMap := map[string]interface{}{}
-
-	if jobDataSystem.KeyID != nil {
-		jobDataSystemMap["key_id"] = jobDataSystem.KeyID
-	}
-	if jobDataSystem.SchematicsResourceID != nil {
-		jobDataSystemMap["schematics_resource_id"] = jobDataSystem.SchematicsResourceID
-	}
-	if jobDataSystem.UpdatedAt != nil {
-		jobDataSystemMap["updated_at"] = jobDataSystem.UpdatedAt.String()
-	}
-
-	return jobDataSystemMap
-}
-
-func resourceIBMSchematicsJobJobDataFlowToMap(jobDataFlow schematicsv1.JobDataFlow) map[string]interface{} {
-	jobDataFlowMap := map[string]interface{}{}
-
-	if jobDataFlow.FlowID != nil {
-		jobDataFlowMap["flow_id"] = jobDataFlow.FlowID
-	}
-	if jobDataFlow.FlowName != nil {
-		jobDataFlowMap["flow_name"] = jobDataFlow.FlowName
-	}
-	if jobDataFlow.Workitems != nil {
-		workitems := []map[string]interface{}{}
-		for _, workitemsItem := range jobDataFlow.Workitems {
-			workitemsItemMap := resourceIBMSchematicsJobJobDataWorkItemToMap(workitemsItem)
-			workitems = append(workitems, workitemsItemMap)
-			// TODO: handle Workitems of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataFlowMap["workitems"] = workitems
-	}
-	if jobDataFlow.UpdatedAt != nil {
-		jobDataFlowMap["updated_at"] = jobDataFlow.UpdatedAt.String()
-	}
-
-	return jobDataFlowMap
-}
-
-func resourceIBMSchematicsJobJobDataWorkItemToMap(jobDataWorkItem schematicsv1.JobDataWorkItem) map[string]interface{} {
-	jobDataWorkItemMap := map[string]interface{}{}
-
-	if jobDataWorkItem.CommandObjectID != nil {
-		jobDataWorkItemMap["command_object_id"] = jobDataWorkItem.CommandObjectID
-	}
-	if jobDataWorkItem.CommandObjectName != nil {
-		jobDataWorkItemMap["command_object_name"] = jobDataWorkItem.CommandObjectName
-	}
-	if jobDataWorkItem.Layers != nil {
-		jobDataWorkItemMap["layers"] = jobDataWorkItem.Layers
-	}
-	if jobDataWorkItem.SourceType != nil {
-		jobDataWorkItemMap["source_type"] = jobDataWorkItem.SourceType
-	}
-	if jobDataWorkItem.Source != nil {
-		SourceMap := resourceIBMSchematicsJobExternalSourceToMap(*jobDataWorkItem.Source)
-		jobDataWorkItemMap["source"] = []map[string]interface{}{SourceMap}
-	}
-	if jobDataWorkItem.Inputs != nil {
-		inputs := []map[string]interface{}{}
-		for _, inputsItem := range jobDataWorkItem.Inputs {
-			inputsItemMap := resourceIBMSchematicsJobVariableDataToMap(inputsItem)
-			inputs = append(inputs, inputsItemMap)
-			// TODO: handle Inputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkItemMap["inputs"] = inputs
-	}
-	if jobDataWorkItem.Outputs != nil {
-		outputs := []map[string]interface{}{}
-		for _, outputsItem := range jobDataWorkItem.Outputs {
-			outputsItemMap := resourceIBMSchematicsJobVariableDataToMap(outputsItem)
-			outputs = append(outputs, outputsItemMap)
-			// TODO: handle Outputs of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkItemMap["outputs"] = outputs
-	}
-	if jobDataWorkItem.Settings != nil {
-		settings := []map[string]interface{}{}
-		for _, settingsItem := range jobDataWorkItem.Settings {
-			settingsItemMap := resourceIBMSchematicsJobVariableDataToMap(settingsItem)
-			settings = append(settings, settingsItemMap)
-			// TODO: handle Settings of type TypeList -- list of non-primitive, not model items
-		}
-		jobDataWorkItemMap["settings"] = settings
-	}
-	if jobDataWorkItem.LastJob != nil {
-		LastJobMap := resourceIBMSchematicsJobJobDataWorkItemLastJobToMap(*jobDataWorkItem.LastJob)
-		jobDataWorkItemMap["last_job"] = []map[string]interface{}{LastJobMap}
-	}
-	if jobDataWorkItem.UpdatedAt != nil {
-		jobDataWorkItemMap["updated_at"] = jobDataWorkItem.UpdatedAt.String()
-	}
-
-	return jobDataWorkItemMap
-}
-
-func resourceIBMSchematicsJobExternalSourceToMap(externalSource schematicsv1.ExternalSource) map[string]interface{} {
-	externalSourceMap := map[string]interface{}{}
-
-	externalSourceMap["source_type"] = externalSource.SourceType
-	if externalSource.Git != nil {
-		GitMap := resourceIBMSchematicsJobExternalSourceGitToMap(*externalSource.Git)
-		externalSourceMap["git"] = []map[string]interface{}{GitMap}
-	}
-	if externalSource.Catalog != nil {
-		CatalogMap := resourceIBMSchematicsJobExternalSourceCatalogToMap(*externalSource.Catalog)
-		externalSourceMap["catalog"] = []map[string]interface{}{CatalogMap}
-	}
-	if externalSource.CosBucket != nil {
-		CosBucketMap := resourceIBMSchematicsJobExternalSourceCosBucketToMap(*externalSource.CosBucket)
-		externalSourceMap["cos_bucket"] = []map[string]interface{}{CosBucketMap}
-	}
-
-	return externalSourceMap
-}
-
-func resourceIBMSchematicsJobExternalSourceGitToMap(externalSourceGit schematicsv1.ExternalSourceGit) map[string]interface{} {
-	externalSourceGitMap := map[string]interface{}{}
-
-	if externalSourceGit.ComputedGitRepoURL != nil {
-		externalSourceGitMap["computed_git_repo_url"] = externalSourceGit.ComputedGitRepoURL
-	}
-	if externalSourceGit.GitRepoURL != nil {
-		externalSourceGitMap["git_repo_url"] = externalSourceGit.GitRepoURL
-	}
-	if externalSourceGit.GitToken != nil {
-		externalSourceGitMap["git_token"] = externalSourceGit.GitToken
-	}
-	if externalSourceGit.GitRepoFolder != nil {
-		externalSourceGitMap["git_repo_folder"] = externalSourceGit.GitRepoFolder
-	}
-	if externalSourceGit.GitRelease != nil {
-		externalSourceGitMap["git_release"] = externalSourceGit.GitRelease
-	}
-	if externalSourceGit.GitBranch != nil {
-		externalSourceGitMap["git_branch"] = externalSourceGit.GitBranch
-	}
-
-	return externalSourceGitMap
-}
-
-func resourceIBMSchematicsJobExternalSourceCatalogToMap(externalSourceCatalog schematicsv1.ExternalSourceCatalog) map[string]interface{} {
-	externalSourceCatalogMap := map[string]interface{}{}
-
-	if externalSourceCatalog.CatalogName != nil {
-		externalSourceCatalogMap["catalog_name"] = externalSourceCatalog.CatalogName
-	}
-	if externalSourceCatalog.OfferingName != nil {
-		externalSourceCatalogMap["offering_name"] = externalSourceCatalog.OfferingName
-	}
-	if externalSourceCatalog.OfferingVersion != nil {
-		externalSourceCatalogMap["offering_version"] = externalSourceCatalog.OfferingVersion
-	}
-	if externalSourceCatalog.OfferingKind != nil {
-		externalSourceCatalogMap["offering_kind"] = externalSourceCatalog.OfferingKind
-	}
-	if externalSourceCatalog.OfferingID != nil {
-		externalSourceCatalogMap["offering_id"] = externalSourceCatalog.OfferingID
-	}
-	if externalSourceCatalog.OfferingVersionID != nil {
-		externalSourceCatalogMap["offering_version_id"] = externalSourceCatalog.OfferingVersionID
-	}
-	if externalSourceCatalog.OfferingRepoURL != nil {
-		externalSourceCatalogMap["offering_repo_url"] = externalSourceCatalog.OfferingRepoURL
-	}
-
-	return externalSourceCatalogMap
-}
-
-func resourceIBMSchematicsJobExternalSourceCosBucketToMap(externalSourceCosBucket schematicsv1.ExternalSourceCosBucket) map[string]interface{} {
-	externalSourceCosBucketMap := map[string]interface{}{}
-
-	if externalSourceCosBucket.CosBucketURL != nil {
-		externalSourceCosBucketMap["cos_bucket_url"] = externalSourceCosBucket.CosBucketURL
-	}
-
-	return externalSourceCosBucketMap
-}
-
-func resourceIBMSchematicsJobJobDataWorkItemLastJobToMap(jobDataWorkItemLastJob schematicsv1.JobDataWorkItemLastJob) map[string]interface{} {
-	jobDataWorkItemLastJobMap := map[string]interface{}{}
-
-	if jobDataWorkItemLastJob.CommandObject != nil {
-		jobDataWorkItemLastJobMap["command_object"] = jobDataWorkItemLastJob.CommandObject
-	}
-	if jobDataWorkItemLastJob.CommandObjectName != nil {
-		jobDataWorkItemLastJobMap["command_object_name"] = jobDataWorkItemLastJob.CommandObjectName
-	}
-	if jobDataWorkItemLastJob.CommandObjectID != nil {
-		jobDataWorkItemLastJobMap["command_object_id"] = jobDataWorkItemLastJob.CommandObjectID
-	}
-	if jobDataWorkItemLastJob.CommandName != nil {
-		jobDataWorkItemLastJobMap["command_name"] = jobDataWorkItemLastJob.CommandName
-	}
-	if jobDataWorkItemLastJob.JobID != nil {
-		jobDataWorkItemLastJobMap["job_id"] = jobDataWorkItemLastJob.JobID
-	}
-	if jobDataWorkItemLastJob.JobStatus != nil {
-		jobDataWorkItemLastJobMap["job_status"] = jobDataWorkItemLastJob.JobStatus
-	}
-
-	return jobDataWorkItemLastJobMap
-}
-
-func resourceIBMSchematicsJobBastionResourceDefinitionToMap(bastionResourceDefinition schematicsv1.BastionResourceDefinition) map[string]interface{} {
-	bastionResourceDefinitionMap := map[string]interface{}{}
-
-	if bastionResourceDefinition.Name != nil {
-		bastionResourceDefinitionMap["name"] = bastionResourceDefinition.Name
-	}
-	if bastionResourceDefinition.Host != nil {
-		bastionResourceDefinitionMap["host"] = bastionResourceDefinition.Host
-	}
-
-	return bastionResourceDefinitionMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryToMap(jobLogSummary schematicsv1.JobLogSummary) map[string]interface{} {
-	jobLogSummaryMap := map[string]interface{}{}
-
-	if jobLogSummary.JobID != nil {
-		jobLogSummaryMap["job_id"] = jobLogSummary.JobID
-	}
-	if jobLogSummary.JobType != nil {
-		jobLogSummaryMap["job_type"] = jobLogSummary.JobType
-	}
-	if jobLogSummary.LogStartAt != nil {
-		jobLogSummaryMap["log_start_at"] = jobLogSummary.LogStartAt.String()
-	}
-	if jobLogSummary.LogAnalyzedTill != nil {
-		jobLogSummaryMap["log_analyzed_till"] = jobLogSummary.LogAnalyzedTill.String()
-	}
-	if jobLogSummary.ElapsedTime != nil {
-		jobLogSummaryMap["elapsed_time"] = jobLogSummary.ElapsedTime
-	}
-	if jobLogSummary.LogErrors != nil {
-		logErrors := []map[string]interface{}{}
-		for _, logErrorsItem := range jobLogSummary.LogErrors {
-			logErrorsItemMap := resourceIBMSchematicsJobJobLogSummaryLogErrorsToMap(logErrorsItem)
-			logErrors = append(logErrors, logErrorsItemMap)
-			// TODO: handle LogErrors of type TypeList -- list of non-primitive, not model items
-		}
-		jobLogSummaryMap["log_errors"] = logErrors
-	}
-	if jobLogSummary.RepoDownloadJob != nil {
-		RepoDownloadJobMap := resourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(*jobLogSummary.RepoDownloadJob)
-		jobLogSummaryMap["repo_download_job"] = []map[string]interface{}{RepoDownloadJobMap}
-	}
-	if jobLogSummary.WorkspaceJob != nil {
-		WorkspaceJobMap := resourceIBMSchematicsJobJobLogSummaryWorkspaceJobToMap(*jobLogSummary.WorkspaceJob)
-		jobLogSummaryMap["workspace_job"] = []map[string]interface{}{WorkspaceJobMap}
-	}
-	if jobLogSummary.FlowJob != nil {
-		FlowJobMap := resourceIBMSchematicsJobJobLogSummaryFlowJobToMap(*jobLogSummary.FlowJob)
-		jobLogSummaryMap["flow_job"] = []map[string]interface{}{FlowJobMap}
-	}
-	if jobLogSummary.ActionJob != nil {
-		ActionJobMap := resourceIBMSchematicsJobJobLogSummaryActionJobToMap(*jobLogSummary.ActionJob)
-		jobLogSummaryMap["action_job"] = []map[string]interface{}{ActionJobMap}
-	}
-	if jobLogSummary.SystemJob != nil {
-		SystemJobMap := resourceIBMSchematicsJobJobLogSummarySystemJobToMap(*jobLogSummary.SystemJob)
-		jobLogSummaryMap["system_job"] = []map[string]interface{}{SystemJobMap}
-	}
-
-	return jobLogSummaryMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryLogErrorsToMap(jobLogSummaryLogErrors schematicsv1.JobLogSummaryLogErrors) map[string]interface{} {
-	jobLogSummaryLogErrorsMap := map[string]interface{}{}
-
-	if jobLogSummaryLogErrors.ErrorCode != nil {
-		jobLogSummaryLogErrorsMap["error_code"] = jobLogSummaryLogErrors.ErrorCode
-	}
-	if jobLogSummaryLogErrors.ErrorMsg != nil {
-		jobLogSummaryLogErrorsMap["error_msg"] = jobLogSummaryLogErrors.ErrorMsg
-	}
-	if jobLogSummaryLogErrors.ErrorCount != nil {
-		jobLogSummaryLogErrorsMap["error_count"] = jobLogSummaryLogErrors.ErrorCount
-	}
-
-	return jobLogSummaryLogErrorsMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(jobLogSummaryRepoDownloadJob schematicsv1.JobLogSummaryRepoDownloadJob) map[string]interface{} {
-	jobLogSummaryRepoDownloadJobMap := map[string]interface{}{}
-
-	if jobLogSummaryRepoDownloadJob.ScannedFileCount != nil {
-		jobLogSummaryRepoDownloadJobMap["scanned_file_count"] = jobLogSummaryRepoDownloadJob.ScannedFileCount
-	}
-	if jobLogSummaryRepoDownloadJob.QuarantinedFileCount != nil {
-		jobLogSummaryRepoDownloadJobMap["quarantined_file_count"] = jobLogSummaryRepoDownloadJob.QuarantinedFileCount
-	}
-	if jobLogSummaryRepoDownloadJob.DetectedFiletype != nil {
-		jobLogSummaryRepoDownloadJobMap["detected_filetype"] = jobLogSummaryRepoDownloadJob.DetectedFiletype
-	}
-	if jobLogSummaryRepoDownloadJob.InputsCount != nil {
-		jobLogSummaryRepoDownloadJobMap["inputs_count"] = jobLogSummaryRepoDownloadJob.InputsCount
-	}
-	if jobLogSummaryRepoDownloadJob.OutputsCount != nil {
-		jobLogSummaryRepoDownloadJobMap["outputs_count"] = jobLogSummaryRepoDownloadJob.OutputsCount
-	}
-
-	return jobLogSummaryRepoDownloadJobMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryWorkspaceJobToMap(jobLogSummaryWorkspaceJob schematicsv1.JobLogSummaryWorkspaceJob) map[string]interface{} {
-	jobLogSummaryWorkspaceJobMap := map[string]interface{}{}
-
-	if jobLogSummaryWorkspaceJob.ResourcesAdd != nil {
-		jobLogSummaryWorkspaceJobMap["resources_add"] = jobLogSummaryWorkspaceJob.ResourcesAdd
-	}
-	if jobLogSummaryWorkspaceJob.ResourcesModify != nil {
-		jobLogSummaryWorkspaceJobMap["resources_modify"] = jobLogSummaryWorkspaceJob.ResourcesModify
-	}
-	if jobLogSummaryWorkspaceJob.ResourcesDestroy != nil {
-		jobLogSummaryWorkspaceJobMap["resources_destroy"] = jobLogSummaryWorkspaceJob.ResourcesDestroy
-	}
-
-	return jobLogSummaryWorkspaceJobMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryFlowJobToMap(jobLogSummaryFlowJob schematicsv1.JobLogSummaryFlowJob) map[string]interface{} {
-	jobLogSummaryFlowJobMap := map[string]interface{}{}
-
-	if jobLogSummaryFlowJob.WorkitemsCompleted != nil {
-		jobLogSummaryFlowJobMap["workitems_completed"] = jobLogSummaryFlowJob.WorkitemsCompleted
-	}
-	if jobLogSummaryFlowJob.WorkitemsPending != nil {
-		jobLogSummaryFlowJobMap["workitems_pending"] = jobLogSummaryFlowJob.WorkitemsPending
-	}
-	if jobLogSummaryFlowJob.WorkitemsFailed != nil {
-		jobLogSummaryFlowJobMap["workitems_failed"] = jobLogSummaryFlowJob.WorkitemsFailed
-	}
-	if jobLogSummaryFlowJob.Workitems != nil {
-		workitems := []map[string]interface{}{}
-		for _, workitemsItem := range jobLogSummaryFlowJob.Workitems {
-			workitemsItemMap := resourceIBMSchematicsJobJobLogSummaryWorkitemsToMap(workitemsItem)
-			workitems = append(workitems, workitemsItemMap)
-			// TODO: handle Workitems of type TypeList -- list of non-primitive, not model items
-		}
-		jobLogSummaryFlowJobMap["workitems"] = workitems
-	}
-
-	return jobLogSummaryFlowJobMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryWorkitemsToMap(jobLogSummaryWorkitems schematicsv1.JobLogSummaryWorkitems) map[string]interface{} {
-	jobLogSummaryWorkitemsMap := map[string]interface{}{}
-
-	if jobLogSummaryWorkitems.WorkspaceID != nil {
-		jobLogSummaryWorkitemsMap["workspace_id"] = jobLogSummaryWorkitems.WorkspaceID
-	}
-	if jobLogSummaryWorkitems.JobID != nil {
-		jobLogSummaryWorkitemsMap["job_id"] = jobLogSummaryWorkitems.JobID
-	}
-	if jobLogSummaryWorkitems.ResourcesAdd != nil {
-		jobLogSummaryWorkitemsMap["resources_add"] = jobLogSummaryWorkitems.ResourcesAdd
-	}
-	if jobLogSummaryWorkitems.ResourcesModify != nil {
-		jobLogSummaryWorkitemsMap["resources_modify"] = jobLogSummaryWorkitems.ResourcesModify
-	}
-	if jobLogSummaryWorkitems.ResourcesDestroy != nil {
-		jobLogSummaryWorkitemsMap["resources_destroy"] = jobLogSummaryWorkitems.ResourcesDestroy
-	}
-	if jobLogSummaryWorkitems.LogURL != nil {
-		jobLogSummaryWorkitemsMap["log_url"] = jobLogSummaryWorkitems.LogURL
-	}
-
-	return jobLogSummaryWorkitemsMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryActionJobToMap(jobLogSummaryActionJob schematicsv1.JobLogSummaryActionJob) map[string]interface{} {
-	jobLogSummaryActionJobMap := map[string]interface{}{}
-
-	if jobLogSummaryActionJob.TargetCount != nil {
-		jobLogSummaryActionJobMap["target_count"] = jobLogSummaryActionJob.TargetCount
-	}
-	if jobLogSummaryActionJob.TaskCount != nil {
-		jobLogSummaryActionJobMap["task_count"] = jobLogSummaryActionJob.TaskCount
-	}
-	if jobLogSummaryActionJob.PlayCount != nil {
-		jobLogSummaryActionJobMap["play_count"] = jobLogSummaryActionJob.PlayCount
-	}
-	if jobLogSummaryActionJob.Recap != nil {
-		RecapMap := resourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(*jobLogSummaryActionJob.Recap)
-		jobLogSummaryActionJobMap["recap"] = []map[string]interface{}{RecapMap}
-	}
-
-	return jobLogSummaryActionJobMap
-}
-
-func resourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(jobLogSummaryActionJobRecap schematicsv1.JobLogSummaryActionJobRecap) map[string]interface{} {
-	jobLogSummaryActionJobRecapMap := map[string]interface{}{}
-
-	if jobLogSummaryActionJobRecap.Target != nil {
-		jobLogSummaryActionJobRecapMap["target"] = jobLogSummaryActionJobRecap.Target
-	}
-	if jobLogSummaryActionJobRecap.Ok != nil {
-		jobLogSummaryActionJobRecapMap["ok"] = jobLogSummaryActionJobRecap.Ok
-	}
-	if jobLogSummaryActionJobRecap.Changed != nil {
-		jobLogSummaryActionJobRecapMap["changed"] = jobLogSummaryActionJobRecap.Changed
-	}
-	if jobLogSummaryActionJobRecap.Failed != nil {
-		jobLogSummaryActionJobRecapMap["failed"] = jobLogSummaryActionJobRecap.Failed
-	}
-	if jobLogSummaryActionJobRecap.Skipped != nil {
-		jobLogSummaryActionJobRecapMap["skipped"] = jobLogSummaryActionJobRecap.Skipped
-	}
-	if jobLogSummaryActionJobRecap.Unreachable != nil {
-		jobLogSummaryActionJobRecapMap["unreachable"] = jobLogSummaryActionJobRecap.Unreachable
-	}
-
-	return jobLogSummaryActionJobRecapMap
-}
-
-func resourceIBMSchematicsJobJobLogSummarySystemJobToMap(jobLogSummarySystemJob schematicsv1.JobLogSummarySystemJob) map[string]interface{} {
-	jobLogSummarySystemJobMap := map[string]interface{}{}
-
-	if jobLogSummarySystemJob.TargetCount != nil {
-		jobLogSummarySystemJobMap["target_count"] = jobLogSummarySystemJob.TargetCount
-	}
-	if jobLogSummarySystemJob.Success != nil {
-		jobLogSummarySystemJobMap["success"] = jobLogSummarySystemJob.Success
-	}
-	if jobLogSummarySystemJob.Failed != nil {
-		jobLogSummarySystemJobMap["failed"] = jobLogSummarySystemJob.Failed
-	}
-
-	return jobLogSummarySystemJobMap
-}
-
-func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	session, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	iamRefreshToken := session.Config.IAMRefreshToken
-
 	updateJobOptions := &schematicsv1.UpdateJobOptions{}
 
 	updateJobOptions.SetJobID(d.Id())
-	updateJobOptions.SetRefreshToken(iamRefreshToken)
-
+	updateJobOptions.SetRefreshToken(d.Get("refresh_token").(string))
 	if _, ok := d.GetOk("command_object"); ok {
 		updateJobOptions.SetCommandObject(d.Get("command_object").(string))
 	}
@@ -4948,14 +3428,17 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		updateJobOptions.SetCommandParameter(d.Get("command_parameter").(string))
 	}
 	if _, ok := d.GetOk("command_options"); ok {
-		updateJobOptions.SetCommandOptions(flex.ExpandStringList(d.Get("command_options").([]interface{})))
+		updateJobOptions.SetCommandOptions(d.Get("command_options").([]string))
 	}
 	if _, ok := d.GetOk("job_inputs"); ok {
 		var jobInputs []schematicsv1.VariableData
 		for _, e := range d.Get("job_inputs").([]interface{}) {
 			value := e.(map[string]interface{})
-			jobInputsItem := resourceIBMSchematicsJobMapToVariableData(value)
-			jobInputs = append(jobInputs, jobInputsItem)
+			jobInputsItem, err := ResourceIBMSchematicsJobMapToVariableData(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			jobInputs = append(jobInputs, *jobInputsItem)
 		}
 		updateJobOptions.SetInputs(jobInputs)
 	}
@@ -4963,44 +3446,47 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		var jobEnvSettings []schematicsv1.VariableData
 		for _, e := range d.Get("job_env_settings").([]interface{}) {
 			value := e.(map[string]interface{})
-			jobEnvSettingsItem := resourceIBMSchematicsJobMapToVariableData(value)
-			jobEnvSettings = append(jobEnvSettings, jobEnvSettingsItem)
+			jobEnvSettingsItem, err := ResourceIBMSchematicsJobMapToVariableData(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			jobEnvSettings = append(jobEnvSettings, *jobEnvSettingsItem)
 		}
 		updateJobOptions.SetSettings(jobEnvSettings)
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		updateJobOptions.SetTags(flex.ExpandStringList(d.Get("tags").([]interface{})))
+		updateJobOptions.SetTags(d.Get("tags").([]string))
 	}
 	if _, ok := d.GetOk("location"); ok {
 		updateJobOptions.SetLocation(d.Get("location").(string))
 	}
 	if _, ok := d.GetOk("status"); ok {
-		statusAttr := d.Get("status").([]interface{})
-		if len(statusAttr) > 0 {
-			status := resourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
-			updateJobOptions.SetStatus(&status)
+		status, err := ResourceIBMSchematicsJobMapToJobStatus(d.Get("status.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		updateJobOptions.SetStatus(status)
 	}
 	if _, ok := d.GetOk("data"); ok {
-		dataAttr := d.Get("data").([]interface{})
-		if len(dataAttr) > 0 {
-			data := resourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
-			updateJobOptions.SetData(&data)
+		data, err := ResourceIBMSchematicsJobMapToJobData(d.Get("data.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		updateJobOptions.SetData(data)
 	}
 	if _, ok := d.GetOk("bastion"); ok {
-		bastionAttr := d.Get("bastion").([]interface{})
-		if len(bastionAttr) > 0 {
-			bastion := resourceIBMSchematicsJobMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
-			updateJobOptions.SetBastion(&bastion)
+		bastion, err := ResourceIBMSchematicsJobMapToBastionResourceDefinition(d.Get("bastion.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		updateJobOptions.SetBastion(bastion)
 	}
 	if _, ok := d.GetOk("log_summary"); ok {
-		jobLogSummaryAttr := d.Get("log_summary").([]interface{})
-		if len(jobLogSummaryAttr) > 0 {
-			logSummary := resourceIBMSchematicsJobMapToJobLogSummary(d.Get("log_summary.0").(map[string]interface{}))
-			updateJobOptions.SetLogSummary(&logSummary)
+		logSummary, err := ResourceIBMSchematicsJobMapToJobLogSummary(d.Get("log_summary.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		updateJobOptions.SetLogSummary(logSummary)
 	}
 
 	_, response, err := schematicsClient.UpdateJobWithContext(context, updateJobOptions)
@@ -5009,25 +3495,16 @@ func resourceIBMSchematicsJobUpdate(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("UpdateJobWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMSchematicsJobRead(context, d, meta)
+	return ResourceIBMSchematicsJobRead(context, d, meta)
 }
 
-func resourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
-	session, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func ResourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	deleteJobOptions := &schematicsv1.DeleteJobOptions{}
-
-	iamRefreshToken := session.Config.IAMRefreshToken
-	deleteJobOptions.SetRefreshToken(iamRefreshToken)
 
 	deleteJobOptions.SetJobID(d.Id())
 
@@ -5040,4 +3517,2016 @@ func resourceIBMSchematicsJobDelete(context context.Context, d *schema.ResourceD
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMSchematicsJobMapToVariableData(modelMap map[string]interface{}) (*schematicsv1.VariableData, error) {
+	model := &schematicsv1.VariableData{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["use_default"] != nil {
+		model.UseDefault = core.BoolPtr(modelMap["use_default"].(bool))
+	}
+	if modelMap["metadata"] != nil && len(modelMap["metadata"].([]interface{})) > 0 {
+		MetadataModel, err := ResourceIBMSchematicsJobMapToVariableMetadata(modelMap["metadata"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Metadata = MetadataModel
+	}
+	if modelMap["link"] != nil && modelMap["link"].(string) != "" {
+		model.Link = core.StringPtr(modelMap["link"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToVariableMetadata(modelMap map[string]interface{}) (*schematicsv1.VariableMetadata, error) {
+	model := &schematicsv1.VariableMetadata{}
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
+	}
+	if modelMap["aliases"] != nil {
+		aliases := []string{}
+		for _, aliasesItem := range modelMap["aliases"].([]interface{}) {
+			aliases = append(aliases, aliasesItem.(string))
+		}
+		model.Aliases = aliases
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["cloud_data_type"] != nil && modelMap["cloud_data_type"].(string) != "" {
+		model.CloudDataType = core.StringPtr(modelMap["cloud_data_type"].(string))
+	}
+	if modelMap["default_value"] != nil && modelMap["default_value"].(string) != "" {
+		model.DefaultValue = core.StringPtr(modelMap["default_value"].(string))
+	}
+	if modelMap["link_status"] != nil && modelMap["link_status"].(string) != "" {
+		model.LinkStatus = core.StringPtr(modelMap["link_status"].(string))
+	}
+	if modelMap["secure"] != nil {
+		model.Secure = core.BoolPtr(modelMap["secure"].(bool))
+	}
+	if modelMap["immutable"] != nil {
+		model.Immutable = core.BoolPtr(modelMap["immutable"].(bool))
+	}
+	if modelMap["hidden"] != nil {
+		model.Hidden = core.BoolPtr(modelMap["hidden"].(bool))
+	}
+	if modelMap["required"] != nil {
+		model.Required = core.BoolPtr(modelMap["required"].(bool))
+	}
+	if modelMap["options"] != nil {
+		options := []string{}
+		for _, optionsItem := range modelMap["options"].([]interface{}) {
+			options = append(options, optionsItem.(string))
+		}
+		model.Options = options
+	}
+	if modelMap["min_value"] != nil {
+		model.MinValue = core.Int64Ptr(int64(modelMap["min_value"].(int)))
+	}
+	if modelMap["max_value"] != nil {
+		model.MaxValue = core.Int64Ptr(int64(modelMap["max_value"].(int)))
+	}
+	if modelMap["min_length"] != nil {
+		model.MinLength = core.Int64Ptr(int64(modelMap["min_length"].(int)))
+	}
+	if modelMap["max_length"] != nil {
+		model.MaxLength = core.Int64Ptr(int64(modelMap["max_length"].(int)))
+	}
+	if modelMap["matches"] != nil && modelMap["matches"].(string) != "" {
+		model.Matches = core.StringPtr(modelMap["matches"].(string))
+	}
+	if modelMap["position"] != nil {
+		model.Position = core.Int64Ptr(int64(modelMap["position"].(int)))
+	}
+	if modelMap["group_by"] != nil && modelMap["group_by"].(string) != "" {
+		model.GroupBy = core.StringPtr(modelMap["group_by"].(string))
+	}
+	if modelMap["source"] != nil && modelMap["source"].(string) != "" {
+		model.Source = core.StringPtr(modelMap["source"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatus(modelMap map[string]interface{}) (*schematicsv1.JobStatus, error) {
+	model := &schematicsv1.JobStatus{}
+	if modelMap["position_in_queue"] != nil {
+		model.PositionInQueue = core.Float64Ptr(modelMap["position_in_queue"].(float64))
+	}
+	if modelMap["total_in_queue"] != nil {
+		model.TotalInQueue = core.Float64Ptr(modelMap["total_in_queue"].(float64))
+	}
+	if modelMap["workspace_job_status"] != nil && len(modelMap["workspace_job_status"].([]interface{})) > 0 {
+		WorkspaceJobStatusModel, err := ResourceIBMSchematicsJobMapToJobStatusWorkspace(modelMap["workspace_job_status"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.WorkspaceJobStatus = WorkspaceJobStatusModel
+	}
+	if modelMap["action_job_status"] != nil && len(modelMap["action_job_status"].([]interface{})) > 0 {
+		ActionJobStatusModel, err := ResourceIBMSchematicsJobMapToJobStatusAction(modelMap["action_job_status"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ActionJobStatus = ActionJobStatusModel
+	}
+	if modelMap["system_job_status"] != nil && len(modelMap["system_job_status"].([]interface{})) > 0 {
+		SystemJobStatusModel, err := ResourceIBMSchematicsJobMapToJobStatusSystem(modelMap["system_job_status"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.SystemJobStatus = SystemJobStatusModel
+	}
+	if modelMap["flow_job_status"] != nil && len(modelMap["flow_job_status"].([]interface{})) > 0 {
+		FlowJobStatusModel, err := ResourceIBMSchematicsJobMapToJobStatusFlow(modelMap["flow_job_status"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.FlowJobStatus = FlowJobStatusModel
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusWorkspace(modelMap map[string]interface{}) (*schematicsv1.JobStatusWorkspace, error) {
+	model := &schematicsv1.JobStatusWorkspace{}
+	if modelMap["workspace_name"] != nil && modelMap["workspace_name"].(string) != "" {
+		model.WorkspaceName = core.StringPtr(modelMap["workspace_name"].(string))
+	}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["flow_status"] != nil && len(modelMap["flow_status"].([]interface{})) > 0 {
+		FlowStatusModel, err := ResourceIBMSchematicsJobMapToJobStatusFlow(modelMap["flow_status"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.FlowStatus = FlowStatusModel
+	}
+	if modelMap["template_status"] != nil {
+		templateStatus := []schematicsv1.JobStatusTemplate{}
+		for _, templateStatusItem := range modelMap["template_status"].([]interface{}) {
+			templateStatusItemModel, err := ResourceIBMSchematicsJobMapToJobStatusTemplate(templateStatusItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			templateStatus = append(templateStatus, *templateStatusItemModel)
+		}
+		model.TemplateStatus = templateStatus
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	if modelMap["commands"] != nil {
+		commands := []schematicsv1.CommandsInfo{}
+		for _, commandsItem := range modelMap["commands"].([]interface{}) {
+			commandsItemModel, err := ResourceIBMSchematicsJobMapToCommandsInfo(commandsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			commands = append(commands, *commandsItemModel)
+		}
+		model.Commands = commands
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusFlow(modelMap map[string]interface{}) (*schematicsv1.JobStatusFlow, error) {
+	model := &schematicsv1.JobStatusFlow{}
+	if modelMap["flow_id"] != nil && modelMap["flow_id"].(string) != "" {
+		model.FlowID = core.StringPtr(modelMap["flow_id"].(string))
+	}
+	if modelMap["flow_name"] != nil && modelMap["flow_name"].(string) != "" {
+		model.FlowName = core.StringPtr(modelMap["flow_name"].(string))
+	}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["workitems"] != nil {
+		workitems := []schematicsv1.JobStatusWorkitem{}
+		for _, workitemsItem := range modelMap["workitems"].([]interface{}) {
+			workitemsItemModel, err := ResourceIBMSchematicsJobMapToJobStatusWorkitem(workitemsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			workitems = append(workitems, *workitemsItemModel)
+		}
+		model.Workitems = workitems
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusWorkitem(modelMap map[string]interface{}) (*schematicsv1.JobStatusWorkitem, error) {
+	model := &schematicsv1.JobStatusWorkitem{}
+	if modelMap["workspace_id"] != nil && modelMap["workspace_id"].(string) != "" {
+		model.WorkspaceID = core.StringPtr(modelMap["workspace_id"].(string))
+	}
+	if modelMap["workspace_name"] != nil && modelMap["workspace_name"].(string) != "" {
+		model.WorkspaceName = core.StringPtr(modelMap["workspace_name"].(string))
+	}
+	if modelMap["job_id"] != nil && modelMap["job_id"].(string) != "" {
+		model.JobID = core.StringPtr(modelMap["job_id"].(string))
+	}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusTemplate(modelMap map[string]interface{}) (*schematicsv1.JobStatusTemplate, error) {
+	model := &schematicsv1.JobStatusTemplate{}
+	if modelMap["template_id"] != nil && modelMap["template_id"].(string) != "" {
+		model.TemplateID = core.StringPtr(modelMap["template_id"].(string))
+	}
+	if modelMap["template_name"] != nil && modelMap["template_name"].(string) != "" {
+		model.TemplateName = core.StringPtr(modelMap["template_name"].(string))
+	}
+	if modelMap["flow_index"] != nil {
+		model.FlowIndex = core.Int64Ptr(int64(modelMap["flow_index"].(int)))
+	}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToCommandsInfo(modelMap map[string]interface{}) (*schematicsv1.CommandsInfo, error) {
+	model := &schematicsv1.CommandsInfo{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["outcome"] != nil && modelMap["outcome"].(string) != "" {
+		model.Outcome = core.StringPtr(modelMap["outcome"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusAction(modelMap map[string]interface{}) (*schematicsv1.JobStatusAction, error) {
+	model := &schematicsv1.JobStatusAction{}
+	if modelMap["action_name"] != nil && modelMap["action_name"].(string) != "" {
+		model.ActionName = core.StringPtr(modelMap["action_name"].(string))
+	}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["bastion_status_code"] != nil && modelMap["bastion_status_code"].(string) != "" {
+		model.BastionStatusCode = core.StringPtr(modelMap["bastion_status_code"].(string))
+	}
+	if modelMap["bastion_status_message"] != nil && modelMap["bastion_status_message"].(string) != "" {
+		model.BastionStatusMessage = core.StringPtr(modelMap["bastion_status_message"].(string))
+	}
+	if modelMap["targets_status_code"] != nil && modelMap["targets_status_code"].(string) != "" {
+		model.TargetsStatusCode = core.StringPtr(modelMap["targets_status_code"].(string))
+	}
+	if modelMap["targets_status_message"] != nil && modelMap["targets_status_message"].(string) != "" {
+		model.TargetsStatusMessage = core.StringPtr(modelMap["targets_status_message"].(string))
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusSystem(modelMap map[string]interface{}) (*schematicsv1.JobStatusSystem, error) {
+	model := &schematicsv1.JobStatusSystem{}
+	if modelMap["system_status_message"] != nil && modelMap["system_status_message"].(string) != "" {
+		model.SystemStatusMessage = core.StringPtr(modelMap["system_status_message"].(string))
+	}
+	if modelMap["system_status_code"] != nil && modelMap["system_status_code"].(string) != "" {
+		model.SystemStatusCode = core.StringPtr(modelMap["system_status_code"].(string))
+	}
+	if modelMap["schematics_resource_status"] != nil {
+		schematicsResourceStatus := []schematicsv1.JobStatusSchematicsResources{}
+		for _, schematicsResourceStatusItem := range modelMap["schematics_resource_status"].([]interface{}) {
+			schematicsResourceStatusItemModel, err := ResourceIBMSchematicsJobMapToJobStatusSchematicsResources(schematicsResourceStatusItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			schematicsResourceStatus = append(schematicsResourceStatus, *schematicsResourceStatusItemModel)
+		}
+		model.SchematicsResourceStatus = schematicsResourceStatus
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobStatusSchematicsResources(modelMap map[string]interface{}) (*schematicsv1.JobStatusSchematicsResources, error) {
+	model := &schematicsv1.JobStatusSchematicsResources{}
+	if modelMap["status_code"] != nil && modelMap["status_code"].(string) != "" {
+		model.StatusCode = core.StringPtr(modelMap["status_code"].(string))
+	}
+	if modelMap["status_message"] != nil && modelMap["status_message"].(string) != "" {
+		model.StatusMessage = core.StringPtr(modelMap["status_message"].(string))
+	}
+	if modelMap["schematics_resource_id"] != nil && modelMap["schematics_resource_id"].(string) != "" {
+		model.SchematicsResourceID = core.StringPtr(modelMap["schematics_resource_id"].(string))
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobData(modelMap map[string]interface{}) (*schematicsv1.JobData, error) {
+	model := &schematicsv1.JobData{}
+	model.JobType = core.StringPtr(modelMap["job_type"].(string))
+	if modelMap["workspace_job_data"] != nil && len(modelMap["workspace_job_data"].([]interface{})) > 0 {
+		WorkspaceJobDataModel, err := ResourceIBMSchematicsJobMapToJobDataWorkspace(modelMap["workspace_job_data"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.WorkspaceJobData = WorkspaceJobDataModel
+	}
+	if modelMap["action_job_data"] != nil && len(modelMap["action_job_data"].([]interface{})) > 0 {
+		ActionJobDataModel, err := ResourceIBMSchematicsJobMapToJobDataAction(modelMap["action_job_data"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ActionJobData = ActionJobDataModel
+	}
+	if modelMap["system_job_data"] != nil && len(modelMap["system_job_data"].([]interface{})) > 0 {
+		SystemJobDataModel, err := ResourceIBMSchematicsJobMapToJobDataSystem(modelMap["system_job_data"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.SystemJobData = SystemJobDataModel
+	}
+	if modelMap["flow_job_data"] != nil && len(modelMap["flow_job_data"].([]interface{})) > 0 {
+		FlowJobDataModel, err := ResourceIBMSchematicsJobMapToJobDataFlow(modelMap["flow_job_data"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.FlowJobData = FlowJobDataModel
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataWorkspace(modelMap map[string]interface{}) (*schematicsv1.JobDataWorkspace, error) {
+	model := &schematicsv1.JobDataWorkspace{}
+	if modelMap["workspace_name"] != nil && modelMap["workspace_name"].(string) != "" {
+		model.WorkspaceName = core.StringPtr(modelMap["workspace_name"].(string))
+	}
+	if modelMap["flow_id"] != nil && modelMap["flow_id"].(string) != "" {
+		model.FlowID = core.StringPtr(modelMap["flow_id"].(string))
+	}
+	if modelMap["flow_name"] != nil && modelMap["flow_name"].(string) != "" {
+		model.FlowName = core.StringPtr(modelMap["flow_name"].(string))
+	}
+	if modelMap["inputs"] != nil {
+		inputs := []schematicsv1.VariableData{}
+		for _, inputsItem := range modelMap["inputs"].([]interface{}) {
+			inputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			inputs = append(inputs, *inputsItemModel)
+		}
+		model.Inputs = inputs
+	}
+	if modelMap["outputs"] != nil {
+		outputs := []schematicsv1.VariableData{}
+		for _, outputsItem := range modelMap["outputs"].([]interface{}) {
+			outputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			outputs = append(outputs, *outputsItemModel)
+		}
+		model.Outputs = outputs
+	}
+	if modelMap["settings"] != nil {
+		settings := []schematicsv1.VariableData{}
+		for _, settingsItem := range modelMap["settings"].([]interface{}) {
+			settingsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			settings = append(settings, *settingsItemModel)
+		}
+		model.Settings = settings
+	}
+	if modelMap["template_data"] != nil {
+		templateData := []schematicsv1.JobDataTemplate{}
+		for _, templateDataItem := range modelMap["template_data"].([]interface{}) {
+			templateDataItemModel, err := ResourceIBMSchematicsJobMapToJobDataTemplate(templateDataItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			templateData = append(templateData, *templateDataItemModel)
+		}
+		model.TemplateData = templateData
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataTemplate(modelMap map[string]interface{}) (*schematicsv1.JobDataTemplate, error) {
+	model := &schematicsv1.JobDataTemplate{}
+	if modelMap["template_id"] != nil && modelMap["template_id"].(string) != "" {
+		model.TemplateID = core.StringPtr(modelMap["template_id"].(string))
+	}
+	if modelMap["template_name"] != nil && modelMap["template_name"].(string) != "" {
+		model.TemplateName = core.StringPtr(modelMap["template_name"].(string))
+	}
+	if modelMap["flow_index"] != nil {
+		model.FlowIndex = core.Int64Ptr(int64(modelMap["flow_index"].(int)))
+	}
+	if modelMap["inputs"] != nil {
+		inputs := []schematicsv1.VariableData{}
+		for _, inputsItem := range modelMap["inputs"].([]interface{}) {
+			inputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			inputs = append(inputs, *inputsItemModel)
+		}
+		model.Inputs = inputs
+	}
+	if modelMap["outputs"] != nil {
+		outputs := []schematicsv1.VariableData{}
+		for _, outputsItem := range modelMap["outputs"].([]interface{}) {
+			outputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			outputs = append(outputs, *outputsItemModel)
+		}
+		model.Outputs = outputs
+	}
+	if modelMap["settings"] != nil {
+		settings := []schematicsv1.VariableData{}
+		for _, settingsItem := range modelMap["settings"].([]interface{}) {
+			settingsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			settings = append(settings, *settingsItemModel)
+		}
+		model.Settings = settings
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataAction(modelMap map[string]interface{}) (*schematicsv1.JobDataAction, error) {
+	model := &schematicsv1.JobDataAction{}
+	if modelMap["action_name"] != nil && modelMap["action_name"].(string) != "" {
+		model.ActionName = core.StringPtr(modelMap["action_name"].(string))
+	}
+	if modelMap["inputs"] != nil {
+		inputs := []schematicsv1.VariableData{}
+		for _, inputsItem := range modelMap["inputs"].([]interface{}) {
+			inputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			inputs = append(inputs, *inputsItemModel)
+		}
+		model.Inputs = inputs
+	}
+	if modelMap["outputs"] != nil {
+		outputs := []schematicsv1.VariableData{}
+		for _, outputsItem := range modelMap["outputs"].([]interface{}) {
+			outputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			outputs = append(outputs, *outputsItemModel)
+		}
+		model.Outputs = outputs
+	}
+	if modelMap["settings"] != nil {
+		settings := []schematicsv1.VariableData{}
+		for _, settingsItem := range modelMap["settings"].([]interface{}) {
+			settingsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			settings = append(settings, *settingsItemModel)
+		}
+		model.Settings = settings
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	if modelMap["inventory_record"] != nil && len(modelMap["inventory_record"].([]interface{})) > 0 {
+		InventoryRecordModel, err := ResourceIBMSchematicsJobMapToInventoryResourceRecord(modelMap["inventory_record"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.InventoryRecord = InventoryRecordModel
+	}
+	if modelMap["materialized_inventory"] != nil && modelMap["materialized_inventory"].(string) != "" {
+		model.MaterializedInventory = core.StringPtr(modelMap["materialized_inventory"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToInventoryResourceRecord(modelMap map[string]interface{}) (*schematicsv1.InventoryResourceRecord, error) {
+	model := &schematicsv1.InventoryResourceRecord{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["location"] != nil && modelMap["location"].(string) != "" {
+		model.Location = core.StringPtr(modelMap["location"].(string))
+	}
+	if modelMap["resource_group"] != nil && modelMap["resource_group"].(string) != "" {
+		model.ResourceGroup = core.StringPtr(modelMap["resource_group"].(string))
+	}
+	if modelMap["created_at"] != nil {
+
+	}
+	if modelMap["created_by"] != nil && modelMap["created_by"].(string) != "" {
+		model.CreatedBy = core.StringPtr(modelMap["created_by"].(string))
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	if modelMap["updated_by"] != nil && modelMap["updated_by"].(string) != "" {
+		model.UpdatedBy = core.StringPtr(modelMap["updated_by"].(string))
+	}
+	if modelMap["inventories_ini"] != nil && modelMap["inventories_ini"].(string) != "" {
+		model.InventoriesIni = core.StringPtr(modelMap["inventories_ini"].(string))
+	}
+	if modelMap["resource_queries"] != nil {
+		resourceQueries := []string{}
+		for _, resourceQueriesItem := range modelMap["resource_queries"].([]interface{}) {
+			resourceQueries = append(resourceQueries, resourceQueriesItem.(string))
+		}
+		model.ResourceQueries = resourceQueries
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataSystem(modelMap map[string]interface{}) (*schematicsv1.JobDataSystem, error) {
+	model := &schematicsv1.JobDataSystem{}
+	if modelMap["key_id"] != nil && modelMap["key_id"].(string) != "" {
+		model.KeyID = core.StringPtr(modelMap["key_id"].(string))
+	}
+	if modelMap["schematics_resource_id"] != nil {
+		schematicsResourceID := []string{}
+		for _, schematicsResourceIDItem := range modelMap["schematics_resource_id"].([]interface{}) {
+			schematicsResourceID = append(schematicsResourceID, schematicsResourceIDItem.(string))
+		}
+		model.SchematicsResourceID = schematicsResourceID
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataFlow(modelMap map[string]interface{}) (*schematicsv1.JobDataFlow, error) {
+	model := &schematicsv1.JobDataFlow{}
+	if modelMap["flow_id"] != nil && modelMap["flow_id"].(string) != "" {
+		model.FlowID = core.StringPtr(modelMap["flow_id"].(string))
+	}
+	if modelMap["flow_name"] != nil && modelMap["flow_name"].(string) != "" {
+		model.FlowName = core.StringPtr(modelMap["flow_name"].(string))
+	}
+	if modelMap["workitems"] != nil {
+		workitems := []schematicsv1.JobDataWorkItem{}
+		for _, workitemsItem := range modelMap["workitems"].([]interface{}) {
+			workitemsItemModel, err := ResourceIBMSchematicsJobMapToJobDataWorkItem(workitemsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			workitems = append(workitems, *workitemsItemModel)
+		}
+		model.Workitems = workitems
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataWorkItem(modelMap map[string]interface{}) (*schematicsv1.JobDataWorkItem, error) {
+	model := &schematicsv1.JobDataWorkItem{}
+	if modelMap["command_object_id"] != nil && modelMap["command_object_id"].(string) != "" {
+		model.CommandObjectID = core.StringPtr(modelMap["command_object_id"].(string))
+	}
+	if modelMap["command_object_name"] != nil && modelMap["command_object_name"].(string) != "" {
+		model.CommandObjectName = core.StringPtr(modelMap["command_object_name"].(string))
+	}
+	if modelMap["layers"] != nil && modelMap["layers"].(string) != "" {
+		model.Layers = core.StringPtr(modelMap["layers"].(string))
+	}
+	if modelMap["source_type"] != nil && modelMap["source_type"].(string) != "" {
+		model.SourceType = core.StringPtr(modelMap["source_type"].(string))
+	}
+	if modelMap["source"] != nil && len(modelMap["source"].([]interface{})) > 0 {
+		SourceModel, err := ResourceIBMSchematicsJobMapToExternalSource(modelMap["source"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Source = SourceModel
+	}
+	if modelMap["inputs"] != nil {
+		inputs := []schematicsv1.VariableData{}
+		for _, inputsItem := range modelMap["inputs"].([]interface{}) {
+			inputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(inputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			inputs = append(inputs, *inputsItemModel)
+		}
+		model.Inputs = inputs
+	}
+	if modelMap["outputs"] != nil {
+		outputs := []schematicsv1.VariableData{}
+		for _, outputsItem := range modelMap["outputs"].([]interface{}) {
+			outputsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(outputsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			outputs = append(outputs, *outputsItemModel)
+		}
+		model.Outputs = outputs
+	}
+	if modelMap["settings"] != nil {
+		settings := []schematicsv1.VariableData{}
+		for _, settingsItem := range modelMap["settings"].([]interface{}) {
+			settingsItemModel, err := ResourceIBMSchematicsJobMapToVariableData(settingsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			settings = append(settings, *settingsItemModel)
+		}
+		model.Settings = settings
+	}
+	if modelMap["last_job"] != nil && len(modelMap["last_job"].([]interface{})) > 0 {
+		LastJobModel, err := ResourceIBMSchematicsJobMapToJobDataWorkItemLastJob(modelMap["last_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.LastJob = LastJobModel
+	}
+	if modelMap["updated_at"] != nil {
+
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToExternalSource(modelMap map[string]interface{}) (*schematicsv1.ExternalSource, error) {
+	model := &schematicsv1.ExternalSource{}
+	model.SourceType = core.StringPtr(modelMap["source_type"].(string))
+	if modelMap["git"] != nil && len(modelMap["git"].([]interface{})) > 0 {
+		GitModel, err := ResourceIBMSchematicsJobMapToExternalSourceGit(modelMap["git"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Git = GitModel
+	}
+	if modelMap["catalog"] != nil && len(modelMap["catalog"].([]interface{})) > 0 {
+		CatalogModel, err := ResourceIBMSchematicsJobMapToExternalSourceCatalog(modelMap["catalog"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Catalog = CatalogModel
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToExternalSourceGit(modelMap map[string]interface{}) (*schematicsv1.ExternalSourceGit, error) {
+	model := &schematicsv1.ExternalSourceGit{}
+	if modelMap["computed_git_repo_url"] != nil && modelMap["computed_git_repo_url"].(string) != "" {
+		model.ComputedGitRepoURL = core.StringPtr(modelMap["computed_git_repo_url"].(string))
+	}
+	if modelMap["git_repo_url"] != nil && modelMap["git_repo_url"].(string) != "" {
+		model.GitRepoURL = core.StringPtr(modelMap["git_repo_url"].(string))
+	}
+	if modelMap["git_token"] != nil && modelMap["git_token"].(string) != "" {
+		model.GitToken = core.StringPtr(modelMap["git_token"].(string))
+	}
+	if modelMap["git_repo_folder"] != nil && modelMap["git_repo_folder"].(string) != "" {
+		model.GitRepoFolder = core.StringPtr(modelMap["git_repo_folder"].(string))
+	}
+	if modelMap["git_release"] != nil && modelMap["git_release"].(string) != "" {
+		model.GitRelease = core.StringPtr(modelMap["git_release"].(string))
+	}
+	if modelMap["git_branch"] != nil && modelMap["git_branch"].(string) != "" {
+		model.GitBranch = core.StringPtr(modelMap["git_branch"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToExternalSourceCatalog(modelMap map[string]interface{}) (*schematicsv1.ExternalSourceCatalog, error) {
+	model := &schematicsv1.ExternalSourceCatalog{}
+	if modelMap["catalog_name"] != nil && modelMap["catalog_name"].(string) != "" {
+		model.CatalogName = core.StringPtr(modelMap["catalog_name"].(string))
+	}
+	if modelMap["offering_name"] != nil && modelMap["offering_name"].(string) != "" {
+		model.OfferingName = core.StringPtr(modelMap["offering_name"].(string))
+	}
+	if modelMap["offering_version"] != nil && modelMap["offering_version"].(string) != "" {
+		model.OfferingVersion = core.StringPtr(modelMap["offering_version"].(string))
+	}
+	if modelMap["offering_kind"] != nil && modelMap["offering_kind"].(string) != "" {
+		model.OfferingKind = core.StringPtr(modelMap["offering_kind"].(string))
+	}
+	if modelMap["offering_id"] != nil && modelMap["offering_id"].(string) != "" {
+		model.OfferingID = core.StringPtr(modelMap["offering_id"].(string))
+	}
+	if modelMap["offering_version_id"] != nil && modelMap["offering_version_id"].(string) != "" {
+		model.OfferingVersionID = core.StringPtr(modelMap["offering_version_id"].(string))
+	}
+	if modelMap["offering_repo_url"] != nil && modelMap["offering_repo_url"].(string) != "" {
+		model.OfferingRepoURL = core.StringPtr(modelMap["offering_repo_url"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobDataWorkItemLastJob(modelMap map[string]interface{}) (*schematicsv1.JobDataWorkItemLastJob, error) {
+	model := &schematicsv1.JobDataWorkItemLastJob{}
+	if modelMap["command_object"] != nil && modelMap["command_object"].(string) != "" {
+		model.CommandObject = core.StringPtr(modelMap["command_object"].(string))
+	}
+	if modelMap["command_object_name"] != nil && modelMap["command_object_name"].(string) != "" {
+		model.CommandObjectName = core.StringPtr(modelMap["command_object_name"].(string))
+	}
+	if modelMap["command_object_id"] != nil && modelMap["command_object_id"].(string) != "" {
+		model.CommandObjectID = core.StringPtr(modelMap["command_object_id"].(string))
+	}
+	if modelMap["command_name"] != nil && modelMap["command_name"].(string) != "" {
+		model.CommandName = core.StringPtr(modelMap["command_name"].(string))
+	}
+	if modelMap["job_id"] != nil && modelMap["job_id"].(string) != "" {
+		model.JobID = core.StringPtr(modelMap["job_id"].(string))
+	}
+	if modelMap["job_status"] != nil && modelMap["job_status"].(string) != "" {
+		model.JobStatus = core.StringPtr(modelMap["job_status"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToBastionResourceDefinition(modelMap map[string]interface{}) (*schematicsv1.BastionResourceDefinition, error) {
+	model := &schematicsv1.BastionResourceDefinition{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["host"] != nil && modelMap["host"].(string) != "" {
+		model.Host = core.StringPtr(modelMap["host"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummary(modelMap map[string]interface{}) (*schematicsv1.JobLogSummary, error) {
+	model := &schematicsv1.JobLogSummary{}
+	if modelMap["job_id"] != nil && modelMap["job_id"].(string) != "" {
+		model.JobID = core.StringPtr(modelMap["job_id"].(string))
+	}
+	if modelMap["job_type"] != nil && modelMap["job_type"].(string) != "" {
+		model.JobType = core.StringPtr(modelMap["job_type"].(string))
+	}
+	if modelMap["log_start_at"] != nil {
+
+	}
+	if modelMap["log_analyzed_till"] != nil {
+
+	}
+	if modelMap["elapsed_time"] != nil {
+		model.ElapsedTime = core.Float64Ptr(modelMap["elapsed_time"].(float64))
+	}
+	if modelMap["log_errors"] != nil {
+		logErrors := []schematicsv1.JobLogSummaryLogErrors{}
+		for _, logErrorsItem := range modelMap["log_errors"].([]interface{}) {
+			logErrorsItemModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryLogErrors(logErrorsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			logErrors = append(logErrors, *logErrorsItemModel)
+		}
+		model.LogErrors = logErrors
+	}
+	if modelMap["repo_download_job"] != nil && len(modelMap["repo_download_job"].([]interface{})) > 0 {
+		RepoDownloadJobModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(modelMap["repo_download_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.RepoDownloadJob = RepoDownloadJobModel
+	}
+	if modelMap["workspace_job"] != nil && len(modelMap["workspace_job"].([]interface{})) > 0 {
+		WorkspaceJobModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryWorkspaceJob(modelMap["workspace_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.WorkspaceJob = WorkspaceJobModel
+	}
+	if modelMap["flow_job"] != nil && len(modelMap["flow_job"].([]interface{})) > 0 {
+		FlowJobModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryFlowJob(modelMap["flow_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.FlowJob = FlowJobModel
+	}
+	if modelMap["action_job"] != nil && len(modelMap["action_job"].([]interface{})) > 0 {
+		ActionJobModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryActionJob(modelMap["action_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ActionJob = ActionJobModel
+	}
+	if modelMap["system_job"] != nil && len(modelMap["system_job"].([]interface{})) > 0 {
+		SystemJobModel, err := ResourceIBMSchematicsJobMapToJobLogSummarySystemJob(modelMap["system_job"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.SystemJob = SystemJobModel
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryLogErrors(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryLogErrors, error) {
+	model := &schematicsv1.JobLogSummaryLogErrors{}
+	if modelMap["error_code"] != nil && modelMap["error_code"].(string) != "" {
+		model.ErrorCode = core.StringPtr(modelMap["error_code"].(string))
+	}
+	if modelMap["error_msg"] != nil && modelMap["error_msg"].(string) != "" {
+		model.ErrorMsg = core.StringPtr(modelMap["error_msg"].(string))
+	}
+	if modelMap["error_count"] != nil {
+		model.ErrorCount = core.Float64Ptr(modelMap["error_count"].(float64))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryRepoDownloadJob(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryRepoDownloadJob, error) {
+	model := &schematicsv1.JobLogSummaryRepoDownloadJob{}
+	if modelMap["scanned_file_count"] != nil {
+		model.ScannedFileCount = core.Float64Ptr(modelMap["scanned_file_count"].(float64))
+	}
+	if modelMap["quarantined_file_count"] != nil {
+		model.QuarantinedFileCount = core.Float64Ptr(modelMap["quarantined_file_count"].(float64))
+	}
+	if modelMap["detected_filetype"] != nil && modelMap["detected_filetype"].(string) != "" {
+		model.DetectedFiletype = core.StringPtr(modelMap["detected_filetype"].(string))
+	}
+	if modelMap["inputs_count"] != nil && modelMap["inputs_count"].(string) != "" {
+		model.InputsCount = core.StringPtr(modelMap["inputs_count"].(string))
+	}
+	if modelMap["outputs_count"] != nil && modelMap["outputs_count"].(string) != "" {
+		model.OutputsCount = core.StringPtr(modelMap["outputs_count"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryWorkspaceJob(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryWorkspaceJob, error) {
+	model := &schematicsv1.JobLogSummaryWorkspaceJob{}
+	if modelMap["resources_add"] != nil {
+		model.ResourcesAdd = core.Float64Ptr(modelMap["resources_add"].(float64))
+	}
+	if modelMap["resources_modify"] != nil {
+		model.ResourcesModify = core.Float64Ptr(modelMap["resources_modify"].(float64))
+	}
+	if modelMap["resources_destroy"] != nil {
+		model.ResourcesDestroy = core.Float64Ptr(modelMap["resources_destroy"].(float64))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryFlowJob(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryFlowJob, error) {
+	model := &schematicsv1.JobLogSummaryFlowJob{}
+	if modelMap["workitems_completed"] != nil {
+		model.WorkitemsCompleted = core.Float64Ptr(modelMap["workitems_completed"].(float64))
+	}
+	if modelMap["workitems_pending"] != nil {
+		model.WorkitemsPending = core.Float64Ptr(modelMap["workitems_pending"].(float64))
+	}
+	if modelMap["workitems_failed"] != nil {
+		model.WorkitemsFailed = core.Float64Ptr(modelMap["workitems_failed"].(float64))
+	}
+	if modelMap["workitems"] != nil {
+		workitems := []schematicsv1.JobLogSummaryWorkitems{}
+		for _, workitemsItem := range modelMap["workitems"].([]interface{}) {
+			workitemsItemModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryWorkitems(workitemsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			workitems = append(workitems, *workitemsItemModel)
+		}
+		model.Workitems = workitems
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryWorkitems(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryWorkitems, error) {
+	model := &schematicsv1.JobLogSummaryWorkitems{}
+	if modelMap["workspace_id"] != nil && modelMap["workspace_id"].(string) != "" {
+		model.WorkspaceID = core.StringPtr(modelMap["workspace_id"].(string))
+	}
+	if modelMap["job_id"] != nil && modelMap["job_id"].(string) != "" {
+		model.JobID = core.StringPtr(modelMap["job_id"].(string))
+	}
+	if modelMap["resources_add"] != nil {
+		model.ResourcesAdd = core.Float64Ptr(modelMap["resources_add"].(float64))
+	}
+	if modelMap["resources_modify"] != nil {
+		model.ResourcesModify = core.Float64Ptr(modelMap["resources_modify"].(float64))
+	}
+	if modelMap["resources_destroy"] != nil {
+		model.ResourcesDestroy = core.Float64Ptr(modelMap["resources_destroy"].(float64))
+	}
+	if modelMap["log_url"] != nil && modelMap["log_url"].(string) != "" {
+		model.LogURL = core.StringPtr(modelMap["log_url"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryActionJob(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryActionJob, error) {
+	model := &schematicsv1.JobLogSummaryActionJob{}
+	if modelMap["target_count"] != nil {
+		model.TargetCount = core.Float64Ptr(modelMap["target_count"].(float64))
+	}
+	if modelMap["task_count"] != nil {
+		model.TaskCount = core.Float64Ptr(modelMap["task_count"].(float64))
+	}
+	if modelMap["play_count"] != nil {
+		model.PlayCount = core.Float64Ptr(modelMap["play_count"].(float64))
+	}
+	if modelMap["recap"] != nil && len(modelMap["recap"].([]interface{})) > 0 {
+		RecapModel, err := ResourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(modelMap["recap"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Recap = RecapModel
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummaryActionJobRecap(modelMap map[string]interface{}) (*schematicsv1.JobLogSummaryActionJobRecap, error) {
+	model := &schematicsv1.JobLogSummaryActionJobRecap{}
+	if modelMap["target"] != nil {
+		target := []string{}
+		for _, targetItem := range modelMap["target"].([]interface{}) {
+			target = append(target, targetItem.(string))
+		}
+		model.Target = target
+	}
+	if modelMap["ok"] != nil {
+		model.Ok = core.Float64Ptr(modelMap["ok"].(float64))
+	}
+	if modelMap["changed"] != nil {
+		model.Changed = core.Float64Ptr(modelMap["changed"].(float64))
+	}
+	if modelMap["failed"] != nil {
+		model.Failed = core.Float64Ptr(modelMap["failed"].(float64))
+	}
+	if modelMap["skipped"] != nil {
+		model.Skipped = core.Float64Ptr(modelMap["skipped"].(float64))
+	}
+	if modelMap["unreachable"] != nil {
+		model.Unreachable = core.Float64Ptr(modelMap["unreachable"].(float64))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobMapToJobLogSummarySystemJob(modelMap map[string]interface{}) (*schematicsv1.JobLogSummarySystemJob, error) {
+	model := &schematicsv1.JobLogSummarySystemJob{}
+	if modelMap["target_count"] != nil {
+		model.TargetCount = core.Float64Ptr(modelMap["target_count"].(float64))
+	}
+	if modelMap["success"] != nil {
+		model.Success = core.Float64Ptr(modelMap["success"].(float64))
+	}
+	if modelMap["failed"] != nil {
+		model.Failed = core.Float64Ptr(modelMap["failed"].(float64))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsJobVariableDataToMap(model *schematicsv1.VariableData) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
+	if model.UseDefault != nil {
+		modelMap["use_default"] = model.UseDefault
+	}
+	if model.Metadata != nil {
+		metadataMap, err := ResourceIBMSchematicsJobVariableMetadataToMap(model.Metadata)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["metadata"] = []map[string]interface{}{metadataMap}
+	}
+	if model.Link != nil {
+		modelMap["link"] = model.Link
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobVariableMetadataToMap(model *schematicsv1.VariableMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = model.Type
+	}
+	if model.Aliases != nil {
+		modelMap["aliases"] = model.Aliases
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.CloudDataType != nil {
+		modelMap["cloud_data_type"] = model.CloudDataType
+	}
+	if model.DefaultValue != nil {
+		modelMap["default_value"] = model.DefaultValue
+	}
+	if model.LinkStatus != nil {
+		modelMap["link_status"] = model.LinkStatus
+	}
+	if model.Secure != nil {
+		modelMap["secure"] = model.Secure
+	}
+	if model.Immutable != nil {
+		modelMap["immutable"] = model.Immutable
+	}
+	if model.Hidden != nil {
+		modelMap["hidden"] = model.Hidden
+	}
+	if model.Required != nil {
+		modelMap["required"] = model.Required
+	}
+	if model.Options != nil {
+		modelMap["options"] = model.Options
+	}
+	if model.MinValue != nil {
+		modelMap["min_value"] = flex.IntValue(model.MinValue)
+	}
+	if model.MaxValue != nil {
+		modelMap["max_value"] = flex.IntValue(model.MaxValue)
+	}
+	if model.MinLength != nil {
+		modelMap["min_length"] = flex.IntValue(model.MinLength)
+	}
+	if model.MaxLength != nil {
+		modelMap["max_length"] = flex.IntValue(model.MaxLength)
+	}
+	if model.Matches != nil {
+		modelMap["matches"] = model.Matches
+	}
+	if model.Position != nil {
+		modelMap["position"] = flex.IntValue(model.Position)
+	}
+	if model.GroupBy != nil {
+		modelMap["group_by"] = model.GroupBy
+	}
+	if model.Source != nil {
+		modelMap["source"] = model.Source
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusToMap(model *schematicsv1.JobStatus) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PositionInQueue != nil {
+		modelMap["position_in_queue"] = model.PositionInQueue
+	}
+	if model.TotalInQueue != nil {
+		modelMap["total_in_queue"] = model.TotalInQueue
+	}
+	if model.WorkspaceJobStatus != nil {
+		workspaceJobStatusMap, err := ResourceIBMSchematicsJobJobStatusWorkspaceToMap(model.WorkspaceJobStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["workspace_job_status"] = []map[string]interface{}{workspaceJobStatusMap}
+	}
+	if model.ActionJobStatus != nil {
+		actionJobStatusMap, err := ResourceIBMSchematicsJobJobStatusActionToMap(model.ActionJobStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["action_job_status"] = []map[string]interface{}{actionJobStatusMap}
+	}
+	if model.SystemJobStatus != nil {
+		systemJobStatusMap, err := ResourceIBMSchematicsJobJobStatusSystemToMap(model.SystemJobStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["system_job_status"] = []map[string]interface{}{systemJobStatusMap}
+	}
+	if model.FlowJobStatus != nil {
+		flowJobStatusMap, err := ResourceIBMSchematicsJobJobStatusFlowToMap(model.FlowJobStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["flow_job_status"] = []map[string]interface{}{flowJobStatusMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusWorkspaceToMap(model *schematicsv1.JobStatusWorkspace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceName != nil {
+		modelMap["workspace_name"] = model.WorkspaceName
+	}
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.FlowStatus != nil {
+		flowStatusMap, err := ResourceIBMSchematicsJobJobStatusFlowToMap(model.FlowStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["flow_status"] = []map[string]interface{}{flowStatusMap}
+	}
+	if model.TemplateStatus != nil {
+		templateStatus := []map[string]interface{}{}
+		for _, templateStatusItem := range model.TemplateStatus {
+			templateStatusItemMap, err := ResourceIBMSchematicsJobJobStatusTemplateToMap(&templateStatusItem)
+			if err != nil {
+				return modelMap, err
+			}
+			templateStatus = append(templateStatus, templateStatusItemMap)
+		}
+		modelMap["template_status"] = templateStatus
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.Commands != nil {
+		commands := []map[string]interface{}{}
+		for _, commandsItem := range model.Commands {
+			commandsItemMap, err := ResourceIBMSchematicsJobCommandsInfoToMap(&commandsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			commands = append(commands, commandsItemMap)
+		}
+		modelMap["commands"] = commands
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusFlowToMap(model *schematicsv1.JobStatusFlow) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.FlowID != nil {
+		modelMap["flow_id"] = model.FlowID
+	}
+	if model.FlowName != nil {
+		modelMap["flow_name"] = model.FlowName
+	}
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.Workitems != nil {
+		workitems := []map[string]interface{}{}
+		for _, workitemsItem := range model.Workitems {
+			workitemsItemMap, err := ResourceIBMSchematicsJobJobStatusWorkitemToMap(&workitemsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			workitems = append(workitems, workitemsItemMap)
+		}
+		modelMap["workitems"] = workitems
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusWorkitemToMap(model *schematicsv1.JobStatusWorkitem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceID != nil {
+		modelMap["workspace_id"] = model.WorkspaceID
+	}
+	if model.WorkspaceName != nil {
+		modelMap["workspace_name"] = model.WorkspaceName
+	}
+	if model.JobID != nil {
+		modelMap["job_id"] = model.JobID
+	}
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusTemplateToMap(model *schematicsv1.JobStatusTemplate) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TemplateID != nil {
+		modelMap["template_id"] = model.TemplateID
+	}
+	if model.TemplateName != nil {
+		modelMap["template_name"] = model.TemplateName
+	}
+	if model.FlowIndex != nil {
+		modelMap["flow_index"] = flex.IntValue(model.FlowIndex)
+	}
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobCommandsInfoToMap(model *schematicsv1.CommandsInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Outcome != nil {
+		modelMap["outcome"] = model.Outcome
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusActionToMap(model *schematicsv1.JobStatusAction) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ActionName != nil {
+		modelMap["action_name"] = model.ActionName
+	}
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.BastionStatusCode != nil {
+		modelMap["bastion_status_code"] = model.BastionStatusCode
+	}
+	if model.BastionStatusMessage != nil {
+		modelMap["bastion_status_message"] = model.BastionStatusMessage
+	}
+	if model.TargetsStatusCode != nil {
+		modelMap["targets_status_code"] = model.TargetsStatusCode
+	}
+	if model.TargetsStatusMessage != nil {
+		modelMap["targets_status_message"] = model.TargetsStatusMessage
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusSystemToMap(model *schematicsv1.JobStatusSystem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SystemStatusMessage != nil {
+		modelMap["system_status_message"] = model.SystemStatusMessage
+	}
+	if model.SystemStatusCode != nil {
+		modelMap["system_status_code"] = model.SystemStatusCode
+	}
+	if model.SchematicsResourceStatus != nil {
+		schematicsResourceStatus := []map[string]interface{}{}
+		for _, schematicsResourceStatusItem := range model.SchematicsResourceStatus {
+			schematicsResourceStatusItemMap, err := ResourceIBMSchematicsJobJobStatusSchematicsResourcesToMap(&schematicsResourceStatusItem)
+			if err != nil {
+				return modelMap, err
+			}
+			schematicsResourceStatus = append(schematicsResourceStatus, schematicsResourceStatusItemMap)
+		}
+		modelMap["schematics_resource_status"] = schematicsResourceStatus
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobStatusSchematicsResourcesToMap(model *schematicsv1.JobStatusSchematicsResources) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.StatusCode != nil {
+		modelMap["status_code"] = model.StatusCode
+	}
+	if model.StatusMessage != nil {
+		modelMap["status_message"] = model.StatusMessage
+	}
+	if model.SchematicsResourceID != nil {
+		modelMap["schematics_resource_id"] = model.SchematicsResourceID
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataToMap(model *schematicsv1.JobData) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["job_type"] = model.JobType
+	if model.WorkspaceJobData != nil {
+		workspaceJobDataMap, err := ResourceIBMSchematicsJobJobDataWorkspaceToMap(model.WorkspaceJobData)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["workspace_job_data"] = []map[string]interface{}{workspaceJobDataMap}
+	}
+	if model.ActionJobData != nil {
+		actionJobDataMap, err := ResourceIBMSchematicsJobJobDataActionToMap(model.ActionJobData)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["action_job_data"] = []map[string]interface{}{actionJobDataMap}
+	}
+	if model.SystemJobData != nil {
+		systemJobDataMap, err := ResourceIBMSchematicsJobJobDataSystemToMap(model.SystemJobData)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["system_job_data"] = []map[string]interface{}{systemJobDataMap}
+	}
+	if model.FlowJobData != nil {
+		flowJobDataMap, err := ResourceIBMSchematicsJobJobDataFlowToMap(model.FlowJobData)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["flow_job_data"] = []map[string]interface{}{flowJobDataMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataWorkspaceToMap(model *schematicsv1.JobDataWorkspace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceName != nil {
+		modelMap["workspace_name"] = model.WorkspaceName
+	}
+	if model.FlowID != nil {
+		modelMap["flow_id"] = model.FlowID
+	}
+	if model.FlowName != nil {
+		modelMap["flow_name"] = model.FlowName
+	}
+	if model.Inputs != nil {
+		inputs := []map[string]interface{}{}
+		for _, inputsItem := range model.Inputs {
+			inputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&inputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs = append(inputs, inputsItemMap)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Outputs != nil {
+		outputs := []map[string]interface{}{}
+		for _, outputsItem := range model.Outputs {
+			outputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&outputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			outputs = append(outputs, outputsItemMap)
+		}
+		modelMap["outputs"] = outputs
+	}
+	if model.Settings != nil {
+		settings := []map[string]interface{}{}
+		for _, settingsItem := range model.Settings {
+			settingsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&settingsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			settings = append(settings, settingsItemMap)
+		}
+		modelMap["settings"] = settings
+	}
+	if model.TemplateData != nil {
+		templateData := []map[string]interface{}{}
+		for _, templateDataItem := range model.TemplateData {
+			templateDataItemMap, err := ResourceIBMSchematicsJobJobDataTemplateToMap(&templateDataItem)
+			if err != nil {
+				return modelMap, err
+			}
+			templateData = append(templateData, templateDataItemMap)
+		}
+		modelMap["template_data"] = templateData
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataTemplateToMap(model *schematicsv1.JobDataTemplate) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TemplateID != nil {
+		modelMap["template_id"] = model.TemplateID
+	}
+	if model.TemplateName != nil {
+		modelMap["template_name"] = model.TemplateName
+	}
+	if model.FlowIndex != nil {
+		modelMap["flow_index"] = flex.IntValue(model.FlowIndex)
+	}
+	if model.Inputs != nil {
+		inputs := []map[string]interface{}{}
+		for _, inputsItem := range model.Inputs {
+			inputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&inputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs = append(inputs, inputsItemMap)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Outputs != nil {
+		outputs := []map[string]interface{}{}
+		for _, outputsItem := range model.Outputs {
+			outputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&outputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			outputs = append(outputs, outputsItemMap)
+		}
+		modelMap["outputs"] = outputs
+	}
+	if model.Settings != nil {
+		settings := []map[string]interface{}{}
+		for _, settingsItem := range model.Settings {
+			settingsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&settingsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			settings = append(settings, settingsItemMap)
+		}
+		modelMap["settings"] = settings
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataActionToMap(model *schematicsv1.JobDataAction) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ActionName != nil {
+		modelMap["action_name"] = model.ActionName
+	}
+	if model.Inputs != nil {
+		inputs := []map[string]interface{}{}
+		for _, inputsItem := range model.Inputs {
+			inputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&inputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs = append(inputs, inputsItemMap)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Outputs != nil {
+		outputs := []map[string]interface{}{}
+		for _, outputsItem := range model.Outputs {
+			outputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&outputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			outputs = append(outputs, outputsItemMap)
+		}
+		modelMap["outputs"] = outputs
+	}
+	if model.Settings != nil {
+		settings := []map[string]interface{}{}
+		for _, settingsItem := range model.Settings {
+			settingsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&settingsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			settings = append(settings, settingsItemMap)
+		}
+		modelMap["settings"] = settings
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.InventoryRecord != nil {
+		inventoryRecordMap, err := ResourceIBMSchematicsJobInventoryResourceRecordToMap(model.InventoryRecord)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["inventory_record"] = []map[string]interface{}{inventoryRecordMap}
+	}
+	if model.MaterializedInventory != nil {
+		modelMap["materialized_inventory"] = model.MaterializedInventory
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobInventoryResourceRecordToMap(model *schematicsv1.InventoryResourceRecord) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Location != nil {
+		modelMap["location"] = model.Location
+	}
+	if model.ResourceGroup != nil {
+		modelMap["resource_group"] = model.ResourceGroup
+	}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.CreatedBy != nil {
+		modelMap["created_by"] = model.CreatedBy
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.UpdatedBy != nil {
+		modelMap["updated_by"] = model.UpdatedBy
+	}
+	if model.InventoriesIni != nil {
+		modelMap["inventories_ini"] = model.InventoriesIni
+	}
+	if model.ResourceQueries != nil {
+		modelMap["resource_queries"] = model.ResourceQueries
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataSystemToMap(model *schematicsv1.JobDataSystem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.KeyID != nil {
+		modelMap["key_id"] = model.KeyID
+	}
+	if model.SchematicsResourceID != nil {
+		modelMap["schematics_resource_id"] = model.SchematicsResourceID
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataFlowToMap(model *schematicsv1.JobDataFlow) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.FlowID != nil {
+		modelMap["flow_id"] = model.FlowID
+	}
+	if model.FlowName != nil {
+		modelMap["flow_name"] = model.FlowName
+	}
+	if model.Workitems != nil {
+		workitems := []map[string]interface{}{}
+		for _, workitemsItem := range model.Workitems {
+			workitemsItemMap, err := ResourceIBMSchematicsJobJobDataWorkItemToMap(&workitemsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			workitems = append(workitems, workitemsItemMap)
+		}
+		modelMap["workitems"] = workitems
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataWorkItemToMap(model *schematicsv1.JobDataWorkItem) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CommandObjectID != nil {
+		modelMap["command_object_id"] = model.CommandObjectID
+	}
+	if model.CommandObjectName != nil {
+		modelMap["command_object_name"] = model.CommandObjectName
+	}
+	if model.Layers != nil {
+		modelMap["layers"] = model.Layers
+	}
+	if model.SourceType != nil {
+		modelMap["source_type"] = model.SourceType
+	}
+	if model.Source != nil {
+		sourceMap, err := ResourceIBMSchematicsJobExternalSourceToMap(model.Source)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["source"] = []map[string]interface{}{sourceMap}
+	}
+	if model.Inputs != nil {
+		inputs := []map[string]interface{}{}
+		for _, inputsItem := range model.Inputs {
+			inputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&inputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			inputs = append(inputs, inputsItemMap)
+		}
+		modelMap["inputs"] = inputs
+	}
+	if model.Outputs != nil {
+		outputs := []map[string]interface{}{}
+		for _, outputsItem := range model.Outputs {
+			outputsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&outputsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			outputs = append(outputs, outputsItemMap)
+		}
+		modelMap["outputs"] = outputs
+	}
+	if model.Settings != nil {
+		settings := []map[string]interface{}{}
+		for _, settingsItem := range model.Settings {
+			settingsItemMap, err := ResourceIBMSchematicsJobVariableDataToMap(&settingsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			settings = append(settings, settingsItemMap)
+		}
+		modelMap["settings"] = settings
+	}
+	if model.LastJob != nil {
+		lastJobMap, err := ResourceIBMSchematicsJobJobDataWorkItemLastJobToMap(model.LastJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["last_job"] = []map[string]interface{}{lastJobMap}
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobExternalSourceToMap(model *schematicsv1.ExternalSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["source_type"] = model.SourceType
+	if model.Git != nil {
+		gitMap, err := ResourceIBMSchematicsJobExternalSourceGitToMap(model.Git)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["git"] = []map[string]interface{}{gitMap}
+	}
+	if model.Catalog != nil {
+		catalogMap, err := ResourceIBMSchematicsJobExternalSourceCatalogToMap(model.Catalog)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["catalog"] = []map[string]interface{}{catalogMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobExternalSourceGitToMap(model *schematicsv1.ExternalSourceGit) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ComputedGitRepoURL != nil {
+		modelMap["computed_git_repo_url"] = model.ComputedGitRepoURL
+	}
+	if model.GitRepoURL != nil {
+		modelMap["git_repo_url"] = model.GitRepoURL
+	}
+	if model.GitToken != nil {
+		modelMap["git_token"] = model.GitToken
+	}
+	if model.GitRepoFolder != nil {
+		modelMap["git_repo_folder"] = model.GitRepoFolder
+	}
+	if model.GitRelease != nil {
+		modelMap["git_release"] = model.GitRelease
+	}
+	if model.GitBranch != nil {
+		modelMap["git_branch"] = model.GitBranch
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobExternalSourceCatalogToMap(model *schematicsv1.ExternalSourceCatalog) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CatalogName != nil {
+		modelMap["catalog_name"] = model.CatalogName
+	}
+	if model.OfferingName != nil {
+		modelMap["offering_name"] = model.OfferingName
+	}
+	if model.OfferingVersion != nil {
+		modelMap["offering_version"] = model.OfferingVersion
+	}
+	if model.OfferingKind != nil {
+		modelMap["offering_kind"] = model.OfferingKind
+	}
+	if model.OfferingID != nil {
+		modelMap["offering_id"] = model.OfferingID
+	}
+	if model.OfferingVersionID != nil {
+		modelMap["offering_version_id"] = model.OfferingVersionID
+	}
+	if model.OfferingRepoURL != nil {
+		modelMap["offering_repo_url"] = model.OfferingRepoURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobDataWorkItemLastJobToMap(model *schematicsv1.JobDataWorkItemLastJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CommandObject != nil {
+		modelMap["command_object"] = model.CommandObject
+	}
+	if model.CommandObjectName != nil {
+		modelMap["command_object_name"] = model.CommandObjectName
+	}
+	if model.CommandObjectID != nil {
+		modelMap["command_object_id"] = model.CommandObjectID
+	}
+	if model.CommandName != nil {
+		modelMap["command_name"] = model.CommandName
+	}
+	if model.JobID != nil {
+		modelMap["job_id"] = model.JobID
+	}
+	if model.JobStatus != nil {
+		modelMap["job_status"] = model.JobStatus
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobBastionResourceDefinitionToMap(model *schematicsv1.BastionResourceDefinition) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Host != nil {
+		modelMap["host"] = model.Host
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryToMap(model *schematicsv1.JobLogSummary) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.JobID != nil {
+		modelMap["job_id"] = model.JobID
+	}
+	if model.JobType != nil {
+		modelMap["job_type"] = model.JobType
+	}
+	if model.LogStartAt != nil {
+		modelMap["log_start_at"] = model.LogStartAt.String()
+	}
+	if model.LogAnalyzedTill != nil {
+		modelMap["log_analyzed_till"] = model.LogAnalyzedTill.String()
+	}
+	if model.ElapsedTime != nil {
+		modelMap["elapsed_time"] = model.ElapsedTime
+	}
+	if model.LogErrors != nil {
+		logErrors := []map[string]interface{}{}
+		for _, logErrorsItem := range model.LogErrors {
+			logErrorsItemMap, err := ResourceIBMSchematicsJobJobLogSummaryLogErrorsToMap(&logErrorsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			logErrors = append(logErrors, logErrorsItemMap)
+		}
+		modelMap["log_errors"] = logErrors
+	}
+	if model.RepoDownloadJob != nil {
+		repoDownloadJobMap, err := ResourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(model.RepoDownloadJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["repo_download_job"] = []map[string]interface{}{repoDownloadJobMap}
+	}
+	if model.WorkspaceJob != nil {
+		workspaceJobMap, err := ResourceIBMSchematicsJobJobLogSummaryWorkspaceJobToMap(model.WorkspaceJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["workspace_job"] = []map[string]interface{}{workspaceJobMap}
+	}
+	if model.FlowJob != nil {
+		flowJobMap, err := ResourceIBMSchematicsJobJobLogSummaryFlowJobToMap(model.FlowJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["flow_job"] = []map[string]interface{}{flowJobMap}
+	}
+	if model.ActionJob != nil {
+		actionJobMap, err := ResourceIBMSchematicsJobJobLogSummaryActionJobToMap(model.ActionJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["action_job"] = []map[string]interface{}{actionJobMap}
+	}
+	if model.SystemJob != nil {
+		systemJobMap, err := ResourceIBMSchematicsJobJobLogSummarySystemJobToMap(model.SystemJob)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["system_job"] = []map[string]interface{}{systemJobMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryLogErrorsToMap(model *schematicsv1.JobLogSummaryLogErrors) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ErrorCode != nil {
+		modelMap["error_code"] = model.ErrorCode
+	}
+	if model.ErrorMsg != nil {
+		modelMap["error_msg"] = model.ErrorMsg
+	}
+	if model.ErrorCount != nil {
+		modelMap["error_count"] = model.ErrorCount
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryRepoDownloadJobToMap(model *schematicsv1.JobLogSummaryRepoDownloadJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ScannedFileCount != nil {
+		modelMap["scanned_file_count"] = model.ScannedFileCount
+	}
+	if model.QuarantinedFileCount != nil {
+		modelMap["quarantined_file_count"] = model.QuarantinedFileCount
+	}
+	if model.DetectedFiletype != nil {
+		modelMap["detected_filetype"] = model.DetectedFiletype
+	}
+	if model.InputsCount != nil {
+		modelMap["inputs_count"] = model.InputsCount
+	}
+	if model.OutputsCount != nil {
+		modelMap["outputs_count"] = model.OutputsCount
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryWorkspaceJobToMap(model *schematicsv1.JobLogSummaryWorkspaceJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ResourcesAdd != nil {
+		modelMap["resources_add"] = model.ResourcesAdd
+	}
+	if model.ResourcesModify != nil {
+		modelMap["resources_modify"] = model.ResourcesModify
+	}
+	if model.ResourcesDestroy != nil {
+		modelMap["resources_destroy"] = model.ResourcesDestroy
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryFlowJobToMap(model *schematicsv1.JobLogSummaryFlowJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkitemsCompleted != nil {
+		modelMap["workitems_completed"] = model.WorkitemsCompleted
+	}
+	if model.WorkitemsPending != nil {
+		modelMap["workitems_pending"] = model.WorkitemsPending
+	}
+	if model.WorkitemsFailed != nil {
+		modelMap["workitems_failed"] = model.WorkitemsFailed
+	}
+	if model.Workitems != nil {
+		workitems := []map[string]interface{}{}
+		for _, workitemsItem := range model.Workitems {
+			workitemsItemMap, err := ResourceIBMSchematicsJobJobLogSummaryWorkitemsToMap(&workitemsItem)
+			if err != nil {
+				return modelMap, err
+			}
+			workitems = append(workitems, workitemsItemMap)
+		}
+		modelMap["workitems"] = workitems
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryWorkitemsToMap(model *schematicsv1.JobLogSummaryWorkitems) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.WorkspaceID != nil {
+		modelMap["workspace_id"] = model.WorkspaceID
+	}
+	if model.JobID != nil {
+		modelMap["job_id"] = model.JobID
+	}
+	if model.ResourcesAdd != nil {
+		modelMap["resources_add"] = model.ResourcesAdd
+	}
+	if model.ResourcesModify != nil {
+		modelMap["resources_modify"] = model.ResourcesModify
+	}
+	if model.ResourcesDestroy != nil {
+		modelMap["resources_destroy"] = model.ResourcesDestroy
+	}
+	if model.LogURL != nil {
+		modelMap["log_url"] = model.LogURL
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryActionJobToMap(model *schematicsv1.JobLogSummaryActionJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCount != nil {
+		modelMap["target_count"] = model.TargetCount
+	}
+	if model.TaskCount != nil {
+		modelMap["task_count"] = model.TaskCount
+	}
+	if model.PlayCount != nil {
+		modelMap["play_count"] = model.PlayCount
+	}
+	if model.Recap != nil {
+		recapMap, err := ResourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(model.Recap)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["recap"] = []map[string]interface{}{recapMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummaryActionJobRecapToMap(model *schematicsv1.JobLogSummaryActionJobRecap) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Target != nil {
+		modelMap["target"] = model.Target
+	}
+	if model.Ok != nil {
+		modelMap["ok"] = model.Ok
+	}
+	if model.Changed != nil {
+		modelMap["changed"] = model.Changed
+	}
+	if model.Failed != nil {
+		modelMap["failed"] = model.Failed
+	}
+	if model.Skipped != nil {
+		modelMap["skipped"] = model.Skipped
+	}
+	if model.Unreachable != nil {
+		modelMap["unreachable"] = model.Unreachable
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsJobJobLogSummarySystemJobToMap(model *schematicsv1.JobLogSummarySystemJob) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCount != nil {
+		modelMap["target_count"] = model.TargetCount
+	}
+	if model.Success != nil {
+		modelMap["success"] = model.Success
+	}
+	if model.Failed != nil {
+		modelMap["failed"] = model.Failed
+	}
+	return modelMap, nil
 }

@@ -16,3 +16,15 @@ output "ibm_schematics_job" {
   value       = ibm_schematics_job.schematics_job_instance
   description = "schematics_job resource instance"
 }
+// This allows schematics_inventory data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_inventory" {
+  value       = ibm_schematics_inventory.schematics_inventory_instance
+  description = "schematics_inventory resource instance"
+}
+// This allows schematics_resource_query data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed
+output "ibm_schematics_resource_query" {
+  value       = ibm_schematics_resource_query.schematics_resource_query_instance
+  description = "schematics_resource_query resource instance"
+}

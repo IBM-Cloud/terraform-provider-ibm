@@ -1607,18 +1607,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 		URL:           EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint),
 	}
 	// Construct the service client.
-	schematicsClient, err := schematicsv1.NewSchematicsV1(schematicsClientOptions)
-	if err != nil {
-		session.schematicsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Schematics Service API service: %q", err)
-	}
-	// Enable retries for API calls
-	if schematicsClient != nil && schematicsClient.Service != nil {
-		schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		schematicsClient.SetDefaultHeaders(gohttp.Header{
+	session.schematicsClient, err = schematicsv1.NewSchematicsV1(schematicsClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.schematicsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.schematicsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	} else {
+		session.schematicsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Schematics Service API service: %q", err)
 	}
-	session.schematicsClient = schematicsClient
 
 	// VPC Service
 	vpcurl := ContructEndpoint(fmt.Sprintf("%s.iaas", c.Region), fmt.Sprintf("%s/v1", cloudEndpoint))

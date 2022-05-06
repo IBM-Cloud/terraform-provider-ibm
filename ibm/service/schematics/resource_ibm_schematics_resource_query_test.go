@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package schematics_test
@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
@@ -25,7 +24,7 @@ func TestAccIBMSchematicsResourceQueryBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSchematicsResourceQueryDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMSchematicsResourceQueryConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSchematicsResourceQueryExists("ibm_schematics_resource_query.schematics_resource_query", conf),
@@ -47,7 +46,7 @@ func TestAccIBMSchematicsResourceQueryAllArgs(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMSchematicsResourceQueryDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMSchematicsResourceQueryConfig(typeVar, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMSchematicsResourceQueryExists("ibm_schematics_resource_query.schematics_resource_query", conf),
@@ -55,14 +54,14 @@ func TestAccIBMSchematicsResourceQueryAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_schematics_resource_query.schematics_resource_query", "name", name),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMSchematicsResourceQueryConfig(typeVarUpdate, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_schematics_resource_query.schematics_resource_query", "type", typeVarUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_resource_query.schematics_resource_query", "name", nameUpdate),
 				),
 			},
-			{
+			resource.TestStep{
 				ResourceName:      "ibm_schematics_resource_query.schematics_resource_query",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -72,11 +71,11 @@ func TestAccIBMSchematicsResourceQueryAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMSchematicsResourceQueryConfigBasic() string {
-	return `
+	return fmt.Sprintf(`
 
 		resource "ibm_schematics_resource_query" "schematics_resource_query" {
 		}
-	`
+	`)
 }
 
 func testAccCheckIBMSchematicsResourceQueryConfig(typeVar string, name string) string {
@@ -145,7 +144,7 @@ func testAccCheckIBMSchematicsResourceQueryDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("schematics_resource_query still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for schematics_resource_query (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for schematics_resource_query (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

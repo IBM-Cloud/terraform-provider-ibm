@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package schematics
@@ -8,62 +8,62 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/schematics-go-sdk/schematicsv1"
 )
 
 func ResourceIBMSchematicsResourceQuery() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMSchematicsResourceQueryCreate,
-		ReadContext:   resourceIBMSchematicsResourceQueryRead,
-		UpdateContext: resourceIBMSchematicsResourceQueryUpdate,
-		DeleteContext: resourceIBMSchematicsResourceQueryDelete,
+		CreateContext: ResourceIBMSchematicsResourceQueryCreate,
+		ReadContext:   ResourceIBMSchematicsResourceQueryRead,
+		UpdateContext: ResourceIBMSchematicsResourceQueryUpdate,
+		DeleteContext: ResourceIBMSchematicsResourceQueryDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"type": {
+			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_schematics_resource_query", "type"),
 				Description:  "Resource type (cluster, vsi, icd, vpc).",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Resource query name.",
 			},
-			"queries": {
+			"queries": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"query_type": {
+						"query_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Type of the query(workspaces).",
 						},
-						"query_condition": {
+						"query_condition": &schema.Schema{
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"name": {
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Name of the resource query param.",
 									},
-									"value": {
+									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Value of the resource query param.",
 									},
-									"description": {
+									"description": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Description of resource query param variable.",
@@ -71,7 +71,7 @@ func ResourceIBMSchematicsResourceQuery() *schema.Resource {
 								},
 							},
 						},
-						"query_select": {
+						"query_select": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "List of query selection parameters.",
@@ -80,22 +80,22 @@ func ResourceIBMSchematicsResourceQuery() *schema.Resource {
 					},
 				},
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resource query creation time.",
 			},
-			"created_by": {
+			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Email address of user who created the Resource query.",
 			},
-			"updated_at": {
+			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Resource query updation time.",
 			},
-			"updated_by": {
+			"updated_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Email address of user who updated the Resource query.",
@@ -120,7 +120,7 @@ func ResourceIBMSchematicsResourceQueryValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,8 +138,11 @@ func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema
 		var queries []schematicsv1.ResourceQuery
 		for _, e := range d.Get("queries").([]interface{}) {
 			value := e.(map[string]interface{})
-			queriesItem := resourceIBMSchematicsResourceQueryMapToResourceQuery(value)
-			queries = append(queries, queriesItem)
+			queriesItem, err := ResourceIBMSchematicsResourceQueryMapToResourceQuery(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			queries = append(queries, *queriesItem)
 		}
 		createResourceQueryOptions.SetQueries(queries)
 	}
@@ -152,51 +155,10 @@ func resourceIBMSchematicsResourceQueryCreate(context context.Context, d *schema
 
 	d.SetId(*resourceQueryRecord.ID)
 
-	return resourceIBMSchematicsResourceQueryRead(context, d, meta)
+	return ResourceIBMSchematicsResourceQueryRead(context, d, meta)
 }
 
-func resourceIBMSchematicsResourceQueryMapToResourceQuery(resourceQueryMap map[string]interface{}) schematicsv1.ResourceQuery {
-	resourceQuery := schematicsv1.ResourceQuery{}
-
-	if resourceQueryMap["query_type"] != nil {
-		resourceQuery.QueryType = core.StringPtr(resourceQueryMap["query_type"].(string))
-	}
-	if resourceQueryMap["query_condition"] != nil {
-		queryCondition := []schematicsv1.ResourceQueryParam{}
-		for _, queryConditionItem := range resourceQueryMap["query_condition"].([]interface{}) {
-			queryConditionItemModel := resourceIBMSchematicsResourceQueryMapToResourceQueryParam(queryConditionItem.(map[string]interface{}))
-			queryCondition = append(queryCondition, queryConditionItemModel)
-		}
-		resourceQuery.QueryCondition = queryCondition
-	}
-	if resourceQueryMap["query_select"] != nil {
-		querySelect := []string{}
-		for _, querySelectItem := range resourceQueryMap["query_select"].([]interface{}) {
-			querySelect = append(querySelect, querySelectItem.(string))
-		}
-		resourceQuery.QuerySelect = querySelect
-	}
-
-	return resourceQuery
-}
-
-func resourceIBMSchematicsResourceQueryMapToResourceQueryParam(resourceQueryParamMap map[string]interface{}) schematicsv1.ResourceQueryParam {
-	resourceQueryParam := schematicsv1.ResourceQueryParam{}
-
-	if resourceQueryParamMap["name"] != nil {
-		resourceQueryParam.Name = core.StringPtr(resourceQueryParamMap["name"].(string))
-	}
-	if resourceQueryParamMap["value"] != nil {
-		resourceQueryParam.Value = core.StringPtr(resourceQueryParamMap["value"].(string))
-	}
-	if resourceQueryParamMap["description"] != nil {
-		resourceQueryParam.Description = core.StringPtr(resourceQueryParamMap["description"].(string))
-	}
-
-	return resourceQueryParam
-}
-
-func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -217,76 +179,41 @@ func resourceIBMSchematicsResourceQueryRead(context context.Context, d *schema.R
 	}
 
 	if err = d.Set("type", resourceQueryRecord.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting type: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 	if err = d.Set("name", resourceQueryRecord.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+	queries := []map[string]interface{}{}
 	if resourceQueryRecord.Queries != nil {
-		queries := []map[string]interface{}{}
 		for _, queriesItem := range resourceQueryRecord.Queries {
-			queriesItemMap := resourceIBMSchematicsResourceQueryResourceQueryToMap(queriesItem)
+			queriesItemMap, err := ResourceIBMSchematicsResourceQueryResourceQueryToMap(&queriesItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			queries = append(queries, queriesItemMap)
 		}
-		if err = d.Set("queries", queries); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting queries: %s", err))
-		}
+	}
+	if err = d.Set("queries", queries); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting queries: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(resourceQueryRecord.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by", resourceQueryRecord.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_by: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(resourceQueryRecord.UpdatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", resourceQueryRecord.UpdatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_by: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
 	}
 
 	return nil
 }
 
-func resourceIBMSchematicsResourceQueryResourceQueryToMap(resourceQuery schematicsv1.ResourceQuery) map[string]interface{} {
-	resourceQueryMap := map[string]interface{}{}
-
-	if resourceQuery.QueryType != nil {
-		resourceQueryMap["query_type"] = resourceQuery.QueryType
-	}
-	if resourceQuery.QueryCondition != nil {
-		queryCondition := []map[string]interface{}{}
-		for _, queryConditionItem := range resourceQuery.QueryCondition {
-			queryConditionItemMap := resourceIBMSchematicsResourceQueryResourceQueryParamToMap(queryConditionItem)
-			queryCondition = append(queryCondition, queryConditionItemMap)
-			// TODO: handle QueryCondition of type TypeList -- list of non-primitive, not model items
-		}
-		resourceQueryMap["query_condition"] = queryCondition
-	}
-	if resourceQuery.QuerySelect != nil {
-		resourceQueryMap["query_select"] = resourceQuery.QuerySelect
-	}
-
-	return resourceQueryMap
-}
-
-func resourceIBMSchematicsResourceQueryResourceQueryParamToMap(resourceQueryParam schematicsv1.ResourceQueryParam) map[string]interface{} {
-	resourceQueryParamMap := map[string]interface{}{}
-
-	if resourceQueryParam.Name != nil {
-		resourceQueryParamMap["name"] = resourceQueryParam.Name
-	}
-	if resourceQueryParam.Value != nil {
-		resourceQueryParamMap["value"] = resourceQueryParam.Value
-	}
-	if resourceQueryParam.Description != nil {
-		resourceQueryParamMap["description"] = resourceQueryParam.Description
-	}
-
-	return resourceQueryParamMap
-}
-
-func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -305,8 +232,11 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 		var queries []schematicsv1.ResourceQuery
 		for _, e := range d.Get("queries").([]interface{}) {
 			value := e.(map[string]interface{})
-			queriesItem := resourceIBMSchematicsResourceQueryMapToResourceQuery(value)
-			queries = append(queries, queriesItem)
+			queriesItem, err := ResourceIBMSchematicsResourceQueryMapToResourceQuery(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			queries = append(queries, *queriesItem)
 		}
 		replaceResourcesQueryOptions.SetQueries(queries)
 	}
@@ -317,10 +247,10 @@ func resourceIBMSchematicsResourceQueryUpdate(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("ReplaceResourcesQueryWithContext failed %s\n%s", err, response))
 	}
 
-	return resourceIBMSchematicsResourceQueryRead(context, d, meta)
+	return ResourceIBMSchematicsResourceQueryRead(context, d, meta)
 }
 
-func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
@@ -339,4 +269,80 @@ func resourceIBMSchematicsResourceQueryDelete(context context.Context, d *schema
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMSchematicsResourceQueryMapToResourceQuery(modelMap map[string]interface{}) (*schematicsv1.ResourceQuery, error) {
+	model := &schematicsv1.ResourceQuery{}
+	if modelMap["query_type"] != nil && modelMap["query_type"].(string) != "" {
+		model.QueryType = core.StringPtr(modelMap["query_type"].(string))
+	}
+	if modelMap["query_condition"] != nil {
+		queryCondition := []schematicsv1.ResourceQueryParam{}
+		for _, queryConditionItem := range modelMap["query_condition"].([]interface{}) {
+			queryConditionItemModel, err := ResourceIBMSchematicsResourceQueryMapToResourceQueryParam(queryConditionItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			queryCondition = append(queryCondition, *queryConditionItemModel)
+		}
+		model.QueryCondition = queryCondition
+	}
+	if modelMap["query_select"] != nil {
+		querySelect := []string{}
+		for _, querySelectItem := range modelMap["query_select"].([]interface{}) {
+			querySelect = append(querySelect, querySelectItem.(string))
+		}
+		model.QuerySelect = querySelect
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsResourceQueryMapToResourceQueryParam(modelMap map[string]interface{}) (*schematicsv1.ResourceQueryParam, error) {
+	model := &schematicsv1.ResourceQueryParam{}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIBMSchematicsResourceQueryResourceQueryToMap(model *schematicsv1.ResourceQuery) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.QueryType != nil {
+		modelMap["query_type"] = model.QueryType
+	}
+	if model.QueryCondition != nil {
+		queryCondition := []map[string]interface{}{}
+		for _, queryConditionItem := range model.QueryCondition {
+			queryConditionItemMap, err := ResourceIBMSchematicsResourceQueryResourceQueryParamToMap(&queryConditionItem)
+			if err != nil {
+				return modelMap, err
+			}
+			queryCondition = append(queryCondition, queryConditionItemMap)
+		}
+		modelMap["query_condition"] = queryCondition
+	}
+	if model.QuerySelect != nil {
+		modelMap["query_select"] = model.QuerySelect
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMSchematicsResourceQueryResourceQueryParamToMap(model *schematicsv1.ResourceQueryParam) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = model.Name
+	}
+	if model.Value != nil {
+		modelMap["value"] = model.Value
+	}
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	return modelMap, nil
 }
