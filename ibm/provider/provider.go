@@ -520,6 +520,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_storage_pools_capacity": power.DataSourceIBMPIStoragePoolsCapacity(),
 			"ibm_pi_storage_type_capacity":  power.DataSourceIBMPIStorageTypeCapacity(),
 			"ibm_pi_storage_types_capacity": power.DataSourceIBMPIStorageTypesCapacity(),
+			"ibm_pi_system_pools":           power.DataSourceIBMPISystemPools(),
 			"ibm_pi_tenant":                 power.DataSourceIBMPITenant(),
 			"ibm_pi_volume":                 power.DataSourceIBMPIVolume(),
 
