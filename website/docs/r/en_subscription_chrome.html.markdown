@@ -15,10 +15,10 @@ Create, update, or delete a Chrome subscription by using IBM Cloud™ Event Noti
 ```terraform
 resource "ibm_en_subscription_chrome" "chrome_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "Chrome Subscription"
-  description    = "Chrome Subscription for Notification"
-  destination_id = ibm_en_destination_chrome.chrome_destination.destination_id
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "Chrome Subscription"
+  description      = "Chrome Subscription for Notification"
+  destination_id   = ibm_en_destination_chrome.chrome_destination.destination_id
+  topic_id         = ibm_en_topic.topic1.topic_id
 }
 ```
 
@@ -45,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 

@@ -14,7 +14,7 @@ Provides a read-only data source for destination. You can then reference the fie
 
 ```terraform
 data "ibm_en_destination" "en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
   destination_id = ibm_en_destination.destination1.destination_id
 }
 ```

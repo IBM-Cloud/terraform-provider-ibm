@@ -15,9 +15,9 @@ Create, update, or delete a firefox destination by using IBM Cloud™ Event Noti
 ```terraform
 resource "ibm_en_destination_firefox" "firefox_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "My Firefox Destination"
-  type        = "push_firefox"
-  description = "Destination firefox for event notification"
+  name          = "My Firefox Destination"
+  type          = "push_firefox"
+  description   = "Destination firefox for event notification"
   config {
     params {
       website_url  = "https://testwebsite.com"

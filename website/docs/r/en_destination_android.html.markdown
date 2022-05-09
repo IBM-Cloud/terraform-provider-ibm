@@ -15,12 +15,12 @@ Create, update, or delete a  FCM destination by using IBM Cloud™ Event Notific
 ```terraform
 resource "ibm_en_destination_android" "android_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "Android Destination"
-  type        = "push_android"
-  description = "The Android Destination"
+  name          = "Android Destination"
+  type          = "push_android"
+  description   = "The Android Destination"
   config {
     params {
-      sender_id = "5237288990"
+      sender_id   = "5237288990"
       server_key  = "36228ghutwervhudokmk"
     }
   }

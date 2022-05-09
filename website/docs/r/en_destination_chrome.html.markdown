@@ -15,12 +15,12 @@ Create, update, or delete a Chrome destination by using IBM Cloud™ Event Notif
 ```terraform
 resource "ibm_en_destination_chrome" "chrome_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "My Chrome Destination"
-  type        = "push_chrome"
-  description = "Destination Chrome for event notification"
+  name          = "My Chrome Destination"
+  type          = "push_chrome"
+  description   = "Destination Chrome for event notification"
   config {
     params {
-      api_key = "The FCM api key for project"
+      api_key     = "The FCM api key for project"
       website_url = "https://testevents.com"
     }
   }

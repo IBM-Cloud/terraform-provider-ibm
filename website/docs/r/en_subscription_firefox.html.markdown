@@ -15,10 +15,10 @@ Create, update, or delete a Firefox subscription by using IBM Cloud™ Event Not
 ```terraform
 resource "ibm_en_subscription_firefox" "firefox_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "Android Subscription"
-  description    = "Android Subscription for Notification"
-  destination_id = ibm_en_destination_firefox.firefx_destination.destination_id
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "Android Subscription"
+  description      = "Android Subscription for Notification"
+  destination_id   = ibm_en_destination_firefox.firefx_destination.destination_id
+  topic_id         = ibm_en_topic.topic1.topic_id
 }
 ```
 
@@ -45,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 

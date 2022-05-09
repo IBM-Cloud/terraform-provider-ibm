@@ -35,17 +35,17 @@ resource "ibm_en_destination_ios" "ios_en_destination" {
 
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = "ibm_resource_instance.en_terraform_test_resource.guid"
-  name        = "IOS Destination "
-  type        = "push_ios"
+  instance_guid            = "ibm_resource_instance.en_terraform_test_resource.guid"
+  name                     = "IOS Destination "
+  type                     = "push_ios"
   certificate_content_type = "p12"
-  certificate = "${path.module}/Certificates/prod.p12"
-  description = "IOS destination with P12"
+  certificate              = "${path.module}/Certificates/prod.p12"
+  description              = "IOS destination with P12"
   config {
     params {
-      cert_type = "p12"
+      cert_type  = "p12"
       is_sandbox = true
-      password = "apnscertpassword"
+      password   = "apnscertpassword"
     }
   }
 }
