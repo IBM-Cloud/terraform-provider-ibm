@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package clouddatabases
+package database
 
 import (
 	"context"
@@ -21,11 +21,6 @@ func DataSourceIBMDatabaseBackups() *schema.Resource {
 		ReadContext: DataSourceIBMDatabaseBackupsRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Deployment ID.",
-			},
 			"deployment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -37,7 +32,7 @@ func DataSourceIBMDatabaseBackups() *schema.Resource {
 				Description: "An array of backups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"backup_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "ID of this backup.",
@@ -92,8 +87,6 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 
 	listDeploymentBackupsOptions := &clouddatabasesv5.ListDeploymentBackupsOptions{}
 
-	listDeploymentBackupsOptions.SetID(d.Get("id").(string))
-
 	backups, response, err := cloudDatabasesClient.ListDeploymentBackupsWithContext(context, listDeploymentBackupsOptions)
 	if err != nil {
 		log.Printf("[DEBUG] ListDeploymentBackupsWithContext failed %s\n%s", err, response)
@@ -127,16 +120,16 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 		d.SetId(DataSourceIBMDatabaseBackupsID(d))
 	}
 
-	backups := []map[string]interface{}{}
-	if backups.Backups != nil {
-		for _, modelItem := range backups.Backups { 
-			modelMap, err := DataSourceIBMDatabaseBackupsBackupToMap(&modelItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			backups = append(backups, modelMap)
-		}
-	}
+	// backups := []map[string]interface{}{}
+	// if backups.Backups != nil {
+	// 	for _, modelItem := range backups.Backups {
+	// 		modelMap, err := DataSourceIBMDatabaseBackupsBackupToMap(&modelItem)
+	// 		if err != nil {
+	// 			return diag.FromErr(err)
+	// 		}
+	// 		backups.Backups = append(backups.Backups, modelMap)
+	// 	}
+	// }
 	if err = d.Set("backups", backups); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting backups %s", err))
 	}
@@ -152,7 +145,7 @@ func DataSourceIBMDatabaseBackupsID(d *schema.ResourceData) string {
 func DataSourceIBMDatabaseBackupsBackupToMap(model *clouddatabasesv5.Backup) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = *model.ID
+		modelMap["backup_id"] = *model.ID
 	}
 	if model.DeploymentID != nil {
 		modelMap["deployment_id"] = *model.DeploymentID
