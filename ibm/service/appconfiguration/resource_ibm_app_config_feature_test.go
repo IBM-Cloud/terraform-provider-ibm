@@ -115,7 +115,7 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 }
 
 func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
-	fmt.Println("Running the testAccCheckIbmAppConfigFeatureDestroy")
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_app_config_feature_resource1" {
 			continue
