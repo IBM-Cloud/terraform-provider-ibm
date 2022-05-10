@@ -107,6 +107,7 @@ func ResourceIBMISFloatingIP() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPTarget},
+				ExactlyOneOf:  []string{isFloatingIPTarget, isFloatingIPZone},
 				Description:   "Zone name",
 			},
 
@@ -115,6 +116,7 @@ func ResourceIBMISFloatingIP() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{isFloatingIPZone},
+				ExactlyOneOf:  []string{isFloatingIPTarget, isFloatingIPZone},
 				Description:   "Target info",
 			},
 			floatingIPTargets: {
@@ -396,7 +398,7 @@ func fipGet(d *schema.ResourceData, meta interface{}, id string) error {
 	} else {
 		d.Set(isFloatingIPTarget, "")
 	}
-	targetList := []map[string]interface{}{}
+	targetList := make([]map[string]interface{}, 0)
 	targetList = append(targetList, targetMap)
 	d.Set(floatingIPTargets, targetList)
 	tags, err := flex.GetTagsUsingCRN(meta, *floatingip.CRN)
@@ -660,122 +662,124 @@ func checkIfZoneChanged(oldNic, newNic, currentZone string, floatingipC *vpcv1.V
 func floatingIPCollectionFloatingIpTargetToMap(targetItemIntf vpcv1.FloatingIPTargetIntf) (targetId string, targetMap map[string]interface{}) {
 	targetMap = map[string]interface{}{}
 	targetId = ""
-	switch reflect.TypeOf(targetItemIntf).String() {
-	case "*vpcv1.FloatingIPTargetNetworkInterfaceReference":
-		{
-			targetItem := targetItemIntf.(*vpcv1.FloatingIPTargetNetworkInterfaceReference)
-			targetId = *targetItem.ID
-			if targetItem.Deleted != nil {
-				deletedList := []map[string]interface{}{}
-				deletedMap := floatingIPTargetNicDeletedToMap(*targetItem.Deleted)
-				deletedList = append(deletedList, deletedMap)
-				targetMap[floatingIPTargetsDeleted] = deletedList
-			}
-			if targetItem.Href != nil {
-				targetMap[floatingIPTargetsHref] = targetItem.Href
-			}
-			if targetItem.ID != nil {
-				targetMap[floatingIPTargetsId] = targetItem.ID
-			}
-			if targetItem.Name != nil {
-				targetMap[floatingIPTargetsName] = targetItem.Name
-			}
-			if targetItem.PrimaryIP != nil {
-				primaryIpList := make([]map[string]interface{}, 0)
-				currentIP := map[string]interface{}{}
-				if targetItem.PrimaryIP.Address != nil {
-					currentIP[floatingIpPrimaryIpAddress] = *targetItem.PrimaryIP.Address
+	if targetItemIntf != nil {
+		switch reflect.TypeOf(targetItemIntf).String() {
+		case "*vpcv1.FloatingIPTargetNetworkInterfaceReference":
+			{
+				targetItem := targetItemIntf.(*vpcv1.FloatingIPTargetNetworkInterfaceReference)
+				targetId = *targetItem.ID
+				if targetItem.Deleted != nil {
+					deletedList := []map[string]interface{}{}
+					deletedMap := floatingIPTargetNicDeletedToMap(*targetItem.Deleted)
+					deletedList = append(deletedList, deletedMap)
+					targetMap[floatingIPTargetsDeleted] = deletedList
 				}
-				if targetItem.PrimaryIP.Href != nil {
-					currentIP[floatingIpPrimaryIpHref] = *targetItem.PrimaryIP.Href
+				if targetItem.Href != nil {
+					targetMap[floatingIPTargetsHref] = targetItem.Href
 				}
-				if targetItem.PrimaryIP.Name != nil {
-					currentIP[floatingIpPrimaryIpName] = *targetItem.PrimaryIP.Name
+				if targetItem.ID != nil {
+					targetMap[floatingIPTargetsId] = targetItem.ID
 				}
-				if targetItem.PrimaryIP.ID != nil {
-					currentIP[floatingIpPrimaryIpId] = *targetItem.PrimaryIP.ID
+				if targetItem.Name != nil {
+					targetMap[floatingIPTargetsName] = targetItem.Name
 				}
-				if targetItem.PrimaryIP.ResourceType != nil {
-					currentIP[floatingIpPrimaryIpResourceType] = *targetItem.PrimaryIP.ResourceType
+				if targetItem.PrimaryIP != nil {
+					primaryIpList := make([]map[string]interface{}, 0)
+					currentIP := map[string]interface{}{}
+					if targetItem.PrimaryIP.Address != nil {
+						currentIP[floatingIpPrimaryIpAddress] = *targetItem.PrimaryIP.Address
+					}
+					if targetItem.PrimaryIP.Href != nil {
+						currentIP[floatingIpPrimaryIpHref] = *targetItem.PrimaryIP.Href
+					}
+					if targetItem.PrimaryIP.Name != nil {
+						currentIP[floatingIpPrimaryIpName] = *targetItem.PrimaryIP.Name
+					}
+					if targetItem.PrimaryIP.ID != nil {
+						currentIP[floatingIpPrimaryIpId] = *targetItem.PrimaryIP.ID
+					}
+					if targetItem.PrimaryIP.ResourceType != nil {
+						currentIP[floatingIpPrimaryIpResourceType] = *targetItem.PrimaryIP.ResourceType
+					}
+					primaryIpList = append(primaryIpList, currentIP)
+					targetMap[floatingIpPrimaryIP] = primaryIpList
 				}
-				primaryIpList = append(primaryIpList, currentIP)
-				targetMap[floatingIpPrimaryIP] = primaryIpList
-			}
-			if targetItem.ResourceType != nil {
-				targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
-			}
-		}
-	case "*vpcv1.FloatingIPTargetPublicGatewayReference":
-		{
-			targetItem := targetItemIntf.(*vpcv1.FloatingIPTargetPublicGatewayReference)
-			targetId = *targetItem.ID
-			if targetItem.Deleted != nil {
-				deletedList := []map[string]interface{}{}
-				deletedMap := floatingIPTargetPgDeletedToMap(*targetItem.Deleted)
-				deletedList = append(deletedList, deletedMap)
-				targetMap[floatingIPTargetsDeleted] = deletedList
-			}
-			if targetItem.Href != nil {
-				targetMap[floatingIPTargetsHref] = targetItem.Href
-			}
-			if targetItem.ID != nil {
-				targetMap[floatingIPTargetsId] = targetItem.ID
-			}
-			if targetItem.Name != nil {
-				targetMap[floatingIPTargetsName] = targetItem.Name
-			}
-			if targetItem.ResourceType != nil {
-				targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
-			}
-			if targetItem.CRN != nil {
-				targetMap[floatingIPTargetsCrn] = targetItem.CRN
-			}
-		}
-	case "*vpcv1.FloatingIPTarget":
-		{
-			targetItem := targetItemIntf.(*vpcv1.FloatingIPTarget)
-			targetId = *targetItem.ID
-			if targetItem.Deleted != nil {
-				deletedList := []map[string]interface{}{}
-				deletedMap := floatingIPTargetNicDeletedToMap(*targetItem.Deleted)
-				deletedList = append(deletedList, deletedMap)
-				targetMap[floatingIPTargetsDeleted] = deletedList
-			}
-			if targetItem.Href != nil {
-				targetMap[floatingIPTargetsHref] = targetItem.Href
-			}
-			if targetItem.ID != nil {
-				targetMap[floatingIPTargetsId] = targetItem.ID
-			}
-			if targetItem.Name != nil {
-				targetMap[floatingIPTargetsName] = targetItem.Name
-			}
-			if targetItem.PrimaryIP != nil && targetItem.PrimaryIP.Address != nil {
-				primaryIpList := make([]map[string]interface{}, 0)
-				currentIP := map[string]interface{}{}
-				if targetItem.PrimaryIP.Address != nil {
-					currentIP[floatingIpPrimaryIpAddress] = *targetItem.PrimaryIP.Address
+				if targetItem.ResourceType != nil {
+					targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
 				}
-				if targetItem.PrimaryIP.Href != nil {
-					currentIP[floatingIpPrimaryIpHref] = *targetItem.PrimaryIP.Href
-				}
-				if targetItem.PrimaryIP.Name != nil {
-					currentIP[floatingIpPrimaryIpName] = *targetItem.PrimaryIP.Name
-				}
-				if targetItem.PrimaryIP.ID != nil {
-					currentIP[floatingIpPrimaryIpId] = *targetItem.PrimaryIP.ID
-				}
-				if targetItem.PrimaryIP.ResourceType != nil {
-					currentIP[floatingIpPrimaryIpResourceType] = *targetItem.PrimaryIP.ResourceType
-				}
-				primaryIpList = append(primaryIpList, currentIP)
-				targetMap[floatingIpPrimaryIP] = primaryIpList
 			}
-			if targetItem.ResourceType != nil {
-				targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
+		case "*vpcv1.FloatingIPTargetPublicGatewayReference":
+			{
+				targetItem := targetItemIntf.(*vpcv1.FloatingIPTargetPublicGatewayReference)
+				targetId = *targetItem.ID
+				if targetItem.Deleted != nil {
+					deletedList := []map[string]interface{}{}
+					deletedMap := floatingIPTargetPgDeletedToMap(*targetItem.Deleted)
+					deletedList = append(deletedList, deletedMap)
+					targetMap[floatingIPTargetsDeleted] = deletedList
+				}
+				if targetItem.Href != nil {
+					targetMap[floatingIPTargetsHref] = targetItem.Href
+				}
+				if targetItem.ID != nil {
+					targetMap[floatingIPTargetsId] = targetItem.ID
+				}
+				if targetItem.Name != nil {
+					targetMap[floatingIPTargetsName] = targetItem.Name
+				}
+				if targetItem.ResourceType != nil {
+					targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
+				}
+				if targetItem.CRN != nil {
+					targetMap[floatingIPTargetsCrn] = targetItem.CRN
+				}
 			}
-			if targetItem.CRN != nil {
-				targetMap[floatingIPTargetsCrn] = targetItem.CRN
+		case "*vpcv1.FloatingIPTarget":
+			{
+				targetItem := targetItemIntf.(*vpcv1.FloatingIPTarget)
+				targetId = *targetItem.ID
+				if targetItem.Deleted != nil {
+					deletedList := []map[string]interface{}{}
+					deletedMap := floatingIPTargetNicDeletedToMap(*targetItem.Deleted)
+					deletedList = append(deletedList, deletedMap)
+					targetMap[floatingIPTargetsDeleted] = deletedList
+				}
+				if targetItem.Href != nil {
+					targetMap[floatingIPTargetsHref] = targetItem.Href
+				}
+				if targetItem.ID != nil {
+					targetMap[floatingIPTargetsId] = targetItem.ID
+				}
+				if targetItem.Name != nil {
+					targetMap[floatingIPTargetsName] = targetItem.Name
+				}
+				if targetItem.PrimaryIP != nil && targetItem.PrimaryIP.Address != nil {
+					primaryIpList := make([]map[string]interface{}, 0)
+					currentIP := map[string]interface{}{}
+					if targetItem.PrimaryIP.Address != nil {
+						currentIP[floatingIpPrimaryIpAddress] = *targetItem.PrimaryIP.Address
+					}
+					if targetItem.PrimaryIP.Href != nil {
+						currentIP[floatingIpPrimaryIpHref] = *targetItem.PrimaryIP.Href
+					}
+					if targetItem.PrimaryIP.Name != nil {
+						currentIP[floatingIpPrimaryIpName] = *targetItem.PrimaryIP.Name
+					}
+					if targetItem.PrimaryIP.ID != nil {
+						currentIP[floatingIpPrimaryIpId] = *targetItem.PrimaryIP.ID
+					}
+					if targetItem.PrimaryIP.ResourceType != nil {
+						currentIP[floatingIpPrimaryIpResourceType] = *targetItem.PrimaryIP.ResourceType
+					}
+					primaryIpList = append(primaryIpList, currentIP)
+					targetMap[floatingIpPrimaryIP] = primaryIpList
+				}
+				if targetItem.ResourceType != nil {
+					targetMap[floatingIPTargetsResourceType] = targetItem.ResourceType
+				}
+				if targetItem.CRN != nil {
+					targetMap[floatingIPTargetsCrn] = targetItem.CRN
+				}
 			}
 		}
 	}
