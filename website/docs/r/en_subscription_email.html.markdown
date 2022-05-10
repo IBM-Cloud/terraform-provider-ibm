@@ -21,10 +21,10 @@ resource "ibm_en_subscription_email" "email_subscription" {
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
       add_notification_payload = true
-      reply_to_mail            = "compliancealert@ibm.com"
-      reply_to_name            = "Compliance User"
-      from_name                = "en@ibm.com"
-      to                       = ["usernew1@gmail.com","testuser@gamil.com"]
+      reply_to_mail = "compliancealert@ibm.com"
+      reply_to_name = "Compliance User"
+      from_name     = "en@ibm.com"
+      to            = ["usernew1@gmail.com","testuser@gamil.com"]
   }
 }
 ```
@@ -40,11 +40,11 @@ resource "ibm_en_subscription_email" "email_subscription" {
   topic_id         = "topicId"
   attributes {
       add_notification_payload = true
-      reply_to_mail = "compliancealert@ibm.com"
-      reply_to_name = "Compliance User"
-      from_name     = "en@ibm.com"
-      add           = ["productionuser@ibm.com"]
-      unsubscribed  = ["testuser@gamil.com"]
+      reply_to_mail            = "compliancealert@ibm.com"
+      reply_to_name            = "Compliance User"
+      from_name                = "en@ibm.com"
+      add                      = ["productionuser@ibm.com"]
+      unsubscribed             = ["testuser@gamil.com"]
   }
 }
 ```

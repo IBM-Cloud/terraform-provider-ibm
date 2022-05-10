@@ -1,24 +1,27 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_android'
+page_title: 'IBM : ibm_en_subscription_webhook'
 description: |-
-  Manages Event Notifications Android subscription.
+  Manages Event Notifications subscription.
 ---
 
-# ibm_en_subscription_android
+# ibm_en_subscription_webhook
 
-Create, update, or delete a FCM subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a  Webhook subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_android" "android_subscription" {
+resource "ibm_en_subscription_webhook" "webhook_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "Android Subscription"
-  description      = "Android Subscription for Notification"
-  destination_id   = ibm_en_destination_android.destinationandroidnew.destination_id
+  name             = "My webhook subscription"
+  description      = "The  webhook subscription"
+  destination_id   = ibm_en_destination_webhook.destination1.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
+  attributes {
+    signing_enabled          = true
+  }
 }
 ```
 
@@ -36,12 +39,16 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, String) Topic ID.
 
+- `attributes` - (Optional, List) Subscription attributes.
+  Nested scheme for **attributes**:
+
+  - `signing_enabled` - (Optional, Boolean) Signing enabled.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `android_subscription`.
+- `id` - (String) The unique identifier of the `webhook_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -49,7 +56,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_android` resource by using `id`.
+You can import the `ibm_en_subscription_webhook` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -62,5 +69,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_android.android_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_webhook.wehook_subscription <instance_guid>/<subscription_id>
 ```

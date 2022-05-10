@@ -1,31 +1,26 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_webhook'
+page_title: 'IBM : ibm_en_destination_firefox'
 description: |-
-  Manages Event Notification Webhook destinations.
+  Manages Event Notification firefox destinations.
 ---
 
 # ibm_en_destination_webhook
 
-Create, update, or delete a Webhook destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a firefox destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_webhook" "webhook_en_destination" {
+resource "ibm_en_destination_firefox" "firefox_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "My Webhook Destination"
-  type          = "webhook"
-  description   = "Destination webhook for event notification"
+  name          = "My Firefox Destination"
+  type          = "push_firefox"
+  description   = "Destination firefox for event notification"
   config {
     params {
-      verb = "POST"
-      url  = "https://testwebhook.com"
-      custom_headers = {
-        "authorization" = "authorization"
-      }
-      sensitive_headers = ["authorization"]
+      website_url  = "https://testwebsite.com"
     }
   }
 }
@@ -41,7 +36,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) Webhook.
+- `type` - (Required, String) push_firefox.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -51,16 +46,13 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
-  - `url` - (Optional, String) URL of webhook.
-  - `verb` - (Optional, String) HTTP method of webhook. Allowable values are: `GET`, `POST`.
+  - `website_url` - (Required, String) URL of the website project.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `webhook_en_destination`.
+- `id` - (String) The unique identifier of the `firefox_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -69,7 +61,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_destination_webhook` resource by using `id`.
+You can import the `ibm_en_destination_firefox` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -84,5 +76,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_webhook.webhook_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_firefox.firefox_en_destination <instance_guid>/<destination_id>
 ```
