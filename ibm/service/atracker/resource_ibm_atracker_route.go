@@ -330,9 +330,12 @@ func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[str
 	receives_global_events := false
 	modelMap := make(map[string]interface{})
 	modelMap["target_ids"] = make([]string, 0)
-	for _, target_id := range model.TargetIds {
-		modelMap["target_ids"] = append(modelMap["target_ids"].([]string), target_id)
+	if model.TargetIds != nil {
+		for _, target_id := range model.TargetIds {
+			modelMap["target_ids"] = append(modelMap["target_ids"].([]string), target_id)
+		}
 	}
+
 	if model.Locations != nil {
 		modelMap["locations"] = make([]string, 0)
 		if model.Locations != nil {
