@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_webhook'
+page_title: 'IBM : ibm_en_subscription_chrome'
 description: |-
-  Get information about a webhook subscription
+  Get information about a chrome subscription
 ---
 
-# ibm_en_subscription_webhook
+# ibm_en_subscription_fcm
 
 Provides a read-only data source for subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_webhook" "webhook_subscription" {
-  instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
-  subscription_id = ibm_en_subscription_webhook.subscriptionwebhook.subscription_id
+data "ibm_en_subscription_chrome" "chrome_subscription" {
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  subscription_id = ibm_en_subscription_chrome.chrome_subscription.subscription_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the webhook_subscription.
+- `id` - The unique identifier of the fcm_subscription.
 
 - `name` - (String) Subscription name.
 
@@ -39,18 +39,6 @@ In addition to all argument references listed, you can access the following attr
 
 - `destination_id` - (String) The destination ID.
 
-- `destination_name` - (String) The destination name.
-
-- `destination_type` - (String) The type of destination.
-
-- `from` - (Optional, String) From Email ID (it will be displayed only in case of smtp_ibm destination type).
-
 - `topic_id` - (String) Topic ID.
-
-- `topic_name` - (String) Topic name.
-
-- `attributes` - (Required, List)
-
-  - `add_notification_payload` - (Boolean) Whether to add the notification payload to the email.
 
 - `updated_at` - (String) Last updated time.

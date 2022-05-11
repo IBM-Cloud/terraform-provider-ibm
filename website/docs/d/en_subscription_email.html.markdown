@@ -14,7 +14,7 @@ Provides a read-only data source for Email subscription. You can then reference 
 
 ```terraform
 data "ibm_en_subscription_email" "email_subscription" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
   subscription_id = ibm_en_subscription_email.subscriptionemail.subscription_id
 }
 ```
