@@ -6,6 +6,10 @@ import (
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
+const (
+	REDACTED_TEXT = "REDACTED"
+)
+
 func getAtrackerClients(meta interface{}) (
 	atrackerClientv1 *atrackerv1.AtrackerV1, atrackerClientv2 *atrackerv2.AtrackerV2, err error) {
 	atrackerClientv1, err = meta.(conns.ClientSession).AtrackerV1()

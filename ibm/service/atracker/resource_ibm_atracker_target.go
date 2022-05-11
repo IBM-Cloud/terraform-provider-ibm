@@ -36,11 +36,12 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Description:  "The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`.",
 			},
 			"target_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_atracker_target", "target_type"),
-				Description:  "The type of the target. It can be cloud_object_storage or logdna. Based on this type you must include cos_endpoint or logdna_endpoint.",
+				Type:             schema.TypeString,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "target_type"),
+				Description:      "The type of the target. It can be cloud_object_storage or logdna. Based on this type you must include cos_endpoint or logdna_endpoint.",
 			},
 			"cos_endpoint": {
 				Type:        schema.TypeList,
@@ -102,10 +103,11 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				},
 			},
 			"region": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_atracker_target", "region"),
-				Description:  "Include this optional field if you want to create a target in a different region other than the one you are connected.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "region"),
+				Description:      "Include this optional field if you want to create a target in a different region other than the one you are connected.",
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -302,6 +304,7 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 	if err = d.Set("target_type", target.TargetType); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting target_type: %s", err))
 	}
+	// Don't report difference if the last parts of CRN are different
 	if target.CosEndpoint != nil {
 		cosEndpointMap, err := resourceIBMAtrackerTargetCosEndpointPrototypeToMap(target.CosEndpoint)
 		if cosInterface, ok := d.GetOk("cos_endpoint.0"); ok {
@@ -353,14 +356,6 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// TODO: will be removed
-	if err = d.Set("encrypt_key", target.EncryptionKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encrypt_key: %s", err))
-	}
-
-	if err = d.Set("encryption_key", target.EncryptionKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting encryption_key: %s", err))
-	}
 	writeStatusMap, err := resourceIBMAtrackerTargetWriteStatusToMap(target.WriteStatus)
 	if err != nil {
 		return diag.FromErr(err)
@@ -399,10 +394,8 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("target_type") || d.HasChange("region") || d.HasChange("logdna_endpoint") {
-		replaceTargetOptions.SetTargetType(d.Get("target_type").(string))
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("region") || d.HasChange("logdna_endpoint") {
 		replaceTargetOptions.SetName(d.Get("name").(string))
-		replaceTargetOptions.SetRegion(d.Get("region").(string))
 
 		_, hasCosEndpoint := d.GetOk("cos_endpoint.0")
 		if hasCosEndpoint {
@@ -480,9 +473,8 @@ func resourceIBMAtrackerTargetCosEndpointPrototypeToMap(model *atrackerv2.CosEnd
 	modelMap["endpoint"] = model.Endpoint
 	modelMap["target_crn"] = model.TargetCRN
 	modelMap["bucket"] = model.Bucket
-	if model.APIKey != nil {
-		modelMap["api_key"] = model.APIKey // pragma: whitelist secret
-	}
+	// TODO: remove after deprecation
+	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
 	modelMap["service_to_service_enabled"] = model.ServiceToServiceEnabled
 	return modelMap, nil
 }
@@ -491,7 +483,7 @@ func resourceIBMAtrackerTargetLogdnaEndpointPrototypeToMap(model *atrackerv2.Log
 
 	modelMap := make(map[string]interface{})
 	modelMap["target_crn"] = model.TargetCRN
-	modelMap["ingestion_key"] = model.IngestionKey // pragma: whitelist secret
+	modelMap["ingestion_key"] = REDACTED_TEXT // pragma: whitelist secret
 	return modelMap, nil
 }
 

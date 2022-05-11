@@ -43,10 +43,10 @@ Nested scheme for **rules**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the atracker_route.
-* `api_version` - (Required, Integer) The API version of the route.
-* `created_at` - (Required, String) The timestamp of the route creation time.
+* `api_version` - (Integer) The API version of the route.
+* `created_at` - (String) The timestamp of the route creation time.
 * `crn` - (Required, String) The crn of the route resource.
-* `updated_at` - (Required, String) The timestamp of the route last updated time.
+* `updated_at` - (String) The timestamp of the route last updated time.
 * `version` - (Optional, Integer) The version of the route.
 * `updated` - **DEPRECATED** (Optional, String) The timestamp of the route last updated time.
 * `created` - **DEPRECATED** (Optional, String) The timestamp of the route creation time.

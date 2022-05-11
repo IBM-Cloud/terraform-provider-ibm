@@ -130,11 +130,16 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
 	}
-	listRoutesOptionsV1 := &atrackerv1.ListRoutesOptions{}
-	routeListV1, response, err := atrackerClientv1.ListRoutesWithContext(context, listRoutesOptionsV1)
-	if err != nil {
-		log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
+	var routeListV1 *atrackerv1.RouteList
+	if len(routeList.Routes) == 0 {
+
+		listRoutesOptionsV1 := &atrackerv1.ListRoutesOptions{}
+		routeListV1Items, response, err := atrackerClientv1.ListRoutesWithContext(context, listRoutesOptionsV1)
+		if err != nil {
+			log.Printf("[DEBUG] ListRoutesWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ListRoutesWithContext failed %s\n%s", err, response))
+		}
+		routeListV1 = routeListV1Items
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
@@ -162,7 +167,7 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 	routeList.Routes = matchRoutes
 	routeListV1.Routes = matchRoutesV1
 	if suppliedFilter {
-		if len(routeList.Routes) == 0 {
+		if len(routeList.Routes) == 0 && len(routeListV1.Routes) == 0 {
 			return diag.FromErr(fmt.Errorf("no Routes found with name %s", name))
 		}
 		d.SetId(name)

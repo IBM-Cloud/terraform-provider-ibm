@@ -43,6 +43,7 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				Description: "Routing rules that will be evaluated in their order of the array.",
+				ConfigMode:  schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_ids": {
@@ -155,18 +156,56 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	getRouteV1Options := &atrackerv1.GetRouteOptions{}
-	getRouteV1Options.SetID(d.Id())
-	// Try v1 first, otherwise try v2
-	routeV1, responseV1, err := atrackerClientv1.GetRouteWithContext(context, getRouteV1Options)
-	if err != nil && responseV1 != nil && responseV1.StatusCode != 404 {
-		log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, responseV1)
-		return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, responseV1))
-	}
-	if err == nil && responseV1 != nil {
-		getRouteOptions := &atrackerv1.GetRouteOptions{}
-		getRouteOptions.SetID(d.Id())
+	getRouteOptions := &atrackerv2.GetRouteOptions{}
+	getRouteOptions.SetID(d.Id())
 
+	// Try v2 first, otherwise try v1
+	route, response, err := atrackerClient.GetRouteWithContext(context, getRouteOptions)
+
+	if err != nil && response != nil && response.StatusCode != 404 {
+		log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, response))
+	}
+	if err == nil && response != nil {
+		if err = d.Set("name", route.Name); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		}
+		rules := []map[string]interface{}{}
+		for _, rulesItem := range route.Rules {
+			rulesItemMap, _, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
+			rules = append(rules, rulesItemMap)
+		}
+		if err = d.Set("rules", rules); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
+		}
+		if err = d.Set("crn", route.CRN); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		}
+		if err = d.Set("version", flex.IntValue(route.Version)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		}
+		if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+		}
+		if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
+		}
+		d.Set("receive_global_events", false)
+	} else {
+		getRouteV1Options := &atrackerv1.GetRouteOptions{}
+		getRouteV1Options.SetID(d.Id())
+		routeV1, responseV1, err := atrackerClientv1.GetRouteWithContext(context, getRouteV1Options)
+		if err != nil {
+			if response != nil && responseV1.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, responseV1)
+			return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, responseV1))
+		}
 		if err = d.Set("name", routeV1.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 		}
@@ -196,47 +235,6 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("api_version", 1); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
 		}
-	} else {
-		getRouteOptions := &atrackerv2.GetRouteOptions{}
-
-		getRouteOptions.SetID(d.Id())
-		route, response, err := atrackerClient.GetRouteWithContext(context, getRouteOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			log.Printf("[DEBUG] GetRouteWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("GetRouteWithContext failed %s\n%s", err, response))
-		}
-
-		if err = d.Set("name", route.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-		}
-		rules := []map[string]interface{}{}
-		for _, rulesItem := range route.Rules {
-			rulesItemMap, _, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
-			rules = append(rules, rulesItemMap)
-		}
-		if err = d.Set("rules", rules); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
-		}
-		if err = d.Set("crn", route.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
-		}
-		if err = d.Set("version", flex.IntValue(route.Version)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
-		}
-		if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
-		if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
-		if err = d.Set("api_version", flex.IntValue(route.APIVersion)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
-		}
-		d.Set("receive_global_events", false)
 	}
 
 	return nil
@@ -247,45 +245,47 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	apiVersion := d.Get("api_version").(int)
 
-	replaceRouteOptions := &atrackerv2.ReplaceRouteOptions{}
+	if apiVersion > 1 {
+		replaceRouteOptions := &atrackerv2.ReplaceRouteOptions{}
 
-	replaceRouteOptions.SetID(d.Id())
-	replaceRouteOptions.SetName(d.Get("name").(string))
+		replaceRouteOptions.SetID(d.Id())
+		replaceRouteOptions.SetName(d.Get("name").(string))
 
-	var rules []atrackerv2.RulePrototype
-	for _, e := range d.Get("rules").([]interface{}) {
-		value := e.(map[string]interface{})
-		rulesItem := resourceIBMAtrackerRouteMapToRule(value, d.Get("receive_global_events").(bool))
-		rules = append(rules, rulesItem)
-	}
-	replaceRouteOptions.SetRules(rules)
-
-	_, response, err := atrackerClient.ReplaceRouteWithContext(context, replaceRouteOptions)
-	if err != nil {
-		// TODO: to remove once version 1 is fully deprecated
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		replaceRouteOptionsV1 := &atrackerv1.ReplaceRouteOptions{}
-		replaceRouteOptionsV1.SetID(d.Id())
-		replaceRouteOptionsV1.SetName(d.Get("name").(string))
-		replaceRouteOptionsV1.SetReceiveGlobalEvents(d.Get("receive_global_events").(bool))
-
-		var rules []atrackerv1.Rule
+		var rules []atrackerv2.RulePrototype = make([]atrackerv2.RulePrototype, 0)
 		for _, e := range d.Get("rules").([]interface{}) {
 			value := e.(map[string]interface{})
-			rulesItem := resourceIBMAtrackerRouteMapToRuleV1(value)
+			rulesItem := resourceIBMAtrackerRouteMapToRule(value, d.Get("receive_global_events").(bool))
 			rules = append(rules, rulesItem)
 		}
-		replaceRouteOptionsV1.SetRules(rules)
+		replaceRouteOptions.SetRules(rules)
 
-		_, _, err = atrackerClientV1.ReplaceRouteWithContext(context, replaceRouteOptionsV1)
+		_, response, err := atrackerClient.ReplaceRouteWithContext(context, replaceRouteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] ReplaceRouteWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
 		}
+		return resourceIBMAtrackerRouteRead(context, d, meta)
+	}
+	// TODO: to remove once version 1 is fully deprecated
+	replaceRouteOptionsV1 := &atrackerv1.ReplaceRouteOptions{}
+	replaceRouteOptionsV1.SetID(d.Id())
+	replaceRouteOptionsV1.SetName(d.Get("name").(string))
+	replaceRouteOptionsV1.SetReceiveGlobalEvents(d.Get("receive_global_events").(bool))
+
+	var rules []atrackerv1.Rule = make([]atrackerv1.Rule, 0)
+	for _, e := range d.Get("rules").([]interface{}) {
+		value := e.(map[string]interface{})
+		rulesItem := resourceIBMAtrackerRouteMapToRuleV1(value)
+		rules = append(rules, rulesItem)
+	}
+	replaceRouteOptionsV1.SetRules(rules)
+
+	_, response, err := atrackerClientV1.ReplaceRouteWithContext(context, replaceRouteOptionsV1)
+	if err != nil {
+		log.Printf("[DEBUG] ReplaceRouteWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ReplaceRouteWithContext failed %s\n%s", err, response))
 	}
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
@@ -297,31 +297,28 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	deleteRouteOptions := &atrackerv2.DeleteRouteOptions{}
+	apiVersion := d.Get("api_version").(int)
 
-	deleteRouteOptions.SetID(d.Id())
-
-	response, err := atrackerClient.DeleteRouteWithContext(context, deleteRouteOptions)
-	if err != nil {
-		// TODO: to remove once version 1 is fully deprecated
-		// Try v1 then v2
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		deleteRouteOptions := &atrackerv1.DeleteRouteOptions{}
+	if apiVersion > 1 {
+		deleteRouteOptions := &atrackerv2.DeleteRouteOptions{}
 
 		deleteRouteOptions.SetID(d.Id())
 
-		_, err = atrackerClientV1.DeleteRouteWithContext(context, deleteRouteOptions)
+		response, err := atrackerClient.DeleteRouteWithContext(context, deleteRouteOptions)
 		if err != nil {
 			log.Printf("[DEBUG] DeleteRouteWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("DeleteRouteWithContext failed %s\n%s", err, response))
 		}
+	} else {
+		deleteRouteOptions := &atrackerv1.DeleteRouteOptions{}
 
-		d.SetId("")
+		deleteRouteOptions.SetID(d.Id())
 
-		return nil
+		response, err := atrackerClientV1.DeleteRouteWithContext(context, deleteRouteOptions)
+		if err != nil {
+			log.Printf("[DEBUG] DeleteRouteWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("DeleteRouteWithContext failed %s\n%s", err, response))
+		}
 	}
 
 	d.SetId("")
@@ -332,14 +329,17 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, bool, error) {
 	receives_global_events := false
 	modelMap := make(map[string]interface{})
-	modelMap["target_ids"] = model.TargetIds
+	modelMap["target_ids"] = make([]string, 0)
+	for _, target_id := range model.TargetIds {
+		modelMap["target_ids"] = append(modelMap["target_ids"].([]string), target_id)
+	}
 	if model.Locations != nil {
-		modelMap["locations"] = model.Locations
+		modelMap["locations"] = make([]string, 0)
 		if model.Locations != nil {
 			for _, location := range model.Locations {
+				modelMap["locations"] = append(modelMap["locations"].([]string), location)
 				if strings.Contains(location, "*") || strings.Contains(location, "global") {
 					receives_global_events = true
-					break
 				}
 			}
 		}
@@ -356,13 +356,15 @@ func resourceIBMAtrackerRouteRulePrototypeToMapV1(model *atrackerv1.Rule) (map[s
 func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}, addGlobalFlag bool) atrackerv2.RulePrototype {
 	rule := atrackerv2.RulePrototype{}
 
-	targetIds := []string{}
+	targetIds := make([]string, 0)
 	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
-		targetIds = append(targetIds, targetIdsItem.(string))
+		if targetIdsItem != nil {
+			targetIds = append(targetIds, targetIdsItem.(string))
+		}
 	}
 	rule.TargetIds = targetIds
 
-	locations := []string{}
+	locations := make([]string, 0)
 	globalDetected := false
 	for _, locationsItem := range ruleMap["locations"].([]interface{}) {
 		if strings.Contains(locationsItem.(string), "*") || strings.Contains(locationsItem.(string), "global") {

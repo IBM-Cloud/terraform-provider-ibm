@@ -286,9 +286,6 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 	if model.Region != nil {
 		modelMap["region"] = *model.Region
 	}
-	if model.EncryptionKey != nil {
-		modelMap["encryption_key"] = *model.EncryptionKey
-	}
 	if model.CosEndpoint != nil {
 		cosEndpointMap, err := DataSourceIBMAtrackerTargetsCosEndpointToMap(model.CosEndpoint)
 		if err != nil {
@@ -333,9 +330,6 @@ func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint)
 	if model.Bucket != nil {
 		modelMap["bucket"] = *model.Bucket
 	}
-	if model.APIKey != nil {
-		modelMap["api_key"] = *model.APIKey // pragma: whitelist secret
-	}
 	modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
 	return modelMap, nil
 }
@@ -344,9 +338,6 @@ func DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model *atrackerv2.LogdnaEnd
 	modelMap := make(map[string]interface{})
 	if model.TargetCRN != nil {
 		modelMap["target_crn"] = *model.TargetCRN
-	}
-	if model.IngestionKey != nil {
-		modelMap["ingestion_key"] = *model.IngestionKey // pragma: whitelist secret
 	}
 	return modelMap, nil
 }

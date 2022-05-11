@@ -68,11 +68,11 @@ Nested scheme for **logdna_endpoint**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 * `id` - The unique identifier of the atracker_target.
 * `api_version` - (Required, Integer) The API version of the target.
-* `created_at` - (Required, String) The timestamp of the target creation time.
+* `created_at` - (String) The timestamp of the target creation time.
 * `crn` - (Required, String) The crn of the target resource.
 * `encryption_key` - (Optional, String) The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.
-* `updated_at` - (Required, String) The timestamp of the target last updated time.
-* `write_status` - (Required, List) The status of the write attempt to the target with the provided endpoint parameters.
+* `updated_at` - (String) The timestamp of the target last updated time.
+* `write_status` - (List) The status of the write attempt to the target with the provided endpoint parameters.
 Nested scheme for **write_status**:
 	* `last_failure` - (Optional, String) The timestamp of the failure.
 	* `reason_for_last_failure` - (Optional, String) Detailed description of the cause of the failure.
