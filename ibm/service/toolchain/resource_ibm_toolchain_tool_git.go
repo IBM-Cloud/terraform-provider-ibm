@@ -209,7 +209,7 @@ func ResourceIBMToolchainToolGitCreate(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
+	postIntegrationOptions := &toolchainv2.CreateIntegrationOptions{}
 
 	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	postIntegrationOptions.SetToolID(d.Get("git_provider").(string))
@@ -230,7 +230,7 @@ func ResourceIBMToolchainToolGitCreate(context context.Context, d *schema.Resour
 	}
 	postIntegrationOptions.SetParameters(parameters)
 
-	postIntegrationResponse, response, err := toolchainClient.PostIntegrationWithContext(context, postIntegrationOptions)
+	postIntegrationResponse, response, err := toolchainClient.CreateIntegrationWithContext(context, postIntegrationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] PostIntegrationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("PostIntegrationWithContext failed %s\n%s", err, response))
@@ -319,7 +319,7 @@ func ResourceIBMToolchainToolGitUpdate(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	patchToolIntegrationOptions := &toolchainv2.PatchToolIntegrationOptions{}
+	patchToolIntegrationOptions := &toolchainv2.UpdateIntegrationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -357,7 +357,7 @@ func ResourceIBMToolchainToolGitUpdate(context context.Context, d *schema.Resour
 	}
 
 	if hasChange {
-		_, response, err := toolchainClient.PatchToolIntegrationWithContext(context, patchToolIntegrationOptions)
+		response, err := toolchainClient.UpdateIntegrationWithContext(context, patchToolIntegrationOptions)
 		if err != nil {
 			log.Printf("[DEBUG] PatchToolIntegrationWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("PatchToolIntegrationWithContext failed %s\n%s", err, response))
@@ -373,7 +373,7 @@ func ResourceIBMToolchainToolGitDelete(context context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	deleteToolIntegrationOptions := &toolchainv2.DeleteToolIntegrationOptions{}
+	deleteToolIntegrationOptions := &toolchainv2.DeleteIntegrationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -383,7 +383,7 @@ func ResourceIBMToolchainToolGitDelete(context context.Context, d *schema.Resour
 	deleteToolIntegrationOptions.SetToolchainID(parts[0])
 	deleteToolIntegrationOptions.SetIntegrationID(parts[1])
 
-	response, err := toolchainClient.DeleteToolIntegrationWithContext(context, deleteToolIntegrationOptions)
+	response, err := toolchainClient.DeleteIntegrationWithContext(context, deleteToolIntegrationOptions)
 	if err != nil {
 		log.Printf("[DEBUG] DeleteToolIntegrationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("DeleteToolIntegrationWithContext failed %s\n%s", err, response))

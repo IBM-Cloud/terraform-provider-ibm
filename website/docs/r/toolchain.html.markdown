@@ -25,25 +25,25 @@ resource "ibm_toolchain" "toolchain" {
 Review the argument reference that you can specify for your resource.
 
 * `description` - (Optional, String) Describes the toolchain.
-  * Constraints: The maximum length is `500` characters.
+  * Constraints: The maximum length is `500` characters. The minimum length is `0` characters. The value must match regular expression `/^(.*?)$/`.
 * `name` - (Required, String) Toolchain name.
-  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `resource_group_id` - (Required, Forces new resource, String) 
-  * Constraints: The value must match regular expression `/^[0-9a-f]{32}$/`.
+  * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
+* `resource_group_id` - (Required, Forces new resource, String) Resource group where toolchain will be created.
+  * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the toolchain.
-* `account_id` - (Required, String) 
-* `created_at` - (Required, String) 
-* `created_by` - (Required, String) 
-* `crn` - (Required, String) 
-* `href` - (Required, String) 
-* `location` - (Required, String) 
-* `tags` - (Required, List) 
-* `updated_at` - (Required, String) 
+* `account_id` - (Required, String) Account ID where toolchain can be found.
+* `created_at` - (Required, String) Toolchain creation timestamp.
+* `created_by` - (Required, String) Identity that created the toolchain.
+* `crn` - (Required, String) Toolchain CRN.
+* `href` - (Required, String) URI that can be used to retrieve toolchain.
+* `location` - (Required, String) Toolchain region.
+* `tags` - (Required, List) Tags associated with the toolchain.
+* `updated_at` - (Required, String) Latest toolchain update timestamp.
 
 ## Provider Configuration
 
@@ -97,14 +97,9 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_toolchain` resource by using `id`. The unique identifier of the toolchain.
+You can import the `ibm_toolchain` resource by using `id`. Toolchain ID.
 
 # Syntax
 ```
 $ terraform import ibm_toolchain.toolchain <id>
-```
-
-# Example
-```
-$ terraform import ibm_toolchain.toolchain ec58a911-c217-4e56-a40b-93482cd18706
 ```

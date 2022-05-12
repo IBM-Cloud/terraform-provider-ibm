@@ -35,9 +35,10 @@ func ResourceIBMToolchainToolPipeline() *schema.Resource {
 				Description:  "ID of the toolchain to bind integration to.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Name of tool integration.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain_tool_pipeline", "name"),
+				Description:  "Name of tool integration.",
 			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
@@ -64,48 +65,58 @@ func ResourceIBMToolchainToolPipeline() *schema.Resource {
 				},
 			},
 			"resource_group_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource group where tool integration can be found.",
 			},
 			"crn": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Tool integration CRN.",
 			},
 			"toolchain_crn": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of toolchain which the integration is bound to.",
 			},
 			"href": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URI representing the tool integration.",
 			},
 			"referent": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Information on URIs to access this resource through the UI or API.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ui_href": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "URI representing the this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "URI representing the this resource through an API.",
 						},
 					},
 				},
 			},
 			"updated_at": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Latest tool integration update timestamp.",
 			},
 			"state": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Current configuration state of the tool integration.",
 			},
 			"instance_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Tool integration ID.",
 			},
 		},
 	}
@@ -123,6 +134,15 @@ func ResourceIBMToolchainToolPipelineValidator() *validate.ResourceValidator {
 			MinValueLength:             36,
 			MaxValueLength:             36,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$`,
+			MinValueLength:             0,
+			MaxValueLength:             128,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_toolchain_tool_pipeline", Schema: validateSchema}
@@ -135,25 +155,25 @@ func ResourceIBMToolchainToolPipelineCreate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	postIntegrationOptions := &toolchainv2.PostIntegrationOptions{}
+	createIntegrationOptions := &toolchainv2.CreateIntegrationOptions{}
 
-	postIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	postIntegrationOptions.SetToolID("pipeline")
+	createIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
+	createIntegrationOptions.SetToolID("pipeline")
 	if _, ok := d.GetOk("name"); ok {
-		postIntegrationOptions.SetName(d.Get("name").(string))
+		createIntegrationOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		parametersModel := GetParametersForCreate(d, ResourceIBMToolchainToolPipeline(), nil)
-		postIntegrationOptions.SetParameters(parametersModel)
+		createIntegrationOptions.SetParameters(parametersModel)
 	}
 
-	postIntegrationResponse, response, err := toolchainClient.PostIntegrationWithContext(context, postIntegrationOptions)
+	postIntegrationResponse, response, err := toolchainClient.CreateIntegrationWithContext(context, createIntegrationOptions)
 	if err != nil {
-		log.Printf("[DEBUG] PostIntegrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("PostIntegrationWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] CreateIntegrationWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateIntegrationWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *postIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
+	d.SetId(fmt.Sprintf("%s/%s", *createIntegrationOptions.ToolchainID, *postIntegrationResponse.ID)) // Delay to allow pipeline to be created before creating tekton resources
 
 	// Delay to allow pipeline to be created before creating tekton resources
 	sleep := 3 * time.Second
@@ -238,16 +258,16 @@ func ResourceIBMToolchainToolPipelineUpdate(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	patchToolIntegrationOptions := &toolchainv2.PatchToolIntegrationOptions{}
+	updateIntegrationOptions := &toolchainv2.UpdateIntegrationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	patchToolIntegrationOptions.SetToolchainID(parts[0])
-	patchToolIntegrationOptions.SetIntegrationID(parts[1])
-	patchToolIntegrationOptions.SetToolID("pipeline")
+	updateIntegrationOptions.SetToolchainID(parts[0])
+	updateIntegrationOptions.SetIntegrationID(parts[1])
+	updateIntegrationOptions.SetToolID("pipeline")
 
 	hasChange := false
 
@@ -256,20 +276,20 @@ func ResourceIBMToolchainToolPipelineUpdate(context context.Context, d *schema.R
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("name") {
-		patchToolIntegrationOptions.SetName(d.Get("name").(string))
+		updateIntegrationOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
 		parameters := GetParametersForUpdate(d, ResourceIBMToolchainToolPipeline(), nil)
-		patchToolIntegrationOptions.SetParameters(parameters)
+		updateIntegrationOptions.SetParameters(parameters)
 		hasChange = true
 	}
 
 	if hasChange {
-		_, response, err := toolchainClient.PatchToolIntegrationWithContext(context, patchToolIntegrationOptions)
+		response, err := toolchainClient.UpdateIntegrationWithContext(context, updateIntegrationOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PatchToolIntegrationWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("PatchToolIntegrationWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateIntegrationWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateIntegrationWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -282,20 +302,20 @@ func ResourceIBMToolchainToolPipelineDelete(context context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	deleteToolIntegrationOptions := &toolchainv2.DeleteToolIntegrationOptions{}
+	deleteIntegrationOptions := &toolchainv2.DeleteIntegrationOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	deleteToolIntegrationOptions.SetToolchainID(parts[0])
-	deleteToolIntegrationOptions.SetIntegrationID(parts[1])
+	deleteIntegrationOptions.SetToolchainID(parts[0])
+	deleteIntegrationOptions.SetIntegrationID(parts[1])
 
-	response, err := toolchainClient.DeleteToolIntegrationWithContext(context, deleteToolIntegrationOptions)
+	response, err := toolchainClient.DeleteIntegrationWithContext(context, deleteIntegrationOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteToolIntegrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteToolIntegrationWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] DeleteIntegrationWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteIntegrationWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

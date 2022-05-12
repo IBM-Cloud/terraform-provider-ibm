@@ -37,44 +37,54 @@ func ResourceIBMToolchain() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_toolchain", "resource_group_id"),
+				Description:  "Resource group where toolchain will be created.",
 			},
 			"description": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Describes the toolchain.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_toolchain", "description"),
+				Description:  "Describes the toolchain.",
 			},
 			"account_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Account ID where toolchain can be found.",
 			},
 			"location": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Toolchain region.",
 			},
 			"crn": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Toolchain CRN.",
 			},
 			"href": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URI that can be used to retrieve toolchain.",
 			},
 			"created_at": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Toolchain creation timestamp.",
 			},
 			"updated_at": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Latest toolchain update timestamp.",
 			},
 			"created_by": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Identity that created the toolchain.",
 			},
 			"tags": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Tags associated with the toolchain.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
@@ -85,18 +95,30 @@ func ResourceIBMToolchainValidator() *validate.ResourceValidator {
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",
-			ValidateFunctionIdentifier: validate.ValidateRegexp,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$`,
+			MinValueLength:             0,
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "resource_group_id",
-			ValidateFunctionIdentifier: validate.ValidateRegexp,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^[0-9a-f]{32}$`,
+			MinValueLength:             32,
+			MaxValueLength:             32,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "description",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^(.*?)$`,
+			MinValueLength:             0,
+			MaxValueLength:             500,
 		},
 	)
 
@@ -110,18 +132,18 @@ func ResourceIBMToolchainCreate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	postToolchainOptions := &toolchainv2.PostToolchainOptions{}
+	createToolchainOptions := &toolchainv2.CreateToolchainOptions{}
 
-	postToolchainOptions.SetName(d.Get("name").(string))
-	postToolchainOptions.SetResourceGroupID(d.Get("resource_group_id").(string))
+	createToolchainOptions.SetName(d.Get("name").(string))
+	createToolchainOptions.SetResourceGroupID(d.Get("resource_group_id").(string))
 	if _, ok := d.GetOk("description"); ok {
-		postToolchainOptions.SetDescription(d.Get("description").(string))
+		createToolchainOptions.SetDescription(d.Get("description").(string))
 	}
 
-	postToolchainResponse, response, err := toolchainClient.PostToolchainWithContext(context, postToolchainOptions)
+	postToolchainResponse, response, err := toolchainClient.CreateToolchainWithContext(context, createToolchainOptions)
 	if err != nil {
-		log.Printf("[DEBUG] PostToolchainWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("PostToolchainWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] CreateToolchainWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateToolchainWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(*postToolchainResponse.ID)
@@ -192,9 +214,9 @@ func ResourceIBMToolchainUpdate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	patchToolchainOptions := &toolchainv2.PatchToolchainOptions{}
+	updateToolchainOptions := &toolchainv2.UpdateToolchainOptions{}
 
-	patchToolchainOptions.SetToolchainID(d.Id())
+	updateToolchainOptions.SetToolchainID(d.Id())
 
 	hasChange := false
 
@@ -203,19 +225,19 @@ func ResourceIBMToolchainUpdate(context context.Context, d *schema.ResourceData,
 			" The resource must be re-created to update this property.", "resource_group_id"))
 	}
 	if d.HasChange("name") {
-		patchToolchainOptions.SetName(d.Get("name").(string))
+		updateToolchainOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 	if d.HasChange("description") {
-		patchToolchainOptions.SetDescription(d.Get("description").(string))
+		updateToolchainOptions.SetDescription(d.Get("description").(string))
 		hasChange = true
 	}
 
 	if hasChange {
-		response, err := toolchainClient.PatchToolchainWithContext(context, patchToolchainOptions)
+		response, err := toolchainClient.UpdateToolchainWithContext(context, updateToolchainOptions)
 		if err != nil {
-			log.Printf("[DEBUG] PatchToolchainWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("PatchToolchainWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateToolchainWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateToolchainWithContext failed %s\n%s", err, response))
 		}
 	}
 

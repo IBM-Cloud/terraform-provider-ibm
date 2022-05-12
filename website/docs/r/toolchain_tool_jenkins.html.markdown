@@ -30,6 +30,7 @@ resource "ibm_toolchain_tool_jenkins" "toolchain_tool_jenkins" {
 Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool integration.
+  * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Optional, List) Parameters to be used to create the integration.
 Nested scheme for **parameters**:
 	* `api_token` - (Optional, String) Type the API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
@@ -45,18 +46,18 @@ Nested scheme for **parameters**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the toolchain_tool_jenkins.
-* `crn` - (Required, String) 
-* `instance_id` - (Required, String) 
-* `href` - (Required, String) 
-* `referent` - (Required, List) 
+* `crn` - (Required, String) Tool integration CRN.
+* `get_integration_by_id_response_id` - (Required, String) Tool integration ID.
+* `href` - (Required, String) URI representing the tool integration.
+* `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (Optional, String)
-	* `ui_href` - (Optional, String)
-* `resource_group_id` - (Required, String) 
-* `state` - (Required, String) 
+	* `api_href` - (Optional, String) URI representing the this resource through an API.
+	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
+* `resource_group_id` - (Required, String) Resource group where tool integration can be found.
+* `state` - (Required, String) Current configuration state of the tool integration.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
-* `toolchain_crn` - (Required, String) 
-* `updated_at` - (Required, String) 
+* `toolchain_crn` - (Required, String) CRN of toolchain which the integration is bound to.
+* `updated_at` - (Required, String) Latest tool integration update timestamp.
 
 ## Provider Configuration
 
@@ -117,7 +118,7 @@ The `id` property can be formed from `toolchain_id`, and `integration_id` in the
 <toolchain_id>/<integration_id>
 ```
 * `toolchain_id`: A string. ID of the toolchain to bind integration to.
-* `integration_id`: A string. ID of the tool integration to be deleted.
+* `integration_id`: A string. ID of the tool integration bound to the toolchain.
 
 # Syntax
 ```
