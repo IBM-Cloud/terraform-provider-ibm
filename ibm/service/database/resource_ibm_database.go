@@ -202,6 +202,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"members_disk_allocation_mb": {
 				Description:   "Disk allocation required for cluster",
@@ -209,6 +210,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"members_cpu_allocation_count": {
 				Description:   "CPU allocation required for cluster",
@@ -216,6 +218,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"node_count": {
 				Description:   "Total number of nodes in the cluster",
@@ -223,14 +226,15 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"node_memory_allocation_mb": {
-				Description: "Memory allocation per node",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-
+				Description:   "Memory allocation per node",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"node_disk_allocation_mb": {
 				Description:   "Disk allocation per node",
@@ -238,6 +242,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"node_cpu_allocation_count": {
 				Description:   "CPU allocation per node",
@@ -245,6 +250,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
+				Deprecated:    "This field is deprecated please use groups",
 			},
 			"plan_validation": {
 				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",

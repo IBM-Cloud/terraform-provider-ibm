@@ -32,8 +32,19 @@ resource "ibm_database" "<your_database>" {
   tags              = ["tag1", "tag2"]
 
   adminpassword                = "password12"
-  members_memory_allocation_mb = 3072
-  members_disk_allocation_mb   = 61440
+
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+  }
+
   users {
     name     = "user123"
     password = "password12"
@@ -50,7 +61,8 @@ output "ICD Etcd database connection string" {
 
 ```
 
-### Sample database instance by using `node_` attributes
+### **Deprecated** Sample database instance by using `node_` attributes
+Please Note this has been deprecated: Please use the `group` attribute instead
 An example to configure and deploy database by using `node_` attributes instead of `memory_`.
 
 ```terraform
@@ -213,8 +225,17 @@ resource "ibm_database" "cassandra" {
   plan                         = "enterprise"
   location                     = "us-south"
   adminpassword                = "password12"
-  members_memory_allocation_mb = 36864
-  members_disk_allocation_mb   = 61440
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+  }
   users {
     name     = "user123"
     password = "password12"
@@ -248,8 +269,19 @@ resource "ibm_database" "mongodb" {
   plan                         = "enterprise"
   location                     = "us-south"
   adminpassword                = "password12"
-  members_disk_allocation_mb   = 61440
-  members_memory_allocation_mb = 43008
+
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+  }
+
   tags                         = ["one:two"]
   users {
     name     = "user123"
@@ -354,8 +386,17 @@ resource "ibm_database" "edb" {
   plan                         = "standard"
   location                     = "us-south"
   adminpassword                = "password12"
-  members_memory_allocation_mb = 3072
-  members_disk_allocation_mb   = 61440
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+  }
   tags                         = ["one:two"]
   users {
     name     = "user123"
@@ -381,9 +422,21 @@ data "ibm_resource_group" "test_acc" {
 
 resource "ibm_database" "db" {
   location                     = "us-east"
-  members_cpu_allocation_count = 0
-  members_disk_allocation_mb   = 10240
-  members_memory_allocation_mb = 2048
+  group {
+    group_id = "member"
+    
+    memory { 
+      allocation_mb = 14336
+    }
+    
+    disk { 
+      allocation_mb = 20480
+    }
+
+    cpu {
+      allocation_count = 3
+    }
+  }
   name                         = "telus-database"
   service                      = "databases-for-postgresql"
   plan                         = "standard"
@@ -487,13 +540,13 @@ Review the argument reference that you can specify for your resource.
     Nested scheme for `cpu`:
     - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
-- `members_memory_allocation_mb` - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_disk_allocation_mb` - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
-- `members_cpu_allocation_count` - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
-- `node_count` - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
-- `node_cpu_allocation_count` - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment per node.
-- `node_disk_allocation_mb`  - (Optional, Integer) The disk size of the database per node. As above.
-- `node_memory_allocation_mb` - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+- `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
+- `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
+- `members_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment.
+- `node_count` **Deprecated** - (Optional, Integer) The total number of nodes in the cluster. If not specified defaults to the database minimum node count. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
+- `node_cpu_allocation_count` **Deprecated** - (Optional, Integer) Enables and allocates the number of specified dedicated cores to your deployment per node.
+- `node_disk_allocation_mb` **Deprecated**  - (Optional, Integer) The disk size of the database per node. As above.
+- `node_memory_allocation_mb` **Deprecated** - (Optional,Integer) The memory size for the database per node. If not specified defaults to the database default. These vary by database type. See the documentation related to each database for the defaults. https://cloud.ibm.com/docs/services/databases-for-postgresql/howto-provisioning.html#list-of-additional-parameters
 
   ~> **Note:** `members_memory_allocation_mb`, `members_disk_allocation_mb`, `members_cpu_allocation_count` conflicts with `node_count`,`node_cpu_allocation_count`, `node_disk_allocation_mb`, `node_memory_allocation_mb`. `group` conflicts with `node_` and `members_` arguments. Either members, node, or group arguments have to be provided.
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
