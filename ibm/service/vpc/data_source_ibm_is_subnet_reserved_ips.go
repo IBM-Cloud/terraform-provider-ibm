@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -152,9 +153,35 @@ func dataSdataSourceIBMISReservedIPsRead(d *schema.ResourceData, meta interface{
 		ipsOutput[isReservedIPName] = *data.Name
 		ipsOutput[isReservedIPOwner] = *data.Owner
 		ipsOutput[isReservedIPType] = *data.ResourceType
-		target, ok := data.Target.(*vpcv1.ReservedIPTarget)
-		if ok {
-			ipsOutput[isReservedIPTarget] = target.ID
+		if data.Target != nil {
+			targetIntf := data.Target
+			switch reflect.TypeOf(targetIntf).String() {
+			case "*vpcv1.ReservedIPTargetEndpointGatewayReference":
+				{
+					target := targetIntf.(*vpcv1.ReservedIPTargetEndpointGatewayReference)
+					ipsOutput[isReservedIPTarget] = target.ID
+				}
+			case "*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext":
+				{
+					target := targetIntf.(*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext)
+					ipsOutput[isReservedIPTarget] = target.ID
+				}
+			case "*vpcv1.ReservedIPTargetLoadBalancerReference":
+				{
+					target := targetIntf.(*vpcv1.ReservedIPTargetLoadBalancerReference)
+					ipsOutput[isReservedIPTarget] = target.ID
+				}
+			case "*vpcv1.ReservedIPTargetVPNGatewayReference":
+				{
+					target := targetIntf.(*vpcv1.ReservedIPTargetVPNGatewayReference)
+					ipsOutput[isReservedIPTarget] = target.ID
+				}
+			case "*vpcv1.ReservedIPTarget":
+				{
+					target := targetIntf.(*vpcv1.ReservedIPTarget)
+					ipsOutput[isReservedIPTarget] = target.ID
+				}
+			}
 		}
 		reservedIPs = append(reservedIPs, ipsOutput)
 	}

@@ -797,7 +797,7 @@ func testAccCheckIBMDatabaseInstancePostgresGroupReduced(databaseResourceGroup s
 				allocation_count = 2
 			}
 			memory {
-				allocation_mb = 512
+				allocation_mb = 1024
 			}
 			 disk {
 				allocation_mb = 7168
