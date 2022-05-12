@@ -93,7 +93,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 ```
 
-```
+
 ### Authorization policy between two specific services.
 
 ```terraform

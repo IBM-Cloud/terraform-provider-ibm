@@ -99,7 +99,7 @@ resource "ibm_is_vpc" "vpc1" {
 resource "ibm_is_subnet" "subnet1" {
   name                     = "mysubnet1"
   vpc                      = ibm_is_vpc.vpc1.id
-  zone                     = "us_south-1"
+  zone                     = "us-south-1"
   total_ipv4_address_count = 256
 }
 

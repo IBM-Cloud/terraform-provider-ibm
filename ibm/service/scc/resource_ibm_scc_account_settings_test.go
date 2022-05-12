@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package scc_test
@@ -9,68 +9,116 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 )
 
-func TestAccIbmSccAccountSettingsResourceBasic(t *testing.T) {
-	var conf adminserviceapiv1.LocationID
-	locationID := "us"
+func TestAccIbmSccAccountSettingsBasic(t *testing.T) {
+	var conf adminserviceapiv1.AccountSettings
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSccAccountSettingsDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmSccAccountSettingsResourceConfigBasic(locationID),
+			resource.TestStep{
+				Config: testAccCheckIbmSccAccountSettingsConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMSccLocationIdExists("ibm_scc_account_settings.ibm_scc_account_settings_instance", conf),
-					resource.TestCheckResourceAttr("ibm_scc_account_settings.ibm_scc_account_settings_instance", "location_id", locationID),
+					testAccCheckIbmSccAccountSettingsExists("ibm_scc_account_settings.scc_account_settings", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_account_settings.scc_account_settings",
+						"location.0.location_id",
+						"us",
+					),
+					resource.TestCheckResourceAttr(
+						"ibm_scc_account_settings.scc_account_settings",
+						"event_notifications.#",
+						"1",
+					),
 				),
+				// ExpectNonEmptyPlan: true,
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_scc_account_settings.scc_account_settings",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckIbmSccAccountSettingsResourceConfigBasic(locationID string) string {
+func testAccCheckIbmSccAccountSettingsConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "ibm_scc_account_settings" "ibm_scc_account_settings_instance" {
-			location_id = "%s"
-		}
-	`, locationID)
+		resource "ibm_scc_account_settings" "scc_account_settings" {
+            location {
+                location_id = "us"
+            }
+            event_notifications {
+            }
+        }
+	`)
 }
 
-func testAccCheckIBMSccLocationIdExists(n string, obj adminserviceapiv1.LocationID) resource.TestCheckFunc {
+func testAccCheckIbmSccAccountSettingsExists(n string, obj adminserviceapiv1.AccountSettings) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
+		// rs, ok := s.RootModule().Resources[n]
 		_, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		adminServiceClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AdminServiceApiV1()
+		adminServiceApiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AdminServiceApiV1()
 		if err != nil {
 			return err
 		}
 
-		getAccountSettingsOption := &adminserviceapiv1.GetSettingsOptions{}
+		getSettingsOptions := &adminserviceapiv1.GetSettingsOptions{}
 
 		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
 		if err != nil {
 			return err
 		}
-		accountID := userDetails.UserAccount
 
-		getAccountSettingsOption.SetAccountID(accountID)
+		getSettingsOptions.SetAccountID(userDetails.UserAccount)
 
-		accountSettings, _, err := adminServiceClient.GetSettings(getAccountSettingsOption)
+		accountSettings, _, err := adminServiceApiClient.GetSettings(getSettingsOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *accountSettings.Location
+		obj = *accountSettings
 		return nil
 	}
+}
+
+func testAccCheckIbmSccAccountSettingsDestroy(s *terraform.State) error {
+	adminServiceApiClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AdminServiceApiV1()
+	if err != nil {
+		return err
+	}
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_scc_account_settings" {
+			continue
+		}
+
+		getSettingsOptions := &adminserviceapiv1.GetSettingsOptions{}
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+		getSettingsOptions.SetAccountID(userDetails.UserAccount)
+
+		// Try to find the key
+		_, response, err := adminServiceApiClient.GetSettings(getSettingsOptions)
+		if response.StatusCode == 404 {
+			return fmt.Errorf("Error checking for scc_account_settings (%s) has been destroyed: %s", rs.Primary.ID, err)
+		}
+
+	}
+
+	return nil
 }

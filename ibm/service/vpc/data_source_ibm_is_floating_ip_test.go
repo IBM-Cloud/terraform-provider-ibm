@@ -35,6 +35,11 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resName, "name", fipname),
 					resource.TestCheckResourceAttr(resName, "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.address"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.reserved_ip"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.resource_type"),
 				),
 			},
 		},
@@ -66,7 +71,6 @@ func testAccCheckIBMISFloatingIPDataSourceConfig(vpcname, subnetname, sshname, p
 		image   = "%s"
 		profile = "%s"
 		primary_network_interface {
-		  port_speed = "100"
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
 		vpc  = ibm_is_vpc.testacc_vpc.id

@@ -21,19 +21,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-const (
-	PIDhcpStatusBuilding = "Building"
-	PIDhcpStatusActive   = "ACTIVE"
-	PIDhcpDeleting       = "Deleting"
-	PIDhcpDeleted        = "Deleted"
-	PIDhcpId             = "dhcp_id"
-	PIDhcpStatus         = "status"
-	PIDhcpNetwork        = "network"
-	PIDhcpLeases         = "leases"
-	PIDhcpInstanceIp     = "instance_ip"
-	PIDhcpInstanceMac    = "instance_mac"
-)
-
 func ResourceIBMPIDhcp() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMPIDhcpCreate,
@@ -110,7 +97,8 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	body := &models.DHCPServerCreate{}
 	if c, ok := d.GetOk(helpers.PICloudConnectionId); ok {
-		body.CloudConnectionID = c.(string)
+		ccID := c.(string)
+		body.CloudConnectionID = &ccID
 	}
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)

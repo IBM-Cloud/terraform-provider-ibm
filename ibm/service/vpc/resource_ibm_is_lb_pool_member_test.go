@@ -253,7 +253,6 @@ func testAccCheckIBMISLBPoolMemberIDConfig(vpcname, subnetname, zone, cidr, sshn
 		image   = data.ibm_is_image.ds_image.id
 		profile = "%s"
 		primary_network_interface {
-		  port_speed = "100"
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
 		vpc  = ibm_is_vpc.testacc_vpc.id

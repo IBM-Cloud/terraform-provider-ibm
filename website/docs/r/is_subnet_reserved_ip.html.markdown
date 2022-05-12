@@ -47,7 +47,7 @@ resource "ibm_is_subnet_reserved_ip" "example" {
 // Subnet ID with a given name
 resource "ibm_is_subnet_reserved_ip" "example1" {
   subnet = ibm_is_subnet.example.id
-  name   = "example-subnet-reserved-ip"
+  name   = "example-subnet-reserved-ip1"
 }
 
 // Subnet ID with auto_delete
@@ -59,7 +59,15 @@ resource "ibm_is_subnet_reserved_ip" "example2" {
 // Subnet ID with both name and auto_delete
 resource "ibm_is_subnet_reserved_ip" "example3" {
   subnet      = ibm_is_subnet.example.id
-  name        = "example-subnet-reserved-ip"
+  name        = "example-subnet-reserved-ip3"
+  auto_delete = true
+}
+
+// Subnet ID with address, name and auto_delete
+resource "ibm_is_subnet_reserved_ip" "example4" {
+  subnet      = ibm_is_subnet.example.id
+  address     = "${replace(ibm_is_subnet.example.ipv4_cidr_block, "0/24", "14")}"
+  name        = "example-subnet-reserved-ip4"
   auto_delete = true
 }
 
@@ -72,9 +80,9 @@ resource "ibm_is_virtual_endpoint_gateway" "example" {
   }
   vpc = ibm_is_vpc.example.id
 }
-resource "ibm_is_subnet_reserved_ip" "example4" {
+resource "ibm_is_subnet_reserved_ip" "example5" {
   subnet = ibm_is_subnet.example.id
-  name   = "example-subnet-reserved-ip"
+  name   = "example-subnet-reserved-ip5"
   target = ibm_is_virtual_endpoint_gateway.example.id
 }
 ```
@@ -82,6 +90,7 @@ resource "ibm_is_subnet_reserved_ip" "example4" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `address` - (Optional, Forces new resource, String) The IP address.
 - `auto_delete`- (Optional, Bool)  If reserved IP is auto deleted.
 - `name` - (Optional, String) The name of the reserved IP. ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
 - `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
@@ -90,14 +99,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `address` - (String) The IP address.
 - `created_at` - (Timestamp) The date and time that the reserved IP was created.",
 - `href` - (String) The URL for this reserved IP.
 - `id` - (String) The combination of the subnet ID and reserved IP ID separated by **/**.
+- `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
 - `owner` - (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
 - `reserved_ip` - (String) The reserved IP.
 - `resource_type` - (String) The resource type.
-- `target` - (String) The ID for the target endpoint gateway for the reserved IP.
+- `target` - (String) The ID for the target for the reserved IP.
 
 ## Import
 The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by using subnet ID and reserved IP ID separated by **/**.
@@ -105,7 +114,7 @@ The `ibm_is_subnet_reserved_ip` and `ibm_is_subnet` resource can be imported by 
 **Syntax**
 
 ```
-$ terraform import ibm_is_subnet.example <reserved_subnet_IP>
+$ terraform import ibm_is_subnet.example <subnet_ID>/<subnet_reserved_IP_ID>
 ```
 
 **Example**
