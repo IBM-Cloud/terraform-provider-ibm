@@ -27,7 +27,7 @@ func TestAccIBMDatabaseRemotesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes_replica", "deployment_id"),
 					resource.TestCheckResourceAttr("data.ibm_database_remotes.database_remotes", "leader", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes_replica", "leader"),
-					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes", "replicas"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes", "replicas.#"),
 				),
 			},
 		},
