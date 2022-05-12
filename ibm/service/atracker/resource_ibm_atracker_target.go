@@ -105,7 +105,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 			"region": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				ForceNew: 				true,
 				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "region"),
 				Description:      "Include this optional field if you want to create a target in a different region other than the one you are connected.",
 			},
