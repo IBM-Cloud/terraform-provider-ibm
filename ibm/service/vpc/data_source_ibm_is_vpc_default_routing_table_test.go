@@ -26,6 +26,7 @@ func TestAccIBMISVPCDefaultRoutingTableDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(node, "id"),
 					resource.TestCheckResourceAttrSet(node, "name"),
 					resource.TestCheckResourceAttrSet(node, "lifecycle_state"),
+					resource.TestCheckResourceAttrSet(node, "route_internet_ingress"),
 				),
 			},
 		},
