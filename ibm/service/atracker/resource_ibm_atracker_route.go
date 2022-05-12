@@ -43,7 +43,6 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				Description: "Routing rules that will be evaluated in their order of the array.",
-				ConfigMode:  schema.SchemaConfigModeAttr,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_ids": {
@@ -170,10 +169,10 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("name", route.Name); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 		}
-		rules := []map[string]interface{}{}
-		for _, rulesItem := range route.Rules {
+		rules := make([]map[string]interface{}, len(route.Rules), len(route.Rules))
+		for i, rulesItem := range route.Rules {
 			rulesItemMap, _, _ := resourceIBMAtrackerRouteRulePrototypeToMap(&rulesItem)
-			rules = append(rules, rulesItemMap)
+			rules[i] = rulesItemMap
 		}
 		if err = d.Set("rules", rules); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
@@ -326,28 +325,29 @@ func resourceIBMAtrackerRouteDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceIBMAtrackerRouteRulePrototypeToMap(model *atrackerv2.Rule) (map[string]interface{}, bool, error) {
+func resourceIBMAtrackerRouteRulePrototypeToMap(ruleModel *atrackerv2.Rule) (map[string]interface{}, bool, error) {
 	receives_global_events := false
-	modelMap := make(map[string]interface{})
-	modelMap["target_ids"] = make([]string, 0)
-	if model.TargetIds != nil {
-		for _, target_id := range model.TargetIds {
-			modelMap["target_ids"] = append(modelMap["target_ids"].([]string), target_id)
+	ruleMap := make(map[string]interface{})
+	if ruleModel != nil {
+		ruleMap["target_ids"] = make([]string, len(ruleModel.TargetIds))
+		if ruleModel.TargetIds != nil {
+			for i, target_id := range ruleModel.TargetIds {
+				ruleMap["target_ids"].([]string)[i] = target_id
+			}
 		}
-	}
 
-	if model.Locations != nil {
-		modelMap["locations"] = make([]string, 0)
-		if model.Locations != nil {
-			for _, location := range model.Locations {
-				modelMap["locations"] = append(modelMap["locations"].([]string), location)
+		ruleMap["locations"] = make([]string, len(ruleModel.Locations))
+		if ruleModel.Locations != nil {
+			for i, location := range ruleModel.Locations {
+				ruleMap["locations"].([]string)[i] = location
 				if strings.Contains(location, "*") || strings.Contains(location, "global") {
 					receives_global_events = true
 				}
 			}
 		}
+		return ruleMap, receives_global_events, nil
 	}
-	return modelMap, receives_global_events, nil
+	return ruleMap, false, nil
 }
 
 func resourceIBMAtrackerRouteRulePrototypeToMapV1(model *atrackerv1.Rule) (map[string]interface{}, error) {
