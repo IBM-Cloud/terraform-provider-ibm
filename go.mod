@@ -41,11 +41,10 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/go-getter v1.5.11 // indirect
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.4.0
 	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
-	github.com/hashicorp/terraform-json v0.13.0 // indirect
-	github.com/hashicorp/terraform-plugin-go v0.5.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/jinzhu/copier v0.3.2
