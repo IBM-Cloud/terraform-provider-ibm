@@ -11,7 +11,6 @@ import (
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_images"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -20,9 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-const cloudStorageDestination string = "cloud-storage"
-const imageCatalogDestination string = "image-catalog"
 
 func ResourceIBMPICapture() *schema.Resource {
 	return &schema.Resource{
@@ -38,36 +34,40 @@ func ResourceIBMPICapture() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			helpers.PICloudInstanceId: {
+			Arg_CloudInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: " Cloud Instance ID - This is the service_instance_id.",
 			},
 
-			helpers.PIInstanceName: {
+			Arg_InstanceName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Instance Name of the Power VM",
 			},
 
-			helpers.PIInstanceCaptureName: {
+			Arg_CaptureName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Name of the capture to create. Note : this must be unique",
 			},
 
-			helpers.PIInstanceCaptureDestination: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Destination for the deployable image",
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"image-catalog", "cloud-storage", "both"}),
+			Arg_CaptureDestination: {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Destination for the deployable image",
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{
+					CaptureDestinationCloud,
+					CaptureDestinationImage,
+					CaptureDestinationBoth,
+				}),
 			},
 
-			helpers.PIInstanceCaptureVolumeIds: {
+			Arg_CaptureVolumeIDs: {
 				Type:             schema.TypeSet,
 				Optional:         true,
 				Elem:             &schema.Schema{Type: schema.TypeString},
@@ -77,35 +77,35 @@ func ResourceIBMPICapture() *schema.Resource {
 				Description:      "List of Data volume IDs",
 			},
 
-			helpers.PIInstanceCaptureCloudStorageRegion: {
+			Arg_CaptureStorageRegion: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "List of Regions to use",
 			},
 
-			helpers.PIInstanceCaptureCloudStorageAccessKey: {
+			Arg_CaptureStorageAccessKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Sensitive:   true,
 				Description: "Name of Cloud Storage Access Key",
 			},
-			helpers.PIInstanceCaptureCloudStorageSecretKey: {
+			Arg_CaptureStorageSecretKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Sensitive:   true,
 				Description: "Name of the Cloud Storage Secret Key",
 			},
-			helpers.PIInstanceCaptureCloudStorageImagePath: {
+			Arg_CaptureStorageImagePath: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Cloud Storage Image Path (bucket-name [/folder/../..])",
 			},
 			// Computed Attribute
-			"image_id": {
+			Attr_CaptureImageID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Image ID of Capture Instance",
@@ -120,10 +120,10 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	name := d.Get(helpers.PIInstanceName).(string)
-	capturename := d.Get(helpers.PIInstanceCaptureName).(string)
-	capturedestination := d.Get(helpers.PIInstanceCaptureDestination).(string)
-	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	name := d.Get(Arg_InstanceName).(string)
+	capturename := d.Get(Arg_CaptureName).(string)
+	capturedestination := d.Get(Arg_CaptureDestination).(string)
+	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 
@@ -131,30 +131,30 @@ func resourceIBMPICaptureCreate(ctx context.Context, d *schema.ResourceData, met
 		CaptureDestination: &capturedestination,
 		CaptureName:        &capturename,
 	}
-	if capturedestination != imageCatalogDestination {
-		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageRegion); ok {
+	if capturedestination != CaptureDestinationImage {
+		if v, ok := d.GetOk(Arg_CaptureStorageRegion); ok {
 			captureBody.CloudStorageRegion = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s", helpers.PIInstanceCaptureCloudStorageRegion, capturedestination)
+			return diag.Errorf("%s is required when capture destination is %s", Arg_CaptureStorageRegion, capturedestination)
 		}
-		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageAccessKey); ok {
+		if v, ok := d.GetOk(Arg_CaptureStorageAccessKey); ok {
 			captureBody.CloudStorageAccessKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageAccessKey, capturedestination)
+			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureStorageAccessKey, capturedestination)
 		}
-		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageImagePath); ok {
+		if v, ok := d.GetOk(Arg_CaptureStorageImagePath); ok {
 			captureBody.CloudStorageImagePath = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageImagePath, capturedestination)
+			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureStorageImagePath, capturedestination)
 		}
-		if v, ok := d.GetOk(helpers.PIInstanceCaptureCloudStorageSecretKey); ok {
+		if v, ok := d.GetOk(Arg_CaptureStorageSecretKey); ok {
 			captureBody.CloudStorageSecretKey = v.(string)
 		} else {
-			return diag.Errorf("%s is required when capture destination is %s ", helpers.PIInstanceCaptureCloudStorageSecretKey, capturedestination)
+			return diag.Errorf("%s is required when capture destination is %s ", Arg_CaptureStorageSecretKey, capturedestination)
 		}
 	}
 
-	if v, ok := d.GetOk(helpers.PIInstanceCaptureVolumeIds); ok {
+	if v, ok := d.GetOk(Arg_CaptureVolumeIDs); ok {
 		volids := flex.ExpandStringList((v.(*schema.Set)).List())
 		if len(volids) > 0 {
 			captureBody.CaptureVolumeIDs = volids
@@ -188,7 +188,7 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 	cloudInstanceID := parts[0]
 	captureID := parts[1]
 	capturedestination := parts[2]
-	if capturedestination != cloudStorageDestination {
+	if capturedestination != CaptureDestinationCloud {
 		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		imagedata, err := imageClient.Get(captureID)
 		if err != nil {
@@ -203,9 +203,9 @@ func resourceIBMPICaptureRead(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 		imageid := *imagedata.ImageID
-		d.Set("image_id", imageid)
+		d.Set(Attr_CaptureImageID, imageid)
 	}
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
+	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	return nil
 }
 
@@ -221,7 +221,7 @@ func resourceIBMPICaptureDelete(ctx context.Context, d *schema.ResourceData, met
 	cloudInstanceID := parts[0]
 	captureID := parts[1]
 	capturedestination := parts[2]
-	if capturedestination != cloudStorageDestination {
+	if capturedestination != CaptureDestinationCloud {
 		imageClient := st.NewIBMPIImageClient(ctx, sess, cloudInstanceID)
 		err = imageClient.Delete(captureID)
 		if err != nil {

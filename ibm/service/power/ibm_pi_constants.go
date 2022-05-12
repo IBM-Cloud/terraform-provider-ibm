@@ -4,21 +4,32 @@ import "time"
 
 const (
 
-	// Keys
-	PIKeys    = "keys"
-	PIKeyName = "name"
-	PIKey     = "ssh_key"
-	PIKeyDate = "creation_date"
+	// -- Capture -------------------------------------------------------------
+	// Arguments
+	Arg_CaptureName             = "pi_capture_name"
+	Arg_CaptureDestination      = "pi_capture_destination"
+	Arg_CaptureVolumeIDs        = "pi_capture_volume_ids"
+	Arg_CaptureStorageRegion    = "pi_capture_cloud_storage_region"
+	Arg_CaptureStorageAccessKey = "pi_caputre_cloud_storage_access_key"
+	Arg_CaptureStorageSecretKey = "pi_caputre_cloud_storage_secret_key"
+	Arg_CaptureStorageImagePath = "pi_capture_storage_image_path"
 
-	// SAP Profile
-	PISAPProfiles         = "profiles"
-	PISAPProfileCertified = "certified"
-	PISAPProfileCores     = "cores"
-	PISAPProfileMemory    = "memory"
-	PISAPProfileID        = "profile_id"
-	PISAPProfileType      = "type"
+	// Attributes
+	Attr_CaptureImageID = "image_id"
 
-	// DHCP
+	// Misc
+	CaptureDestinationBoth  = "both"
+	CaptureDestinationCloud = "cloud-storage"
+	CaptureDestinationImage = "image-catalog"
+
+	// -- Cloud Connection ----------------------------------------------------
+
+	// -- Cloud Instance ------------------------------------------------------
+	Arg_CloudInstanceID = "pi_cloud_instance_id"
+
+	// -- Console Language ----------------------------------------------------
+
+	// -- DHCP ----------------------------------------------------------------
 	PIDhcpStatusBuilding = "Building"
 	PIDhcpStatusActive   = "ACTIVE"
 	PIDhcpDeleting       = "Deleting"
@@ -30,7 +41,11 @@ const (
 	PIDhcpInstanceIp     = "instance_ip"
 	PIDhcpInstanceMac    = "instance_mac"
 
-	// Instance
+	// -- Image ---------------------------------------------------------------
+
+	// -- Instance ------------------------------------------------------------
+	Arg_InstanceName = "pi_instance_name"
+
 	//Added timeout values for warning  and active status
 	warningTimeOut = 60 * time.Second
 	activeTimeOut  = 2 * time.Minute
@@ -41,18 +56,44 @@ const (
 	PISAPInstanceProfileID        = "pi_sap_profile_id"
 	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
 
-	// Placement Group
+	// -- Key -----------------------------------------------------------------
+	PIKeys    = "keys"
+	PIKeyName = "name"
+	PIKey     = "ssh_key"
+	PIKeyDate = "creation_date"
+
+	// -- Network -------------------------------------------------------------
+
+	// -- Operations ----------------------------------------------------------
+
+	// -- Placement Group -----------------------------------------------------
 	PIPlacementGroupID      = "placement_group_id"
 	PIPlacementGroupMembers = "members"
 
-	// Volume
+	// -- SAP -----------------------------------------------------------------
+	PISAPProfiles         = "profiles"
+	PISAPProfileCertified = "certified"
+	PISAPProfileCores     = "cores"
+	PISAPProfileMemory    = "memory"
+	PISAPProfileID        = "profile_id"
+	PISAPProfileType      = "type"
+
+	// -- Snapshot ------------------------------------------------------------
+
+	// -- Storage Pool --------------------------------------------------------
+
+	// -- Storage Type --------------------------------------------------------
+
+	// -- Tenant --------------------------------------------------------------
+
+	// -- Volume --------------------------------------------------------------
 	PIAffinityPolicy        = "pi_affinity_policy"
 	PIAffinityVolume        = "pi_affinity_volume"
 	PIAffinityInstance      = "pi_affinity_instance"
 	PIAntiAffinityInstances = "pi_anti_affinity_instances"
 	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
 
-	// VPN
+	// -- VPN -----------------------------------------------------------------
 	PIVPNConnectionId                         = "connection_id"
 	PIVPNConnectionStatus                     = "connection_status"
 	PIVPNConnectionDeadPeerDetection          = "dead_peer_detections"
@@ -61,4 +102,9 @@ const (
 	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
 	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
 	PIVPNConnectionVpnGatewayAddress          = "gateway_address"
+
+	// -- VPN Policy ----------------------------------------------------------
+
+	// Health
+	HealthOk = "OK"
 )
