@@ -28,69 +28,69 @@ func DataSourceIBMPICloudInstance() *schema.Resource {
 			},
 
 			// Start of Computed Attributes
-			"enabled": {
+			Attr_CloudInstanceEnabled: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"tenant_id": {
+			Attr_CloudInstanceTenant: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"region": {
+			Attr_CloudInstanceRegion: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"capabilities": {
+			Attr_CloudInstanceCapabilities: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"total_processors_consumed": {
+			Attr_CloudInstanceTotalProcessors: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"total_instances": {
+			Attr_CloudInstanceTotalInstances: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"total_memory_consumed": {
+			Attr_CloudInstanceTotalMemory: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"total_ssd_storage_consumed": {
+			Attr_CloudInstanceTotalSSD: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"total_standard_storage_consumed": {
+			Attr_CloudInstanceTotalStorage: {
 				Type:     schema.TypeFloat,
 				Computed: true,
 			},
-			"pvm_instances": {
+			Attr_CloudInstanceInstances: {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						Attr_InstanceID: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						Attr_InstanceName: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"href": {
+						Attr_InstanceHref: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						Attr_InstanceStatus: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"systype": {
+						Attr_InstanceSysType: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"creation_date": {
+						Attr_InstanceCreationDate: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -116,16 +116,16 @@ func dataSourceIBMPICloudInstanceRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(*cloud_instance_data.CloudInstanceID)
-	d.Set("tenant_id", (cloud_instance_data.TenantID))
-	d.Set("enabled", cloud_instance_data.Enabled)
-	d.Set("region", cloud_instance_data.Region)
-	d.Set("capabilities", cloud_instance_data.Capabilities)
-	d.Set("pvm_instances", flattenpvminstances(cloud_instance_data.PvmInstances))
-	d.Set("total_ssd_storage_consumed", cloud_instance_data.Usage.StorageSSD)
-	d.Set("total_instances", cloud_instance_data.Usage.Instances)
-	d.Set("total_standard_storage_consumed", cloud_instance_data.Usage.StorageStandard)
-	d.Set("total_processors_consumed", cloud_instance_data.Usage.Processors)
-	d.Set("total_memory_consumed", cloud_instance_data.Usage.Memory)
+	d.Set(Attr_CloudInstanceTenant, (cloud_instance_data.TenantID))
+	d.Set(Attr_CloudInstanceEnabled, cloud_instance_data.Enabled)
+	d.Set(Attr_CloudInstanceRegion, cloud_instance_data.Region)
+	d.Set(Attr_CloudInstanceCapabilities, cloud_instance_data.Capabilities)
+	d.Set(Attr_CloudInstanceInstances, flattenpvminstances(cloud_instance_data.PvmInstances))
+	d.Set(Attr_CloudInstanceTotalSSD, cloud_instance_data.Usage.StorageSSD)
+	d.Set(Attr_CloudInstanceTotalInstances, cloud_instance_data.Usage.Instances)
+	d.Set(Attr_CloudInstanceTotalStorage, cloud_instance_data.Usage.StorageStandard)
+	d.Set(Attr_CloudInstanceTotalProcessors, cloud_instance_data.Usage.Processors)
+	d.Set(Attr_CloudInstanceTotalMemory, cloud_instance_data.Usage.Memory)
 
 	return nil
 
@@ -136,12 +136,12 @@ func flattenpvminstances(list []*models.PVMInstanceReference) []map[string]inter
 	for _, lpars := range list {
 
 		l := map[string]interface{}{
-			"id":            *lpars.PvmInstanceID,
-			"name":          *lpars.ServerName,
-			"href":          *lpars.Href,
-			"status":        *lpars.Status,
-			"systype":       lpars.SysType,
-			"creation_date": lpars.CreationDate.String(),
+			Attr_InstanceID:           *lpars.PvmInstanceID,
+			Attr_InstanceName:         *lpars.ServerName,
+			Attr_InstanceHref:         *lpars.Href,
+			Attr_InstanceStatus:       *lpars.Status,
+			Attr_InstanceSysType:      lpars.SysType,
+			Attr_InstanceCreationDate: lpars.CreationDate.String(),
 		}
 		pvms = append(pvms, l)
 
