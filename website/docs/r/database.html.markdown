@@ -37,6 +37,7 @@ resource "ibm_database" "<your_database>" {
   users {
     name     = "user123"
     password = "password12"
+    type     = "database"
   }
   whitelist {
     address     = "172.168.1.1/32"
@@ -71,8 +72,9 @@ resource "ibm_database" "<your_database>" {
   node_memory_allocation_mb = 1024
   node_disk_allocation_mb   = 20480
   users {
-    name     = "user123"
-    password = "password12"
+    name      = "user123"
+    password  = "password12"
+    type      = "database"
   }
   whitelist {
     address     = "172.168.1.1/32"
@@ -216,8 +218,9 @@ resource "ibm_database" "cassandra" {
   members_memory_allocation_mb = 36864
   members_disk_allocation_mb   = 61440
   users {
-    name     = "user123"
-    password = "password12"
+    name      = "user123"
+    password  = "password12"
+    type      = "database"
   }
   whitelist {
     address     = "172.168.1.2/32"
@@ -252,8 +255,15 @@ resource "ibm_database" "mongodb" {
   members_memory_allocation_mb = 43008
   tags                         = ["one:two"]
   users {
-    name     = "user123"
-    password = "password12"
+    name      = "dbuser"
+    password  = "password12"
+    type      = "database"
+  }
+  users {
+    name     = "opsmanageruser"
+    password = "$ecurepa$$word12"
+    type     = "ops_manager"
+    role     = "group_read_only"
   }
   whitelist {
     address     = "172.168.1.2/32"
@@ -358,8 +368,9 @@ resource "ibm_database" "edb" {
   members_disk_allocation_mb   = 61440
   tags                         = ["one:two"]
   users {
-    name     = "user123"
-    password = "password12"
+    name      = "user123"
+    password  = "password12"
+    type      = "database"
   }
   whitelist {
     address     = "172.168.1.2/32"
@@ -510,8 +521,11 @@ Review the argument reference that you can specify for your resource.
 - `users` - (Optional, List of Objects) A list of users that you want to create on the database. Multiple blocks are allowed.
 
   Nested scheme for `users`:
-  - `name` - (Optional, String) The user ID to add to the database instance. The user ID must be in the range 5 - 32 characters.
-  - `password` - (Optional, String) The password for the user ID. The password must be in the range 10 - 32 characters.
+  - `name` - (Required, String) The user name to add to the database instance. The user name must be in the range 5 - 32 characters.
+  - `password` - (Required, String) The password for the user. The password must be in the range 10 - 32 characters. Users 
+  - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
+  - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
+
 - `whitelist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
   Nested scheme for `whitelist`:
