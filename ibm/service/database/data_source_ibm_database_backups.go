@@ -86,6 +86,7 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 	}
 
 	listDeploymentBackupsOptions := &clouddatabasesv5.ListDeploymentBackupsOptions{}
+	listDeploymentBackupsOptions.SetID(d.Get("deployment_id").(string))
 
 	backups, response, err := cloudDatabasesClient.ListDeploymentBackupsWithContext(context, listDeploymentBackupsOptions)
 	if err != nil {
