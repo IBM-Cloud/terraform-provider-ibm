@@ -46,13 +46,13 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_ids": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Required:    true,
 							Description: "The target ID List. All the events will be send to all targets listed in the rule. You can include targets from other regions.  ",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"locations": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Optional:    true,
 							Description: "Logs from these locations will be sent to the targets specified. Locations is a superset of regions including global and *.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
@@ -360,7 +360,7 @@ func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}, addGlobal
 	rule := atrackerv2.RulePrototype{}
 
 	targetIds := make([]string, 0)
-	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
+	for _, targetIdsItem := range ruleMap["target_ids"].(*schema.Set).List() {
 		if targetIdsItem != nil {
 			targetIds = append(targetIds, targetIdsItem.(string))
 		}
@@ -369,7 +369,7 @@ func resourceIBMAtrackerRouteMapToRule(ruleMap map[string]interface{}, addGlobal
 
 	locations := make([]string, 0)
 	globalDetected := false
-	for _, locationsItem := range ruleMap["locations"].([]interface{}) {
+	for _, locationsItem := range ruleMap["locations"].(*schema.Set).List() {
 		if strings.Contains(locationsItem.(string), "*") || strings.Contains(locationsItem.(string), "global") {
 			globalDetected = true
 		}
@@ -388,7 +388,7 @@ func resourceIBMAtrackerRouteMapToRuleV1(ruleMap map[string]interface{}) atracke
 	rule := atrackerv1.Rule{}
 
 	targetIds := []string{}
-	for _, targetIdsItem := range ruleMap["target_ids"].([]interface{}) {
+	for _, targetIdsItem := range ruleMap["target_ids"].(*schema.Set).List() {
 		targetIds = append(targetIds, targetIdsItem.(string))
 	}
 	rule.TargetIds = targetIds

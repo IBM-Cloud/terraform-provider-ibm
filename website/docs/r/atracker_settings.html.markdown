@@ -18,6 +18,10 @@ resource "ibm_atracker_settings" "atracker_settings" {
   metadata_region_primary = "us-south"
   permitted_target_regions = us-south
   private_api_endpoint_only = false
+  # Optional but recommended lifecycle flag to ensure target delete order is correct
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 ```
 

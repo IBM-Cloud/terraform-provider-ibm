@@ -22,6 +22,7 @@ resource "ibm_atracker_target" "atracker_target" {
   }
   name = "my-cos-target"
   target_type = "cloud_object_storage"
+  region = "us-south"
 }
 
 resource "ibm_atracker_target" "atracker_logdna_target" {
@@ -32,6 +33,7 @@ resource "ibm_atracker_target" "atracker_logdna_target" {
   }
   name = "my-logdna-target"
   target_type = "logdna"
+  region = "us-south"
 }
 ```
 
