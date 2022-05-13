@@ -276,6 +276,16 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
+			"kms_instance_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Instance ID for boot volume encryption",
+			},
+			"crk": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Root Key ID for boot volume encryption",
+			},
 
 			//Get Cluster info Request
 			"state": {
@@ -472,11 +482,20 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
+	kmsid := d.Get("kms_instance_id").(string)
+	crk := d.Get("crk").(string)
+
+	wve := v2.WorkerVolumeEncryption{
+		KmsInstanceID:     kmsid,
+		WorkerVolumeCRKID: crk,
+	}
+
 	workerpool := v2.WorkerPoolConfig{
-		VpcID:       vpcID,
-		Flavor:      flavor,
-		WorkerCount: workerCount,
-		Zones:       zonesList,
+		VpcID:                  vpcID,
+		Flavor:                 flavor,
+		WorkerCount:            workerCount,
+		Zones:                  zonesList,
+		WorkerVolumeEncryption: &wve,
 	}
 
 	if l, ok := d.GetOk("worker_labels"); ok {
