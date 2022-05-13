@@ -131,7 +131,7 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 	// 		backups.Backups = append(backups.Backups, modelMap)
 	// 	}
 	// }
-	if err = d.Set("backups", backups); err != nil {
+	if err = d.Set("backups", backups.Backups); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting backups %s", err))
 	}
 
