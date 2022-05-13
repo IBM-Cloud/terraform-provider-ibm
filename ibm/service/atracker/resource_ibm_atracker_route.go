@@ -144,6 +144,7 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(*route.ID)
+	d.Set("api_version", 2)
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
 }
@@ -157,6 +158,7 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 
 	getRouteOptions := &atrackerv2.GetRouteOptions{}
 	getRouteOptions.SetID(d.Id())
+	apiVersion := d.Get("api_version")
 
 	// Try v2 first, otherwise try v1
 	route, response, err := atrackerClient.GetRouteWithContext(context, getRouteOptions)
@@ -193,7 +195,7 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("Error setting api_version: %s", err))
 		}
 		d.Set("receive_global_events", false)
-	} else {
+	} else if apiVersion != 2 {
 		getRouteV1Options := &atrackerv1.GetRouteOptions{}
 		getRouteV1Options.SetID(d.Id())
 		routeV1, responseV1, err := atrackerClientv1.GetRouteWithContext(context, getRouteV1Options)
