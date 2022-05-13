@@ -121,17 +121,17 @@ func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.Resourc
 		d.SetId(DataSourceIBMDatabaseBackupsID(d))
 	}
 
-	// backups := []map[string]interface{}{}
-	// if backups.Backups != nil {
-	// 	for _, modelItem := range backups.Backups {
-	// 		modelMap, err := DataSourceIBMDatabaseBackupsBackupToMap(&modelItem)
-	// 		if err != nil {
-	// 			return diag.FromErr(err)
-	// 		}
-	// 		backups.Backups = append(backups.Backups, modelMap)
-	// 	}
-	// }
-	if err = d.Set("backups", backups.Backups); err != nil {
+	backups2 := []map[string]interface{}{}
+	if backups.Backups != nil {
+		for _, modelItem := range backups.Backups {
+			modelMap, err := DataSourceIBMDatabaseBackupsBackupToMap(&modelItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			backups2 = append(backups2, modelMap)
+		}
+	}
+	if err = d.Set("backups", backups2); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting backups %s", err))
 	}
 
