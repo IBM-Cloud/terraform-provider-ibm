@@ -12,6 +12,7 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	vars "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -32,9 +33,9 @@ func TestAccIBMPICloudConnectionbasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.cloud_connection"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection",
-						"pi_cloud_connection_speed", "100"),
+						vars.Arg_CloudConnectionSpeed, "100"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection",
 						"pi_cloud_connection_networks.#", "1"),
 				),
@@ -129,7 +130,7 @@ func TestAccIBMPICloudConnectionNetworks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.cc_network"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cc_network",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cc_network",
 						"pi_cloud_connection_networks.#", "1"),
 				),
@@ -139,7 +140,7 @@ func TestAccIBMPICloudConnectionNetworks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.cc_network"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cc_network",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cc_network",
 						"pi_cloud_connection_networks.#", "1"),
 				),
@@ -206,13 +207,13 @@ func TestAccIBMPICloudConnectionClassic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.classic"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.classic",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.classic",
 						"pi_cloud_connection_networks.#", "0"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.classic",
-						"pi_cloud_connection_classic_enabled", "true"),
+						vars.Arg_CloudConnectionClassic, "true"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.classic",
-						"pi_cloud_connection_vpc_enabled", "false"),
+						vars.Arg_CloudConnectionVPC, "false"),
 				),
 			},
 		},
@@ -241,13 +242,13 @@ func TestAccIBMPICloudConnectionVPC(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.vpc"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.vpc",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.vpc",
 						"pi_cloud_connection_networks.#", "0"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.vpc",
-						"pi_cloud_connection_classic_enabled", "false"),
+						vars.Arg_CloudConnectionClassic, "false"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.vpc",
-						"pi_cloud_connection_vpc_enabled", "true"),
+						vars.Arg_CloudConnectionVPC, "true"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.vpc",
 						"pi_cloud_connection_vpc_crns.#", "1"),
 				),

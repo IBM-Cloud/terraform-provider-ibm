@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	vars "github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,7 +25,7 @@ func TestAccIBMPICloudConnectionNetworkAttachBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.cloud_connection"),
 					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection",
-						"pi_cloud_connection_name", name),
+						vars.Arg_CloudConnectionName, name),
 					resource.TestCheckResourceAttr("data.ibm_pi_cloud_connection.cloud_connection",
 						"networks.#", "1"),
 				),
