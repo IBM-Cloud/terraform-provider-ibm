@@ -156,16 +156,17 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 				matchRoutes = append(matchRoutes, data)
 			}
 		}
-		for _, data := range routeListV1.Routes {
-			if *data.Name == name {
-				matchRoutesV1 = append(matchRoutesV1, data)
+		if routeListV1 != nil {
+			for _, data := range routeListV1.Routes {
+				if *data.Name == name {
+					matchRoutesV1 = append(matchRoutesV1, data)
+				}
 			}
 		}
 	} else {
 		matchRoutes = routeList.Routes
 	}
 	routeList.Routes = matchRoutes
-	routeListV1.Routes = matchRoutesV1
 	if suppliedFilter {
 		if len(routeList.Routes) == 0 && len(routeListV1.Routes) == 0 {
 			return diag.FromErr(fmt.Errorf("no Routes found with name %s", name))
@@ -185,7 +186,8 @@ func dataSourceIBMAtrackerRoutesRead(context context.Context, d *schema.Resource
 			routes = append(routes, modelMap)
 		}
 	}
-	if routeListV1.Routes != nil {
+	if routeListV1 != nil && routeListV1.Routes != nil {
+		routeListV1.Routes = matchRoutesV1
 		for _, modelItem := range routeListV1.Routes {
 			modelMap := dataSourceRouteListRoutesToMapV1(modelItem)
 			if err != nil {

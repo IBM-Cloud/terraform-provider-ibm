@@ -316,6 +316,8 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 	if model.APIVersion != nil {
 		modelMap["api_version"] = *model.APIVersion
 	}
+	// TODO: Deprecated, to remove
+	modelMap["encryption_key"] = REDACTED_TEXT
 	return modelMap, nil
 }
 
