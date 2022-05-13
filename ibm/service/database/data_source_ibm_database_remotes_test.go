@@ -5,19 +5,14 @@ package database_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccIBMDatabaseRemotesDataSourceBasic(t *testing.T) {
-	var leader string
 
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
 
@@ -25,15 +20,19 @@ func TestAccIBMDatabaseRemotesDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMDatabaseRemotesDataSourceConfigBasic(testName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExampleLeaderExists(testName, &leader),
 					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes_replica", "deployment_id"),
+					resource.TestCheckResourceAttr("data.ibm_database_remotes.database_remotes", "leader", ""),
+					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes_replica", "leader"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_remotes.database_remotes", "replicas.#"),
 				),
 			},
 		},
-	})
+	},
+	)
 }
 
 func testAccCheckIBMDatabaseDataSourceConfig4(name string) string {
@@ -53,57 +52,40 @@ func testAccCheckIBMDatabaseDataSourceConfig4(name string) string {
 		location          = "%[2]s"
 		tags              = ["one:two"]
 	}
+
+	resource "ibm_database" "db_replica" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+    	remote_leader_id  = ibm_database.db.id
+		name              = "%[1]s-replica"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[2]s"
+		tags              = ["one:two"]
+
+    depends_on = [
+      ibm_database.db,
+    ]
+	}
+
 				`, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseRemotesDataSourceConfigBasic(name string) string {
 	return testAccCheckIBMDatabaseDataSourceConfig4(name) + `
+		data "ibm_database_remotes" "database_remotes_replica" {
+			deployment_id = ibm_database.db_replica.id
+
+		depends_on = [
+			ibm_database.db_replica,
+		]
+		}
+
 		data "ibm_database_remotes" "database_remotes" {
 			deployment_id = ibm_database.db.id
+			
+		depends_on = [
+			ibm_database.db_replica,
+		]
 		}
 	`
-}
-
-func testAccCheckExampleLeaderExists(resourceName string, widget *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		// retrieve the resource by name from state
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("Widget ID is not set")
-		}
-
-		// retrieve the client from the test provider
-		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ResourceControllerV2API()
-		if err != nil {
-			return err
-		}
-
-		instanceID := rs.Primary.ID
-
-		rsInst := rc.GetResourceInstanceOptions{
-			ID: &instanceID,
-		}
-
-		instance, response, err := rsContClient.GetResourceInstance(&rsInst)
-		if err != nil {
-			if strings.Contains(err.Error(), "Object not found") ||
-				strings.Contains(err.Error(), "status code: 404") {
-				*widget = ""
-				return nil
-			}
-			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s %s", err, response)
-		}
-
-		if strings.Contains(*instance.State, "removed") {
-			*widget = ""
-			return nil
-		}
-
-		*widget = instanceID
-		return nil
-	}
 }
