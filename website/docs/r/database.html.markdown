@@ -122,11 +122,11 @@ resource "ibm_database" "<your_database>" {
     group_id = "member"
 
     memory {
-      allocation_mb = 1024
+      allocation_mb = 10240
     }
 
     disk {
-      allocation_mb = 5120
+      allocation_mb = 256000
     }
 
     cpu {
@@ -231,11 +231,11 @@ resource "ibm_database" "cassandra" {
     group_id = "member"
     
     memory { 
-      allocation_mb = 14336
+      allocation_mb = 24576
     }
     
     disk { 
-      allocation_mb = 20480
+      allocation_mb = 368640
     }
   }
   users {
@@ -277,11 +277,11 @@ resource "ibm_database" "mongodb" {
     group_id = "member"
     
     memory { 
-      allocation_mb = 14336
+      allocation_mb = 24576
     }
     
     disk { 
-      allocation_mb = 20480
+      allocation_mb = 122880
     }
   }
 
@@ -331,11 +331,11 @@ resource "ibm_database" "mongodb_enterprise" {
     group_id = "member"
     
     memory { 
-      allocation_mb = 14336
+      allocation_mb = 24576
     }
     
     disk { 
-      allocation_mb = 20480
+      allocation_mb = 122880
     }
   }
   
@@ -400,11 +400,11 @@ resource "ibm_database" "edb" {
     group_id = "member"
     
     memory { 
-      allocation_mb = 14336
+      allocation_mb = 12288
     }
     
     disk { 
-      allocation_mb = 20480
+      allocation_mb = 131072
     }
   }
   tags                         = ["one:two"]
@@ -437,11 +437,11 @@ resource "ibm_database" "db" {
     group_id = "member"
     
     memory { 
-      allocation_mb = 14336
+      allocation_mb = 12288
     }
     
     disk { 
-      allocation_mb = 20480
+      allocation_mb = 131072
     }
 
     cpu {
