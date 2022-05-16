@@ -199,7 +199,11 @@ func dataSourceIBMIBMIsVPCRoutingTableRouteRead(context context.Context, d *sche
 		for _, r := range allrecs {
 			if *r.Name == routeName {
 				route = &r
+				break
 			}
+		}
+		if route == nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Route not found with name: %s", routeName))
 		}
 	}
 
