@@ -171,7 +171,9 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	options.SetEnabledValue(d.Get("enabled_value").(string))
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetDisabledValue(d.Get("disabled_value").(string))
-	options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
+	if _, ok := d.GetOk("rollout_percentage"); ok {
+		options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
+	}
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}

@@ -80,7 +80,7 @@ func DataSourceIBMAppConfigFeature() *schema.Resource {
 			},
 			"rollout_percentage": {
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Computed:    true,
 				Description: "Rollout percentage of the feature.",
 			},
 			"segment_rules": {
@@ -118,7 +118,7 @@ func DataSourceIBMAppConfigFeature() *schema.Resource {
 						},
 						"rollout_percentage": {
 							Type:        schema.TypeInt,
-							Optional:    true,
+							Computed:    true,
 							Description: "Rollout percentage for the segment rule.",
 						},
 					},
