@@ -53,6 +53,9 @@ func testAccCheckIbmIsPlacementGroupsDataSourceConfig(placementGroupStrategy str
 		}
 
 		data "ibm_is_placement_groups" "is_placement_groups" {
+			depends_on = [
+				ibm_is_placement_group.is_placement_group
+			]
 		}
 	`, placementGroupStrategy, placementGroupName)
 }
