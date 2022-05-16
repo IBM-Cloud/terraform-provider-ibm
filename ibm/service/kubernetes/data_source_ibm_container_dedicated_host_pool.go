@@ -48,9 +48,21 @@ func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"capacity": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeSet,
 							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"memory_bytes": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									"vcpu": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"host_count": {
 							Type:     schema.TypeInt,

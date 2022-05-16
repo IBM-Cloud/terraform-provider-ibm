@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package kubernetes
@@ -70,9 +70,21 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"capacity": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeSet,
 							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"memory_bytes": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+
+									"vcpu": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"host_count": {
 							Type:     schema.TypeInt,
