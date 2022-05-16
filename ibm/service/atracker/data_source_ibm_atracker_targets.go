@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker
@@ -9,16 +9,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func DataSourceIBMAtrackerTargets() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMAtrackerTargetsRead,
+		ReadContext: DataSourceIBMAtrackerTargetsRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -52,8 +51,20 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 							Computed:    true,
 							Description: "The type of the target.",
 						},
+						"region": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Included this optional field if you used it to create a target in a different region other than the one you are connected.",
+						},
 						"encrypt_key": {
 							Type:        schema.TypeString,
+							Computed:    true,
+							Deprecated:  "use encryption_key instead",
+							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
+						},
+						"encryption_key": {
+							Type:        schema.TypeString,
+							Sensitive:   true,
 							Computed:    true,
 							Description: "The encryption key that is used to encrypt events before Activity Tracker services buffer them on storage. This credential is masked in the response.",
 						},
@@ -82,7 +93,32 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
-										Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response.",
+										Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response. This is required if service_to_service is not enabled.",
+									},
+									"service_to_service_enabled": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "ATracker service is enabled to support service to service authentication. If service to service is enabled then set this flag is true and do not supply apikey.",
+									},
+								},
+							},
+						},
+						"logdna_endpoint": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Property values for a LogDNA Endpoint.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"target_crn": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of the LogDNA instance.",
+									},
+									"ingestion_key": {
+										Type:        schema.TypeString,
+										Sensitive:   true,
+										Computed:    true,
+										Description: "The LogDNA ingestion key is used for routing logs to a specific LogDNA instance.",
 									},
 								},
 							},
@@ -90,7 +126,32 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 						"cos_write_status": {
 							Type:        schema.TypeList,
 							Computed:    true,
+							Deprecated:  "use write_status instead",
 							Description: "The status of the write attempt with the provided cos_endpoint parameters.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The status such as failed or success.",
+									},
+									"last_failure": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The timestamp of the failure.",
+									},
+									"reason_for_last_failure": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Detailed description of the cause of the failure.",
+									},
+								},
+							},
+						},
+						"write_status": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The status of the write attempt to the target with the provided endpoint parameters.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"status": {
@@ -114,12 +175,29 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 						"created": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Deprecated:  "use created_at instead",
 							Description: "The timestamp of the target creation time.",
 						},
 						"updated": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Deprecated:  "use updated_at instead",
 							Description: "The timestamp of the target last updated time.",
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The timestamp of the target creation time.",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The timestamp of the target last updated time.",
+						},
+						"api_version": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The API version of the target.",
 						},
 					},
 				},
@@ -128,13 +206,13 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 	}
 }
 
-func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	atrackerClient, err := meta.(conns.ClientSession).AtrackerV1()
+func DataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	_, atrackerClient, err := getAtrackerClients(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	listTargetsOptions := &atrackerv1.ListTargetsOptions{}
+	listTargetsOptions := &atrackerv2.ListTargetsOptions{}
 
 	targetList, response, err := atrackerClient.ListTargetsWithContext(context, listTargetsOptions)
 	if err != nil {
@@ -143,7 +221,7 @@ func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.Resourc
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	var matchTargets []atrackerv1.Target
+	var matchTargets []atrackerv2.Target
 	var name string
 	var suppliedFilter bool
 
@@ -166,103 +244,116 @@ func dataSourceIBMAtrackerTargetsRead(context context.Context, d *schema.Resourc
 		}
 		d.SetId(name)
 	} else {
-		d.SetId(dataSourceIBMAtrackerTargetsID(d))
+		d.SetId(DataSourceIBMAtrackerTargetsID(d))
 	}
 
+	targets := []map[string]interface{}{}
 	if targetList.Targets != nil {
-		err = d.Set("targets", dataSourceTargetListFlattenTargets(targetList.Targets))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting targets %s", err))
+		for _, modelItem := range targetList.Targets {
+			modelMap, err := DataSourceIBMAtrackerTargetsTargetToMap(&modelItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			targets = append(targets, modelMap)
 		}
+	}
+	if err = d.Set("targets", targets); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting targets %s", err))
 	}
 
 	return nil
 }
 
-// dataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
-func dataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
+// DataSourceIBMAtrackerTargetsID returns a reasonable ID for the list.
+func DataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceTargetListFlattenTargets(result []atrackerv1.Target) (targets []map[string]interface{}) {
-	for _, targetsItem := range result {
-		targets = append(targets, dataSourceTargetListTargetsToMap(targetsItem))
+func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
-
-	return targets
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
+	if model.TargetType != nil {
+		modelMap["target_type"] = *model.TargetType
+	}
+	if model.Region != nil {
+		modelMap["region"] = *model.Region
+	}
+	if model.CosEndpoint != nil {
+		cosEndpointMap, err := DataSourceIBMAtrackerTargetsCosEndpointToMap(model.CosEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["cos_endpoint"] = []map[string]interface{}{cosEndpointMap}
+	}
+	if model.LogdnaEndpoint != nil {
+		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
+	}
+	if model.WriteStatus != nil {
+		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
+	}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.APIVersion != nil {
+		modelMap["api_version"] = *model.APIVersion
+	}
+	// TODO: Deprecated, to remove
+	modelMap["encryption_key"] = REDACTED_TEXT
+	return modelMap, nil
 }
 
-func dataSourceTargetListTargetsToMap(targetsItem atrackerv1.Target) (targetsMap map[string]interface{}) {
-	targetsMap = map[string]interface{}{}
-
-	if targetsItem.ID != nil {
-		targetsMap["id"] = targetsItem.ID
+func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Endpoint != nil {
+		modelMap["endpoint"] = *model.Endpoint
 	}
-	if targetsItem.Name != nil {
-		targetsMap["name"] = targetsItem.Name
+	if model.TargetCRN != nil {
+		modelMap["target_crn"] = *model.TargetCRN
 	}
-	if targetsItem.CRN != nil {
-		targetsMap["crn"] = targetsItem.CRN
+	if model.Bucket != nil {
+		modelMap["bucket"] = *model.Bucket
 	}
-	if targetsItem.TargetType != nil {
-		targetsMap["target_type"] = targetsItem.TargetType
-	}
-	if targetsItem.EncryptKey != nil {
-		targetsMap["encrypt_key"] = targetsItem.EncryptKey
-	}
-	if targetsItem.CosEndpoint != nil {
-		cosEndpointList := []map[string]interface{}{}
-		cosEndpointMap := dataSourceTargetListTargetsCosEndpointToMap(*targetsItem.CosEndpoint)
-		cosEndpointList = append(cosEndpointList, cosEndpointMap)
-		targetsMap["cos_endpoint"] = cosEndpointList
-	}
-	if targetsItem.CosWriteStatus != nil {
-		cosWriteStatusList := []map[string]interface{}{}
-		cosWriteStatusMap := dataSourceTargetListTargetsCosWriteStatusToMap(*targetsItem.CosWriteStatus)
-		cosWriteStatusList = append(cosWriteStatusList, cosWriteStatusMap)
-		targetsMap["cos_write_status"] = cosWriteStatusList
-	}
-	if targetsItem.Created != nil {
-		targetsMap["created"] = targetsItem.Created.String()
-	}
-	if targetsItem.Updated != nil {
-		targetsMap["updated"] = targetsItem.Updated.String()
-	}
-
-	return targetsMap
+	modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
+	return modelMap, nil
 }
 
-func dataSourceTargetListTargetsCosEndpointToMap(cosEndpointItem atrackerv1.CosEndpoint) (cosEndpointMap map[string]interface{}) {
-	cosEndpointMap = map[string]interface{}{}
-
-	if cosEndpointItem.Endpoint != nil {
-		cosEndpointMap["endpoint"] = cosEndpointItem.Endpoint
+func DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model *atrackerv2.LogdnaEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCRN != nil {
+		modelMap["target_crn"] = *model.TargetCRN
 	}
-	if cosEndpointItem.TargetCRN != nil {
-		cosEndpointMap["target_crn"] = cosEndpointItem.TargetCRN
-	}
-	if cosEndpointItem.Bucket != nil {
-		cosEndpointMap["bucket"] = cosEndpointItem.Bucket
-	}
-	if cosEndpointItem.APIKey != nil {
-		cosEndpointMap["api_key"] = cosEndpointItem.APIKey
-	}
-
-	return cosEndpointMap
+	return modelMap, nil
 }
 
-func dataSourceTargetListTargetsCosWriteStatusToMap(cosWriteStatusItem atrackerv1.CosWriteStatus) (cosWriteStatusMap map[string]interface{}) {
-	cosWriteStatusMap = map[string]interface{}{}
-
-	if cosWriteStatusItem.Status != nil {
-		cosWriteStatusMap["status"] = cosWriteStatusItem.Status
+func DataSourceIBMAtrackerTargetsWriteStatusToMap(model *atrackerv2.WriteStatus) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
 	}
-	if cosWriteStatusItem.LastFailure != nil {
-		cosWriteStatusMap["last_failure"] = cosWriteStatusItem.LastFailure.String()
+	if model.LastFailure != nil {
+		modelMap["last_failure"] = model.LastFailure.String()
 	}
-	if cosWriteStatusItem.ReasonForLastFailure != nil {
-		cosWriteStatusMap["reason_for_last_failure"] = cosWriteStatusItem.ReasonForLastFailure
+	if model.ReasonForLastFailure != nil {
+		modelMap["reason_for_last_failure"] = *model.ReasonForLastFailure
 	}
-
-	return cosWriteStatusMap
+	return modelMap, nil
 }

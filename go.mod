@@ -14,13 +14,13 @@ require (
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.0
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.9.2
+	github.com/IBM/go-sdk-core/v5 v5.9.5
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.28.0
-	github.com/IBM/platform-services-go-sdk v0.22.6
+	github.com/IBM/platform-services-go-sdk v0.25.1
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.4
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
@@ -52,7 +52,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/api v0.34.0 // indirect
 	gotest.tools v2.2.0+incompatible
