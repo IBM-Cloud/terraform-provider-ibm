@@ -50,7 +50,7 @@ func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, e
 			name     = "%s"
 			location = "us-south"
 			service  = "apprapp"
-			plan     = "standard"
+			plan     = "lite"
 		}
 		
 		resource "ibm_app_config_feature" "app_config_feature_resource2" {
@@ -62,7 +62,8 @@ func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, e
 			enabled_value  	= true
 			disabled_value 	= false
 			description    	= "%s"
-			tags    			 	= "%s"
+			tags    		= "%s"
+			rollout_percentage  = "80"
 		}
 		
 		data "ibm_app_config_features" "app_config_features_data2" {

@@ -42,6 +42,7 @@ func TestAccIbmAppConfigFeatureDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_feature.ibm_app_config_feature_data1", "created_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_feature.ibm_app_config_feature_data1", "updated_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_feature.ibm_app_config_feature_data1", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_app_config_feature.ibm_app_config_feature_data1", "rollout_percentage"),
 				),
 			},
 		},
@@ -54,7 +55,7 @@ func testAccCheckIbmAppConfigFeatureDataSourceConfigBasic(instanceName, name, en
 			name     = "%s"
 			location = "us-south"
 			service  = "apprapp"
-			plan     = "standard"
+			plan     = "lite"
 		}
 		
 		resource "ibm_app_config_feature" "app_config_feature_resource1" {
@@ -67,6 +68,7 @@ func testAccCheckIbmAppConfigFeatureDataSourceConfigBasic(instanceName, name, en
 			disabled_value 	= "false"
 			description    	= "%s"
 			tags    			 	= "%s"
+			rollout_percentage  =  "80"
 		}
 		
 		data "ibm_app_config_feature" "ibm_app_config_feature_data1" {

@@ -54,6 +54,7 @@ In addition to all argument references list, you can access the following attrib
   - `enabled_value` - (String) The value of the feature when it is enabled.
   - `disabled_value` - (String) The value of the feature when it is disabled.
   - `tags` - (String) The tags associated with the feature.
+  - `rollout_percentage` - (String) Rollout percentage of the feature.
   - `enabled` - (String) The state of the feature flag.
   - `segment_exists` - (String) Denotes if the targeting rules are specified for the feature flag.
   - `segment_rules` - (List) The segment rules array. 
@@ -65,6 +66,7 @@ In addition to all argument references list, you can access the following attrib
       - `segments` - (String) The Segments array.
     - `value` - (String) Value of the segment.
     - `order` - (String) Order of the segment, used during evaluation.
+    - `rollout_percentage` - (String) Rollout percentage for the segment rule.
   - `collections` - (List) The collection array. 
   
     Nested scheme for `collections`:

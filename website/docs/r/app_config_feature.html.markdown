@@ -22,6 +22,7 @@ resource "ibm_app_config_feature" "app_config_feature" {
   enabled_value = "enabled_value"
   environment_id = "environment_id"
   disabled_value = "disabled_value"
+  rollout_percentage = "rollout_percentage"
 }
 ```
 
@@ -38,11 +39,13 @@ Review the argument reference that you can specify for your resource.
 - `disabled_value` - (Required, String) The value of the feature when it is disabled. The value can be **BOOLEAN**, **STRING**, or **NUMERIC** value as per the `type` attribute.
 - `description` - (Optional, String) The feature description.
 - `tags` - (Optional, String) Tags associated with the feature.
+- `rollout_percentage` - (String) Rollout percentage of the feature.
 - `segment_rules` - (Optional, List) Specify the targeting rules that is used to set different feature flag values for different segments.
   - `rules` - (Required, []interface{}) The rules array.
     - `segments` - (Required, Array of Strings) The list of segment IDs that are used for targeting using the rule.
   - `value` - (Required, String) The value to be used for evaluation for this rule. The value can be Boolean, String or a Numeric value as per the `type` attribute.
   - `order` - (Required, Integer) The order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
+  - `rollout_percentage` - (String) Rollout percentage for the segment rule.
 - `collections` - (Optional, List) The list of collection ID representing the collections that are associated with the specified feature flag.
   - `collection_id` - (Required, String) Collection ID.
 

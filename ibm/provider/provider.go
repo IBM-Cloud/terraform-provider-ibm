@@ -420,6 +420,7 @@ func Provider() *schema.Provider {
 			"ibm_is_region":                      vpc.DataSourceIBMISRegion(),
 			"ibm_is_regions":                     vpc.DataSourceIBMISRegions(),
 			"ibm_is_ssh_key":                     vpc.DataSourceIBMISSSHKey(),
+			"ibm_is_ssh_keys":                    vpc.DataSourceIBMIsSshKeys(),
 			"ibm_is_subnet":                      vpc.DataSourceIBMISSubnet(),
 			"ibm_is_subnets":                     vpc.DataSourceIBMISSubnets(),
 			"ibm_is_subnet_reserved_ip":          vpc.DataSourceIBMISReservedIP(),
@@ -433,6 +434,7 @@ func Provider() *schema.Provider {
 			"ibm_is_snapshot":                    vpc.DataSourceSnapshot(),
 			"ibm_is_snapshots":                   vpc.DataSourceSnapshots(),
 			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
+			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
 			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
 			"ibm_is_volume_profiles":             vpc.DataSourceIBMISVolumeProfiles(),
 			"ibm_is_vpc":                         vpc.DataSourceIBMISVPC(),
@@ -951,8 +953,9 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
 			// // Atracker
-			"ibm_atracker_target": atracker.ResourceIBMAtrackerTarget(),
-			"ibm_atracker_route":  atracker.ResourceIBMAtrackerRoute(),
+			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
+			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
+			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
 			// //Security and Compliance Center
 			"ibm_scc_si_note":             scc.ResourceIBMSccSiNote(),
@@ -1112,6 +1115,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
 				"ibm_atracker_target":                     atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      atracker.ResourceIBMAtrackerRouteValidator(),
+				"ibm_atracker_settings":                   atracker.ResourceIBMAtrackerSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),

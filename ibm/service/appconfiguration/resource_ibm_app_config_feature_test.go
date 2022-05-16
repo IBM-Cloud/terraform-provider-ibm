@@ -46,6 +46,7 @@ func TestAccIbmIbmAppConfigFeatureBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "description"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "enabled_value"),
 					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "disabled_value"),
+					resource.TestCheckResourceAttrSet("ibm_app_config_feature.ibm_app_config_feature_resource1", "rollout_percentage"),
 				),
 			},
 			{
@@ -66,18 +67,19 @@ func testAccCheckIbmAppConfigFeatureConfigBasic(name, envName, featureID, featur
 			name     = "%s"
 			location = "us-south"
 			service  = "apprapp"
-			plan     = "standard"
+			plan     = "lite"
 		}
 		resource "ibm_app_config_feature" "ibm_app_config_feature_resource1" {
-			guid           	= ibm_resource_instance.app_config_terraform_test456.guid
-			name           	= "%s"
-			environment_id  = "dev"
-			feature_id     	= "%s"
-			type           	= "%s"
-			enabled_value  	= true
-			disabled_value 	= false
-			description    	= "%s"
-			tags    			 	= "%s"
+			guid           	    = ibm_resource_instance.app_config_terraform_test456.guid
+			name            	= "%s"
+			environment_id      = "dev"
+			feature_id     	    = "%s"
+			type            	= "%s"
+			enabled_value  	    = true
+			disabled_value 	    = false
+			description    	    = "%s"
+			tags    		    = "%s"
+			rollout_percentage  = "80"
 		}`, name, envName, featureID, featureType, description, tags)
 }
 
@@ -113,6 +115,7 @@ func testAccCheckIbmAppConfigFeatureExists(n string, obj appconfigurationv1.Feat
 }
 
 func testAccCheckIbmAppConfigFeatureDestroy(s *terraform.State) error {
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_app_config_feature_resource1" {
 			continue
