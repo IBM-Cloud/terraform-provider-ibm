@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	REDACTED_TEXT = "REDACTED"
+	REDACTED_TEXT       = "REDACTED"
+	BLOCKED_V1_RESOURCE = "v2_resource_exists_v1_api_is_not_accessible"
 )
 
 func getAtrackerClients(meta interface{}) (
