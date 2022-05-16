@@ -373,6 +373,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Set true to enable image security enforcement policies",
 			},
 
+			"host_pool_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the cluster's associated host pool",
+			},
+
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -450,6 +457,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	flavor := d.Get("flavor").(string)
 	workerCount := d.Get("worker_count").(int)
 	imageSecurityEnabled := d.Get("image_security_enforcement").(bool)
+	hostPoolID := d.Get("host_pool_id").(string)
 
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
@@ -477,6 +485,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Flavor:      flavor,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
+		HostPoolID:  hostPoolID,
 	}
 
 	if l, ok := d.GetOk("worker_labels"); ok {
