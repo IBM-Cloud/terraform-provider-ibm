@@ -953,8 +953,9 @@ func Provider() *schema.Provider {
 			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),
 
 			// // Atracker
-			"ibm_atracker_target": atracker.ResourceIBMAtrackerTarget(),
-			"ibm_atracker_route":  atracker.ResourceIBMAtrackerRoute(),
+			"ibm_atracker_target":   atracker.ResourceIBMAtrackerTarget(),
+			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
+			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
 			// //Security and Compliance Center
 			"ibm_scc_si_note":             scc.ResourceIBMSccSiNote(),
@@ -1114,6 +1115,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_pi_volume":                           power.ResourceIBMPIVolumeValidator(),
 				"ibm_atracker_target":                     atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                      atracker.ResourceIBMAtrackerRouteValidator(),
+				"ibm_atracker_settings":                   atracker.ResourceIBMAtrackerSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
 				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),

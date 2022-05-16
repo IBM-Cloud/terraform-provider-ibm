@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -7,22 +7,19 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 )
 
 func TestAccIBMAtrackerRouteBasic(t *testing.T) {
-	var conf atrackerv1.Route
+	var conf atrackerv2.Route
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	receiveGlobalEvents := "false"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	receiveGlobalEventsUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,18 +27,16 @@ func TestAccIBMAtrackerRouteBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAtrackerRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAtrackerRouteConfigBasic(name, receiveGlobalEvents),
+				Config: testAccCheckIBMAtrackerRouteConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route", conf),
 					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", name),
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "receive_global_events", receiveGlobalEvents),
 				),
 			},
 			{
-				Config: testAccCheckIBMAtrackerRouteConfigBasic(nameUpdate, receiveGlobalEventsUpdate),
+				Config: testAccCheckIBMAtrackerRouteConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route", "receive_global_events", receiveGlobalEventsUpdate),
 				),
 			},
 			{
@@ -53,10 +48,8 @@ func TestAccIBMAtrackerRouteBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMAtrackerRouteConfigBasic(name string, receiveGlobalEvents string) string {
+func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 	return fmt.Sprintf(`
-
-
 		resource "ibm_atracker_target" "atracker_target" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
@@ -70,16 +63,15 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string, receiveGlobalEvents st
 
 		resource "ibm_atracker_route" "atracker_route" {
 			name = "%s"
-			receive_global_events = %s
 			rules {
 				target_ids = [ ibm_atracker_target.atracker_target.id ]
+				locations = [ "us-south" ]
 			}
 		}
-
-	`, name, receiveGlobalEvents)
+	`, name)
 }
 
-func testAccCheckIBMAtrackerRouteExists(n string, obj atrackerv1.Route) resource.TestCheckFunc {
+func testAccCheckIBMAtrackerRouteExists(n string, obj atrackerv2.Route) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -87,12 +79,12 @@ func testAccCheckIBMAtrackerRouteExists(n string, obj atrackerv1.Route) resource
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		atrackerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AtrackerV1()
+		atrackerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AtrackerV2()
 		if err != nil {
 			return err
 		}
 
-		getRouteOptions := &atrackerv1.GetRouteOptions{}
+		getRouteOptions := &atrackerv2.GetRouteOptions{}
 
 		getRouteOptions.SetID(rs.Primary.ID)
 
@@ -107,7 +99,7 @@ func testAccCheckIBMAtrackerRouteExists(n string, obj atrackerv1.Route) resource
 }
 
 func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
-	atrackerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AtrackerV1()
+	atrackerClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).AtrackerV2()
 	if err != nil {
 		return err
 	}
@@ -116,7 +108,7 @@ func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getRouteOptions := &atrackerv1.GetRouteOptions{}
+		getRouteOptions := &atrackerv2.GetRouteOptions{}
 
 		getRouteOptions.SetID(rs.Primary.ID)
 
