@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_backups"
 description: |-
   Get information about Backups
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_backups
@@ -14,8 +14,7 @@ Provides a read-only data source for Backups. You can then reference the fields 
 
 ```hcl
 data "ibm_database_backups" "database_backups" {
-	deployment_id = "595eada310b7ac00116dd48b"
-	id = "id"
+	deployment_id = "<crn>"
 }
 ```
 
@@ -23,20 +22,18 @@ data "ibm_database_backups" "database_backups" {
 
 Review the argument reference that you can specify for your data source.
 
-* `deployment_id` - (Optional, String) ID of the deployment this backup relates to.
-* `id` - (Required, Forces new resource, String) Deployment ID.
+* `deployment_id` - (Required, String) ID of the deployment this backup relates to.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the Backups.
 * `backups` - (Optional, List) An array of backups.
 Nested scheme for **backups**:
 	* `created_at` - (Optional, String) Date and time when this backup was created.
 	* `deployment_id` - (Optional, String) ID of the deployment this backup relates to.
 	* `download_link` - (Optional, String) URI which is currently available for file downloading.
-	* `id` - (Optional, String) ID of this backup.
+	* `backup_id` - (Optional, String) ID of this backup.
 	* `is_downloadable` - (Optional, Boolean) Is this backup available to download?.
 	* `is_restorable` - (Optional, Boolean) Can this backup be used to restore an instance?.
 	* `status` - (Optional, String) The status of this backup.

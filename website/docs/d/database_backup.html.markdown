@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_backup"
 description: |-
   Get information about Backup
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_backup
@@ -28,14 +28,12 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the Backup.
+* `backup_id` - The unique identifier of the Backup.
 * `created_at` - (Optional, String) Date and time when this backup was created.
 
 * `deployment_id` - (Optional, String) ID of the deployment this backup relates to.
 
 * `download_link` - (Optional, String) URI which is currently available for file downloading.
-
-* `id` - (Optional, String) ID of this backup.
 
 * `is_downloadable` - (Optional, Boolean) Is this backup available to download?.
 
