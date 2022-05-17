@@ -83,7 +83,7 @@ func DataSourceIBMDatabaseBackupRead(context context.Context, d *schema.Resource
 
 	d.SetId(*backup.Backup.ID)
 
-	if err = d.Set("id", backup.Backup.ID); err != nil {
+	if err = d.Set("backup_id", backup.Backup.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
 	}
 
