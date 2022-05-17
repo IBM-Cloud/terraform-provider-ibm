@@ -26,11 +26,6 @@ func DataSourceIBMDatabaseBackup() *schema.Resource {
 				Required:    true,
 				Description: "Backup ID.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of this backup.",
-			},
 			"deployment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
