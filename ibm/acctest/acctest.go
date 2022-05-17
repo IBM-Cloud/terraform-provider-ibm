@@ -163,7 +163,7 @@ var Scc_posture_collector_id_scope_update []string
 var ClusterName string
 
 //Dedicated host
-var DedicatedHostPoolID string
+var HostPoolID string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -881,9 +881,9 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
 	}
 
-	DedicatedHostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
-	if ClusterName == "" {
-		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
+	if HostPoolID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
 	}
 }
 

@@ -125,7 +125,7 @@ func TestAccIBMContainerVpcClusterImageSecuritySetting(t *testing.T) {
 
 func TestAccIBMContainerVpcClusterDedicatedHost(t *testing.T) {
 	clusterName := fmt.Sprintf("tf-vpc-cluster-dhost-%d", acctest.RandIntRange(10, 100))
-	dhostPoolID := acc.DedicatedHostPoolID
+	hostPoolID := acc.HostPoolID
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -138,11 +138,11 @@ func TestAccIBMContainerVpcClusterDedicatedHost(t *testing.T) {
 					"bx2d.4x16",
 					acc.IksClusterSubnetID,
 					acc.IksClusterResourceGroupID,
-					dhostPoolID,
+					hostPoolID,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.testacc_dhost_vpc_cluster", "host_pool_id", dhostPoolID),
+						"ibm_container_vpc_cluster.testacc_dhost_vpc_cluster", "host_pool_id", hostPoolID),
 				),
 			},
 		},
