@@ -20,8 +20,9 @@ func TestAccIBMDatabaseBackupDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMDatabaseBackupDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "backup_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "is_downloadable"),
 				),
 			},
 		},
