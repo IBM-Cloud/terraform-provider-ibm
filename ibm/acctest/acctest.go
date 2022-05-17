@@ -94,6 +94,8 @@ var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
 var IcdDbRegion string
+var IcdDbDeploymentId string
+var IcdDbBackupId string
 
 // For Power Colo
 
@@ -524,6 +526,18 @@ func init() {
 	if IcdDbRegion == "" {
 		IcdDbRegion = "eu-gb"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
+	}
+
+	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
+	if IcdDbDeploymentId == "" {
+		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+	}
+
+	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")
+	if IcdDbBackupId == "" {
+		IcdDbBackupId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_BACKUP_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3'")
 	}
 
 	// Added for Power Colo Testing

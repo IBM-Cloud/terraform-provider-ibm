@@ -31,8 +31,7 @@ func TestAccIBMDatabaseBackupsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMDatabaseBackupsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_database_backups" "database_backups" {
-			id = "id"
-			deployment_id = "595eada310b7ac00116dd48b"
+			deployment_id = "%[1]s"
 		}
-	`)
+	`, acc.IcdDbDeploymentId)
 }
