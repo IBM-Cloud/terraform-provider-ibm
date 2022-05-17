@@ -1,3 +1,7 @@
+# 1.41.1 (May 17, 2022)
+BUGFIXES
+* fix(floating_ip): fixed nil check on floating ip target ([3783](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3783))
+
 # 1.41.0 (May 04, 2022)
 Features
 * Support Databases
