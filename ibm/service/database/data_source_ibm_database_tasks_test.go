@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMDatabaseTaskDataSourceBasic(t *testing.T) {
+func TestAccIBMDatabaseTasksDataSourceBasic(t *testing.T) {
 	testName := fmt.Sprintf("tf-Pgress-%s", acctest.RandString(16))
 
 	resource.Test(t, resource.TestCase{
@@ -20,16 +20,16 @@ func TestAccIBMDatabaseTaskDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMDatabaseTaskDataSourceConfigBasic(testName),
+				Config: testAccCheckIBMDatabaseTasksDataSourceConfigBasic(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_tasks.database_tasks", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMDatabaseDataSourceConfig5(name string) string {
+func testAccCheckIBMDatabaseDataSourceConfig6(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -52,10 +52,10 @@ func testAccCheckIBMDatabaseDataSourceConfig5(name string) string {
 				`, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseTaskDataSourceConfigBasic(name string) string {
-	return testAccCheckIBMDatabaseDataSourceConfig5(name) + `
-		data "ibm_database_task" "database_task" {
-			id = taskIDLink
+func testAccCheckIBMDatabaseTasksDataSourceConfigBasic(name string) string {
+	return testAccCheckIBMDatabaseDataSourceConfig6(name) + `
+		data "ibm_database_tasks" "database_tasks" {
+			id = "id"
 		}
 	`
 }
