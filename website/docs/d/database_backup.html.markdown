@@ -14,7 +14,7 @@ Provides a read-only data source for Backup. You can then reference the fields o
 
 ```hcl
 data "ibm_database_backup" "database_backup" {
-	backup_id = "backup_id"
+	backup_id = "<backup_crn>"
 }
 ```
 
