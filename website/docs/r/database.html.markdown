@@ -43,6 +43,10 @@ resource "ibm_database" "<your_database>" {
     disk { 
       allocation_mb = 20480
     }
+
+    cpu {
+      allocation_count = 3
+    }
   }
 
   users {
@@ -237,6 +241,10 @@ resource "ibm_database" "cassandra" {
     disk { 
       allocation_mb = 368640
     }
+
+    cpu {
+      allocation_count = 6
+    }
   }
   users {
     name      = "user123"
@@ -282,6 +290,10 @@ resource "ibm_database" "mongodb" {
     
     disk { 
       allocation_mb = 122880
+    }
+
+    cpu {
+      allocation_count = 6
     }
   }
 
@@ -336,6 +348,10 @@ resource "ibm_database" "mongodb_enterprise" {
     
     disk { 
       allocation_mb = 122880
+    }
+
+    cpu {
+      allocation_count = 6
     }
   }
   
@@ -405,6 +421,10 @@ resource "ibm_database" "edb" {
     
     disk { 
       allocation_mb = 131072
+    }
+
+    cpu {
+      allocation_count = 3
     }
   }
   tags                         = ["one:two"]
