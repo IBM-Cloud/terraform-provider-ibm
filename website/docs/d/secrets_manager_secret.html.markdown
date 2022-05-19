@@ -23,7 +23,7 @@ data "ibm_secrets_manager_secret" "secrets_manager_secret" {
 Review the argument references that you can specify for your data source. 
 
 - `instance_id` - (Required, String) The secrets manager instance GUID.
-- `secret_type` - (Required, String) The secret type. Supported options are `arbitrary`, `iam_credentials`, `username_password`.
+- `secret_type` - (Required, String) The secret type. Supported options are `arbitrary`, `iam_credentials`, `username_password`,`imported_cert`,`public_cert`,`private_cert`,`kv`.
 - `secret_id` - (Required, String) The v4 UUID that uniquely identifies the secret.
 - `endpoint_type` - (Optional, String) The type of the endpoint used to fetch secret. Supported options are `public`, and `private`. The default value is `public`.
 
