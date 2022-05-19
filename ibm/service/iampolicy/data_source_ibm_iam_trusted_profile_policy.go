@@ -38,6 +38,12 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -176,8 +182,13 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	if err != nil {
+
+	if err != nil || resp == nil {
 		return fmt.Errorf("Error listing trusted profile policies: %s, %s", err, resp)
 	}
 
@@ -213,6 +224,9 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(iamID)
+	}
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.Set("policies", profilePolicies)
 	return nil
