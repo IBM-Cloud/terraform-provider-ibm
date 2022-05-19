@@ -25,6 +25,7 @@ resource "ibm_iam_user_policy" "policy" {
 
 data "ibm_iam_user_policy" "testacc_ds_user_policy" {
   ibm_id = ibm_iam_user_policy.policy.ibm_id
+  transaction_id = "terrformUserPolicy"
 }
 
 ```
@@ -35,6 +36,7 @@ Review the argument references that you can specify for your data source.
 
 - `ibm_id` - (Required, String) The IBM ID or email address of the user.
 - `sort`- (Optional, String) The single field sort query for  policies.
+- `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
 ## Attribute reference
 

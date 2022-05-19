@@ -71,8 +71,8 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the network. The ID is composed of `<power_instance_id>/<network_id>`.
-- `networkid` - (String) The unique identifier of the network.
-- `vlanid` - (Integer) The ID of the VLAN that your network is attached to. 
+- `network_id` - (String) The unique identifier of the network.
+- `vlan_id` - (Integer) The ID of the VLAN that your network is attached to. 
 
 ## Import
 The `ibm_pi_network` resource can be imported by using `power_instance_id` and `network_id`.
