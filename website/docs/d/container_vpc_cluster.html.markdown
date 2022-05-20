@@ -78,5 +78,3 @@ In addition to all argument reference list, you can access the following attribu
 			- `id` - (String) The ID of the subnet that the worker pool is attached to in the zone.
 			- `primary` -  (Bool) If set to **true**, the subnet is used as the primary subnet.
 		- `worker_count` - (Integer) The number of worker nodes in this worker pool.
-- `crk` - Root Key ID for boot volume encryption.
-- `kms_instance_id` - Instance ID for boot volume encryption.

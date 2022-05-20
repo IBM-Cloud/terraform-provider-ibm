@@ -277,14 +277,16 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
 			"kms_instance_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Instance ID for boot volume encryption",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Instance ID for boot volume encryption",
 			},
 			"crk": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Root Key ID for boot volume encryption",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Root Key ID for boot volume encryption",
 			},
 
 			//Get Cluster info Request
@@ -482,8 +484,13 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	kmsid := d.Get("kms_instance_id").(string)
-	crk := d.Get("crk").(string)
+	var kmsid, crk string
+	if v, ok := d.GetOk("kms_instance_id"); ok {
+		kmsid = v.(string)
+	}
+	if v, ok := d.GetOk("crk"); ok {
+		crk = v.(string)
+	}
 
 	wve := v2.WorkerVolumeEncryption{
 		KmsInstanceID:     kmsid,

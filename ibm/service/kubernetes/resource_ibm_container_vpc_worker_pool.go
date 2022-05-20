@@ -152,14 +152,16 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description: "Resource Controller URL",
 			},
 			"kms_instance_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Instance ID for boot volume encryption",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Instance ID for boot volume encryption",
 			},
 			"crk": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Root Key ID for boot volume encryption",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Root Key ID for boot volume encryption",
 			},
 		},
 	}
@@ -204,8 +206,13 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 	}
 
-	kmsid := d.Get("kms_instance_id").(string)
-	crk := d.Get("crk").(string)
+	var kmsid, crk string
+	if v, ok := d.GetOk("kms_instance_id"); ok {
+		kmsid = v.(string)
+	}
+	if v, ok := d.GetOk("crk"); ok {
+		crk = v.(string)
+	}
 
 	wve := v2.WorkerVolumeEncryption{
 		KmsInstanceID:     kmsid,
