@@ -1286,6 +1286,10 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	if err != nil {
 		return false, err
 	}
+	bucket_meta := strings.Split(d.Id(), ":meta:")
+	if len(bucket_meta) < 2 || len(strings.Split(bucket_meta[1], ":")) < 2 {
+		return false, fmt.Errorf("[ERROR] Error parsing bucket ID. Bucket ID format must be: $CRN:meta:$buckettype:$bucketlocation")
+	}
 
 	bucketName := parseBucketId(d.Id(), "bucketName")
 	serviceID := parseBucketId(d.Id(), "serviceID")

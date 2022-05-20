@@ -26,6 +26,7 @@ resource "ibm_iam_service_policy" "policy" {
 
 data "ibm_iam_service_policy" "testacc_ds_service_policy" {
   iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+  transaction_id = "terrformServicePolicy"
 }
 
 ```
@@ -37,6 +38,7 @@ Review the argument references that you can specify for your data source.
 - `iam_service_id` - (Required, String) The UUID of the service ID.
 - `iam_id` - (Optional, String) IAM ID of the service ID. One of the `iam_service_id` or `iam_id` is required argument. You can use to get cross account service ID policy.
 - `sort`- Optional -  (String) The single field sort query for policies.
+- `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
 ## Attribute reference
 

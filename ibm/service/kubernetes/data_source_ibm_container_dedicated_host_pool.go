@@ -56,7 +56,6 @@ func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-
 									"vcpu": {
 										Type:     schema.TypeInt,
 										Computed: true,

@@ -7,10 +7,10 @@ require (
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62
 	github.com/IBM-Cloud/power-go-client v1.1.8
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
-	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
+	github.com/IBM/appconfiguration-go-admin-sdk v0.2.3
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
-	github.com/IBM/cloudant-go-sdk v0.0.36
+	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.0
 	github.com/IBM/eventstreams-go-sdk v1.2.0
