@@ -61,6 +61,7 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
 					resource.TestCheckResourceAttr(name, "users.#", "2"),
+					resource.TestCheckResourceAttr(name, "users.1.type", "ops_manager"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "3"),
@@ -156,6 +157,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseBasic(databaseResourceGroup
 		users {
 		  name     = "user123"
 		  password = "password12"
+		  type     = "database"
 		}
 		whitelist {
 		  address     = "172.168.1.2/32"
@@ -190,10 +192,12 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseFullyspecified(databaseReso
 		users {
 		  name     = "user123"
 		  password = "password12"
+		  type     = "database"
 		}
 		users {
 		  name     = "user124"
-		  password = "password12"
+		  password = "password12$password"
+		  type     = "ops_manager"
 		}
 		whitelist {
 		  address     = "172.168.1.2/32"

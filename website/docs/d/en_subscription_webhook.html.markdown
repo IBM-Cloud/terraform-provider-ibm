@@ -14,7 +14,7 @@ Provides a read-only data source for subscription. You can then reference the fi
 
 ```terraform
 data "ibm_en_subscription_webhook" "webhook_subscription" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
   subscription_id = ibm_en_subscription_webhook.subscriptionwebhook.subscription_id
 }
 ```
