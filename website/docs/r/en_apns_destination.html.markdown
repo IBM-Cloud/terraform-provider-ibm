@@ -14,19 +14,19 @@ Create, update, or delete IOS destination by using IBM Cloud™ Event Notificati
 
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name        = "IOS Destination Auth"
-  type        = "push_ios"
+  instance_guid            = ibm_resource_instance.en_terraform_test_resource.guid
+  name                     = "IOS Destination Auth"
+  type                     = "push_ios"
   certificate_content_type = "p8"
-  certificate = "${path.module}/Certificates/Auth.p8"
-  description = "IOS destination with P8"
+  certificate              = "${path.module}/Certificates/Auth.p8"
+  description              = "IOS destination with P8"
   config {
     params {
-      cert_type = "p8"
+      cert_type  = "p8"
       is_sandbox = true
-      key_id = production
-      team_id = "2347"
-      bundle_id = "testp8"
+      key_id     = production
+      team_id    = "2347"
+      bundle_id  = "testp8"
     }
   }
 }
@@ -35,17 +35,17 @@ resource "ibm_en_destination_ios" "ios_en_destination" {
 
 ```terraform
 resource "ibm_en_destination_ios" "ios_en_destination" {
-  instance_guid = "ibm_resource_instance.en_terraform_test_resource.guid"
-  name        = "IOS Destination "
-  type        = "push_ios"
+  instance_guid            = "ibm_resource_instance.en_terraform_test_resource.guid"
+  name                     = "IOS Destination "
+  type                     = "push_ios"
   certificate_content_type = "p12"
-  certificate = "${path.module}/Certificates/prod.p12"
-  description = "IOS destination with P12"
+  certificate              = "${path.module}/Certificates/prod.p12"
+  description              = "IOS destination with P12"
   config {
     params {
-      cert_type = "p12"
+      cert_type  = "p12"
       is_sandbox = true
-      password = "apnscertpassword"
+      password   = "apnscertpassword"
     }
   }
 }

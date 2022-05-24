@@ -15,10 +15,10 @@ Create, update, or delete a subscription by using IBM Cloud™ Event Notificatio
 ```terraform
 resource "ibm_en_subscription" "en_subscription_webhook" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "Webhook Subscription"
-  description    = "Subscription for Webhook destination"
-  destination_id = ibm_en_destination.destinationwebhook.destination_id
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "Webhook Subscription"
+  description      = "Subscription for Webhook destination"
+  destination_id   = ibm_en_destination.destinationwebhook.destination_id
+  topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     signing_enabled          = true
   }
@@ -26,10 +26,10 @@ resource "ibm_en_subscription" "en_subscription_webhook" {
 
 resource "ibm_en_subscription" "en_subscription_sms" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "SMS Subscription"
-  description    = "Subscription for SMS destination"
-  destination_id = "destination_id"
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "SMS Subscription"
+  description      = "Subscription for SMS destination"
+  destination_id   = "destination_id"
+  topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     to = ["+15678923404", "+19643567389"]
   }
@@ -37,16 +37,16 @@ resource "ibm_en_subscription" "en_subscription_sms" {
 
 resource "ibm_en_subscription" "en_subscription_email" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "Email Subscription"
-  description    = "Subscription for Email destination"
-  destination_id = "destination_id"
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "Email Subscription"
+  description      = "Subscription for Email destination"
+  destination_id   = "destination_id"
+  topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
     add_notification_payload = true
     reply_to_mail = "compliancealert@ibm.com"
     reply_to_name = "Compliance User"
-    from_name="en@ibm.com"
-    to = ["usernew1@gmail.com","testuser@gamil.com"]
+    from_name     = "en@ibm.com"
+    to            = ["usernew1@gmail.com","testuser@gamil.com"]
   }
 }
 
@@ -100,7 +100,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `from` - (Optional, String) From Email ID (it will be displayed only in case of smtp_ibm destination type).
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 

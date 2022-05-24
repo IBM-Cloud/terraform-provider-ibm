@@ -15,16 +15,16 @@ Create, update, or delete a Email subscription by using IBM Cloud™ Event Notif
 ```terraform
 resource "ibm_en_subscription_email" "email_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "Email Certificate Subscription"
-  description    = "Subscription for Certificate expiration alert"
-  destination_id = "email_destination_id"
-  topic_id       = ibm_en_topic.topic1.topic_id
+  name             = "Email Certificate Subscription"
+  description      = "Subscription for Certificate expiration alert"
+  destination_id   = "email_destination_id"
+  topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
       add_notification_payload = true
-      reply_to_mail = "compliancealert@ibm.com"
-      reply_to_name = "Compliance User"
-      from_name="en@ibm.com"
-      to = ["usernew1@gmail.com","testuser@gamil.com"]
+      reply_to_mail            = "compliancealert@ibm.com"
+      reply_to_name            = "Compliance User"
+      from_name                = "en@ibm.com"
+      to                       = ["usernew1@gmail.com","testuser@gamil.com"]
   }
 }
 ```
@@ -34,17 +34,17 @@ resource "ibm_en_subscription_email" "email_subscription" {
 ```terraform
 resource "ibm_en_subscription_email" "email_subscription" {
   instance_guid    = "my_instance_guid"
-  name           = "Email Certificate Subscription"
-  description    = "Subscription for Certificate expiration alert"
-  destination_id = "email_destination_id"
-  topic_id       = "topicId"
+  name             = "Email Certificate Subscription"
+  description      = "Subscription for Certificate expiration alert"
+  destination_id   = "email_destination_id"
+  topic_id         = "topicId"
   attributes {
       add_notification_payload = true
       reply_to_mail = "compliancealert@ibm.com"
       reply_to_name = "Compliance User"
-      from_name="en@ibm.com"
-      add = ["productionuser@ibm.com"]
-      unsubscribed = ["testuser@gamil.com"]
+      from_name     = "en@ibm.com"
+      add           = ["productionuser@ibm.com"]
+      unsubscribed  = ["testuser@gamil.com"]
   }
 }
 ```
@@ -86,7 +86,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 

@@ -5,8 +5,9 @@ App Configuration
 Catalog Management
 Certificate Manager
 Classic infrastructure
-Cloud Databases
+Cloud Database
 Cloud Foundry
+Cloudant Databases
 Container Registry
 Context Based Restrictions
 Direct Link Gateway

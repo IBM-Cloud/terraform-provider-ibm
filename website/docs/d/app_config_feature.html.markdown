@@ -42,6 +42,7 @@ In addition to all argument references list, you can access the following attrib
 - `disabled_value` - (String) Value of the feature when it is disabled. The value can be Boolean, String or a Numeric value as per the `type` attribute.
 - `enabled` - (String) The state of the feature flag.
 - `tags` - (String) Tags associated with the feature.
+- `rollout_percentage` - (String) Rollout percentage of the feature.
 - `segment_rules` - (List) Specify the targeting rules that is used to set different feature flag values for different segments.
 
   Nested scheme for `segment_rules`:
@@ -51,6 +52,7 @@ In addition to all argument references list, you can access the following attrib
     - `segments` - (String) List of segment ids that are used for targeting using the rule.
   - `value` - (String) Value to be used for evaluation for this rule. The value can be Boolean, String or a Numeric value as per the `type` attribute.
   - `order` - (String) Order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
+  - `rollout_percentage` - (String) Rollout percentage for the segment rule.
 - `segment_exists` - (String) Denotes if the targeting rules are specified for the feature flag.
 - `collections` - (List) List of collection ID representing the collections that are associated with the specified feature flag. 
 
