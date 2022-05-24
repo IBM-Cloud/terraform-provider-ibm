@@ -156,12 +156,14 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Instance ID for boot volume encryption",
+				RequiredWith:     []string{"crk"},
 			},
 			"crk": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Root Key ID for boot volume encryption",
+				RequiredWith:     []string{"kms_instance_id"},
 			},
 		},
 	}
@@ -206,25 +208,21 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 	}
 
-	var kmsid, crk string
-	if v, ok := d.GetOk("kms_instance_id"); ok {
-		kmsid = v.(string)
-	}
-	if v, ok := d.GetOk("crk"); ok {
-		crk = v.(string)
+	workerPoolConfig := v2.WorkerPoolConfig{
+		Name:        d.Get("worker_pool_name").(string),
+		VpcID:       d.Get("vpc_id").(string),
+		Flavor:      d.Get("flavor").(string),
+		WorkerCount: d.Get("worker_count").(int),
+		Zones:       zone,
 	}
 
-	wve := v2.WorkerVolumeEncryption{
-		KmsInstanceID:     kmsid,
-		WorkerVolumeCRKID: crk,
-	}
-	workerPoolConfig := v2.WorkerPoolConfig{
-		Name:                   d.Get("worker_pool_name").(string),
-		VpcID:                  d.Get("vpc_id").(string),
-		Flavor:                 d.Get("flavor").(string),
-		WorkerCount:            d.Get("worker_count").(int),
-		Zones:                  zone,
-		WorkerVolumeEncryption: &wve,
+	if v, ok := d.GetOk("kms_instance_id"); ok {
+		crk := d.Get("crk").(string)
+		wve := v2.WorkerVolumeEncryption{
+			KmsInstanceID:     v.(string),
+			WorkerVolumeCRKID: crk,
+		}
+		workerPoolConfig.WorkerVolumeEncryption = &wve
 	}
 
 	if l, ok := d.GetOk("labels"); ok {
