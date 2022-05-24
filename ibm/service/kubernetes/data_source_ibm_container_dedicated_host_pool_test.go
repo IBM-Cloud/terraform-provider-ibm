@@ -36,7 +36,7 @@ func TestAccIBMContainerDedicatedHostPoolDataSource_basic(t *testing.T) {
 func testAccCheckIBMContainerDedicatedHostPoolDataSourceConfig(name string) string {
 	return testAccCheckIBMContainerDedicatedHostPoolBasic(name) + `
 	data "ibm_container_dedicated_host_pool" "test_dhostpool_2" {
-	    id = "${ibm_container_dedicated_host_pool.test_dhostpool.id}"
+	    host_pool_id = ibm_container_dedicated_host_pool.test_dhostpool.id
 	}
 `
 }

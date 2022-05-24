@@ -4,6 +4,8 @@
 package kubernetes
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -11,7 +13,7 @@ func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMContainerDedicatedHostPoolRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"host_pool_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The id of the dedicated host pool",
@@ -94,7 +96,14 @@ func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 		},
 	}
 }
+
 func dataSourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta interface{}) error {
-	d.SetId(d.Get("id").(string))
-	return resourceIBMContainerDedicatedHostPoolRead(d, meta)
+	hostPoolID := d.Get("host_pool_id").(string)
+	err := getIBMContainerDedicatedHostPool(hostPoolID, d, meta)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving host pool details %v", err)
+	}
+
+	d.SetId(hostPoolID)
+	return nil
 }

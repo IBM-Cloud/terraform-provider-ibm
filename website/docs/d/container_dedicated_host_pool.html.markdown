@@ -17,13 +17,13 @@ In the following example, you can retrieve a dedicated host pool:
 
 ```terraform
 data "ibm_container_dedicated_host_pool" "test_dhostpool" {
-    id = "<dedicated hostpool id>"
+    host_pool_id = "<dedicated hostpool id>"
 }
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
-- `id` - (Required, String) The unique identifier of the dedicated host pool.
+- `host_pool_id` - (Required, String) The unique identifier of the dedicated host pool.
  
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your data source is created.

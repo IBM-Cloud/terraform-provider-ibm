@@ -5,7 +5,6 @@ package kubernetes
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -19,19 +18,11 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMContainerDedicatedHostPoolCreate,
 		Read:     resourceIBMContainerDedicatedHostPoolRead,
-		Update:   resourceIBMContainerDedicatedHostPoolUpdate,
 		Delete:   resourceIBMContainerDedicatedHostPoolDelete,
-		Exists:   resourceIBMContainerDedicatedHostPoolExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{},
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The id of the dedicated host pool",
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -53,19 +44,16 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 			"host_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Optional:    true,
 				Description: "The count of the hosts under the dedicated host pool",
 			},
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 				Description: "The state of the dedicated host pool",
 			},
 			"zones": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "The zones of the dedicated host pool",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -100,7 +88,6 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 			"worker_pools": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "The worker pools of the dedicated host pool",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -135,16 +122,29 @@ func resourceIBMContainerDedicatedHostPoolCreate(d *schema.ResourceData, meta in
 
 	res, err := dedicatedHostPoolAPI.CreateDedicatedHostPool(params, targetEnv)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error creating host pool %v", err)
 	}
 
 	d.SetId(res.ID)
-	d.Set("id", res.ID)
 
 	return resourceIBMContainerDedicatedHostPoolRead(d, meta)
 }
 
 func resourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta interface{}) error {
+	err := getIBMContainerDedicatedHostPool(d.Id(), d, meta)
+	if err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				d.SetId("")
+				return nil
+			}
+		}
+		return fmt.Errorf("[ERROR] Error retrieving host pool details %v", err)
+	}
+	return nil
+}
+
+func getIBMContainerDedicatedHostPool(hostPoolID string, d *schema.ResourceData, meta interface{}) error {
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func resourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta inte
 	dedicatedHostPoolAPI := client.DedicatedHostPool()
 	targetEnv := v2.ClusterTargetHeader{}
 
-	dedicatedHostPool, err := dedicatedHostPoolAPI.GetDedicatedHostPool(d.Id(), targetEnv)
+	dedicatedHostPool, err := dedicatedHostPoolAPI.GetDedicatedHostPool(hostPoolID, targetEnv)
 	if err != nil {
 		return err
 	}
@@ -188,10 +188,6 @@ func resourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceIBMContainerDedicatedHostPoolUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceIBMContainerDedicatedHostPoolRead(d, meta)
-}
-
 func resourceIBMContainerDedicatedHostPoolDelete(d *schema.ResourceData, meta interface{}) error {
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -205,29 +201,8 @@ func resourceIBMContainerDedicatedHostPoolDelete(d *schema.ResourceData, meta in
 	}
 
 	if err := dedicatedHostPoolAPI.RemoveDedicatedHostPool(params, targetEnv); err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error removing host pool %v", err)
 	}
 
 	return nil
-}
-
-func resourceIBMContainerDedicatedHostPoolExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	client, err := meta.(conns.ClientSession).VpcContainerAPI()
-	if err != nil {
-		return false, err
-	}
-	dedicatedHostPoolAPI := client.DedicatedHostPool()
-	targetEnv := v2.ClusterTargetHeader{}
-
-	_, err = dedicatedHostPoolAPI.GetDedicatedHostPool(d.Id(), targetEnv)
-	if err != nil {
-		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
-			if apiErr.StatusCode() == 404 && strings.Contains(apiErr.Description(), "The specified dedicated host pool could not be found") {
-				return false, nil
-			}
-		}
-		return false, fmt.Errorf("[ERROR] Error getting container dedicatedhostpool: %s", err)
-	}
-
-	return true, nil
 }

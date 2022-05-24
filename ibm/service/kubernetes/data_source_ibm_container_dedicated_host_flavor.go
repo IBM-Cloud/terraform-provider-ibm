@@ -21,7 +21,7 @@ func DataSourceIBMContainerDedicatedHostFlavor() *schema.Resource {
 				Required:    true,
 				Description: "The zones of the dedicated host flavor",
 			},
-			"id": {
+			"host_flavor_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The id of the dedicated host flavor",
@@ -72,7 +72,7 @@ func DataSourceIBMContainerDedicatedHostFlavor() *schema.Resource {
 	}
 }
 func dataSourceIBMContainerDedicatedHostFlavorRead(d *schema.ResourceData, meta interface{}) error {
-	d.SetId(d.Get("id").(string))
+	flavorID := d.Get("host_flavor_id").(string)
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -88,16 +88,17 @@ func dataSourceIBMContainerDedicatedHostFlavorRead(d *schema.ResourceData, meta 
 	var dedicatedHostFlavor *v2.GetDedicatedHostFlavor
 
 	for _, dh := range dedicatedHostFlavors {
-		if dh.ID == d.Get("id").(string) {
+		if dh.ID == flavorID {
 			dedicatedHostFlavor = &dh
 			break
 		}
 	}
 
 	if dedicatedHostFlavor == nil {
-		return fmt.Errorf("dedicated host flavor is not found, id : %s", d.Get("id").(string))
+		return fmt.Errorf("[ERROR] Dedicated host flavor is not found, id : %s", d.Get("id").(string))
 	}
 
+	d.SetId(dedicatedHostFlavor.ID)
 	d.Set("flavor_class", dedicatedHostFlavor.FlavorClass)
 	d.Set("region", dedicatedHostFlavor.Region)
 	d.Set("deprecated", dedicatedHostFlavor.Deprecated)

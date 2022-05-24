@@ -17,14 +17,14 @@ In the following example, you can retrieve a dedicated host flavor:
 
 ```terraform
 data "ibm_container_dedicated_host_flavor" "test_dhost_flavor" {
-	  id   = "bx2d.host.152x608"
-		zone = "us-south-1"
+	  host_flavor_id = "bx2d.host.152x608"
+		zone           = "us-south-1"
 }
 ```
 
 ## Argument reference
 Review the argument references that you can specify for your data source. 
-- `id` - (Required, String) The unique identifier of the dedicated host flavor.
+- `host_flavor_id` - (Required, String) The unique identifier of the dedicated host flavor.
 - `zone` - (Required, String) The zone of the dedicated host flavor.
  
 ## Attribute reference
