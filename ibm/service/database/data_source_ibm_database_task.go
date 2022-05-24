@@ -60,9 +60,15 @@ func dataSourceIBMDatabaseTaskRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	log.Printf("[DEBUG] HEY WE ARE HERE")
+
 	getTaskOptions := &clouddatabasesv5.GetTaskOptions{}
 
+	log.Printf("getTaskOptions %v %s", getTaskOptions, d.Get("task_id").(string))
+
 	getTaskOptions.SetID(d.Get("task_id").(string))
+
+	log.Printf("getTaskOptions twooo %v", getTaskOptions)
 
 	task, response, err := cloudDatabasesClient.GetTaskWithContext(context, getTaskOptions)
 	if err != nil {
@@ -70,7 +76,13 @@ func dataSourceIBMDatabaseTaskRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("GetTaskWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(d.Get("task_id").(string))
+	log.Printf("task broooooooo twooo %v %v", task, task.Task)
+
+	d.SetId(*task.Task.ID)
+
+	if err = d.Set("task_id", task.Task.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
+	}
 
 	if task.Task.Description != nil {
 		if err = d.Set("description", task.Task.Description); err != nil {

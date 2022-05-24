@@ -22,40 +22,22 @@ func TestAccIBMDatabaseTaskDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMDatabaseTaskDataSourceConfigBasic(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "task_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "description"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "status"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "progress_percent"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "created_at"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMDatabaseDataSourceConfig5(name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		is_default = true
-	}
-
-	data "ibm_database" "%[1]s" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = ibm_database.db.name
-	}
-
-	resource "ibm_database" "db" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "%[1]s"
-		service           = "databases-for-postgresql"
-		plan              = "standard"
-		location          = "%[2]s"
-		tags              = ["one:two"]
-	}
-
-				`, name, acc.IcdDbRegion)
-}
-
 func testAccCheckIBMDatabaseTaskDataSourceConfigBasic(name string) string {
-	return testAccCheckIBMDatabaseDataSourceConfig5(name) + `
+	return fmt.Sprintf(`
 		data "ibm_database_task" "database_task" {
-			id = taskIDLink
+			task_id = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:task:72cda75b-bc2f-4e84-abb0-96f63dbb02b0"
 		}
-	`
+	`)
 }
