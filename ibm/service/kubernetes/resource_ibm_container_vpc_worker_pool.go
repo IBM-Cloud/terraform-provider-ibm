@@ -146,6 +146,12 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
+			"host_pool_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the dedicated host pool associated with the worker pool",
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -201,7 +207,8 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 	// }
 
-	workerPoolConfig := v2.WorkerPoolConfig{
+	params := v2.WorkerPoolRequest{
+		Cluster:     clusterNameorID,
 		Name:        d.Get("worker_pool_name").(string),
 		VpcID:       d.Get("vpc_id").(string),
 		Flavor:      d.Get("flavor").(string),
@@ -214,17 +221,16 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		for k, v := range l.(map[string]interface{}) {
 			labels[k] = v.(string)
 		}
-		workerPoolConfig.Labels = labels
+		params.Labels = labels
 	}
 
 	// Update workerpoolConfig with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
-		workerPoolConfig.Entitlement = v.(string)
+		params.Entitlement = v.(string)
 	}
 
-	params := v2.WorkerPoolRequest{
-		WorkerPoolConfig: workerPoolConfig,
-		Cluster:          clusterNameorID,
+	if hpid, ok := d.GetOk("host_pool_id"); ok {
+		params.HostPoolID = hpid.(string)
 	}
 
 	workerPoolsAPI := wpClient.WorkerPools()
@@ -460,6 +466,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("cluster", cluster)
 	d.Set("vpc_id", workerPool.VpcID)
+	d.Set("host_pool_id", workerPool.HostPoolID)
 	if workerPool.Taints != nil {
 		d.Set("taints", flattenWorkerPoolTaints(workerPool))
 	}
