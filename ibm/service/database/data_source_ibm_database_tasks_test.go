@@ -22,7 +22,8 @@ func TestAccIBMDatabaseTasksDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMDatabaseTasksDataSourceConfigBasic(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_tasks.database_tasks", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_tasks.database_tasks", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_tasks.database_tasks", "tasks.#"),
 				),
 			},
 		},
@@ -49,13 +50,31 @@ func testAccCheckIBMDatabaseDataSourceConfig6(name string) string {
 		tags              = ["one:two"]
 	}
 
+	resource "ibm_database" "db_replica" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+    	remote_leader_id  = ibm_database.db.id
+		name              = "%[1]s-replica"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[2]s"
+		tags              = ["one:two"]
+
+    depends_on = [
+      ibm_database.db,
+    ]
+	}
+
 				`, name, acc.IcdDbRegion)
 }
 
 func testAccCheckIBMDatabaseTasksDataSourceConfigBasic(name string) string {
 	return testAccCheckIBMDatabaseDataSourceConfig6(name) + `
 		data "ibm_database_tasks" "database_tasks" {
-			id = "id"
+			deployment_id = ibm_database.db.id
+
+			depends_on = [
+				ibm_database.db_replica,
+			]
 		}
 	`
 }
