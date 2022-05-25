@@ -46,7 +46,7 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
   }
 
   kms_instance_id = "8e9056e6-1936-4dd9-a0a1-51d824765e11"
-	crk = "804cb251-fa0a-46f5-a442-fe42cfb0ed5f"
+  crk = "804cb251-fa0a-46f5-a442-fe42cfb0ed5f"
 }
 ```
 
