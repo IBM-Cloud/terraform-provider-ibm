@@ -61,4 +61,7 @@ const (
 	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
 	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
 	PIVPNConnectionVpnGatewayAddress          = "gateway_address"
+
+	// Cloud Connections
+	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
 )

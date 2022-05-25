@@ -55,6 +55,24 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfig(name string) s
 `
 }
 
+func TestAccIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-wp-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "id"),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "crk", acc.CrkID),
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker_pool.testacc_ds_worker_pool", "kms_instance_id", acc.KmsInstanceID),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfigDedicatedHost(name, hostpoolID string) string {
 	return testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(
 		acc.ClusterName, name, "bx2d.4x16", acc.IksClusterSubnetID, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, hostpoolID) +
@@ -67,4 +85,13 @@ func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfigDedicatedHost(n
 		]
 	}
 	`, acc.ClusterName, name)
+}
+
+func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name string) string {
+	return testAccCheckIBMVpcContainerWorkerPoolEnvvar(name) + `
+	data "ibm_container_vpc_cluster_worker_pool" "testacc_ds_worker_pool" {
+	    cluster = "${ibm_container_vpc_worker_pool.test_pool.cluster}"
+	    worker_pool_name = "${ibm_container_vpc_worker_pool.test_pool.worker_pool_name}"
+	}
+`
 }
