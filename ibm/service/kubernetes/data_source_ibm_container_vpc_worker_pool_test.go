@@ -75,16 +75,15 @@ func TestAccIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(t *testing.T) {
 
 func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceConfigDedicatedHost(name, hostpoolID string) string {
 	return testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(
-		acc.ClusterName, name, "bx2d.4x16", acc.IksClusterSubnetID, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, hostpoolID) +
-		fmt.Sprintf(`
+		acc.ClusterName, name, "bx2d.4x16", acc.IksClusterSubnetID, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, hostpoolID) + `
 	data "ibm_container_vpc_worker_pool" "vpc_worker_pool" {
-	    cluster = "%s"
-	    worker_pool_name = "%s"
+	    cluster = "${ibm_container_vpc_worker_pool.vpc_worker_pool.cluster}"
+	    worker_pool_name = "${ibm_container_vpc_worker_pool.vpc_worker_pool.worker_pool_name}"
 		depends_on = [
 			ibm_container_vpc_worker_pool.vpc_worker_pool
 		]
 	}
-	`, acc.ClusterName, name)
+`
 }
 
 func testAccCheckIBMContainerVPCClusterWorkerPoolDataSourceEnvvar(name string) string {

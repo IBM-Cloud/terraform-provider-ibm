@@ -229,7 +229,7 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 			KmsInstanceID:     v.(string),
 			WorkerVolumeCRKID: crk,
 		}
-		workerPoolConfig.WorkerVolumeEncryption = &wve
+		params.WorkerVolumeEncryption = &wve
 	}
 
 	if l, ok := d.GetOk("labels"); ok {
