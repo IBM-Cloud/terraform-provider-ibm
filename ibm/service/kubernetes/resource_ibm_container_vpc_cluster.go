@@ -472,11 +472,6 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	workerCount := d.Get("worker_count").(int)
 	imageSecurityEnabled := d.Get("image_security_enforcement").(bool)
 
-	var hostPoolID string
-	if hpid, ok := d.GetOk("host_pool_id"); ok {
-		hostPoolID = hpid.(string)
-	}
-
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
 	if v, ok := d.GetOk("wait_till"); ok {
@@ -503,7 +498,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Flavor:      flavor,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
-		HostPoolID:  hostPoolID,
+	}
+
+	if hpid, ok := d.GetOk("host_pool_id"); ok {
+		workerpool.HostPoolID = hpid.(string)
 	}
 
 	if v, ok := d.GetOk("kms_instance_id"); ok {
@@ -1007,6 +1005,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
+	d.Set("host_pool_id", workerPool.HostPoolID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {

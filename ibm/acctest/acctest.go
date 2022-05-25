@@ -901,9 +901,9 @@ func init() {
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
 	if HostPoolID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
-  }
+	}
 
-  KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
+	KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
 	if KmsInstanceID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_KMS_INSTANCE_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
 	}
