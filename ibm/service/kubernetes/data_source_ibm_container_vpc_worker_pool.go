@@ -64,6 +64,14 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"kms_instance_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"crk": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -98,13 +106,16 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 	d.Set("worker_pool_name", workerPool.PoolName)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
-	d.Set("provider", workerPool.Provider)
 	d.Set("labels", workerPool.Labels)
 	d.Set("zones", zones)
 	d.Set("cluster", clusterName)
 	d.Set("vpc_id", workerPool.VpcID)
 	d.Set("isolation", workerPool.Isolation)
 	d.Set("resource_group_id", targetEnv.ResourceGroup)
+	if workerPool.WorkerVolumeEncryption != nil {
+		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
+		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
+	}
 	d.SetId(workerPool.ID)
 	return nil
 }

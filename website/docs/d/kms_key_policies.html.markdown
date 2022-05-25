@@ -17,6 +17,11 @@ data "ibm_kms_key_policies" "test" {
   instance_id = "guid-of-keyprotect-or hs-crypto-instance"
   key_id = "key-id-of-the-key"
 }
+OR
+data "ibm_kms_key_policies" "test" {
+  instance_id = "guid-of-keyprotect-or hs-crypto-instance"
+  alias = "alias-of-the-key"
+}
 ```
 
 
@@ -26,13 +31,15 @@ The following arguments are supported:
 
 - `endpoint_type` - (Optional, String) The type of the public or private endpoint to be used for fetching keys.
 - `instance_id` - (Required, string) The keyprotect instance guid.
-- `key_id` - (Required, string) The id of the key.
+- `key_id` - (Required - if the alias is not provided, String) The id of the key.
+- `alias`  - (Required - if the key_id is not provided, String) The alias of the key.
 
 ## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 - `id` - (String) The CRN of the key.
 - `key_id` - (String) The ID of the key.
+- `alias`  - (String) The alias of the key.
 - `rotation` - (List) The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
 
     Nested scheme for `rotation`:

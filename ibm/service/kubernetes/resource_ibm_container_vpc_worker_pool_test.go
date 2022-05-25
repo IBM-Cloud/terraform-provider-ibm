@@ -80,9 +80,12 @@ func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 		target := v2.ClusterTargetHeader{}
 
 		// Try to find the key
-		_, err = wpClient.WorkerPools().GetWorkerPool(cluster, workerPoolID, target)
+		wp, err := wpClient.WorkerPools().GetWorkerPool(cluster, workerPoolID, target)
 
 		if err == nil {
+			if wp.ActualState == "deleted" && wp.DesiredState == "deleted" {
+				return nil
+			}
 			return fmt.Errorf("Worker pool still exists: %s", rs.Primary.ID)
 		} else if !strings.Contains(err.Error(), "404") {
 			return fmt.Errorf("[ERROR] Error waiting for worker pool (%s) to be destroyed: %s", rs.Primary.ID, err)
@@ -206,4 +209,54 @@ func testAccCheckIBMVpcContainerWorkerPoolUpdate(name string) string {
 	  }
 	}
 		`, name)
+}
+
+func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
+
+	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"kms_instance_id", "crk"},
+			},
+		},
+	})
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = "%[2]s"
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "bx2.4x16"
+	  vpc_id            = "%[3]s"
+	  worker_count      = 1
+	  zones {
+		subnet_id = "%[4]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[5]s"
+	  crk = "%[6]s"
+	}
+		`, name, acc.IksClusterID, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
 }

@@ -102,18 +102,18 @@ func testAccCheckIBMPICloudConnectionExists(n string) resource.TestCheckFunc {
 }
 func testAccCheckIBMPICloudConnectionConfig(name string) string {
 	return fmt.Sprintf(`
-	  resource "ibm_pi_cloud_connection" "cloud_connection" {
-		pi_cloud_instance_id				= "%[1]s"
-		pi_cloud_connection_name			= "%[2]s"
-		pi_cloud_connection_speed			= 100
-		pi_cloud_connection_networks		= [ibm_pi_network.network1.network_id]
-	  }
-	  resource "ibm_pi_network" "network1" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_network_name			= "%[2]s"
-		pi_network_type         = "vlan"
-		pi_cidr         		= "192.112.111.0/24"
-	  }
+	resource "ibm_pi_cloud_connection" "cloud_connection" {
+		pi_cloud_instance_id         = "%[1]s"
+		pi_cloud_connection_name     = "%[2]s"
+		pi_cloud_connection_speed    = 100
+		pi_cloud_connection_networks = [ibm_pi_network.network1.network_id]
+	}
+	resource "ibm_pi_network" "network1" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.111.0/24"
+	}
 	`, acc.Pi_cloud_instance_id, name)
 }
 
@@ -150,47 +150,47 @@ func TestAccIBMPICloudConnectionNetworks(t *testing.T) {
 
 func testAccCheckIBMPICloudConnectionNetworkConfig(name string) string {
 	return fmt.Sprintf(`
-	  resource "ibm_pi_cloud_connection" "cc_network" {
-		pi_cloud_instance_id		= "%[1]s"
-		pi_cloud_connection_name	= "%[2]s"
-		pi_cloud_connection_speed	= 1000
-		pi_cloud_connection_networks	= [ibm_pi_network.network1.network_id]
-	  }
-	  resource "ibm_pi_network" "network1" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_network_name			= "%[2]s_net1"
-		pi_network_type         = "vlan"
-		pi_cidr         		= "192.112.112.0/24"
-	  }
-	  resource "ibm_pi_network" "network2" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_network_name			= "%[2]s_net2"
-		pi_network_type         = "vlan"
-		pi_cidr         		= "192.112.113.0/24"
-	  }
+	resource "ibm_pi_cloud_connection" "cc_network" {
+		pi_cloud_instance_id         = "%[1]s"
+		pi_cloud_connection_name     = "%[2]s"
+		pi_cloud_connection_speed    = 1000
+		pi_cloud_connection_networks = [ibm_pi_network.network1.network_id]
+	}
+	resource "ibm_pi_network" "network1" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s_net1"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.112.0/24"
+	}
+	resource "ibm_pi_network" "network2" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s_net2"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.113.0/24"
+	}
 	`, acc.Pi_cloud_instance_id, name)
 }
 
 func testAccCheckIBMPICloudConnectionNetworkUpdateConfig(name string) string {
 	return fmt.Sprintf(`
-	  resource "ibm_pi_cloud_connection" "cc_network" {
-		pi_cloud_instance_id				= "%[1]s"
-		pi_cloud_connection_name			= "%[2]s"
-		pi_cloud_connection_speed			= 1000
-		pi_cloud_connection_networks		= [ibm_pi_network.network2.network_id]
-	  }
-	  resource "ibm_pi_network" "network1" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_network_name			= "%[2]s_net1"
-		pi_network_type         = "vlan"
-		pi_cidr         		= "192.112.112.0/24"
-	  }
-	  resource "ibm_pi_network" "network2" {
-		pi_cloud_instance_id	= "%[1]s"
-		pi_network_name			= "%[2]s_net2"
-		pi_network_type         = "vlan"
-		pi_cidr         		= "192.112.113.0/24"
-	  }
+	resource "ibm_pi_cloud_connection" "cc_network" {
+		pi_cloud_instance_id         = "%[1]s"
+		pi_cloud_connection_name     = "%[2]s"
+		pi_cloud_connection_speed    = 1000
+		pi_cloud_connection_networks = [ibm_pi_network.network2.network_id]
+	}
+	resource "ibm_pi_network" "network1" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s_net1"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.112.0/24"
+	}
+	resource "ibm_pi_network" "network2" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s_net2"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.113.0/24"
+	}
 	`, acc.Pi_cloud_instance_id, name)
 }
 
@@ -220,12 +220,12 @@ func TestAccIBMPICloudConnectionClassic(t *testing.T) {
 }
 func testAccCheckIBMPICloudConnectionClassicConfig(name string) string {
 	return fmt.Sprintf(`
-	  resource "ibm_pi_cloud_connection" "classic" {
-		pi_cloud_instance_id		= "%[1]s"
-		pi_cloud_connection_name	= "%[2]s"
-		pi_cloud_connection_speed	= 50
-		pi_cloud_connection_classic_enabled	= true
-	  }
+	resource "ibm_pi_cloud_connection" "classic" {
+		pi_cloud_instance_id                = "%[1]s"
+		pi_cloud_connection_name            = "%[2]s"
+		pi_cloud_connection_speed           = 50
+		pi_cloud_connection_classic_enabled = true
+	}
 	`, acc.Pi_cloud_instance_id, name)
 }
 
@@ -258,12 +258,55 @@ func TestAccIBMPICloudConnectionVPC(t *testing.T) {
 
 func testAccCheckIBMPICloudConnectionVPCConfig(name string) string {
 	return fmt.Sprintf(`
-	  resource "ibm_pi_cloud_connection" "vpc" {
-		pi_cloud_instance_id		= "%[1]s"
-		pi_cloud_connection_name	= "%[2]s"
-		pi_cloud_connection_speed	= 50
-		pi_cloud_connection_vpc_enabled	= true
-		pi_cloud_connection_vpc_crns = ["crn:v1:bluemix:public:is:us-south:a/d9cec80d0adc400ead8e2076afe26698::vpc:r006-6486cf73-451d-4d44-b90d-83dff504cbed"]
-	  }
+	resource "ibm_pi_cloud_connection" "vpc" {
+		pi_cloud_instance_id            = "%[1]s"
+		pi_cloud_connection_name        = "%[2]s"
+		pi_cloud_connection_speed       = 50
+		pi_cloud_connection_vpc_enabled = true
+		pi_cloud_connection_vpc_crns    = ["crn:v1:bluemix:public:is:us-south:a/d9cec80d0adc400ead8e2076afe26698::vpc:r006-6486cf73-451d-4d44-b90d-83dff504cbed"]
+	}
+	`, acc.Pi_cloud_instance_id, name)
+}
+
+func TestAccIBMPICloudConnectionTransitGateway(t *testing.T) {
+	name := fmt.Sprintf("tf-cloudconnection-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPICloudConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPICloudConnectionConfigTransitGateway(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPICloudConnectionExists("ibm_pi_cloud_connection.cloud_connection_transit"),
+					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection_transit",
+						"pi_cloud_connection_name", name),
+					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection_transit",
+						"pi_cloud_connection_speed", "100"),
+					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection_transit",
+						"pi_cloud_connection_networks.#", "1"),
+					resource.TestCheckResourceAttr("ibm_pi_cloud_connection.cloud_connection_transit",
+						"pi_cloud_connection_transit_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPICloudConnectionConfigTransitGateway(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_cloud_connection" "cloud_connection_transit" {
+		pi_cloud_instance_id                = "%[1]s"
+		pi_cloud_connection_name            = "%[2]s"
+		pi_cloud_connection_speed           = 100
+		pi_cloud_connection_networks        = [ibm_pi_network.network1.network_id]
+		pi_cloud_connection_transit_enabled = true
+	}
+	resource "ibm_pi_network" "network1" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[2]s"
+		pi_network_type      = "vlan"
+		pi_cidr              = "192.112.111.0/24"
+	}
 	`, acc.Pi_cloud_instance_id, name)
 }

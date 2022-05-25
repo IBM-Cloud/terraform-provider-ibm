@@ -9,7 +9,7 @@ description: |-
 
 # ibm_kp_key
 
-Create, or delete a Key Protect standard or root key. To use the `ibm_kp_key` resource, the region parameter in the `provider.tf` file must be set to the same region that your Key Protect service instance. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails. 
+Create, or delete a Key Protect standard or root key. To use the `ibm_kp_key` resource, the region parameter in the `provider.tf` file must be set to the same region that your Key Protect service instance. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by  Terraform and the  Terraform action fails.
 
 **Note**
 
@@ -39,7 +39,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
 }
 ```
 ## Argument reference
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
 - `encrypted_nonce` - (Optional, Forces new resource, String) The encrypted nonce value that verifies your request to import a key to Key Protect. This value must be encrypted by using the key that you want to import to the service. To retrieve a nonce, use the `ibmcloud kp import-token get` command. Then, encrypt the value by running `ibmcloud kp import-token encrypt-nonce`. Only for imported root key.
 - `force_delete` - (Optional, Bool) If set to **true**, Key Protect forces the deletion of a root or standard key, even if this key is still in use, such as to protect an IBM Cloud Object Storage bucket. Note, the key cannot be deleted if the protected cloud resource is set up with a retention policy. Successful deletion includes the removal of any registrations that are associated with the key. Default value is **false**. **Note** Before executing Terraform destroy if `force_delete` flag is introduced after provisioning keys, a Terraform apply must be done before Terraform destroy for `force_delete` flag to take effect.

@@ -30,6 +30,26 @@ resource "ibm_container_vpc_worker_pool" "test_pool" {
 }
 ```
 
+In the following example, you can create a worker pool for a vpc cluster with boot volume encryption enabled:
+
+```terraform
+resource "ibm_container_vpc_worker_pool" "test_pool" {
+  cluster          = "my_vpc_cluster"
+  worker_pool_name = "my_vpc_pool"
+  flavor           = "c2.2x4"
+  vpc_id           = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
+  worker_count     = "1"
+
+  zones {
+    name      = "us-south-1"
+    subnet_id = "015ffb8b-efb1-4c03-8757-29335a07493b"
+  }
+
+  kms_instance_id = "8e9056e6-1936-4dd9-a0a1-51d824765e11"
+  crk = "804cb251-fa0a-46f5-a442-fe42cfb0ed5f"
+}
+```
+
 In the follwoing example, you can create a worker pool for openshift cluster type with entitlement.
 ```terraform
 resource "ibm_container_vpc_worker_pool" "test_pool" {
@@ -77,7 +97,9 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `zones`:
   - `name` - (Required, String) The name of the zone.
   - `subnet_id` - (Required, String) The subnet that you want to use for your worker pool.
- 
+
+- `crk` - Root Key ID for boot volume encryption.
+- `kms_instance_id` - Instance ID for boot volume encryption. 
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

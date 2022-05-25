@@ -286,6 +286,8 @@ func Provider() *schema.Provider {
 			"ibm_database_connection":               database.DataSourceIBMDatabaseConnection(),
 			"ibm_database_point_in_time_recovery":   database.DataSourceIBMDatabasePointInTimeRecovery(),
 			"ibm_database_remotes":                  database.DataSourceIBMDatabaseRemotes(),
+			"ibm_database_backup":                   database.DataSourceIBMDatabaseBackup(),
+			"ibm_database_backups":                  database.DataSourceIBMDatabaseBackups(),
 			"ibm_compute_bare_metal":                classicinfrastructure.DataSourceIBMComputeBareMetal(),
 			"ibm_compute_image_template":            classicinfrastructure.DataSourceIBMComputeImageTemplate(),
 			"ibm_compute_placement_group":           classicinfrastructure.DataSourceIBMComputePlacementGroup(),

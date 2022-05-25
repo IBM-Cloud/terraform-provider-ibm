@@ -28,6 +28,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 
 data "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group_policy.policy.access_group_id
+  transaction_id = "terrformAccessGroupPolicy"
 }
 
 ```
@@ -37,7 +38,8 @@ data "ibm_iam_access_group_policy" "policy" {
 Review the argument references that you can specify for your data source.
 
 - `access_group_id` - (Required, Forces new resource, String) The ID of the access group.
-- `sort`- (Optional, String) The single field sort query for policies. Allowed values are `id`, `type`, `href`, `created_at`, `created_by_id`, `last_modified_at`,`last_modified_by_id`, `state`
+- `sort`- (Optional, String) The single field sort query for policies. Allowed values are `id`, `type`, `href`, `created_at`, `created_by_id`, `last_modified_at`,`last_modified_by_id`, `state`.
+- `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
 ## Attribute reference
 

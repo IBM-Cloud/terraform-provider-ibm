@@ -90,10 +90,15 @@ var HpcsAdmin2 string
 var HpcsToken2 string
 var RealmName string
 var IksSa string
+var IksClusterID string
 var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
 var IcdDbRegion string
+var IcdDbDeploymentId string
+var IcdDbBackupId string
+var KmsInstanceID string
+var CrkID string
 
 // For Power Colo
 
@@ -529,6 +534,18 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
 	}
 
+	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
+	if IcdDbDeploymentId == "" {
+		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+	}
+
+	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")
+	if IcdDbBackupId == "" {
+		IcdDbBackupId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_BACKUP_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3'")
+	}
+
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
@@ -884,6 +901,21 @@ func init() {
 	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
 	if HostPoolID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
+  }
+
+  KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
+	if KmsInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_KMS_INSTANCE_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	CrkID = os.Getenv("IBM_CRK_ID")
+	if CrkID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CRK_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	IksClusterID = os.Getenv("IBM_CLUSTER_ID")
+	if IksClusterID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
 	}
 }
 
