@@ -21,6 +21,7 @@ func TestAccIBMPICloudConnectionDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMPICloudConnectionDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_cloud_connection.example", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_cloud_connection.example", "connection_mode"),
 				),
 			},
 		},
