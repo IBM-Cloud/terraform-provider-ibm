@@ -111,6 +111,15 @@ func TestAccIBMKMSResource_Key_Alias_Key_Check(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName2),
 				),
 			},
+			{
+				Config: testAccCheckIBMKmsResourceAliasWithExistingAlias(instanceName, keyName, aliasName, aliasName2),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName),
+					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias2", "existing_alias", aliasName),
+					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias2", "alias", aliasName2),
+				),
+			},
 		},
 	})
 }
@@ -216,6 +225,34 @@ func testAccCheckIBMKmsResourceAliasTwo(instanceName, KeyName, aliasName, aliasN
 		instance_id = "${ibm_resource_instance.kms_instance.guid}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
+	}
+
+`, instanceName, KeyName, aliasName, aliasName2)
+}
+
+func testAccCheckIBMKmsResourceAliasWithExistingAlias(instanceName, KeyName, aliasName, aliasName2 string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kms_instance" {
+		name              = "%s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "us-south"
+	  }
+	  resource "ibm_kms_key" "test" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "%s"
+		standard_key =  true
+		force_delete = true
+	}
+	resource "ibm_kms_key_alias" "testAlias" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		alias = "%s"
+		key_id = "${ibm_kms_key.test.key_id}"
+	}
+	resource "ibm_kms_key_alias" "testAlias2" {
+		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		alias = "%s"
+		existing_alias = "${ibm_kms_key_alias.testAlais.alias}"
 	}
 
 `, instanceName, KeyName, aliasName, aliasName2)
