@@ -39,6 +39,12 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20220407050707-b4cd0d4da813 h1:UgPApMMM6SglqB+U/EaFHyaoyaEM16RzxyiVah70g4o=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20220407050707-b4cd0d4da813/go.mod h1:UOhxo7T8CdX6sdTY9Dn7rJSgyoTlz1KM9641XcPraH0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220506091544-f67089f8d5d9 h1:zxeiJfE5hRMUH/h4hd+g9M98a4DRfUrD8nNbcteSlrc=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220506091544-f67089f8d5d9/go.mod h1:UOhxo7T8CdX6sdTY9Dn7rJSgyoTlz1KM9641XcPraH0=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220510085630-12dc05e70f29 h1:42c4MfIYppIOBymVz0WHNN3WO9zNPH+9aFNDP2ektYg=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220510085630-12dc05e70f29/go.mod h1:tfNN3lCKuA2+SQvndt0+5CjPr2qn/wdNLjrue1GrOhY=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220512101601-701829d22dbc h1:X3zq0LZyqBzsiX5KJvwzxH7Btl6M/oHqskS/2tL4B5A=
+github.com/IBM-Cloud/bluemix-go v0.0.0-20220512101601-701829d22dbc/go.mod h1:tfNN3lCKuA2+SQvndt0+5CjPr2qn/wdNLjrue1GrOhY=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62 h1:MOkcr6qQGk4tY542ZJ1DggVh2WUP72EEyLB79llFVH8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=

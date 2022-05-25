@@ -151,6 +151,20 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Computed:    true,
 				Description: "Resource Controller URL",
 			},
+			"kms_instance_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Instance ID for boot volume encryption",
+				RequiredWith:     []string{"crk"},
+			},
+			"crk": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Root Key ID for boot volume encryption",
+				RequiredWith:     []string{"kms_instance_id"},
+			},
 		},
 	}
 }
@@ -194,19 +208,21 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 
 	}
 
-	// for _, e := range d.Get("zones").(*schema.Set).List() {
-	// 	value := e.(map[string]interface{})
-	// 	id := value["id"].(string)
-	// 	subnetid := value["subnet_id"].(string)
-
-	// }
-
 	workerPoolConfig := v2.WorkerPoolConfig{
 		Name:        d.Get("worker_pool_name").(string),
 		VpcID:       d.Get("vpc_id").(string),
 		Flavor:      d.Get("flavor").(string),
 		WorkerCount: d.Get("worker_count").(int),
 		Zones:       zone,
+	}
+
+	if v, ok := d.GetOk("kms_instance_id"); ok {
+		crk := d.Get("crk").(string)
+		wve := v2.WorkerVolumeEncryption{
+			KmsInstanceID:     v.(string),
+			WorkerVolumeCRKID: crk,
+		}
+		workerPoolConfig.WorkerVolumeEncryption = &wve
 	}
 
 	if l, ok := d.GetOk("labels"); ok {
@@ -462,6 +478,10 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	d.Set("vpc_id", workerPool.VpcID)
 	if workerPool.Taints != nil {
 		d.Set("taints", flattenWorkerPoolTaints(workerPool))
+	}
+	if workerPool.WorkerVolumeEncryption != nil {
+		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
+		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
 	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {

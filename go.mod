@@ -3,7 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.16
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20220407050707-b4cd0d4da813
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20220512101601-701829d22dbc
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62
 	github.com/IBM-Cloud/power-go-client v1.1.9
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
