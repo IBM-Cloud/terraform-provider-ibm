@@ -40,6 +40,8 @@ func TestAccIBMContainerDedicatedHostPoolBasic(t *testing.T) {
 						"ibm_container_dedicated_host_pool.test_dhostpool", "host_count", "0"),
 					resource.TestCheckResourceAttr(
 						"ibm_container_dedicated_host_pool.test_dhostpool", "state", "created"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_dedicated_host_pool.test_dhostpool", "zones.#", "0"),
 				),
 			},
 			{

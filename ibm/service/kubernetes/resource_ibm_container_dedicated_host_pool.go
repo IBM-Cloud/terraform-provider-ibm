@@ -58,7 +58,7 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"capacity": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -166,10 +166,10 @@ func getIBMContainerDedicatedHostPool(hostPoolID string, d *schema.ResourceData,
 	zones := make([]map[string]interface{}, len(dedicatedHostPool.Zones))
 	for i, zone := range dedicatedHostPool.Zones {
 		zones[i] = map[string]interface{}{
-			"capacity": map[string]interface{}{
+			"capacity": []interface{}{map[string]interface{}{
 				"memory_bytes": zone.Capacity.MemoryBytes,
 				"vcpu":         zone.Capacity.VCPU,
-			},
+			}},
 			"host_count": zone.HostCount,
 			"zone":       zone.Zone,
 		}
