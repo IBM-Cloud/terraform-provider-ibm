@@ -34,11 +34,13 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				ValidateFunc:  validate.ValidateAllowedStringValues(bucketTypes),
 				Optional:      true,
+				RequiredWith:  []string{"bucket_region"},
 				ConflictsWith: []string{"satellite_location_id"},
 			},
 			"bucket_region": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				RequiredWith:  []string{"bucket_type"},
 				ConflictsWith: []string{"satellite_location_id"},
 			},
 			"resource_instance_id": {
@@ -46,8 +48,10 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Required: true,
 			},
 			"satellite_location_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"bucket_type", "bucket_region"},
+				ExactlyOneOf:  []string{"satellite_location_id", "bucket_region"},
 			},
 			"endpoint_type": {
 				Type:          schema.TypeString,
@@ -346,7 +350,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if bucketType == "sl" {
-		apiEndpoint = SelectSatlocCosApi(bucketLocationConvert(bucketType), serviceID, satlc_id)
+		apiEndpoint = SelectSatlocCosApi(bucketType, serviceID, satlc_id)
 
 	} else {
 		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
@@ -398,7 +402,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if bucketType != "sl" {
-
 		bucketLocationInput := &s3.GetBucketLocationInput{
 			Bucket: aws.String(bucketName),
 		}
@@ -452,21 +455,18 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if bucketType == "sl" {
-
-		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, bucketType)
+		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, satlc_id)
 
 		sess.SetServiceURL(satconfig)
 
 	}
 
 	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
-
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
 
 	if bucketPtr != nil {
-
 		if bucketPtr.Firewall != nil {
 			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
 		}
@@ -560,9 +560,6 @@ func bucketLocationConvert(locationtype string) string {
 	}
 	if locationtype == "single_site_location" {
 		return "ssl"
-	}
-	if locationtype == "satellite_location_id" {
-		return "sl"
 	}
 	return ""
 }
