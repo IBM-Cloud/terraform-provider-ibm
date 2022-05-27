@@ -9,6 +9,7 @@ const (
 	PIKeyName = "name"
 	PIKey     = "ssh_key"
 	PIKeyDate = "creation_date"
+	PIKeyID   = "key_id"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
