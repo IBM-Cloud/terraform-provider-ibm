@@ -123,6 +123,33 @@ func TestAccIBMContainerVpcClusterImageSecuritySetting(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterDedicatedHost(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-vpc-cluster-dhost-%d", acctest.RandIntRange(10, 100))
+	hostPoolID := acc.HostPoolID
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterDedicatedHostSetting(
+					clusterName,
+					acc.IksClusterVpcID,
+					"bx2d.4x16",
+					acc.IksClusterSubnetID,
+					acc.IksClusterResourceGroupID,
+					hostPoolID,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_dhost_vpc_cluster", "host_pool_id", hostPoolID),
+				),
+			},
+		},
+	},
+	)
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -364,6 +391,21 @@ func testAccCheckIBMContainerVpcClusterImageSecuritySetting(name, setting string
 		  }
 		image_security_enforcement = %s
 	  }`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.SubnetID, setting)
+}
+
+func testAccCheckIBMContainerVpcClusterDedicatedHostSetting(name, vpcID, flavor, subnetID, rgroupID, hostpoolID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "testacc_dhost_vpc_cluster" {
+		name = "%s"
+		vpc_id = "%s"
+		flavor = "%s"
+		zones {
+		  subnet_id = "%s"
+		  name      = "us-south-1"
+		}
+		resource_group_id = "%s"
+		host_pool_id = "%s"
+	}`, name, vpcID, flavor, subnetID, rgroupID, hostpoolID)
 }
 
 // This test is here to help to focus on given resources, but requires everything else existing already

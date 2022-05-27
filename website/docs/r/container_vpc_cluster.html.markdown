@@ -179,6 +179,7 @@ Review the argument references that you can specify for your resource.
 - `image_security_enforcement` - (Optional, Bool) Set to **true** to enable image security enforcement policies in a cluster.
 - `name` - (Required, Forces new resource, String) The name of the cluster.
 - `kms_config` - (Optional, String) Use to attach a Key Protect instance to a cluster. Nested `kms_config` block has an `instance_id`, `crk_id`, `private_endpoint`.
+- `host_pool_id` - (Optional, String) If provided, the cluster will be associated with a dedicated host pool identified by this ID.
 
   Nested scheme for `kms_config`:
   - `crk_id` - (Optional, String) The ID of the customer root key (CRK).

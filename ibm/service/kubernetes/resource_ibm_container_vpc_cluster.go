@@ -387,6 +387,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Set true to enable image security enforcement policies",
 			},
 
+			"host_pool_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the cluster's associated host pool",
+			},
+
 			flex.ResourceName: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -491,6 +498,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Flavor:      flavor,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
+	}
+
+	if hpid, ok := d.GetOk("host_pool_id"); ok {
+		workerpool.HostPoolID = hpid.(string)
 	}
 
 	if v, ok := d.GetOk("kms_instance_id"); ok {
@@ -994,6 +1005,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
+	d.Set("host_pool_id", workerPool.HostPoolID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
