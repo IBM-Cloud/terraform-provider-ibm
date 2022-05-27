@@ -917,6 +917,7 @@ func init() {
 	if IksClusterID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
 	}
+
 }
 
 var TestAccProviders map[string]*schema.Provider
