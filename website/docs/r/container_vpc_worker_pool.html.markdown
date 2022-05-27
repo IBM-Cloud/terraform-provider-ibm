@@ -80,6 +80,7 @@ Review the argument references that you can specify for your resource.
 - `cluster` - (Required, Forces new resource, String) The name or ID of the cluster.
 - `entitlement`- (Optional, String) The OpenShift cluster entitlement avoids incurred OCP license charges and use cloud pak with OCP license entitlement to add the OpenShift cluster worker pool. **Note** <ul><li> It is set as one time creation of the worker pool. There is no impacts on any modification.</li><li> Set the argument to `entitlement` only when you use cluster with a cloud pak that has an OpenShift entitlement. </li></ul>
 - `flavor` - (Required, Forces new resource, String) The flavor of the worker node.
+- `host_pool_id` - (Optional, String) The ID of the dedicated host pool the worker pool is associated with.
 - `labels` (Optional, Map) A list of labels that you want to add to all the worker nodes in the worker pool.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `taints` - (Optional, Set) A nested block that sets or removes Kubernetes taints for all worker nodes in a worker pool

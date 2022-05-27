@@ -30,6 +30,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `flavor` - (String) The flavour of the worker node.
+- `host_pool_id` -(String) The ID of the dedicated host pool the worker pool is associated with.
 - `id` - (String) The unique identifier of the worker pool resource, as <cluster_name_id>/<worker_pool_id>.
 - `isolation` - (String) Isolation for the worker node.
 - `labels` - (String) Labels on all the workers in the worker pool. 
