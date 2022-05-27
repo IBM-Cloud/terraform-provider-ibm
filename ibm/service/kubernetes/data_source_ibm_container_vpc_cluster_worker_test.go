@@ -29,6 +29,23 @@ func TestAccIBMContainerVPCClusterWorkerDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVPCClusterWorkerDataSource_dedicatedhost(t *testing.T) {
+	clusterName := acc.ClusterName
+	hostpoolID := acc.HostPoolID
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVPCClusterWorkerDataSourceDedicatedHostConfig(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_container_vpc_cluster_worker.dhost_vpc_worker", "host_pool_id", hostpoolID),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(name string) string {
 	return testAccCheckIBMVpcContainerWorkerPoolBasic(name) + `
 	data "ibm_container_vpc_cluster" "testacc_ds_cluster" {
@@ -39,4 +56,16 @@ func testAccCheckIBMContainerVPCClusterWorkerDataSourceConfig(name string) strin
 	    worker_id = data.ibm_container_vpc_cluster.testacc_ds_cluster.workers[0]
 	}
 `
+}
+
+func testAccCheckIBMContainerVPCClusterWorkerDataSourceDedicatedHostConfig(clusterName string) string {
+	return fmt.Sprintf(`
+	data "ibm_container_vpc_cluster" "dhost_vpc_cluster" {
+		cluster_name_id = "%s"
+	}
+	data "ibm_container_vpc_cluster_worker" "dhost_vpc_worker" {
+	    cluster_name_id = "%s"
+	    worker_id = data.ibm_container_vpc_cluster.dhost_vpc_cluster.workers[0]
+	}
+	`, clusterName, clusterName)
 }
