@@ -98,7 +98,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Description: "Healthy state of the custom resolver",
 			},
 			pdnsCustomResolverLocations: {
-				Type:             schema.TypeSet,
+				Type:             schema.TypeList,
 				Description:      "Locations on which the custom resolver will be running",
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -210,8 +210,8 @@ func resouceIBMPrivateDNSCustomResolverCreate(context context.Context, d *schema
 	crLocationCreate := false
 	if _, ok := d.GetOk(pdnsCustomResolverLocations); ok {
 		crLocationCreate = true
-		crLocations := d.Get(pdnsCustomResolverLocations).(*schema.Set)
-		if cr_highaval && crLocations.Len() <= 1 {
+		crLocations := d.Get(pdnsCustomResolverLocations).([]interface{})
+		if cr_highaval && len(crLocations) <= 1 {
 			return diag.FromErr(fmt.Errorf("To meet high availability status, configure custom resolvers with a minimum of two resolver locations. A maximum of four locations can be configured within the same subnet location."))
 		}
 		customResolverOption.SetLocations(expandPdnsCRLocations(crLocations))
@@ -401,8 +401,8 @@ func flattenPdnsCRLocations(crLocation []dnssvcsv1.Location) interface{} {
 	return flattened
 }
 
-func expandPdnsCRLocations(crLocList *schema.Set) (crLocations []dnssvcsv1.LocationInput) {
-	for _, iface := range crLocList.List() {
+func expandPdnsCRLocations(crLocList []interface{}) (crLocations []dnssvcsv1.LocationInput) {
+	for _, iface := range crLocList {
 		var locOpt dnssvcsv1.LocationInput
 		loc := iface.(map[string]interface{})
 		locOpt.SubnetCrn = core.StringPtr(loc[pdnsCRLocationSubnetCrn].(string))
