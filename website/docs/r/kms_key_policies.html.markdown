@@ -30,9 +30,26 @@ resource "ibm_kms_key" "key" {
   standard_key   = false
 }
 
+resource "ibm_kms_key_alias" "key_alias" {
+    instance_id = ibm_kms_key.test.instance_id
+    alias  = "alias"
+    key_id = "ibm_kms_key.test.key_id"
+}
+
 resource "ibm_kms_key_policies" "key_policy" {
   instance_id = ibm_resource_instance.kms_instance.guid
   key_id = ibm_kms_key.key.key_id
+  rotation {
+       interval_month = 3
+    }
+    dual_auth_delete {
+       enabled = false
+    }
+}
+OR
+resource "ibm_kms_key_policies" "key_policy" {
+  instance_id = ibm_resource_instance.kms_instance.guid
+  alias= ibm_kms_key_alias.key_alias.alias
   rotation {
        interval_month = 3
     }
@@ -47,6 +64,8 @@ resource "ibm_kms_key_policies" "key_policy" {
 The following arguments are supported:
 
 - `endpoint_type` - (Optional, String) The type of the public or private endpoint to be used for fetching policies.
+- `key_id` - (Required - if the alias is not provided, String) The ID of the key.
+- `alias` - (Required - if the key_id is not provided, String) The alias created for the key.
 - `instance_id` - (Required, String) The key-protect instance ID for creating policies.
 - `rotation` - (Optional,list) The key rotation time interval in months, with a minimum of 1, and a maximum of 12. Atleast one of `rotation` and `dual_auth_delete` is required
 
@@ -64,6 +83,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - (String) The CRN of the key.
 - `key_id` - (String) The ID of the key.
+- `alias`  - (String) The alias of the key.
 - `rotation` - (List) The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
 
     Nested scheme for `rotation`:

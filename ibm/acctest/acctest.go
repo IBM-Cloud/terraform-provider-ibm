@@ -90,12 +90,15 @@ var HpcsAdmin2 string
 var HpcsToken2 string
 var RealmName string
 var IksSa string
+var IksClusterID string
 var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
 var IcdDbRegion string
 var IcdDbDeploymentId string
 var IcdDbBackupId string
+var KmsInstanceID string
+var CrkID string
 
 // For Power Colo
 
@@ -167,6 +170,9 @@ var ClusterName string
 // Satellite instance
 var Satellite_location_id string
 var Satellite_Resource_instance_id string
+
+//Dedicated host
+var HostPoolID string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -905,6 +911,27 @@ func init() {
 	if Satellite_Resource_instance_id == "" {
 		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
 	}
+  
+	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
+	if HostPoolID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
+	}
+
+	KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
+	if KmsInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_KMS_INSTANCE_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	CrkID = os.Getenv("IBM_CRK_ID")
+	if CrkID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CRK_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	IksClusterID = os.Getenv("IBM_CLUSTER_ID")
+	if IksClusterID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
+	}
+
 }
 
 var TestAccProviders map[string]*schema.Provider
