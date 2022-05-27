@@ -67,7 +67,7 @@ Review the argument reference that you can specify for your resource.
 - `enabled`- (Optional, Bool) To make custom resolver enabled/disable.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
-- `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
+- `locations`- (Optional, List) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
@@ -76,7 +76,7 @@ In addition to all argument reference list, you can access the following attribu
 - `custom_resolver_id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
-- `locations` - (Set) Locations on which the custom resolver will be running.
+- `locations` - (List) Locations on which the custom resolver will be running.
 
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.

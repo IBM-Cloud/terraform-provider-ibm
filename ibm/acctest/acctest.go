@@ -167,6 +167,9 @@ var Scc_posture_collector_id_scope_update []string
 //ROKS Cluster
 var ClusterName string
 
+//Dedicated host
+var HostPoolID string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -893,6 +896,11 @@ func init() {
 	ClusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
 	if ClusterName == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
+	if HostPoolID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
 	}
 
 	KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
