@@ -174,7 +174,7 @@ func ResourceIBMPrivateDNSGLBPool() *schema.Resource {
 }
 
 func ResourceIBMPrivateDNSGLBPoolValidator() *validate.ResourceValidator {
-	regions := "us-south,us-east,eu-gb,eu-du,au-syd,jp-tok"
+	regions := "us-south,us-east,eu-gb,eu-de,jp-tok,au-syd,jp-osa,eu-fr2,ca-tor,br-sao"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
