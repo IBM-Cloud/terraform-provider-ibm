@@ -353,6 +353,7 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 			"isolation":    workerPool.Isolation,
 			"labels":       workerPool.Labels,
 			"state":        workerPool.Lifecycle.ActualState,
+			"host_pool_id": workerPool.HostPoolID,
 		}
 		zones := workerPool.Zones
 		zonesConfig := make([]map[string]interface{}, len(zones))
