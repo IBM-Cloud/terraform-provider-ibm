@@ -48,6 +48,22 @@ func TestAccIBMIAMUserPolicyDataSource_Multiple_Policies(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMUserPolicyDataSource_Service_Specific_Attributes(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyDataSourceServiceSpecificAttributesConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_user_policy.testacc_ds_user_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMUserPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -115,4 +131,26 @@ data "ibm_iam_user_policy" "testacc_ds_user_policy" {
   sort = "-id"
 }`, name, acc.IAMUser, acc.IAMUser)
 
+}
+
+func testAccCheckIBMIAMUserPolicyDataSourceServiceSpecificAttributesConfig() string {
+	return fmt.Sprintf(`
+
+resource "ibm_iam_user_policy" "policy" {
+	ibm_id = "%s"
+	roles  = ["Viewer"]
+	resource_attributes {
+		name     = "serviceName"
+		value    = "containers-kubernetes"
+	}
+	resource_attributes {
+		name     = "namespace"
+		value    = "test"
+	}
+}
+
+data "ibm_iam_user_policy" "testacc_ds_user_policy" {
+	ibm_id = ibm_iam_user_policy.policy.ibm_id
+}
+`, acc.IAMUser)
 }
