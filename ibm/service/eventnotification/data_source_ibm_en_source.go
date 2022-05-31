@@ -82,10 +82,8 @@ func dataSourceIBMEnSourceRead(context context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if result.Enabled != nil {
-		if err = d.Set("Enabled", result.Enabled); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting Enabled: %s", err))
-		}
+	if err = d.Set("enabled", result.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enabled flag: %s", err))
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {

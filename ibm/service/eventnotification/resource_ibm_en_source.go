@@ -42,7 +42,8 @@ func ResourceIBMEnSource() *schema.Resource {
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Required:    true,
+				Default:     false,
 				Description: "The enabled flag for source",
 			},
 			"source_id": {
@@ -74,9 +75,7 @@ func resourceIBMEnSourceCreate(context context.Context, d *schema.ResourceData, 
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	if _, ok := d.GetOk("enabled"); ok {
-		options.SetEnabled(d.Get("enabled").(bool))
-	}
+	options.SetEnabled(d.Get("enabled").(bool))
 
 	result, response, err := enClient.CreateSourcesWithContext(context, options)
 	if err != nil {
@@ -163,9 +162,7 @@ func resourceIBMEnSourceUpdate(context context.Context, d *schema.ResourceData, 
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		if _, ok := d.GetOk("enabled"); ok {
-			options.SetEnabled(d.Get("enabled").(bool))
-		}
+		options.SetEnabled(d.Get("enabled").(bool))
 
 		_, response, err := enClient.UpdateSourceWithContext(context, options)
 		if err != nil {
