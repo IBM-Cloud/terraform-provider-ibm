@@ -47,6 +47,29 @@ func TestAccIBMISSubnetReservedIPResource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISSubnetReservedIPResource_address(t *testing.T) {
+	var reservedIPID string
+	vpcName := fmt.Sprintf("tfresip-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tfresip-subnet-%d", acctest.RandIntRange(10, 100))
+	reservedIPName := fmt.Sprintf("tfresip-reservedip-%d", acctest.RandIntRange(10, 100))
+	terraformTag := "ibm_is_subnet_reserved_ip.resIP1"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckisSubnetReservedIPDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Tests create
+				Config: testAccCheckISSubnetReservedIPConfigAddress(vpcName, subnetName, reservedIPName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckISSubnetReservedIPExists(terraformTag, &reservedIPID),
+					resource.TestCheckResourceAttr(terraformTag, "name", reservedIPName),
+					resource.TestCheckResourceAttr(terraformTag, "address", "10.240.0.14"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckisSubnetReservedIPDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -130,4 +153,24 @@ func testAccCheckISSubnetReservedIPConfigBasic(vpcName, subnetName, resIPName st
 		target = ibm_is_virtual_endpoint_gateway.endpoint_gateway.id
 	  }
 	`, vpcName, subnetName, resIPName)
+}
+func testAccCheckISSubnetReservedIPConfigAddress(vpcName, subnetName, resIPName string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "vpc1" {
+		name = "%s"
+	  }
+
+	  resource "ibm_is_subnet" "subnet1" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.vpc1.id
+		zone 					 = "%s"
+		ipv4_cidr_block 		 = "%s"
+	  }
+
+	  resource "ibm_is_subnet_reserved_ip" "resIP1" {
+		subnet 		= ibm_is_subnet.subnet1.id
+		name 		= "%s"
+		address		= "${replace(ibm_is_subnet.subnet1.ipv4_cidr_block, "0/24", "14")}"
+	  }
+	`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, resIPName)
 }

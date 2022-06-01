@@ -100,7 +100,7 @@ In addition to all argument reference list, you can access the following attribu
 2. Host assignment to workerpool:
 
 -  When you attach a host to a Satellite location, the host automatically assigned to worker pools in satellite resources.
-   Auto-assignment works based on matching host labels (https://cloud.ibm.com/docs/satellite?topic=satellite-hosts#host-autoassign-ov).
+   Auto-assignment works based on matching host labels (https://cloud.ibm.com/docs/satellite?topic=satellite-assigning-hosts#host-autoassign-ov).
 -  For manual assignment, Use `ibm_satellite_host` resource to assign the host to workerpools.
 
 

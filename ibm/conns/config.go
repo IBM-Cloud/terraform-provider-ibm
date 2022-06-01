@@ -60,6 +60,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
@@ -275,6 +276,7 @@ type ClientSession interface {
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	AtrackerV2() (*atrackerv2.AtrackerV2, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
@@ -546,6 +548,9 @@ type clientSession struct {
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
 	atrackerClientErr error
+
+	atrackerClientV2    *atrackerv2.AtrackerV2
+	atrackerClientV2Err error
 
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
@@ -1060,6 +1065,10 @@ func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
 }
 
+func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
+	return session.atrackerClientV2, session.atrackerClientV2Err
+}
+
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
@@ -1523,6 +1532,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+	// Version 2 Atracker
+	var atrackerClientV2URL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		atrackerClientV2URL = atrackerv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		atrackerClientV2URL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientV2URL)
+	}
+	atrackerClientV2Options := &atrackerv2.AtrackerV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientV2URL),
+	}
+	session.atrackerClientV2, err = atrackerv2.NewAtrackerV2(atrackerClientV2Options)
+	if err == nil {
+		// Enable retries for API calls
+		session.atrackerClientV2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClientV2.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
 	}
 
 	// SCC FINDINGS Service

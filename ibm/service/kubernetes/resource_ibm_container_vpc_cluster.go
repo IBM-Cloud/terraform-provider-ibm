@@ -276,6 +276,20 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
+			"kms_instance_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Instance ID for boot volume encryption",
+				RequiredWith:     []string{"crk"},
+			},
+			"crk": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Root Key ID for boot volume encryption",
+				RequiredWith:     []string{"kms_instance_id"},
+			},
 
 			//Get Cluster info Request
 			"state": {
@@ -371,6 +385,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Set true to enable image security enforcement policies",
+			},
+
+			"host_pool_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the cluster's associated host pool",
 			},
 
 			flex.ResourceName: {
@@ -477,6 +498,19 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		Flavor:      flavor,
 		WorkerCount: workerCount,
 		Zones:       zonesList,
+	}
+
+	if hpid, ok := d.GetOk("host_pool_id"); ok {
+		workerpool.HostPoolID = hpid.(string)
+	}
+
+	if v, ok := d.GetOk("kms_instance_id"); ok {
+		crk := d.Get("crk").(string)
+		wve := v2.WorkerVolumeEncryption{
+			KmsInstanceID:     v.(string),
+			WorkerVolumeCRKID: crk,
+		}
+		workerpool.WorkerVolumeEncryption = &wve
 	}
 
 	if l, ok := d.GetOk("worker_labels"); ok {
@@ -971,6 +1005,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
+	d.Set("host_pool_id", workerPool.HostPoolID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -987,6 +1022,11 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	d.Set(flex.ResourceCRN, cls.CRN)
 	d.Set(flex.ResourceStatus, cls.State)
 	d.Set(flex.ResourceGroupName, cls.ResourceGroupName)
+
+	if workerPool.WorkerVolumeEncryption != nil {
+		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
+		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
+	}
 
 	return nil
 }
