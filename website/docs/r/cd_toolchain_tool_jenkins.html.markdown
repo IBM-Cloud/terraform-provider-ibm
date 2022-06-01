@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_jenkins"
 description: |-
   Manages cd_toolchain_tool_jenkins.
-subcategory: "Toolchain"
+subcategory: "CD Toolchain"
 ---
 
 # ibm_cd_toolchain_tool_jenkins

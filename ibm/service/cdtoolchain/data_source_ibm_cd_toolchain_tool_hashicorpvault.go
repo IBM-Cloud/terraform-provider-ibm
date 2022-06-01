@@ -1,0 +1,249 @@
+// Copyright IBM Corp. 2022 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package cdtoolchain
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.ibm.com/org-ids/toolchain-go-sdk/cdtoolchainv2"
+)
+
+func DataSourceIBMCdToolchainToolHashicorpvault() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: DataSourceIBMCdToolchainToolHashicorpvaultRead,
+
+		Schema: map[string]*schema.Schema{
+			"toolchain_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "ID of the toolchain.",
+			},
+			"integration_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "ID of the tool integration bound to the toolchain.",
+			},
+			"resource_group_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Resource group where tool integration can be found.",
+			},
+			"crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Tool integration CRN.",
+			},
+			"toolchain_crn": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "CRN of toolchain which the integration is bound to.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URI representing the tool integration.",
+			},
+			"referent": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Information on URIs to access this resource through the UI or API.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ui_href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URI representing the this resource through the UI.",
+						},
+						"api_href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URI representing the this resource through an API.",
+						},
+					},
+				},
+			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Tool integration name.",
+			},
+			"updated_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Latest tool integration update timestamp.",
+			},
+			"parameters": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Parameters to be used to create the integration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type the server URL for your HashiCorp Vault instance.",
+						},
+						"authentication_method": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Choose the authentication method for your HashiCorp Vault instance.",
+						},
+						"token": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Type or select the authentication token for your HashiCorp Vault instance.",
+						},
+						"role_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Type or select the authentication role ID for your HashiCorp Vault instance.",
+						},
+						"secret_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Type or select the authentication secret ID for your HashiCorp Vault instance.",
+						},
+						"dashboard_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type the URL that you want to navigate to when you click the HashiCorp Vault integration tile.",
+						},
+						"path": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type the mount path where your secrets are stored in your HashiCorp Vault instance.",
+						},
+						"secret_filter": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type a regular expression to filter the list of secret names returned from your HashiCorp Vault instance.",
+						},
+						"default_secret": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type a default secret name that will be selected or used if no list of secret names are returned from your HashiCorp Vault instance.",
+						},
+						"username": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type or select the authentication username for your HashiCorp Vault instance.",
+						},
+						"password": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "Type or select the authentication password for your HashiCorp Vault instance.",
+						},
+					},
+				},
+			},
+			"state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Current configuration state of the tool integration.",
+			},
+		},
+	}
+}
+
+func DataSourceIBMCdToolchainToolHashicorpvaultRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getIntegrationByIDOptions := &cdtoolchainv2.GetIntegrationByIDOptions{}
+
+	getIntegrationByIDOptions.SetToolchainID(d.Get("toolchain_id").(string))
+	getIntegrationByIDOptions.SetIntegrationID(d.Get("integration_id").(string))
+
+	getIntegrationByIDResponse, response, err := cdToolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
+	if err != nil {
+		log.Printf("[DEBUG] GetIntegrationByIDWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
+	}
+
+	if *getIntegrationByIDResponse.ToolID != "hashicorpvault" {
+		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *getIntegrationByIDResponse.ToolID))
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", *getIntegrationByIDOptions.ToolchainID, *getIntegrationByIDOptions.IntegrationID))
+
+	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	}
+
+	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+	}
+
+	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
+	}
+
+	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
+	referent := []map[string]interface{}{}
+	if getIntegrationByIDResponse.Referent != nil {
+		modelMap, err := DataSourceIBMCdToolchainToolHashicorpvaultToolIntegrationReferentToMap(getIntegrationByIDResponse.Referent)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		referent = append(referent, modelMap)
+	}
+	if err = d.Set("referent", referent); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting referent %s", err))
+	}
+
+	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+
+	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
+	}
+
+	parameters := []map[string]interface{}{}
+	if getIntegrationByIDResponse.Parameters != nil {
+		modelMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, DataSourceIBMCdToolchainToolHashicorpvault(), nil)
+		parameters = append(parameters, modelMap)
+	}
+	if err = d.Set("parameters", parameters); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting parameters %s", err))
+	}
+
+	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
+	}
+
+	return nil
+}
+
+func DataSourceIBMCdToolchainToolHashicorpvaultToolIntegrationReferentToMap(model *cdtoolchainv2.ToolIntegrationReferent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.UIHref != nil {
+		modelMap["ui_href"] = *model.UIHref
+	}
+	if model.APIHref != nil {
+		modelMap["api_href"] = *model.APIHref
+	}
+	return modelMap, nil
+}

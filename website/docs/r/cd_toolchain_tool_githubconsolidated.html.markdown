@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_githubconsolidated"
 description: |-
   Manages cd_toolchain_tool_githubconsolidated.
-subcategory: "Toolchain"
+subcategory: "CD Toolchain"
 ---
 
 # ibm_cd_toolchain_tool_githubconsolidated

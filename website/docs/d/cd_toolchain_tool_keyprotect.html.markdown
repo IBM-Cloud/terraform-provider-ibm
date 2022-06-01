@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_keyprotect"
 description: |-
   Get information about cd_toolchain_tool_keyprotect
-subcategory: "Toolchain"
+subcategory: "CD Toolchain"
 ---
 
 # ibm_cd_toolchain_tool_keyprotect

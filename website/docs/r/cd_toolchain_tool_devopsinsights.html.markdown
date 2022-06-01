@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_devopsinsights"
 description: |-
   Manages cd_toolchain_tool_devopsinsights.
-subcategory: "Toolchain"
+subcategory: "CD Toolchain"
 ---
 
 # ibm_cd_toolchain_tool_devopsinsights

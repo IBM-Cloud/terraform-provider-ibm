@@ -6,47 +6,47 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entry to `import`:
 ```
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/toolchain"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
 ```
 
 - Add the following entries to `DataSourcesMap`:
 ```
-    "ibm_cd_toolchain_tool_sonarqube": toolchain.DataSourceIBMCdToolchainToolSonarqube(),
+    "ibm_cd_toolchain_tool_sonarqube": cdtoolchain.DataSourceIBMCdToolchainToolSonarqube(),
 ```
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_cd_toolchain_tool_sonarqube": toolchain.ResourceIBMCdToolchainToolSonarqube(),
+    "ibm_cd_toolchain_tool_sonarqube": cdtoolchain.ResourceIBMCdToolchainToolSonarqube(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
 ``` 
-    "ibm_cd_toolchain_tool_sonarqube": toolchain.ResourceIBMCdToolchainToolSonarqubeValidator(),
+    "ibm_cd_toolchain_tool_sonarqube": cdtoolchain.ResourceIBMCdToolchainToolSonarqubeValidator(),
 ```
 
 ### Changes to `config.go`
 
 - Add an import for the generated Go SDK:
 ```
-    "github.ibm.com/org-ids/toolchain-go-sdk/toolchainv2"
+    "github.ibm.com/org-ids/toolchain-go-sdk/cdtoolchainv2"
 ```
 
 - Add a method to the `ClientSession interface`:
 ```
-    ToolchainV2()   (*toolchainv2.ToolchainV2, error)
+    CdToolchainV2()   (*cdtoolchainv2.CdToolchainV2, error)
 ```
 
 - Add two fields to the `clientSession struct`:
 ```
-    toolchainClient     *toolchainv2.ToolchainV2
-    toolchainClientErr  error
+    cdToolchainClient     *cdtoolchainv2.CdToolchainV2
+    cdToolchainClientErr  error
 ```
 
 - Implement a new method on the `clientSession struct`:
 ```
-// Toolchain
-func (session clientSession) ToolchainV2() (*toolchainv2.ToolchainV2, error) {
-    return session.toolchainClient, session.toolchainClientErr
+// CD Toolchain
+func (session clientSession) CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error) {
+    return session.cdToolchainClient, session.cdToolchainClientErr
 }
 ```
 
@@ -57,37 +57,37 @@ func (session clientSession) ToolchainV2() (*toolchainv2.ToolchainV2, error) {
   add the code to initialize the service client
 ```
     // Construct an "options" struct for creating the service client.
-    var toolchainClientURL string
+    var cdToolchainClientURL string
     if c.Visibility == "private" || c.Visibility == "public-and-private" {
-        toolchainClientURL, err = toolchainv2.GetServiceURLForRegion("private." + c.Region)
+        cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion("private." + c.Region)
         if err != nil && c.Visibility == "public-and-private" {
-            toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
+            cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
         }
     } else {
-        toolchainClientURL, err = toolchainv2.GetServiceURLForRegion(c.Region)
+        cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
     }
     if err != nil {
-        toolchainClientURL = toolchainv2.DefaultServiceURL
+        cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
     }
     if fileMap != nil && c.Visibility != "public-and-private" {
-		toolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, toolchainClientURL)
+		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, cdToolchainClientURL)
 	}
-    toolchainClientOptions := &toolchainv2.ToolchainV2Options{
+    cdToolchainClientOptions := &cdtoolchainv2.CdToolchainV2Options{
         Authenticator: authenticator,
-        URL: EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, toolchainClientURL),
+        URL: EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, cdToolchainClientURL),
     }
 
     // Construct the service client.
-    session.toolchainClient, err = toolchainv2.NewToolchainV2(toolchainClientOptions)
+    session.cdToolchainClient, err = cdtoolchainv2.NewCdToolchainV2(cdToolchainClientOptions)
     if err == nil {
         // Enable retries for API calls
-        session.toolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+        session.cdToolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
         // Add custom header for analytics
-        session.toolchainClient.SetDefaultHeaders(gohttp.Header{
+        session.cdToolchainClient.SetDefaultHeaders(gohttp.Header{
             "X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
         })
     } else {
-        session.toolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
+        session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring CD Toolchain service: %q", err)
     }
 ```
 
@@ -96,5 +96,5 @@ func (session clientSession) ToolchainV2() (*toolchainv2.ToolchainV2, error) {
 Insert the following line into the website/allowed-subcategories.txt file (in alphabetic order):
 
 ```
-Toolchain
+CD Toolchain
 ``` 
