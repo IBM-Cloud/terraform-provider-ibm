@@ -125,7 +125,7 @@ func ResourceIBMCdToolchainToolJenkins() *schema.Resource {
 				Computed:    true,
 				Description: "Current configuration state of the tool integration.",
 			},
-			"instance_id": &schema.Schema{
+			"integration_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Tool integration ID.",
@@ -253,8 +253,8 @@ func ResourceIBMCdToolchainToolJenkinsRead(context context.Context, d *schema.Re
 	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
-	if err = d.Set("instance_id", getIntegrationByIDResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
+	if err = d.Set("integration_id", getIntegrationByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting integration_id: %s", err))
 	}
 
 	return nil
