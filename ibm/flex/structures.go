@@ -2277,6 +2277,22 @@ func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func InstanceProfileValidate(diff *schema.ResourceDiff) error {
+	if diff.Id() != "" && diff.HasChange("profile") {
+		o, n := diff.GetChange("profile")
+		old := o.(string)
+		new := n.(string)
+		log.Println("old profile : ", old)
+		log.Println("new profile : ", new)
+		if !strings.Contains(old, "d") && strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		} else if strings.Contains(old, "d") && !strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		}
+	}
+	return nil
+}
+
 func ResourceVolumeValidate(diff *schema.ResourceDiff) error {
 
 	if diff.Id() != "" && diff.HasChange("capacity") {
