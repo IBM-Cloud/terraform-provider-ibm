@@ -10,7 +10,7 @@ Cloud Foundry
 Cloudant Databases
 Container Registry
 Context Based Restrictions
-Continuous Delivery Pipeline
+CD Tekton Pipeline
 Direct Link Gateway
 DNS Services
 Enterprise Management

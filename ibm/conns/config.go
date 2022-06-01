@@ -286,7 +286,7 @@ type ClientSession interface {
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
-	ContinuousDeliveryPipelineV2() (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error)
+	CdTektonPipelineV2()   (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 }
 
 type clientSession struct {
@@ -586,9 +586,9 @@ type clientSession struct {
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
 
-	// Tekton Pipeline
-	continuousDeliveryPipelineClient    *continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2
-	continuousDeliveryPipelineClientErr error
+	// CD Tekton Pipeline
+	cdTektonPipelineClient     *cdtektonpipelinev2.CdTektonPipelineV2
+    cdTektonPipelineClientErr  error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1118,9 +1118,9 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
-// Continuous Delivery Pipeline
-func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error) {
-	return session.continuousDeliveryPipelineClient, session.continuousDeliveryPipelineClientErr
+// CD Tekton Pipeline
+func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error) {
+    return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -3027,37 +3027,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
-	var continuousDeliveryPipelineClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
-		}
-	} else {
-		continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
-	}
+	var cdTektonPipelineClientURL string
+    if c.Visibility == "private" || c.Visibility == "public-and-private" {
+        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
+        if err != nil && c.Visibility == "public-and-private" {
+            cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+        }
+    } else {
+        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+    }
 	if err != nil {
-		continuousDeliveryPipelineClientURL = continuousdeliverypipelinev2.DefaultServiceURL
+        cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
+    }
+    if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, cdTektonPipelineClientURL)
 	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		continuousDeliveryPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, continuousDeliveryPipelineClientURL)
-	}
-	continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, containerRegistryClientURL),
-		Authenticator: authenticator,
-	}
+    cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
+        Authenticator: authenticator,
+        URL: EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
+    }
 	// Construct the service client.
-	session.continuousDeliveryPipelineClient, err = continuousdeliverypipelinev2.NewContinuousDeliveryPipelineV2(continuousDeliveryPipelineClientOptions)
-	if err == nil {
-		// Enable retries for API calls
-		session.continuousDeliveryPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.continuousDeliveryPipelineClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	} else {
-		session.continuousDeliveryPipelineClientErr = fmt.Errorf("Error occurred while configuring Continuous Delivery Pipeline service: %q", err)
-	}
+	session.cdTektonPipelineClient, err = cdtektonpipelinev2.NewCdTektonPipelineV2(cdTektonPipelineClientOptions)
+    if err == nil {
+        // Enable retries for API calls
+        session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+        // Add custom header for analytics
+        session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
+            "X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
+        })
+    } else {
+        session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
+    }
 
 	if os.Getenv("TF_LOG") != "" {
 		logDestination := log.Writer()

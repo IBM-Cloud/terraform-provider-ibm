@@ -73,13 +73,14 @@ func testAccCheckIBMTektonPipelineTriggerExists(n string, obj cdtektonpipelinev2
 		getTektonPipelineTriggerOptions.SetPipelineID(parts[0])
 		getTektonPipelineTriggerOptions.SetTriggerID(parts[1])
 
-		triggerIntf, _, err := cdTektonPipelineClient.GetTektonPipelineTrigger(getTektonPipelineTriggerOptions)
+		_, response, err := cdTektonPipelineClient.GetTektonPipelineTrigger(getTektonPipelineTriggerOptions)
 		if err != nil {
 			return err
 		}
 
-		trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
-		obj = *trigger
+		if response.StatusCode != 200 {
+			return fmt.Errorf("Error checking for tekton_pipeline_trigger (%s) has been fetched: %s", rs.Primary.ID, err)
+		}
 		return nil
 	}
 }

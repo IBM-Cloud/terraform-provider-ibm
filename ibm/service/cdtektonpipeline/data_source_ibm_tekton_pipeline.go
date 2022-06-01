@@ -185,11 +185,6 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 				Description: "Tekton pipeline triggers list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"source_trigger_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "source trigger ID to clone from.",
-						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -684,14 +679,12 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-		if model.SourceTriggerID != nil {
-			modelMap["source_trigger_id"] = *model.SourceTriggerID
+		
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
 		}
 		if model.Name != nil {
 			modelMap["name"] = *model.Name
-		}
-		if model.Type != nil {
-			modelMap["type"] = *model.Type
 		}
 		if model.EventListener != nil {
 			modelMap["event_listener"] = *model.EventListener
@@ -864,17 +857,6 @@ func DataSourceIBMTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.Gen
 	}
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = *model.Algorithm
-	}
-	return modelMap, nil
-}
-
-func DataSourceIBMTektonPipelineTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.SourceTriggerID != nil {
-		modelMap["source_trigger_id"] = *model.SourceTriggerID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }

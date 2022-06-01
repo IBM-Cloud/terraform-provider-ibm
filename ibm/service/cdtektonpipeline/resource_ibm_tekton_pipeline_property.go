@@ -5,8 +5,12 @@ package cdtektonpipeline
 
 import (
 	"context"
+	"crypto/hmac"
+	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/sha3"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/google/go-cmp/cmp"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 )
 
@@ -44,6 +49,25 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "value"),
 				Description: "String format property value.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if d.Get("type").(string) == "SECURE" {
+						segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
+						secret := strings.Join(segs, ".")
+						mac := hmac.New(sha3.New512, []byte(secret))
+						mac.Write([]byte(new))
+						secureHmac := hex.EncodeToString(mac.Sum(nil))
+						hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
+						if hasEnvChange {
+							return false
+						}
+						return true
+					} else {
+						if old == new {
+							return true
+						}
+						return false
+					}
+				},
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -150,7 +174,12 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 		createTektonPipelinePropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("enum"); ok {
-		createTektonPipelinePropertiesOptions.SetEnum(d.Get("enum").([]string))
+		enumInterface := d.Get("enum").([]interface{})
+		enum := make([]string, len(enumInterface))
+		for i, v := range enumInterface {
+			enum[i] = fmt.Sprint(v)
+		}
+		createTektonPipelinePropertiesOptions.SetEnum(enum)
 	}
 	if _, ok := d.GetOk("default"); ok {
 		createTektonPipelinePropertiesOptions.SetDefault(d.Get("default").(string))
@@ -241,6 +270,8 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 
 	replaceTektonPipelinePropertyOptions.SetPipelineID(parts[0])
 	replaceTektonPipelinePropertyOptions.SetPropertyName(parts[1])
+	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
+	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
 
 	hasChange := false
 
@@ -249,28 +280,32 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 				" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("name") {
-		replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
-		hasChange = true
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
 	}
-	if d.HasChange("value") {
-		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-		hasChange = true
-	}
-	if d.HasChange("enum") {
-		// TODO: handle Enum of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("default") {
-		replaceTektonPipelinePropertyOptions.SetDefault(d.Get("default").(string))
-		hasChange = true
-	}
-	if d.HasChange("type") {
-		replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-		hasChange = true
-	}
-	if d.HasChange("path") {
-		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
-		hasChange = true
+
+	if d.Get("type").(string) == "INTEGRATION" {
+		if d.HasChange("value") || d.HasChange("path") {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
+			hasChange = true
+		}
+	} else if d.Get("type").(string) == "SINGLE_SELECT" {
+		if d.HasChange("enum") || d.HasChange("default") {
+			enumInterface := d.Get("enum").([]interface{})
+			enum := make([]string, len(enumInterface))
+			for i, v := range enumInterface {
+				enum[i] = fmt.Sprint(v)
+			}
+			replaceTektonPipelinePropertyOptions.SetEnum(enum)
+			replaceTektonPipelinePropertyOptions.SetDefault(d.Get("default").(string))
+			hasChange = true
+		}
+	} else {
+		if d.HasChange("value") {
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+			hasChange = true
+		}
 	}
 
 	if hasChange {

@@ -622,7 +622,6 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-<<<<<<< HEAD
 			"ibm_en_destination":   eventnotification.DataSourceIBMEnDestination(),
 			"ibm_en_destinations":  eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":         eventnotification.DataSourceIBMEnTopic(),

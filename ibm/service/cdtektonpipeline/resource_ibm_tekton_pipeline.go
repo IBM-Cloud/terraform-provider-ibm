@@ -40,6 +40,11 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 					},
 				},
 			},
+			"pipeline_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "String.",
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -113,13 +118,11 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 						},
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
 							Computed:    true,
 							Description: "UUID.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
 							Computed:    true,
 							Description: "UUID.",
 						},
@@ -184,11 +187,13 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
+							Computed:    true,
 							Optional:    true,
 							Description: "The state of pipeline definition status.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
+							Computed:    true,
 							Optional:    true,
 							Description: "UUID.",
 						},
@@ -201,11 +206,6 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 				Description: "Tekton pipeline triggers list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"source_trigger_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "source trigger ID to clone from.",
-						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -223,6 +223,7 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
+							Computed:    true,
 							Optional:    true,
 							Description: "UUID.",
 						},
@@ -265,6 +266,7 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
+										Computed:    true,
 										Optional:    true,
 										Description: "General href URL.",
 									},
@@ -473,7 +475,9 @@ func ResourceIBMTektonPipelineCreate(context context.Context, d *schema.Resource
 		}
 		createTektonPipelineOptions.SetWorker(workerModel)
 	}
-
+	if _, ok := d.GetOk("pipeline_id"); ok {
+		createTektonPipelineOptions.SetID(d.Get("pipeline_id").(string))
+	}
 	tektonPipeline, response, err := cdTektonPipelineClient.CreateTektonPipelineWithContext(context, createTektonPipelineOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateTektonPipelineWithContext failed %s\n%s", err, response)
@@ -513,6 +517,9 @@ func ResourceIBMTektonPipelineRead(context context.Context, d *schema.ResourceDa
 		if err = d.Set("worker", []map[string]interface{}{workerMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting worker: %s", err))
 		}
+	}
+	if err = d.Set("pipeline_id", tektonPipeline.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
 	if err = d.Set("name", tektonPipeline.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
@@ -719,9 +726,7 @@ func ResourceIBMTektonPipelineTektonPipelinePipelineDefinitionToMap(model *cdtek
 }
 
 func ResourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerDuplicateTrigger); ok {
-		return ResourceIBMTektonPipelineTriggerDuplicateTriggerToMap(model.(*cdtektonpipelinev2.TriggerDuplicateTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
+	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
 		return ResourceIBMTektonPipelineTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
 		return ResourceIBMTektonPipelineTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
@@ -732,9 +737,6 @@ func ResourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf)
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-		if model.SourceTriggerID != nil {
-			modelMap["source_trigger_id"] = model.SourceTriggerID
-		}
 		if model.Name != nil {
 			modelMap["name"] = model.Name
 		}
@@ -907,13 +909,6 @@ func ResourceIBMTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.Gener
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = model.Algorithm
 	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["source_trigger_id"] = model.SourceTriggerID
-	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 

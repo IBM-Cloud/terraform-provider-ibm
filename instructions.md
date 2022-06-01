@@ -6,56 +6,58 @@ To add this generated code into the IBM Terraform Provider:
 
 - Add the following entry to `import`:
 ```
-	"github.ibm.com/cloudengineering/terraform-provider-template/ibm/service/continuousdeliverypipeline"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 ```
 
 - Add the following entries to `DataSourcesMap`:
 ```
-    "ibm_tekton_pipeline_definition": continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
-    "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineTriggerProperty(),
-    "ibm_tekton_pipeline_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
-    "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
+    "ibm_tekton_pipeline_definition": cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
+    "ibm_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
+    "ibm_tekton_pipeline_property": cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
+    "ibm_tekton_pipeline_trigger": cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
+    "ibm_tekton_pipeline": cdtektonpipeline.DataSourceIBMTektonPipeline(),
 ```
 
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_tekton_pipeline_definition": continuousdeliverypipeline.ResourceIBMTektonPipelineDefinition(),
-    "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerProperty(),
-    "ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelineProperty(),
-    "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.ResourceIBMTektonPipelineTrigger(),
+    "ibm_tekton_pipeline_definition": cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
+    "ibm_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
+    "ibm_tekton_pipeline_property": cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
+    "ibm_tekton_pipeline_trigger": cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
+    "ibm_tekton_pipeline": cdtektonpipeline.ResourceIBMTektonPipeline(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
 ``` 
-    "ibm_tekton_pipeline_definition": continuousdeliverypipeline.ResourceIBMTektonPipelineDefinitionValidator(),
-    "ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
-    "ibm_tekton_pipeline_property": continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
-    "ibm_tekton_pipeline_trigger": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
+    "ibm_tekton_pipeline_definition": cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
+    "ibm_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+    "ibm_tekton_pipeline_property": cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
+    "ibm_tekton_pipeline_trigger": cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
 ```
 
 ### Changes to `config.go`
 
 - Add an import for the generated Go SDK:
 ```
-    "github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
+    "github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 ```
 
 - Add a method to the `ClientSession interface`:
 ```
-    ContinuousDeliveryPipelineV2()   (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error)
+    CdTektonPipelineV2()   (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 ```
 
 - Add two fields to the `clientSession struct`:
 ```
-    continuousDeliveryPipelineClient     *continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2
-    continuousDeliveryPipelineClientErr  error
+    cdTektonPipelineClient     *cdtektonpipelinev2.CdTektonPipelineV2
+    cdTektonPipelineClientErr  error
 ```
 
 - Implement a new method on the `clientSession struct`:
 ```
-// Continuous Delivery Pipeline
-func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2, error) {
-    return session.continuousDeliveryPipelineClient, session.continuousDeliveryPipelineClientErr
+// CD Tekton Pipeline
+func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error) {
+    return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 ```
 
@@ -66,36 +68,37 @@ func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdelivery
   add the code to initialize the service client
 ```
     // Construct an "options" struct for creating the service client.
-    var continuousDeliveryPipelineClientURL string
+    var cdTektonPipelineClientURL string
     if c.Visibility == "private" || c.Visibility == "public-and-private" {
-        continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion("private." + c.Region)
+        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
         if err != nil && c.Visibility == "public-and-private" {
-            continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+            cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
         }
     } else {
-        continuousDeliveryPipelineClientURL, err = continuousdeliverypipelinev2.GetServiceURLForRegion(c.Region)
+        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
     }
     if err != nil {
-        continuousDeliveryPipelineClientURL = continuousdeliverypipelinev2.DefaultServiceURL
+        cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
     }
     if fileMap != nil && c.Visibility != "public-and-private" {
-		continuousDeliveryPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, continuousDeliveryPipelineClientURL)
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, cdTektonPipelineClientURL)
 	}
-    continuousDeliveryPipelineClientOptions := &continuousdeliverypipelinev2.ContinuousDeliveryPipelineV2Options{
+    cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
         Authenticator: authenticator,
+        URL: EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
     }
 
     // Construct the service client.
-    session.continuousDeliveryPipelineClient, err = continuousdeliverypipelinev2.NewContinuousDeliveryPipelineV2(continuousDeliveryPipelineClientOptions)
+    session.cdTektonPipelineClient, err = cdtektonpipelinev2.NewCdTektonPipelineV2(cdTektonPipelineClientOptions)
     if err == nil {
         // Enable retries for API calls
-        session.continuousDeliveryPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+        session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
         // Add custom header for analytics
-        session.continuousDeliveryPipelineClient.SetDefaultHeaders(gohttp.Header{
+        session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
             "X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
         })
     } else {
-        session.continuousDeliveryPipelineClientErr = fmt.Errorf("Error occurred while configuring Continuous Delivery Pipeline service: %q", err)
+        session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
     }
 ```
 
@@ -104,5 +107,5 @@ func (session clientSession) ContinuousDeliveryPipelineV2() (*continuousdelivery
 Insert the following line into the website/allowed-subcategories.txt file (in alphabetic order):
 
 ```
-Continuous Delivery Pipeline
+CD Tekton Pipeline
 ``` 

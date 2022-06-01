@@ -30,11 +30,6 @@ func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
 				Required:    true,
 				Description: "The trigger ID.",
 			},
-			"source_trigger_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "source trigger ID to clone from.",
-			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -269,7 +264,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 	getTektonPipelineTriggerOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	getTektonPipelineTriggerOptions.SetTriggerID(d.Get("trigger_id").(string))
 
-	trigger, response, err := cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	TriggerIntf, response, err := cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetTektonPipelineTriggerWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetTektonPipelineTriggerWithContext failed %s\n%s", err, response))
@@ -277,16 +272,19 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
 
-	if err = d.Set("source_trigger_id", trigger.SourceTriggerID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_trigger_id: %s", err))
-	}
+	trigger, _, err := TriggerIntf.(*cdtektonpipelinev2.Trigger)
 
-	if err = d.Set("name", trigger.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	if err != nil {
+		log.Printf("[DEBUG] ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err)
+		return diag.FromErr(fmt.Errorf("ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err))
 	}
 
 	if err = d.Set("type", trigger.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
+	}
+
+	if err = d.Set("name", trigger.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 
 	if err = d.Set("event_listener", trigger.EventListener); err != nil {
@@ -306,7 +304,6 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 	if err = d.Set("properties", properties); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
-
 
 	worker := []map[string]interface{}{}
 	if trigger.Worker != nil {
