@@ -110,7 +110,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
-	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
