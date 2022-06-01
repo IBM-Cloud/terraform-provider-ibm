@@ -8,6 +8,7 @@ resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition_instance" 
   scm_source {
     url = "url"
     branch = "branch"
+    tag = "tag"
     path = "path"
   }
 }
@@ -39,29 +40,8 @@ resource "ibm_tekton_pipeline_property" "tekton_pipeline_property_instance" {
 resource "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
   pipeline_id = var.tekton_pipeline_trigger_pipeline_id
   trigger {
-    type = "type"
+    source_trigger_id = "source_trigger_id"
     name = "start-deploy"
-    event_listener = "event_listener"
-    id = "id"
-    properties {
-      name = "name"
-      value = "value"
-      enum = [ "enum" ]
-      default = "default"
-      type = "SECURE"
-      path = "path"
-      href = "href"
-    }
-    tags = [ "tags" ]
-    worker {
-      name = "name"
-      type = "private"
-      id = "id"
-    }
-    concurrency {
-      max_concurrent_runs = 20
-    }
-    disabled = true
   }
 }
 

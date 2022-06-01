@@ -1,6 +1,6 @@
-# Example for ContinuousDeliveryPipelineV2
+# Example for CdTektonPipelineV2
 
-This example illustrates how to use the ContinuousDeliveryPipelineV2
+This example illustrates how to use the CdTektonPipelineV2
 
 These types of resources are supported:
 
@@ -23,7 +23,7 @@ $ terraform apply
 Run `terraform destroy` when you don't need these resources.
 
 
-## ContinuousDeliveryPipelineV2 resources
+## CdTektonPipelineV2 resources
 
 tekton_pipeline_definition resource:
 
@@ -76,7 +76,7 @@ resource "tekton_pipeline" "tekton_pipeline_instance" {
 }
 ```
 
-## ContinuousDeliveryPipelineV2 Data sources
+## CdTektonPipelineV2 Data sources
 
 tekton_pipeline_definition data source:
 
@@ -163,7 +163,7 @@ data "tekton_pipeline" "tekton_pipeline_instance" {
 | path | property path for INTEGRATION type properties. | `string` | false |
 | pipeline_id | The tekton pipeline ID. | `string` | true |
 | trigger | Tekton pipeline trigger object. | `` | false |
-| worker | Worker object with just worker ID. | `` | false |
+| worker | Worker object with worker ID only. | `` | false |
 | pipeline_id | The tekton pipeline ID. | `string` | true |
 | definition_id | The definition ID. | `string` | true |
 | pipeline_id | The tekton pipeline ID. | `string` | true |

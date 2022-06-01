@@ -106,7 +106,7 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
 // RetryAPIDelay - retry api delay
