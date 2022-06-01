@@ -189,7 +189,7 @@ func TestAccIBMIAMServicePolicy_import(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resources", "resource_attributes"},
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes", "transaction_id"},
 			},
 		},
 	})
@@ -253,7 +253,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Attributes(t *testing.T) {
 			{
 				Config: testAccCheckIBMIAMServicePolicyResourceAttributes(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_service_policy.policy", conf),
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
 				),
@@ -261,7 +261,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Attributes(t *testing.T) {
 			{
 				Config: testAccCheckIBMIAMServicePolicyResourceAttributesUpdate(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_service_policy.policy", conf),
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
 				),
@@ -269,6 +269,69 @@ func TestAccIBMIAMServicePolicy_With_Resource_Attributes(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMIAMServicePolicy_With_Resource_Tags(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Creation for test scenario"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMServicePolicyUpdateResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_tags.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "description", "IAM Service Policy Update for test scenario"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMServicePolicy_With_Transaction_Id(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceTransactionId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "transaction_id", "terrformServicePolicy")),
+			},
+			{
+				Config: testAccCheckIBMIAMServicePolicyResourceTransactionIdUpdate(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "resource_attributes.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "transaction_id", "terrformServicePolicyUpdate"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -589,6 +652,93 @@ func testAccCheckIBMIAMServicePolicyResourceAttributesUpdate(name string) string
 	  resource "ibm_iam_service_policy" "policy" {
 		iam_service_id     = ibm_iam_service_id.serviceID.id
 		roles              = ["Viewer"]
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyResourceTags(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+			
+			resource_tags {
+				name  = "one"
+				value = "Terraform"
+			}
+			description    = "IAM Service Policy Creation for test scenario"
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyUpdateResourceTags(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_service_policy" "policy" {
+			iam_service_id = ibm_iam_service_id.serviceID.id
+			roles          = ["Viewer"]
+			
+			resource_tags {
+				name  = "one"
+				value = "Terraform"
+			}
+			resource_tags {
+				name  = "two"
+				value = "TerraformUpdate"
+			}
+			description    = "IAM Service Policy Update for test scenario"
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyResourceTransactionId(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_service_policy" "policy" {
+		iam_service_id     = ibm_iam_service_id.serviceID.id
+		roles              = ["Viewer"]
+		transaction_id = "terrformServicePolicy"
+		resource_attributes {
+			name     = "resource"
+			value    = "test*"
+			operator = "stringMatch"
+		}
+		resource_attributes {
+			name     = "serviceName"
+			value    = "messagehub"
+		}
+	  }
+	`, name)
+}
+
+func testAccCheckIBMIAMServicePolicyResourceTransactionIdUpdate(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_iam_service_id" "serviceID" {
+		name = "%s"
+	  }
+  
+	  resource "ibm_iam_service_policy" "policy" {
+		iam_service_id     = ibm_iam_service_id.serviceID.id
+		roles              = ["Viewer"]
+		transaction_id = "terrformServicePolicyUpdate"
 		resource_attributes {
 			name     = "resource"
 			value    = "test*"

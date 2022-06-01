@@ -40,3 +40,5 @@ Review the attribute references that are exported.
 	- `public_vlan` - (String) The ID of the public VLAN.
 	- `worker_count` - (String) Number of workers attached to this zone.
   - `zone` - (String) Zone name.
+- `crk` - Root Key ID for boot volume encryption.
+- `kms_instance_id` - Instance ID for boot volume encryption.

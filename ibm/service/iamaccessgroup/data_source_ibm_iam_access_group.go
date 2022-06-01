@@ -5,7 +5,6 @@ package iamaccessgroup
 
 import (
 	"fmt"
-
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -48,6 +47,11 @@ func DataSourceIBMIAMAccessGroup() *schema.Resource {
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"iam_service_ids": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"iam_profile_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -157,7 +161,33 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	profileStart := ""
+	allprofiles := []iamidentityv1.TrustedProfile{}
+	var plimit int64 = 100
+	for {
+		listProfilesOptions := iamidentityv1.ListProfilesOptions{
+			AccountID: &userDetails.UserAccount,
+			Pagesize:  &plimit,
+		}
+		if profileStart != "" {
+			listProfilesOptions.Pagetoken = &profileStart
+		}
+
+		profileIDs, resp, err := iamClient.ListProfiles(&listProfilesOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp)
+		}
+		profileStart = flex.GetNextIAM(profileIDs.Next)
+		allprofiles = append(allprofiles, profileIDs.Profiles...)
+		if profileStart == "" {
+			break
+		}
+	}
+	offset := int64(0)
+	limit := int64(100)
 	listAccessGroupOption := iamAccessGroupsClient.NewListAccessGroupsOptions(accountID)
+	listAccessGroupOption.Limit = &plimit
+	listAccessGroupOption.Offset = &offset
 	retreivedGroups, detailedResponse, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOption)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
@@ -166,17 +196,30 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 	if len(retreivedGroups.Groups) == 0 {
 		return fmt.Errorf("[ERROR] No access group in account")
 	}
+	allGroups := retreivedGroups.Groups
+
+	totalGroups := flex.IntValue(retreivedGroups.TotalCount)
+	for len(allGroups) < totalGroups {
+		offset = offset + limit
+		listAccessGroupOption.SetOffset(offset)
+		retreivedGroups, detailedResponse, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOption)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving access groups: %s. API Response is: %s", err, detailedResponse)
+		}
+
+		allGroups = append(allGroups, retreivedGroups.Groups...)
+	}
 	var agName string
 	var matchGroups []iamaccessgroupsv2.Group
 	if v, ok := d.GetOk("access_group_name"); ok {
 		agName = v.(string)
-		for _, grpData := range retreivedGroups.Groups {
+		for _, grpData := range allGroups {
 			if *grpData.Name == agName {
 				matchGroups = append(matchGroups, grpData)
 			}
 		}
 	} else {
-		matchGroups = retreivedGroups.Groups
+		matchGroups = allGroups
 	}
 	if len(matchGroups) == 0 {
 		return fmt.Errorf("[ERROR] No Access Groups with name %s in Account", agName)
@@ -196,7 +239,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			log.Printf("Error retrieving access group rules: %s. API Response: %s", err, detailedResponse)
 		}
-		ibmID, serviceID := flex.FlattenMembersData(members.Members, res, allrecs)
+		ibmID, serviceID, profileID := flex.FlattenMembersData(members.Members, res, allrecs, allprofiles)
 
 		grpInstance := map[string]interface{}{
 			"id":              grp.ID,
@@ -204,6 +247,7 @@ func dataIBMIAMAccessGroupRead(d *schema.ResourceData, meta interface{}) error {
 			"description":     grp.Description,
 			"ibm_ids":         ibmID,
 			"iam_service_ids": serviceID,
+			"iam_profile_ids": profileID,
 			"rules":           flex.FlattenAccessGroupRules(rules),
 		}
 

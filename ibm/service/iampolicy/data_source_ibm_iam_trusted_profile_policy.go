@@ -38,6 +38,12 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -97,6 +103,30 @@ func DataSourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 								},
 							},
 						},
+						"resource_tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Description: "Set access management tags.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of attribute.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value of attribute.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator of attribute.",
+									},
+								},
+							},
+						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -152,12 +182,17 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
-	if err != nil {
-		return err
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+
+	if err != nil || resp == nil {
+		return fmt.Errorf("Error listing trusted profile policies: %s, %s", err, resp)
+	}
+
+	policies := policyList.Policies
 	profilePolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
@@ -166,8 +201,9 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"roles":     roles,
-			"resources": resources,
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if v, ok := d.GetOk("profile_id"); ok && v != nil {
 			profileUUID := v.(string)
@@ -188,6 +224,9 @@ func dataSourceIBMIAMTrustedProfilePolicyRead(d *schema.ResourceData, meta inter
 	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(iamID)
+	}
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.Set("policies", profilePolicies)
 	return nil

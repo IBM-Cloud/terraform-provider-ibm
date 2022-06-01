@@ -6,7 +6,6 @@ package vpc
 import (
 	"fmt"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -99,6 +98,12 @@ func DataSourceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the snapshot",
 			},
+
+			isSnapshotCapturedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time that this snapshot was created",
+			},
 		},
 	}
 }
@@ -137,51 +142,46 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		return err
 	}
 	if name != "" {
-		start := ""
-		allrecs := []vpcv1.Snapshot{}
-		for {
-			listSnapshotOptions := &vpcv1.ListSnapshotsOptions{}
-			if start != "" {
-				listSnapshotOptions.Start = &start
-			}
-			snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
-			}
-			start = flex.GetNext(snapshots.Next)
-			allrecs = append(allrecs, snapshots.Snapshots...)
-			if start == "" {
-				break
-			}
+		listSnapshotOptions := &vpcv1.ListSnapshotsOptions{
+			Name: &name,
 		}
-		for _, snapshot := range allrecs {
-			if *snapshot.Name == name || *snapshot.ID == id {
-				d.SetId(*snapshot.ID)
-				d.Set(isSnapshotName, *snapshot.Name)
-				d.Set(isSnapshotHref, *snapshot.Href)
-				d.Set(isSnapshotCRN, *snapshot.CRN)
-				d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
-				d.Set(isSnapshotSize, *snapshot.Size)
-				d.Set(isSnapshotEncryption, *snapshot.Encryption)
-				d.Set(isSnapshotLCState, *snapshot.LifecycleState)
-				d.Set(isSnapshotResourceType, *snapshot.ResourceType)
-				d.Set(isSnapshotBootable, *snapshot.Bootable)
-				if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
-					d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
-				}
-				if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
-					d.Set(isSnapshotSourceVolume, *snapshot.SourceVolume.ID)
-				}
-				if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
-					d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID)
-				}
-				if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
-					d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
-				}
-				return nil
-			}
+
+		snapshots, response, err := sess.ListSnapshots(listSnapshotOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error Fetching snapshots %s\n%s", err, response)
 		}
-		return fmt.Errorf("[ERROR] No snapshot found with name %s", name)
+		allrecs := snapshots.Snapshots
+
+		if len(allrecs) == 0 {
+			return fmt.Errorf("[ERROR] No snapshot found with name %s", name)
+		}
+		snapshot := allrecs[0]
+		d.SetId(*snapshot.ID)
+		d.Set(isSnapshotName, *snapshot.Name)
+		d.Set(isSnapshotHref, *snapshot.Href)
+		d.Set(isSnapshotCRN, *snapshot.CRN)
+		d.Set(isSnapshotMinCapacity, *snapshot.MinimumCapacity)
+		d.Set(isSnapshotSize, *snapshot.Size)
+		d.Set(isSnapshotEncryption, *snapshot.Encryption)
+		d.Set(isSnapshotLCState, *snapshot.LifecycleState)
+		d.Set(isSnapshotResourceType, *snapshot.ResourceType)
+		d.Set(isSnapshotBootable, *snapshot.Bootable)
+		if snapshot.CapturedAt != nil {
+			d.Set(isSnapshotCapturedAt, (*snapshot.CapturedAt).String())
+		}
+		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
+			d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
+		}
+		if snapshot.SourceVolume != nil && snapshot.SourceVolume.ID != nil {
+			d.Set(isSnapshotSourceVolume, *snapshot.SourceVolume.ID)
+		}
+		if snapshot.SourceImage != nil && snapshot.SourceImage.ID != nil {
+			d.Set(isSnapshotSourceImage, *snapshot.SourceImage.ID)
+		}
+		if snapshot.OperatingSystem != nil && snapshot.OperatingSystem.Name != nil {
+			d.Set(isSnapshotOperatingSystem, *snapshot.OperatingSystem.Name)
+		}
+		return nil
 	} else {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
@@ -203,6 +203,9 @@ func snapshotGetByNameOrID(d *schema.ResourceData, meta interface{}, name, id st
 		d.Set(isSnapshotLCState, *snapshot.LifecycleState)
 		d.Set(isSnapshotResourceType, *snapshot.ResourceType)
 		d.Set(isSnapshotBootable, *snapshot.Bootable)
+		if snapshot.CapturedAt != nil {
+			d.Set(isSnapshotCapturedAt, (*snapshot.CapturedAt).String())
+		}
 		if snapshot.ResourceGroup != nil && snapshot.ResourceGroup.ID != nil {
 			d.Set(isSnapshotResourceGroup, *snapshot.ResourceGroup.ID)
 		}

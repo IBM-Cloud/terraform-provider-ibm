@@ -29,6 +29,12 @@ func DataSourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -88,6 +94,30 @@ func DataSourceIBMIAMAccessGroupPolicy() *schema.Resource {
 								},
 							},
 						},
+						"resource_tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Description: "Set access management tags.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of attribute.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value of attribute.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator of attribute.",
+									},
+								},
+							},
+						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -125,13 +155,17 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
-
-	if err != nil {
-		return err
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+
+	if err != nil || resp == nil {
+		return fmt.Errorf("Error listing access group policies: %s, %s", err, resp)
+	}
+
+	policies := policyList.Policies
 	accessGroupPolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
@@ -140,9 +174,10 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"id":        fmt.Sprintf("%s/%s", accessGroupId, *policy.ID),
-			"roles":     roles,
-			"resources": resources,
+			"id":            fmt.Sprintf("%s/%s", accessGroupId, *policy.ID),
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if policy.Description != nil {
 			p["description"] = policy.Description
@@ -150,6 +185,11 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		accessGroupPolicies = append(accessGroupPolicies, p)
 	}
 	d.SetId(accessGroupId)
+
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
+	}
+
 	d.Set("policies", accessGroupPolicies)
 
 	return nil

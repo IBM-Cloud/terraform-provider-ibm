@@ -105,7 +105,8 @@ resource "ibm_is_instance_template" "example1" {
   name    = "example-template"
   image   = ibm_is_image.example.id
   profile = "bx2-8x32"
-
+  metadata_service_enabled = false
+  
   primary_network_interface {
     subnet            = ibm_is_subnet.example.id
     allow_ip_spoofing = true
@@ -172,6 +173,7 @@ resource "ibm_is_instance_template" "example4" {
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
+- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
 
 - `boot_volume` - (Optional, List) A nested block describes the boot volume configuration for the template.
 
@@ -190,14 +192,16 @@ Review the argument references that you can specify for your resource.
   **Note:**
     - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
+- `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
+- `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
 - `image` - (Required, String) The ID of the image to create the template.
 - `keys` - (Required, List) List of SSH key IDs used to allow log in user to the instances.
+- `metadata_service_enabled` - (Optional, Forces new resource, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.  Default value : **false**
 - `name` - (Optional, String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 
   **Note:**
     - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
-
 - `profile` - (Required, String) The number of instances created in the instance group.
 - `primary_network_interfaces` (Required, List) A nested block describes the primary network interface for the template.
 

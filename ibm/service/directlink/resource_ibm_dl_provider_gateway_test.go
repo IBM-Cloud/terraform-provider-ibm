@@ -53,6 +53,7 @@ func testAccCheckIBMDLProviderGatewayConfig(gatewayname, custAccID string) strin
 		customer_account_id = "%s"
 		speed_mbps = 1000
 		port =  data.ibm_dl_provider_ports.test_ds_dl_ports.ports[0].port_id
+		vlan = 25
 	  }
 	  
 	  `, gatewayname, custAccID)

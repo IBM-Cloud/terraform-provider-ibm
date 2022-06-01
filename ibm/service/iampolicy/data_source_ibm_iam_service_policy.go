@@ -38,6 +38,12 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -97,6 +103,30 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 								},
 							},
 						},
+						"resource_tags": {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Description: "Set access management tags.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of attribute.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value of attribute.",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator of attribute.",
+									},
+								},
+							},
+						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -123,7 +153,7 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 			ID: &serviceIDUUID,
 		}
 		serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
-		if err != nil {
+		if err != nil || resp == nil {
 			return fmt.Errorf("[ERROR] Error] Error Getting Service Id %s %s", err, resp)
 		}
 		iamID = *serviceID.IamID
@@ -152,12 +182,17 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
-	policyList, _, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	policies := policyList.Policies
-	if err != nil {
-		return err
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
+	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
+
+	if err != nil {
+		return fmt.Errorf("Error listing service policies: %s, %s", err, resp)
+	}
+
+	policies := policyList.Policies
 	servicePolicies := make([]map[string]interface{}, 0, len(policies))
 	for _, policy := range policies {
 		roles := make([]string, len(policy.Roles))
@@ -166,8 +201,9 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 		}
 		resources := flex.FlattenPolicyResource(policy.Resources)
 		p := map[string]interface{}{
-			"roles":     roles,
-			"resources": resources,
+			"roles":         roles,
+			"resources":     resources,
+			"resource_tags": flex.FlattenPolicyResourceTags(policy.Resources),
 		}
 		if v, ok := d.GetOk("iam_service_id"); ok && v != nil {
 			serviceIDUUID := v.(string)
@@ -188,6 +224,9 @@ func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{})
 	} else if v, ok := d.GetOk("iam_id"); ok && v != nil {
 		iamID := v.(string)
 		d.SetId(iamID)
+	}
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
 	}
 	d.Set("policies", servicePolicies)
 	return nil

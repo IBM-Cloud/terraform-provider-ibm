@@ -32,7 +32,6 @@ resource "ibm_is_instance" "example" {
   profile = "bc1-2x8"
 
   primary_network_interface {
-    port_speed = "1000"
     subnet     = ibm_is_subnet.example.id
   }
 

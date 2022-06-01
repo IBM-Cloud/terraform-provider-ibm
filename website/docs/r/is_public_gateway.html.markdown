@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_is_public_gateway
-Create, update, or delete a public gateway for a VPC subnet. Public gateways enable a VPC subnet and all the instances that are connected to the subnet to connect to the internet. For more information, see [use a Public Gateway for external connectivity of a subnet](hhttps://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity).
+Create, update, or delete a public gateway for a VPC subnet. Public gateways enable a VPC subnet and all the instances that are connected to the subnet to connect to the internet. For more information, see [use a Public Gateway for external connectivity of a subnet](https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity).
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.

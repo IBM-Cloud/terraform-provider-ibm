@@ -56,9 +56,10 @@ func TestAccIBMIAMAuthorizationPolicy_Resource_Instance(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"transaction_id"},
 			},
 		},
 	})
@@ -126,6 +127,48 @@ func TestAccIBMIAMAuthorizationPolicyDelegatorRole(t *testing.T) {
 					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
 					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_ResourceAttributes(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	sServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	tServiceInstance := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, tServiceInstance, acc.Tg_cross_network_account_id, acc.Tg_cross_network_account_id),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttrSet("ibm_iam_authorization_policy.policy", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAuthorizationPolicy_With_Transaction_id(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMAuthorizationPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAuthorizationPolicyTransactionId(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAuthorizationPolicyExists("ibm_iam_authorization_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "source_service_name", "databases-for-redis"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "target_service_name", "kms"),
+					resource.TestCheckResourceAttr("ibm_iam_authorization_policy.policy", "transaction_id", "terrformAuthorizationPolicy"),
 				),
 			},
 		},
@@ -266,4 +309,62 @@ func testAccCheckIBMIAMAuthorizationPolicyResourceGroup(sResourceGroup, tResourc
 	  }
 	  
 	`, sResourceGroup, tResourceGroup)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyResourceAttributes(sServiceInstance, tServiceInstance, sAccountID, tAccountID string) string {
+
+	return fmt.Sprintf(`
+	
+	resource "ibm_resource_instance" "cos" {
+		name     = "%s"
+		service  = "cloud-object-storage"
+		plan     = "lite"
+		location = "global"
+	}
+	
+	resource "ibm_resource_instance" "kms" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	}
+	resource "ibm_iam_authorization_policy" "policy" {
+		roles                       = ["Reader"]
+		subject_attributes {
+			name   = "accountId"
+			value = "%s"
+		}
+		subject_attributes {
+			name   = "serviceInstance"
+			value = ibm_resource_instance.cos.id
+		}
+		subject_attributes {
+			name   = "serviceName"
+			value = "cloud-object-storage"
+		}
+		resource_attributes {
+			name   = "serviceName"
+			value = "kms"
+		}
+		resource_attributes {
+			name   = "accountId"
+			value = "%s"
+		}
+		resource_attributes {
+			name   = "serviceInstance"
+			value = ibm_resource_instance.kms.id
+		}
+	}
+	`, sServiceInstance, tServiceInstance, sAccountID, tAccountID)
+}
+
+func testAccCheckIBMIAMAuthorizationPolicyTransactionId() string {
+	return `
+	resource "ibm_iam_authorization_policy" "policy" {
+		source_service_name         = "databases-for-redis"
+		target_service_name         = "kms"
+		roles                       = ["Reader", "Authorization Delegator"]
+		transaction_id 				= "terrformAuthorizationPolicy"
+	  }
+	`
 }

@@ -401,3 +401,63 @@ resource "ibm_cis_dns_records_import" "test" {
   domain_id = data.ibm_cis_domain.cis_domain.domain_id
   file      = "dns_records.txt"
 }
+
+# CIS Webhooks
+resource "ibm_cis_webhook" "test" {
+    cis_id = data.ibm_cis.cis.id
+    name    = "test-Webhooks"
+    url     = "https://hooks.slack.com/services/Ds3fdBFbV/1234568"
+    secret = "ZaHkAf0iNXNWn8ySUJjTJHkzlanchfnR4TISjOPC_I1U"
+}
+
+# CIS Webhooks data source
+data "ibm_cis_webhooks" "test1" {
+  cis_id = data.ibm_cis.cis.id
+}
+
+# CIS Alert Policy
+resource "ibm_cis_alert" "test" {
+  depends_on  = [ibm_cis_webhook.test]
+  cis_id      = data.ibm_cis.cis.id
+  name        = "test-alert-police"
+  description = "alert policy description"
+  enabled     = true
+  alert_type = "clickhouse_alert_fw_anomaly"
+  mechanisms {
+    email    = ["mynotifications@email.com"]
+    webhooks = [ibm_cis_webhook.test.webhook_id]
+  }
+ filters =<<FILTERS
+  		{}
+  		FILTERS
+ conditions =<<CONDITIONS
+  		{}
+  		CONDITIONS
+
+} 
+# CIS Alert Policy Data source
+data "ibm_cis_alerts" "test1" {
+  cis_id = data.ibm_cis.cis.id
+}
+# CIS Logpush Job
+resource "ibm_cis_logpush_job" "test" {
+    cis_id          = data.ibm_cis.cis.id
+    domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+    name            = "MylogpushjobUpdate"
+    enabled         = true
+    logpull_options = "timestamps=rfc3339&timestamps=rfc3339"
+    dataset         = "http_requests"
+    frequency       = "high"
+    logdna =<<LOG
+        {
+                        "hostname": "cistest-load.com",
+            "ingress_key": "e2f7xxxxx73a251caxxxxxxxxxxxx",
+            "region": "in-che"
+        }
+        LOG
+}
+# CIS Logpush Job Data source
+data "ibm_cis_logpush_jobs" "test" {
+    cis_id          = data.ibm_cis.cis.id
+    domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+}

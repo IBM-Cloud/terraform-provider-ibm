@@ -74,7 +74,7 @@ Review the argument reference that you can specify for your resource.
 * `resolver_id` - (Required, String) The unique identifier of a custom resolver.
 * `description` - (Optional, String) Descriptive text of the forwarding rule.
 * `type` - (Optional, String) Type of the forwarding rule.
-  * Constraints: Allowable values are: `zone`, `hostname`.
+  * Constraints: Allowable values are: `zone`, `hostname`,`Default`.
 * `match` - (Optional, String) The matching zone or hostname.
 * `forward_to` - (Optional, List) The upstream DNS servers will be forwarded to.
 

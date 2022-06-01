@@ -4,7 +4,14 @@ provider "ibm" {
 
 // Update the current account settings
 resource "ibm_scc_account_settings" "ibm_scc_account_settings_instance" {
-  location_id = var.ibm_scc_account_settings_location_id
+  // Optional input of location
+  location {
+    location_id = "us"
+  }
+  // Optional input of event_notifications
+  event_notifications {
+    // instance_crn = "instance_crn"
+  }
 }
 
 // Read the current account location settings

@@ -8,15 +8,13 @@ description: |-
 
 # ibm_database
 
-Create a read-only copy of an existing IBM Cloud database service. For more information, about an IBM Cloud datbase service instance, see [provisioning databases](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-provisioning).
+Retrieve information about an existing [IBM Cloud Database instance](https://cloud.ibm.com/docs/cloud-databases).
 
 **Note**
 Configuration of an IBM Cloud Databases `data_source` requires that the `region` parameter is set for the IBM provider in the `provider.tf`. The region must be the same as the `location` that the IBM Cloud Databases instance is deployed into. If not specified, `us-south` is used by default. A `terraform refresh` of the `data_source` fails if the region and the location differ.
 
-
 ## Example usage
-The following example creates a read-only copy of the `mydatabase` instance in `us-east`.  
-
+The following example retrieves information about the `mydatabase` instance in `us-east`.
 
 ```terraform
 data "ibm_database" "database" {
@@ -25,7 +23,6 @@ data "ibm_database" "database" {
 }
 ```
 
-
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
@@ -33,7 +30,6 @@ Review the argument reference that you can specify for your data source.
 - `location` - (Optional, String) The location where the IBM Cloud Databases instance is deployed into.
 - `resource_group_id`- (Optional, String) The ID of the resource group where the IBM Cloud Databases instance is deployed into. The default is `default`.
 - `service` - (Optional, String) The service type of the instance. To retrieve this value, run `ibmcloud catalog service-marketplace` or `ibmcloud catalog search`.
-
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your data source is created. 
@@ -47,7 +43,6 @@ In addition to all argument references list, you can access the following attrib
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
 - `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
 - `status` - (String)  The status of the IBM Cloud Databases instance.
-- `status` - (String)  The status of resource instance.
 - `version` - (String) The database version.
 - `platform_options`-  (String) The CRN of key protect key.
    

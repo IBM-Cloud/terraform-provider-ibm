@@ -15,6 +15,15 @@ resource "ibm_tg_connection" "test_ibm_tg_connection"{
                 name = var.vc_name
                 network_id = ibm_is_vpc.test_tg_vpc.resource_crn
 }
+# Add a prefix filter to a Transit Gateway connection
+resource "ibm_tg_connection_prefix_filter" "test_tg_prefix_filter" {
+                gateway = ibm_tg_gateway.new_tg_gw.id
+                connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+                action = "permit"
+                prefix = "192.168.100.0/24"
+                le = "0"
+                ge = "32"
+}
 /*
 # Create a transit gateway cross account connection
 resource "ibm_tg_connection" "test_tg_cross_connection"{
@@ -50,6 +59,11 @@ resource "ibm_tg_connection" "test_tg_dl_connection"{
                 network_id = var.network_id
 }
 
+# Create a transit gateway route report
+resource ibm_tg_route_report" "test_tg_route_report" {
+	gateway = ibm_tg_gateway.new_tg_gw.id
+}
+
 # Retrieves specified Transit Gateway
 data "ibm_tg_gateway" "tg_gateway" {
         name= ibm_tg_gateway.new_tg_gw.name
@@ -63,6 +77,30 @@ data "ibm_tg_locations" "tg_locations" {
 # Get the details of a Transit Gateway Location.
 data "ibm_tg_location" "tg_location" {
         name = "us-south"
+}
+
+# List all prefix filters for a Transit Gateway Connection
+data "ibm_tg_connection_prefix_filters" "tg_prefix_filters" {
+    gateway = ibm_tg_gateway.new_tg_gw.id
+    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+}
+
+# Retrieve specified Transit Gateway Connection Prefix Filter
+data "ibm_tg_connection_prefix_filter" "tg_prefix_filter" {
+    gateway = ibm_tg_gateway.new_tg_gw.id
+    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+	filter_id = ibm_tg_connection_prefix_filter.test_tg_prefix_filter.filter_id
+}
+
+# List all route reports for a Transit Gateway
+data "ibm_tg_route_reports" "tg_route_reports" {
+	gateway = ibm_tg_gateway.new_tg_gw.id
+}
+
+# Retrieve specified Transit Gateway Route report
+data "ibm_tg_route_report" "tg_route_report" {
+	gateway = ibm_tg_gateway.new_tg_gw.
+	route_report = ibm_tg_route_report_test_tg_route_report.route_report_id
 }
 
 */

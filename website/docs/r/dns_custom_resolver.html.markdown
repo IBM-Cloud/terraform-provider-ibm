@@ -67,7 +67,7 @@ Review the argument reference that you can specify for your resource.
 - `enabled`- (Optional, Bool) To make custom resolver enabled/disable.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
-- `locations`- (Optional, Set) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
+- `locations`- (Optional, List) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
@@ -76,13 +76,20 @@ In addition to all argument reference list, you can access the following attribu
 - `custom_resolver_id` - (String) The unique ID of the private DNS custom resolver.
 - `modified_on` - (Timestamp) The time (modified On) of the DNS Custom Resolver.
 - `health`- (String) The status of DNS Custom Resolver's health. Possible values are `DEGRADED`, `CRITICAL`, `HEALTHY`.
-- `locations` - (Set) Locations on which the custom resolver will be running.
+- `locations` - (List) Locations on which the custom resolver will be running.
 
   Nested scheme for `locations`:
   - `healthy`- (String) The health status.
   - `dns_server_ip`- (String) The DNS server IP.
   - `enabled`- (Bool) Whether the location is enabled.
   - `location_id`- (String) The location ID.
+
+ Nested scheme for `rules`:
+ - `rule_id` - (String) The rule ID is unique identifier of the custom resolver forwarding rule.
+ - `description`- (String) Descriptive text of the forwarding rule.
+ - `type` - (String) Type of the forwarding rule.Constraints: Allowable values are: `zone`, `hostname`.
+ - `match` - (String) The matching zone or hostname.
+ - `forward_to` - (List) The upstream DNS servers will be forwarded to.
 
 ## Import
 The `ibm_dns_custom_resolver` can be imported by using private DNS instance ID, Custom Resolver ID.

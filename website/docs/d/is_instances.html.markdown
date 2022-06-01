@@ -57,6 +57,7 @@ In addition to all argument reference list, you can access the following attribu
 - `instances`- (List of Object) A list of Virtual Servers for VPC instances that exist in your account.
    
    Nested scheme for `instances`:
+    - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
     - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
 
@@ -86,12 +87,21 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
+	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
 	  Nested scheme for `network_interfaces`:
 		- `id` - (String) The ID of the more network interface.
 		- `name` - (String) The name of the more network interface.
-		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.
+		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+			Nested scheme for `primary_ip`:
+			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `href`- (String) The URL for this reserved IP
+			- `name`- (String) The user-defined or system-provided name for this reserved IP
+			- `reserved_ip`- (String) The unique identifier for this reserved IP
+			- `resource_type`- (String) The resource type.
+		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
 		- `subnet` - (String) The ID of the subnet that is used in the more network interface.
 		- `security_groups` (List)A list of security groups that were created for the interface.
 	- `placement_target`- (List) The placement restrictions for the virtual server instance.
@@ -111,13 +121,23 @@ In addition to all argument reference list, you can access the following attribu
 		- `name` - (String) The name of the primary network interface.
 		- `subnet` - (String) The ID of the subnet that is used in the primary network interface.
 		- `security_groups` (List)A list of security groups that were created for the interface.
-		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses.- `resource_group` - (String) The name of the resource group where the instance was created.
+		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+			Nested scheme for `primary_ip`:
+			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `href`- (String) The URL for this reserved IP
+			- `name`- (String) The user-defined or system-provided name for this reserved IP
+			- `reserved_ip`- (String) The unique identifier for this reserved IP
+			- `resource_type`- (String) The resource type.
+		- `primary_ipv4_address` - (String) The IPv4 address range that the subnet uses. Same as `primary_ip.0.address`
+		- `resource_group` - (String) The name of the resource group where the instance was created.
 	- `status` - (String) The status of the instance.
 	- `status_reasons` - (List) Array of reasons for the current status. 
 
 		Nested scheme for `status_reasons`:
 		- `code` - (String)  A snake case string identifying the status reason.
 		- `message` - (String)  An explanation of the status reason
+		- `more_info` - (String) Link to documentation about this status reason
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
     - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
@@ -135,4 +155,3 @@ In addition to all argument reference list, you can access the following attribu
 		- `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
 	- `vpc` - (String) The ID of the VPC that the instance belongs to.
 	- `zone` - (String) The zone where the instance was created.
-

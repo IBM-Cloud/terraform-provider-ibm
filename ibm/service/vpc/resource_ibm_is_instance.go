@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -66,6 +67,7 @@ const (
 	isInstanceStatusReasons           = "status_reasons"
 	isInstanceStatusReasonsCode       = "code"
 	isInstanceStatusReasonsMessage    = "message"
+	isInstanceStatusReasonsMoreInfo   = "more_info"
 	isEnableCleanDelete               = "wait_before_delete"
 	isInstanceProvisioning            = "provisioning"
 	isInstanceProvisioningDone        = "done"
@@ -74,15 +76,17 @@ const (
 	isInstanceDeleteDone              = "done"
 	isInstanceFailed                  = "failed"
 
-	isInstanceStatusRestarting     = "restarting"
-	isInstanceStatusStarting       = "starting"
-	isInstanceActionStatusStopping = "stopping"
-	isInstanceActionStatusStopped  = "stopped"
-	isInstanceStatusPending        = "pending"
-	isInstanceStatusRunning        = "running"
-	isInstanceStatusFailed         = "failed"
+	isInstanceStatusRestarting           = "restarting"
+	isInstanceStatusStarting             = "starting"
+	isInstanceActionStatusStopping       = "stopping"
+	isInstanceActionStatusStopped        = "stopped"
+	isInstanceStatusPending              = "pending"
+	isInstanceStatusRunning              = "running"
+	isInstanceStatusFailed               = "failed"
+	isInstanceAvailablePolicyHostFailure = "availability_policy_host_failure"
 
 	isInstanceBootAttachmentName = "name"
+	isInstanceBootVolumeId       = "volume_id"
 	isInstanceBootSize           = "size"
 	isInstanceBootIOPS           = "iops"
 	isInstanceBootEncryption     = "encryption"
@@ -98,6 +102,10 @@ const (
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
 	isInstancePlacementTarget           = "placement_target"
 	isPlacementTargetPlacementGroup     = "placement_group"
+
+	isInstanceDefaultTrustedProfileAutoLink = "default_trusted_profile_auto_link"
+	isInstanceDefaultTrustedProfileTarget   = "default_trusted_profile_target"
+	isInstanceMetadataServiceEnabled        = "metadata_service_enabled"
 )
 
 func ResourceIBMISInstance() *schema.Resource {
@@ -153,6 +161,13 @@ func ResourceIBMISInstance() *schema.Resource {
 		),
 
 		Schema: map[string]*schema.Schema{
+			isInstanceAvailablePolicyHostFailure: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The availability policy to use for this virtual server instance",
+			},
+
 			isInstanceName: {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -196,7 +211,20 @@ func ResourceIBMISInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Profile info",
 			},
-
+			isInstanceDefaultTrustedProfileAutoLink: {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				RequiredWith: []string{isInstanceDefaultTrustedProfileTarget},
+				Description:  "If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted.",
+			},
+			isInstanceDefaultTrustedProfileTarget: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.",
+			},
 			isPlacementTargetDedicatedHost: {
 				Type:          schema.TypeString,
 				Optional:      true,
@@ -338,14 +366,67 @@ func ResourceIBMISInstance() *schema.Resource {
 						isInstanceNicPortSpeed: {
 							Type:             schema.TypeInt,
 							Optional:         true,
+							Computed:         true,
 							DiffSuppressFunc: flex.ApplyOnce,
 							Deprecated:       "This field is deprected",
 						},
 						isInstanceNicPrimaryIpv4Address: {
-							Type:     schema.TypeString,
-							ForceNew: true,
-							Optional: true,
-							Computed: true,
+							Type:          schema.TypeString,
+							ForceNew:      true,
+							Optional:      true,
+							Computed:      true,
+							ConflictsWith: []string{"primary_network_interface.0.primary_ip.0.address"},
+							Deprecated:    "primary_ipv4_address is deprecated and support will be removed. Use primary_ip instead",
+						},
+						isInstanceNicPrimaryIP: {
+							Type:        schema.TypeList,
+							MinItems:    0,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceNicReservedIpAddress: {
+										Type:          schema.TypeString,
+										Computed:      true,
+										ForceNew:      true,
+										Optional:      true,
+										ConflictsWith: []string{"primary_network_interface.0.primary_ipv4_address"},
+										Description:   "The IP address to reserve, which must not already be reserved on the subnet.",
+									},
+									isInstanceNicReservedIpHref: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP",
+									},
+									isInstanceNicReservedIpAutoDelete: {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+									},
+									isInstanceNicReservedIpName: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The user-defined name for this reserved IP. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the subnet the reserved IP resides in. ",
+									},
+									isInstanceNicReservedIpId: {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ForceNew:      true,
+										ConflictsWith: []string{"primary_network_interface.0.primary_ipv4_address", "primary_network_interface.0.primary_ip.0.address"},
+										Computed:      true,
+										Description:   "Identifies a reserved IP by a unique property.",
+									},
+									isInstanceNicReservedIpResourceType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type",
+									},
+								},
+							},
 						},
 						isInstanceNicSecurityGroups: {
 							Type:     schema.TypeSet,
@@ -385,10 +466,58 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed: true,
 						},
 						isInstanceNicPrimaryIpv4Address: {
-							Type:     schema.TypeString,
-							ForceNew: true,
-							Optional: true,
-							Computed: true,
+							Type:       schema.TypeString,
+							ForceNew:   true,
+							Optional:   true,
+							Deprecated: "primary_ipv4_address is deprecated and support will be removed. Use primary_ip instead",
+							Computed:   true,
+						},
+						isInstanceNicPrimaryIP: {
+							Type:        schema.TypeList,
+							MinItems:    0,
+							MaxItems:    1,
+							Optional:    true,
+							Computed:    true,
+							Description: "The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceNicReservedIpAddress: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										ForceNew:    true,
+										Optional:    true,
+										Description: "The IP address to reserve, which must not already be reserved on the subnet.",
+									},
+									isInstanceNicReservedIpAutoDelete: {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.",
+									},
+									isInstanceNicReservedIpHref: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this reserved IP",
+									},
+									isInstanceNicReservedIpName: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The user-defined name for this reserved IP. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the subnet the reserved IP resides in. ",
+									},
+									isInstanceNicReservedIpId: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "Identifies a reserved IP by a unique property.",
+									},
+									isInstanceNicReservedIpResourceType: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type",
+									},
+								},
+							},
 						},
 						isInstanceNicSecurityGroups: {
 							Type:     schema.TypeSet,
@@ -425,11 +554,10 @@ func ResourceIBMISInstance() *schema.Resource {
 			},
 
 			isInstanceBootVolume: {
-				Type:             schema.TypeList,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Optional:         true,
-				Computed:         true,
-				MaxItems:         1,
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceBootAttachmentName: {
@@ -439,22 +567,30 @@ func ResourceIBMISInstance() *schema.Resource {
 							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootAttachmentName),
 						},
 
+						isInstanceBootVolumeId: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
 						isInstanceVolumeSnapshot: {
-							Type:          schema.TypeString,
-							RequiredWith:  []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
-							AtLeastOneOf:  []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot"},
-							ConflictsWith: []string{isInstanceImage, isInstanceSourceTemplate},
-							Optional:      true,
-							ForceNew:      true,
+							Type:             schema.TypeString,
+							RequiredWith:     []string{isInstanceZone, isInstancePrimaryNetworkInterface, isInstanceProfile, isInstanceKeys, isInstanceVPC},
+							AtLeastOneOf:     []string{isInstanceImage, isInstanceSourceTemplate, "boot_volume.0.snapshot"},
+							ConflictsWith:    []string{isInstanceImage, isInstanceSourceTemplate},
+							Optional:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
 						},
 						isInstanceBootEncryption: {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Computed:         true,
 						},
 						isInstanceBootSize: {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceBootSize),
 						},
 						isInstanceBootIOPS: {
 							Type:     schema.TypeInt,
@@ -565,9 +701,22 @@ func ResourceIBMISInstance() *schema.Resource {
 							Computed:    true,
 							Description: "An explanation of the status reason",
 						},
+
+						isInstanceStatusReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about this status reason",
+						},
 					},
 				},
 			},
+			isInstanceMetadataServiceEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates whether the metadata service endpoint is available to the virtual server instance",
+			},
+
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -701,6 +850,7 @@ func ResourceIBMISInstance() *schema.Resource {
 
 func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 	actions := "stop, start, reboot"
+	host_failure := "restart, stop"
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -729,6 +879,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MinValue:                   "500"})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 isInstanceBootSize,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Optional:                   true,
+			MinValue:                   "1",
+			MaxValue:                   "250"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
 			Identifier:                 isInstanceAction,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
@@ -744,6 +902,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			Regexp:                     `^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`,
 			MinValueLength:             1,
 			MaxValueLength:             63})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isInstanceAvailablePolicyHostFailure,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              host_failure})
 
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
@@ -769,6 +935,31 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &vpcID,
 		},
 	}
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
@@ -800,6 +991,12 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -834,11 +1031,59 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		if namestr != "" {
 			primnicobj.Name = &namestr
 		}
+
+		// reserved ip changes
+
+		var ipv4str, reservedIp, reservedipv4, reservedipname string
+		var autodelete, okAuto bool
 		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
-		ipv4str := ipv4.(string)
-		if ipv4str != "" {
-			primnicobj.PrimaryIpv4Address = &ipv4str
+		ipv4str = ipv4.(string)
+
+		primaryIpOk, ok := primnic[isInstanceNicPrimaryIP]
+		if ok && len(primaryIpOk.([]interface{})) > 0 {
+			primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+			reservedipok, _ := primip[isInstanceNicReservedIpId]
+			reservedIp = reservedipok.(string)
+
+			reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+			reservedipv4 = reservedipv4Ok.(string)
+
+			reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+			reservedipname = reservedipnameOk.(string)
+			var reservedipautodeleteok interface{}
+			reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+			autodelete = reservedipautodeleteok.(bool)
 		}
+		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+		}
+		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				ID: &reservedIp,
+			}
+		} else {
+			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				if ipv4str != "" {
+					primaryipobj.Address = &ipv4str
+				}
+				if reservedipv4 != "" {
+					primaryipobj.Address = &reservedipv4
+				}
+				if reservedipname != "" {
+					primaryipobj.Name = &reservedipname
+				}
+				if okAuto {
+					primaryipobj.AutoDelete = &autodelete
+				}
+				primnicobj.PrimaryIP = primaryipobj
+			}
+		}
+
 		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
 		allowIPSpoofingbool := allowIPSpoofing.(bool)
 		if ok {
@@ -877,10 +1122,57 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
 			}
+
+			// reserved ip changes
+
+			var ipv4str, reservedIp, reservedipv4, reservedipname string
+			var autodelete, okAuto bool
 			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
-			ipv4str := ipv4.(string)
-			if ipv4str != "" {
-				nwInterface.PrimaryIpv4Address = &ipv4str
+			ipv4str = ipv4.(string)
+
+			primaryIpOk, ok := nic[isInstanceNicPrimaryIP]
+			if ok && len(primaryIpOk.([]interface{})) > 0 {
+				primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+				reservedipok, _ := primip[isInstanceNicReservedIpId]
+				reservedIp = reservedipok.(string)
+
+				reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+				reservedipv4 = reservedipv4Ok.(string)
+
+				reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+				reservedipname = reservedipnameOk.(string)
+				var reservedipautodeleteok interface{}
+				reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+				autodelete = reservedipautodeleteok.(bool)
+			}
+			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			}
+			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			}
+			if reservedIp != "" {
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+					ID: &reservedIp,
+				}
+			} else {
+				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					if ipv4str != "" {
+						primaryipobj.Address = &ipv4str
+					}
+					if reservedipv4 != "" {
+						primaryipobj.Address = &reservedipv4
+					}
+					if reservedipname != "" {
+						primaryipobj.Name = &reservedipname
+					}
+					if okAuto {
+						primaryipobj.AutoDelete = &autodelete
+					}
+					nwInterface.PrimaryIP = primaryipobj
+				}
 			}
 			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
 			allowIPSpoofingbool := allowIPSpoofing.(bool)
@@ -929,6 +1221,13 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 			ID: &grpstr,
 		}
 
+	}
+
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -974,6 +1273,24 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		Name: &name,
 	}
 
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
 	if profile != "" {
 		instanceproto.Profile = &vpcv1.InstanceProfileIdentity{
 			Name: &profile,
@@ -1014,7 +1331,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		}
 		instanceproto.PlacementTarget = placementGrp
 	}
-
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
 		var volTemplate = &vpcv1.VolumePrototypeInstanceByImageContext{}
@@ -1022,6 +1344,12 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1057,10 +1385,57 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		if namestr != "" {
 			primnicobj.Name = &namestr
 		}
+
+		// reserved ip changes
+
+		var ipv4str, reservedIp, reservedipv4, reservedipname string
+		var autodelete, okAuto bool
 		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
-		ipv4str := ipv4.(string)
-		if ipv4str != "" {
-			primnicobj.PrimaryIpv4Address = &ipv4str
+		ipv4str = ipv4.(string)
+
+		primaryIpOk, ok := primnic[isInstanceNicPrimaryIP]
+		if ok && len(primaryIpOk.([]interface{})) > 0 {
+			primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+			reservedipok, _ := primip[isInstanceNicReservedIpId]
+			reservedIp = reservedipok.(string)
+
+			reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+			reservedipv4 = reservedipv4Ok.(string)
+
+			reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+			reservedipname = reservedipnameOk.(string)
+			var reservedipautodeleteok interface{}
+			reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+			autodelete = reservedipautodeleteok.(bool)
+		}
+		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+		}
+		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				ID: &reservedIp,
+			}
+		} else {
+			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				if ipv4str != "" {
+					primaryipobj.Address = &ipv4str
+				}
+				if reservedipv4 != "" {
+					primaryipobj.Address = &reservedipv4
+				}
+				if reservedipname != "" {
+					primaryipobj.Name = &reservedipname
+				}
+				if okAuto {
+					primaryipobj.AutoDelete = &autodelete
+				}
+				primnicobj.PrimaryIP = primaryipobj
+			}
 		}
 		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
 		allowIPSpoofingbool := allowIPSpoofing.(bool)
@@ -1100,10 +1475,57 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
 			}
+
+			// reserved ip changes
+
+			var ipv4str, reservedIp, reservedipv4, reservedipname string
+			var autodelete, okAuto bool
 			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
-			ipv4str := ipv4.(string)
-			if ipv4str != "" {
-				nwInterface.PrimaryIpv4Address = &ipv4str
+			ipv4str = ipv4.(string)
+
+			primaryIpOk, ok := nic[isInstanceNicPrimaryIP]
+			if ok && len(primaryIpOk.([]interface{})) > 0 {
+				primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+				reservedipok, _ := primip[isInstanceNicReservedIpId]
+				reservedIp = reservedipok.(string)
+
+				reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+				reservedipv4 = reservedipv4Ok.(string)
+
+				reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+				reservedipname = reservedipnameOk.(string)
+				var reservedipautodeleteok interface{}
+				reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+				autodelete = reservedipautodeleteok.(bool)
+			}
+			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			}
+			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			}
+			if reservedIp != "" {
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+					ID: &reservedIp,
+				}
+			} else {
+				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					if ipv4str != "" {
+						primaryipobj.Address = &ipv4str
+					}
+					if reservedipv4 != "" {
+						primaryipobj.Address = &reservedipv4
+					}
+					if reservedipname != "" {
+						primaryipobj.Name = &reservedipname
+					}
+					if okAuto {
+						primaryipobj.AutoDelete = &autodelete
+					}
+					nwInterface.PrimaryIP = primaryipobj
+				}
 			}
 			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
 			allowIPSpoofingbool := allowIPSpoofing.(bool)
@@ -1154,6 +1576,13 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	}
 
+	if metadataServiceEnabled, ok := d.GetOkExists(isInstanceMetadataServiceEnabled); ok {
+		metadataServiceEnabledBool := metadataServiceEnabled.(bool)
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabledBool,
+		}
+	}
+
 	options := &vpcv1.CreateInstanceOptions{
 		InstancePrototype: instanceproto,
 	}
@@ -1167,6 +1596,10 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 
 	log.Printf("[INFO] Instance : %s", *instance.ID)
 	d.Set(isInstanceStatus, instance.Status)
+
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 
 	_, err = isWaitForInstanceAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
@@ -1190,7 +1623,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 	if err != nil {
 		return err
 	}
-	instanceproto := &vpcv1.InstancePrototypeInstanceByVolume{
+	instanceproto := &vpcv1.InstancePrototypeInstanceBySourceSnapshot{
 		Zone: &vpcv1.ZoneIdentity{
 			Name: &zone,
 		},
@@ -1202,6 +1635,26 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &vpcID,
 		},
 	}
+
+	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
+		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
+
+		target := &vpcv1.TrustedProfileIdentity{}
+		if strings.HasPrefix(defaultTrustedProfiletarget, "crn") {
+			target.CRN = &defaultTrustedProfiletarget
+		} else {
+			target.ID = &defaultTrustedProfiletarget
+		}
+		instanceproto.DefaultTrustedProfile = &vpcv1.InstanceDefaultTrustedProfilePrototype{
+			Target: target,
+		}
+
+		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
+			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
+			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
+		}
+	}
+
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -1224,12 +1677,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 
 	if boot, ok := d.GetOk(isInstanceBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
-		var volTemplate = &vpcv1.VolumeAttachmentVolumePrototypeInstanceByVolumeContext{}
+		var volTemplate = &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{}
 
 		name, ok := bootvol[isInstanceBootAttachmentName]
 		namestr := name.(string)
 		if namestr != "" && ok {
 			volTemplate.Name = &namestr
+		}
+		sizeOk, ok := bootvol[isInstanceBootSize]
+		size := sizeOk.(int)
+		if size != 0 && ok {
+			sizeInt64 := int64(size)
+			volTemplate.Capacity = &sizeInt64
 		}
 		enc, ok := bootvol[isInstanceBootEncryption]
 		encstr := enc.(string)
@@ -1251,7 +1710,7 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			}
 		}
 		deletebool := true
-		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{
+		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
 		}
@@ -1274,11 +1733,59 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		if namestr != "" {
 			primnicobj.Name = &namestr
 		}
+
+		// reserved ip changes
+
+		var ipv4str, reservedIp, reservedipv4, reservedipname string
+		var autodelete, okAuto bool
 		ipv4, _ := primnic[isInstanceNicPrimaryIpv4Address]
-		ipv4str := ipv4.(string)
-		if ipv4str != "" {
-			primnicobj.PrimaryIpv4Address = &ipv4str
+		ipv4str = ipv4.(string)
+
+		primaryIpOk, ok := primnic[isInstanceNicPrimaryIP]
+		if ok && len(primaryIpOk.([]interface{})) > 0 {
+			primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+			reservedipok, _ := primip[isInstanceNicReservedIpId]
+			reservedIp = reservedipok.(string)
+
+			reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+			reservedipv4 = reservedipv4Ok.(string)
+
+			reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+			reservedipname = reservedipnameOk.(string)
+			var reservedipautodeleteok interface{}
+			reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+			autodelete = reservedipautodeleteok.(bool)
 		}
+		if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+		}
+		if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+			return fmt.Errorf("[ERROR] Error creating instance, primary_network_interface error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+		}
+		if reservedIp != "" {
+			primnicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+				ID: &reservedIp,
+			}
+		} else {
+			if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+				primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+				if ipv4str != "" {
+					primaryipobj.Address = &ipv4str
+				}
+				if reservedipv4 != "" {
+					primaryipobj.Address = &reservedipv4
+				}
+				if reservedipname != "" {
+					primaryipobj.Name = &reservedipname
+				}
+				if okAuto {
+					primaryipobj.AutoDelete = &autodelete
+				}
+				primnicobj.PrimaryIP = primaryipobj
+			}
+		}
+
 		allowIPSpoofing, ok := primnic[isInstanceNicAllowIPSpoofing]
 		allowIPSpoofingbool := allowIPSpoofing.(bool)
 		if ok {
@@ -1317,10 +1824,56 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			if ok && namestr != "" {
 				nwInterface.Name = &namestr
 			}
+			// reserved ip changes
+
+			var ipv4str, reservedIp, reservedipv4, reservedipname string
+			var autodelete, okAuto bool
 			ipv4, _ := nic[isInstanceNicPrimaryIpv4Address]
-			ipv4str := ipv4.(string)
-			if ipv4str != "" {
-				nwInterface.PrimaryIpv4Address = &ipv4str
+			ipv4str = ipv4.(string)
+
+			primaryIpOk, ok := nic[isInstanceNicPrimaryIP]
+			if ok && len(primaryIpOk.([]interface{})) > 0 {
+				primip := primaryIpOk.([]interface{})[0].(map[string]interface{})
+
+				reservedipok, _ := primip[isInstanceNicReservedIpId]
+				reservedIp = reservedipok.(string)
+
+				reservedipv4Ok, _ := primip[isInstanceNicReservedIpAddress]
+				reservedipv4 = reservedipv4Ok.(string)
+
+				reservedipnameOk, _ := primip[isInstanceNicReservedIpName]
+				reservedipname = reservedipnameOk.(string)
+				var reservedipautodeleteok interface{}
+				reservedipautodeleteok, okAuto = primip[isInstanceNicReservedIpAutoDelete]
+				autodelete = reservedipautodeleteok.(bool)
+			}
+			if ipv4str != "" && reservedipv4 != "" && ipv4str != reservedipv4 {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, use either primary_ipv4_address(%s) or primary_ip.0.address(%s)", ipv4str, reservedipv4)
+			}
+			if reservedIp != "" && (ipv4str != "" || reservedipv4 != "" || reservedipname != "") {
+				return fmt.Errorf("[ERROR] Error creating instance, network_interfaces error, reserved_ip(%s) is mutually exclusive with other primary_ip attributes", reservedIp)
+			}
+			if reservedIp != "" {
+				nwInterface.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+					ID: &reservedIp,
+				}
+			} else {
+				if ipv4str != "" || reservedipv4 != "" || reservedipname != "" || okAuto {
+					primaryipobj := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+					if ipv4str != "" {
+						primaryipobj.Address = &ipv4str
+					}
+					if reservedipv4 != "" {
+						primaryipobj.Address = &reservedipv4
+					}
+					if reservedipname != "" {
+						primaryipobj.Name = &reservedipname
+					}
+					if okAuto {
+						primaryipobj.AutoDelete = &autodelete
+					}
+					nwInterface.PrimaryIP = primaryipobj
+				}
 			}
 			allowIPSpoofing, ok := nic[isInstanceNicAllowIPSpoofing]
 			allowIPSpoofingbool := allowIPSpoofing.(bool)
@@ -1369,6 +1922,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 			ID: &grpstr,
 		}
 
+	}
+	if availablePolicyItem, ok := d.GetOk(isInstanceAvailablePolicyHostFailure); ok {
+		hostFailure := availablePolicyItem.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPrototype{
+			HostFailure: &hostFailure,
+		}
+	}
+	metadataServiceEnabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+	if metadataServiceEnabled {
+		instanceproto.MetadataService = &vpcv1.InstanceMetadataServicePrototype{
+			Enabled: &metadataServiceEnabled,
+		}
 	}
 
 	options := &vpcv1.CreateInstanceOptions{
@@ -1478,11 +2043,29 @@ func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.Resource
 			// taint the instance if status is failed
 			if *instance.Status == "failed" {
 				instanceStatusReason := instance.StatusReasons
+
+				//set the status reasons
+				if instance.StatusReasons != nil {
+					statusReasonsList := make([]map[string]interface{}, 0)
+					for _, sr := range instance.StatusReasons {
+						currentSR := map[string]interface{}{}
+						if sr.Code != nil && sr.Message != nil {
+							currentSR[isInstanceStatusReasonsCode] = *sr.Code
+							currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+							if sr.MoreInfo != nil {
+								currentSR[isInstanceStatusReasonsMoreInfo] = *sr.MoreInfo
+							}
+							statusReasonsList = append(statusReasonsList, currentSR)
+						}
+					}
+					d.Set(isInstanceStatusReasons, statusReasonsList)
+				}
+
 				out, err := json.MarshalIndent(instanceStatusReason, "", "    ")
 				if err != nil {
-					return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
+					return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID)
 				}
-				return instance, *instance.Status, fmt.Errorf("Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
+				return instance, *instance.Status, fmt.Errorf("[ERROR] Instance (%s) went into failed state during the operation \n (%+v) \n [WARNING] Running terraform apply again will remove the tainted instance and attempt to create the instance again replacing the previous configuration", *instance.ID, string(out))
 			}
 			return instance, *instance.Status, nil
 
@@ -1548,6 +2131,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 	getinsOptions := &vpcv1.GetInstanceOptions{
 		ID: &id,
 	}
+	getinsIniOptions := &vpcv1.GetInstanceInitializationOptions{
+		ID: &id,
+	}
 	instance, response, err := instanceC.GetInstance(getinsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -1556,7 +2142,20 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("[ERROR] Error getting Instance: %s\n%s", err, response)
 	}
+	instanceInitialization, response, err := instanceC.GetInstanceInitialization(getinsIniOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting Instance initialization details: %s\n%s", err, response)
+	}
+	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.AutoLink != nil {
+		d.Set(isInstanceDefaultTrustedProfileAutoLink, *instanceInitialization.DefaultTrustedProfile.AutoLink)
+	}
+	if instanceInitialization.DefaultTrustedProfile != nil && instanceInitialization.DefaultTrustedProfile.Target != nil {
+		d.Set(isInstanceDefaultTrustedProfileTarget, *instanceInitialization.DefaultTrustedProfile.Target.ID)
+	}
 
+	if instance.AvailabilityPolicy != nil && instance.AvailabilityPolicy.HostFailure != nil {
+		d.Set(isInstanceAvailablePolicyHostFailure, *instance.AvailabilityPolicy.HostFailure)
+	}
 	d.Set(isInstanceName, *instance.Name)
 	if instance.Profile != nil {
 		d.Set(isInstanceProfile, *instance.Profile.Name)
@@ -1599,7 +2198,39 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		currentPrimNic := map[string]interface{}{}
 		currentPrimNic["id"] = *instance.PrimaryNetworkInterface.ID
 		currentPrimNic[isInstanceNicName] = *instance.PrimaryNetworkInterface.Name
-		currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIpv4Address
+
+		//reserved ip changes
+		primaryIpList := make([]map[string]interface{}, 0)
+		currentPrimIp := map[string]interface{}{}
+		if instance.PrimaryNetworkInterface.PrimaryIP.Address != nil {
+			currentPrimNic[isInstanceNicPrimaryIpv4Address] = *instance.PrimaryNetworkInterface.PrimaryIP.Address
+			currentPrimIp[isInstanceNicReservedIpAddress] = *instance.PrimaryNetworkInterface.PrimaryIP.Address
+		}
+		if instance.PrimaryNetworkInterface.PrimaryIP.Href != nil {
+			currentPrimIp[isInstanceNicReservedIpHref] = *instance.PrimaryNetworkInterface.PrimaryIP.Href
+		}
+		if instance.PrimaryNetworkInterface.PrimaryIP.Name != nil {
+			currentPrimIp[isInstanceNicReservedIpName] = *instance.PrimaryNetworkInterface.PrimaryIP.Name
+		}
+		if instance.PrimaryNetworkInterface.PrimaryIP.ID != nil {
+			currentPrimIp[isInstanceNicReservedIpId] = *instance.PrimaryNetworkInterface.PrimaryIP.ID
+		}
+		if instance.PrimaryNetworkInterface.PrimaryIP.ResourceType != nil {
+			currentPrimIp[isInstanceNicReservedIpResourceType] = *instance.PrimaryNetworkInterface.PrimaryIP.ResourceType
+		}
+		getripoptions := &vpcv1.GetSubnetReservedIPOptions{
+			SubnetID: instance.PrimaryNetworkInterface.Subnet.ID,
+			ID:       instance.PrimaryNetworkInterface.PrimaryIP.ID,
+		}
+		insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *instance.PrimaryNetworkInterface.PrimaryIP.ID, *instance.PrimaryNetworkInterface.ID, err, response)
+		}
+		currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
+
+		primaryIpList = append(primaryIpList, currentPrimIp)
+		currentPrimNic[isInstanceNicPrimaryIP] = primaryIpList
+
 		getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 			InstanceID: &id,
 			ID:         instance.PrimaryNetworkInterface.ID,
@@ -1609,6 +2240,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return fmt.Errorf("[ERROR] Error getting network interfaces attached to the instance %s\n%s", err, response)
 		}
 		currentPrimNic[isInstanceNicAllowIPSpoofing] = *insnic.AllowIPSpoofing
+		if insnic.PortSpeed != nil {
+			currentPrimNic[isInstanceNicPortSpeed] = *insnic.PortSpeed
+		}
 		currentPrimNic[isInstanceNicSubnet] = *insnic.Subnet.ID
 		if len(insnic.SecurityGroups) != 0 {
 			secgrpList := []string{}
@@ -1629,7 +2263,41 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				currentNic := map[string]interface{}{}
 				currentNic["id"] = *intfc.ID
 				currentNic[isInstanceNicName] = *intfc.Name
-				currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIpv4Address
+
+				// reserved ip changes
+				primaryIpList := make([]map[string]interface{}, 0)
+				currentPrimIp := map[string]interface{}{}
+
+				if intfc.PrimaryIP.Address != nil {
+					currentPrimIp[isInstanceNicReservedIpAddress] = *intfc.PrimaryIP.Address
+					currentNic[isInstanceNicPrimaryIpv4Address] = *intfc.PrimaryIP.Address
+				}
+				if intfc.PrimaryIP.Href != nil {
+					currentPrimIp[isInstanceNicReservedIpHref] = *intfc.PrimaryIP.Href
+				}
+				if intfc.PrimaryIP.Name != nil {
+					currentPrimIp[isInstanceNicReservedIpName] = *intfc.PrimaryIP.Name
+				}
+				if intfc.PrimaryIP.ID != nil {
+					currentPrimIp[isInstanceNicReservedIpId] = *intfc.PrimaryIP.ID
+				}
+				if intfc.PrimaryIP.ResourceType != nil {
+					currentPrimIp[isInstanceNicReservedIpResourceType] = *intfc.PrimaryIP.ResourceType
+				}
+
+				getripoptions := &vpcv1.GetSubnetReservedIPOptions{
+					SubnetID: intfc.Subnet.ID,
+					ID:       intfc.PrimaryIP.ID,
+				}
+				insRip, response, err := instanceC.GetSubnetReservedIP(getripoptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the instance network interface(%s): %s\n%s", *intfc.PrimaryIP.ID, *intfc.ID, err, response)
+				}
+				currentPrimIp[isInstanceNicReservedIpAutoDelete] = insRip.AutoDelete
+
+				primaryIpList = append(primaryIpList, currentPrimIp)
+				currentNic[isInstanceNicPrimaryIP] = primaryIpList
+
 				getnicoptions := &vpcv1.GetInstanceNetworkInterfaceOptions{
 					InstanceID: &id,
 					ID:         intfc.ID,
@@ -1669,6 +2337,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			if sr.Code != nil && sr.Message != nil {
 				currentSR[isInstanceStatusReasonsCode] = *sr.Code
 				currentSR[isInstanceStatusReasonsMessage] = *sr.Message
+				if sr.MoreInfo != nil {
+					currentSR[isInstanceStatusReasonsMoreInfo] = *sr.MoreInfo
+				}
 				statusReasonsList = append(statusReasonsList, currentSR)
 			}
 		}
@@ -1699,6 +2370,7 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		bootVol := map[string]interface{}{}
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
+			bootVol[isInstanceBootVolumeId] = *instance.BootVolumeAttachment.Volume.ID
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -1712,6 +2384,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				bootVol[isInstanceBootProfile] = *vol.Profile.Name
 				if vol.EncryptionKey != nil {
 					bootVol[isInstanceBootEncryption] = *vol.EncryptionKey.CRN
+				}
+				if vol.SourceSnapshot != nil {
+					bootVol[isInstanceVolumeSnapshot] = vol.SourceSnapshot.ID
 				}
 			}
 		}
@@ -1738,7 +2413,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceResourceGroup, *instance.ResourceGroup.ID)
 		d.Set(flex.ResourceGroupName, *instance.ResourceGroup.Name)
 	}
-
+	if instance.MetadataService != nil {
+		d.Set(isInstanceMetadataServiceEnabled, instance.MetadataService.Enabled)
+	}
 	if instance.Disks != nil {
 		disks := []map[string]interface{}{}
 		for _, disksItem := range instance.Disks {
@@ -1767,6 +2444,40 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	id := d.Id()
+
+	bootVolSize := "boot_volume.0.size"
+	if d.HasChange(bootVolSize) && !d.IsNewResource() {
+		old, new := d.GetChange(bootVolSize)
+		if new.(int) < old.(int) {
+			return fmt.Errorf("[ERROR] Error while updating boot volume size of the instance, only expansion is possible")
+		}
+		bootVol := int64(new.(int))
+		volId := d.Get("boot_volume.0.volume_id").(string)
+		updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+			ID: &volId,
+		}
+		volPatchModel := &vpcv1.VolumePatch{
+			Capacity: &bootVol,
+		}
+		volPatchModelAsPatch, err := volPatchModel.AsPatch()
+
+		if err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err))
+		}
+
+		updateVolumeOptions.VolumePatch = volPatchModelAsPatch
+
+		vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+
+		if vol == nil || err != nil {
+			return (fmt.Errorf("[ERROR] Error encountered while expanding boot volume of instance %s/n%s", err, res))
+		}
+
+		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
+	}
 
 	if d.HasChange(isInstanceAction) && !d.IsNewResource() {
 
@@ -1917,6 +2628,33 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange("primary_network_interface.0.primary_ip.0.name") || d.HasChange("primary_network_interface.0.primary_ip.0.auto_delete") {
+		subnetId := d.Get("primary_network_interface.0.subnet").(string)
+		ripId := d.Get("primary_network_interface.0.primary_ip.0.reserved_ip").(string)
+		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+			SubnetID: &subnetId,
+			ID:       &ripId,
+		}
+		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		if d.HasChange("primary_network_interface.0.primary_ip.0.name") {
+			name := d.Get("primary_network_interface.0.primary_ip.0.name").(string)
+			reservedIpPath.Name = &name
+		}
+		if d.HasChange("primary_network_interface.0.primary_ip.0.auto_delete") {
+			auto := d.Get("primary_network_interface.0.primary_ip.0.auto_delete").(bool)
+			reservedIpPath.AutoDelete = &auto
+		}
+		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+		}
+		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+		_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+		}
+	}
+
 	if (d.HasChange("primary_network_interface.0.allow_ip_spoofing") || d.HasChange("primary_network_interface.0.name")) && !d.IsNewResource() {
 		newName := d.Get("primary_network_interface.0.name").(string)
 		networkID := d.Get("primary_network_interface.0.id").(string)
@@ -1951,7 +2689,38 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		for i := range nics {
 			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
 			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+			subnetKey := fmt.Sprintf("network_interfaces.%d.subnet", i)
 			ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
+			primaryipname := fmt.Sprintf("network_interfaces.%d.primary_ip.0.name", i)
+			primaryipauto := fmt.Sprintf("network_interfaces.%d.primary_ip.0.auto_delete", i)
+			primaryiprip := fmt.Sprintf("network_interfaces.%d.primary_ip.0.reserved_ip", i)
+			if d.HasChange(primaryipname) || d.HasChange(primaryipauto) {
+				subnetId := d.Get(subnetKey).(string)
+				ripId := d.Get(primaryiprip).(string)
+				updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+					SubnetID: &subnetId,
+					ID:       &ripId,
+				}
+				reservedIpPath := &vpcv1.ReservedIPPatch{}
+				if d.HasChange(primaryipname) {
+					name := d.Get(primaryipname).(string)
+					reservedIpPath.Name = &name
+				}
+				if d.HasChange(primaryipauto) {
+					auto := d.Get(primaryipauto).(bool)
+					reservedIpPath.AutoDelete = &auto
+				}
+				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+				}
+				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+				_, response, err := instanceC.UpdateSubnetReservedIP(updateripoptions)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error updating instance network interface reserved ip(%s): %s\n%s", ripId, err, response)
+				}
+			}
+
 			if d.HasChange(securitygrpKey) {
 				ovs, nvs := d.GetChange(securitygrpKey)
 				ov := ovs.(*schema.Set)
@@ -2067,6 +2836,50 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 		updnetoptions.InstancePatch = instancePatch
 
 		_, _, err = instanceC.UpdateInstance(updnetoptions)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange(isInstanceMetadataServiceEnabled) && !d.IsNewResource() {
+		enabled := d.Get(isInstanceMetadataServiceEnabled).(bool)
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		instancePatchModel := &vpcv1.InstancePatch{
+			MetadataService: &vpcv1.InstanceMetadataServicePatch{
+				Enabled: &enabled,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
+		if err != nil {
+			return err
+		}
+	}
+	if d.HasChange(isInstanceAvailablePolicyHostFailure) && !d.IsNewResource() {
+
+		updatedoptions := &vpcv1.UpdateInstanceOptions{
+			ID: &id,
+		}
+		availablePolicyHostFailure := d.Get(isInstanceAvailablePolicyHostFailure).(string)
+		instancePatchModel := &vpcv1.InstancePatch{
+			AvailabilityPolicy: &vpcv1.InstanceAvailabilityPolicyPatch{
+				HostFailure: &availablePolicyHostFailure,
+			},
+		}
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("Error calling asPatch for InstancePatch: %s", err)
+		}
+		updatedoptions.InstancePatch = instancePatch
+
+		_, _, err = instanceC.UpdateInstance(updatedoptions)
 		if err != nil {
 			return err
 		}

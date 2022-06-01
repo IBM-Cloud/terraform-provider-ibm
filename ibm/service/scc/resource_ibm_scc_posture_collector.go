@@ -7,14 +7,13 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/scc-go-sdk/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
 func ResourceIBMSccPostureCollectors() *schema.Resource {
@@ -115,7 +114,12 @@ func resourceIBMSccPostureCollectorsCreate(context context.Context, d *schema.Re
 	}
 
 	createCollectorOptions := &posturemanagementv2.CreateCollectorOptions{}
-	createCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	createCollectorOptions.SetAccountID(userDetails.UserAccount)
 
 	createCollectorOptions.SetName(d.Get("name").(string))
 	createCollectorOptions.SetIsPublic(d.Get("is_public").(bool))
@@ -147,25 +151,26 @@ func resourceIBMSccPostureCollectorsRead(context context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	listCollectorsOptions := &posturemanagementv2.ListCollectorsOptions{}
+	getCollectorsOptions := &posturemanagementv2.GetCollectorOptions{}
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
 	}
 
 	accountID := userDetails.UserAccount
-	listCollectorsOptions.SetAccountID(accountID)
+	getCollectorsOptions.SetAccountID(accountID)
+	getCollectorsOptions.SetID(d.Id())
 
-	collectorList, response, err := postureManagementClient.ListCollectorsWithContext(context, listCollectorsOptions)
+	collector, response, err := postureManagementClient.GetCollectorWithContext(context, getCollectorsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] ListCollectorsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("ListCollectorsWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetCollectorWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetCollectorWithContext failed %s\n%s", err, response))
 	}
-	d.SetId(*(collectorList.Collectors[0].ID))
+	d.SetId(*(collector.ID))
 	return nil
 }
 
@@ -176,7 +181,12 @@ func resourceIBMSccPostureCollectorsUpdate(context context.Context, d *schema.Re
 	}
 
 	updateCollectorOptions := &posturemanagementv2.UpdateCollectorOptions{}
-	updateCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	updateCollectorOptions.SetAccountID(userDetails.UserAccount)
 
 	updateCollectorOptions.SetID(d.Id())
 
@@ -201,7 +211,12 @@ func resourceIBMSccPostureCollectorsDelete(context context.Context, d *schema.Re
 	}
 
 	deleteCollectorOptions := &posturemanagementv2.DeleteCollectorOptions{}
-	deleteCollectorOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+	deleteCollectorOptions.SetAccountID(userDetails.UserAccount)
 
 	deleteCollectorOptions.SetID(d.Id())
 

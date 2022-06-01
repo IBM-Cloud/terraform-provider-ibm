@@ -189,7 +189,7 @@ func TestAccIBMIAMTrustedProfilePolicy_import(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resources", "resource_attributes"},
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes", "transaction_id"},
 			},
 		},
 	})
@@ -269,6 +269,60 @@ func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Attributes(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMIAMTrustedProfilePolicy_With_Resource_Tags(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_tags.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyUpdateResourceTags(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resource_tags.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMTrustedProfilePolicy_With_Transaction_Id(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMTrustedProfilePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyTransactionId(name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMTrustedProfilePolicyExists("ibm_iam_trusted_profile_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.profileID", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "resources.0.service", "cloudantnosqldb"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_policy.policy", "transaction_id", "terrformTrustedPolicy"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMTrustedProfilePolicyDestroy(s *terraform.State) error {
 	rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMPolicyManagementV1API()
 	if err != nil {
@@ -598,5 +652,61 @@ func testAccCheckIBMIAMTrustedProfilePolicyResourceAttributesUpdate(name string)
 			value    = "messagehub"
 		}
 	  }
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyResourceTags(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles          = ["Viewer"]
+			resource_tags {
+				name = "one"
+				value = "Terraform"
+			}
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyTransactionId(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles          = ["Viewer"]
+			transaction_id = "terrformTrustedPolicy"
+	  
+			resources {
+		 	 service = "cloudantnosqldb"
+			}
+	  	}
+	`, name)
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyUpdateResourceTags(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_trusted_profile" "profileID" {
+			name = "%s"
+	  	}
+	  
+	  	resource "ibm_iam_trusted_profile_policy" "policy" {
+			profile_id = ibm_iam_trusted_profile.profileID.id
+			roles          = ["Viewer"]
+			resource_tags {
+				name = "one"
+				value = "Terraform"
+			}
+			resource_tags {
+				name = "two"
+				value = "TerraformUpdate"
+			}
+	  	}
 	`, name)
 }

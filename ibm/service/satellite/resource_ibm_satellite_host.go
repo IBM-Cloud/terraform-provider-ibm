@@ -11,6 +11,7 @@ import (
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -95,10 +96,31 @@ func ResourceIBMSatelliteHost() *schema.Resource {
 				Computed:    true,
 				Description: "Health status of the host",
 			},
+			"wait_till": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Wait until location is normal",
+				ValidateFunc: validate.InvokeValidator("ibm_satellite_host", "wait_till"),
+			},
 		},
 	}
 }
 
+func ResourceIBMSatelliteHostValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+	waitTill := "location_normal"
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "wait_till",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              waitTill})
+
+	satelliteHostResourceValidator := validate.ResourceValidator{ResourceName: "ibm_satellite_host", Schema: validateSchema}
+	return &satelliteHostResourceValidator
+}
 func resourceIBMSatelliteHostCreate(d *schema.ResourceData, meta interface{}) error {
 	hostName := d.Get(hostID).(string)
 	location := d.Get(hostLocation).(string)
@@ -154,6 +176,13 @@ func resourceIBMSatelliteHostCreate(d *schema.ResourceData, meta interface{}) er
 	_, err = waitForHostAttachment(hostName, location, d, meta)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error waiting for host (%s) to get normal state: %s", hostName, err)
+	}
+	wait, ok := d.GetOk("wait_till")
+	if ok && wait.(string) == "location_normal" {
+		_, err = waitForLocationNormal(location, d, meta)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error waiting for getting location (%s) to be normal: %s", location, err)
+		}
 	}
 
 	return resourceIBMSatelliteHostRead(d, meta)

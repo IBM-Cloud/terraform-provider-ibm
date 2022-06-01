@@ -5,7 +5,6 @@ package scc_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -14,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/scc-go-sdk/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
 func TestAccIBMSccPostureCredentialsBasic(t *testing.T) {
@@ -101,7 +100,13 @@ func testAccCheckIBMSccPostureCredentialsExists(n string, obj posturemanagementv
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+
+		listCredentialsOptions.SetAccountID(userDetails.UserAccount)
 
 		newCredential, _, err := postureManagementClient.ListCredentials(listCredentialsOptions)
 		if err != nil {
@@ -124,7 +129,12 @@ func testAccCheckIBMSccPostureCredentialsDestroy(s *terraform.State) error {
 		}
 
 		listCredentialsOptions := &posturemanagementv2.ListCredentialsOptions{}
-		listCredentialsOptions.SetAccountID(os.Getenv("SCC_POSTURE_ACCOUNT_ID"))
+
+		userDetails, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+		listCredentialsOptions.SetAccountID(userDetails.UserAccount)
 
 		// Try to find the key
 		_, response, err := postureManagementClient.ListCredentials(listCredentialsOptions)
