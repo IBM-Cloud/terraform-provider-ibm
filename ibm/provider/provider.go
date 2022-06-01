@@ -1203,16 +1203,16 @@ func Validator() validate.ValidatorDict {
 				"ibm_scc_template_attachment":             scc.ResourceIBMSccTemplateAttachmentValidator(),
 				"ibm_cbr_zone":                            contextbasedrestrictions.ResourceIBMCbrZoneValidator(),
 				"ibm_cbr_rule":                            contextbasedrestrictions.ResourceIBMCbrRuleValidator(),
+				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+
+				// // Added for Event Notifications
+				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
+
 				// // Added for Tekton Pipeline
 				"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.ResourceIBMTektonPipelineDefinitionValidator(),
 				"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
 				"ibm_tekton_pipeline_property":         continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
 				"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
-
-				"ibm_satellite_host": satellite.ResourceIBMSatelliteHostValidator(),
-
-				// // Added for Event Notifications
-				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
 
 				// // Added for Toolchains
 				"ibm_cd_toolchain":                          cdtoolchain.ResourceIBMCdToolchainValidator(),
