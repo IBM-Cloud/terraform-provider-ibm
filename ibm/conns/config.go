@@ -29,6 +29,8 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
+	cisoriginauth "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
+	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -257,6 +259,7 @@ type ClientSession interface {
 	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
+	CisOrigAuthSession() (*cisoriginauth.AuthenticatedOriginPullApiV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
 	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
@@ -544,6 +547,10 @@ type clientSession struct {
 	// CIS FirewallRules options
 	cisFirewallRulesClient *cisfirewallrulesv1.FirewallRulesV1
 	cisFirewallRulesErr    error
+
+	// CIS originAuth Pull client option
+	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
+	cisOriginAuthPullErr error
 
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
@@ -992,6 +999,14 @@ func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1
 	return sess.cisWAFRuleClient.Clone(), nil
 }
 
+// CIS originAuth pull
+func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error) {
+	if sess.cisOriginAuthPullErr != nil {
+		return sess.cisOriginAuthClient, sess.cisOriginAuthPullErr
+	}
+	return sess.cisOriginAuthClient.Clone(), nil
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1191,6 +1206,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
 		session.cisWebhooksErr = errEmptyBluemixCredentials
+		session.cisOriginAuthPullErr = errEmptyBluemixCredentials
 		session.cisLogpushJobsErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
@@ -2525,6 +2541,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	cisOriginAuthOptions := &cisoriginpull.AuthenticatedOriginPullApiV1Options{
+		URL:            cisEndPoint,
+		Authenticator:  authenticator,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+	}
+
+	session.cisOriginAuthClient, session.cisOriginAuthPullErr =
+		cisoriginpull.NewAuthenticatedOriginPullApiV1(cisOriginAuthOptions)
+	if session.cisOriginAuthPullErr != nil {
+		session.cisOriginAuthPullErr = fmt.Errorf(
+			"Error occured while configuring CIS WAF Rules service: %s",
+			session.cisOriginAuthPullErr)
+	}
+	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
+		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisOriginAuthClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IBM Network CIS WAF Rule Service
 	cisWAFRuleOpt := &ciswafrulev1.WafRulesApiV1Options{
 		URL:           cisEndPoint,
@@ -2532,6 +2569,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		ZoneID:        core.StringPtr(""),
 		Authenticator: authenticator,
 	}
+
 	session.cisWAFRuleClient, session.cisWAFRuleErr =
 		ciswafrulev1.NewWafRulesApiV1(cisWAFRuleOpt)
 	if session.cisWAFRuleErr != nil {
