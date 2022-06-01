@@ -175,7 +175,7 @@ func TestAccIBMIAMUserPolicy_import(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"resources", "resource_attributes"},
+				ImportStateVerifyIgnore: []string{"resources", "resource_attributes", "transaction_id"},
 			},
 		},
 	})
@@ -291,7 +291,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIAMUserPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMUserPolicyResourceTags(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMUserPolicyExists("ibm_iam_user_policy.policy", conf),
@@ -300,7 +300,7 @@ func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "description", "IAM User Policy Creation for test scenario"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMIAMUserPolicyResourceTagsUpdate(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "resource_tags.#", "2"),
@@ -311,6 +311,25 @@ func TestAccIBMIAMUserPolicy_With_Resource_Tags(t *testing.T) {
 		},
 	})
 
+}
+
+func TestAccIBMIAMUserPolicy_With_Transaction_Id(t *testing.T) {
+	var conf iampolicymanagementv1.Policy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIAMServicePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMUserPolicyTransactionId(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_user_policy.policy", conf),
+					resource.TestCheckResourceAttr("ibm_iam_user_policy.policy", "transaction_id", "terrformUserPolicy"),
+				),
+			},
+		},
+	})
 }
 
 func testAccCheckIBMIAMUserPolicyDestroy(s *terraform.State) error {
@@ -669,5 +688,20 @@ func testAccCheckIBMIAMUserPolicyResourceTagsUpdate() string {
 			value = "terrformupdate"
 		}
 	}
+	`, acc.IAMUser)
+}
+
+func testAccCheckIBMIAMUserPolicyTransactionId() string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_user_policy" "policy" {
+			ibm_id = "%s"
+			roles  = ["Viewer"]
+			transaction_id = "terrformUserPolicy"
+			resources {
+		 		 service = "cloudantnosqldb"
+			}
+	  	}
+
 	`, acc.IAMUser)
 }

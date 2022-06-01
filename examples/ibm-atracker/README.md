@@ -6,6 +6,7 @@ These types of resources are supported:
 
 * Activity Tracker Target
 * Activity Tracker Route
+* Activity Tracker Settings
 
 ## Usage
 
@@ -38,6 +39,17 @@ resource "atracker_route" "atracker_route_instance" {
   name = var.atracker_route_name
   receive_global_events = var.atracker_route_receive_global_events
   rules = var.atracker_route_rules
+}
+```
+
+atracker_settings resource:
+
+```hcl
+resource "atracker_settings" "atracker_settings_instance" {
+  metadata_region_primary = var.atracker_settings_metadata_region_primary
+  private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
+  default_targets = var.atracker_settings_default_targets
+  permitted_target_regions = var.atracker_settings_permitted_target_regions
 }
 ```
 
@@ -107,3 +119,4 @@ data "atracker_endpoints" "atracker_endpoints_instance" {
 | atracker_targets | atracker_targets object |
 | atracker_routes | atracker_routes object |
 | atracker_endpoints | atracker_endpoints object |
+| atracker_settings | atracker_settings object |

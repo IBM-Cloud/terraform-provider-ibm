@@ -1010,3 +1010,26 @@ data "ibm_is_ike_policy" "example2" {
 data "ibm_is_ipsec_policy" "example3" {
   name = "my-ipsec-policy"
 }
+
+# List ssh keys 
+data "ibm_is_ssh_keys" "example" {
+}
+
+# List ssh keys by Resource group id
+data "ibm_is_ssh_keys" "example" {
+  resource_group = data.ibm_resource_group.default.id
+}
+
+# List volumes
+data "ibm_is_volumes" "example-volumes" {
+}
+
+# List Volumes by Name 
+data "ibm_is_volumes" "example" {
+  volume_name = "worrier-mailable-timpani-scowling"
+}
+
+# List Volumes by Zone name
+data "ibm_is_volumes" "example" {
+  zone_name = "us-south-1"
+}

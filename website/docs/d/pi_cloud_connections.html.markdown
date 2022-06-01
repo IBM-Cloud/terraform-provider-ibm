@@ -18,32 +18,37 @@ data "ibm_pi_cloud_connections" "example" {
 }
 ```
 
- **Notes**
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
-  
+**Notes**
+
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+
+  - `region` - `lon`
+  - `zone` - `lon04`
+
   Example usage:
-  
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-  
+
 ## Argument reference
-Review the argument references that you can specify for your data source. 
+
+Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 
 ## Attribute reference
+
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `connections` - (List) List of all the Cloud Connections.
 
   Nested scheme for `connections`:
+
   - `classic_enabled` - (Bool) Is Classic endpoint destination enabled.
   - `cloud_connection_id` - (String) The unique identifier of the cloud connection.
   - `global_routing` - (String) Is global routing enabled for this cloud connection.
@@ -59,3 +64,4 @@ In addition to all argument reference list, you can access the following attribu
   - `user_ip_address` - (String) User IP address.
   - `vpc_crns` - (Set of String) Set of VPCs attached to this cloud connection.
   - `vpc_enabled` - (Bool) Is VPC enabled for this cloud connection.
+  - `connection_mode` - (String) Type of service the gateway is attached to.

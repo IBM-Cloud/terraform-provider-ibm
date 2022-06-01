@@ -14,7 +14,7 @@ Create, update, or delete a IOS subscription by using IBM Cloud™ Event Notific
 
 ```terraform
 resource "ibm_en_subscription_ios" "ios_subscription" {
-  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "IOS Subscription"
   description    = "IOS device subscription"
   destination_id = ibm_en_destination_ios.destinationiosp8.destination_id
@@ -44,7 +44,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 

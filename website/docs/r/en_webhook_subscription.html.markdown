@@ -14,7 +14,7 @@ Create, update, or delete a  Webhook subscription by using IBM Cloud™ Event No
 
 ```terraform
 resource "ibm_en_subscription_webhook" "webhook_subscription" {
-  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
   name           = "My webhook subscription"
   description    = "The  webhook subscription"
   destination_id = ibm_en_destination_webhook.destination1.destination_id
