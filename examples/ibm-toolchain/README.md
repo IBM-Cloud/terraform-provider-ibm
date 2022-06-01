@@ -4,7 +4,7 @@ This example illustrates how to use the ToolchainV2
 
 These types of resources are supported:
 
-* toolchain_tool_sonarqube
+* cd_toolchain_tool_sonarqube
 
 ## Usage
 
@@ -21,18 +21,26 @@ Run `terraform destroy` when you don't need these resources.
 
 ## ToolchainV2 resources
 
-toolchain_tool_sonarqube resource:
+cd_toolchain_tool_sonarqube resource:
 
 ```hcl
-resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
-  toolchain_id = var.toolchain_tool_sonarqube_toolchain_id
-  name = var.toolchain_tool_sonarqube_name
-  parameters = var.toolchain_tool_sonarqube_parameters
+resource "cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
+  toolchain_id = var.cd_toolchain_tool_sonarqube_toolchain_id
+  name = var.cd_toolchain_tool_sonarqube_name
+  parameters = var.cd_toolchain_tool_sonarqube_parameters
 }
 ```
 
 ## ToolchainV2 Data sources
 
+cd_toolchain_tool_sonarqube data source:
+
+```hcl
+data "cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
+  toolchain_id = var.cd_toolchain_tool_sonarqube_toolchain_id
+  integration_id = var.cd_toolchain_tool_sonarqube_integration_id
+}
+```
 
 ## Assumptions
 
@@ -62,9 +70,12 @@ resource "toolchain_tool_sonarqube" "toolchain_tool_sonarqube_instance" {
 | toolchain_id | ID of the toolchain to bind integration to. | `string` | true |
 | name | Name of tool integration. | `string` | false |
 | parameters | Parameters to be used to create the integration. | `` | false |
+| toolchain_id | ID of the toolchain. | `string` | true |
+| integration_id | ID of the tool integration bound to the toolchain. | `string` | true |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| toolchain_tool_sonarqube | toolchain_tool_sonarqube object |
+| cd_toolchain_tool_sonarqube | cd_toolchain_tool_sonarqube object |
+| cd_toolchain_tool_sonarqube | cd_toolchain_tool_sonarqube object |

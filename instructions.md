@@ -9,14 +9,19 @@ To add this generated code into the IBM Terraform Provider:
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/toolchain"
 ```
 
+- Add the following entries to `DataSourcesMap`:
+```
+    "ibm_cd_toolchain_tool_sonarqube": toolchain.DataSourceIBMCdToolchainToolSonarqube(),
+```
+
 - Add the following entries to `ResourcesMap`:
 ```
-    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIBMToolchainToolSonarqube(),
+    "ibm_cd_toolchain_tool_sonarqube": toolchain.ResourceIBMCdToolchainToolSonarqube(),
 ```
 
 - Add the following entries to `globalValidatorDict`:
 ``` 
-    "ibm_toolchain_tool_sonarqube": toolchain.ResourceIBMToolchainToolSonarqubeValidator(),
+    "ibm_cd_toolchain_tool_sonarqube": toolchain.ResourceIBMCdToolchainToolSonarqubeValidator(),
 ```
 
 ### Changes to `config.go`
