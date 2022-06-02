@@ -67,8 +67,7 @@ func TestAccIBMPrivateDNSCustomResolverLocations_Import(t *testing.T) {
 func testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, zone, cidr, name, description string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "rg" {
-		//is_default	= true
-		name="SRE India Team"
+		is_default	= true
 	}
 	resource "ibm_is_vpc" "test-pdns-cr-vpc" {
 		name			= "%s"

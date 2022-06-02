@@ -138,16 +138,16 @@ func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.Reso
 	d.SetId(flex.ConvertCisToTfThreeVar(locationID, resolverID, instanceID))
 
 	if cr_enable && enable_loc {
-		_, err = PDNSCustomResolverEnableLocation(meta, instanceID, resolverID, locationID)
+		err := PDNSCustomResolverEnableLocation(meta, instanceID, resolverID, locationID)
 		if err != nil {
-			return diag.FromErr(err)
+			return err
 		}
 	}
 
 	if cr_enable && enable_loc {
-		_, err = PDNSCustomResolverEnable(meta, instanceID, resolverID)
+		err := PDNSCustomResolverEnable(meta, instanceID, resolverID)
 		if err != nil {
-			return diag.FromErr(err)
+			return err
 		}
 	} else if !cr_enable {
 		optCr := sess.NewUpdateCustomResolverOptions(instanceID, resolverID)
