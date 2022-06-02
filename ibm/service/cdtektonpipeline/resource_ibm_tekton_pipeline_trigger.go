@@ -25,19 +25,19 @@ import (
 
 func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineTriggerCreate,
-		ReadContext:     ResourceIBMTektonPipelineTriggerRead,
-		UpdateContext:   ResourceIBMTektonPipelineTriggerUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineTriggerDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineTriggerCreate,
+		ReadContext:   ResourceIBMTektonPipelineTriggerRead,
+		UpdateContext: ResourceIBMTektonPipelineTriggerUpdate,
+		DeleteContext: ResourceIBMTektonPipelineTriggerDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"trigger": &schema.Schema{
 				Type:        schema.TypeList,
@@ -359,8 +359,8 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("trigger.0.name") {
 		updateTektonPipelineTriggerOptions.SetName(d.Get("trigger.0.name").(string))

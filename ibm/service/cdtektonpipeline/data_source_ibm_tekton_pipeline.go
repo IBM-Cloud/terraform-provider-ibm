@@ -277,8 +277,8 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 										Description: "worker type.",
 									},
 									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
+										Type:     schema.TypeString,
+										Computed: true,
 									},
 								},
 							},
@@ -429,8 +429,8 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 							Description: "worker type.",
 						},
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -498,7 +498,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	definitions := []map[string]interface{}{}
 	if tektonPipeline.Definitions != nil {
-		for _, modelItem := range tektonPipeline.Definitions { 
+		for _, modelItem := range tektonPipeline.Definitions {
 			modelMap, err := DataSourceIBMTektonPipelineDefinitionToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -512,7 +512,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	properties := []map[string]interface{}{}
 	if tektonPipeline.Properties != nil {
-		for _, modelItem := range tektonPipeline.Properties { 
+		for _, modelItem := range tektonPipeline.Properties {
 			modelMap, err := DataSourceIBMTektonPipelinePropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -546,7 +546,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	triggers := []map[string]interface{}{}
 	if tektonPipeline.Triggers != nil {
-		for _, modelItem := range tektonPipeline.Triggers { 
+		for _, modelItem := range tektonPipeline.Triggers {
 			modelMap, err := DataSourceIBMTektonPipelineTriggerToMap(modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -679,7 +679,7 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-		
+
 		if model.Type != nil {
 			modelMap["type"] = *model.Type
 		}

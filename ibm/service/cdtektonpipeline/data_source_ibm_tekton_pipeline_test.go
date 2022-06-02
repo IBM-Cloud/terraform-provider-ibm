@@ -50,4 +50,3 @@ func testAccCheckIBMTektonPipelineDataSourceConfigBasic() string {
 		}
 	`)
 }
-

@@ -117,8 +117,8 @@ func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
 							Description: "worker type.",
 						},
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -293,7 +293,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
-		for _, modelItem := range trigger.Properties { 
+		for _, modelItem := range trigger.Properties {
 			modelMap, err := DataSourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)

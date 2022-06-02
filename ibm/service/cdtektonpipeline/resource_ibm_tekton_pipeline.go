@@ -19,11 +19,11 @@ import (
 
 func ResourceIBMTektonPipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineCreate,
-		ReadContext:     ResourceIBMTektonPipelineRead,
-		UpdateContext:   ResourceIBMTektonPipelineUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineCreate,
+		ReadContext:   ResourceIBMTektonPipelineRead,
+		UpdateContext: ResourceIBMTektonPipelineUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"worker": &schema.Schema{
@@ -34,8 +34,8 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
+							Type:     schema.TypeString,
+							Required: true,
 						},
 					},
 				},
@@ -299,8 +299,8 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 										Description: "worker type.",
 									},
 									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
+										Type:     schema.TypeString,
+										Required: true,
 									},
 								},
 							},

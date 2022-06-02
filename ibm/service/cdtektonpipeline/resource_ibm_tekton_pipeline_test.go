@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMTektonPipelineBasic(t *testing.T) {
@@ -44,7 +44,7 @@ func testAccCheckIBMTektonPipelineConfigBasic() string {
 
 		resource "ibm_tekton_pipeline" "tekton_pipeline" {
 		}
-	`, )
+	`)
 }
 
 func testAccCheckIBMTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {
