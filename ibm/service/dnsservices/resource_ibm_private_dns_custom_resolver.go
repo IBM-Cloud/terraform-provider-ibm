@@ -408,7 +408,7 @@ func resouceIBMPrivateDNSCustomResolverUpdate(context context.Context, d *schema
 			// Add new custom resolver locations
 			if strings.Contains(newLoc.locationId, "NEW0") {
 				locationID, err := addCRLocation(meta, instanceID, resolverID, newLoc.subnet)
-				if err != nil {
+				if err != nil || locationID == "" {
 					return err
 				}
 				if newLoc.enabled {
