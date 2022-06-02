@@ -20,20 +20,20 @@ func TestAccIBMTektonPipelineDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTektonPipelineDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "status"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "resource_group_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "toolchain.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "definitions.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "properties.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "updated_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "created"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "triggers.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "worker.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "html_url"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline.tekton_pipeline", "enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "status"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "resource_group_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "toolchain.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "definitions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "properties.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "created"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "triggers.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "worker.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "html_url"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline.tekton_pipeline", "enabled"),
 				),
 			},
 		},
@@ -42,10 +42,10 @@ func TestAccIBMTektonPipelineDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMTektonPipelineDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "ibm_tekton_pipeline" "tekton_pipeline" {
+		resource "ibm_cd_tekton_pipeline" "tekton_pipeline" {
 		}
 
-		data "ibm_tekton_pipeline" "tekton_pipeline" {
+		data "ibm_cd_tekton_pipeline" "tekton_pipeline" {
 			id = "94619026-912b-4d92-8f51-6c74f0692d90"
 		}
 	`)

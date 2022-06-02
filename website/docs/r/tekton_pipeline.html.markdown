@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline"
+page_title: "IBM : ibm_cd_tekton_pipeline"
 description: |-
   Manages tekton_pipeline.
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline
+# ibm_cd_tekton_pipeline
 
 Provides a resource for tekton_pipeline. This allows tekton_pipeline to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_tekton_pipeline" "tekton_pipeline" {
+resource "ibm_cd_tekton_pipeline" "tekton_pipeline" {
   worker {
 		id = "id"
   }
@@ -218,9 +218,9 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_tekton_pipeline` resource by using `id`. UUID.
+You can import the `ibm_cd_tekton_pipeline` resource by using `id`. UUID.
 
 # Syntax
 ```
-$ terraform import ibm_tekton_pipeline.tekton_pipeline <id>
+$ terraform import ibm_cd_tekton_pipeline.tekton_pipeline <id>
 ```

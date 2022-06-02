@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_trigger_property"
+page_title: "IBM : ibm_cd_tekton_pipeline_trigger_property"
 description: |-
   Manages tekton_pipeline_trigger_property.
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_trigger_property
+# ibm_cd_tekton_pipeline_trigger_property
 
 Provides a resource for tekton_pipeline_trigger_property. This allows tekton_pipeline_trigger_property to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property" {
+resource "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property" {
   name = "key1"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   trigger_id = "1bb892a1-2e04-4768-a369-b1159eace147"
@@ -101,7 +101,7 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_tekton_pipeline_trigger_property` resource by using `name`.
+You can import the `ibm_cd_tekton_pipeline_trigger_property` resource by using `name`.
 The `name` property can be formed from `pipeline_id`, `trigger_id`, and `property_name` in the following format:
 
 ```
@@ -113,5 +113,5 @@ The `name` property can be formed from `pipeline_id`, `trigger_id`, and `propert
 
 # Syntax
 ```
-$ terraform import ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property <pipeline_id>/<trigger_id>/<property_name>
+$ terraform import ibm_cd_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property <pipeline_id>/<trigger_id>/<property_name>
 ```

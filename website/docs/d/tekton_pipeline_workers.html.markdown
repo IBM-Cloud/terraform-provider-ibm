@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_workers"
+page_title: "IBM : ibm_cd_tekton_pipeline_workers"
 description: |-
   Get information about tekton_pipeline_workers
 subcategory: "Continuous Delivery Pipeline"
 ---
 
-# ibm_tekton_pipeline_workers
+# ibm_cd_tekton_pipeline_workers
 
 Provides a read-only data source for tekton_pipeline_workers. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_tekton_pipeline_workers" "tekton_pipeline_workers" {
+data "ibm_cd_tekton_pipeline_workers" "tekton_pipeline_workers" {
 	pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
 }
 ```

@@ -1,22 +1,22 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_trigger_property"
+page_title: "IBM : ibm_cd_tekton_pipeline_trigger_property"
 description: |-
   Get information about tekton_pipeline_trigger_property
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_trigger_property
+# ibm_cd_tekton_pipeline_trigger_property
 
 Provides a read-only data source for tekton_pipeline_trigger_property. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property" {
-	pipeline_id = ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property.pipeline_id
+data "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property" {
+	pipeline_id = ibm_cd_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property.pipeline_id
 	property_name = "debug-pipeline"
-	trigger_id = ibm_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property.trigger_id
+	trigger_id = ibm_cd_tekton_pipeline_trigger_property.tekton_pipeline_trigger_property.trigger_id
 }
 ```
 

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_property"
+page_title: "IBM : ibm_cd_tekton_pipeline_property"
 description: |-
   Manages tekton_pipeline_property.
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_property
+# ibm_cd_tekton_pipeline_property
 
 Provides a resource for tekton_pipeline_property. This allows tekton_pipeline_property to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_tekton_pipeline_property" "tekton_pipeline_property" {
+resource "ibm_cd_tekton_pipeline_property" "tekton_pipeline_property" {
   name = "key1"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   type = "TEXT"
@@ -98,7 +98,7 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_tekton_pipeline_property` resource by using `name`.
+You can import the `ibm_cd_tekton_pipeline_property` resource by using `name`.
 The `name` property can be formed from `pipeline_id`, and `property_name` in the following format:
 
 ```
@@ -109,5 +109,5 @@ The `name` property can be formed from `pipeline_id`, and `property_name` in the
 
 # Syntax
 ```
-$ terraform import ibm_tekton_pipeline_property.tekton_pipeline_property <pipeline_id>/<property_name>
+$ terraform import ibm_cd_tekton_pipeline_property.tekton_pipeline_property <pipeline_id>/<property_name>
 ```

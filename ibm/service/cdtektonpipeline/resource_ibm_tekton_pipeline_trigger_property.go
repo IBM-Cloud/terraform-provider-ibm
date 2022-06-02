@@ -35,26 +35,26 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "pipeline_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "pipeline_id"),
 				Description:  "The tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "trigger_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "trigger_id"),
 				Description:  "The trigger ID.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "name"),
 				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "value"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
 				Description:  "String format property value.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
@@ -85,19 +85,19 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 			"default": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "default"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "default"),
 				Description:  "Default option for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "type"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "type"),
 				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger_property", "path"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
 				Description:  "property path for INTEGRATION type properties.",
 			},
 		},
@@ -170,7 +170,7 @@ func ResourceIBMTektonPipelineTriggerPropertyValidator() *validate.ResourceValid
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_tekton_pipeline_trigger_property", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_tekton_pipeline_trigger_property", Schema: validateSchema}
 	return &resourceValidator
 }
 

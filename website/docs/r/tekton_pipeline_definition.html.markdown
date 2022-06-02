@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_definition"
+page_title: "IBM : ibm_cd_tekton_pipeline_definition"
 description: |-
   Manages tekton_pipeline_definition.
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_definition
+# ibm_cd_tekton_pipeline_definition
 
 Provides a resource for tekton_pipeline_definition. This allows tekton_pipeline_definition to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
+resource "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   scm_source {
 		url = "url"
@@ -103,7 +103,7 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_tekton_pipeline_definition` resource by using `id`.
+You can import the `ibm_cd_tekton_pipeline_definition` resource by using `id`.
 The `id` property can be formed from `pipeline_id`, and `definition_id` in the following format:
 
 ```
@@ -114,5 +114,5 @@ The `id` property can be formed from `pipeline_id`, and `definition_id` in the f
 
 # Syntax
 ```
-$ terraform import ibm_tekton_pipeline_definition.tekton_pipeline_definition <pipeline_id>/<definition_id>
+$ terraform import ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition <pipeline_id>/<definition_id>
 ```

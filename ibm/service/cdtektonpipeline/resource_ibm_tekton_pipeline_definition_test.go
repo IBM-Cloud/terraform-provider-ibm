@@ -29,12 +29,12 @@ func TestAccIBMTektonPipelineDefinitionBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTektonPipelineDefinitionConfigBasic(pipelineID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMTektonPipelineDefinitionExists("ibm_tekton_pipeline_definition.tekton_pipeline_definition", conf),
-					resource.TestCheckResourceAttr("ibm_tekton_pipeline_definition.tekton_pipeline_definition", "pipeline_id", pipelineID),
+					testAccCheckIBMTektonPipelineDefinitionExists("ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "pipeline_id", pipelineID),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_tekton_pipeline_definition.tekton_pipeline_definition",
+				ResourceName:      "ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -45,7 +45,7 @@ func TestAccIBMTektonPipelineDefinitionBasic(t *testing.T) {
 func testAccCheckIBMTektonPipelineDefinitionConfigBasic(pipelineID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
+		resource "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
 			pipeline_id = "%s"
 		}
 	`, pipelineID)
@@ -90,7 +90,7 @@ func testAccCheckIBMTektonPipelineDefinitionDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_tekton_pipeline_definition" {
+		if rs.Type != "ibm_cd_tekton_pipeline_definition" {
 			continue
 		}
 

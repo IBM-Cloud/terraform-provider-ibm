@@ -29,12 +29,12 @@ func TestAccIBMTektonPipelineTriggerBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTektonPipelineTriggerConfigBasic(pipelineID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMTektonPipelineTriggerExists("ibm_tekton_pipeline_trigger.tekton_pipeline_trigger", conf),
-					resource.TestCheckResourceAttr("ibm_tekton_pipeline_trigger.tekton_pipeline_trigger", "pipeline_id", pipelineID),
+					testAccCheckIBMTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger", conf),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger", "pipeline_id", pipelineID),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_tekton_pipeline_trigger.tekton_pipeline_trigger",
+				ResourceName:      "ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -45,7 +45,7 @@ func TestAccIBMTektonPipelineTriggerBasic(t *testing.T) {
 func testAccCheckIBMTektonPipelineTriggerConfigBasic(pipelineID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
+		resource "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
 			pipeline_id = "%s"
 		}
 	`, pipelineID)
@@ -92,7 +92,7 @@ func testAccCheckIBMTektonPipelineTriggerDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_tekton_pipeline_trigger" {
+		if rs.Type != "ibm_cd_tekton_pipeline_trigger" {
 			continue
 		}
 
