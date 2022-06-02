@@ -13,8 +13,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 )
 
 func ResourceIBMTektonPipeline() *schema.Resource {
@@ -657,7 +657,7 @@ func ResourceIBMTektonPipelineMapToWorkerWithID(modelMap map[string]interface{})
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineWorkerWithIDToMap(model *cdtektonpipelinev2.WorkerWithID) (map[string]interface{}, error) {
+func ResourceIBMTektonPipelineWorkerWithIDToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	return modelMap, nil
