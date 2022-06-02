@@ -181,6 +181,7 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 			},
 			"pipeline_definition": &schema.Schema{
 				Type:        schema.TypeList,
+				Optional:    true,
 				Computed:    true,
 				Description: "Tekton pipeline definition document detail object. If this property is absent, the pipeline has no definitions added.",
 				Elem: &schema.Resource{
