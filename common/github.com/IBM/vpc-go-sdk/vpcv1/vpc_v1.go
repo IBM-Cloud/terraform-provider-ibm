@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2022-03-29")
+		options.Version = core.StringPtr("2022-06-02")
 	}
 
 	service = &VpcV1{
@@ -604,7 +604,7 @@ func (vpc *VpcV1) GetVPCDefaultRoutingTableWithContext(ctx context.Context, getV
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{id}/default_routing_table`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{id}/default_routing_table?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1423,7 +1423,7 @@ func (vpc *VpcV1) ListVPCRoutingTablesWithContext(ctx context.Context, listVPCRo
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1497,7 +1497,7 @@ func (vpc *VpcV1) CreateVPCRoutingTableWithContext(ctx context.Context, createVP
 	builder := core.NewRequestBuilder(core.POST)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1587,7 +1587,7 @@ func (vpc *VpcV1) DeleteVPCRoutingTableWithContext(ctx context.Context, deleteVP
 	builder := core.NewRequestBuilder(core.DELETE)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1639,7 +1639,7 @@ func (vpc *VpcV1) GetVPCRoutingTableWithContext(ctx context.Context, getVPCRouti
 	builder := core.NewRequestBuilder(core.GET)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
@@ -1704,7 +1704,7 @@ func (vpc *VpcV1) UpdateVPCRoutingTableWithContext(ctx context.Context, updateVP
 	builder := core.NewRequestBuilder(core.PATCH)
 	builder = builder.WithContext(ctx)
 	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
-	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}`, pathParamsMap)
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/vpcs/{vpc_id}/routing_tables/{id}?maturity=development`, pathParamsMap)
 	if err != nil {
 		return
 	}
