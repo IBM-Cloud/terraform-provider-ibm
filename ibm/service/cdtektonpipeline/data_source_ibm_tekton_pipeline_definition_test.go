@@ -23,11 +23,11 @@ func TestAccIBMTektonPipelineDefinitionDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTektonPipelineDefinitionDataSourceConfigBasic(definitionPipelineID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_definition.tekton_pipeline_definition", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_definition.tekton_pipeline_definition", "pipeline_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_definition.tekton_pipeline_definition", "definition_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_definition.tekton_pipeline_definition", "scm_source.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_definition.tekton_pipeline_definition", "service_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "pipeline_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "definition_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "scm_source.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition", "service_instance_id"),
 				),
 			},
 		},
@@ -36,13 +36,13 @@ func TestAccIBMTektonPipelineDefinitionDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMTektonPipelineDefinitionDataSourceConfigBasic(definitionPipelineID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
+		resource "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
 			pipeline_id = "%s"
 		}
 
-		data "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
-			pipeline_id = ibm_tekton_pipeline_definition.tekton_pipeline_definition.pipeline_id
-			definition_id = ibm_tekton_pipeline_definition.tekton_pipeline_definition.definition_id
+		data "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
+			pipeline_id = ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition.pipeline_id
+			definition_id = ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition.definition_id
 		}
 	`, definitionPipelineID)
 }

@@ -31,7 +31,7 @@ func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_definition", "pipeline_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_definition", "pipeline_id"),
 				Description:  "The tekton pipeline ID.",
 			},
 			"scm_source": &schema.Schema{
@@ -92,7 +92,7 @@ func ResourceIBMTektonPipelineDefinitionValidator() *validate.ResourceValidator 
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_tekton_pipeline_definition", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_tekton_pipeline_definition", Schema: validateSchema}
 	return &resourceValidator
 }
 

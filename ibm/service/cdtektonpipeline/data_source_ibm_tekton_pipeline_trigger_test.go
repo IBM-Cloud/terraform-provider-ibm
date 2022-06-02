@@ -23,9 +23,9 @@ func TestAccIBMTektonPipelineTriggerDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMTektonPipelineTriggerDataSourceConfigBasic(triggerPipelineID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_trigger.tekton_pipeline_trigger", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_trigger.tekton_pipeline_trigger", "pipeline_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_tekton_pipeline_trigger.tekton_pipeline_trigger", "trigger_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger", "pipeline_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger", "trigger_id"),
 				),
 			},
 		},
@@ -34,13 +34,13 @@ func TestAccIBMTektonPipelineTriggerDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMTektonPipelineTriggerDataSourceConfigBasic(triggerPipelineID string) string {
 	return fmt.Sprintf(`
-		resource "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
+		resource "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
 			pipeline_id = "%s"
 		}
 
-		data "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
-			pipeline_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.pipeline_id
-			trigger_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.trigger_id
+		data "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
+			pipeline_id = ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger.pipeline_id
+			trigger_id = ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger.trigger_id
 		}
 	`, triggerPipelineID)
 }

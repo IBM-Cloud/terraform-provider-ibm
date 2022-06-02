@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline"
+page_title: "IBM : ibm_cd_tekton_pipeline"
 description: |-
   Get information about tekton_pipeline
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline
+# ibm_cd_tekton_pipeline
 
 Provides a read-only data source for tekton_pipeline. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_tekton_pipeline" "tekton_pipeline" {
+data "ibm_cd_tekton_pipeline" "tekton_pipeline" {
 	id = "94619026-912b-4d92-8f51-6c74f0692d90"
 }
 ```

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_trigger"
+page_title: "IBM : ibm_cd_tekton_pipeline_trigger"
 description: |-
   Manages tekton_pipeline_trigger.
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_trigger
+# ibm_cd_tekton_pipeline_trigger
 
 Provides a resource for tekton_pipeline_trigger. This allows tekton_pipeline_trigger to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
+resource "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   trigger {
 		source_trigger_id = "source_trigger_id"
@@ -238,7 +238,7 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 
 ## Import
 
-You can import the `ibm_tekton_pipeline_trigger` resource by using `id`.
+You can import the `ibm_cd_tekton_pipeline_trigger` resource by using `id`.
 The `id` property can be formed from `pipeline_id`, and `trigger_id` in the following format:
 
 ```
@@ -249,5 +249,5 @@ The `id` property can be formed from `pipeline_id`, and `trigger_id` in the foll
 
 # Syntax
 ```
-$ terraform import ibm_tekton_pipeline_trigger.tekton_pipeline_trigger <pipeline_id>/<trigger_id>
+$ terraform import ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger <pipeline_id>/<trigger_id>
 ```

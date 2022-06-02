@@ -36,7 +36,7 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_trigger", "pipeline_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "pipeline_id"),
 				Description:  "The tekton pipeline ID.",
 			},
 			"trigger": &schema.Schema{
@@ -266,7 +266,7 @@ func ResourceIBMTektonPipelineTriggerValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_tekton_pipeline_trigger", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_tekton_pipeline_trigger", Schema: validateSchema}
 	return &resourceValidator
 }
 

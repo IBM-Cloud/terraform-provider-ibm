@@ -1,21 +1,21 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_tekton_pipeline_trigger"
+page_title: "IBM : ibm_cd_tekton_pipeline_trigger"
 description: |-
   Get information about tekton_pipeline_trigger
 subcategory: "CD Tekton Pipeline"
 ---
 
-# ibm_tekton_pipeline_trigger
+# ibm_cd_tekton_pipeline_trigger
 
 Provides a read-only data source for tekton_pipeline_trigger. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
-	pipeline_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.pipeline_id
-	trigger_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.trigger_id
+data "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
+	pipeline_id = ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger.pipeline_id
+	trigger_id = ibm_cd_tekton_pipeline_trigger.tekton_pipeline_trigger.trigger_id
 }
 ```
 
