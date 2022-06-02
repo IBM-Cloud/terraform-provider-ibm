@@ -1208,12 +1208,6 @@ func Validator() validate.ValidatorDict {
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
 
-				// // Added for Tekton Pipeline
-				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
-				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
-				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
-				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
-
 				// // Added for Toolchains
 				"ibm_cd_toolchain":                          cdtoolchain.ResourceIBMCdToolchainValidator(),
 				"ibm_cd_toolchain_tool_keyprotect":          cdtoolchain.ResourceIBMCdToolchainToolKeyprotectValidator(),
@@ -1240,6 +1234,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_pagerduty":           cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
 				"ibm_cd_toolchain_tool_rationalteamconcert": cdtoolchain.ResourceIBMCdToolchainToolRationalteamconcertValidator(),
 				"ibm_cd_toolchain_tool_saucelabs":           cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
+
+				// // Added for Tekton Pipeline
+				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
+				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
+				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
