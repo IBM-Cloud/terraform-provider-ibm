@@ -25,7 +25,6 @@ func TestAccIBMISVPCRoutingTablesDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMISVPCRoutingTablesDataSourceConfig(vpcname, routetablename),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(node, "routing_tables.#"),
-					resource.TestCheckResourceAttrSet(node, "routing_tables.[0].route_internet_ingress"),
 				),
 			},
 		},
