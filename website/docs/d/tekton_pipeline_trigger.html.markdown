@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_tekton_pipeline_trigger"
 description: |-
   Get information about tekton_pipeline_trigger
-subcategory: "Continuous Delivery Pipeline"
+subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_tekton_pipeline_trigger
@@ -14,8 +14,8 @@ Provides a read-only data source for tekton_pipeline_trigger. You can then refer
 
 ```hcl
 data "ibm_tekton_pipeline_trigger" "tekton_pipeline_trigger" {
-	pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
-	trigger_id = "1bb892a1-2e04-4768-a369-b1159eace147"
+	pipeline_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.pipeline_id
+	trigger_id = ibm_tekton_pipeline_trigger.tekton_pipeline_trigger.trigger_id
 }
 ```
 
@@ -38,26 +38,27 @@ Nested scheme for **concurrency**:
 	* `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger.
 	  * Constraints: The minimum value is `0`.
 
-* `cron` - (Optional, String) Needed only for timer trigger type. Cron expression for timer trigger.
+* `cron` - (Optional, String) Needed only for timer trigger type. Cron expression for timer trigger. Maximum frequency is every 5 minutes.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 
-* `disabled` - (Optional, Boolean) Defines if this trigger is disabled.
+* `disabled` - (Optional, Boolean) flag whether the trigger is disabled.
 
 * `event_listener` - (Optional, String) Event listener name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 
 * `events` - (Optional, List) Needed only for git trigger type. Events object defines the events this git trigger listening to.
 Nested scheme for **events**:
-	* `pull_request` - (Optional, Boolean) If true, the trigger will start when a pull request 'open' or 'update' event received.
-	* `pull_request_closed` - (Optional, Boolean) If true, the trigger will start when a pull request 'close' event received.
-	* `push` - (Optional, Boolean) If true, the trigger will start when a 'push' event received.
+	* `pull_request` - (Optional, Boolean) If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'open' or 'update' git webhook event.
+	* `pull_request_closed` - (Optional, Boolean) If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'close' git webhook event.
+	* `push` - (Optional, Boolean) If true, the trigger starts when tekton pipeline service receive a repo's 'push' git webhook event.
 
-* `name` - (Optional, String) Trigger name.
+* `name` - (Optional, String) name of the duplicated trigger.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
 
 * `properties` - (Optional, List) Trigger properties.
 Nested scheme for **properties**:
 	* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `href` - (Optional, String) General href URL.
@@ -67,21 +68,23 @@ Nested scheme for **properties**:
 	* `path` - (Optional, String) property path for INTEGRATION type properties.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `type` - (Required, String) Property type.
-	  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`.
+	  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`, `APPCONFIG`.
 	* `value` - (Optional, String) String format property value.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 
 * `scm_source` - (Optional, List) Scm source for git type tekton pipeline trigger.
 Nested scheme for **scm_source**:
 	* `blind_connection` - (Optional, Boolean) Needed only for git trigger type. Branch name of the repo.
-	* `branch` - (Optional, String) Needed only for git trigger type. Branch name of the repo.
+	* `branch` - (Optional, String) Needed only for git trigger type. Branch name of the repo. Branch field doesn't coexist with pattern field.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `hook_id` - (Optional, String) Webhook Id.
+	* `hook_id` - (Optional, String) Webhook ID.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	* `pattern` - (Optional, String) Needed only for git trigger type. Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,235}$/`.
 	* `url` - (Optional, String) Needed only for git trigger type. Repo URL that listening to.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
-* `secret` - (Optional, List) Needed only for generic trigger type. Secret used to execute generic trigger.
+* `secret` - (Optional, List) Needed only for generic trigger type. Secret used to start generic trigger.
 Nested scheme for **secret**:
 	* `algorithm` - (Optional, String) Algorithm used for "digestMatches" secret type.
 	  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
@@ -97,6 +100,9 @@ Nested scheme for **secret**:
 * `service_instance_id` - (Optional, String) UUID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
+* `source_trigger_id` - (Optional, String) source trigger ID to clone from.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+
 * `tags` - (Optional, List) Trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 
@@ -108,8 +114,7 @@ Nested scheme for **secret**:
 
 * `worker` - (Optional, List) Trigger worker used to run the trigger, the trigger worker overrides the default pipeline worker.If not exist, this trigger uses default pipeline worker.
 Nested scheme for **worker**:
-	* `id` - (Required, String) ID.
-	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]+$/`.
+	* `id` - (Required, String)
 	* `name` - (Optional, String) worker name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,235}$/`.
 	* `type` - (Optional, String) worker type.

@@ -52,7 +52,6 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
-	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/api v0.34.0 // indirect
@@ -62,7 +61,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-
-// replace github.com/IBM/continuous-delivery-go-sdk => ../continuous-delivery-go-sdk
-
-replace github.ibm.com/org-ids/tekton-pipeline-go-sdk => ../tekton-pipeline-go-sdk

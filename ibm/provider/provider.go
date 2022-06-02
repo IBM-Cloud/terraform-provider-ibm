@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
@@ -24,7 +25,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/continuousdeliverypipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
@@ -642,13 +642,6 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_chrome":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.DataSourceIBMEnFCMSubscription(),
 
-			// // Added for Tekton Pipeline
-			"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.DataSourceIBMTektonPipelineDefinition(),
-			"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.DataSourceIBMTektonPipelineTriggerProperty(),
-			"ibm_tekton_pipeline_property":         continuousdeliverypipeline.DataSourceIBMTektonPipelineProperty(),
-			"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.DataSourceIBMTektonPipelineTrigger(),
-			"ibm_tekton_pipeline":                  continuousdeliverypipeline.DataSourceIBMTektonPipeline(),
-
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                          cdtoolchain.DataSourceIBMCdToolchain(),
 			"ibm_cd_toolchain_tool_keyprotect":          cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
@@ -675,6 +668,13 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":           cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_rationalteamconcert": cdtoolchain.DataSourceIBMCdToolchainToolRationalteamconcert(),
 			"ibm_cd_toolchain_tool_saucelabs":           cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
+
+			// Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1032,13 +1032,6 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
 
-			// // Added for Tekton Pipeline
-			"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.ResourceIBMTektonPipelineDefinition(),
-			"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerProperty(),
-			"ibm_tekton_pipeline_property":         continuousdeliverypipeline.ResourceIBMTektonPipelineProperty(),
-			"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.ResourceIBMTektonPipelineTrigger(),
-			"ibm_tekton_pipeline":                  continuousdeliverypipeline.ResourceIBMTektonPipeline(),
-
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                          cdtoolchain.ResourceIBMCdToolchain(),
 			"ibm_cd_toolchain_tool_keyprotect":          cdtoolchain.ResourceIBMCdToolchainToolKeyprotect(),
@@ -1065,6 +1058,13 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_pagerduty":           cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_rationalteamconcert": cdtoolchain.ResourceIBMCdToolchainToolRationalteamconcert(),
 			"ibm_cd_toolchain_tool_saucelabs":           cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
+
+			// // Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMTektonPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1209,10 +1209,10 @@ func Validator() validate.ValidatorDict {
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
 
 				// // Added for Tekton Pipeline
-				"ibm_tekton_pipeline_definition":       continuousdeliverypipeline.ResourceIBMTektonPipelineDefinitionValidator(),
-				"ibm_tekton_pipeline_trigger_property": continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
-				"ibm_tekton_pipeline_property":         continuousdeliverypipeline.ResourceIBMTektonPipelinePropertyValidator(),
-				"ibm_tekton_pipeline_trigger":          continuousdeliverypipeline.ResourceIBMTektonPipelineTriggerValidator(),
+				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
+				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
+				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
 
 				// // Added for Toolchains
 				"ibm_cd_toolchain":                          cdtoolchain.ResourceIBMCdToolchainValidator(),

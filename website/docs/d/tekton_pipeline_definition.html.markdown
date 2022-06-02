@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_tekton_pipeline_definition"
 description: |-
   Get information about tekton_pipeline_definition
-subcategory: "Continuous Delivery Pipeline"
+subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_tekton_pipeline_definition
@@ -14,8 +14,8 @@ Provides a read-only data source for tekton_pipeline_definition. You can then re
 
 ```hcl
 data "ibm_tekton_pipeline_definition" "tekton_pipeline_definition" {
-	definition_id = "94299034-d45f-4e9a-8ed5-6bd5c7bb7ada"
-	pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
+	definition_id = ibm_tekton_pipeline_definition.tekton_pipeline_definition.definition_id
+	pipeline_id = ibm_tekton_pipeline_definition.tekton_pipeline_definition.pipeline_id
 }
 ```
 
@@ -35,10 +35,12 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the tekton_pipeline_definition.
 * `scm_source` - (Required, List) Scm source for tekton pipeline defintion.
 Nested scheme for **scm_source**:
-	* `branch` - (Required, String) The branch of the repo.
+	* `branch` - (Optional, String) A branch of the repo, branch field doesn't coexist with tag field.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `path` - (Required, String) The path to the definitions yaml files.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	* `tag` - (Optional, String) A tag of the repo.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
 	* `url` - (Required, String) General href URL.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 

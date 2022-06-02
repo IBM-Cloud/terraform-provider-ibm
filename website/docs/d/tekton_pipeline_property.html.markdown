@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_tekton_pipeline_property"
 description: |-
   Get information about tekton_pipeline_property
-subcategory: "Continuous Delivery Pipeline"
+subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_tekton_pipeline_property
@@ -14,7 +14,7 @@ Provides a read-only data source for tekton_pipeline_property. You can then refe
 
 ```hcl
 data "ibm_tekton_pipeline_property" "tekton_pipeline_property" {
-	pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
+	pipeline_id = ibm_tekton_pipeline_property.tekton_pipeline_property.pipeline_id
 	property_name = "debug-pipeline"
 }
 ```
@@ -34,6 +34,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the tekton_pipeline_property.
 * `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 
 * `enum` - (Optional, List) Options for SINGLE_SELECT property type.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
@@ -45,7 +46,7 @@ In addition to all argument references listed, you can access the following attr
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 
 * `type` - (Required, String) Property type.
-  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`.
+  * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`, `APPCONFIG`.
 
 * `value` - (Optional, String) String format property value.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
