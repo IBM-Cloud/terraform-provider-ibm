@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/org-ids/toolchain-go-sdk/cdtoolchainv2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 )
 
 func DataSourceIBMCdToolchainToolBitbucketgit() *schema.Resource {

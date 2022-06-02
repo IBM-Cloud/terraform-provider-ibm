@@ -108,11 +108,11 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/posturemanagementv1"
 	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/continuousdeliverypipelinev2"
-	"github.ibm.com/org-ids/toolchain-go-sdk/cdtoolchainv2"
 )
 
 // RetryAPIDelay - retry api delay

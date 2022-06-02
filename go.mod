@@ -12,9 +12,10 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
+	github.com/IBM/continuous-delivery-go-sdk v0.0.2
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.0
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.9.5
+	github.com/IBM/go-sdk-core/v5 v5.10.1
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
@@ -52,7 +53,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	github.ibm.com/org-ids/tekton-pipeline-go-sdk v0.0.1
-	github.ibm.com/org-ids/toolchain-go-sdk v0.0.2
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/api v0.34.0 // indirect
@@ -63,6 +63,6 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.ibm.com/org-ids/toolchain-go-sdk => ../toolchain-go-sdk
+// replace github.com/IBM/continuous-delivery-go-sdk => ../continuous-delivery-go-sdk
 
 replace github.ibm.com/org-ids/tekton-pipeline-go-sdk => ../tekton-pipeline-go-sdk
