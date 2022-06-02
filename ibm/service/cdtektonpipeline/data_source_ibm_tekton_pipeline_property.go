@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
 func DataSourceIBMTektonPipelineProperty() *schema.Resource {
@@ -93,7 +93,6 @@ func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
-
 
 	if err = d.Set("default", property.Default); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))

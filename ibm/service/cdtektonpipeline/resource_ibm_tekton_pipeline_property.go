@@ -18,37 +18,37 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/google/go-cmp/cmp"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 )
 
 func ResourceIBMTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelinePropertyCreate,
-		ReadContext:     ResourceIBMTektonPipelinePropertyRead,
-		UpdateContext:   ResourceIBMTektonPipelinePropertyUpdate,
-		DeleteContext:   ResourceIBMTektonPipelinePropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelinePropertyCreate,
+		ReadContext:   ResourceIBMTektonPipelinePropertyRead,
+		UpdateContext: ResourceIBMTektonPipelinePropertyUpdate,
+		DeleteContext: ResourceIBMTektonPipelinePropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "name"),
-				Description: "Property name.",
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "value"),
-				Description: "String format property value.",
+				Description:  "String format property value.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("type").(string) == "SECURE" {
 						segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
@@ -76,22 +76,22 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "default"),
-				Description: "Default option for SINGLE_SELECT property type.",
+				Description:  "Default option for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "type"),
-				Description: "Property type.",
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_property", "path"),
-				Description: "property path for INTEGRATION type properties.",
+				Description:  "property path for INTEGRATION type properties.",
 			},
 		},
 	}
@@ -276,8 +276,8 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("name") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+

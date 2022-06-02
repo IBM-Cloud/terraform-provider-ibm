@@ -108,10 +108,10 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
-	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
 // RetryAPIDelay - retry api delay
@@ -285,7 +285,7 @@ type ClientSession interface {
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
-	CdTektonPipelineV2()   (*cdtektonpipelinev2.CdTektonPipelineV2, error)
+	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 }
 
 type clientSession struct {
@@ -586,8 +586,8 @@ type clientSession struct {
 	contextBasedRestrictionsClientErr error
 
 	// CD Tekton Pipeline
-	cdTektonPipelineClient     *cdtektonpipelinev2.CdTektonPipelineV2
-    cdTektonPipelineClientErr  error
+	cdTektonPipelineClient    *cdtektonpipelinev2.CdTektonPipelineV2
+	cdTektonPipelineClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -1119,7 +1119,7 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 
 // CD Tekton Pipeline
 func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error) {
-    return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
+	return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -3027,36 +3027,36 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct an "options" struct for creating the tekton pipeline service client.
 	var cdTektonPipelineClientURL string
-    if c.Visibility == "private" || c.Visibility == "public-and-private" {
-        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
-        if err != nil && c.Visibility == "public-and-private" {
-            cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
-        }
-    } else {
-        cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
-    }
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+	}
 	if err != nil {
-        cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
-    }
-    if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
 		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, cdTektonPipelineClientURL)
 	}
-    cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
-        Authenticator: authenticator,
-        URL: EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
-    }
+	cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
+	}
 	// Construct the service client.
 	session.cdTektonPipelineClient, err = cdtektonpipelinev2.NewCdTektonPipelineV2(cdTektonPipelineClientOptions)
-    if err == nil {
-        // Enable retries for API calls
-        session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-        // Add custom header for analytics
-        session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
-            "X-Original-User-Agent": { fmt.Sprintf("terraform-provider-ibm/%s", version.Version) },
-        })
-    } else {
-        session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
-    }
+	if err == nil {
+		// Enable retries for API calls
+		session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
+	}
 
 	if os.Getenv("TF_LOG") != "" {
 		logDestination := log.Writer()

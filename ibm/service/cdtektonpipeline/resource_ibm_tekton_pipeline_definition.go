@@ -14,25 +14,25 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 )
 
 func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineDefinitionCreate,
-		ReadContext:     ResourceIBMTektonPipelineDefinitionRead,
-		UpdateContext:   ResourceIBMTektonPipelineDefinitionUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDefinitionDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineDefinitionCreate,
+		ReadContext:   ResourceIBMTektonPipelineDefinitionRead,
+		UpdateContext: ResourceIBMTektonPipelineDefinitionUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDefinitionDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tekton_pipeline_definition", "pipeline_id"),
-				Description: "The tekton pipeline ID.",
+				Description:  "The tekton pipeline ID.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -193,8 +193,8 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("scm_source") {
 		scmSource, err := ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))

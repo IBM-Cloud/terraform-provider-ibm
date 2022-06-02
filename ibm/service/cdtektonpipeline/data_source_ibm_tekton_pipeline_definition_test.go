@@ -46,4 +46,3 @@ func testAccCheckIBMTektonPipelineDefinitionDataSourceConfigBasic(definitionPipe
 		}
 	`, definitionPipelineID)
 }
-

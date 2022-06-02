@@ -16,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/classicinfrastructure"
@@ -23,7 +24,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudfoundry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cloudshell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/contextbasedrestrictions"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cos"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/database"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
@@ -622,13 +622,6 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
-			"ibm_en_destination":   eventnotification.DataSourceIBMEnDestination(),
-			"ibm_en_destinations":  eventnotification.DataSourceIBMEnDestinations(),
-			"ibm_en_topic":         eventnotification.DataSourceIBMEnTopic(),
-			"ibm_en_topics":        eventnotification.DataSourceIBMEnTopics(),
-			"ibm_en_subscription":  eventnotification.DataSourceIBMEnSubscription(),
-			"ibm_en_subscriptions": eventnotification.DataSourceIBMEnSubscriptions(),
-
 			"ibm_en_destination":          eventnotification.DataSourceIBMEnDestination(),
 			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
@@ -647,8 +640,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.DataSourceIBMEnFCMSubscription(),
-            
-            // Added for Tekton Pipeline
+
+			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
 			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
@@ -1011,7 +1004,7 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
 
-            // // Added for Tekton Pipeline
+			// // Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
 			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
@@ -1160,8 +1153,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
 				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
 				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
-				
-				"ibm_satellite_host":                      satellite.ResourceIBMSatelliteHostValidator(),
+
+				"ibm_satellite_host": satellite.ResourceIBMSatelliteHostValidator(),
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),

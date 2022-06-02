@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
 func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
@@ -117,8 +117,8 @@ func DataSourceIBMTektonPipelineTrigger() *schema.Resource {
 							Description: "worker type.",
 						},
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -272,12 +272,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
 
-	trigger, _, err := TriggerIntf.(*cdtektonpipelinev2.Trigger)
-
-	if err != nil {
-		log.Printf("[DEBUG] ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err)
-		return diag.FromErr(fmt.Errorf("ResourceIBMTektonPipelineTriggerTriggerToMap failed %s\n", err))
-	}
+	trigger := TriggerIntf.(*cdtektonpipelinev2.Trigger)
 
 	if err = d.Set("type", trigger.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
@@ -293,7 +288,7 @@ func DataSourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.R
 
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
-		for _, modelItem := range trigger.Properties { 
+		for _, modelItem := range trigger.Properties {
 			modelMap, err := DataSourceIBMTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)

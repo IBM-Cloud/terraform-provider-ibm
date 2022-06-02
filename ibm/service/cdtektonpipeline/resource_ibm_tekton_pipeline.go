@@ -13,17 +13,17 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/org-ids/tekton-pipeline-go-sdk/cdtektonpipelinev2"
 )
 
 func ResourceIBMTektonPipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   ResourceIBMTektonPipelineCreate,
-		ReadContext:     ResourceIBMTektonPipelineRead,
-		UpdateContext:   ResourceIBMTektonPipelineUpdate,
-		DeleteContext:   ResourceIBMTektonPipelineDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: ResourceIBMTektonPipelineCreate,
+		ReadContext:   ResourceIBMTektonPipelineRead,
+		UpdateContext: ResourceIBMTektonPipelineUpdate,
+		DeleteContext: ResourceIBMTektonPipelineDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"worker": &schema.Schema{
@@ -34,8 +34,8 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
+							Type:     schema.TypeString,
+							Required: true,
 						},
 					},
 				},
@@ -299,8 +299,8 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 										Description: "worker type.",
 									},
 									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
+										Type:     schema.TypeString,
+										Required: true,
 									},
 								},
 							},
@@ -657,7 +657,7 @@ func ResourceIBMTektonPipelineMapToWorkerWithID(modelMap map[string]interface{})
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineWorkerWithIDToMap(model *cdtektonpipelinev2.WorkerWithID) (map[string]interface{}, error) {
+func ResourceIBMTektonPipelineWorkerWithIDToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	return modelMap, nil
