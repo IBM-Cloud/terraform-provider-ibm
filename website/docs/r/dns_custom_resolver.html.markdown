@@ -44,10 +44,11 @@ Provides a private DNS custom resolver resource. This allows DNS custom resolver
 		plan				= "standard-dns"
 	}
 	resource "ibm_dns_custom_resolver" "test" {
-		name		= "test-customresolver"
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		description = "new test CR - TF"
-		enabled 	= true
+		name				= "test-customresolver"
+		instance_id 		= ibm_resource_instance.test-pdns-cr-instance.guid
+		description			= "new test CR - TF"
+		high_availability   = true
+		enabled 	 		= true
 		locations {
 			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet1.crn
 			enabled		= true
@@ -55,6 +56,10 @@ Provides a private DNS custom resolver resource. This allows DNS custom resolver
 		locations {
 			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
 			enabled     = true
+		}
+		locations {
+			subnet_crn	= ibm_is_subnet.test-pdns-cr-subnet2.crn
+			enabled     = false
 		}
 	}
 ```
@@ -64,10 +69,10 @@ Review the argument reference that you can specify for your resource.
 
 - `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
-- `enabled`- (Optional, Bool) To make custom resolver enabled/disable.
+- `enabled`- (Optional, Bool) To make custom resolver enabled/disable. To enable a custom resolver there should be atleast one enabled location. The Default value is `false`
 - `description` - (Optional, String) Descriptive text of the custom resolver.
-- `high_availability` - (Optional, Bool) High Availability is enabled by Default, Need to add two or more locations.
-- `locations`- (Optional, List) The list of locations where this custom resolver is deployed. There is no update for location argument in resolver resource.
+- `high_availability` - (Optional, Bool) High Availability is enabled by Default. To meet high availability status, configure custom resolvers with a minimum of two resolver locations.
+- `locations`- (Optional, List) The list of locations where this custom resolver is deployed.  A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 
