@@ -175,6 +175,42 @@ func ResourceIBMCISCacheSettingsValidator() *validate.ResourceValidator {
 	return &ibmCISCacheSettingsResourceValidator
 }
 
+/* MUST READ :  There is loop-hole in the framework API (Schema API)
+   if a valid input is zero (0). It gives wrong interpreration as this value
+   is returned from API and we may end up taking wrong decision.
+   Following API have this loop whole so to avoid writing following wrarpers
+   resourceCISCacheSettingsUpdateDefaultCheck
+   resourceCISCacheSettingsUpdateGetValueCheck
+   Issue#3814
+
+*/
+
+func resourceCISCacheSettingsUpdateDefaultCheck(d *schema.ResourceData, meta interface{}) bool {
+	if !d.HasChange(cisCacheSettingsBrowserExpiration) {
+		value, _ := d.GetOk(cisCacheSettingsBrowserExpiration)
+		if (value.(int)) == 0 {
+			return true
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
+// Helper functino to validatae broswer expiratin value
+func resourceCISCacheSettingsUpdateGetValueCheck(d *schema.ResourceData) bool {
+	_, ok := d.GetOk(cisCacheSettingsBrowserExpiration)
+	if !ok {
+		value, _ := d.GetOk(cisCacheSettingsBrowserExpiration)
+		if (value.(int)) == 0 {
+			return true
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
 func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 	cisClient, err := meta.(conns.ClientSession).CisCacheClientSession()
 	if err != nil {
@@ -186,7 +222,7 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 	cisClient.ZoneID = core.StringPtr(zoneID)
 
 	if d.HasChange(cisCacheSettingsCachingLevel) ||
-		d.HasChange(cisCacheSettingsBrowserExpiration) ||
+		resourceCISCacheSettingsUpdateDefaultCheck(d, meta) ||
 		d.HasChange(cisCacheSettingsDevelopmentMode) ||
 		d.HasChange(cisCacheSettingsQueryStringSort) ||
 		d.HasChange(cisCachePurgeAll) ||
@@ -217,7 +253,8 @@ func resourceCISCacheSettingsUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 
 		// Browser Expiration setting
-		if value, ok := d.GetOk(cisCacheSettingsBrowserExpiration); ok {
+		if resourceCISCacheSettingsUpdateGetValueCheck(d) {
+			value, _ := d.GetOk(cisCacheSettingsBrowserExpiration)
 			opt := cisClient.NewUpdateBrowserCacheTtlOptions()
 			opt.SetValue(int64(value.(int)))
 			_, resp, err := cisClient.UpdateBrowserCacheTTL(opt)
