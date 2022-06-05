@@ -69,7 +69,7 @@ Review the argument reference that you can specify for your resource.
 
 - `instance_id` - (Required, String) The GUID of the private DNS service instance.
 - `name`- (Required, String) The name of the custom resolver.
-- `enabled`- (Optional, Bool) To make custom resolver enabled/disable. To enable a custom resolver there should be atleast one enabled location. The Default value is `false`
+- `enabled`- (Optional, Bool) To enable or disable a custom resolver. To enable a custom resolver, it is recommended that you have at least one enabled location. The Default value is `false`.
 - `description` - (Optional, String) Descriptive text of the custom resolver.
 - `high_availability` - (Optional, Bool) High Availability is enabled by Default. To meet high availability status, configure custom resolvers with a minimum of two resolver locations.
 - `locations`- (Optional, List) The list of locations where this custom resolver is deployed.  A custom resolver can have a maximum of three locations, either within the same subnet or in different subnets.
