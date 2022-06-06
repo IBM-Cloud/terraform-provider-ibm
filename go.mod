@@ -3,24 +3,24 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.16
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20220407050707-b4cd0d4da813
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62
-	github.com/IBM-Cloud/power-go-client v1.1.4
+	github.com/IBM-Cloud/power-go-client v1.1.9
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
-	github.com/IBM/appconfiguration-go-admin-sdk v0.1.0
+	github.com/IBM/appconfiguration-go-admin-sdk v0.2.3
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
-	github.com/IBM/cloudant-go-sdk v0.0.36
+	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
-	github.com/IBM/go-sdk-core/v5 v5.9.2
+	github.com/IBM/go-sdk-core/v5 v5.9.5
 	github.com/IBM/ibm-cos-sdk-go v1.8.0
 	github.com/IBM/ibm-cos-sdk-go-config v1.2.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.28.0
-	github.com/IBM/platform-services-go-sdk v0.22.6
+	github.com/IBM/platform-services-go-sdk v0.25.1
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk v1.3.4
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
@@ -41,6 +41,7 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/go-getter v1.5.11 // indirect
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/go-version v1.4.0
 	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
@@ -53,7 +54,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/api v0.34.0 // indirect
 	gotest.tools v2.2.0+incompatible

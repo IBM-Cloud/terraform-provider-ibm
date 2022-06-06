@@ -109,6 +109,7 @@ resource "ibm_is_lb" "example" {
 resource "ibm_is_lb_listener" "example" {
   lb       = ibm_is_lb.example.id
   protocol = "tcp"
+  default_pool = ibm_is_lb_pool.example.id
 }
 ```
 
@@ -180,6 +181,11 @@ Review the argument references that you can specify for your resource.
 
 - `protocol` - (Required, String) The listener protocol. Enumeration type are `http`, `tcp`, `https` and `udp`. Network load balancer supports only `tcp` and `udp` protocol.
 - `default_pool` - (Optional, String) The load balancer pool unique identifier.
+    ~> **NOTE**
+    - The specified pool must -
+      - Belong to this load balancer
+      - Have the  same protocol as this listener, or have a compatible protocol. At present, the compatible protocols are http and https.
+      - Not already be the default_pool for another listener 
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
 - `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.

@@ -1,5 +1,4 @@
 ---
-
 subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_cloud_connection"
@@ -25,20 +24,21 @@ resource "ibm_pi_cloud_connection" "cloud_connection" {
 
 **Note**
 
-* Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
-* If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
-  * `region` - `lon`
-  * `zone` - `lon04`
-  
+- Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
+- If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
+
+  - `region` - `lon`
+  - `zone` - `lon04`
+
   Example usage:
-  
+
   ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
     }
   ```
-  
+
 ## Timeouts
 
 The `ibm_pi_cloud_connection` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -49,7 +49,7 @@ The `ibm_pi_cloud_connection` provides the following [timeouts](https://www.terr
 
 ## Argument reference
 
-Review the argument references that you can specify for your resource. 
+Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_cloud_connection_classic_enabled` - (Optional, Bool) Enable classic endpoint destination.
@@ -62,7 +62,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cloud_connection_speed` - (Required, String) Speed of the cloud connection (speed in megabits per second). Supported values are `50`, `100`, `200`, `500`, `1000`, `2000`, `5000`, `10000`.
 - `pi_cloud_connection_vpc_enabled` - (Optional, Bool) Enable VPC for this cloud connection.
 - `pi_cloud_connection_vpc_crns` - (Optional, Set of String) Set of VPC CRNs to attach to this cloud connection.
-
+- `pi_cloud_connection_transit_enabled` - (Optional, Bool) Enable transit gateway for this cloud connection.
 
 ## Attribute reference
 

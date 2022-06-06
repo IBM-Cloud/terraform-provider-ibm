@@ -97,7 +97,8 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	body := &models.DHCPServerCreate{}
 	if c, ok := d.GetOk(helpers.PICloudConnectionId); ok {
-		body.CloudConnectionID = c.(string)
+		ccID := c.(string)
+		body.CloudConnectionID = &ccID
 	}
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)

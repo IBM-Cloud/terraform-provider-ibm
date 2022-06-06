@@ -29,6 +29,12 @@ func DataSourceIBMIAMAccessGroupPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"transaction_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Set transactionID for debug",
+			},
 			"policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -149,8 +155,13 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		listPoliciesOptions.Sort = core.StringPtr(v.(string))
 	}
 
+	if transactionID, ok := d.GetOk("transaction_id"); ok {
+		listPoliciesOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
+	}
+
 	policyList, resp, err := iamPolicyManagementClient.ListPolicies(listPoliciesOptions)
-	if err != nil {
+
+	if err != nil || resp == nil {
 		return fmt.Errorf("Error listing access group policies: %s, %s", err, resp)
 	}
 
@@ -174,6 +185,11 @@ func dataSourceIBMIAMAccessGroupPolicyRead(d *schema.ResourceData, meta interfac
 		accessGroupPolicies = append(accessGroupPolicies, p)
 	}
 	d.SetId(accessGroupId)
+
+	if len(resp.Headers["Transaction-Id"]) > 0 && resp.Headers["Transaction-Id"][0] != "" {
+		d.Set("transaction_id", resp.Headers["Transaction-Id"][0])
+	}
+
 	d.Set("policies", accessGroupPolicies)
 
 	return nil

@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,9 +133,33 @@ func dataSdataSourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set(isReservedIPType, *reserveIP.ResourceType)
 	if reserveIP.Target != nil {
-		target, ok := reserveIP.Target.(*vpcv1.ReservedIPTarget)
-		if ok {
-			d.Set(isReservedIPTarget, target.ID)
+		targetIntf := reserveIP.Target
+		switch reflect.TypeOf(targetIntf).String() {
+		case "*vpcv1.ReservedIPTargetEndpointGatewayReference":
+			{
+				target := targetIntf.(*vpcv1.ReservedIPTargetEndpointGatewayReference)
+				d.Set(isReservedIPTarget, target.ID)
+			}
+		case "*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext":
+			{
+				target := targetIntf.(*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext)
+				d.Set(isReservedIPTarget, target.ID)
+			}
+		case "*vpcv1.ReservedIPTargetLoadBalancerReference":
+			{
+				target := targetIntf.(*vpcv1.ReservedIPTargetLoadBalancerReference)
+				d.Set(isReservedIPTarget, target.ID)
+			}
+		case "*vpcv1.ReservedIPTargetVPNGatewayReference":
+			{
+				target := targetIntf.(*vpcv1.ReservedIPTargetVPNGatewayReference)
+				d.Set(isReservedIPTarget, target.ID)
+			}
+		case "*vpcv1.ReservedIPTarget":
+			{
+				target := targetIntf.(*vpcv1.ReservedIPTarget)
+				d.Set(isReservedIPTarget, target.ID)
+			}
 		}
 	}
 	return nil // By default there should be no error
