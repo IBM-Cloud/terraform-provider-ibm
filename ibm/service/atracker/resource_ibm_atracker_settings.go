@@ -66,7 +66,7 @@ func ResourceIBMAtrackerSettings() *schema.Resource {
 }
 
 func ResourceIBMAtrackerSettingsValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "metadata_region_primary",
