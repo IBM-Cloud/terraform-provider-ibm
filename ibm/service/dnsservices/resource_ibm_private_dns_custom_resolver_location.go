@@ -76,10 +76,11 @@ func ResourceIBMPrivateDNSCRLocation() *schema.Resource {
 			pdnsCustomReolverEnabled: {
 				Type:             schema.TypeBool,
 				Optional:         true,
-				Default:          false,
+				Default:          true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 		},
+		DeprecationMessage: "Resource ibm_dns_custom_resolver_location is deprecated. Using the deprecated resource can cause an outage. If you have used the `ibm_dns_custom_resolver_location` resource, change it to the composite Custom Resolver [ibm_dns_custom_resolver] resource before running terraform apply.",
 	}
 }
 func resourceIBMPrivateDNSLocationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

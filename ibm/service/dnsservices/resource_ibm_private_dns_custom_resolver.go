@@ -100,6 +100,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "Locations on which the custom resolver will be running",
 				Optional:    true,
+				MaxItems:    3,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						pdnsCRLocationId: {
