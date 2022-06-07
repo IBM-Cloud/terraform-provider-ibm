@@ -32,28 +32,24 @@ require (
 	github.com/Shopify/sarama v1.29.1
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/aws/aws-sdk-go v1.37.0 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.21.2
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.8
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0
-	github.com/hashicorp/go-getter v1.5.11 // indirect
-	github.com/hashicorp/go-uuid v1.0.2
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version v1.4.0
-	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.16.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20170213120834-e6b9231a2b1c // indirect
 	github.com/jinzhu/copier v0.3.2
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/tools v0.1.10 // indirect
-	google.golang.org/api v0.34.0 // indirect
+	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	gotest.tools v2.2.0+incompatible
 )
 
