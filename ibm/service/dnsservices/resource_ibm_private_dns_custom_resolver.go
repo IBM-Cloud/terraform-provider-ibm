@@ -82,7 +82,7 @@ func ResourceIBMPrivateDNSCustomResolver() *schema.Resource {
 			pdnsCREnabled: {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 				Description: "Whether the custom resolver is enabled",
 			},
 			pdnsCRHighAvailability: {
