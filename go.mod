@@ -26,7 +26,7 @@ require (
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/schematics-go-sdk v0.1.3
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.19.0
+	github.com/IBM/vpc-go-sdk v0.20.0
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
