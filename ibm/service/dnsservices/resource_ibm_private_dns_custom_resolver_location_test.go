@@ -27,10 +27,7 @@ func TestAccIBMPrivateDNSCustomResolverLocations_basic(t *testing.T) {
 			{
 				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "enabled", "true"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "cr_enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "cr_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "enabled", "false"),
 				),
 			},
 		},
@@ -51,21 +48,16 @@ func TestAccIBMPrivateDNSCustomResolverLocations_Import(t *testing.T) {
 			{
 				Config: testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, description),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "enabled", "true"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test1", "cr_enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "enabled", "false"),
-					resource.TestCheckResourceAttr("ibm_dns_custom_resolver_location.test2", "cr_enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_dns_custom_resolver.test", "enabled", "false"),
 				),
 			},
 			{
-				ResourceName:      "ibm_dns_custom_resolver_location.test",
+				ResourceName:      "ibm_dns_custom_resolver.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"enabled",
 					"instance_id",
-					"resolver_id",
-					"subnet_crn",
 				},
 			},
 		},
@@ -101,21 +93,15 @@ func testAccCheckIBMPrivateDNSCRLocationsBasic(vpcname, subnetname, zone, cidr, 
 		description = "%s"
 		high_availability = false
 		enabled 	= false
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled    = false
+		}
+		locations {
+			subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
+			enabled    = false
+		}
 	}
-	resource "ibm_dns_custom_resolver_location" "test1" {
-		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn = ibm_is_subnet.test-pdns-cr-subnet1.crn
-		enabled    = true
-		cr_enabled = false
-	}
-	resource "ibm_dns_custom_resolver_location" "test2" {
-		instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
-		resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
-		subnet_crn    = ibm_is_subnet.test-pdns-cr-subnet1.crn
-		enabled       = false
-		cr_enabled    = false 
-	  }
 	`, vpcname, subnetname, zone, cidr, name, description)
 
 }

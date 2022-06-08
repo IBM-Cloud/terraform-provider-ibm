@@ -1,3 +1,64 @@
+# 1.42.0 (Jun 07, 2022)
+Breaking Changes
+* Redesign Dns Custom resolver resource and deprecate Custom resolver location ([3820](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3820))
+
+Features
+* Support Databases
+    - **DataSources**
+        - ibm_database_remotes
+        - ibm_database_point_in_time_recovery
+        - ibm_database_backup
+        - ibm_database_backups
+* Support PowerSystem
+    - **DataSources**
+        - ibm_pi_system_pools
+* Support EventNotification
+    - **DataSources**
+        - ibm_en_destination_chrome
+        - ibm_en_destination_firefox
+    - **Resources**
+        - ibm_en_destination_chrome
+        - ibm_en_destination_firefox
+* Support VPC
+    - **DataSources**
+        - ibm_is_ssh_keys
+        - ibm_is_volumes
+* Support Atracker
+    - **DataSources**
+        - ibm_atracker_settings
+    - **Resources**
+        - ibm_atracker_settings
+* Support Cloudant
+    - **Datasources**
+        - ibm_cloudant_database
+    - **Resources**
+        - ibm_cloudant_database
+Enhancements
+* enhancement(Cloud Databases): add support for User types, roles ([3475](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3475))
+* added in preliminary changes for v2 atracker ([3724](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3724))
+*  add support to retrieve all secret types ([3793](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3793))
+* Support of Transaction-Id for IAM Policy Management ([3518](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3518))
+* Deprecate flat list of scaling attributes ([3782](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3782))
+* added docs & enhanced network-port-attach resource ([3756](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3756))
+* Add support for transit enabled cloud connections ([3758](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3758))
+* Support boot volume encryption in cluster and workerpool ([3776](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3776))
+* Alias support for key policies ([3768](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3768))
+* Enable VPC cluster and worker pool to accept a dedicated host pool ID ([3781](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3781))
+* Support SAP deployment type ([3822](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3822))
+*
+
+BUGFIXES
+* Name Validation Error Fix for VPC ([3675](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3675))
+* fix for route by name VPC Routing Table ([3754](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3754))
+* Documentation Update VPC Lb Listener and SG Rule ([3673](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3673))
+* Added fix for optional weight attribute's value ([3684](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3684))
+* Error on failed bucket parsing ([3757](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3757))
+* Fix to list the policies even policy contains service specific attributes ([3811](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3811))
+* Resource: ibm_resource_key is always recreated even when no changes are available for service Role ([3803](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3803))
+* browser cachec issue fixed for zero valid input ([3823](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3823))
+* Add new Healthcheck regions ([3827](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3827))
+
+
 # 1.42.0-beta0 (May 23, 2022)
 Features
 * Support Databases
