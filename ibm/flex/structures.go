@@ -1614,6 +1614,19 @@ func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
 	return
 }
 
+// IBM Cloud Databases
+func ExpandAllowlist(allowList *schema.Set) (allowlist []icdv4.AllowlistEntry) {
+	for _, iface := range allowList.List() {
+		alItem := iface.(map[string]interface{})
+		alEntry := icdv4.AllowlistEntry{
+			Address:     alItem["address"].(string),
+			Description: alItem["description"].(string),
+		}
+		allowlist = append(allowlist, alEntry)
+	}
+	return
+}
+
 // Cloud Internet Services
 func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
@@ -1621,6 +1634,19 @@ func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 		l := map[string]interface{}{
 			"address":     whitelistEntry.Address,
 			"description": whitelistEntry.Description,
+		}
+		entries[i] = l
+	}
+	return entries
+}
+
+// Cloud Internet Services
+func FlattenAllowlist(allowlist icdv4.Allowlist) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(allowlist.AllowlistEntrys), len(allowlist.AllowlistEntrys))
+	for i, allowlistEntry := range allowlist.AllowlistEntrys {
+		l := map[string]interface{}{
+			"address":     allowlistEntry.Address,
+			"description": allowlistEntry.Description,
 		}
 		entries[i] = l
 	}
