@@ -18,5 +18,5 @@ resource "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance
 // Create cd_toolchain_tool_sonarqube data source
 data "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
   toolchain_id = var.cd_toolchain_tool_sonarqube_toolchain_id
-  integration_id = var.cd_toolchain_tool_sonarqube_integration_id
+  tool_id = var.cd_toolchain_tool_sonarqube_tool_id
 }

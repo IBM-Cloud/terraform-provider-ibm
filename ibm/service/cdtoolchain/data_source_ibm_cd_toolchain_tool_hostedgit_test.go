@@ -22,7 +22,7 @@ func TestAccIBMCdToolchainToolHostedgitDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "integration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_hostedgit.cd_toolchain_tool_hostedgit", "crn"),
@@ -42,7 +42,7 @@ func testAccCheckIBMCdToolchainToolHostedgitDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
 			toolchain_id = "toolchain_id"
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
 	`)
 }

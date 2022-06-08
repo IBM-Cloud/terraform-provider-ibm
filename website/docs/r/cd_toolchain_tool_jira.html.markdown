@@ -32,9 +32,9 @@ resource "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool integration.
+* `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Optional, List) Parameters to be used to create the integration.
+* `parameters` - (Optional, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_url` - (Required, String) Type the base API URL for your JIRA instance. To find that value, from the header of your JIRA instance, click the **Administration** icon, which looks like a gear, and then click **System**.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
@@ -46,7 +46,7 @@ Nested scheme for **parameters**:
 	* `type` - (Required, String)
 	  * Constraints: Allowable values are: `new`, `existing`.
 	* `username` - (Optional, String) Your user name is required only if you are connecting to a private JIRA instance or if you are connecting to a public instance and want to receive traceability information or if you are creating a new project. Otherwise, you do not need to enter your user name.
-* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind integration to.
+* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
@@ -54,19 +54,19 @@ Nested scheme for **parameters**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_jira.
-* `crn` - (Required, String) Tool integration CRN.
-* `get_integration_by_id_response_id` - (Required, String) Tool integration ID.
+* `crn` - (Required, String) Tool CRN.
+* `get_tool_by_id_response_id` - (Required, String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
-* `href` - (Required, String) URI representing the tool integration.
+* `href` - (Required, String) URI representing the tool.
 * `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
 	* `api_href` - (Optional, String) URI representing the this resource through an API.
 	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
-* `resource_group_id` - (Required, String) Resource group where tool integration can be found.
-* `state` - (Required, String) Current configuration state of the tool integration.
+* `resource_group_id` - (Required, String) Resource group where tool can be found.
+* `state` - (Required, String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
-* `toolchain_crn` - (Required, String) CRN of toolchain which the integration is bound to.
-* `updated_at` - (Required, String) Latest tool integration update timestamp.
+* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
+* `updated_at` - (Required, String) Latest tool update timestamp.
 
 ## Provider Configuration
 
@@ -121,15 +121,15 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 ## Import
 
 You can import the `ibm_cd_toolchain_tool_jira` resource by using `id`.
-The `id` property can be formed from `toolchain_id`, and `integration_id` in the following format:
+The `id` property can be formed from `toolchain_id`, and `tool_id` in the following format:
 
 ```
-<toolchain_id>/<integration_id>
+<toolchain_id>/<tool_id>
 ```
-* `toolchain_id`: A string. ID of the toolchain to bind integration to.
-* `integration_id`: A string. ID of the tool integration bound to the toolchain.
+* `toolchain_id`: A string. ID of the toolchain to bind tool to.
+* `tool_id`: A string. ID of the tool bound to the toolchain.
 
 # Syntax
 ```
-$ terraform import ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira <toolchain_id>/<integration_id>
+$ terraform import ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira <toolchain_id>/<tool_id>
 ```

@@ -22,7 +22,7 @@ func TestAccIBMCdToolchainToolGithubintegratedDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "integration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated", "crn"),
@@ -42,7 +42,7 @@ func testAccCheckIBMCdToolchainToolGithubintegratedDataSourceConfigBasic() strin
 	return fmt.Sprintf(`
 		data "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubintegrated" {
 			toolchain_id = "toolchain_id"
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
 	`)
 }

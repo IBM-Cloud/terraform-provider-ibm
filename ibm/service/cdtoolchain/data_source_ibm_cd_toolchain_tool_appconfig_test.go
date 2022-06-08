@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolAppconfigDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolAppconfigDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolAppconfigDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolAppconfigDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(getIntegration
 
 		data "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = "%s"
@@ -102,7 +102,7 @@ func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(getIntegrationByIDR
 
 		data "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

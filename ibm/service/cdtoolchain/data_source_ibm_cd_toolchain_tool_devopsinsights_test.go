@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolDevopsinsightsDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "toolchain_crn"),
@@ -41,20 +41,20 @@ func TestAccIBMCdToolchainToolDevopsinsightsDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolDevopsinsightsDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights", "toolchain_crn"),
@@ -69,7 +69,7 @@ func TestAccIBMCdToolchainToolDevopsinsightsDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
 			toolchain_id = "%s"
@@ -77,12 +77,12 @@ func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfigBasic(getIntegr
 
 		data "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
 			toolchain_id = ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
 			toolchain_id = "%s"
@@ -91,7 +91,7 @@ func testAccCheckIBMCdToolchainToolDevopsinsightsDataSourceConfig(getIntegration
 
 		data "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
 			toolchain_id = ibm_cd_toolchain_tool_devopsinsights.cd_toolchain_tool_devopsinsights.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

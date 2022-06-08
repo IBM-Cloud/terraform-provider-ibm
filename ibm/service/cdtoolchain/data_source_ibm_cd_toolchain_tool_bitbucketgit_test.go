@@ -22,7 +22,7 @@ func TestAccIBMCdToolchainToolBitbucketgitDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "integration_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_bitbucketgit.cd_toolchain_tool_bitbucketgit", "crn"),
@@ -42,7 +42,7 @@ func testAccCheckIBMCdToolchainToolBitbucketgitDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_cd_toolchain_tool_bitbucketgit" "cd_toolchain_tool_bitbucketgit" {
 			toolchain_id = "toolchain_id"
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
 	`)
 }

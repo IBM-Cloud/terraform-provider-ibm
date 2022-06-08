@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolSaucelabsDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolSaucelabsDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolSaucelabsDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolSaucelabsDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfigBasic(getIntegration
 
 		data "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
 			toolchain_id = ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
 			toolchain_id = "%s"
@@ -97,7 +97,7 @@ func testAccCheckIBMCdToolchainToolSaucelabsDataSourceConfig(getIntegrationByIDR
 
 		data "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
 			toolchain_id = ibm_cd_toolchain_tool_saucelabs.cd_toolchain_tool_saucelabs.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

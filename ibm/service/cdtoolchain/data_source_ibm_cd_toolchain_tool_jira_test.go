@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolJiraDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolJiraDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolJiraDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolJiraDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolJiraDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolJiraDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolJiraDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolJiraDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolJiraDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolJiraDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolJiraDataSourceConfigBasic(getIntegrationByIDR
 
 		data "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 			toolchain_id = ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolJiraDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolJiraDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 			toolchain_id = "%s"
@@ -103,7 +103,7 @@ func testAccCheckIBMCdToolchainToolJiraDataSourceConfig(getIntegrationByIDRespon
 
 		data "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 			toolchain_id = ibm_cd_toolchain_tool_jira.cd_toolchain_tool_jira.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

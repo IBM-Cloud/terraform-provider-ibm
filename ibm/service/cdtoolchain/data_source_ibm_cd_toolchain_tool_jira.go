@@ -26,30 +26,30 @@ func DataSourceIBMCdToolchainToolJira() *schema.Resource {
 				Required:    true,
 				Description: "ID of the toolchain.",
 			},
-			"integration_id": &schema.Schema{
+			"tool_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "ID of the tool integration bound to the toolchain.",
+				Description: "ID of the tool bound to the toolchain.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool integration can be found.",
+				Description: "Resource group where tool can be found.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool integration CRN.",
+				Description: "Tool CRN.",
 			},
 			"toolchain_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN of toolchain which the integration is bound to.",
+				Description: "CRN of toolchain which the tool is bound to.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "URI representing the tool integration.",
+				Description: "URI representing the tool.",
 			},
 			"referent": &schema.Schema{
 				Type:        schema.TypeList,
@@ -73,17 +73,17 @@ func DataSourceIBMCdToolchainToolJira() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool integration name.",
+				Description: "Tool name.",
 			},
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Latest tool integration update timestamp.",
+				Description: "Latest tool update timestamp.",
 			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Parameters to be used to create the integration.",
+				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -129,7 +129,7 @@ func DataSourceIBMCdToolchainToolJira() *schema.Resource {
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Current configuration state of the tool integration.",
+				Description: "Current configuration state of the tool.",
 			},
 		},
 	}
@@ -141,42 +141,42 @@ func DataSourceIBMCdToolchainToolJiraRead(context context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIDOptions := &cdtoolchainv2.GetIntegrationByIDOptions{}
+	getToolByIDOptions := &cdtoolchainv2.GetToolByIDOptions{}
 
-	getIntegrationByIDOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	getIntegrationByIDOptions.SetIntegrationID(d.Get("integration_id").(string))
+	getToolByIDOptions.SetToolchainID(d.Get("toolchain_id").(string))
+	getToolByIDOptions.SetToolID(d.Get("tool_id").(string))
 
-	getIntegrationByIDResponse, response, err := cdToolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
+	getToolByIDResponse, response, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetIntegrationByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetToolByIDWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetToolByIDWithContext failed %s\n%s", err, response))
 	}
 
-	if *getIntegrationByIDResponse.ToolID != "jira" {
-		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *getIntegrationByIDResponse.ToolID))
+	if *getToolByIDResponse.ToolTypeID != "jira" {
+		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *getToolByIDResponse.ToolTypeID))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *getIntegrationByIDOptions.ToolchainID, *getIntegrationByIDOptions.IntegrationID))
+	d.SetId(fmt.Sprintf("%s/%s", *getToolByIDOptions.ToolchainID, *getToolByIDOptions.ToolID))
 
-	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
 
-	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
+	if err = d.Set("crn", getToolByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 
-	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
+	if err = d.Set("toolchain_crn", getToolByIDResponse.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
 
-	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
+	if err = d.Set("href", getToolByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	referent := []map[string]interface{}{}
-	if getIntegrationByIDResponse.Referent != nil {
-		modelMap, err := DataSourceIBMCdToolchainToolJiraToolIntegrationReferentToMap(getIntegrationByIDResponse.Referent)
+	if getToolByIDResponse.Referent != nil {
+		modelMap, err := DataSourceIBMCdToolchainToolJiraToolReferentToMap(getToolByIDResponse.Referent)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -186,31 +186,31 @@ func DataSourceIBMCdToolchainToolJiraRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("Error setting referent %s", err))
 	}
 
-	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
+	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getToolByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	parameters := []map[string]interface{}{}
-	if getIntegrationByIDResponse.Parameters != nil {
-		modelMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, DataSourceIBMCdToolchainToolJira(), nil)
+	if getToolByIDResponse.Parameters != nil {
+		modelMap := GetParametersFromRead(getToolByIDResponse.Parameters, DataSourceIBMCdToolchainToolJira(), nil)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters %s", err))
 	}
 
-	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
+	if err = d.Set("state", getToolByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 
 	return nil
 }
 
-func DataSourceIBMCdToolchainToolJiraToolIntegrationReferentToMap(model *cdtoolchainv2.ToolIntegrationReferent) (map[string]interface{}, error) {
+func DataSourceIBMCdToolchainToolJiraToolReferentToMap(model *cdtoolchainv2.ToolReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = *model.UIHref

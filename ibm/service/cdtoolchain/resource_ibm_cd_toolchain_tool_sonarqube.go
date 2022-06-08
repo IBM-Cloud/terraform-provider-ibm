@@ -31,19 +31,19 @@ func ResourceIBMCdToolchainToolSonarqube() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_sonarqube", "toolchain_id"),
-				Description:  "ID of the toolchain to bind integration to.",
+				Description:  "ID of the toolchain to bind tool to.",
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_sonarqube", "name"),
-				Description:  "Name of tool integration.",
+				Description:  "Name of tool.",
 			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Parameters to be used to create the integration.",
+				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -79,22 +79,22 @@ func ResourceIBMCdToolchainToolSonarqube() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool integration can be found.",
+				Description: "Resource group where tool can be found.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool integration CRN.",
+				Description: "Tool CRN.",
 			},
 			"toolchain_crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "CRN of toolchain which the integration is bound to.",
+				Description: "CRN of toolchain which the tool is bound to.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "URI representing the tool integration.",
+				Description: "URI representing the tool.",
 			},
 			"referent": &schema.Schema{
 				Type:        schema.TypeList,
@@ -118,17 +118,17 @@ func ResourceIBMCdToolchainToolSonarqube() *schema.Resource {
 			"updated_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Latest tool integration update timestamp.",
+				Description: "Latest tool update timestamp.",
 			},
 			"state": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Current configuration state of the tool integration.",
+				Description: "Current configuration state of the tool.",
 			},
-			"integration_id": &schema.Schema{
+			"tool_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Tool integration ID.",
+				Description: "Tool ID.",
 			},
 		},
 	}
@@ -167,25 +167,25 @@ func ResourceIBMCdToolchainToolSonarqubeCreate(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	createIntegrationOptions := &cdtoolchainv2.CreateIntegrationOptions{}
+	createToolOptions := &cdtoolchainv2.CreateToolOptions{}
 
-	createIntegrationOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	createIntegrationOptions.SetToolID("sonarqube")
+	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
+	createToolOptions.SetToolTypeID("sonarqube")
 	if _, ok := d.GetOk("name"); ok {
-		createIntegrationOptions.SetName(d.Get("name").(string))
+		createToolOptions.SetName(d.Get("name").(string))
 	}
 	if _, ok := d.GetOk("parameters"); ok {
 		parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSonarqube(), nil)
-		createIntegrationOptions.SetParameters(parametersModel)
+		createToolOptions.SetParameters(parametersModel)
 	}
 
-	postIntegrationResponse, response, err := cdToolchainClient.CreateIntegrationWithContext(context, createIntegrationOptions)
+	postToolResponse, response, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateIntegrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateIntegrationWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] CreateToolWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateToolWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createIntegrationOptions.ToolchainID, *postIntegrationResponse.ID))
+	d.SetId(fmt.Sprintf("%s/%s", *createToolOptions.ToolchainID, *postToolResponse.ID))
 
 	return ResourceIBMCdToolchainToolSonarqubeRead(context, d, meta)
 }
@@ -196,65 +196,65 @@ func ResourceIBMCdToolchainToolSonarqubeRead(context context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIDOptions := &cdtoolchainv2.GetIntegrationByIDOptions{}
+	getToolByIDOptions := &cdtoolchainv2.GetToolByIDOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	getIntegrationByIDOptions.SetToolchainID(parts[0])
-	getIntegrationByIDOptions.SetIntegrationID(parts[1])
+	getToolByIDOptions.SetToolchainID(parts[0])
+	getToolByIDOptions.SetToolID(parts[1])
 
-	getIntegrationByIDResponse, response, err := cdToolchainClient.GetIntegrationByIDWithContext(context, getIntegrationByIDOptions)
+	getToolByIDResponse, response, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetIntegrationByIDWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetIntegrationByIDWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] GetToolByIDWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetToolByIDWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("toolchain_id", getIntegrationByIDResponse.ToolchainID); err != nil {
+	if err = d.Set("toolchain_id", getToolByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	if err = d.Set("name", getIntegrationByIDResponse.Name); err != nil {
+	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if getIntegrationByIDResponse.Parameters != nil {
-		parametersMap := GetParametersFromRead(getIntegrationByIDResponse.Parameters, ResourceIBMCdToolchainToolSonarqube(), nil)
+	if getToolByIDResponse.Parameters != nil {
+		parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolSonarqube(), nil)
 		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 		}
 	}
-	if err = d.Set("resource_group_id", getIntegrationByIDResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("crn", getIntegrationByIDResponse.CRN); err != nil {
+	if err = d.Set("crn", getToolByIDResponse.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("toolchain_crn", getIntegrationByIDResponse.ToolchainCRN); err != nil {
+	if err = d.Set("toolchain_crn", getToolByIDResponse.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
-	if err = d.Set("href", getIntegrationByIDResponse.Href); err != nil {
+	if err = d.Set("href", getToolByIDResponse.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := ResourceIBMCdToolchainToolSonarqubeToolIntegrationReferentToMap(getIntegrationByIDResponse.Referent)
+	referentMap, err := ResourceIBMCdToolchainToolSonarqubeToolReferentToMap(getToolByIDResponse.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err = d.Set("referent", []map[string]interface{}{referentMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting referent: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getIntegrationByIDResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(getToolByIDResponse.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("state", getIntegrationByIDResponse.State); err != nil {
+	if err = d.Set("state", getToolByIDResponse.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
-	if err = d.Set("integration_id", getIntegrationByIDResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting integration_id: %s", err))
+	if err = d.Set("tool_id", getToolByIDResponse.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting tool_id: %s", err))
 	}
 
 	return nil
@@ -266,16 +266,16 @@ func ResourceIBMCdToolchainToolSonarqubeUpdate(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	updateIntegrationOptions := &cdtoolchainv2.UpdateIntegrationOptions{}
+	updateToolOptions := &cdtoolchainv2.UpdateToolOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	updateIntegrationOptions.SetToolchainID(parts[0])
-	updateIntegrationOptions.SetIntegrationID(parts[1])
-	updateIntegrationOptions.SetToolID("sonarqube")
+	updateToolOptions.SetToolchainID(parts[0])
+	updateToolOptions.SetToolID(parts[1])
+	updateToolOptions.SetToolTypeID("sonarqube")
 
 	hasChange := false
 
@@ -284,20 +284,20 @@ func ResourceIBMCdToolchainToolSonarqubeUpdate(context context.Context, d *schem
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("name") {
-		updateIntegrationOptions.SetName(d.Get("name").(string))
+		updateToolOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 	if d.HasChange("parameters") {
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSonarqube(), nil)
-		updateIntegrationOptions.SetParameters(parameters)
+		updateToolOptions.SetParameters(parameters)
 		hasChange = true
 	}
 
 	if hasChange {
-		response, err := cdToolchainClient.UpdateIntegrationWithContext(context, updateIntegrationOptions)
+		response, err := cdToolchainClient.UpdateToolWithContext(context, updateToolOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateIntegrationWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateIntegrationWithContext failed %s\n%s", err, response))
+			log.Printf("[DEBUG] UpdateToolWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateToolWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -310,20 +310,20 @@ func ResourceIBMCdToolchainToolSonarqubeDelete(context context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	deleteIntegrationOptions := &cdtoolchainv2.DeleteIntegrationOptions{}
+	deleteToolOptions := &cdtoolchainv2.DeleteToolOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	deleteIntegrationOptions.SetToolchainID(parts[0])
-	deleteIntegrationOptions.SetIntegrationID(parts[1])
+	deleteToolOptions.SetToolchainID(parts[0])
+	deleteToolOptions.SetToolID(parts[1])
 
-	response, err := cdToolchainClient.DeleteIntegrationWithContext(context, deleteIntegrationOptions)
+	response, err := cdToolchainClient.DeleteToolWithContext(context, deleteToolOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteIntegrationWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteIntegrationWithContext failed %s\n%s", err, response))
+		log.Printf("[DEBUG] DeleteToolWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteToolWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")
@@ -331,7 +331,7 @@ func ResourceIBMCdToolchainToolSonarqubeDelete(context context.Context, d *schem
 	return nil
 }
 
-func ResourceIBMCdToolchainToolSonarqubeToolIntegrationReferentToMap(model *cdtoolchainv2.ToolIntegrationReferent) (map[string]interface{}, error) {
+func ResourceIBMCdToolchainToolSonarqubeToolReferentToMap(model *cdtoolchainv2.ToolReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

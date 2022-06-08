@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolNexusDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolNexusDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolNexusDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolNexusDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolNexusDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolNexusDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolNexusDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolNexusDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolNexusDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolNexusDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolNexusDataSourceConfigBasic(getIntegrationByID
 
 		data "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
 			toolchain_id = ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolNexusDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolNexusDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
 			toolchain_id = "%s"
@@ -103,7 +103,7 @@ func testAccCheckIBMCdToolchainToolNexusDataSourceConfig(getIntegrationByIDRespo
 
 		data "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
 			toolchain_id = ibm_cd_toolchain_tool_nexus.cd_toolchain_tool_nexus.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

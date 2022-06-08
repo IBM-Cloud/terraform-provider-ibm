@@ -38,7 +38,7 @@ cd_toolchain_tool_sonarqube data source:
 ```hcl
 data "cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
   toolchain_id = var.cd_toolchain_tool_sonarqube_toolchain_id
-  integration_id = var.cd_toolchain_tool_sonarqube_integration_id
+  tool_id = var.cd_toolchain_tool_sonarqube_tool_id
 }
 ```
 
@@ -67,11 +67,11 @@ data "cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| toolchain_id | ID of the toolchain to bind integration to. | `string` | true |
-| name | Name of tool integration. | `string` | false |
-| parameters | Parameters to be used to create the integration. | `` | false |
+| toolchain_id | ID of the toolchain to bind tool to. | `string` | true |
+| name | Name of tool. | `string` | false |
+| parameters | Parameters to be used to create the tool. | `` | false |
 | toolchain_id | ID of the toolchain. | `string` | true |
-| integration_id | ID of the tool integration bound to the toolchain. | `string` | true |
+| tool_id | ID of the tool bound to the toolchain. | `string` | true |
 
 ## Outputs
 

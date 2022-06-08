@@ -14,7 +14,7 @@ Provides a read-only data source for cd_toolchain_tool_secretsmanager. You can t
 
 ```hcl
 data "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
-	integration_id = "integration_id"
+	tool_id = "tool_id"
 	toolchain_id = ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager.toolchain_id
 }
 ```
@@ -23,7 +23,7 @@ data "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
 
 Review the argument reference that you can specify for your data source.
 
-* `integration_id` - (Required, Forces new resource, String) ID of the tool integration bound to the toolchain.
+* `tool_id` - (Required, Forces new resource, String) ID of the tool bound to the toolchain.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
@@ -33,16 +33,16 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_secretsmanager.
-* `crn` - (Required, String) Tool integration CRN.
+* `crn` - (Required, String) Tool CRN.
 
-* `get_integration_by_id_response_id` - (Required, String) Tool integration ID.
+* `get_tool_by_id_response_id` - (Required, String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
-* `href` - (Required, String) URI representing the tool integration.
+* `href` - (Required, String) URI representing the tool.
 
-* `name` - (Optional, String) Tool integration name.
+* `name` - (Optional, String) Tool name.
 
-* `parameters` - (Required, List) Parameters to be used to create the integration.
+* `parameters` - (Required, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `instance_name` - (Required, String) The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.
 	  * Constraints: The value must match regular expression `/\\S/`.
@@ -55,12 +55,12 @@ Nested scheme for **referent**:
 	* `api_href` - (Optional, String) URI representing the this resource through an API.
 	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
 
-* `resource_group_id` - (Required, String) Resource group where tool integration can be found.
+* `resource_group_id` - (Required, String) Resource group where tool can be found.
 
-* `state` - (Required, String) Current configuration state of the tool integration.
+* `state` - (Required, String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
-* `toolchain_crn` - (Required, String) CRN of toolchain which the integration is bound to.
+* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
 
-* `updated_at` - (Required, String) Latest tool integration update timestamp.
+* `updated_at` - (Required, String) Latest tool update timestamp.
 

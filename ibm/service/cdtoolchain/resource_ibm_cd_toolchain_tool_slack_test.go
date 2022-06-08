@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMCdToolchainToolSlackBasic(t *testing.T) {
-	var conf cdtoolchainv2.GetIntegrationByIDResponse
+	var conf cdtoolchainv2.GetToolByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -38,7 +38,7 @@ func TestAccIBMCdToolchainToolSlackBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolSlackAllArgs(t *testing.T) {
-	var conf cdtoolchainv2.GetIntegrationByIDResponse
+	var conf cdtoolchainv2.GetToolByIDResponse
 	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -101,7 +101,7 @@ func testAccCheckIBMCdToolchainToolSlackConfig(toolchainID string, name string) 
 	`, toolchainID, name)
 }
 
-func testAccCheckIBMCdToolchainToolSlackExists(n string, obj cdtoolchainv2.GetIntegrationByIDResponse) resource.TestCheckFunc {
+func testAccCheckIBMCdToolchainToolSlackExists(n string, obj cdtoolchainv2.GetToolByIDResponse) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -114,22 +114,22 @@ func testAccCheckIBMCdToolchainToolSlackExists(n string, obj cdtoolchainv2.GetIn
 			return err
 		}
 
-		getIntegrationByIDOptions := &cdtoolchainv2.GetIntegrationByIDOptions{}
+		getToolByIDOptions := &cdtoolchainv2.GetToolByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIDOptions.SetToolchainID(parts[0])
-		getIntegrationByIDOptions.SetIntegrationID(parts[1])
+		getToolByIDOptions.SetToolchainID(parts[0])
+		getToolByIDOptions.SetToolID(parts[1])
 
-		getIntegrationByIDResponse, _, err := cdToolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
+		getToolByIDResponse, _, err := cdToolchainClient.GetToolByID(getToolByIDOptions)
 		if err != nil {
 			return err
 		}
 
-		obj = *getIntegrationByIDResponse
+		obj = *getToolByIDResponse
 		return nil
 	}
 }
@@ -144,18 +144,18 @@ func testAccCheckIBMCdToolchainToolSlackDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getIntegrationByIDOptions := &cdtoolchainv2.GetIntegrationByIDOptions{}
+		getToolByIDOptions := &cdtoolchainv2.GetToolByIDOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getIntegrationByIDOptions.SetToolchainID(parts[0])
-		getIntegrationByIDOptions.SetIntegrationID(parts[1])
+		getToolByIDOptions.SetToolchainID(parts[0])
+		getToolByIDOptions.SetToolID(parts[1])
 
 		// Try to find the key
-		_, response, err := cdToolchainClient.GetIntegrationByID(getIntegrationByIDOptions)
+		_, response, err := cdToolchainClient.GetToolByID(getToolByIDOptions)
 
 		if err == nil {
 			return fmt.Errorf("cd_toolchain_tool_slack still exists: %s", rs.Primary.ID)

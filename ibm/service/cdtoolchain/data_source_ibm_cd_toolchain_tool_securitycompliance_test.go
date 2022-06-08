@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolSecuritycomplianceDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolSecuritycomplianceDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolSecuritycomplianceDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolSecuritycomplianceDataSourceAllArgs(t *testing.T) 
 	})
 }
 
-func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfigBasic(getIn
 
 		data "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance" {
 			toolchain_id = ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance" {
 			toolchain_id = "%s"
@@ -103,7 +103,7 @@ func testAccCheckIBMCdToolchainToolSecuritycomplianceDataSourceConfig(getIntegra
 
 		data "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance" {
 			toolchain_id = ibm_cd_toolchain_tool_securitycompliance.cd_toolchain_tool_securitycompliance.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolSecretsmanagerDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolSecretsmanagerDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolSecretsmanagerDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolSecretsmanagerDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfigBasic(getIntegr
 
 		data "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
 			toolchain_id = ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
 			toolchain_id = "%s"
@@ -100,7 +100,7 @@ func testAccCheckIBMCdToolchainToolSecretsmanagerDataSourceConfig(getIntegration
 
 		data "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
 			toolchain_id = ibm_cd_toolchain_tool_secretsmanager.cd_toolchain_tool_secretsmanager.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }

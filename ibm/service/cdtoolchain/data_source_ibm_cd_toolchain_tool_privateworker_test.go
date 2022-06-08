@@ -14,19 +14,19 @@ import (
 )
 
 func TestAccIBMCdToolchainToolPrivateworkerDataSourceBasic(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfigBasic(getIntegrationByIDResponseToolchainID),
+				Config: testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfigBasic(getToolByIDResponseToolchainID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "toolchain_crn"),
@@ -42,20 +42,20 @@ func TestAccIBMCdToolchainToolPrivateworkerDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolPrivateworkerDataSourceAllArgs(t *testing.T) {
-	getIntegrationByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
-	getIntegrationByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseToolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfig(getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfig(getToolByIDResponseToolchainID, getToolByIDResponseName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "integration_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "get_integration_by_id_response_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "tool_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "get_tool_by_id_response_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker", "toolchain_crn"),
@@ -71,7 +71,7 @@ func TestAccIBMCdToolchainToolPrivateworkerDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfigBasic(getIntegrationByIDResponseToolchainID string) string {
+func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfigBasic(getToolByIDResponseToolchainID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
 			toolchain_id = "%s"
@@ -79,12 +79,12 @@ func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfigBasic(getIntegra
 
 		data "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
 			toolchain_id = ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID)
+	`, getToolByIDResponseToolchainID)
 }
 
-func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfig(getIntegrationByIDResponseToolchainID string, getIntegrationByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfig(getToolByIDResponseToolchainID string, getToolByIDResponseName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
 			toolchain_id = "%s"
@@ -98,7 +98,7 @@ func testAccCheckIBMCdToolchainToolPrivateworkerDataSourceConfig(getIntegrationB
 
 		data "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
 			toolchain_id = ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker.toolchain_id
-			integration_id = "integration_id"
+			tool_id = "tool_id"
 		}
-	`, getIntegrationByIDResponseToolchainID, getIntegrationByIDResponseName)
+	`, getToolByIDResponseToolchainID, getToolByIDResponseName)
 }
