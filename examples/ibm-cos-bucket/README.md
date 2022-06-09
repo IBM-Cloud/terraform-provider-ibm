@@ -193,6 +193,46 @@ data "ibm_cos_bucket" "standard-ams03" {
 
 * [Cloud Object Storage](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-cos-bucket)
 
+<!-- COS SATELLITE PROJECT -->
+
+## COS SATELLITE
+
+The following example creates a bucket and add object versioning and expiration features on COS satellite location. As of now we are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. We don't have any resource group in satellite.We can not use storage_class with Satellite location id.
+
+* [IBM Satellite](https://cloud.ibm.com/docs/satellite?topic=satellite-getting-started)
+* [IBM COS Satellite](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-about-cos-satellite)
+
+## Example Usage
+
+```terraform
+data "ibm_resource_group" "group" {
+    name = "Default"
+}
+
+resource "ibm_satellite_location" "create_location" {
+  location          = var.location
+  zones             = var.location_zones
+  managed_from      = var.managed_from
+  resource_group_id = data.ibm_resource_group.group.id
+}
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = "cos-sat-terraform"
+  resource_instance_id  = data.ibm_resource_instance.cos_instance.id
+  satellite_location_id  = data.ibm_satellite_location.create_location.id
+  object_versioning {
+    enable  = true
+  }
+  expire_rule {
+    rule_id = "bucket-tf-rule1"
+    enable  = false
+    days    = 20
+    prefix  = "logs/"
+  }
+}
+```
+
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Requirements
@@ -213,6 +253,7 @@ data "ibm_cos_bucket" "standard-ams03" {
 |------|-------------|------|---------|
 | bucket_name | Name of the bucket. | `string` | yes |
 | resource_group_name | Name of the resource group. | `string` | yes |
+| satellite_location_id | satellite location. | `string` | no |
 | storage | The storage class that you want to use for the bucket. Supported values are **standard, vault, cold, flex, and smart**.| `string` | no |
 | region | The location for a cross-regional bucket. Supported values are **us, eu, and ap**. | `string` | no |
 | read_data_events | Enables sending log data to Activity Tracker and LogDNA to provide visibility into object read and write events. | `array` | no

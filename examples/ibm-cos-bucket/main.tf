@@ -112,3 +112,19 @@ resource "ibm_cos_bucket_object" "base64" {
   content_base64  = "RW5jb2RlZCBpbiBiYXNlNjQ="
   key             = "base64.txt"
 }
+
+//Satellite Location
+resource "ibm_cos_bucket" "cos_bucket_sat" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = "crn:v1:bluemix:public:cloud-object-storage:satloc_wdc_c8jh7hfw0ppoapdqrmpg:a/d0c259a490e4488c83b62707ad3f5182:756ad6b6-72a6-4e55-8c94-b02e51e708b3::"
+  satellite_location_id  = var.satellite_location_id
+  object_versioning {
+    enable  = true
+  }
+  expire_rule {
+    rule_id = "bucket-tf-rule1"
+    enable  = false
+    days    = 20
+    prefix  = "logs/"
+  }
+}
