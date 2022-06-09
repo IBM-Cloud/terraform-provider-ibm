@@ -313,6 +313,7 @@ func Provider() *schema.Provider {
 			"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_container_dedicated_host_pool":     kubernetes.DataSourceIBMContainerDedicatedHostPool(),
 			"ibm_container_dedicated_host_flavor":   kubernetes.DataSourceIBMContainerDedicatedHostFlavor(),
+			"ibm_container_dedicated_host_flavors":  kubernetes.DataSourceIBMContainerDedicatedHostFlavors(),
 			"ibm_cr_namespaces":                     registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":      cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                        cos.DataSourceIBMCosBucket(),

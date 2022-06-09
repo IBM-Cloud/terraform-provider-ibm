@@ -17,9 +17,9 @@ In the following example, you can create a dedicated host pool:
 
 ```terraform
 resource "ibm_container_dedicated_host_pool" "test_dhostpool" {
-	name         = "test_dhostpool"
-	flavor_class = "bx2d"
-	metro        = "dal"
+  name         = "test_dhostpool"
+  flavor_class = "bx2d"
+  metro        = "dal"
 }
 ```
 
