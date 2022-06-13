@@ -48,6 +48,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/transitgateway"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/uko"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
@@ -324,6 +325,10 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_topic":               eventstreams.DataSourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":              eventstreams.DataSourceIBMEventStreamsSchema(),
 			"ibm_hpcs":                              hpcs.DataSourceIBMHPCS(),
+			"ibm_hpcs_managed_key":                  uko.DataSourceIbmManagedKey(),
+			"ibm_hpcs_key_template":                 uko.DataSourceIbmKeyTemplate(),
+			"ibm_hpcs_keystore":                     uko.DataSourceIbmKeystore(),
+			"ibm_hpcs_vault":                        uko.DataSourceIbmVault(),
 			"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroup(),
 			"ibm_iam_access_group_policy":           iampolicy.DataSourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_account_settings":              iamidentity.DataSourceIBMIAMAccountSettings(),
@@ -760,6 +765,10 @@ func Provider() *schema.Provider {
 			"ibm_firewall":                              classicinfrastructure.ResourceIBMFirewall(),
 			"ibm_firewall_policy":                       classicinfrastructure.ResourceIBMFirewallPolicy(),
 			"ibm_hpcs":                                  hpcs.ResourceIBMHPCS(),
+			"ibm_hpcs_managed_key":                      uko.ResourceIbmManagedKey(),
+			"ibm_hpcs_key_template":                     uko.ResourceIbmKeyTemplate(),
+			"ibm_hpcs_keystore":                         uko.ResourceIbmKeystore(),
+			"ibm_hpcs_vault":                            uko.ResourceIbmVault(),
 			"ibm_iam_access_group":                      iamaccessgroup.ResourceIBMIAMAccessGroup(),
 			"ibm_iam_account_settings":                  iamidentity.ResourceIBMIAMAccountSettings(),
 			"ibm_iam_custom_role":                       iampolicy.ResourceIBMIAMCustomRole(),
@@ -1056,6 +1065,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_function_trigger":            functions.ResourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":          functions.ResourceIBMFuncNamespaceValidator(),
 				"ibm_hpcs":                        hpcs.ResourceIBMHPCSValidator(),
+				"ibm_hpcs_managed_key":            uko.ResourceIbmManagedKeyValidator(),
+				"ibm_hpcs_key_template":           uko.ResourceIbmKeyTemplateValidator(),
+				"ibm_hpcs_vault":                  uko.ResourceIbmVaultValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),
