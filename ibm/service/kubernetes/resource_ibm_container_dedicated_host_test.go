@@ -118,7 +118,7 @@ func testAccCheckIBMContainerDedicatedHostBasic(dedicatedHostPoolName string) st
 resource "ibm_container_dedicated_host" "test_dhost" {
 	flavor         = "bx2d.host.152x608"
 	host_pool_id   = ibm_container_dedicated_host_pool.test_dhostpool.id
-	zone           = "us-south-1"
+	zone           = "us-south-2"
 }
 `
 }
@@ -128,7 +128,7 @@ func testAccCheckIBMContainerDedicatedHostDisable(dedicatedHostPoolName string) 
 resource "ibm_container_dedicated_host" "test_dhost" {
 	flavor            = "bx2d.host.152x608"
 	host_pool_id      = ibm_container_dedicated_host_pool.test_dhostpool.id
-	zone              = "us-south-1"
+	zone              = "us-south-2"
 	placement_enabled = "false"
 }
 `
@@ -139,7 +139,7 @@ func testAccCheckIBMContainerDedicatedHostEnable(dedicatedHostPoolName string) s
 resource "ibm_container_dedicated_host" "test_dhost" {
 	flavor            = "bx2d.host.152x608"
 	host_pool_id      = ibm_container_dedicated_host_pool.test_dhostpool.id
-	zone              = "us-south-1"
+	zone              = "us-south-2"
 	placement_enabled = "true"
 }
 `

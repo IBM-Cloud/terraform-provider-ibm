@@ -17,10 +17,10 @@ In the following example, you can create a dedicated host:
 
 ```terraform
 resource "ibm_container_dedicated_host" "test_dhost" {
-	flavor            = "bx2d.host.152x608"
-	host_pool_id      = ibm_container_dedicated_host_pool.test_dhostpool.id
-	zone              = "us-south-1"
-	placement_enabled = "true"
+  flavor            = "bx2d.host.152x608"
+  host_pool_id      = ibm_container_dedicated_host_pool.test_dhostpool.id
+  zone              = "us-south-1"
+  placement_enabled = "true"
 }
 ```
 
