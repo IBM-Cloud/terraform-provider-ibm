@@ -36,7 +36,7 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `certificate_instance`:
 	- `crn` - (String) The CRN for this certificate instance.
 
-	-> **NOTE:** Migrate your load balancer certificates from Certificate Manager to Secrets Manager as the certificate CRN from Certificate Manager is deprecated.
+	-> **NOTE:** Certificate Manager is deprecated. Migrate your load balancer certificates from Certificate Manager to Secrets Manager.
 
 - `connection_limit` - (Integer) The connection limit of the listener.
 
