@@ -394,6 +394,7 @@ func Provider() *schema.Provider {
 			"ibm_is_images":                          vpc.DataSourceIBMISImages(),
 			"ibm_is_endpoint_gateway_targets":        vpc.DataSourceIBMISEndpointGatewayTargets(),
 			"ibm_is_instance_group":                  vpc.DataSourceIBMISInstanceGroup(),
+			"ibm_is_instance_groups":                 vpc.DataSourceIBMISInstanceGroups(),
 			"ibm_is_instance_group_memberships":      vpc.DataSourceIBMISInstanceGroupMemberships(),
 			"ibm_is_instance_group_membership":       vpc.DataSourceIBMISInstanceGroupMembership(),
 			"ibm_is_instance_group_manager":          vpc.DataSourceIBMISInstanceGroupManager(),
