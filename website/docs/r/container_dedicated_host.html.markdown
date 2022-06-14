@@ -18,11 +18,20 @@ In the following example, you can create a dedicated host:
 ```terraform
 resource "ibm_container_dedicated_host" "test_dhost" {
   flavor            = "bx2d.host.152x608"
-  host_pool_id      = ibm_container_dedicated_host_pool.test_dhostpool.id
+  host_pool_id      = "dh-abcdefgh1234567"
   zone              = "us-south-1"
   placement_enabled = "true"
 }
 ```
+
+## Timeouts
+
+ibm_container_dedicated_host provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+* `create` - (Default 40 minutes) Used for creating the dedicated host. Please note that after creating the host, terraform may need to execute some update logic.
+* `read`   - (Default 10 minutes) Used for reading the dedicated host.
+* `update` - (Default 15 minutes) Used for updating the dedicated host.
+* `delete` - (Default 40 minutes) Used for deleting the dedicated host. Please note that before deleting the host, terraform may need to execute some update logic.
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
@@ -66,9 +75,9 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_container_dedicated_host` can be imported by using the dedicated host pool id and the dedicated host id in the following format: `<dedicated host pool id>:<dedicated host id>`.
+The `ibm_container_dedicated_host` can be imported by using the dedicated host pool id and the dedicated host id in the following format: `<dedicated host pool id>/<dedicated host id>`.
 
 **Example**
 
 ```
-$ terraform import ibm_container_dedicated_host.test_dhost <dedicated host pool id>:<dedicated host id>
+$ terraform import ibm_container_dedicated_host.test_dhost dh-abcdefgh1234567/abcd12-dh-abcdefgh1234567-abcd123-acbd1234

@@ -145,7 +145,7 @@ func dataSourceIBMContainerDedicatedHostRead(ctx context.Context, d *schema.Reso
 
 	hostID := d.Get("host_id").(string)
 	hostPoolID := d.Get("host_pool_id").(string)
-	id := fmt.Sprintf("%s:%s", hostPoolID, hostID)
+	id := fmt.Sprintf("%s/%s", hostPoolID, hostID)
 
 	if err := getIBMContainerDedicatedHost(id, d, meta); err != nil {
 		return diag.Errorf("[ERROR] getIBMContainerDedicatedHost failed: %v", err)

@@ -32,7 +32,11 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 		ReadContext:   resourceIBMContainerDedicatedHostPoolRead,
 		DeleteContext: resourceIBMContainerDedicatedHostPoolDelete,
 		Importer:      &schema.ResourceImporter{},
-		Timeouts:      &schema.ResourceTimeout{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(time.Minute * 10),
+			Read:   schema.DefaultTimeout(time.Minute * 10),
+			Delete: schema.DefaultTimeout(time.Minute * 10),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -139,7 +143,7 @@ func resourceIBMContainerDedicatedHostPoolCreate(ctx context.Context, d *schema.
 
 	d.SetId(res.ID)
 
-	dhp, err := waitForDedicatedHostPoolAvailable(ctx, dedicatedHostPoolAPI, res.ID, DedicatedHostCreateTimeout, targetEnv)
+	dhp, err := waitForDedicatedHostPoolAvailable(ctx, dedicatedHostPoolAPI, res.ID, d.Timeout(schema.TimeoutCreate)-time.Minute, targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostPoolAvailable failed: %v", err)
 	}
@@ -229,7 +233,7 @@ func resourceIBMContainerDedicatedHostPoolDelete(ctx context.Context, d *schema.
 		return diag.Errorf("[ERROR] Error removing host pool %v", err)
 	}
 
-	_, err = waitForDedicatedHostPoolRemove(ctx, dedicatedHostPoolAPI, hostPoolID, DedicatedHostCreateTimeout, targetEnv)
+	_, err = waitForDedicatedHostPoolRemove(ctx, dedicatedHostPoolAPI, hostPoolID, d.Timeout(schema.TimeoutDelete)-time.Minute, targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostPoolRemove failed: %v", err)
 	}

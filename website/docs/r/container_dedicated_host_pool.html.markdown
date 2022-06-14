@@ -23,6 +23,14 @@ resource "ibm_container_dedicated_host_pool" "test_dhostpool" {
 }
 ```
 
+## Timeouts
+
+ibm_container_dedicated_host_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+* `create` - (Default 10 minutes) Used for creating the dedicated host pool.
+* `read`   - (Default 10 minutes) Used for reading the dedicated host pool.
+* `delete` - (Default 10 minutes) Used for deleting the dedicated host pool.
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -58,4 +66,4 @@ The `ibm_container_dedicated_host_pool` can be imported by using `id`.
 **Example**
 
 ```
-$ terraform import ibm_container_dedicated_host_pool.test_dhostpool <dedicated host id>
+$ terraform import ibm_container_dedicated_host_pool.test_dhostpool "dh-abcdefgh1234567"
