@@ -624,6 +624,7 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.DataSourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.DataSourceIBMEnDestination(),
 			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
@@ -635,6 +636,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_ios":      eventnotification.DataSourceIBMEnAPNSDestination(),
 			"ibm_en_destination_chrome":   eventnotification.DataSourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.DataSourceIBMEnFirefoxDestination(),
+			"ibm_en_destination_slack":    eventnotification.DataSourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.DataSourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.DataSourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.DataSourceIBMEnWebhookSubscription(),
@@ -642,6 +644,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.DataSourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -984,6 +989,7 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.ResourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.ResourceIBMEnDestination(),
 			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_subscription":         eventnotification.ResourceIBMEnSubscription(),
@@ -992,6 +998,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_chrome":   eventnotification.ResourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.ResourceIBMEnFirefoxDestination(),
 			"ibm_en_destination_ios":      eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_destination_slack":    eventnotification.ResourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.ResourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.ResourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.ResourceIBMEnWebhookSubscription(),
@@ -999,6 +1006,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
