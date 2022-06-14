@@ -351,6 +351,12 @@ func resourceIBMContainerDedicatedHostDelete(ctx context.Context, d *schema.Reso
 	}
 
 	if err = dedicatedHostAPI.DisableDedicatedHostPlacement(placementParams, targetEnv); err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				log.Printf("[DEBUG] DedicatedHostDelete: DisableDedicatedHostPlacement couldn't find dedicated host with host pool id %s and host id %s", hostPoolID, hostID)
+				return nil
+			}
+		}
 		return diag.Errorf("[ERROR] DisableDedicatedHostPlacement failed: %v", err)
 	}
 
@@ -365,6 +371,12 @@ func resourceIBMContainerDedicatedHostDelete(ctx context.Context, d *schema.Reso
 	}
 
 	if err = dedicatedHostAPI.RemoveDedicatedHost(params, targetEnv); err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				log.Printf("[DEBUG] RemoveDedicatedHost couldn't find dedicated host with host pool id %s and host id %s", hostPoolID, hostID)
+				return nil
+			}
+		}
 		return diag.Errorf("[ERROR] RemoveDedicatedHost failed: %v", err)
 	}
 

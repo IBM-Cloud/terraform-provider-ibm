@@ -230,6 +230,12 @@ func resourceIBMContainerDedicatedHostPoolDelete(ctx context.Context, d *schema.
 	}
 
 	if err := dedicatedHostPoolAPI.RemoveDedicatedHostPool(params, targetEnv); err != nil {
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				log.Printf("[DEBUG] RemoveDedicatedHostPool couldn't find dedicated host pool with id %s", hostPoolID)
+				return nil
+			}
+		}
 		return diag.Errorf("[ERROR] Error removing host pool %v", err)
 	}
 
