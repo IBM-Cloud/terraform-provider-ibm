@@ -1262,6 +1262,7 @@ func Validator() validate.ValidatorDict {
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
 				"ibm_is_snapshot":        vpc.DataSourceIBMISSnapshotValidator(),
+				"ibm_is_images":          vpc.DataSourceIBMISImagesValidator(),
 				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
 				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
 
