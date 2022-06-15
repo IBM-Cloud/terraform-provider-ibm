@@ -40,7 +40,7 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "name"),
 				Description:  "Property name.",
 			},
@@ -83,7 +83,7 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 			},
 			"type": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "type"),
 				Description:  "Property type.",
 			},
@@ -113,7 +113,7 @@ func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			Regexp:                     `^[-0-9a-zA-Z_.]{1,234}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
@@ -140,7 +140,7 @@ func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
 			Identifier:                 "type",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Optional:                   true,
+			Required:                   true,
 			AllowedValues:              "APPCONFIG, INTEGRATION, SECURE, SINGLE_SELECT, TEXT",
 		},
 		validate.ValidateSchema{
