@@ -106,5 +106,11 @@ func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
 	}
 
+	if property.Enum != nil {
+		if err = d.Set("enum", property.Enum); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
+		}
+	}
+
 	return nil
 }
