@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"time"
@@ -630,6 +631,248 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 	})
 }
 
+//
+// Satellite location
+func TestAccIBMCosBucket_Satellite(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_basic_sat(serviceName, bucketName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_sat_updateWithSameName(serviceName, bucketName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_Expiredays(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	ruleId := "my-rule-id-bucket-expiredays"
+	enable := true
+	expireDays := 2
+	prefix := "prefix/"
+	expireDaysUpdate := 3
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_expiredays_satellite(bucketName, bucketRegion, ruleId, enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_expire_updateDays_satellite(bucketName, bucketRegion, ruleId, enable, expireDaysUpdate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.days", fmt.Sprintf("%d", expireDaysUpdate)),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_update_expiredays_satellite(bucketName, bucketRegion, ruleId, enable, expireDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_Expiredate(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	ruleId := "my-rule-id-bucket-expiredate"
+	enable := true
+	expireDate := "2021-11-28"
+	prefix := ""
+	expireDateUpdate := "2021-11-30"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_sat_expiredate(bucketName, bucketRegion, ruleId, enable, expireDate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_sat_expire_updateDate(bucketName, bucketRegion, ruleId, enable, expireDateUpdate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.0.date", expireDateUpdate),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_sat_update_expiredate(bucketName, bucketRegion, ruleId, enable, expireDate, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_Expireddeletemarker(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	ruleId := "my-rule-id-bucket-expireddeletemarker"
+	enable := true
+	prefix := ""
+	expiredObjectDeleteMarker := false
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_sat_expiredeletemarker(bucketName, bucketRegion, ruleId, enable, expiredObjectDeleteMarker, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "expire_rule.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_AbortIncompeleteMPU(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	ruleId := "my-rule-id-bucket-abortmpu"
+	enable := true
+	prefix := ""
+	daysAfterInitiation := 1
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_sat_abortincompletempu(bucketName, bucketRegion, ruleId, enable, daysAfterInitiation, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "abort_incomplete_multipart_upload_days.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_sat_update_abortincompletempu(bucketName, bucketRegion, ruleId, enable, daysAfterInitiation, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "abort_incomplete_multipart_upload_days.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_noncurrentversion(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	ruleId := "my-rule-id-bucket-ncversion"
+	enable := true
+	prefix := ""
+	noncurrentDays := 1
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_sat_noncurrentversion(bucketName, bucketRegion, ruleId, enable, noncurrentDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "noncurrent_version_expiration.#", "1"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_sat_update_noncurrentversion(bucketName, bucketRegion, ruleId, enable, noncurrentDays, prefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "noncurrent_version_expiration.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Satellite_Object_Versioning(t *testing.T) {
+
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := acc.Satellite_location_id
+	ResourceInstanceId := acc.Satellite_Resource_instance_id
+	enable := true
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_sat_object_versioning(bucketName, bucketRegion, enable),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucket_Satellite_Exists(ResourceInstanceId, "ibm_cos_bucket.bucket", bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 
 	var s3Conf *aws.Config
@@ -683,16 +926,81 @@ func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 	return nil
 }
 
+// COS Satellite
+func testAccCheckIBMCosBucket_Satellite_Exists(resource string, bucket string, region string, bucketname string) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		var s3Conf *aws.Config
+
+		bucket, ok := s.RootModule().Resources[bucket]
+		if !ok {
+			return fmt.Errorf("Bucket Not found: %s", bucket)
+		}
+
+		satloc_guid := strings.Split(resource, ":")
+		bucketsatcrn := satloc_guid[7]
+		resource = bucketsatcrn
+
+		var rt string
+
+		rt = "sl"
+
+		apiEndpoint := cos.SelectSatlocCosApi(rt, resource, region)
+
+		rsContClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BluemixSession()
+		if err != nil {
+			return err
+		}
+
+		authEndpoint, err := rsContClient.Config.EndpointLocator.IAMEndpoint()
+		if err != nil {
+			return err
+		}
+		authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
+		apiKey := rsContClient.Config.BluemixAPIKey
+		if apiKey != "" {
+			s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, resource)).WithS3ForcePathStyle(true)
+		}
+		iamAccessToken := rsContClient.Config.IAMAccessToken
+		if iamAccessToken != "" {
+			initFunc := func() (*token.Token, error) {
+				return &token.Token{
+					AccessToken:  rsContClient.Config.IAMAccessToken,
+					RefreshToken: rsContClient.Config.IAMRefreshToken,
+					TokenType:    "Bearer",
+					ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
+					Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
+				}, nil
+			}
+			s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, resource)).WithS3ForcePathStyle(true)
+		}
+		s3Sess := session.Must(session.NewSession())
+		s3Client := s3.New(s3Sess, s3Conf)
+
+		bucketList, _ := s3Client.ListBuckets(&s3.ListBucketsInput{})
+		for _, bucket := range bucketList.Buckets {
+			bn := *bucket.Name
+			if bn == bucketname {
+				return nil
+			}
+		}
+		return errors.New("bucket does not exist")
+	}
+}
+
+/// IBMCLOUD
 func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype string, region string, bucketname string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		var s3Conf *aws.Config
 		resourceInstance, ok := s.RootModule().Resources[resource]
+
 		if !ok {
 			return fmt.Errorf("Not found: %s", resource)
 		}
 
 		bucket, ok := s.RootModule().Resources[bucket]
+
 		if !ok {
 			return fmt.Errorf("Not found: %s", bucket)
 		}
@@ -776,6 +1084,7 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 		  
 	`, serviceName, bucketName, storageClass, region)
 }
+
 func testAccCheckIBMCosBucket_direct(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 
 	return fmt.Sprintf(`
@@ -1504,6 +1813,229 @@ func testAccCheckIBMCosBucket_update_noncurrentversion(cosServiceName string, bu
 		storage_class         = "%s"
 	}
 	`, cosServiceName, bucketName, region, storageClass)
+}
+
+//Satellite
+
+func testAccCheckIBMCosBucket_basic_sat(serviceName string, bucketName string) string {
+	return fmt.Sprintf(`
+	
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	  
+		  
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+func testAccCheckIBMCosBucket_sat_updateWithSameName(serviceName string, bucketName string) string {
+
+	return fmt.Sprintf(`	
+
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMCosBucket_sat_expiredeletemarker(bucketName string, region string, ruleId string, enable bool, expiredObjectDeleteMarker bool, prefix string) string {
+
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		expire_rule {
+			rule_id                     = "%s"
+			enable                      = true
+			expired_object_delete_marker = true
+			prefix                       = "%s"
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, prefix)
+}
+
+func testAccCheckIBMCosBucket_sat_abortincompletempu(bucketName string, region string, ruleId string, enable bool, daysAfterInitiation int, prefix string) string {
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		abort_incomplete_multipart_upload_days {
+			rule_id             	= "%s"
+			enable              	= true
+			days_after_initiation   = %d
+			prefix                  = "%s"
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, daysAfterInitiation, prefix)
+}
+
+func testAccCheckIBMCosBucket_sat_abortincompletempu_updateDays(bucketName string, region string, ruleId string, enable bool, daysAfterInitiationUpdate int, prefix string) string {
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		abort_incomplete_multipart_upload_days {
+			rule_id            	    = "%s"
+			enable              	= true
+			days_after_initiation   = %d
+			prefix                  = "%s"
+		  }
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, daysAfterInitiationUpdate, prefix)
+
+}
+
+func testAccCheckIBMCosBucket_sat_update_abortincompletempu(bucketName string, region string, ruleId string, enable bool, daysAfterInitiation int, prefix string) string {
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMCosBucket_sat_noncurrentversion(bucketName string, region string, ruleId string, enable bool, noncurrentDays int, prefix string) string {
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		noncurrent_version_expiration {
+			rule_id             	= "%s"
+			enable              	= true
+			noncurrent_days  		= %d
+			prefix                  = "%s"
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, noncurrentDays, prefix)
+}
+
+func testAccCheckIBMCosBucket_sat_update_noncurrentversion(bucketName string, region string, ruleId string, enable bool, noncurrentDays int, prefix string) string {
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMCosBucket_sat_expiredate(bucketName string, region string, ruleId string, enable bool, expireDate string, prefix string) string {
+
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			date                = "%s"
+			prefix              = "%s"
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, expireDate, prefix)
+}
+
+func testAccCheckIBMCosBucket_sat_expire_updateDate(bucketName string, region string, ruleId string, enable bool, expireDateUpdate string, prefix string) string {
+
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			date                = "%s"
+			prefix              = "%s"
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, expireDateUpdate, prefix)
+
+}
+
+func testAccCheckIBMCosBucket_sat_update_expiredate(bucketName string, region string, ruleId string, enable bool, expireDate string, prefix string) string {
+
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMCosBucket_sat_object_versioning(bucketName string, region string, enable bool) string {
+
+	return fmt.Sprintf(`
+	
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		object_versioning {
+			enable  = true
+		}
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
+}
+
+func testAccCheckIBMCosBucket_expiredays_satellite(bucketName string, region string, ruleId string, enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		}
+	}
+
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, expireDays, prefix)
+}
+
+func testAccCheckIBMCosBucket_expire_updateDays_satellite(bucketName string, region string, ruleId string, enable bool, expireDaysUpdate int, prefix string) string {
+
+	return fmt.Sprintf(`
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+		expire_rule {
+			rule_id             = "%s"
+			enable              = true
+			days                = %d
+			prefix              = "%s"
+		}
+	}
+
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id, ruleId, expireDaysUpdate, prefix)
+
+}
+
+func testAccCheckIBMCosBucket_update_expiredays_satellite(bucketName string, region string, ruleId string, enable bool, expireDays int, prefix string) string {
+
+	return fmt.Sprintf(`
+	
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = "%s"
+		satellite_location_id = "%s"
+	}
+	`, bucketName, acc.Satellite_Resource_instance_id, acc.Satellite_location_id)
 }
 
 func TestSingleSiteLocationRegex(t *testing.T) {
