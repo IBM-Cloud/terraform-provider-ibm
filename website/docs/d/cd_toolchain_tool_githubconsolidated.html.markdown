@@ -44,33 +44,21 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (Required, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `access_token` - (Optional, String)
 	* `api_root_url` - (Optional, String) e.g. https://api.github.example.com.
-	* `api_token` - (Optional, String) Personal Access Token.
-	* `auth_type` - (Optional, String)
-	  * Constraints: Allowable values are: `oauth`, `pat`.
-	* `authorized` - (Optional, String)
 	* `auto_init` - (Optional, Boolean) Select this checkbox to initialize this repository with a README.
 	  * Constraints: The default value is `false`.
-	* `blind_connection` - (Optional, Boolean) Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.
-	  * Constraints: The default value is `false`.
-	* `default_branch` - (Optional, String) e.g. main.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Optional, String)
 	* `has_issues` - (Optional, Boolean) Select this check box to enable GitHub Issues for lightweight issue tracking.
 	  * Constraints: The default value is `true`.
 	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
-	* `legal` - (Optional, Boolean)
-	  * Constraints: The default value is `false`.
 	* `owner_id` - (Optional, String)
 	* `private_repo` - (Optional, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, String)
 	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
-	* `root_url` - (Optional, String) e.g. https://github.example.com.
 	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
-	* `title` - (Optional, String) e.g. My GitHub Enterprise Server.
 	* `token_url` - (Optional, String) Integration token URL.
 	* `type` - (Optional, String)
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.

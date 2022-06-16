@@ -95,30 +95,10 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"title": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. My GitLab Enterprise Server.",
-						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "e.g. https://gitlab.example.com/api/v4.",
-						},
-						"default_branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. main.",
-						},
-						"root_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. https://gitlab.example.com.",
-						},
-						"access_token": &schema.Schema{
-							Type:      schema.TypeString,
-							Computed:  true,
-							Sensitive: true,
 						},
 						"owner_id": &schema.Schema{
 							Type:     schema.TypeString,
@@ -162,24 +142,10 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Computed:    true,
 							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
-						"authorized": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
-						},
-						"auth_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"api_token": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "Personal Access Token.",
 						},
 					},
 				},

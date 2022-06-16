@@ -15,6 +15,7 @@ Provides a resource for cd_toolchain_tool_hostedgit. This allows cd_toolchain_to
 ```hcl
 resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
   initialization {
+		owner_id = "owner_id"
 		repo_name = "repo_name"
 		repo_url = "repo_url"
 		source_repo_url = "source_repo_url"
@@ -23,11 +24,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
   }
   parameters {
 		git_id = "git_id"
-		title = "title"
 		api_root_url = "api_root_url"
-		default_branch = "default_branch"
-		root_url = "root_url"
-		access_token = "access_token"
 		owner_id = "owner_id"
 		repo_name = "repo_name"
 		repo_url = "repo_url"
@@ -37,10 +34,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
 		private_repo = true
 		has_issues = true
 		enable_traceability = true
-		authorized = "authorized"
 		integration_owner = "integration_owner"
-		auth_type = "oauth"
-		api_token = "api_token"
   }
   toolchain_id = "toolchain_id"
 }
@@ -50,8 +44,9 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
 
 Review the argument reference that you can specify for your resource.
 
-* `initialization` - (Optional, List) 
+* `initialization` - (Required, List) 
 Nested scheme for **initialization**:
+	* `owner_id` - (Optional, Forces new resource, String)
 	* `private_repo` - (Optional, Forces new resource, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `true`.
 	* `repo_name` - (Optional, Forces new resource, String)
@@ -61,15 +56,9 @@ Nested scheme for **initialization**:
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Optional, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `access_token` - (Optional, String)
 	* `api_root_url` - (Optional, String) e.g. https://gitlab.example.com/api/v4.
-	* `api_token` - (Optional, String) Personal Access Token.
-	* `auth_type` - (Optional, String)
-	  * Constraints: Allowable values are: `oauth`, `pat`.
-	* `authorized` - (Optional, String)
-	* `default_branch` - (Optional, String) e.g. main.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Optional, String)
@@ -81,9 +70,7 @@ Nested scheme for **parameters**:
 	  * Constraints: The default value is `true`.
 	* `repo_name` - (Optional, String)
 	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
-	* `root_url` - (Optional, String) e.g. https://gitlab.example.com.
 	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
-	* `title` - (Optional, String) e.g. My GitLab Enterprise Server.
 	* `token_url` - (Optional, String) Integration token URL.
 	* `type` - (Optional, String)
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
@@ -96,7 +83,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_hostedgit.
 * `crn` - (Required, String) Tool CRN.
-* `get_tool_by_id_response_id` - (Required, String) Tool ID.
+* `tool_id` - (Required, String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (Required, String) URI representing the tool.
 * `referent` - (Required, List) Information on URIs to access this resource through the UI or API.

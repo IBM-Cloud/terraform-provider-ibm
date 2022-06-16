@@ -15,7 +15,7 @@ import (
 
 func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 	getToolchainByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	getToolchainByIDResponseResourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	getToolchainByIDResponseResourceGroupID := acc.CdResourceGroupID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -28,7 +28,6 @@ func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "toolchain_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "location"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "resource_group_id"),
@@ -37,7 +36,6 @@ func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "tags.#"),
 				),
 			},
 		},
@@ -46,7 +44,7 @@ func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 	getToolchainByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	getToolchainByIDResponseResourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	getToolchainByIDResponseResourceGroupID := acc.CdResourceGroupID
 	getToolchainByIDResponseDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -69,7 +67,6 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "created_by"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "tags.#"),
 				),
 			},
 		},
@@ -84,7 +81,7 @@ func testAccCheckIBMCdToolchainDataSourceConfigBasic(getToolchainByIDResponseNam
 		}
 
 		data "ibm_cd_toolchain" "cd_toolchain" {
-			toolchain_id = "toolchain_id"
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 		}
 	`, getToolchainByIDResponseName, getToolchainByIDResponseResourceGroupID)
 }
@@ -98,7 +95,7 @@ func testAccCheckIBMCdToolchainDataSourceConfig(getToolchainByIDResponseName str
 		}
 
 		data "ibm_cd_toolchain" "cd_toolchain" {
-			toolchain_id = "toolchain_id"
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 		}
 	`, getToolchainByIDResponseName, getToolchainByIDResponseResourceGroupID, getToolchainByIDResponseDescription)
 }

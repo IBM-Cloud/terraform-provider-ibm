@@ -174,6 +174,9 @@ var Satellite_Resource_instance_id string
 //Dedicated host
 var HostPoolID string
 
+// Continuous Delivery
+var CdResourceGroupID string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -932,6 +935,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
+	if CdResourceGroupID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
+	}
 }
 
 var TestAccProviders map[string]*schema.Provider

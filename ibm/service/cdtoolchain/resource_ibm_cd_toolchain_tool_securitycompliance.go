@@ -33,16 +33,11 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "toolchain_id"),
 				Description:  "ID of the toolchain to bind tool to.",
 			},
-			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "name"),
-				Description:  "Name of tool.",
-			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -95,6 +90,12 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 						},
 					},
 				},
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_securitycompliance", "name"),
+				Description:  "Name of tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -191,15 +192,13 @@ func ResourceIBMCdToolchainToolSecuritycomplianceCreate(context context.Context,
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("security_compliance")
+	remapFields := map[string]string{
+		"api_key": "api-key",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
+	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
-	}
-	if _, ok := d.GetOk("parameters"); ok {
-		remapFields := map[string]string{
-			"api_key": "api-key",
-		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
-		createToolOptions.SetParameters(parametersModel)
 	}
 
 	postToolResponse, response, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
@@ -242,17 +241,15 @@ func ResourceIBMCdToolchainToolSecuritycomplianceRead(context context.Context, d
 	if err = d.Set("toolchain_id", getToolByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
+	remapFields := map[string]string{
+		"api_key": "api-key",
+	}
+	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
+	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
+	}
 	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if getToolByIDResponse.Parameters != nil {
-		remapFields := map[string]string{
-			"api_key": "api-key",
-		}
-		parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
-		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
-		}
 	}
 	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
@@ -309,16 +306,16 @@ func ResourceIBMCdToolchainToolSecuritycomplianceUpdate(context context.Context,
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
-	if d.HasChange("name") {
-		updateToolOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
 			"api_key": "api-key",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSecuritycompliance(), remapFields)
 		updateToolOptions.SetParameters(parameters)
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		updateToolOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 

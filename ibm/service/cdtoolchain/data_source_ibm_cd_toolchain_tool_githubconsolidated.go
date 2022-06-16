@@ -91,43 +91,14 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
 						"git_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
-						},
-						"title": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. My GitHub Enterprise Server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "e.g. https://api.github.example.com.",
-						},
-						"default_branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. main.",
-						},
-						"root_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. https://github.example.com.",
-						},
-						"access_token": &schema.Schema{
-							Type:      schema.TypeString,
-							Computed:  true,
-							Sensitive: true,
-						},
-						"blind_connection": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
 							Type:     schema.TypeString,
@@ -176,24 +147,10 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Computed:    true,
 							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
-						"authorized": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
-						},
-						"auth_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"api_token": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "Personal Access Token.",
 						},
 					},
 				},

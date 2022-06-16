@@ -33,65 +33,24 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_githubconsolidated", "toolchain_id"),
 				Description:  "ID of the toolchain to bind tool to.",
 			},
-			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_githubconsolidated", "name"),
-				Description:  "Name of tool.",
-			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
-						},
 						"git_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
-						},
-						"title": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "e.g. My GitHub Enterprise Server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "e.g. https://api.github.example.com.",
-						},
-						"default_branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "e.g. main.",
-						},
-						"root_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "e.g. https://github.example.com.",
-						},
-						"access_token": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-							Sensitive:        true,
-						},
-						"blind_connection": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. Certain functionality that requires API access to the git server will be disabled. Delivery pipeline will only work using a private worker that has network access to the git server.",
 						},
 						"owner_id": &schema.Schema{
 							Type:     schema.TypeString,
@@ -150,43 +109,30 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Default:     false,
 							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
-						"authorized": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
 						},
-						"auth_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"api_token": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-							Sensitive:        true,
-							Description:      "Personal Access Token.",
-						},
 					},
 				},
 			},
 			"initialization": &schema.Schema{
 				Type:     schema.TypeList,
+				MinItems: 1,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
+						"git_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Default:  true,
+							ForceNew: true,
+						},
+						"owner_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
 							ForceNew: true,
 						},
 						"repo_name": &schema.Schema{
@@ -218,8 +164,21 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							ForceNew:    true,
 							Description: "Select this check box to make this repository private.",
 						},
+						"auto_init": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+							Description: "Select this checkbox to initialize this repository with a README.",
+						},
 					},
 				},
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_githubconsolidated", "name"),
+				Description:  "Name of tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -316,14 +275,10 @@ func ResourceIBMCdToolchainToolGithubconsolidatedCreate(context context.Context,
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("githubconsolidated")
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolGithubconsolidated(), nil)
+	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
-	}
-	_, pok := d.GetOk("parameters")
-	_, iok := d.GetOk("initialization")
-	if pok || iok {
-		parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolGithubconsolidated(), nil)
-		createToolOptions.SetParameters(parametersModel)
 	}
 
 	postToolResponse, response, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
@@ -366,14 +321,12 @@ func ResourceIBMCdToolchainToolGithubconsolidatedRead(context context.Context, d
 	if err = d.Set("toolchain_id", getToolByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
+	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolGithubconsolidated(), nil)
+	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
+	}
 	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if getToolByIDResponse.Parameters != nil {
-		parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolGithubconsolidated(), nil)
-		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
-		}
 	}
 	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
@@ -430,13 +383,13 @@ func ResourceIBMCdToolchainToolGithubconsolidatedUpdate(context context.Context,
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
-	if d.HasChange("name") {
-		updateToolOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
 	if d.HasChange("parameters") {
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolGithubconsolidated(), nil)
 		updateToolOptions.SetParameters(parameters)
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		updateToolOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 

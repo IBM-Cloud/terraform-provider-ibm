@@ -33,16 +33,11 @@ func ResourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_privateworker", "toolchain_id"),
 				Description:  "ID of the toolchain to bind tool to.",
 			},
-			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_privateworker", "name"),
-				Description:  "Name of tool.",
-			},
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
+				MinItems:    1,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -64,6 +59,12 @@ func ResourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 						},
 					},
 				},
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_privateworker", "name"),
+				Description:  "Name of tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -160,16 +161,14 @@ func ResourceIBMCdToolchainToolPrivateworkerCreate(context context.Context, d *s
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("private_worker")
+	remapFields := map[string]string{
+		"worker_queue_credentials": "workerQueueCredentials",
+		"worker_queue_identifier":  "workerQueueIdentifier",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolPrivateworker(), remapFields)
+	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
-	}
-	if _, ok := d.GetOk("parameters"); ok {
-		remapFields := map[string]string{
-			"worker_queue_credentials": "workerQueueCredentials",
-			"worker_queue_identifier":  "workerQueueIdentifier",
-		}
-		parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolPrivateworker(), remapFields)
-		createToolOptions.SetParameters(parametersModel)
 	}
 
 	postToolResponse, response, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
@@ -212,18 +211,16 @@ func ResourceIBMCdToolchainToolPrivateworkerRead(context context.Context, d *sch
 	if err = d.Set("toolchain_id", getToolByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
+	remapFields := map[string]string{
+		"worker_queue_credentials": "workerQueueCredentials",
+		"worker_queue_identifier":  "workerQueueIdentifier",
+	}
+	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolPrivateworker(), remapFields)
+	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
+	}
 	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-	if getToolByIDResponse.Parameters != nil {
-		remapFields := map[string]string{
-			"worker_queue_credentials": "workerQueueCredentials",
-			"worker_queue_identifier":  "workerQueueIdentifier",
-		}
-		parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolPrivateworker(), remapFields)
-		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
-		}
 	}
 	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
@@ -280,10 +277,6 @@ func ResourceIBMCdToolchainToolPrivateworkerUpdate(context context.Context, d *s
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
-	if d.HasChange("name") {
-		updateToolOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
 			"worker_queue_credentials": "workerQueueCredentials",
@@ -291,6 +284,10 @@ func ResourceIBMCdToolchainToolPrivateworkerUpdate(context context.Context, d *s
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolPrivateworker(), remapFields)
 		updateToolOptions.SetParameters(parameters)
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		updateToolOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 

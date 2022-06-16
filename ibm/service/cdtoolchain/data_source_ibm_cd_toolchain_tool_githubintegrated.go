@@ -91,10 +91,6 @@ func DataSourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 				Description: "Parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"authorized": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"git_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -103,16 +99,6 @@ func DataSourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "e.g. https://github.ibm.com/api/v3.",
-						},
-						"default_branch": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. main.",
-						},
-						"root_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "e.g. https://github.ibm.com.",
 						},
 						"legal": &schema.Schema{
 							Type:     schema.TypeBool,
@@ -164,16 +150,6 @@ func DataSourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
-						},
-						"auth_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"api_token": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "Personal Access Token.",
 						},
 						"auto_init": &schema.Schema{
 							Type:        schema.TypeBool,

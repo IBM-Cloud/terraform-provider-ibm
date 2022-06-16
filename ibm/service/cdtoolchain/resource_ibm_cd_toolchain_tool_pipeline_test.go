@@ -19,7 +19,8 @@ import (
 
 func TestAccIBMCdToolchainToolPipelineBasic(t *testing.T) {
 	var conf cdtoolchainv2.GetToolByIDResponse
-	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	rgID := acc.CdResourceGroupID
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,10 +28,10 @@ func TestAccIBMCdToolchainToolPipelineBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdToolchainToolPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolPipelineConfigBasic(toolchainID),
+				Config: testAccCheckIBMCdToolchainToolPipelineConfigBasic(tcName, rgID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdToolchainToolPipelineExists("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", conf),
-					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id"),
 				),
 			},
 		},
@@ -39,7 +40,8 @@ func TestAccIBMCdToolchainToolPipelineBasic(t *testing.T) {
 
 func TestAccIBMCdToolchainToolPipelineAllArgs(t *testing.T) {
 	var conf cdtoolchainv2.GetToolByIDResponse
-	toolchainID := fmt.Sprintf("tf_toolchain_id_%d", acctest.RandIntRange(10, 100))
+	rgID := acc.CdResourceGroupID
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -49,17 +51,17 @@ func TestAccIBMCdToolchainToolPipelineAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdToolchainToolPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolPipelineConfig(toolchainID, name),
+				Config: testAccCheckIBMCdToolchainToolPipelineConfig(tcName, rgID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdToolchainToolPipelineExists("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", conf),
-					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id"),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolPipelineConfig(toolchainID, nameUpdate),
+				Config: testAccCheckIBMCdToolchainToolPipelineConfig(tcName, rgID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id", toolchainID),
+					resource.TestCheckResourceAttrSet("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "toolchain_id"),
 					resource.TestCheckResourceAttr("ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline", "name", nameUpdate),
 				),
 			},
@@ -72,28 +74,43 @@ func TestAccIBMCdToolchainToolPipelineAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolPipelineConfigBasic(toolchainID string) string {
+func testAccCheckIBMCdToolchainToolPipelineConfigBasic(tcName string, rgID string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
-			toolchain_id = "%s"
-		}
-	`, toolchainID)
-}
-
-func testAccCheckIBMCdToolchainToolPipelineConfig(toolchainID string, name string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
-			toolchain_id = "%s"
+		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
+			resource_group_id = "%s"
+		}
+
+		resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "name"
-				type = "classic"
+				type = "tekton"
 				ui_pipeline = true
 			}
 		}
-	`, toolchainID, name)
+	`, tcName, rgID)
+}
+
+func testAccCheckIBMCdToolchainToolPipelineConfig(tcName string, rgID string, name string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_cd_toolchain" "cd_toolchain" {
+			name = "%s"
+			resource_group_id = "%s"
+		}
+
+		resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
+				toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+				parameters {
+					name = "name"
+					type = "tekton"
+					ui_pipeline = true
+				}
+				name = "%s"
+		}
+	`, tcName, rgID, name)
 }
 
 func testAccCheckIBMCdToolchainToolPipelineExists(n string, obj cdtoolchainv2.GetToolByIDResponse) resource.TestCheckFunc {

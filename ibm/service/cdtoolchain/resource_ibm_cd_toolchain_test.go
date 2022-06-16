@@ -19,7 +19,7 @@ import (
 func TestAccIBMCdToolchainBasic(t *testing.T) {
 	var conf cdtoolchainv2.GetToolchainByIDResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	resourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	resourceGroupID := acc.CdResourceGroupID
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -49,7 +49,7 @@ func TestAccIBMCdToolchainBasic(t *testing.T) {
 func TestAccIBMCdToolchainAllArgs(t *testing.T) {
 	var conf cdtoolchainv2.GetToolchainByIDResponse
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	resourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
+	resourceGroupID := acc.CdResourceGroupID
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))

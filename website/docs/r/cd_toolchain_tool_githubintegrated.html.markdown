@@ -16,18 +16,17 @@ Provides a resource for cd_toolchain_tool_githubintegrated. This allows cd_toolc
 resource "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubintegrated" {
   initialization {
 		legal = true
+		owner_id = "owner_id"
 		repo_name = "repo_name"
 		repo_url = "repo_url"
 		source_repo_url = "source_repo_url"
 		type = "new"
 		private_repo = true
+		auto_init = true
   }
   parameters {
-		authorized = "authorized"
 		git_id = "git_id"
 		api_root_url = "api_root_url"
-		default_branch = "default_branch"
-		root_url = "root_url"
 		legal = true
 		owner_id = "owner_id"
 		repo_name = "repo_name"
@@ -39,8 +38,6 @@ resource "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubinteg
 		has_issues = true
 		enable_traceability = true
 		integration_owner = "integration_owner"
-		auth_type = "oauth"
-		api_token = "api_token"
 		auto_init = true
   }
   toolchain_id = "toolchain_id"
@@ -51,10 +48,13 @@ resource "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubinteg
 
 Review the argument reference that you can specify for your resource.
 
-* `initialization` - (Optional, List) 
+* `initialization` - (Required, List) 
 Nested scheme for **initialization**:
+	* `auto_init` - (Optional, Forces new resource, Boolean) Select this checkbox to initialize this repository with a README.
+	  * Constraints: The default value is `false`.
 	* `legal` - (Optional, Forces new resource, Boolean)
 	  * Constraints: The default value is `true`.
+	* `owner_id` - (Optional, Forces new resource, String)
 	* `private_repo` - (Optional, Forces new resource, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, Forces new resource, String)
@@ -64,16 +64,11 @@ Nested scheme for **initialization**:
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Optional, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Optional, String) e.g. https://github.ibm.com/api/v3.
-	* `api_token` - (Optional, String) Personal Access Token.
-	* `auth_type` - (Optional, String)
-	  * Constraints: Allowable values are: `oauth`, `pat`.
-	* `authorized` - (Optional, String)
 	* `auto_init` - (Optional, Boolean) Select this checkbox to initialize this repository with a README.
 	  * Constraints: The default value is `false`.
-	* `default_branch` - (Optional, String) e.g. main.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Optional, String)
@@ -87,7 +82,6 @@ Nested scheme for **parameters**:
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, String)
 	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
-	* `root_url` - (Optional, String) e.g. https://github.ibm.com.
 	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
 	* `token_url` - (Optional, String) Integration token URL.
 	* `type` - (Optional, String)
@@ -101,7 +95,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_githubintegrated.
 * `crn` - (Required, String) Tool CRN.
-* `get_tool_by_id_response_id` - (Required, String) Tool ID.
+* `tool_id` - (Required, String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (Required, String) URI representing the tool.
 * `referent` - (Required, List) Information on URIs to access this resource through the UI or API.

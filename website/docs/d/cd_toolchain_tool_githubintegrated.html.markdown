@@ -45,13 +45,8 @@ In addition to all argument references listed, you can access the following attr
 * `parameters` - (Required, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Optional, String) e.g. https://github.ibm.com/api/v3.
-	* `api_token` - (Optional, String) Personal Access Token.
-	* `auth_type` - (Optional, String)
-	  * Constraints: Allowable values are: `oauth`, `pat`.
-	* `authorized` - (Optional, String)
 	* `auto_init` - (Optional, Boolean) Select this checkbox to initialize this repository with a README.
 	  * Constraints: The default value is `false`.
-	* `default_branch` - (Optional, String) e.g. main.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Optional, String)
@@ -65,7 +60,6 @@ Nested scheme for **parameters**:
 	  * Constraints: The default value is `false`.
 	* `repo_name` - (Optional, String)
 	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
-	* `root_url` - (Optional, String) e.g. https://github.ibm.com.
 	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
 	* `token_url` - (Optional, String) Integration token URL.
 	* `type` - (Optional, String)

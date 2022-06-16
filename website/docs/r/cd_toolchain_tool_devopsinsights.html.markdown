@@ -33,7 +33,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_devopsinsights.
 * `crn` - (Required, String) Tool CRN.
-* `get_tool_by_id_response_id` - (Required, String) Tool ID.
+* `tool_id` - (Required, String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (Required, String) URI representing the tool.
 * `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
