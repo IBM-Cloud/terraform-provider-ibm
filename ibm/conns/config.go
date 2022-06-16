@@ -1223,6 +1223,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
+		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
+		session.cdToolchainClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
