@@ -459,7 +459,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
-				Deprecated:    "This field is deprecated please use allowlist",
+				Deprecated:    "Whitelist is deprecated please use allowlist",
 				ConflictsWith: []string{"allowlist"},
 			},
 			"allowlist": {
