@@ -37,6 +37,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, Forces new resource, String) The name of the dedicated host pool.
 - `metro`- (Required, Forces new resource, String) The metro to create the dedicated host pool in.
 - `flavor_class` - (Required, Forces new resource, String) The flavor class of the dedicated host pool.
+- `resource_group_id` - (Optional, String) The ID of the resource group where you want to create the dedicated host pool. To retrieve the ID, use the  `ibm_resource_group` data source. If no value is provided, the dedicated host pool is automatically created under the `default` resource group.
  
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

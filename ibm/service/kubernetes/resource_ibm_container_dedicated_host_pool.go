@@ -57,6 +57,12 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 				ForceNew:    true,
 				Description: "The flavor class of the dedicated host pool",
 			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of the resource group.",
+			},
 			"host_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -129,6 +135,10 @@ func resourceIBMContainerDedicatedHostPoolCreate(ctx context.Context, d *schema.
 	}
 	dedicatedHostPoolAPI := client.DedicatedHostPool()
 	targetEnv := v2.ClusterTargetHeader{}
+
+	if rg, ok := d.GetOk("resource_group_id"); ok {
+		targetEnv.ResourceGroup = rg.(string)
+	}
 
 	params := v2.CreateDedicatedHostPoolRequest{
 		FlavorClass: d.Get("flavor_class").(string),
