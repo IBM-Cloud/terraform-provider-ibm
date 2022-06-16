@@ -1,23 +1,23 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_android'
+page_title: 'IBM : ibm_en_subscription_safari'
 description: |-
-  Manages Event Notifications Android subscription.
+  Manages Event Notifications Safari subscription.
 ---
 
-# ibm_en_subscription_android
+# ibm_en_subscription_safari
 
-Create, update, or delete a FCM subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a Safari subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_android" "android_subscription" {
+resource "ibm_en_subscription_safari" "safari_subscription" {
   instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
-  name             = "Android Subscription"
-  description      = "Android Subscription for Notification"
-  destination_id   = ibm_en_destination_android.destinationandroidnew.destination_id
+  name             = "safari Subscription"
+  description      = "safari Subscription for Notification"
+  destination_id   = ibm_en_destination_safari.safari_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
 }
 ```
@@ -41,7 +41,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `android_subscription`.
+- `id` - (String) The unique identifier of the `safari_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
@@ -49,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_en_subscription_android` resource by using `id`.
+You can import the `ibm_en_subscription_safari` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -62,5 +62,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_android.android_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_safari.safari_subscription <instance_guid>/<subscription_id>
 ```

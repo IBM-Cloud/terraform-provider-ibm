@@ -311,6 +311,9 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_worker_pool":         kubernetes.DataSourceIBMContainerVpcClusterWorkerPool(),
 			"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPool(),
 			"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachment(),
+			"ibm_container_dedicated_host_pool":     kubernetes.DataSourceIBMContainerDedicatedHostPool(),
+			"ibm_container_dedicated_host_flavor":   kubernetes.DataSourceIBMContainerDedicatedHostFlavor(),
+			"ibm_container_dedicated_host_flavors":  kubernetes.DataSourceIBMContainerDedicatedHostFlavors(),
 			"ibm_cr_namespaces":                     registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":      cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                        cos.DataSourceIBMCosBucket(),
@@ -621,6 +624,7 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.DataSourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.DataSourceIBMEnDestination(),
 			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
@@ -632,6 +636,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_ios":      eventnotification.DataSourceIBMEnAPNSDestination(),
 			"ibm_en_destination_chrome":   eventnotification.DataSourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.DataSourceIBMEnFirefoxDestination(),
+			"ibm_en_destination_slack":    eventnotification.DataSourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.DataSourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.DataSourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.DataSourceIBMEnWebhookSubscription(),
@@ -639,6 +644,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.DataSourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -741,6 +749,7 @@ func Provider() *schema.Provider {
 			"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachment(),
 			"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_container_nlb_dns":                     kubernetes.ResourceIBMContainerNlbDns(),
+			"ibm_container_dedicated_host_pool":         kubernetes.ResourceIBMContainerDedicatedHostPool(),
 			"ibm_cr_namespace":                          registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                   registry.ResourceIBMCrRetentionPolicy(),
 			"ibm_ob_logging":                            kubernetes.ResourceIBMObLogging(),
@@ -980,6 +989,7 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.ResourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.ResourceIBMEnDestination(),
 			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_subscription":         eventnotification.ResourceIBMEnSubscription(),
@@ -988,6 +998,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_chrome":   eventnotification.ResourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.ResourceIBMEnFirefoxDestination(),
 			"ibm_en_destination_ios":      eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_destination_slack":    eventnotification.ResourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.ResourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.ResourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.ResourceIBMEnWebhookSubscription(),
@@ -995,6 +1006,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1104,7 +1118,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_vpn_gateway":                      vpc.ResourceIBMISVPNGatewayValidator(),
 				"ibm_kms_key_rings":                       kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
-				"ibm_dns_glb_pool":                        dnsservices.ResourceIBMPrivateDNSGLBPoolValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
 				"ibm_schematics_action":                   schematics.ResourceIBMSchematicsActionValidator(),
 				"ibm_schematics_job":                      schematics.ResourceIBMSchematicsJobValidator(),

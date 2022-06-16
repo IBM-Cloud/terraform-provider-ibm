@@ -176,22 +176,24 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 	options := &vpcv1.CreateSnapshotOptions{}
+	snapshotprototypeoptions := &vpcv1.SnapshotPrototypeSnapshotBySourceVolume{}
 	if snapshotName, ok := d.GetOk(isSnapshotName); ok {
 		name := snapshotName.(string)
-		options.Name = &name
+		snapshotprototypeoptions.Name = &name
 	}
 	if sourceVolume, ok := d.GetOk(isSnapshotSourceVolume); ok {
 		sv := sourceVolume.(string)
-		options.SourceVolume = &vpcv1.VolumeIdentity{
+		snapshotprototypeoptions.SourceVolume = &vpcv1.VolumeIdentity{
 			ID: &sv,
 		}
 	}
 	if grp, ok := d.GetOk(isVPCResourceGroup); ok {
 		rg := grp.(string)
-		options.ResourceGroup = &vpcv1.ResourceGroupIdentity{
+		snapshotprototypeoptions.ResourceGroup = &vpcv1.ResourceGroupIdentity{
 			ID: &rg,
 		}
 	}
+	options.SnapshotPrototype = snapshotprototypeoptions
 
 	log.Printf("[DEBUG] Snapshot create")
 
