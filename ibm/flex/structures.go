@@ -23,6 +23,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
@@ -1615,14 +1616,14 @@ func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
 }
 
 // IBM Cloud Databases
-func ExpandAllowlist(allowList *schema.Set) (allowlist []icdv4.AllowlistEntry) {
+func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.AllowlistEntry) {
 	for _, iface := range allowList.List() {
 		alItem := iface.(map[string]interface{})
-		alEntry := icdv4.AllowlistEntry{
-			Address:     alItem["address"].(string),
-			Description: alItem["description"].(string),
+		alEntry := &clouddatabasesv5.AllowlistEntry{
+			Address:     core.StringPtr(alItem["address"].(string)),
+			Description: core.StringPtr(alItem["description"].(string)),
 		}
-		allowlist = append(allowlist, alEntry)
+		allowlist = append(allowlist, *alEntry)
 	}
 	return
 }
@@ -1641,9 +1642,9 @@ func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 }
 
 // Cloud Internet Services
-func FlattenAllowlist(allowlist icdv4.Allowlist) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(allowlist.AllowlistEntrys), len(allowlist.AllowlistEntrys))
-	for i, allowlistEntry := range allowlist.AllowlistEntrys {
+func FlattenGetAllowlist(allowlist clouddatabasesv5.GetAllowlistResponse) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(allowlist.IPAddresses), len(allowlist.IPAddresses))
+	for i, allowlistEntry := range allowlist.IPAddresses {
 		l := map[string]interface{}{
 			"address":     allowlistEntry.Address,
 			"description": allowlistEntry.Description,
