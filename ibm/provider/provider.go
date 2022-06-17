@@ -1039,6 +1039,9 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
 
 			// // Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
@@ -1063,9 +1066,6 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
-			"ibm_en_subscription_slack":                eventnotification.ResourceIBMEnSlackSubscription(),
-			"ibm_en_subscription_safari":               eventnotification.ResourceIBMEnFCMSubscription(),
-			"ibm_en_destination_safari":                eventnotification.ResourceIBMEnSafariDestination(),
 
 			// // Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
