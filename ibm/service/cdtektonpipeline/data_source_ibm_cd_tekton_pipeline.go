@@ -21,7 +21,7 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 		ReadContext: DataSourceIBMTektonPipelineRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "ID of current instance.",
@@ -462,7 +462,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	getTektonPipelineOptions := &cdtektonpipelinev2.GetTektonPipelineOptions{}
 
-	getTektonPipelineOptions.SetID(d.Get("id").(string))
+	getTektonPipelineOptions.SetID(d.Get("pipeline_id").(string))
 
 	tektonPipeline, response, err := cdTektonPipelineClient.GetTektonPipelineWithContext(context, getTektonPipelineOptions)
 	if err != nil {

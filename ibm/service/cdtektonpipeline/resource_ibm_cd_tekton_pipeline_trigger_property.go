@@ -48,6 +48,7 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "name"),
 				Description:  "Property name.",
 			},
@@ -292,10 +293,6 @@ func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id"))
-	}
 	if d.HasChange("trigger_id") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "trigger_id"))

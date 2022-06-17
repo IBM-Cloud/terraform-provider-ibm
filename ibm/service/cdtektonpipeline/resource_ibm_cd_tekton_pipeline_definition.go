@@ -192,10 +192,6 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id"))
-	}
 	if d.HasChange("scm_source") {
 		scmSource, err := ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
 		if err != nil {

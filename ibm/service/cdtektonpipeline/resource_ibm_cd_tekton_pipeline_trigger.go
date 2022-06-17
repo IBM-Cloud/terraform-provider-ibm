@@ -358,10 +358,6 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 
 	hasChange := false
 
-	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "pipeline_id"))
-	}
 	if d.HasChange("trigger.0.name") {
 		updateTektonPipelineTriggerOptions.SetName(d.Get("trigger.0.name").(string))
 		hasChange = true

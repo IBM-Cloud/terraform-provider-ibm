@@ -43,6 +43,7 @@ func ResourceIBMTektonPipeline() *schema.Resource {
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "String.",
 			},
 			"name": &schema.Schema{
