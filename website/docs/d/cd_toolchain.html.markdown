@@ -42,9 +42,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `href` - (Required, String) URI that can be used to retrieve toolchain.
 
-* `id` - (Required, String) Toolchain ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
-
 * `location` - (Required, String) Toolchain region.
 
 * `name` - (Required, String) Toolchain name.

@@ -26,11 +26,6 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 				Required:    true,
 				Description: "ID of the toolchain.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Toolchain ID.",
-			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -110,10 +105,6 @@ func DataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getToolchainByIDOptions.ToolchainID))
-
-	if err = d.Set("id", getToolchainByIDResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 
 	if err = d.Set("name", getToolchainByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
