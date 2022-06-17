@@ -8,6 +8,8 @@ subcategory: "CD Tekton Pipeline"
 
 # ibm_cd_tekton_pipeline
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for tekton_pipeline. This allows tekton_pipeline to be created, updated and deleted.
 
 ## Example Usage

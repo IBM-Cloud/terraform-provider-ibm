@@ -8,6 +8,8 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_hashicorpvault
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for cd_toolchain_tool_hashicorpvault. This allows cd_toolchain_tool_hashicorpvault to be created, updated and deleted.
 
 ## Example Usage

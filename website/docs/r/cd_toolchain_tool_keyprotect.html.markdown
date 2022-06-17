@@ -8,6 +8,8 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_keyprotect
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for cd_toolchain_tool_keyprotect. This allows cd_toolchain_tool_keyprotect to be created, updated and deleted.
 
 ## Example Usage

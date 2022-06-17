@@ -8,6 +8,8 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_custom
 
+~> **Beta:** This data source is in Beta, and is subject to change.
+
 Provides a read-only data source for cd_toolchain_tool_custom. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage

@@ -8,6 +8,8 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_jenkins
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for cd_toolchain_tool_jenkins. This allows cd_toolchain_tool_jenkins to be created, updated and deleted.
 
 ## Example Usage

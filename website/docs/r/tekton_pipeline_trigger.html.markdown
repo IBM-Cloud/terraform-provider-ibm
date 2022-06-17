@@ -8,6 +8,8 @@ subcategory: "CD Tekton Pipeline"
 
 # ibm_cd_tekton_pipeline_trigger
 
+~> **Beta:** This resource is in Beta, and is subject to change.
+
 Provides a resource for tekton_pipeline_trigger. This allows tekton_pipeline_trigger to be created, updated and deleted.
 
 ## Example Usage
