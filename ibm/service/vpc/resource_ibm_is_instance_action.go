@@ -95,7 +95,7 @@ func ResourceIBMISInstanceAction() *schema.Resource {
 func ResourceIBMISInstanceActionValidator() *validate.ResourceValidator {
 
 	instanceActions := "start, reboot, stop"
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
