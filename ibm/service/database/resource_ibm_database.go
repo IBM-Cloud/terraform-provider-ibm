@@ -1775,11 +1775,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 			ID: &instanceID,
 		}
 
-		log.Printf("[DEBUG[ alEntry %v icdID %s", alEntry, icdId)
 		allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
-
-		log.Printf("allowlist %v", allowlist)
-
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 		}

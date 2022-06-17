@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
@@ -217,6 +218,25 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"address": {
 							Description: "Whitelist IP address in CIDR notation",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"description": {
+							Description: "Unique white list description",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+				Deprecated: "The whitelist field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description: "Allowlist IP address in CIDR notation",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -700,11 +720,26 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+	if _, ok := d.GetOk("whitelist"); ok {
+		whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
+		}
+		d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+	} else if _, ok := d.GetOk("allowlist"); ok {
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		alEntry := &clouddatabasesv5.GetAllowlistOptions{
+			ID: &instance.ID,
+		}
+
+		allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
+		}
+
+		d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
 	}
-	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {
