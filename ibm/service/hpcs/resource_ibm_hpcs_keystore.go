@@ -31,16 +31,19 @@ func ResourceIbmKeystore() *schema.Resource {
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				Force_new:   true,
 				Description: "The ID of the UKO instance this resource exists in.",
 			},
 			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				Force_new:   true,
 				Description: "The region of the UKO instance this resource exists in.",
 			},
 			"uko_vault": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				Force_new:   true,
 				Description: "The UUID of the Vault in which the update is to take place.",
 			},
 			"aws_region": &schema.Schema{
@@ -140,8 +143,7 @@ func ResourceIbmKeystore() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
+							Required:    true,
 							Description: "The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.",
 						},
 						"name": &schema.Schema{
