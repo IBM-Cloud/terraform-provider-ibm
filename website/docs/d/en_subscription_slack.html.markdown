@@ -1,21 +1,21 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_ios'
+page_title: 'IBM : ibm_en_subscription_slack'
 description: |-
-  Get information about a IOS subscription
+  Get information about a Slack subscription
 ---
 
-# ibm_en_subscription_ios
+# ibm_en_subscription_slack
 
-Provides a read-only data source for APNS subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example usage
 
 ```terraform
-data "ibm_en_subscription_ios" "ios_subscription" {
+data "ibm_en_subscription_slack" "slack_subscription" {
   instance_guid   = ibm_resource_instance.en_terraform_test_resource.guid
-  subscription_id = ibm_en_subscription_ios.subscriptionapns.subscription_id
+  subscription_id = ibm_en_subscription_slack.subscriptionslack.subscription_id
 }
 ```
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the ios_subscription.
+- `id` - The unique identifier of the slack_subscription.
 
 - `name` - (String) Subscription name.
 
@@ -39,6 +39,16 @@ In addition to all argument references listed, you can access the following attr
 
 - `destination_id` - (String) The destination ID.
 
+- `destination_name` - (String) The destination name.
+
+- `destination_type` - (String) The type of destination.
+
 - `topic_id` - (String) Topic ID.
+
+- `topic_name` - (String) Topic name.
+
+- `attributes` - (Required, List)
+
+  - `attachment_color` - (String) The color code for slack attachment .
 
 - `updated_at` - (String) Last updated time.

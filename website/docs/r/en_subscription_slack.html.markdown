@@ -1,26 +1,26 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_subscription_webhook'
+page_title: 'IBM : ibm_en_subscription_slack'
 description: |-
   Manages Event Notifications subscription.
 ---
 
-# ibm_en_subscription_webhook
+# ibm_en_subscription_slack
 
-Create, update, or delete a  Webhook subscription by using IBM Cloud™ Event Notifications.
+Create, update, or delete a slack subscription by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_subscription_webhook" "webhook_subscription" {
-  instance_guid  = ibm_resource_instance.en_terraform_test_resource.guid
-  name           = "My webhook subscription"
-  description    = "The  webhook subscription"
-  destination_id = ibm_en_destination_webhook.destination1.destination_id
-  topic_id       = ibm_en_topic.topic1.topic_id
+resource "ibm_en_subscription_slack" "slack_subscription" {
+  instance_guid    = ibm_resource_instance.en_terraform_test_resource.guid
+  name             = "My Slack subscription"
+  description      = "The Slack subscription for slack destination in Event Notifications"
+  destination_id   = ibm_en_destination_slack.destination1.destination_id
+  topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
-    signing_enabled          = true
+    "attachment_color" = "#FF0000"
   }
 }
 ```
@@ -42,21 +42,21 @@ Review the argument reference that you can specify for your resource.
 - `attributes` - (Optional, List) Subscription attributes.
   Nested scheme for **attributes**:
 
-  - `signing_enabled` - (Optional, Boolean) Signing enabled.
+  - `attachment_color` - (Optional, Boolean) The color code for slack attachment.
 
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `webhook_subscription`.
+- `id` - (String) The unique identifier of the `slack_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
 
-- `updated_at` - (Required, String) Last updated time.
+- `updated_at` - (String) Last updated time.
 
 ## Import
 
-You can import the `ibm_en_subscription_webhook` resource by using `id`.
+You can import the `ibm_en_subscription_slack` resource by using `id`.
 The `id` property can be formed from `instance_guid`, and `subscription_id` in the following format:
 
 ```
@@ -69,5 +69,5 @@ The `id` property can be formed from `instance_guid`, and `subscription_id` in t
 **Example**
 
 ```
-$ terraform import ibm_en_subscription_webhook.wehook_subscription <instance_guid>/<subscription_id>
+$ terraform import ibm_en_subscription_slack.slack_subscription <instance_guid>/<subscription_id>
 ```
