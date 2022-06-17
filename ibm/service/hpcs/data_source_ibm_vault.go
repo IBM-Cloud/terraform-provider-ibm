@@ -83,9 +83,9 @@ func DataSourceIbmVaultRead(context context.Context, d *schema.ResourceData, met
 
 	getVaultOptions := &ukov4.GetVaultOptions{}
 
-	region := d.Get("region")
-	instance_id := d.Get("instance_id")
-	vault_id := d.Get("vault_id")
+	region := d.Get("region").(string)
+	instance_id := d.Get("instance_id").(string)
+	vault_id := d.Get("vault_id").(string)
 
 	getVaultOptions.SetID(vault_id)
 

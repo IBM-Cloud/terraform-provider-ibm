@@ -169,10 +169,10 @@ func DataSourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceDat
 
 	getKeyTemplateOptions := &ukov4.GetKeyTemplateOptions{}
 
-	region := d.Get("region")
-	instance_id := d.Get("instance_id")
-	vault_id := d.Get("uko_vault")
-	template_id := d.Get("template_id")
+	region := d.Get("region").(string)
+	instance_id := d.Get("instance_id").(string)
+	vault_id := d.Get("uko_vault").(string)
+	template_id := d.Get("template_id").(string)
 	getKeyTemplateOptions.SetID(template_id)
 	getKeyTemplateOptions.SetUKOVault(vault_id)
 

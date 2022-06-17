@@ -270,10 +270,10 @@ func DataSourceIbmManagedKeyRead(context context.Context, d *schema.ResourceData
 
 	getManagedKeyOptions := &ukov4.GetManagedKeyOptions{}
 
-	region := d.Get("region")
-	instance_id := d.Get("instance_id")
-	vault_id := d.Get("uko_vault")
-	key_id := d.Get("key_id")
+	region := d.Get("region").(string)
+	instance_id := d.Get("instance_id").(string)
+	vault_id := d.Get("uko_vault").(string)
+	key_id := d.Get("key_id").(string)
 	getManagedKeyOptions.SetID(key_id)
 	getManagedKeyOptions.SetUKOVault(vault_id)
 

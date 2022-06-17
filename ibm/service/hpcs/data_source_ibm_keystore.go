@@ -214,10 +214,10 @@ func DataSourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, 
 
 	getKeystoreOptions := &ukov4.GetKeystoreOptions{}
 
-	region := d.Get("region")
-	instance_id := d.Get("instance_id")
-	vault_id := d.Get("uko_vault")
-	keystore_id := d.Get("keystore_id")
+	region := d.Get("region").(string)
+	instance_id := d.Get("instance_id").(string)
+	vault_id := d.Get("uko_vault").(string)
+	keystore_id := d.Get("keystore_id").(string)
 	getKeystoreOptions.SetID(keystore_id)
 	getKeystoreOptions.SetUKOVault(vault_id)
 
