@@ -349,11 +349,11 @@ func DataSourceIbmManagedKeyRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting verification_patterns %s", err))
 	}
 
-	if err = d.Set("activation_date", flex.DateToString(managedKey.ActivationDate)); err != nil {
+	if err = d.Set("activation_date", flex.dateToString(managedKey.ActivationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting activation_date: %s", err))
 	}
 
-	if err = d.Set("expiration_date", flex.DateToString(managedKey.ExpirationDate)); err != nil {
+	if err = d.Set("expiration_date", flex.dateToString(managedKey.ExpirationDate)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting expiration_date: %s", err))
 	}
 
