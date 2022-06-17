@@ -208,7 +208,7 @@ func resourceIBMContainerDedicatedHostCreate(ctx context.Context, d *schema.Reso
 	hostID := res.ID
 	d.SetId(fmt.Sprintf("%s/%s", hostPoolID, hostID))
 
-	dh, err := waitForDedicatedHostAvailable(ctx, dedicatedHostAPI, hostID, hostPoolID, d.Timeout(schema.TimeoutCreate)-d.Timeout(schema.TimeoutUpdate)-time.Minute, targetEnv)
+	dh, err := waitForDedicatedHostAvailable(ctx, dedicatedHostAPI, hostID, hostPoolID, d.Timeout(schema.TimeoutCreate), targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostAvailable failed: %v", err)
 	}
@@ -235,7 +235,7 @@ func resourceIBMContainerDedicatedHostCreate(ctx context.Context, d *schema.Reso
 				return diag.Errorf("[ERROR] DisableDedicatedHostPlacement failed: %v", err)
 			}
 		}
-		_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, placement.(bool), d.Timeout(schema.TimeoutUpdate)-time.Minute, targetEnv)
+		_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, placement.(bool), d.Timeout(schema.TimeoutCreate), targetEnv)
 		if err != nil {
 			return diag.Errorf("[ERROR] waitForDedicatedHostPlacement failed: %v", err)
 		}
@@ -319,7 +319,7 @@ func resourceIBMContainerDedicatedHostUpdate(ctx context.Context, d *schema.Reso
 				return diag.Errorf("[ERROR] DisableDedicatedHostPlacement failed: %v", err)
 			}
 		}
-		_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, placement, d.Timeout(schema.TimeoutUpdate)-time.Minute, targetEnv)
+		_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, placement, d.Timeout(schema.TimeoutUpdate), targetEnv)
 		if err != nil {
 			return diag.Errorf("[ERROR] waitForDedicatedHostPlacement failed: %v", err)
 		}
@@ -360,7 +360,7 @@ func resourceIBMContainerDedicatedHostDelete(ctx context.Context, d *schema.Reso
 		return diag.Errorf("[ERROR] DisableDedicatedHostPlacement failed: %v", err)
 	}
 
-	_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, false, d.Timeout(schema.TimeoutDelete)-d.Timeout(schema.TimeoutUpdate)-time.Minute, targetEnv)
+	_, err = waitForDedicatedHostPlacement(ctx, dedicatedHostAPI, hostID, hostPoolID, false, d.Timeout(schema.TimeoutDelete), targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostPlacement failed: %v", err)
 	}
@@ -380,7 +380,7 @@ func resourceIBMContainerDedicatedHostDelete(ctx context.Context, d *schema.Reso
 		return diag.Errorf("[ERROR] RemoveDedicatedHost failed: %v", err)
 	}
 
-	_, err = waitForDedicatedHostRemove(ctx, dedicatedHostAPI, hostID, hostPoolID, d.Timeout(schema.TimeoutUpdate)-time.Minute, targetEnv)
+	_, err = waitForDedicatedHostRemove(ctx, dedicatedHostAPI, hostID, hostPoolID, d.Timeout(schema.TimeoutUpdate), targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostRemove failed: %v", err)
 	}

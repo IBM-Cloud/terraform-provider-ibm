@@ -153,7 +153,7 @@ func resourceIBMContainerDedicatedHostPoolCreate(ctx context.Context, d *schema.
 
 	d.SetId(res.ID)
 
-	dhp, err := waitForDedicatedHostPoolAvailable(ctx, dedicatedHostPoolAPI, res.ID, d.Timeout(schema.TimeoutCreate)-time.Minute, targetEnv)
+	dhp, err := waitForDedicatedHostPoolAvailable(ctx, dedicatedHostPoolAPI, res.ID, d.Timeout(schema.TimeoutCreate), targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostPoolAvailable failed: %v", err)
 	}
@@ -249,7 +249,7 @@ func resourceIBMContainerDedicatedHostPoolDelete(ctx context.Context, d *schema.
 		return diag.Errorf("[ERROR] Error removing host pool %v", err)
 	}
 
-	_, err = waitForDedicatedHostPoolRemove(ctx, dedicatedHostPoolAPI, hostPoolID, d.Timeout(schema.TimeoutDelete)-time.Minute, targetEnv)
+	_, err = waitForDedicatedHostPoolRemove(ctx, dedicatedHostPoolAPI, hostPoolID, d.Timeout(schema.TimeoutDelete), targetEnv)
 	if err != nil {
 		return diag.Errorf("[ERROR] waitForDedicatedHostPoolRemove failed: %v", err)
 	}
