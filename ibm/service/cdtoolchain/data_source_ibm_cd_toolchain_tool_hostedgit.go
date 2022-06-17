@@ -31,11 +31,6 @@ func DataSourceIBMCdToolchainToolHostedgit() *schema.Resource {
 				Required:    true,
 				Description: "ID of the tool bound to the toolchain.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Tool ID.",
-			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -180,11 +175,7 @@ func DataSourceIBMCdToolchainToolHostedgitRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *getToolByIDResponse.ToolTypeID))
 	}
 
-	d.SetId(*getToolByIDResponse.ID)
-
-	if err = d.Set("id", getToolByIDResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
+	d.SetId(fmt.Sprintf("%s/%s", *getToolByIDOptions.ToolchainID, *getToolByIDOptions.ToolID))
 
 	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))

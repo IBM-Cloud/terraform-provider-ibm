@@ -15,7 +15,7 @@ Provides a read-only data source for cd_toolchain_tool_gitlab. You can then refe
 ```hcl
 data "ibm_cd_toolchain_tool_gitlab" "cd_toolchain_tool_gitlab" {
 	tool_id = "tool_id"
-	toolchain_id = "toolchain_id"
+	toolchain_id = ibm_cd_toolchain_tool_gitlab.cd_toolchain_tool_gitlab.toolchain_id
 }
 ```
 
@@ -36,9 +36,6 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (Required, String) Tool CRN.
 
 * `href` - (Required, String) URI representing the tool.
-
-* `id` - (Required, String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 * `name` - (Optional, String) Tool name.
 
