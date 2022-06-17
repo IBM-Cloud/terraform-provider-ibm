@@ -31,19 +31,19 @@ func ResourceIbmKeyTemplate() *schema.Resource {
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Force_new:   true,
+				ForceNew:    true,
 				Description: "The ID of the UKO instance this resource exists in.",
 			},
 			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Force_new:   true,
+				ForceNew:    true,
 				Description: "The region of the UKO instance this resource exists in.",
 			},
 			"uko_vault": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Force_new:   true,
+				ForceNew:    true,
 				Description: "The UUID of the Vault in which the update is to take place.",
 			},
 			"vault": &schema.Schema{
