@@ -43,7 +43,7 @@ Review the argument reference that you can specify for your resource.
 * `instance_id` - (Required, String) ID of UKO Instance
   * Constraints: Must match the ID of the UKO instance you are trying to work with.
 * `region` - (Required, String) Region of the UKO Instance
-  * Constraints: Must match the region of the UKO instance you are trying to work with.
+  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd `, `ch-ctu `, `in-che `, `jp-osa `, `jp-tok `, `kr-seo `, `eu-de `, `eu-gb `, `ca-tor `, `us-south `, `us-south-test `, `customer-ral `, `us-east `, `br-sao`.
 * `description` - (Optional, String) Description of the key template.
   * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/(.|\\n)*/`.
 * `key` - (Required, List) Properties describing the properties of the managed key.
@@ -77,28 +77,28 @@ Nested scheme for **vault**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the key_template.
-* `created_at` - (Optional, String) Date and time when the key template was created.
-* `created_by` - (Optional, String) ID of the user that created the key template.
+* `template_id` - The unique identifier of the key_template.
+* `created_at` - (String) Date and time when the key template was created.
+* `created_by` - (String) ID of the user that created the key template.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]+$/`.
-* `href` - (Optional, String) A URL that uniquely identifies your cloud resource.
+* `href` - (String) A URL that uniquely identifies your cloud resource.
   * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._~:\/?&=-]+$/`.
-* `updated_at` - (Optional, String) Date and time when the key template was updated.
-* `updated_by` - (Optional, String) ID of the user that updated the key.
+* `updated_at` - (String) Date and time when the key template was updated.
+* `updated_by` - (String) ID of the user that updated the key.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]+$/`.
-* `version` - (Optional, Integer) Version of the key template. Every time the key template is updated, the version will be updated automatically.
+* `version` - (Integer) Version of the key template. Every time the key template is updated, the version will be updated automatically.
   * Constraints: The maximum value is `2147483647`. The minimum value is `1`.
 
 ## Import
 
-You can import the `ibm_hpcs_key_template` resource by using `region`, `instance_id`, `vault_id`, and `id`.
+You can import the `ibm_hpcs_key_template` resource by using `region`, `instance_id`, `vault_id`, and `template_id`.
 
 # Syntax
 ```
-$ terraform import ibm_hpcs_key_template.template <region>/<instance_id>/<vault_id>/<id>
+$ terraform import ibm_hpcs_key_template.template <region>/<instance_id>/<vault_id>/<template_id>
 ```
 
 # Example
 ```
-$ terraform import ibm_hpcs_key_template.key_template us-east/76195d24-8a31-4c6d-9050-c35f09375cfb/5295ad47-2ce9-43c3-b9e7-e5a9482c362b
+$ terraform import ibm_hpcs_key_template.key_template us-east/76195d24-8a31-4c6d-9050-c35f09375cfb/5295ad47-2ce9-43c3-b9e7-e5a9482c362b/d8cc1ef7-d13b-4731-95be-1f7c98c9f524
 ```

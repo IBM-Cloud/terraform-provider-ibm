@@ -1447,7 +1447,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	} else {
-		session.ukoClientErr = fmt.Errorf("Error occurred while configuring UKO service: %q", err)
+		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
 	}
 
 	// APPID Service

@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 )
@@ -42,51 +43,6 @@ func ResourceIbmKeystore() *schema.Resource {
 				Required:    true,
 				Description: "The UUID of the Vault in which the update is to take place.",
 			},
-			// "keystore_body": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	MinItems:    1,
-			// 	MaxItems:    1,
-			// 	Required:    true,
-			// 	Description: "Keystore properties to update.",
-			// 	Elem: &schema.Resource{
-			// Schema: map[string]*schema.Schema{
-			// "type": &schema.Schema{
-			// 	Type:        schema.TypeString,
-			// 	Required:    true,
-			// 	Description: "Type of keystore.",
-			// },
-			// "vault": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	MinItems:    1,
-			// 	MaxItems:    1,
-			// 	Required:    true,
-			// 	Description: "ID of the Vault where the entity is to be created in.",
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"id": &schema.Schema{
-			// 				Type:        schema.TypeString,
-			// 				Required:    true,
-			// 				Description: "The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.",
-			// 			},
-			// 		},
-			// 	},
-			// },
-			// "name": &schema.Schema{
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Name of a target keystore.",
-			// },
-			// "description": &schema.Schema{
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Description of the keystore.",
-			// },
-			// "groups": &schema.Schema{
-			// 	Type:        schema.TypeList,
-			// 	Optional:    true,
-			// 	Description: "A list of groups that this keystore belongs to.",
-			// 	Elem:        &schema.Schema{Type: schema.TypeString},
-			// },
 			"aws_region": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -176,9 +132,6 @@ func ResourceIbmKeystore() *schema.Resource {
 				Optional:    true,
 				Description: "The key ring of an IBM Cloud KMS Keystore.",
 			},
-			// 		},
-			// 	},
-			// },
 			"vault": &schema.Schema{
 				Type:        schema.TypeList,
 				Required:    true,
@@ -252,97 +205,28 @@ func ResourceIbmKeystore() *schema.Resource {
 				Computed:    true,
 				Description: "A URL that uniquely identifies your cloud resource.",
 			},
-			// 	"aws_region": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "AWS Region.",
-			// 	},
-			// 	"aws_access_key_id": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "The access key id used for connecting to this instance of AWS KMS.",
-			// 	},
-			// 	"aws_secret_access_key": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "The secret access key used for connecting to this instance of AWS KMS.",
-			// 	},
-			// 	"azure_service_name": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Service name of the key vault instance from the Azure portal.",
-			// 	},
-			// 	"azure_resource_group": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Resource group in Azure.",
-			// 	},
-			// 	"azure_location": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Location of the Azure Key Vault.",
-			// 	},
-			// 	"azure_service_principal_client_id": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Azure service principal client ID.",
-			// 	},
-			// 	"azure_service_principal_password": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Azure service principal password.",
-			// 	},
-			// 	"azure_tenant": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Azure tenant that the Key Vault is associated with,.",
-			// 	},
-			// 	"azure_subscription_id": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Subscription ID in Azure.",
-			// 	},
-			// 	"azure_environment": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Azure environment, usually 'Azure'.",
-			// 	},
-			// 	"ibm_api_endpoint": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "API endpoint of the IBM Cloud keystore.",
-			// 	},
-			// 	"ibm_iam_endpoint": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Endpoint of the IAM service for this IBM Cloud keystore.",
-			// 	},
-			// 	"ibm_api_key": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "The IBM Cloud API key to be used for connecting to this IBM Cloud keystore.",
-			// 	},
-			// 	"ibm_instance_id": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "The instance ID of the IBM Cloud keystore.",
-			// 	},
-			// 	"ibm_variant": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "Possible IBM Cloud KMS variants.",
-			// 	},
-			// 	"ibm_key_ring": &schema.Schema{
-			// 		Type:        schema.TypeString,
-			// 		Computed:    true,
-			// 		Description: "The key ring of an IBM Cloud KMS Keystore.",
-			// 	},
 			"version": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
 	}
+}
+
+func ResourceIbmKeystoreValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "region",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao, au-syd, ch-ctu, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, customer-ral, us-east, br-sao",
+		},
+	)
+
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_hpcs_keystore", Schema: validateSchema}
+	return &resourceValidator
 }
 
 func ResourceIbmKeystoreCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -498,7 +382,7 @@ func ResourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("Error setting ibm_iam_endpoint: %s", err))
 	}
 	if err = d.Set("ibm_api_key", keystore.IbmApiKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ibm_api_key: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting ibm_api_key: %s", err)) // pragma: allowlist secret
 	}
 	if err = d.Set("ibm_instance_id", keystore.IbmInstanceID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ibm_instance_id: %s", err))
@@ -902,7 +786,7 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeAwsKmsCreateToMap(mod
 	}
 	modelMap["aws_region"] = model.AwsRegion
 	modelMap["aws_access_key_id"] = model.AwsAccessKeyID
-	modelMap["aws_secret_access_key"] = model.AwsSecretAccessKey
+	modelMap["aws_secret_access_key"] = model.AwsSecretAccessKey // pragma: allowlist secret
 	return modelMap, nil
 }
 
@@ -968,7 +852,7 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalEx
 	}
 	modelMap["ibm_api_endpoint"] = model.IbmApiEndpoint
 	modelMap["ibm_iam_endpoint"] = model.IbmIamEndpoint
-	modelMap["ibm_api_key"] = model.IbmApiKey
+	modelMap["ibm_api_key"] = model.IbmApiKey // pragma: allowlist secret
 	modelMap["ibm_instance_id"] = model.IbmInstanceID
 	modelMap["ibm_variant"] = model.IbmVariant
 	if model.IbmKeyRing != nil {
@@ -1045,7 +929,7 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeAzureCreateToMap(mode
 	modelMap["azure_resource_group"] = model.AzureResourceGroup
 	modelMap["azure_location"] = model.AzureLocation
 	modelMap["azure_service_principal_client_id"] = model.AzureServicePrincipalClientID
-	modelMap["azure_service_principal_password"] = model.AzureServicePrincipalPassword
+	modelMap["azure_service_principal_password"] = model.AzureServicePrincipalPassword // pragma: allowlist secret
 	modelMap["azure_tenant"] = model.AzureTenant
 	modelMap["azure_subscription_id"] = model.AzureSubscriptionID
 	modelMap["azure_environment"] = model.AzureEnvironment

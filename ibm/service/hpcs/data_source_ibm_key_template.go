@@ -1,13 +1,12 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,7 +31,7 @@ func DataSourceIbmKeyTemplate() *schema.Resource {
 				Required:    true,
 				Description: "The region of the UKO instance this resource exists in.",
 			},
-			"id": &schema.Schema{
+			"template_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "UUID of the template.",
@@ -170,11 +169,10 @@ func DataSourceIbmKeyTemplateRead(context context.Context, d *schema.ResourceDat
 
 	getKeyTemplateOptions := &ukov4.GetKeyTemplateOptions{}
 
-	id := strings.Split(d.Id(), "/")
-	region := id[0]
-	instance_id := id[1]
-	vault_id := id[2]
-	template_id := id[3]
+	region := d.Get("region")
+	instance_id := d.Get("instance_id")
+	vault_id := d.Get("uko_vault")
+	template_id := d.Get("template_id")
 	getKeyTemplateOptions.SetID(template_id)
 	getKeyTemplateOptions.SetUKOVault(vault_id)
 

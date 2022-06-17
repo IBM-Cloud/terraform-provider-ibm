@@ -81,7 +81,7 @@ resource "ibm_hpcs_keystore" "keystore_instance" {
   groups                = ["Production"]
   aws_region            = "eu_central_1"
   aws_access_key_id     = "HSNGYJMKHGFFF"
-  aws_secret_access_key = "JHGSY766YUG67GFV"
+  aws_secret_access_key = "JHGSY766YUG67GFV"detect-secrets audit .secrets.baseline
 }
 ```
 vault resource:

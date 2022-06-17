@@ -1,13 +1,12 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,7 +31,7 @@ func DataSourceIbmVault() *schema.Resource {
 				Required:    true,
 				Description: "The region of the UKO instance this resource exists in.",
 			},
-			"id": &schema.Schema{
+			"vault_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "UUID of the vault.",
@@ -84,10 +83,9 @@ func DataSourceIbmVaultRead(context context.Context, d *schema.ResourceData, met
 
 	getVaultOptions := &ukov4.GetVaultOptions{}
 
-	id := strings.Split(d.Id(), "/")
-	region := id[0]
-	instance_id := id[1]
-	vault_id := id[2]
+	region := d.Get("region")
+	instance_id := d.Get("instance_id")
+	vault_id := d.Get("vault_id")
 
 	getVaultOptions.SetID(vault_id)
 

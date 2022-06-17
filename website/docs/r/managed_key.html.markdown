@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your resource.
 * `instance_id` - (Required, String) ID of UKO Instance
   * Constraints: Must match the ID of the UKO instance you are trying to work with.
 * `region` - (Required, String) Region of the UKO Instance
-  * Constraints: Must match the region of the UKO instance you are trying to work with.
+  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd `, `ch-ctu `, `in-che `, `jp-osa `, `jp-tok `, `kr-seo `, `eu-de `, `eu-gb `, `ca-tor `, `us-south `, `us-south-test `, `customer-ral `, `us-east `, `br-sao`.
 * `description` - (Optional, String) Description of the managed key.
   * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/(.|\\n)*/`.
 * `label` - (Required, String) The label of the key.
@@ -57,74 +57,74 @@ Nested scheme for **vault**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the managed_key.
-* `activation_date` - (Optional, String) First day when the key is active.
-* `algorithm` - (Required, String) The algorithm of the key.
+* `key_id` - The unique identifier of the managed_key.
+* `activation_date` - (String) First day when the key is active.
+* `algorithm` - (String) The algorithm of the key.
   * Constraints: Allowable values are: `aes`, `rsa`.
-* `created_at` - (Optional, String) Date and time when the key was created.
-* `created_by` - (Optional, String) ID of the user that created the key.
+* `created_at` - (String) Date and time when the key was created.
+* `created_by` - (String) ID of the user that created the key.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]+$/`.
-* `expiration_date` - (Optional, String) Last day when the key is active.
-* `href` - (Optional, String) A URL that uniquely identifies your cloud resource.
+* `expiration_date` - (String) Last day when the key is active.
+* `href` - (String) A URL that uniquely identifies your cloud resource.
   * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._~:\/?&=-]+$/`.
-* `instances` - (Required, List) key instances.
+* `instances` - (List) key instances.
   * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 Nested scheme for **instances**:
-	* `id` - (Required, String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
+	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `keystore` - (Required, List) Description of properties of a key within the context of keystores.
+	* `keystore` - (List) Description of properties of a key within the context of keystores.
 	Nested scheme for **keystore**:
-		* `group` - (Required, String)
+		* `group` - (String)
 		  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9-_ ]+$/`.
-		* `type` - (Required, String) Type of keystore.
+		* `type` - (String) Type of keystore.
 		  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
-	* `label_in_keystore` - (Required, String) The label of the key.
+	* `label_in_keystore` - (String) The label of the key.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._ -]+$/`.
-	* `type` - (Optional, String) Type of the key instance.
+	* `type` - (String) Type of the key instance.
 	  * Constraints: Allowable values are: `public_key`, `private_key`, `key_pair`, `secret_key`.
-* `referenced_keystores` - (Required, List) referenced keystores.
+* `referenced_keystores` - (List) referenced keystores.
   * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 Nested scheme for **referenced_keystores**:
-	* `href` - (Optional, String) A URL that uniquely identifies your cloud resource.
+	* `href` - (String) A URL that uniquely identifies your cloud resource.
 	  * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._~:\/?&=-]+$/`.
-	* `id` - (Optional, String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
+	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `name` - (Optional, String) Name of the target keystore.
+	* `name` - (String) Name of the target keystore.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9][A-Za-z0-9 .-_]*$/`.
-	* `type` - (Required, String) Type of keystore.
+	* `type` - (String) Type of keystore.
 	  * Constraints: Allowable values are: `aws_kms`, `azure_key_vault`, `ibm_cloud_kms`.
-* `size` - (Optional, String) The size of the underlying cryptographic key or key pair. E.g. "256" for AES keys, or "2048" for RSA.
+* `size` - (String) The size of the underlying cryptographic key or key pair. E.g. "256" for AES keys, or "2048" for RSA.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9]+$/`.
-* `state` - (Required, String) The state of the key.
+* `state` - (String) The state of the key.
   * Constraints: The default value is `active`. Allowable values are: `pre_activation`, `active`, `deactivated`, `destroyed`.
-* `template` - (Required, List) Reference to a key template.
+* `template` - (List) Reference to a key template.
 Nested scheme for **template**:
-	* `href` - (Optional, String) A URL that uniquely identifies your cloud resource.
+	* `href` - (String) A URL that uniquely identifies your cloud resource.
 	  * Constraints: The maximum length is `200` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._~:\/?&=-]+$/`.
-	* `id` - (Optional, String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
+	* `id` - (String) The v4 UUID used to uniquely identify the resource, as specified by RFC 4122.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `name` - (Optional, String) Name of the key template.
+	* `name` - (String) Name of the key template.
 	  * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z][A-Za-z0-9-]*$/`.
-* `updated_at` - (Optional, String) Date and time when the key was last updated.
-* `updated_by` - (Optional, String) ID of the user that last updated the key.
+* `updated_at` - (String) Date and time when the key was last updated.
+* `updated_by` - (String) ID of the user that last updated the key.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]+$/`.
-* `verification_patterns` - (Optional, List) A list of verification patterns of the key (e.g. public key hash for RSA keys).
+* `verification_patterns` - (List) A list of verification patterns of the key (e.g. public key hash for RSA keys).
   * Constraints: The maximum length is `16` items. The minimum length is `1` item.
 Nested scheme for **verification_patterns**:
-	* `method` - (Required, String) The method used for calculating the verification pattern.
+	* `method` - (String) The method used for calculating the verification pattern.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9-]+$/`.
-	* `value` - (Required, String) The calculated value.
+	* `value` - (String) The calculated value.
 	  * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9+\/=]+$/`.
 
 * `version` - Version of the managed_key.
 
 ## Import
 
-You can import the `ibm_hpcs_managed_key` resource by using `region`, `instance_id`, `vault_id`, and `id`.
+You can import the `ibm_hpcs_managed_key` resource by using `region`, `instance_id`, `vault_id`, and `key_id`.
 
 # Syntax
 ```
-$ terraform import ibm_hpcs_managed_key.key <region>/<instance_id>/<vault_id>/<id>
+$ terraform import ibm_hpcs_managed_key.key <region>/<instance_id>/<vault_id>/<key_id>
 ```
 
 # Example

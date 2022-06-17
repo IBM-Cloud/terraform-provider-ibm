@@ -48,7 +48,7 @@ resource "ibm_hpcs_keystore" "keystore_instance" {
   groups                = ["Production"]
   aws_region            = "eu_central_1"
   aws_access_key_id     = "XXXXXXX"
-  aws_secret_access_key = "XXXXXXX"
+  aws_secret_access_key = "XXXXXXX" // pragma: allowlist secret
 }
 
 // Provision vault resource instance

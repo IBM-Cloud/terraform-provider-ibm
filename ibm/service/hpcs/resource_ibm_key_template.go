@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
@@ -170,6 +170,13 @@ func ResourceIbmKeyTemplateValidator() *validate.ResourceValidator {
 			Regexp:                     `^[A-Za-z][A-Za-z0-9-]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             30,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "region",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao, au-syd, ch-ctu, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, customer-ral, us-east, br-sao",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "description",

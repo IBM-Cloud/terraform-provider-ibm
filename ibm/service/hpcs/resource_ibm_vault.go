@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
@@ -101,6 +101,13 @@ func ResourceIbmVaultValidator() *validate.ResourceValidator {
 			Regexp:                     `^[A-Za-z][A-Za-z0-9#@!$% '_-]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             100,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "region",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao, au-syd, ch-ctu, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, customer-ral, us-east, br-sao",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "description",
@@ -298,11 +305,11 @@ func getUkoUrl(context context.Context, region string, instance_id string, ukoCl
 	}
 
 	var brokerUrl string
-	if v := os.Getenv("IBMCLOUD_HPCS_BROKER_URL"); v != "" {
+	if v := os.Getenv("IBMCLOUD_HPCS_UKO_URL"); v != "" {
 		if strings.Contains(v, "https://") {
-			brokerUrl = v
+			return v, nil
 		} else {
-			brokerUrl = fmt.Sprintf("https://%s/", v)
+			return fmt.Sprintf("https://%s/", v), nil
 		}
 	} else {
 		brokerUrl = fmt.Sprintf("https://broker.%s.hs-crypto.cloud.ibm.com", region)

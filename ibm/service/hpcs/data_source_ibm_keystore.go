@@ -1,13 +1,12 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package uko
+package hpcs
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,7 +31,7 @@ func DataSourceIbmKeystore() *schema.Resource {
 				Required:    true,
 				Description: "The region of the UKO instance this resource exists in.",
 			},
-			"id": &schema.Schema{
+			"keystore_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "UUID of the keystore.",
@@ -182,7 +181,7 @@ func DataSourceIbmKeystore() *schema.Resource {
 				Computed:    true,
 				Description: "Endpoint of the IAM service for this IBM Cloud keystore.",
 			},
-			"ibm_api_key": &schema.Schema{
+			"ibm_api_key": &schema.Schema{ // pragma: allowlist secret
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -215,11 +214,10 @@ func DataSourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, 
 
 	getKeystoreOptions := &ukov4.GetKeystoreOptions{}
 
-	id := strings.Split(d.Id(), "/")
-	region := id[0]
-	instance_id := id[1]
-	vault_id := id[2]
-	keystore_id := id[3]
+	region := d.Get("region")
+	instance_id := d.Get("instance_id")
+	vault_id := d.Get("uko_vault")
+	keystore_id := d.Get("keystore_id")
 	getKeystoreOptions.SetID(keystore_id)
 	getKeystoreOptions.SetUKOVault(vault_id)
 
@@ -335,7 +333,7 @@ func DataSourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, 
 	}
 
 	if err = d.Set("ibm_api_key", keystore.IbmApiKey); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting ibm_api_key: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting ibm_api_key: %s", err)) // pragma: allowlist secret
 	}
 
 	if err = d.Set("ibm_instance_id", keystore.IbmInstanceID); err != nil {
