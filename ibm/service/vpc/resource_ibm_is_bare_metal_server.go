@@ -4,14 +4,17 @@
 package vpc
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -335,8 +338,9 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 
 			isBareMetalServerNetworkInterfaces: {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      resourceIBMBMSNicSet,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -351,10 +355,10 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Description: "Indicates whether IP spoofing is allowed on this interface.",
 						},
 						isBareMetalServerNicName: {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of randomly-selected words",
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of randomly-selected words",
 						},
 						isBareMetalServerNicPortSpeed: {
 							Type:     schema.TypeInt,
@@ -439,7 +443,6 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 						isBareMetalServerNicAllowedVlans: {
 							Type:        schema.TypeSet,
 							Optional:    true,
-							Computed:    true,
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 							Set:         schema.HashInt,
 							Description: "Indicates what VLAN IDs (for VLAN type only) can use this physical (PCI type) interface. A given VLAN can only be in the allowed_vlans array for one PCI type adapter per bare metal server.",
@@ -725,11 +728,13 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	}
 
 	if nicsintf, ok := d.GetOk(isBareMetalServerNetworkInterfaces); ok {
-		nics := nicsintf.([]interface{})
+
+		nics := nicsintf.(*schema.Set).List()
 		inlinenicobj := make([]vpcv1.BareMetalServerNetworkInterfacePrototypeIntf, 0)
 		for _, resource := range nics {
 			nic := resource.(map[string]interface{})
 			interfaceType := ""
+
 			if allowedVlansOk, ok := nic[isBareMetalServerNicAllowedVlans]; ok {
 				interfaceType = "pci"
 				var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
@@ -737,82 +742,169 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 				allowedVlansList := allowedVlansOk.(*schema.Set).List()
 
-				allowedVlans := make([]int64, 0, len(allowedVlansList))
-				for _, k := range allowedVlansList {
-					allowedVlans = append(allowedVlans, int64(k.(int)))
-				}
-				nicobj.AllowedVlans = allowedVlans
+				if len(allowedVlansList) > 0 {
+					allowedVlans := make([]int64, 0, len(allowedVlansList))
+					for _, k := range allowedVlansList {
+						allowedVlans = append(allowedVlans, int64(k.(int)))
+					}
+					nicobj.AllowedVlans = allowedVlans
 
-				subnetintf, _ := nic[isBareMetalServerNicSubnet]
-				subnetintfstr := subnetintf.(string)
-				nicobj.Subnet = &vpcv1.SubnetIdentity{
-					ID: &subnetintfstr,
-				}
-				name, _ := nic[isBareMetalServerNicName]
-				namestr := name.(string)
-				if namestr != "" {
-					nicobj.Name = &namestr
-				}
-
-				enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
-				enableInfraNATbool := enableInfraNAT.(bool)
-				if ok {
-					nicobj.EnableInfrastructureNat = &enableInfraNATbool
-				}
-
-				if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
-					primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
-
-					reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
-					if ok && reservedIpIdOk.(string) != "" {
-						ipid := reservedIpIdOk.(string)
-						nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
-							ID: &ipid,
-						}
-					} else {
-						primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
-						reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
-						if okAdd && reservedIpAddressOk.(string) != "" {
-							reservedIpAddress := reservedIpAddressOk.(string)
-							primaryip.Address = &reservedIpAddress
-						}
-						reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
-						if okName && reservedIpNameOk.(string) != "" {
-							reservedIpName := reservedIpNameOk.(string)
-							primaryip.Name = &reservedIpName
-						}
-						reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
-						if okAuto {
-							reservedIpAuto := reservedIpAutoOk.(bool)
-							primaryip.AutoDelete = &reservedIpAuto
-						}
-						if okAdd || okName || okAuto {
-							nicobj.PrimaryIP = primaryip
-						}
+					subnetintf, _ := nic[isBareMetalServerNicSubnet]
+					subnetintfstr := subnetintf.(string)
+					nicobj.Subnet = &vpcv1.SubnetIdentity{
+						ID: &subnetintfstr,
+					}
+					name, _ := nic[isBareMetalServerNicName]
+					namestr := name.(string)
+					if namestr != "" {
+						nicobj.Name = &namestr
 					}
 
-				}
+					enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
+					enableInfraNATbool := enableInfraNAT.(bool)
+					if ok {
+						nicobj.EnableInfrastructureNat = &enableInfraNATbool
+					}
 
-				allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
-				allowIPSpoofingbool := allowIPSpoofing.(bool)
-				if ok && allowIPSpoofingbool {
-					nicobj.AllowIPSpoofing = &allowIPSpoofingbool
-				}
-				secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
-				if ok {
-					secgrpSet := secgrpintf.(*schema.Set)
-					if secgrpSet.Len() != 0 {
-						var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
-						for i, secgrpIntf := range secgrpSet.List() {
-							secgrpIntfstr := secgrpIntf.(string)
-							secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
-								ID: &secgrpIntfstr,
+					if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+						primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+
+						reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
+						if ok && reservedIpIdOk.(string) != "" {
+							ipid := reservedIpIdOk.(string)
+							nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+								ID: &ipid,
+							}
+						} else {
+							primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+							reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
+							if okAdd && reservedIpAddressOk.(string) != "" {
+								reservedIpAddress := reservedIpAddressOk.(string)
+								primaryip.Address = &reservedIpAddress
+							}
+							reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
+							if okName && reservedIpNameOk.(string) != "" {
+								reservedIpName := reservedIpNameOk.(string)
+								primaryip.Name = &reservedIpName
+							}
+							reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
+							if okAuto {
+								reservedIpAuto := reservedIpAutoOk.(bool)
+								primaryip.AutoDelete = &reservedIpAuto
+							}
+							if okAdd || okName || okAuto {
+								nicobj.PrimaryIP = primaryip
 							}
 						}
-						nicobj.SecurityGroups = secgrpobjs
+
 					}
+
+					allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
+					allowIPSpoofingbool := allowIPSpoofing.(bool)
+					if ok && allowIPSpoofingbool {
+						nicobj.AllowIPSpoofing = &allowIPSpoofingbool
+					}
+					secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
+					if ok {
+						secgrpSet := secgrpintf.(*schema.Set)
+						if secgrpSet.Len() != 0 {
+							var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+							for i, secgrpIntf := range secgrpSet.List() {
+								secgrpIntfstr := secgrpIntf.(string)
+								secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+									ID: &secgrpIntfstr,
+								}
+							}
+							nicobj.SecurityGroups = secgrpobjs
+						}
+					}
+					inlinenicobj = append(inlinenicobj, nicobj)
+				} else {
+					interfaceType = "vlan"
+					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
+					nicobj.InterfaceType = &interfaceType
+
+					if aitf, ok := nic[isBareMetalServerNicAllowInterfaceToFloat]; ok {
+						allowInterfaceToFloat := aitf.(bool)
+						nicobj.AllowInterfaceToFloat = &allowInterfaceToFloat
+					}
+					if vlan, ok := nic[isBareMetalServerNicVlan]; ok {
+						vlanInt := int64(vlan.(int))
+						nicobj.Vlan = &vlanInt
+					}
+
+					subnetintf, _ := nic[isBareMetalServerNicSubnet]
+					subnetintfstr := subnetintf.(string)
+					nicobj.Subnet = &vpcv1.SubnetIdentity{
+						ID: &subnetintfstr,
+					}
+					name, _ := nic[isBareMetalServerNicName]
+					namestr := name.(string)
+					if namestr != "" {
+						nicobj.Name = &namestr
+					}
+
+					enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
+					enableInfraNATbool := enableInfraNAT.(bool)
+					if ok {
+						nicobj.EnableInfrastructureNat = &enableInfraNATbool
+					}
+
+					if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+						primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+						reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
+						if ok && reservedIpIdOk.(string) != "" {
+							ipid := reservedIpIdOk.(string)
+							nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+								ID: &ipid,
+							}
+						} else {
+							primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+
+							reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
+							if okAdd && reservedIpAddressOk.(string) != "" {
+								reservedIpAddress := reservedIpAddressOk.(string)
+								primaryip.Address = &reservedIpAddress
+							}
+
+							reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
+							if okName && reservedIpNameOk.(string) != "" {
+								reservedIpName := reservedIpNameOk.(string)
+								primaryip.Name = &reservedIpName
+							}
+
+							reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
+							if okAuto {
+								reservedIpAuto := reservedIpAutoOk.(bool)
+								primaryip.AutoDelete = &reservedIpAuto
+							}
+							if okAdd || okName || okAuto {
+								nicobj.PrimaryIP = primaryip
+							}
+						}
+					}
+
+					allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
+					allowIPSpoofingbool := allowIPSpoofing.(bool)
+					if ok && allowIPSpoofingbool {
+						nicobj.AllowIPSpoofing = &allowIPSpoofingbool
+					}
+					secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
+					if ok {
+						secgrpSet := secgrpintf.(*schema.Set)
+						if secgrpSet.Len() != 0 {
+							var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+							for i, secgrpIntf := range secgrpSet.List() {
+								secgrpIntfstr := secgrpIntf.(string)
+								secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+									ID: &secgrpIntfstr,
+								}
+							}
+							nicobj.SecurityGroups = secgrpobjs
+						}
+					}
+					inlinenicobj = append(inlinenicobj, nicobj)
 				}
-				inlinenicobj = append(inlinenicobj, nicobj)
 			} else {
 				interfaceType = "vlan"
 				var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
@@ -1221,7 +1313,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 						currentNic[isBareMetalServerNicEnableInfraNAT] = *bmsnic.EnableInfrastructureNat
 						currentNic[isBareMetalServerNicPortSpeed] = *bmsnic.PortSpeed
 						currentNic[isBareMetalServerNicInterfaceType] = "vlan"
-
+						if bmsnic.Vlan != nil {
+							currentNic[isBareMetalServerNicVlan] = *bmsnic.Vlan
+						}
 						if len(bmsnic.SecurityGroups) != 0 {
 							secgrpList := []string{}
 							for i := 0; i < len(bmsnic.SecurityGroups); i++ {
@@ -1313,126 +1407,485 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	}
 
 	if d.HasChange(isBareMetalServerNetworkInterfaces) {
-		nics := d.Get(isBareMetalServerNetworkInterfaces).([]interface{})
-		for i := range nics {
-			securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
-			networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
-			ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
-			infraNatKey := fmt.Sprintf("network_interfaces.%d.enable_infrastructure_nat", i)
-			allowedVlans := fmt.Sprintf("network_interfaces.%d.allowed_vlans", i)
-			primaryipname := fmt.Sprintf("network_interfaces.%d.primary_ip.0.name", i)
-			primaryipauto := fmt.Sprintf("network_interfaces.%d.primary_ip.0.auto_delete", i)
-			primaryiprip := fmt.Sprintf("network_interfaces.%d.primary_ip.0.reserved_ip", i)
-			if d.HasChange(primaryipname) || d.HasChange(primaryipauto) {
-				subnetId := d.Get(isBareMetalServerNicSubnet).(string)
-				ripId := d.Get(primaryiprip).(string)
-				updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
-					SubnetID: &subnetId,
-					ID:       &ripId,
-				}
-				reservedIpPath := &vpcv1.ReservedIPPatch{}
-				if d.HasChange(primaryipname) {
-					name := d.Get(primaryipname).(string)
-					reservedIpPath.Name = &name
-				}
-				if d.HasChange(primaryipauto) {
-					auto := d.Get(primaryipauto).(bool)
-					reservedIpPath.AutoDelete = &auto
-				}
-				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
-				}
-				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-				_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating bare metal server network interface reserved ip(%s): %s\n%s", ripId, err, response)
-				}
-			}
+		oldList, newList := d.GetChange(isBareMetalServerNetworkInterfaces)
+		if oldList == nil {
+			oldList = new(schema.Set)
+		}
+		if newList == nil {
+			newList = new(schema.Set)
+		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
+		for _, nA := range ns.List() {
+			newPack := nA.(map[string]interface{})
+			for _, oA := range os.List() {
+				oldPack := oA.(map[string]interface{})
+				if strings.Compare(newPack["name"].(string), oldPack["name"].(string)) == 0 {
+					networkId := newPack["id"].(string)
+					newAllowedVlans := newPack[isBareMetalServerNicAllowedVlans].(*schema.Set)
+					newNicName := newPack[isBareMetalServerNicName].(string)
+					newIpSpoofing := newPack[isBareMetalServerNicAllowIPSpoofing].(bool)
+					newInfraNat := newPack[isBareMetalServerNicEnableInfraNAT].(bool)
 
-			if d.HasChange(securitygrpKey) {
-				ovs, nvs := d.GetChange(securitygrpKey)
-				ov := ovs.(*schema.Set)
-				nv := nvs.(*schema.Set)
-				remove := flex.ExpandStringList(ov.Difference(nv).List())
-				add := flex.ExpandStringList(nv.Difference(ov).List())
-				if len(add) > 0 {
-					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
-					networkID := d.Get(networkIDKey).(string)
-					for i := range add {
-						createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
-							SecurityGroupID: &add[i],
-							ID:              &networkID,
-						}
-						_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
-						if err != nil {
-							return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
-						}
-					}
+					oldAllowedVlans := oldPack[isBareMetalServerNicAllowedVlans].(*schema.Set)
+					oldNicName := oldPack[isBareMetalServerNicName].(string)
+					oldIpSpoofing := oldPack[isBareMetalServerNicAllowIPSpoofing].(bool)
+					oldInfraNat := oldPack[isBareMetalServerNicEnableInfraNAT].(bool)
 
-				}
-				if len(remove) > 0 {
-					networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
-					networkID := d.Get(networkIDKey).(string)
-					for i := range remove {
-						deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
-							SecurityGroupID: &remove[i],
-							ID:              &networkID,
+					if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 || newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 || newInfraNat != oldInfraNat || newIpSpoofing != oldIpSpoofing {
+
+						updatepnicfoptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
+							BareMetalServerID: &id,
+							ID:                &networkId,
 						}
-						response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+
+						bmsPatchModel := &vpcv1.BareMetalServerNetworkInterfacePatch{}
+						if strings.Compare(newNicName, oldNicName) != 0 {
+							bmsPatchModel.Name = &newNicName
+						}
+
+						if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 || newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 {
+							allowedVlansList := newPack[isBareMetalServerNicAllowedVlans].(*schema.Set).List()
+							allowedVlans := make([]int64, 0, len(allowedVlansList))
+							for _, k := range allowedVlansList {
+								allowedVlans = append(allowedVlans, int64(k.(int)))
+							}
+							bmsPatchModel.AllowedVlans = allowedVlans
+						}
+
+						if newIpSpoofing != oldIpSpoofing {
+							bmsPatchModel.AllowIPSpoofing = &newIpSpoofing
+						}
+						if newInfraNat != oldInfraNat {
+							bmsPatchModel.EnableInfrastructureNat = &newInfraNat
+						}
+						networkInterfacePatch, err := bmsPatchModel.AsPatch()
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+							return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch: %s", err)
 						}
+						updatepnicfoptions.BareMetalServerNetworkInterfacePatch = networkInterfacePatch
+						_, response, err := sess.UpdateBareMetalServerNetworkInterface(updatepnicfoptions)
+						if err != nil {
+							return fmt.Errorf("[ERROR] Error while updating network interface(%s) of bar emetal server(%s) \n%s: %q", networkId, d.Id(), err, response)
+						}
+						ns.Remove(nA)
+						os.Remove(oA)
 					}
 				}
-
 			}
+		}
+		remove := os.Difference(ns).List()
 
-			if d.HasChange(allowedVlans) || d.HasChange(networkNameKey) || d.HasChange(ipSpoofingKey) || d.HasChange(infraNatKey) {
-				newName := d.Get(networkNameKey).(string)
-				networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
-				networkID := d.Get(networkIDKey).(string)
-				ipSpoofing := d.Get(ipSpoofingKey).(bool)
-				infraNat := d.Get(infraNatKey).(bool)
-				updatepnicfoptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
+		if len(remove) > 0 {
+			// check if any removing nic is of pci type
+			flag := false
+			for _, rem := range remove {
+				oldNic := rem.(map[string]interface{})
+				interfaceType := oldNic["interface_type"].(string)
+				if interfaceType == "pci" {
+					flag = true
+				}
+			}
+			if flag {
+				err = resourceStopServerIfRunning(id, "hard", d, context, sess)
+				if err != nil {
+					return err
+				}
+			}
+			for _, rem := range remove {
+				oldNic := rem.(map[string]interface{})
+				networkId := oldNic["id"].(string)
+				removeBMSNic := &vpcv1.DeleteBareMetalServerNetworkInterfaceOptions{
 					BareMetalServerID: &id,
-					ID:                &networkID,
+					ID:                &networkId,
 				}
+				_, err = sess.DeleteBareMetalServerNetworkInterface(removeBMSNic)
+				if err != nil {
+					return err
+				}
+			}
 
-				bmsPatchModel := &vpcv1.BareMetalServerNetworkInterfacePatch{}
-				if d.HasChange(networkNameKey) {
-					bmsPatchModel.Name = &newName
+			if flag {
+				err = resourceStartServerIfStopped(id, "hard", d, context, sess)
+				if err != nil {
+					return err
 				}
-				if d.HasChange(allowedVlans) {
-					if allowedVlansOk, ok := d.GetOk(allowedVlans); ok {
-						allowedVlansList := allowedVlansOk.(*schema.Set).List()
+			}
+		}
+		add := ns.Difference(os).List()
+		if len(add) > 0 {
+			// check if any adding nic is of pci type
+			flag := false
+			for _, a := range add {
+				oldNic := a.(map[string]interface{})
+				allowedVlansOk, ok := oldNic[isBareMetalServerNicAllowedVlans]
+				if ok && len(allowedVlansOk.(*schema.Set).List()) > 0 {
+					flag = true
+				}
+			}
+			if flag {
+				err = resourceStopServerIfRunning(id, "hard", d, context, sess)
+				if err != nil {
+					return err
+				}
+			}
+			for _, a := range add {
+				nic := a.(map[string]interface{})
+				addNicOptions := &vpcv1.CreateBareMetalServerNetworkInterfaceOptions{
+					BareMetalServerID: &id,
+				}
+				interfaceType := ""
+
+				if allowedVlansOk, ok := nic[isBareMetalServerNicAllowedVlans]; ok {
+					interfaceType = "pci"
+					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
+					nicobj.InterfaceType = &interfaceType
+
+					allowedVlansList := allowedVlansOk.(*schema.Set).List()
+
+					if len(allowedVlansList) > 0 {
 						allowedVlans := make([]int64, 0, len(allowedVlansList))
 						for _, k := range allowedVlansList {
 							allowedVlans = append(allowedVlans, int64(k.(int)))
 						}
-						bmsPatchModel.AllowedVlans = allowedVlans
-					}
-				}
-				if d.HasChange(ipSpoofingKey) {
-					bmsPatchModel.AllowIPSpoofing = &ipSpoofing
-				}
-				if d.HasChange(infraNatKey) {
-					bmsPatchModel.EnableInfrastructureNat = &infraNat
-				}
-				networkInterfacePatch, err := bmsPatchModel.AsPatch()
-				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch: %s", err)
-				}
-				updatepnicfoptions.BareMetalServerNetworkInterfacePatch = networkInterfacePatch
+						nicobj.AllowedVlans = allowedVlans
 
-				_, response, err := sess.UpdateBareMetalServerNetworkInterface(updatepnicfoptions)
+						subnetintf, _ := nic[isBareMetalServerNicSubnet]
+						subnetintfstr := subnetintf.(string)
+						nicobj.Subnet = &vpcv1.SubnetIdentity{
+							ID: &subnetintfstr,
+						}
+						name, _ := nic[isBareMetalServerNicName]
+						namestr := name.(string)
+						if namestr != "" {
+							nicobj.Name = &namestr
+						}
+
+						enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
+						enableInfraNATbool := enableInfraNAT.(bool)
+						if ok {
+							nicobj.EnableInfrastructureNat = &enableInfraNATbool
+						}
+
+						if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+							primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+
+							reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
+							if ok && reservedIpIdOk.(string) != "" {
+								ipid := reservedIpIdOk.(string)
+								nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+									ID: &ipid,
+								}
+							} else {
+								primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+								reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
+								if okAdd && reservedIpAddressOk.(string) != "" {
+									reservedIpAddress := reservedIpAddressOk.(string)
+									primaryip.Address = &reservedIpAddress
+								}
+								reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
+								if okName && reservedIpNameOk.(string) != "" {
+									reservedIpName := reservedIpNameOk.(string)
+									primaryip.Name = &reservedIpName
+								}
+								reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
+								if okAuto {
+									reservedIpAuto := reservedIpAutoOk.(bool)
+									primaryip.AutoDelete = &reservedIpAuto
+								}
+								if okAdd || okName || okAuto {
+									nicobj.PrimaryIP = primaryip
+								}
+							}
+
+						}
+
+						allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
+						allowIPSpoofingbool := allowIPSpoofing.(bool)
+						if ok && allowIPSpoofingbool {
+							nicobj.AllowIPSpoofing = &allowIPSpoofingbool
+						}
+						secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
+						if ok {
+							secgrpSet := secgrpintf.(*schema.Set)
+							if secgrpSet.Len() != 0 {
+								var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+								for i, secgrpIntf := range secgrpSet.List() {
+									secgrpIntfstr := secgrpIntf.(string)
+									secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+										ID: &secgrpIntfstr,
+									}
+								}
+								nicobj.SecurityGroups = secgrpobjs
+							}
+						}
+						addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
+					} else {
+						interfaceType = "vlan"
+						var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
+						nicobj.InterfaceType = &interfaceType
+
+						if aitf, ok := nic[isBareMetalServerNicAllowInterfaceToFloat]; ok {
+							allowInterfaceToFloat := aitf.(bool)
+							nicobj.AllowInterfaceToFloat = &allowInterfaceToFloat
+						}
+						if vlan, ok := nic[isBareMetalServerNicVlan]; ok {
+							vlanInt := int64(vlan.(int))
+							nicobj.Vlan = &vlanInt
+						}
+
+						subnetintf, _ := nic[isBareMetalServerNicSubnet]
+						subnetintfstr := subnetintf.(string)
+						nicobj.Subnet = &vpcv1.SubnetIdentity{
+							ID: &subnetintfstr,
+						}
+						name, _ := nic[isBareMetalServerNicName]
+						namestr := name.(string)
+						if namestr != "" {
+							nicobj.Name = &namestr
+						}
+
+						enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
+						enableInfraNATbool := enableInfraNAT.(bool)
+						if ok {
+							nicobj.EnableInfrastructureNat = &enableInfraNATbool
+						}
+
+						if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+							primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+							reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
+							if ok && reservedIpIdOk.(string) != "" {
+								ipid := reservedIpIdOk.(string)
+								nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+									ID: &ipid,
+								}
+							} else {
+								primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+
+								reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
+								if okAdd && reservedIpAddressOk.(string) != "" {
+									reservedIpAddress := reservedIpAddressOk.(string)
+									primaryip.Address = &reservedIpAddress
+								}
+
+								reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
+								if okName && reservedIpNameOk.(string) != "" {
+									reservedIpName := reservedIpNameOk.(string)
+									primaryip.Name = &reservedIpName
+								}
+
+								reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
+								if okAuto {
+									reservedIpAuto := reservedIpAutoOk.(bool)
+									primaryip.AutoDelete = &reservedIpAuto
+								}
+								if okAdd || okName || okAuto {
+									nicobj.PrimaryIP = primaryip
+								}
+							}
+						}
+
+						allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
+						allowIPSpoofingbool := allowIPSpoofing.(bool)
+						if ok && allowIPSpoofingbool {
+							nicobj.AllowIPSpoofing = &allowIPSpoofingbool
+						}
+						secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
+						if ok {
+							secgrpSet := secgrpintf.(*schema.Set)
+							if secgrpSet.Len() != 0 {
+								var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+								for i, secgrpIntf := range secgrpSet.List() {
+									secgrpIntfstr := secgrpIntf.(string)
+									secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+										ID: &secgrpIntfstr,
+									}
+								}
+								nicobj.SecurityGroups = secgrpobjs
+							}
+						}
+						addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
+					}
+				} else {
+					interfaceType = "vlan"
+					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
+					nicobj.InterfaceType = &interfaceType
+
+					if aitf, ok := nic[isBareMetalServerNicAllowInterfaceToFloat]; ok {
+						allowInterfaceToFloat := aitf.(bool)
+						nicobj.AllowInterfaceToFloat = &allowInterfaceToFloat
+					}
+					if vlan, ok := nic[isBareMetalServerNicVlan]; ok {
+						vlanInt := int64(vlan.(int))
+						nicobj.Vlan = &vlanInt
+					}
+
+					subnetintf, _ := nic[isBareMetalServerNicSubnet]
+					subnetintfstr := subnetintf.(string)
+					nicobj.Subnet = &vpcv1.SubnetIdentity{
+						ID: &subnetintfstr,
+					}
+					name, _ := nic[isBareMetalServerNicName]
+					namestr := name.(string)
+					if namestr != "" {
+						nicobj.Name = &namestr
+					}
+
+					enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
+					enableInfraNATbool := enableInfraNAT.(bool)
+					if ok {
+						nicobj.EnableInfrastructureNat = &enableInfraNATbool
+					}
+
+					if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+						primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+						reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
+						if ok && reservedIpIdOk.(string) != "" {
+							ipid := reservedIpIdOk.(string)
+							nicobj.PrimaryIP = &vpcv1.NetworkInterfaceIPPrototypeReservedIPIdentity{
+								ID: &ipid,
+							}
+						} else {
+							primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+
+							reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
+							if okAdd && reservedIpAddressOk.(string) != "" {
+								reservedIpAddress := reservedIpAddressOk.(string)
+								primaryip.Address = &reservedIpAddress
+							}
+
+							reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
+							if okName && reservedIpNameOk.(string) != "" {
+								reservedIpName := reservedIpNameOk.(string)
+								primaryip.Name = &reservedIpName
+							}
+
+							reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
+							if okAuto {
+								reservedIpAuto := reservedIpAutoOk.(bool)
+								primaryip.AutoDelete = &reservedIpAuto
+							}
+							if okAdd || okName || okAuto {
+								nicobj.PrimaryIP = primaryip
+							}
+						}
+					}
+
+					allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
+					allowIPSpoofingbool := allowIPSpoofing.(bool)
+					if ok && allowIPSpoofingbool {
+						nicobj.AllowIPSpoofing = &allowIPSpoofingbool
+					}
+					secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
+					if ok {
+						secgrpSet := secgrpintf.(*schema.Set)
+						if secgrpSet.Len() != 0 {
+							var secgrpobjs = make([]vpcv1.SecurityGroupIdentityIntf, secgrpSet.Len())
+							for i, secgrpIntf := range secgrpSet.List() {
+								secgrpIntfstr := secgrpIntf.(string)
+								secgrpobjs[i] = &vpcv1.SecurityGroupIdentity{
+									ID: &secgrpIntfstr,
+								}
+							}
+							nicobj.SecurityGroups = secgrpobjs
+						}
+					}
+					addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
+				}
+				_, _, err := sess.CreateBareMetalServerNetworkInterface(addNicOptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error while updating network interface(%s) of bar emetal server(%s) \n%s: %q", networkID, d.Id(), err, response)
+					return err
 				}
 			}
-		}
-	}
+			if flag {
+				err = resourceStartServerIfStopped(id, "hard", d, context, sess)
+				if err != nil {
+					return err
+				}
+			}
 
+		}
+
+		// if len(add) > 0 {
+		// }
+		// if len(remove) > 0 {
+		// }
+		// nics := d.Get(isBareMetalServerNetworkInterfaces).(*schema.Set).List()
+		// for i := range nics {
+		// 	securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
+		// 	networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
+		// 	ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
+		// 	infraNatKey := fmt.Sprintf("network_interfaces.%d.enable_infrastructure_nat", i)
+		// 	allowedVlans := fmt.Sprintf("network_interfaces.%d.allowed_vlans", i)
+		// 	primaryipname := fmt.Sprintf("network_interfaces.%d.primary_ip.0.name", i)
+		// 	primaryipauto := fmt.Sprintf("network_interfaces.%d.primary_ip.0.auto_delete", i)
+		// 	primaryiprip := fmt.Sprintf("network_interfaces.%d.primary_ip.0.reserved_ip", i)
+		// 	if d.HasChange(primaryipname) || d.HasChange(primaryipauto) {
+		// 		subnetId := d.Get(isBareMetalServerNicSubnet).(string)
+		// 		ripId := d.Get(primaryiprip).(string)
+		// 		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
+		// 			SubnetID: &subnetId,
+		// 			ID:       &ripId,
+		// 		}
+		// 		reservedIpPath := &vpcv1.ReservedIPPatch{}
+		// 		if d.HasChange(primaryipname) {
+		// 			name := d.Get(primaryipname).(string)
+		// 			reservedIpPath.Name = &name
+		// 		}
+		// 		if d.HasChange(primaryipauto) {
+		// 			auto := d.Get(primaryipauto).(bool)
+		// 			reservedIpPath.AutoDelete = &auto
+		// 		}
+		// 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
+		// 		if err != nil {
+		// 			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+		// 		}
+		// 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
+		// 		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
+		// 		if err != nil {
+		// 			return fmt.Errorf("[ERROR] Error updating bare metal server network interface reserved ip(%s): %s\n%s", ripId, err, response)
+		// 		}
+		// 	}
+
+		// 	if d.HasChange(securitygrpKey) {
+		// 		ovs, nvs := d.GetChange(securitygrpKey)
+		// 		ov := ovs.(*schema.Set)
+		// 		nv := nvs.(*schema.Set)
+		// 		remove := flex.ExpandStringList(ov.Difference(nv).List())
+		// 		add := flex.ExpandStringList(nv.Difference(ov).List())
+		// 		if len(add) > 0 {
+		// 			networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
+		// 			networkID := d.Get(networkIDKey).(string)
+		// 			for i := range add {
+		// 				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
+		// 					SecurityGroupID: &add[i],
+		// 					ID:              &networkID,
+		// 				}
+		// 				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+		// 				if err != nil {
+		// 					return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
+		// 				}
+		// 			}
+
+		// 		}
+		// 		if len(remove) > 0 {
+		// 			networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
+		// 			networkID := d.Get(networkIDKey).(string)
+		// 			for i := range remove {
+		// 				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
+		// 					SecurityGroupID: &remove[i],
+		// 					ID:              &networkID,
+		// 				}
+		// 				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+		// 				if err != nil {
+		// 					return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
+		// 				}
+		// 			}
+		// 		}
+
+		// 	}
+
+	}
 	options := &vpcv1.UpdateBareMetalServerOptions{
 		ID: &id,
 	}
@@ -1551,7 +2004,6 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			isBareMetalServerRestart(sess, d.Id(), d, 10)
 		}
 	}
-
 	return nil
 }
 
@@ -1828,4 +2280,73 @@ func isBareMetalServerRestart(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 		return nil, err
 	}
 	return nil, nil
+}
+
+func resourceIBMBMSNicSet(v interface{}) int {
+	var buf bytes.Buffer
+	a := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-", a["subnet"].(string)))
+	// buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
+	buf.WriteString(fmt.Sprintf("%d-", a["vlan"].(int)))
+	buf.WriteString(fmt.Sprintf("%v-", a["allowed_vlans"].(*schema.Set)))
+	return conns.String(buf.String())
+}
+
+func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1) error {
+	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+		ID: &id,
+	}
+	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+	}
+	if *bms.Status == "running" {
+
+		options := &vpcv1.StopBareMetalServerOptions{
+			ID:   bms.ID,
+			Type: &stoppingType,
+		}
+
+		response, err := sess.StopBareMetalServerWithContext(context, options)
+		if err != nil && response != nil && response.StatusCode != 204 {
+			return fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+		}
+		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+
+	}
+	return nil
+}
+
+func resourceStartServerIfStopped(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1) error {
+	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
+		ID: &id,
+	}
+	bms, response, err := sess.GetBareMetalServerWithContext(context, getBmsOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
+		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+	}
+	if *bms.Status == "stopped" {
+
+		createbmsactoptions := &vpcv1.StartBareMetalServerOptions{
+			ID: &id,
+		}
+		response, err := sess.StartBareMetalServer(createbmsactoptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				return nil
+			}
+			return fmt.Errorf("[ERROR] Error creating Bare Metal Server action start : %s\n%s", err, response)
+		}
+		_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
