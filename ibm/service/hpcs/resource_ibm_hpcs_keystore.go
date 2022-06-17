@@ -148,13 +148,11 @@ func ResourceIbmKeystore() *schema.Resource {
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Name of the referenced vault.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "A URL that uniquely identifies your cloud resource.",
 						},
