@@ -4,14 +4,15 @@
 package kubernetes
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMContainerDedicatedHostPoolRead,
+		ReadContext: dataSourceIBMContainerDedicatedHostPoolRead,
 		Schema: map[string]*schema.Schema{
 			"host_pool_id": {
 				Type:        schema.TypeString,
@@ -97,11 +98,11 @@ func DataSourceIBMContainerDedicatedHostPool() *schema.Resource {
 	}
 }
 
-func dataSourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMContainerDedicatedHostPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	hostPoolID := d.Get("host_pool_id").(string)
 	err := getIBMContainerDedicatedHostPool(hostPoolID, d, meta)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving host pool details %v", err)
+		return diag.Errorf("[ERROR] Error retrieving host pool details %v", err)
 	}
 
 	d.SetId(hostPoolID)
