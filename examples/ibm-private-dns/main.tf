@@ -174,6 +174,7 @@ resource "ibm_dns_glb" "test_pdns_glb" {
   zone_id       = ibm_dns_zone.test-pdns-zone.zone_id
   description   = "new glb"
   ttl           = 120
+  enabled       = true
   fallback_pool = ibm_dns_glb_pool.test-pdns-pool-nw.pool_id
   default_pools = [ibm_dns_glb_pool.test-pdns-pool-nw.pool_id]
   az_pools {

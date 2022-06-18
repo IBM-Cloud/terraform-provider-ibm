@@ -23,12 +23,21 @@ resource "ibm_container_dedicated_host_pool" "test_dhostpool" {
 }
 ```
 
+## Timeouts
+
+ibm_container_dedicated_host_pool provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+* `create` - (Default 10 minutes) Used for creating the dedicated host pool.
+* `read`   - (Default 10 minutes) Used for reading the dedicated host pool.
+* `delete` - (Default 10 minutes) Used for deleting the dedicated host pool.
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
 - `name` - (Required, Forces new resource, String) The name of the dedicated host pool.
 - `metro`- (Required, Forces new resource, String) The metro to create the dedicated host pool in.
 - `flavor_class` - (Required, Forces new resource, String) The flavor class of the dedicated host pool.
+- `resource_group_id` - (Optional, String) The ID of the resource group where you want to create the dedicated host pool. To retrieve the ID, use the  `ibm_resource_group` data source. If no value is provided, the dedicated host pool is automatically created under the `default` resource group.
  
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -58,4 +67,4 @@ The `ibm_container_dedicated_host_pool` can be imported by using `id`.
 **Example**
 
 ```
-$ terraform import ibm_container_dedicated_host_pool.test_dhostpool <dedicated host id>
+$ terraform import ibm_container_dedicated_host_pool.test_dhostpool "dh-abcdefgh1234567"
