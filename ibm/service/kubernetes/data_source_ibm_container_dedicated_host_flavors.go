@@ -4,8 +4,9 @@
 package kubernetes
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -14,7 +15,7 @@ import (
 
 func DataSourceIBMContainerDedicatedHostFlavors() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMContainerDedicatedHostFlavorsRead,
+		ReadContext: dataSourceIBMContainerDedicatedHostFlavorsRead,
 		Schema: map[string]*schema.Schema{
 			"zone": {
 				Type:        schema.TypeString,
@@ -79,17 +80,17 @@ func DataSourceIBMContainerDedicatedHostFlavors() *schema.Resource {
 		},
 	}
 }
-func dataSourceIBMContainerDedicatedHostFlavorsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMContainerDedicatedHostFlavorsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	dedicatedHostFlavorsAPI := client.DedicatedHostFlavor()
 	targetEnv := v2.ClusterTargetHeader{}
 
 	dedicatedHostFlavors, err := dedicatedHostFlavorsAPI.ListDedicatedHostFlavors(d.Get("zone").(string), targetEnv)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Listing dedicated host flavors in zone %s failed: %v", d.Get("zone").(string), err)
+		return diag.Errorf("[ERROR] Listing dedicated host flavors in zone %s failed: %v", d.Get("zone").(string), err)
 	}
 
 	flavors := make([]interface{}, len(dedicatedHostFlavors))
@@ -115,6 +116,5 @@ func dataSourceIBMContainerDedicatedHostFlavorsRead(d *schema.ResourceData, meta
 
 	d.SetId(d.Get("zone").(string))
 	d.Set("host_flavors", flavors)
-
 	return nil
 }

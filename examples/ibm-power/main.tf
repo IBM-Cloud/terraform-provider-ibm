@@ -1,58 +1,64 @@
+data "ibm_pi_image" "data_source_image" {
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_image_name        = var.image_name
+}
 resource "ibm_pi_key" "key" {
-  pi_cloud_instance_id = var.powerinstanceid
-  pi_key_name          = var.sshkeyname
-  pi_ssh_key           = var.sshkey
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_key_name          = var.ssh_key_name
+  pi_ssh_key           = var.ssh_key_rsa
 }
+data "ibm_pi_key" "data_source_key" {
+  depends_on = [ibm_pi_key.key]
 
-data "ibm_pi_key" "dskey" {
-  depends_on           = [ibm_pi_key.key]
-  pi_cloud_instance_id = var.powerinstanceid
-  pi_key_name          = var.sshkeyname
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_key_name          = var.ssh_key_name
 }
-
-resource "ibm_pi_network" "power_networks" {
-  count                = 1
-  pi_network_name      = var.networkname
-  pi_cloud_instance_id = var.powerinstanceid
-  pi_network_type      = "pub-vlan"
+resource "ibm_pi_network" "network" {
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_network_name      = var.network_name
+  pi_network_type      = var.network_type
+  count                = var.network_count
 }
+data "ibm_pi_public_network" "data_source_network" {
+  depends_on = [ibm_pi_network.network]
 
-data "ibm_pi_public_network" "dsnetwork" {
-  depends_on           = [ibm_pi_network.power_networks]
-  pi_cloud_instance_id = var.powerinstanceid
+  pi_cloud_instance_id = var.cloud_instance_id
 }
-
 resource "ibm_pi_volume" "volume" {
-  pi_volume_size       = 20
-  pi_volume_name       = var.volname
-  pi_volume_type       = "ssd"
-  pi_volume_shareable  = true
-  pi_cloud_instance_id = var.powerinstanceid // Get it by running cmd "ibmcloud resource service-instances --long"
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_volume_name       = var.volume_name
+  pi_volume_type       = var.volume_type
+  pi_volume_size       = var.volume_size
+  pi_volume_shareable  = var.volume_shareable
+}
+data "ibm_pi_volume" "data_source_volume" {
+  depends_on = [ibm_pi_volume.volume]
+
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_volume_name       = var.volume_name
+}
+resource "ibm_pi_instance" "instance" {
+  depends_on = [data.ibm_pi_image.data_source_image,
+    data.ibm_pi_key.data_source_key,
+    data.ibm_pi_volume.data_source_volume,
+  data.ibm_pi_public_network.data_source_network]
+
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_instance_name     = var.instance_name
+  pi_memory            = var.memory
+  pi_processors        = var.processors
+  pi_proc_type         = var.proc_type
+  pi_storage_type      = var.storage_type
+  pi_sys_type          = var.sys_type
+  pi_image_id          = data.ibm_pi_image.data_source_image.id
+  pi_key_pair_name     = data.ibm_pi_key.data_source_key.id
+  pi_network { network_id = data.ibm_pi_public_network.data_source_network.id }
+  pi_volume_ids = [data.ibm_pi_volume.data_source_volume.id]
 }
 
-data "ibm_pi_volume" "dsvolume" {
-  depends_on           = [ibm_pi_volume.volume]
-  pi_cloud_instance_id = var.powerinstanceid
-  pi_volume_name       = var.volname
-}
+data "ibm_pi_instance" "data_source_instance" {
+  depends_on = [ibm_pi_instance.instance]
 
-data "ibm_pi_image" "powerimages" {
-  pi_image_name        = var.imagename
-  pi_cloud_instance_id = var.powerinstanceid
-}
-
-resource "ibm_pi_instance" "test-instance" {
-  pi_memory            = "4"
-  pi_processors        = "2"
-  pi_instance_name     = var.instancename
-  pi_proc_type         = "shared"
-  pi_image_id          = data.ibm_pi_image.powerimages.id
-  pi_key_pair_name     = data.ibm_pi_key.dskey.id
-  pi_sys_type          = "s922"
-  pi_cloud_instance_id = var.powerinstanceid
-  pi_volume_ids        = [data.ibm_pi_volume.dsvolume.id]
-
-  pi_network {
-    network_id = data.ibm_pi_public_network.dsnetwork.id
-  }
+  pi_cloud_instance_id = var.cloud_instance_id
+  pi_instance_name     = var.instance_name
 }
