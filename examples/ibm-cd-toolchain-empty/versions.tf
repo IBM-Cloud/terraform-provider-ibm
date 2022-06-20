@@ -1,5 +1,5 @@
 ###############################
-# IBM Cloud Copyright 2020 IBM
+# IBM Cloud Copyright 2022 IBM
 ###############################
 
 terraform {
