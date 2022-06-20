@@ -29,7 +29,7 @@ func TestAccIBMCisMtlsAppDataSource_Basic(t *testing.T) {
 }
 func testAccCheckCisMtlsAppDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	data "ibm_cis_mtls_app" "%[1]s" {
+	data "ibm_cis_mtls_apps" "%[1]s" {
 		cis_id = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.domain_id
 	  }
