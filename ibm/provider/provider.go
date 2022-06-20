@@ -16,6 +16,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/classicinfrastructure"
@@ -652,6 +654,37 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_slack":   eventnotification.DataSourceIBMEnSlackSubscription(),
 			"ibm_en_subscription_safari":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
+
+			// // Added for Toolchain
+			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
+			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
+			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
+			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.DataSourceIBMCdToolchainToolBitbucketgit(),
+			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.DataSourceIBMCdToolchainToolGithubintegrated(),
+			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.DataSourceIBMCdToolchainToolGithubconsolidated(),
+			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.DataSourceIBMCdToolchainToolGitlab(),
+			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.DataSourceIBMCdToolchainToolHostedgit(),
+			"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.DataSourceIBMCdToolchainToolArtifactory(),
+			"ibm_cd_toolchain_tool_custom":             cdtoolchain.DataSourceIBMCdToolchainToolCustom(),
+			"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.DataSourceIBMCdToolchainToolPipeline(),
+			"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.DataSourceIBMCdToolchainToolDevopsinsights(),
+			"ibm_cd_toolchain_tool_slack":              cdtoolchain.DataSourceIBMCdToolchainToolSlack(),
+			"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.DataSourceIBMCdToolchainToolSonarqube(),
+			"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.DataSourceIBMCdToolchainToolHashicorpvault(),
+			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.DataSourceIBMCdToolchainToolSecuritycompliance(),
+			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.DataSourceIBMCdToolchainToolPrivateworker(),
+			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.DataSourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.DataSourceIBMCdToolchainToolJenkins(),
+			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.DataSourceIBMCdToolchainToolNexus(),
+			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
+			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
+
+			// Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1019,6 +1052,37 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
 			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
+
+			// // Added for Toolchain
+			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
+			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotect(),
+			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanager(),
+			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgit(),
+			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegrated(),
+			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidated(),
+			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlab(),
+			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgit(),
+			"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.ResourceIBMCdToolchainToolArtifactory(),
+			"ibm_cd_toolchain_tool_custom":             cdtoolchain.ResourceIBMCdToolchainToolCustom(),
+			"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.ResourceIBMCdToolchainToolPipeline(),
+			"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.ResourceIBMCdToolchainToolDevopsinsights(),
+			"ibm_cd_toolchain_tool_slack":              cdtoolchain.ResourceIBMCdToolchainToolSlack(),
+			"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.ResourceIBMCdToolchainToolSonarqube(),
+			"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.ResourceIBMCdToolchainToolHashicorpvault(),
+			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycompliance(),
+			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworker(),
+			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkins(),
+			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
+			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
+			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
+
+			// // Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMTektonPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1164,6 +1228,36 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
+
+				// // Added for Toolchains
+				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),
+				"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotectValidator(),
+				"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanagerValidator(),
+				"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgitValidator(),
+				"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegratedValidator(),
+				"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidatedValidator(),
+				"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlabValidator(),
+				"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgitValidator(),
+				"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.ResourceIBMCdToolchainToolArtifactoryValidator(),
+				"ibm_cd_toolchain_tool_custom":             cdtoolchain.ResourceIBMCdToolchainToolCustomValidator(),
+				"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.ResourceIBMCdToolchainToolPipelineValidator(),
+				"ibm_cd_toolchain_tool_slack":              cdtoolchain.ResourceIBMCdToolchainToolSlackValidator(),
+				"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.ResourceIBMCdToolchainToolDevopsinsightsValidator(),
+				"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.ResourceIBMCdToolchainToolSonarqubeValidator(),
+				"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.ResourceIBMCdToolchainToolHashicorpvaultValidator(),
+				"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycomplianceValidator(),
+				"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworkerValidator(),
+				"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfigValidator(),
+				"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkinsValidator(),
+				"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexusValidator(),
+				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
+				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
+
+				// // Added for Tekton Pipeline
+				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
+				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
+				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
