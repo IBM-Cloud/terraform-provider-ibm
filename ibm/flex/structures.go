@@ -981,7 +981,7 @@ func float64Value(f32 *float32) (f float64) {
 	return
 }
 
-func dateToString(d *strfmt.Date) (s string) {
+func DateToString(d *strfmt.Date) (s string) {
 	if d != nil {
 		s = d.String()
 	}
