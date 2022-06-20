@@ -49,6 +49,7 @@ Review the argument references that you can specify for your resource.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with DHCP private network.
+- `pi_dhcp_server_name` - (Optional, String) Name of the dhcp server.
 
 ## Attribute reference
 
