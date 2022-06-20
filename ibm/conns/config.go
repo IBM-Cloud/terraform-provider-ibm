@@ -110,6 +110,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 )
 
@@ -237,6 +238,7 @@ type ClientSession interface {
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
+	UkoV4() (*ukov4.UkoV4, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
@@ -369,6 +371,9 @@ type clientSession struct {
 
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
+
+	ukoClient    *ukov4.UkoV4
+	ukoClientErr error
 
 	pDNSClient *dns.DnsSvcsV1
 	pDNSErr    error
@@ -656,6 +661,11 @@ func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1,
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
 func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
+}
+
+// UKO
+func (session clientSession) UkoV4() (*ukov4.UkoV4, error) {
+	return session.ukoClient, session.ukoClientErr
 }
 
 // UserManagementAPI provides User management APIs ...
@@ -1420,6 +1430,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	ukoClientOptions := &ukov4.UkoV4Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.ukoClient, err = ukov4.NewUkoV4(ukoClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ukoClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ukoClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
 	}
 
 	// APPID Service
