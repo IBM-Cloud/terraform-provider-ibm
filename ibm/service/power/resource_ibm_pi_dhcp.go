@@ -47,6 +47,12 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Description: "The cloud connection uuid to connect with DHCP private network",
 				ForceNew:    true,
 			},
+			PIDhcpServerName: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Name of the dhcp server",
+				ForceNew:    true,
+			},
 
 			//Computed Attributes
 			PIDhcpId: {
@@ -99,6 +105,10 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 	if c, ok := d.GetOk(helpers.PICloudConnectionId); ok {
 		ccID := c.(string)
 		body.CloudConnectionID = &ccID
+	}
+	if name, ok := d.GetOk(PIDhcpServerName); ok {
+		dhcpName := name.(string)
+		body.Name = &dhcpName
 	}
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)

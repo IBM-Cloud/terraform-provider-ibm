@@ -133,3 +133,31 @@ func testAccCheckIBMPIDhcpWithCloudConnectionConfig(name string) string {
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }
+
+func TestAccIBMPIDhcpWithDhcpServerName(t *testing.T) {
+	name := fmt.Sprintf("tf-dhcp-service-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIDhcpDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIDhcpWithDhcpServerNameConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIDhcpExists("ibm_pi_dhcp.dhcp_service"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_pi_dhcp.dhcp_service", "dhcp_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIDhcpWithDhcpServerNameConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_dhcp" "dhcp_service" {
+			pi_cloud_instance_id 	= "%s"
+			pi_dhcp_server_name 	= "%s"
+		}
+	`, acc.Pi_cloud_instance_id, name)
+}
