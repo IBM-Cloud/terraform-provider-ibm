@@ -135,7 +135,6 @@ func DataSourceIBMCISMtlsApp() *schema.Resource {
 							Computed:    true,
 							Description: "Application Updated At",
 						},
-						// TODO Include, Exclude and Require of Interface type
 					},
 				},
 			},
@@ -192,8 +191,6 @@ func dataIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
 			mtlsPolicyList["policy_uid"] = *PolicyObj.Uid
 			mtlsPolicyList["policy_created_at"] = *PolicyObj.CreatedAt
 			mtlsPolicyList["policy_updated_at"] = *PolicyObj.UpdatedAt
-
-			// TODO Include, Exclude and Require of Interface type
 
 			mtlsPolicyLists = append(mtlsPolicyLists, mtlsPolicyList)
 		}
