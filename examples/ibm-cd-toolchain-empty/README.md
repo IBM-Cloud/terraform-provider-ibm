@@ -5,7 +5,7 @@ This toolchain templates creates an empty toolchain in IBM Cloud region and reso
 ## Usage
 
 The terraform template requires you to provide values for the terraform variables. 
-Copy the file `variables.tfvar.example` as `variables.tfvar`. Provide appropriate values to the variables within the file. 
+Copy the file `variables.tfvars.example` as `variables.tfvars`. Provide appropriate values to the variables within the file. 
 
 
 1. Initialize the terraform project to download the terraform providers and modules
@@ -14,13 +14,13 @@ $ terraform init
 ```
 2. Perform terraform plan with the variables. Run `terraform plan` to see the changes that will be applied to your account after you make any change to the terraform code. 
 ```bash
-$ terraform plan -var-file=./variables.tfvar
+$ terraform plan -var-file=./variables.tfvars
 ```
 
 3. Perform terraform apply with the variables. Run `terraform apply` to apply the changes to the IBM Cloud after that will be applied to your account after you make any change to the terraform code. 
 
 ```bash
-$ terraform apply -var-file=./variables.tfvar
+$ terraform apply -var-file=./variables.tfvars
 ```
 
 Run `terraform destroy` to clean up and destroy all the resources created for the toolchain.
