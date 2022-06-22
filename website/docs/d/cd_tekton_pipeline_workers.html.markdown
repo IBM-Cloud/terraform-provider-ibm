@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_tekton_pipeline_workers"
 description: |-
   Get information about tekton_pipeline_workers
-subcategory: "Continuous Delivery Pipeline"
+subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_cd_tekton_pipeline_workers
