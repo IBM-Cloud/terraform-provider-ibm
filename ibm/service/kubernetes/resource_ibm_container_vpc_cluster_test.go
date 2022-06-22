@@ -123,6 +123,33 @@ func TestAccIBMContainerVpcClusterImageSecuritySetting(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterDedicatedHost(t *testing.T) {
+	clusterName := fmt.Sprintf("tf-vpc-cluster-dhost-%d", acctest.RandIntRange(10, 100))
+	hostPoolID := acc.HostPoolID
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterDedicatedHostSetting(
+					clusterName,
+					acc.IksClusterVpcID,
+					"bx2d.4x16",
+					acc.IksClusterSubnetID,
+					acc.IksClusterResourceGroupID,
+					hostPoolID,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.testacc_dhost_vpc_cluster", "host_pool_id", hostPoolID),
+				),
+			},
+		},
+	},
+	)
+}
+
 func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 	csClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -364,4 +391,77 @@ func testAccCheckIBMContainerVpcClusterImageSecuritySetting(name, setting string
 		  }
 		image_security_enforcement = %s
 	  }`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.SubnetID, setting)
+}
+
+func testAccCheckIBMContainerVpcClusterDedicatedHostSetting(name, vpcID, flavor, subnetID, rgroupID, hostpoolID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "testacc_dhost_vpc_cluster" {
+		name = "%s"
+		vpc_id = "%s"
+		flavor = "%s"
+		zones {
+		  subnet_id = "%s"
+		  name      = "us-south-1"
+		}
+		resource_group_id = "%s"
+		host_pool_id = "%s"
+	}`, name, vpcID, flavor, subnetID, rgroupID, hostpoolID)
+}
+
+// This test is here to help to focus on given resources, but requires everything else existing already
+func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "worker_count", "1"),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_cluster.cluster",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_till", "update_all_workers", "kms_config", "force_delete_storage", "wait_for_worker_update"},
+			},
+		},
+	})
+}
+
+// You need to set up env vars:
+// export IBM_CLUSTER_VPC_ID
+// export IBM_CLUSTER_VPC_SUBNET_ID
+// export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// export IBM_KMS_INSTANCE_ID
+// export IBM_CRK_ID
+// for acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID
+func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
+	config := fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%[1]s"
+		vpc_id            = "%[2]s"
+		flavor            = "bx2.4x16"
+		worker_count      = 1
+		resource_group_id = "%[3]s"
+		zones {
+			subnet_id = "%[4]s"
+			name      = "us-south-1"
+		}
+		kms_instance_id = "%[5]s"
+		crk = "%[6]s"
+	}
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
+	fmt.Println(config)
+	return config
 }

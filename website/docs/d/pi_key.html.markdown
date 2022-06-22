@@ -46,4 +46,4 @@ In addition to all argument reference list, you can access the following attribu
 
 - `creation_date` - Timestamp - The timestamp when the SSH key was created.
 - `id` - (String) The unique identifier of the SSH key.
-- `sshkey` - (String) The public SSH key value.
+- `ssh_key` - (String) The public SSH key value.

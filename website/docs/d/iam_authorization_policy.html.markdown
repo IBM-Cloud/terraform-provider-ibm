@@ -23,6 +23,7 @@ data "ibm_iam_authorization_policies" "testacc_ds_authorization_policy" {
 Review the argument references that you can specify for your data source.
 
 - `account_id` - (Optional, String) An alpha-numeric value identifying the account ID.
+- `transaction_id`- (Optional, String) The TransactionID can be passed to your request for the tracking calls.
 
 ## Attribute reference
 

@@ -108,8 +108,11 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 )
 
@@ -237,6 +240,7 @@ type ClientSession interface {
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
+	UkoV4() (*ukov4.UkoV4, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
@@ -284,6 +288,8 @@ type ClientSession interface {
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
+	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
+	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 }
 
 type clientSession struct {
@@ -369,6 +375,9 @@ type clientSession struct {
 
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
+
+	ukoClient    *ukov4.UkoV4
+	ukoClientErr error
 
 	pDNSClient *dns.DnsSvcsV1
 	pDNSErr    error
@@ -582,6 +591,14 @@ type clientSession struct {
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
+
+	// CD Toolchain
+	cdToolchainClient    *cdtoolchainv2.CdToolchainV2
+	cdToolchainClientErr error
+
+	// CD Tekton Pipeline
+	cdTektonPipelineClient    *cdtektonpipelinev2.CdTektonPipelineV2
+	cdTektonPipelineClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -656,6 +673,11 @@ func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1,
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
 func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
+}
+
+// UKO
+func (session clientSession) UkoV4() (*ukov4.UkoV4, error) {
+	return session.ukoClient, session.ukoClientErr
 }
 
 // UserManagementAPI provides User management APIs ...
@@ -1111,6 +1133,16 @@ func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrict
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
 }
 
+// CD Toolchain
+func (session clientSession) CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error) {
+	return session.cdToolchainClient, session.cdToolchainClientErr
+}
+
+// CD Tekton Pipeline
+func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error) {
+	return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, err := newSession(c)
@@ -1201,6 +1233,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
+		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
+		session.cdToolchainClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1420,6 +1454,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		authenticator = &core.BearerTokenAuthenticator{
 			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
 		}
+	}
+
+	// Construct an "options" struct for creating the service client.
+	ukoClientOptions := &ukov4.UkoV4Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.ukoClient, err = ukov4.NewUkoV4(ukoClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ukoClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ukoClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
 	}
 
 	// APPID Service
@@ -3012,6 +3064,73 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// Construct an "options" struct for creating the service client.
+	var cdToolchainClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
+	}
+	cdToolchainClientOptions := &cdtoolchainv2.CdToolchainV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, cdToolchainClientURL),
+	}
+
+	// Construct the service client.
+	session.cdToolchainClient, err = cdtoolchainv2.NewCdToolchainV2(cdToolchainClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cdToolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cdToolchainClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the tekton pipeline service client.
+	var cdTektonPipelineClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
+	}
+	cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
+	}
+	// Construct the service client.
+	session.cdTektonPipelineClient, err = cdtektonpipelinev2.NewCdTektonPipelineV2(cdTektonPipelineClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
 	}
 
 	if os.Getenv("TF_LOG") != "" {

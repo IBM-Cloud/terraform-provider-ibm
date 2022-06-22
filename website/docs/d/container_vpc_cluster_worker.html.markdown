@@ -13,7 +13,7 @@ Retrieve information about the worker nodes of your IBM Cloud Kubernetes Service
 The following example retrieves information about a worker node with the ID in the cluster. 
 
 ```terraform
-data "ibm_container_cluster_worker" "worker_foo" {
+data "ibm_container_vpc_cluster_worker" "worker_foo" {
   worker_id       = "dev-mex10-pa70c4414695c041518603bfd0cd6e333a-w1"
   cluster_name_id = "test"
 }
@@ -31,6 +31,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `cidr` - (String) The CIDR of the network.
+- `host_pool_id` - (String) The ID of the dedicated host pool the worker is associated with.
 - `ip_address` - (String) The IP address of the worker pool that the worker node belongs to.
 - `network_interfaces` - (String) The network interface of the cluster.
 - `pool_id` - (String) The ID of the worker pool that the worker node belongs to.

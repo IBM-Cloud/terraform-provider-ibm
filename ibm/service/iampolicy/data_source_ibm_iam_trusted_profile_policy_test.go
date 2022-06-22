@@ -47,6 +47,23 @@ func TestAccIBMIAMTrustedProfilePolicyDataSource_Multiple_Policies(t *testing.T)
 	})
 }
 
+func TestAccIBMIAMTrustedProfilePolicyDataSourceServiceSpecificAttributesConfig(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMTrustedProfilePolicyDataSourceServiceSpecificAttributesConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_trusted_profile_policy.policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMTrustedProfilePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -121,5 +138,32 @@ data "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
   sort = "id"
 }`, name, name)
+
+}
+
+func testAccCheckIBMIAMTrustedProfilePolicyDataSourceServiceSpecificAttributesConfig(name string) string {
+	return fmt.Sprintf(`
+resource "ibm_iam_trusted_profile" "profileID" {
+  name        = "%s"
+  description = "Profile ID for test"
+}
+
+resource "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile.profileID.id
+  roles          = ["Manager", "Viewer", "Administrator"]
+
+  resource_attributes {
+		name     = "serviceName"
+		value    = "containers-kubernetes"
+	}
+	resource_attributes {
+		name     = "namespace"
+		value    = "test"
+	}
+}
+
+data "ibm_iam_trusted_profile_policy" "policy" {
+  profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
+}`, name)
 
 }

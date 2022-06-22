@@ -353,6 +353,7 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 			"isolation":    workerPool.Isolation,
 			"labels":       workerPool.Labels,
 			"state":        workerPool.Lifecycle.ActualState,
+			"host_pool_id": workerPool.HostPoolID,
 		}
 		zones := workerPool.Zones
 		zonesConfig := make([]map[string]interface{}, len(zones))
@@ -980,7 +981,7 @@ func float64Value(f32 *float32) (f float64) {
 	return
 }
 
-func dateToString(d *strfmt.Date) (s string) {
+func DateToString(d *strfmt.Date) (s string) {
 	if d != nil {
 		s = d.String()
 	}

@@ -24,11 +24,11 @@ resource "ibm_iam_access_group" "accgrp" {
 resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
   roles           = ["Viewer"]
-  
   resource_tags {
     name = "env"
     value = "dev"
   }
+  transaction_id     = "terraformUserPolicy"
 }
 
 ```
@@ -248,6 +248,8 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) The key of an access management tag. 
   - `value` - (Required, String) The value of an access management tag.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
+
+- `transaction_id`- (Optional, String) The TransactionID can be passed to your request for tracking the calls.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

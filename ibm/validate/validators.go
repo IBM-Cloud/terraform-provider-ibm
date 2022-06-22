@@ -1060,7 +1060,7 @@ func (f FunctionIdentifier) MarshalText() ([]byte, error) {
 
 // Use stringer tool to generate this later.
 func (i FunctionIdentifier) String() string {
-	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost", "ValidateAllowedStringValue", "StringLenBetween", "ValidateIPorCIDR", "ValidateAllowedIntValue", "ValidateRegexpLen", "ValidateRegexp", "ValidateNoZeroValues", "ValidateJSONString", "ValidateJSONParam", "ValidateBindedPackageName", "ValidateOverlappingAddress"}[i]
+	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost", "ValidateAllowedStringValue", "StringLenBetween", "ValidateIPorCIDR", "ValidateCIDRAddress", "ValidateAllowedIntValue", "ValidateRegexpLen", "ValidateRegexp", "ValidateNoZeroValues", "ValidateJSONString", "ValidateJSONParam", "ValidateBindedPackageName", "ValidateOverlappingAddress"}[i]
 }
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.

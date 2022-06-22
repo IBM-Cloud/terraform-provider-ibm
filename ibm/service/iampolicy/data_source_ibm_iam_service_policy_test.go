@@ -47,6 +47,23 @@ func TestAccIBMIAMServicePolicyDataSource_Multiple_Policies(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMServicePolicyDataSourceServiceSpecificAttributesConfig(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMServicePolicyDataSourceServiceSpecificAttributesConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_service_policy.testacc_ds_service_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMServicePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 
@@ -122,5 +139,34 @@ data "ibm_iam_service_policy" "testacc_ds_service_policy" {
   iam_service_id = ibm_iam_service_policy.policy.iam_service_id
   sort = "id"
 }`, name, name)
+
+}
+
+func testAccCheckIBMIAMServicePolicyDataSourceServiceSpecificAttributesConfig(name string) string {
+	return fmt.Sprintf(`
+
+resource "ibm_iam_service_id" "serviceID" {
+  name        = "%s"
+  description = "Service ID for test"
+}
+
+resource "ibm_iam_service_policy" "policy" {
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Manager", "Viewer", "Administrator"]
+
+  resource_attributes {
+		name     = "serviceName"
+		value    = "containers-kubernetes"
+	}
+	resource_attributes {
+		name     = "namespace"
+		value    = "test"
+	}
+  
+}
+
+data "ibm_iam_service_policy" "testacc_ds_service_policy" {
+  iam_service_id = ibm_iam_service_policy.policy.iam_service_id
+}`, name)
 
 }

@@ -33,14 +33,20 @@ func DataSourceIBMPIKey() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			//Computed Attributes
-			"creation_date": {
+			PIKeyDate: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"sshkey": {
+			PIKey: {
 				Type:      schema.TypeString,
 				Sensitive: true,
 				Computed:  true,
+			},
+			"sshkey": {
+				Type:       schema.TypeString,
+				Sensitive:  true,
+				Computed:   true,
+				Deprecated: "This field is deprecated, use ssh_key instead",
 			},
 		},
 	}
@@ -61,7 +67,9 @@ func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	d.SetId(*sshkeydata.Name)
-	d.Set("creation_date", sshkeydata.CreationDate.String())
+	d.Set(PIKeyDate, sshkeydata.CreationDate.String())
+	d.Set(PIKey, sshkeydata.SSHKey)
+	// TODO: deprecated, to remove
 	d.Set("sshkey", sshkeydata.SSHKey)
 	d.Set(helpers.PIKeyName, sshkeydata.Name)
 

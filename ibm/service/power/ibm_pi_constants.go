@@ -9,6 +9,7 @@ const (
 	PIKeyName = "name"
 	PIKey     = "ssh_key"
 	PIKeyDate = "creation_date"
+	PIKeyID   = "key_id"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
@@ -39,6 +40,7 @@ const (
 	PIInstanceNetwork             = "pi_network"
 	PIInstanceStoragePool         = "pi_storage_pool"
 	PISAPInstanceProfileID        = "pi_sap_profile_id"
+	PISAPInstanceDeploymentType   = "pi_sap_deployment_type"
 	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
 
 	// Placement Group
@@ -61,4 +63,7 @@ const (
 	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
 	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
 	PIVPNConnectionVpnGatewayAddress          = "gateway_address"
+
+	// Cloud Connections
+	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
 )
