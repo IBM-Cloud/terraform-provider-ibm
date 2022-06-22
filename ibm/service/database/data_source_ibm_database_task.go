@@ -6,9 +6,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -60,23 +60,15 @@ func dataSourceIBMDatabaseTaskRead(context context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] HEY WE ARE HERE")
-
 	getTaskOptions := &clouddatabasesv5.GetTaskOptions{}
-
-	log.Printf("getTaskOptions %v %s", getTaskOptions, d.Get("task_id").(string))
 
 	getTaskOptions.SetID(d.Get("task_id").(string))
 
-	log.Printf("getTaskOptions twooo %v", getTaskOptions)
-
 	task, response, err := cloudDatabasesClient.GetTaskWithContext(context, getTaskOptions)
+
 	if err != nil {
-		log.Printf("[DEBUG] GetTaskWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetTaskWithContext failed %s\n%s", err, response))
 	}
-
-	log.Printf("task broooooooo twooo %v %v", task, task.Task)
 
 	d.SetId(*task.Task.ID)
 
@@ -109,7 +101,7 @@ func dataSourceIBMDatabaseTaskRead(context context.Context, d *schema.ResourceDa
 	}
 
 	if task.Task.CreatedAt != nil {
-		if err = d.Set("created_at", task.Task.CreatedAt); err != nil {
+		if err = d.Set("created_at", flex.DateTimeToString(task.Task.CreatedAt)); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 		}
 	}

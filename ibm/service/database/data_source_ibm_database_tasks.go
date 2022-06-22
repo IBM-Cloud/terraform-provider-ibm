@@ -6,7 +6,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -80,12 +79,10 @@ func dataSourceIBMDatabaseTasksRead(context context.Context, d *schema.ResourceD
 
 	tasks, response, err := cloudDatabasesClient.ListDeploymentTasksWithContext(context, listDeploymentTasksOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListDeploymentTasksWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("ListDeploymentTasksWithContext failed %s\n%s", err, response))
 	}
 
 	// Use the provided filter argument and construct a new list with only the requested resource(s)
-	// log.Printf("[DEBUG] TASKSSSSSS %v", tasks.Tasks)
 	var matchTasks []clouddatabasesv5.Task
 	var deploymentID string
 	var suppliedFilter bool
@@ -94,7 +91,6 @@ func dataSourceIBMDatabaseTasksRead(context context.Context, d *schema.ResourceD
 		deploymentID = v.(string)
 		suppliedFilter = true
 		for _, data := range tasks.Tasks {
-			log.Printf("[DEBUG] data yoooooo %v", data)
 			if *data.DeploymentID == deploymentID {
 				matchTasks = append(matchTasks, data)
 			}
@@ -102,7 +98,6 @@ func dataSourceIBMDatabaseTasksRead(context context.Context, d *schema.ResourceD
 	} else {
 		matchTasks = tasks.Tasks
 	}
-	log.Printf("[DEBUG] matchTasks %v", matchTasks)
 	tasks.Tasks = matchTasks
 
 	if suppliedFilter {
@@ -118,7 +113,6 @@ func dataSourceIBMDatabaseTasksRead(context context.Context, d *schema.ResourceD
 	if tasks.Tasks != nil {
 		for _, modelItem := range tasks.Tasks {
 			modelMap, err := DataSourceIBMDatabaseTasksTaskToMap(&modelItem)
-			log.Printf("[DEBUG] modelMap %s", modelMap)
 			if err != nil {
 				return diag.FromErr(err)
 			}
