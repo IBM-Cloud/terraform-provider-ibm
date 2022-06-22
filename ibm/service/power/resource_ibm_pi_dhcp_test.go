@@ -135,7 +135,7 @@ func testAccCheckIBMPIDhcpWithCloudConnectionConfig(name string) string {
 }
 
 func TestAccIBMPIDhcpWithDhcpServerName(t *testing.T) {
-	name := fmt.Sprintf("tf-dhcp-service-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-dhcp-server-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
