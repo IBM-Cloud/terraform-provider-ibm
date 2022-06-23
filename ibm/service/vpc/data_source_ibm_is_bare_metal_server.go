@@ -362,7 +362,7 @@ func DataSourceIBMIsBareMetalServer() *schema.Resource {
 			isBareMetalServerTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", "tag")},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Tags for the Bare metal server",
 			},
@@ -383,6 +383,15 @@ func DataSourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 			Identifier:                 isBareMetalServerName,
 			ValidateFunctionIdentifier: validate.ValidateNoZeroValues,
 			Type:                       validate.TypeString})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISBMSDataSourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_bare_metal_server", Schema: validateSchema}
 	return &ibmISBMSDataSourceValidator
