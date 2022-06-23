@@ -367,7 +367,7 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 						isBareMetalServerTags: {
 							Type:        schema.TypeSet,
 							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", "tag")},
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", "tags")},
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "Tags for the Bare metal server",
 						},
