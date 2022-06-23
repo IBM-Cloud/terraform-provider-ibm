@@ -214,7 +214,7 @@ func ResourceIbmKeystore() *schema.Resource {
 }
 
 func ResourceIbmKeystoreValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "region",
