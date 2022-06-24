@@ -625,6 +625,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profile":           scc.DataSourceIBMSccPostureProfileDetails(),
 			"ibm_scc_posture_group_profile":     scc.DataSourceIBMSccPostureGroupProfileDetails(),
 			"ibm_scc_posture_scope_correlation": scc.DataSourceIBMSccPostureScopeCorrelation(),
+			"ibm_scc_posture_get_credential":    dataSourceIBMSccPostureGetCredential(),
+			"ibm_scc_posture_get_collector":     dataSourceIBMSccPostureGetCollector(),
+			"ibm_scc_posture_get_scope":         dataSourceIBMSccPostureGetScope(),
 
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
