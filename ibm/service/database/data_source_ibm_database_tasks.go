@@ -30,7 +30,7 @@ func DataSourceIBMDatabaseTasks() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"task_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "ID of the task.",
@@ -134,7 +134,7 @@ func DataSourceIBMDatabaseTasksID(d *schema.ResourceData) string {
 func DataSourceIBMDatabaseTasksTaskToMap(model *clouddatabasesv5.Task) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
-		modelMap["id"] = *model.ID
+		modelMap["task_id"] = *model.ID
 	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description

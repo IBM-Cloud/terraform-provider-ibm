@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_task"
 description: |-
   Get information about database_task
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_task

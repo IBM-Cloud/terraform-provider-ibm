@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_database_tasks"
 description: |-
   Get information about database_tasks
-subcategory: "The IBM Cloud Databases API"
+subcategory: "Cloud Databases"
 ---
 
 # ibm_database_tasks
@@ -34,7 +34,7 @@ Nested scheme for **tasks**:
 	* `created_at` - (Optional, String) Date and time when the task was created.
 	* `deployment_id` - (Optional, String) ID of the deployment the task is being performed on.
 	* `description` - (Optional, String) Human-readable description of the task.
-	* `id` - (Optional, String) ID of the task.
+	* `task_id` - (Optional, String) ID of the task.
 	* `progress_percent` - (Optional, Integer) Indicator as percentage of progress of the task.
 	* `status` - (Optional, String) The status of the task.
 	  * Constraints: Allowable values are: `running`, `completed`, `failed`.
