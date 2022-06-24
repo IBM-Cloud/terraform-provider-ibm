@@ -12,6 +12,13 @@ resource "ibm_cd_tekton_pipeline_property" "ci_env_app_name" {
   pipeline_id    = var.pipeline_id         
 }
 
+resource "ibm_cd_tekton_pipeline_property" "ci_env_branch" {
+  name           = "branch"
+  type           = "TEXT"
+  value          = "main"
+  pipeline_id    = var.pipeline_id         
+}
+
 resource "ibm_cd_tekton_pipeline_property" "ci_env_cluster_name" {
   name           = "cluster-name"
   type           = "TEXT"
@@ -85,6 +92,6 @@ resource "ibm_cd_tekton_pipeline_property" "ci_env_repository" {
 resource "ibm_cd_tekton_pipeline_property" "ci_env_ibmcloud-api" {
   name           = "ibmcloud-api"
   type           = "TEXT"
-  value          = "https://test.cloud.ibm.com"
+  value          = "https://cloud.ibm.com"
   pipeline_id    = var.pipeline_id         
 }

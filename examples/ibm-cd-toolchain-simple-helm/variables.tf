@@ -60,19 +60,19 @@ variable "cluster_namespace" {
 variable "cluster_region" {
   type        = string
   description = "Region of the kubernetes cluster where the application will be deployed."
-  default     = "ibm:ys1:us-south"
+  default     = "ibm:yp1:us-south"
 }
 
 variable "registry_namespace" {
   type        = string
   description = "Namespace within the IBM Cloud Container Registry where application image need to be stored."
-  default     = "alpha-cd-namespace"
+  default     = "myregistry-free"
 }
 
 variable "registry_region" {
   type        = string
   description = "IBM Cloud Region where the IBM Cloud Container Registry where registry is to be created."
-  default     = "ibm:ys1:us-south"
+  default     = "ibm:yp1:us-south"
 }
 
 variable "kp_name" {

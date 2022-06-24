@@ -18,3 +18,6 @@ variable "region" {
 
 variable "ibm_cloud_api_key" {
 }
+
+variable "repositories_prefix" { 
+}

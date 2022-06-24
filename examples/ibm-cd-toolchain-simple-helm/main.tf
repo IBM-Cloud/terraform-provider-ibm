@@ -17,6 +17,7 @@ module "repositories" {
   app_repo                        = var.app_repo
   pipeline_repo                   = var.pipeline_repo
   tekton_tasks_catalog_repo       = var.tekton_tasks_catalog_repo
+  repositories_prefix             = var.app_name
 }
 
 resource "ibm_cd_toolchain_tool_pipeline" "ci_pipeline" {

@@ -5,7 +5,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "app_repo" {
     type = "clone"
     source_repo_url = var.app_repo
     private_repo = true
-    repo_name = join("-", [split(".", split("/", var.app_repo)[4])[0], formatdate("DDMMYYYYhhmmss", timestamp())])
+    repo_name = join("-", [ var.repositories_prefix, "app-repo" ])
   }  
   parameters {
     has_issues          = true
@@ -20,7 +20,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "pipeline_repo" {
     type = "clone"
     repo_url = var.pipeline_repo
     private_repo = true
-    repo_name = join("-", [split(".", split("/", var.pipeline_repo)[4])[0], formatdate("DDMMYYYYhhmmss", timestamp())])
+    repo_name = join("-", [ var.repositories_prefix, "pipeline-repo" ])
   }
   parameters {
     has_issues          = false
@@ -35,7 +35,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "tekton_tasks_catalog_repo" {
     type = "clone"
     repo_url = var.tekton_tasks_catalog_repo
     private_repo = true
-    repo_name = join("-", [split(".", split("/", var.tekton_tasks_catalog_repo)[4])[0], formatdate("DDMMYYYYhhmmss", timestamp())])
+    repo_name = join("-", [ var.repositories_prefix, "tasks-repo" ])
   }
   parameters {
     has_issues          = false
