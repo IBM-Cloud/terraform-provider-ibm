@@ -20,6 +20,7 @@ const (
 	PISAPProfileType      = "type"
 
 	// DHCP
+	PIDhcpDnsServer      = "pi_dhcp_dns_server"
 	PIDhcpServerName     = "pi_dhcp_server_name"
 	PIDhcpStatusBuilding = "Building"
 	PIDhcpStatusActive   = "ACTIVE"
