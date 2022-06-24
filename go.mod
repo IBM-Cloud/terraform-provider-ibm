@@ -57,3 +57,5 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
+
+replace github.com/IBM-Cloud/power-go-client => github.com/guruhosmath/power-go-client v1.0.84

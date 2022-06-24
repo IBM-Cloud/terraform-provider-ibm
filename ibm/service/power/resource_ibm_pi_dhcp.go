@@ -53,6 +53,12 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Description: "Name of the dhcp server",
 				ForceNew:    true,
 			},
+			PIDhcpDnsServer: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "IP address of dns server for dhcp server",
+				ForceNew:    true,
+			},
 
 			//Computed Attributes
 			PIDhcpId: {
@@ -109,6 +115,10 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 	if name, ok := d.GetOk(PIDhcpServerName); ok {
 		dhcpName := name.(string)
 		body.Name = &dhcpName
+	}
+	if dnsServer, ok := d.GetOk(PIDhcpDnsServer); ok {
+		dhcpDnsServer := dnsServer.(string)
+		body.DNSServer = &dhcpDnsServer
 	}
 
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
