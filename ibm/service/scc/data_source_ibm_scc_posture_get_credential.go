@@ -1,20 +1,22 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
-func dataSourceIBMSccPostureGetCredential() *schema.Resource {
+func DataSourceIBMSccPostureGetCredential() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSccPostureGetCredentialRead,
 
@@ -222,18 +224,18 @@ func dataSourceIBMSccPostureGetCredential() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureGetCredentialRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getCredentialOptions := &posturemanagementv2.GetCredentialOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	getCredentialOptions.SetAccountID(accountID)
 	getCredentialOptions.SetID(d.Get("id").(string))
 
@@ -266,10 +268,10 @@ func dataSourceIBMSccPostureGetCredentialRead(context context.Context, d *schema
 	if err = d.Set("created_by", credential.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", dateTimeToString(credential.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(credential.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", dateTimeToString(credential.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(credential.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("updated_by", credential.UpdatedBy); err != nil {

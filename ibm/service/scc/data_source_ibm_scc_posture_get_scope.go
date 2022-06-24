@@ -1,20 +1,22 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
-func dataSourceIBMSccPostureGetScope() *schema.Resource {
+func DataSourceIBMSccPostureGetScope() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSccPostureGetScopeRead,
 
@@ -826,18 +828,18 @@ func dataSourceIBMSccPostureGetScope() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureGetScopeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getScopeDetailsOptions := &posturemanagementv2.GetScopeDetailsOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	getScopeDetailsOptions.SetAccountID(accountID)
 	getScopeDetailsOptions.SetID(d.Get("id").(string))
 
@@ -860,13 +862,13 @@ func dataSourceIBMSccPostureGetScopeRead(context context.Context, d *schema.Reso
 	if err = d.Set("description", scope.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("org_id", intValue(scope.OrgID)); err != nil {
+	if err = d.Set("org_id", flex.IntValue(scope.OrgID)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting org_id: %s", err))
 	}
-	if err = d.Set("cloud_type_id", intValue(scope.CloudTypeID)); err != nil {
+	if err = d.Set("cloud_type_id", flex.IntValue(scope.CloudTypeID)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting cloud_type_id: %s", err))
 	}
-	if err = d.Set("tld_credential_id", intValue(scope.TldCredentialID)); err != nil {
+	if err = d.Set("tld_credential_id", flex.IntValue(scope.TldCredentialID)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting tld_credential_id: %s", err))
 	}
 	if err = d.Set("status", scope.Status); err != nil {
@@ -996,10 +998,10 @@ func dataSourceIBMSccPostureGetScopeRead(context context.Context, d *schema.Reso
 	if err = d.Set("is_discovery_scheduled", scope.IsDiscoveryScheduled); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting is_discovery_scheduled: %s", err))
 	}
-	if err = d.Set("interval", intValue(scope.Interval)); err != nil {
+	if err = d.Set("interval", flex.IntValue(scope.Interval)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting interval: %s", err))
 	}
-	if err = d.Set("discovery_setting_id", intValue(scope.DiscoverySettingID)); err != nil {
+	if err = d.Set("discovery_setting_id", flex.IntValue(scope.DiscoverySettingID)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting discovery_setting_id: %s", err))
 	}
 	if err = d.Set("include_new_eagerly", scope.IncludeNewEagerly); err != nil {

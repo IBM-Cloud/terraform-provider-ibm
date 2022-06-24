@@ -1,20 +1,22 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package ibm
+package scc
 
 import (
 	"context"
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 )
 
-func dataSourceIBMSccPostureGetCollector() *schema.Resource {
+func DataSourceIBMSccPostureGetCollector() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMSccPostureGetCollectorRead,
 
@@ -184,18 +186,18 @@ func dataSourceIBMSccPostureGetCollector() *schema.Resource {
 }
 
 func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	postureManagementClient, err := meta.(ClientSession).PostureManagementV2()
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	getCollectorOptions := &posturemanagementv2.GetCollectorOptions{}
-	userDetails, err := meta.(ClientSession).BluemixUserDetails()
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error getting userDetails %s", err))
 	}
 
-	accountID := userDetails.userAccount
+	accountID := userDetails.UserAccount
 	getCollectorOptions.SetAccountID(accountID)
 	getCollectorOptions.SetID(d.Get("id").(string))
 
@@ -215,7 +217,7 @@ func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.
 	if err = d.Set("public_key", collector.PublicKey); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting public_key: %s", err))
 	}
-	if err = d.Set("last_heartbeat", dateTimeToString(collector.LastHeartbeat)); err != nil {
+	if err = d.Set("last_heartbeat", flex.DateTimeToString(collector.LastHeartbeat)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting last_heartbeat: %s", err))
 	}
 	if err = d.Set("status", collector.Status); err != nil {
@@ -233,13 +235,13 @@ func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.
 	if err = d.Set("created_by", collector.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("created_at", dateTimeToString(collector.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(collector.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("updated_by", collector.UpdatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_by: %s", err))
 	}
-	if err = d.Set("updated_at", dateTimeToString(collector.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(collector.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 	if err = d.Set("enabled", collector.Enabled); err != nil {
@@ -254,7 +256,7 @@ func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.
 	if err = d.Set("credential_public_key", collector.CredentialPublicKey); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting credential_public_key: %s", err))
 	}
-	if err = d.Set("failure_count", intValue(collector.FailureCount)); err != nil {
+	if err = d.Set("failure_count", flex.IntValue(collector.FailureCount)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting failure_count: %s", err))
 	}
 	if err = d.Set("approved_local_gateway_ip", collector.ApprovedLocalGatewayIP); err != nil {
@@ -281,7 +283,7 @@ func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.
 	if err = d.Set("managed_by", collector.ManagedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting managed_by: %s", err))
 	}
-	if err = d.Set("trial_expiry", dateTimeToString(collector.TrialExpiry)); err != nil {
+	if err = d.Set("trial_expiry", flex.DateTimeToString(collector.TrialExpiry)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting trial_expiry: %s", err))
 	}
 	if err = d.Set("last_failed_internet_gateway_ip", collector.LastFailedInternetGatewayIP); err != nil {
@@ -290,7 +292,7 @@ func dataSourceIBMSccPostureGetCollectorRead(context context.Context, d *schema.
 	if err = d.Set("status_description", collector.StatusDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting status_description: %s", err))
 	}
-	if err = d.Set("reset_time", dateTimeToString(collector.ResetTime)); err != nil {
+	if err = d.Set("reset_time", flex.DateTimeToString(collector.ResetTime)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting reset_time: %s", err))
 	}
 	if err = d.Set("is_public", collector.IsPublic); err != nil {
