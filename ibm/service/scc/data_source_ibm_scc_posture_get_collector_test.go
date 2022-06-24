@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package scc
+package scc_test
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ func TestAccIBMSccPostureGetCollectorDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureGetCollectorDataSourceConfigBasic(scc_posture_collector_id),
+				Config: testAccCheckIBMSccPostureGetCollectorDataSourceConfigBasic(acc.Scc_posture_collector_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_get_collector.get_collector", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_get_collector.get_collector", "display_name"),

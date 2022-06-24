@@ -1,7 +1,7 @@
 // Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
-package scc
+package scc_test
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ func TestAccIBMSccPostureGetCredentialDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMSccPostureGetCredentialDataSourceConfigBasic(scc_posture_credential_id),
+				Config: testAccCheckIBMSccPostureGetCredentialDataSourceConfigBasic(acc.Scc_posture_credential_id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_get_credential.get_credential", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_get_credential.get_credential", "enabled"),
