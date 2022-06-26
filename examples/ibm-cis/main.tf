@@ -439,6 +439,21 @@ resource "ibm_cis_alert" "test" {
 data "ibm_cis_alerts" "test1" {
   cis_id = data.ibm_cis.cis.id
 }
+
+# CIS Authentication Origin Zone Level Data source
+data "ibm_cis_origin_auths" "test" {
+	cis_id          = data.ibm_cis.cis.id
+	domain_id 		= data.ibm_cis_domain.cis_domain.domain_id
+}
+
+# CIS Authentication Origin Per Hostname Data source
+data "ibm_cis_origin_auths" "test" {
+	cis_id          = data.ibm_cis.cis.id
+	domain_id 		= data.ibm_cis_domain.cis_domain.domain_id
+  request_type    = "per_hostname"
+	hostname        = data.ibm_cis_domain.cis_domain.domain
+}
+
 # CIS Logpush Job
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id
