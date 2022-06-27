@@ -47,6 +47,23 @@ func TestAccIBMIAMAccessGroupPolicyDataSource_Multiple_Policies(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccessGroupPolicyDataSourceSpecificAttributesConfig(t *testing.T) {
+	name := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIAMAccessGroupPolicyDataSourceSpecificAttributesConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_iam_access_group_policy.testacc_ds_access_group_policy", "policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIAMAccessGroupPolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 	
@@ -120,5 +137,34 @@ data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
 	access_group_id = ibm_iam_access_group_policy.policy.access_group_id
 	sort = "-id"
 }`, name, name)
+
+}
+
+func testAccCheckIBMIAMAccessGroupPolicyDataSourceSpecificAttributesConfig(name string) string {
+	return fmt.Sprintf(`
+
+
+resource "ibm_iam_access_group" "accgrp" {
+	name = "%s"
+}
+
+resource "ibm_iam_access_group_policy" "policy" {
+	access_group_id = ibm_iam_access_group.accgrp.id
+	roles  = ["Manager", "Viewer", "Administrator"]
+	
+	resource_attributes {
+		name     = "serviceName"
+		value    = "containers-kubernetes"
+	}
+	resource_attributes {
+		name     = "namespace"
+		value    = "test"
+	}
+}
+
+data "ibm_iam_access_group_policy" "testacc_ds_access_group_policy" {
+	access_group_id = ibm_iam_access_group_policy.policy.access_group_id
+}
+`, name)
 
 }

@@ -48,7 +48,6 @@ ibm_pi_key provides the following [timeouts](https://www.terraform.io/docs/langu
 Review the argument references that you can specify for your resource. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_creation_date` - (Optional, String) The date when the SSH key was created. 
 - `pi_key_name`  - (Required, Integer) The name of the SSH key that you uploaded to IBM Cloud. 
 - `pi_ssh_key` - (Required, String) The value of the public SSH key. 
 
@@ -56,12 +55,13 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
  In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the key. The ID is composed of `<power_instance_id>/<key_name>`.
+- `creation_date` - (String) The date when the SSH key was created. 
+- `id` - (String) The unique identifier of the key. The ID is composed of `<pi_cloud_instance_id>/<pi_key_name>`.
 - `key_id` - (String) The unique identifier of the key.
 
 ## Import
 
-The `ibm_pi_key` resource can be imported by using `power_instance_id` and `ssh_key_name`.
+The `ibm_pi_key` resource can be imported by using `pi_cloud_instance_id` and `pi_key_name`.
 
 **Example**
 
