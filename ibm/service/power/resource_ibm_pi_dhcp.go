@@ -50,13 +50,13 @@ func ResourceIBMPIDhcp() *schema.Resource {
 			PIDhcpServerName: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Name of the dhcp server",
+				Description: "Name of the DHCP service",
 				ForceNew:    true,
 			},
 			PIDhcpDnsServer: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "IP address of dns server for dhcp server",
+				Description: "DNS Server for DHCP service",
 				ForceNew:    true,
 			},
 
