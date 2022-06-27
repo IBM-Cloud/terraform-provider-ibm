@@ -30,14 +30,15 @@ resource "ibm_cis_mtls" "mtls_settings" {
 
 Review the argument references that you can specify for your resource. 
 
-- `cis_id`      - (Required, String) The ID of the IBM Cloud Internet Services instance.
-- `domain_id`   - (Required, String) The ID of the domain to change cache settings.
-- `cert_mtls`   - (Required, String) Content of valid MTLS certificate.
-- `cert_name`   - (Required, String) Name of certificate. 
-- `host_name`   - (Required, String) Valid host name for which we want to add the certificate.
-- `created_at`  - (Computed, String) Time stamp string when Certificate is created'.
-- `updated_at`  - (Computed, String) Time stamp string when Certificate is modified'.
-- `expires_on`  - (Computed, String) Time stamp string when Cerftificate expires on'.
+- `cis_id`                  - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id`               - (Required, String) The ID of the domain to change cache settings.
+- `certificate`             - (Required, String) Content of valid MTLS certificate.
+- `name`                    - (Required, String) Name of certificate. 
+- `associated_hostname`     - (Required, String) Valid host name for which we want to add the certificate.
+- `created_at`              - (Computed, String) Time stamp string when Certificate is created'.
+- `updated_at`              - (Computed, String) Time stamp string when Certificate is modified'.
+- `expires_on`              - (Computed, String) Time stamp string when Cerftificate expires on'.
+- `cert_id`                 - (Computed, String) Created certificate ID.
 
 
 ## Attribute reference

@@ -22,10 +22,9 @@ func TestAccIBMCisMtlsApp_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisMtlsAppBasic1("test", acc.CisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "url", "darunya.austest-10.cistest-load.com"),
-					resource.TestCheckResourceAttr(name, "app_name", "MTLS-App"),
+					resource.TestCheckResourceAttr(name, "associated_hostname", "darunya.austest-10.cistest-load.com"),
+					resource.TestCheckResourceAttr(name, "name", "MTLS-APP"),
 					resource.TestCheckResourceAttr(name, "policy_name", "MTLS-Policy"),
-					resource.TestCheckResourceAttr(name, "host_name", "darunya.austest-10.cistest-load.com"),
 				),
 			},
 		},
@@ -35,12 +34,11 @@ func TestAccIBMCisMtlsApp_Basic(t *testing.T) {
 func testAccCheckCisMtlsAppBasic1(id string, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	resource "ibm_cis_mtls_app" "%[1]s" {
-		cis_id          = data.ibm_cis.cis.id
-		domain_id       = data.ibm_cis_domain.cis_domain.domain_id
-		url             = "darunya.austest-10.cistest-load.com"
-		app_name        = "MTLS-App"
-		policy_name     = "MTLS-Policy"
-		host_name       = "darunya.austest-10.cistest-load.com"
+		cis_id                         = data.ibm_cis.cis.id
+		domain_id                      = data.ibm_cis_domain.cis_domain.domain_id
+		associated_hostname            = "darunya.austest-10.cistest-load.com"
+		name                           = "MTLS-APP"
+		policy_name                    = "Default Policy"
 	  }
 `, id)
 }

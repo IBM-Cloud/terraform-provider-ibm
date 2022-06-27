@@ -16,9 +16,10 @@ import (
 
 const (
 	cisMtlsID            = "mtls_id"
-	cisMtlsCert          = "cert_mtls"
-	cisMtlsCertName      = "cert_name"
-	cisMtlsHostName      = "host_name"
+	cisMtlsCert          = "certificate"
+	cisMtlsCertName      = "name"
+	cisMtlsCertID        = "cert_id"
+	cisMtlsHostName      = "associated_hostname"
 	cisMtlsCertCreatedAt = "created_at"
 	cisMtlsCertUpdatedAt = "updated_at"
 	cisMtlsCertExpireOn  = "expires_on"
@@ -77,6 +78,11 @@ func ResourceIBMCISMtls() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Certificate Expires on",
+			},
+			cisMtlsCertID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate ID",
 			},
 		},
 	}
@@ -139,6 +145,7 @@ func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, met
 	d.Set(cisMtlsCertCreatedAt, *result.Result.CreatedAt)
 	d.Set(cisMtlsCertUpdatedAt, *result.Result.UpdatedAt)
 	d.Set(cisMtlsCertExpireOn, *result.Result.ExpiresOn)
+	d.Set(cisMtlsCertID, *result.Result.ID)
 
 	return nil
 }

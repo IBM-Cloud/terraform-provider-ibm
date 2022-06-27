@@ -16,16 +16,17 @@ import (
 )
 
 const (
-	cisMtlsAppName       = "app_name"
-	cisMtlsDuration      = "duration"
-	cisMtlsRuleCertVal   = "rule_cert"
+	cisMtlsAppName       = "name"
+	cisMtlsDuration      = "session_duration"
 	cisMtlsRuleCommonVal = "rule_common"
 	cisMtlsPolicyName    = "policy_name"
-	cisMtlsPolicyAction  = "policy_action"
+	cisMtlsPolicyAction  = "policy_decision"
 	cisMtlsAppCreatedAt  = "app_created_at"
 	cisMtlsAppUpdatedAt  = "app_updated_at"
 	cisMtlsPolCreatedAt  = "pol_created_at"
 	cisMtlsPolUpdatedAt  = "pol_updated_at"
+	cisMtlsAppID         = "app_id"
+	cisMtlsPolicyID      = "policy_id"
 )
 
 func ResourceIBMCISMtlsApp() *schema.Resource {
@@ -50,7 +51,7 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 			cisMtlsHostName: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Host associated with",
+				Description: "Associated host name",
 			},
 			cisMtlsAppName: {
 				Type:        schema.TypeString,
@@ -66,13 +67,13 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 			cisMtlsPolicyName: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "MTLS-Policy",
+				Default:     "Default policy",
 				Description: "Policy Name",
 			},
 			cisMtlsPolicyAction: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "non_identity",
+				Default:     "Non-identity",
 				Description: "Policy Action",
 			},
 			cisMtlsRuleCommonVal: {
@@ -100,6 +101,16 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Certificate Created At",
+			},
+			cisMtlsAppID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "APP ID",
+			},
+			cisMtlsPolicyID: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Policy ID",
 			},
 		},
 	}
@@ -194,6 +205,8 @@ func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, 
 
 	d.Set(cisID, crn)
 	d.Set(cisDomainID, zoneID)
+	d.Set(cisMtlsAppID, *getAppResult.Result.ID)
+	d.Set(cisMtlsPolicyID, *getPolicyResult.Result.ID)
 	d.Set(cisMtlsAppCreatedAt, *getAppResult.Result.CreatedAt)
 	d.Set(cisMtlsAppUpdatedAt, *getAppResult.Result.UpdatedAt)
 	d.Set(cisMtlsPolCreatedAt, *getPolicyResult.Result.CreatedAt)

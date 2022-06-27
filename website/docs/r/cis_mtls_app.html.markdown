@@ -28,17 +28,19 @@ resource "ibm_cis_mtls_app" "mtls_app_settings" {
 
 Review the argument references that you can specify for your resource. 
 
-- `cis_id`          - (Required, String) The ID of the IBM Cloud Internet Services instance.
-- `domain_id`       - (Required, String) The ID of the domain to change cache settings.
-- `app_name`        - (Required, String) Name for the app which you want to create.
-- `url`             - (Required, String) Host name for which we want to create app. 
-- `policy_name`     - (Option, String) Valid name for a policy.
-- `duration`        - (Option, String) Duraing in string, default is '24h'.
-- `policy_action`   - (Option, String) Valid policuy action, default is 'non_identity'.
-- `app_created_at`  - (Computed, String) Time stamp string when App is created'.
-- `app_updated_at`  - (Computed, String) Time stamp string when App is modififed'.
-- `pol_created_at`  - (Computed, String) Time stamp string when Policy is created'.
-- `pol_updated_at`  - (Computed, String) Time stamp string when Policy is modified'.
+- `cis_id`                         - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id`                      - (Required, String) The ID of the domain to change cache settings.
+- `name`                           - (Required, String) Name for the app which you want to create.
+- `associated_hostname`            - (Required, String) Host name for which we want to create app. 
+- `policy_name`                    - (Optional, String) Valid name for a policy.
+- `duration`                       - (Optional, String) Duraing in string, default is '24h'.
+- `policy_decision`                - (Optional, String) Valid policuy action, default is 'non_identity'.
+- `app_created_at`                 - (Computed, String) Time stamp string when App is created.
+- `app_updated_at`                 - (Computed, String) Time stamp string when App is modififed.
+- `pol_created_at`                 - (Computed, String) Time stamp string when Policy is created.
+- `pol_updated_at`                 - (Computed, String) Time stamp string when Policy is modified.
+- `App_ID`                         - (Computed, String) ID of created App.
+- `Policy_ID`                      - (Computed, String) ID of created Policy.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

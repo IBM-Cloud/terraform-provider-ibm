@@ -464,23 +464,21 @@ data "ibm_cis_logpush_jobs" "test" {
 
 #CIS MTLS instance
 resource "ibm_cis_mtls" “test” {
-  cis_id          = ibm_cis.web_domain.id
-  domain_id       = ibm_cis_domain.web_domain.id
-  cert_mtls       = <<EOT 
-                   "-----BEGIN CERTIFICATE----- 
-                    -------END CERTIFICATE-----"
-                    EOT
-
-  cert_name       = "MTLS_Cert"
-  host_name       = "abc.abc.abc.com"
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT 
+                              "-----BEGIN CERTIFICATE----- 
+                              -------END CERTIFICATE-----"
+                              EOT
+  name                       = "MTLS_Cert"
+  associated_hostnames       = "abc.abc.abc.com"
 }
 
 #CIS MTLS app and policy instance
 resource "ibm_cis_mtls_app" “test” {
-  cis_id          = ibm_cis.web_domain.id
-  domain_id       = ibm_cis_domain.web_domain.id
-  app_name        = "MY_APP"
-  url             = "abc.abc.com"
-  duration        = "24h"
-  policy_name     = "MTLS_Policy"
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
 }
