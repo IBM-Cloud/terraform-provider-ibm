@@ -18,7 +18,6 @@ import (
 const (
 	cisMtlsAppName       = "app_name"
 	cisMtlsDuration      = "duration"
-	cisMtlsURL           = "url"
 	cisMtlsRuleCertVal   = "rule_cert"
 	cisMtlsRuleCommonVal = "rule_common"
 	cisMtlsPolicyName    = "policy_name"
@@ -64,11 +63,6 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Default:     "24h",
 				Description: "Duration for app validatidity",
 			},
-			cisMtlsURL: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "App URL",
-			},
 			cisMtlsPolicyName: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -80,6 +74,12 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Optional:    true,
 				Default:     "non_identity",
 				Description: "Policy Action",
+			},
+			cisMtlsRuleCommonVal: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "Access CA",
+				Description: "Policy common rule",
 			},
 			cisMtlsAppCreatedAt: {
 				Type:        schema.TypeString,
@@ -211,7 +211,6 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 	appID, zoneID, _, _ := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if d.HasChange(cisMtlsAppName) ||
-		d.HasChange(cisMtlsURL) ||
 		d.HasChange(cisMtlsPolicyName) || d.HasChange(cisMtlsPolicyAction) ||
 		d.HasChange(cisMtlsDuration) {
 
@@ -220,12 +219,9 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 		if app_name, ok := d.GetOk(cisMtlsAppName); ok {
 			updateOptionApp.SetName(app_name.(string))
 		}
-		if app_url, ok := d.GetOk(cisMtlsURL); ok {
-			updateOptionApp.SetName(app_url.(string))
-		}
 
 		if duration_val, ok := d.GetOk(cisMtlsDuration); ok {
-			updateOptionApp.SetName(duration_val.(string))
+			updateOptionApp.SetSessionDuration(duration_val.(string))
 		}
 		updateResultApp, updateRespApp, updateErrApp := sess.UpdateAccessApplication(updateOptionApp)
 		if updateErrApp != nil {
@@ -241,7 +237,7 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 			optionsPolicy.SetName(policy_name.(string))
 		}
 		if action_name, ok := d.GetOk(cisMtlsPolicyAction); ok {
-			optionsPolicy.SetName(action_name.(string))
+			optionsPolicy.SetDecision(action_name.(string))
 		}
 
 		resultPolicy, responsePolicy, operationErrPolicy := sess.CreateAccessPolicy(optionsPolicy)
