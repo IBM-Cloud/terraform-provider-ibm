@@ -1521,7 +1521,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
 	}
-	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.ContextBasedRestrictionsV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
 	}
