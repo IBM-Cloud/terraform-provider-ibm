@@ -4,6 +4,7 @@
 package cis
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,7 +29,8 @@ const (
 
 func DataSourceIBMCISMtls() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISMtlsRead,
+		ReadContext: dataIBMCISMtlsRead,
+
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -89,23 +92,22 @@ func DataSourceIBMCISMtls() *schema.Resource {
 	}
 }
 
-func dataIBMCISMtlsRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISMtlsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
-	crn := d.Get(cisID).(string)
-	sess.Crn = core.StringPtr(crn)
 
-	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
+	zoneID, crn, _ := flex.ConvertTftoCisTwoVar(d.Id())
+	sess.Crn = core.StringPtr(crn)
 
 	opt := sess.NewListAccessCertificatesOptions(zoneID)
 
 	result, resp, err := sess.ListAccessCertificates(opt)
 	if err != nil {
 		log.Printf("[WARN] List all certificates failed: %v\n", resp)
-		return err
+		return diag.FromErr(err)
 	}
 	mtlsCertLists := make([]map[string]interface{}, 0)
 	for _, certObj := range result.Result {

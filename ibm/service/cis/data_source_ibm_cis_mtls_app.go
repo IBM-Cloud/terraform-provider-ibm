@@ -4,6 +4,7 @@
 package cis
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -11,12 +12,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIBMCISMtlsApp() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISMtlsAppRead,
+		ReadContext: dataIBMCISMtlsAppRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -135,6 +137,7 @@ func DataSourceIBMCISMtlsApp() *schema.Resource {
 							Computed:    true,
 							Description: "Application Updated At",
 						},
+						// TODO Include, Exclude and Require of Interface type
 					},
 				},
 			},
@@ -142,22 +145,21 @@ func DataSourceIBMCISMtlsApp() *schema.Resource {
 	}
 }
 
-func dataIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
-	crn := d.Get(cisID).(string)
+	zoneID, crn, _ := flex.ConvertTftoCisTwoVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
-	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
 
 	opt := sess.NewListAccessApplicationsOptions(zoneID)
 	result, resp, err := sess.ListAccessApplications(opt)
 	if err != nil {
 		log.Printf("[WARN] List all Applications failed: %v\n", resp)
-		return err
+		return diag.FromErr(err)
 	}
 
 	mtlsAppLists := make([]map[string]interface{}, 0)
@@ -179,7 +181,7 @@ func dataIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
 		PolicyResult, PolicyResp, PolicyErr := sess.ListAccessPolicies(PolicyOpt)
 		if PolicyErr != nil {
 			log.Printf("[WARN] List all Policies failed: %v\n", PolicyResp)
-			return PolicyErr
+			return diag.FromErr(PolicyErr)
 		}
 
 		for _, PolicyObj := range PolicyResult.Result {
@@ -191,6 +193,8 @@ func dataIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
 			mtlsPolicyList["policy_uid"] = *PolicyObj.Uid
 			mtlsPolicyList["policy_created_at"] = *PolicyObj.CreatedAt
 			mtlsPolicyList["policy_updated_at"] = *PolicyObj.UpdatedAt
+
+			// TODO Include, Exclude and Require of Interface type
 
 			mtlsPolicyLists = append(mtlsPolicyLists, mtlsPolicyList)
 		}
