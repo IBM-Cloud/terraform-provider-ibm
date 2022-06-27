@@ -6,7 +6,7 @@ description: |-
   Get information on an IBM Cloud Internet Services mTLS Applications and Policies.
 ---
 
-# ibm_cis_alerts
+# ibm_cis_mtlss
 
 Retrieve information about an IBM Cloud Internet Services mTLS Applications data sources and fetch Policies data source, with respect to Application ID. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
@@ -14,8 +14,8 @@ Retrieve information about an IBM Cloud Internet Services mTLS Applications data
 
 ```terraform
 data "ibm_cis_mtls_apps" "tests" {
-    cis_id    = ibm_cis.instance.id
-    domain_id = ibm_cis_domain.example.id
+   cis_id    = ibm_cis.instance.id
+   domain_id = ibm_cis_domain.example.id
 }
 ```
 

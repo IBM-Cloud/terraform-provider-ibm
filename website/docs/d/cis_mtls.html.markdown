@@ -6,7 +6,7 @@ description: |-
   Get information on an IBM Cloud Internet Services mTLS.
 ---
 
-# ibm_cis_alerts
+# ibm_cis_mtlss
 
 Retrieve information about an IBM Cloud Internet Services mTLS data sources. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
@@ -14,7 +14,7 @@ Retrieve information about an IBM Cloud Internet Services mTLS data sources. For
 
 ```terraform
 data "ibm_cis_mtlss" "tests" {
-	cis_id    = ibm_cis.instance.id
+  cis_id    = ibm_cis.instance.id
   domain_id = ibm_cis_domain.example.id
 }
 ```
