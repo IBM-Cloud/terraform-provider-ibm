@@ -1,7 +1,7 @@
 ---
 subcategory: "VPC infrastructure"
 layout: "ibm"
-page_title: "IBM : instance_group_manager_action"
+page_title: "IBM : instance_group_manager_actions"
 description: |-
   Get all information about IBM VPC instance group manager action.
 ---
@@ -23,7 +23,7 @@ provider "ibm" {
 ## Example usage
 
 ```terraform
-data "ibm_is_instance_group_manager_action" "example" {
+data "ibm_is_instance_group_manager_actions" "example" {
   instance_group         = ibm_is_instance_group.example.id
   instance_group_manager = ibm_is_instance_group_manager.example.manager_id
 }
