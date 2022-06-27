@@ -60,15 +60,15 @@ func ResourceIBMSccPostureScopes() *schema.Resource {
 }
 
 func ResourceIBMSccPostureScopesValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
-			MinValueLength:             1,
+			Regexp:                     `^[a-zA-Z0-9-\\.,_\s]*$`,
+			MinValueLength:             3,
 			MaxValueLength:             50,
 		},
 		validate.ValidateSchema{
@@ -76,7 +76,7 @@ func ResourceIBMSccPostureScopesValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
+			Regexp:                     `^[a-zA-Z0-9-\\.,_\s]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             255,
 		},

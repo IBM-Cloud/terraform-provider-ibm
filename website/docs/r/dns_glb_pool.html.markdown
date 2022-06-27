@@ -40,7 +40,7 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) Descriptive text of the origin server.
 - `enabled`- (Required, Bool) Whether the origin server is enabled.
 - `healthy_origins_threshold`- (Required, Integer) The minimum number of origins that must be healthy for this pool to serve traffic. If the number of healthy origins falls below this number, the pool will be marked unhealthy and will failover to the next available pool.
-- `healthcheck_region` - (Optional, String) Health check region of VSIs. Allowable values are `us-south`,`us-east`, `eu-gb`, `eu-du`, `au-syd`, `jp-tok`.
+- `healthcheck_region` - (Optional, String) Health check region of VSIs. Examples: `us-south`,`us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `jp-osa`, `ca-tor`, `br-sao`.
 - `healthcheck_subnets` - (List, Optional) The health check subnet CRN of VSIs.
 - `instance_id` - (Required, Forces new resource, String) The GUID of the private DNS on which zone has to be created.
 - `monitor` - (Optional, String) The ID of the Load Balancer monitor to be associated to this pool.

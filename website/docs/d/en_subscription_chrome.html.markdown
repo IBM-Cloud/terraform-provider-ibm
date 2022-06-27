@@ -6,7 +6,7 @@ description: |-
   Get information about a chrome subscription
 ---
 
-# ibm_en_subscription_fcm
+# ibm_en_subscription_chrome
 
 Provides a read-only data source for subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-- `id` - The unique identifier of the fcm_subscription.
+- `id` - The unique identifier of the chrome_subscription.
 
 - `name` - (String) Subscription name.
 

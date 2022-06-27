@@ -15,14 +15,14 @@ import (
 )
 
 func TestAccIBMContainerVpcClusterWorkerVolumeAttachment_Basic(t *testing.T) {
-	clusterName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
-	randint := acctest.RandIntRange(10, 100)
-	vpc := fmt.Sprintf("terraformvpc-%d", randint)
-	subnet := fmt.Sprintf("terraformsubnet-%d", randint)
-	flavor := "bx2.16x64"
+	randInt := acctest.RandIntRange(10, 100)
+	clusterName := fmt.Sprintf("terraformcluster-%d", randInt)
+	vpc := fmt.Sprintf("terraformvpc-%d", randInt)
+	subnet := fmt.Sprintf("terraformsubnet-%d", randInt)
+	flavor := "cx2.2x4"
 	zone := "us-south"
 	workerCount := "1"
-	volumeName := fmt.Sprintf("terraformvpcvol-%d", randint)
+	volumeName := fmt.Sprintf("terraformvpcvol-%d", randInt)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -36,6 +36,11 @@ func TestAccIBMContainerVpcClusterWorkerVolumeAttachment_Basic(t *testing.T) {
 						"ibm_container_storage_attachment.volume_attach", "status", "attached"),
 				),
 			},
+			{
+				ResourceName:      "ibm_container_storage_attachment.volume_attach",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -43,45 +48,48 @@ func TestAccIBMContainerVpcClusterWorkerVolumeAttachment_Basic(t *testing.T) {
 func testAccCheckIBMContainerVpcClusterWorkerVolumeAttach_basic(zone, vpc, subnet, clusterName, flavor, workerCount, volumeName string) string {
 	return fmt.Sprintf(`
 		provider "ibm" {
-			region ="us-south"
+			region ="%s"
 		}	
 		data "ibm_resource_group" "resource_group" {
 			is_default = "true"
 		}
 		resource "ibm_is_vpc" "vpc" {
-			name = "%s"
+			name           = "%s"
+			resource_group = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_is_subnet" "subnet" {
 			name                     = "%s"
 			vpc                      = ibm_is_vpc.vpc.id
-			zone                     = "us-south-1"
+			zone                     = "%s-1"
 			total_ipv4_address_count = 256
+			resource_group           = data.ibm_resource_group.resource_group.id
 		}
 		
 		resource "ibm_container_vpc_cluster" "cluster" {
 			name              = "%s"
 			vpc_id            = ibm_is_vpc.vpc.id
-			flavor            = "cx2.2x4"
-			worker_count      = 1
+			flavor            = "%s"
+			worker_count      = %s
 			wait_till         = "OneWorkerNodeReady"
 			resource_group_id = data.ibm_resource_group.resource_group.id
 			zones {
-				 subnet_id = ibm_is_subnet.subnet.id
-				 name      = "us-south-1"
+				subnet_id = ibm_is_subnet.subnet.id
+				name      = "%s-1"
 			}
 			worker_labels = {
-			"test"  = "test-default-pool"
-			"test1" = "test-default-pool1"
-			"test2" = "test-default-pool2"
+				"test"  = "test-default-pool"
+				"test1" = "test-default-pool1"
+				"test2" = "test-default-pool2"
 			}
 			
-		  }
+		}
 
-		  resource "ibm_is_volume" "storage"{
-			name = "%s"
-			profile = "10iops-tier"
-			zone = "us-south-1"
-			# capacity= 200
+		resource "ibm_is_volume" "storage"{
+			name           = "%s"
+			profile        = "10iops-tier"
+			zone           = "%s-1"
+			# capacity     = 200
+			resource_group = data.ibm_resource_group.resource_group.id
 		}
 
 		data "ibm_container_vpc_cluster" "cluster" {
@@ -92,7 +100,7 @@ func testAccCheckIBMContainerVpcClusterWorkerVolumeAttach_basic(zone, vpc, subne
 			volume = ibm_is_volume.storage.id
 			cluster = ibm_container_vpc_cluster.cluster.id
 			worker = data.ibm_container_vpc_cluster.cluster.workers[0]
-		}`, vpc, subnet, clusterName, volumeName)
+		}`, zone, vpc, subnet, zone, clusterName, flavor, workerCount, zone, volumeName, zone)
 }
 
 func testAccCheckIBMContainerVpcWorkerStorageDestroy(s *terraform.State) error {

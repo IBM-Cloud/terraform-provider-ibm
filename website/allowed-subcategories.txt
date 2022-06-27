@@ -10,6 +10,7 @@ Cloud Foundry
 Cloudant Databases
 Container Registry
 Context Based Restrictions
+CD Tekton Pipeline
 Direct Link Gateway
 DNS Services
 Enterprise Management
@@ -19,6 +20,7 @@ Functions
 Global Tagging
 IBM Cloud Shell
 Hyper Protect Crypto Service (HPCS)
+CD Toolchain
 Identity & Access Management (IAM)
 Internet services
 Key Management Service

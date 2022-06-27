@@ -97,8 +97,14 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 									},
 									"service_type": {
 										Type:        schema.TypeString,
-										Optional:    true,
+										Computed:    true,
 										Description: "Service type of the policy definition",
+									},
+									"attributes": {
+										Type:        schema.TypeMap,
+										Computed:    true,
+										Description: "Set resource attributes in the form of 'name=value,name=value....",
+										Elem:        schema.TypeString,
 									},
 								},
 							},

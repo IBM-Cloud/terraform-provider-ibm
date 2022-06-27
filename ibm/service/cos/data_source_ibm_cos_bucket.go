@@ -5,9 +5,6 @@ package cos
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -18,6 +15,8 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
+	"time"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -32,24 +31,35 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Required: true,
 			},
 			"bucket_type": {
-				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues(bucketTypes),
-				Required:     true,
+				Type:          schema.TypeString,
+				ValidateFunc:  validate.ValidateAllowedStringValues(bucketTypes),
+				Optional:      true,
+				RequiredWith:  []string{"bucket_region"},
+				ConflictsWith: []string{"satellite_location_id"},
 			},
 			"bucket_region": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				RequiredWith:  []string{"bucket_type"},
+				ConflictsWith: []string{"satellite_location_id"},
 			},
 			"resource_instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"satellite_location_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"bucket_type", "bucket_region"},
+				ExactlyOneOf:  []string{"satellite_location_id", "bucket_region"},
+			},
 			"endpoint_type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
-				Description:  "public or private",
-				Default:      "public",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
+				Description:   "public or private",
+				ConflictsWith: []string{"satellite_location_id"},
+				Default:       "public",
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -327,14 +337,32 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	serviceID := d.Get("resource_instance_id").(string)
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
-	var endpointType = d.Get("endpoint_type").(string)
-	apiEndpoint, apiEndpointPrivate, directApiEndpoint := SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
-	if endpointType == "private" {
-		apiEndpoint = apiEndpointPrivate
+	endpointType := d.Get("endpoint_type").(string)
+
+	var satlc_id, apiEndpoint, apiEndpointPrivate, directApiEndpoint string
+
+	if satlc, ok := d.GetOk("satellite_location_id"); ok {
+		satlc_id = satlc.(string)
+		satloc_guid := strings.Split(serviceID, ":")
+		bucketsatcrn := satloc_guid[7]
+		serviceID = bucketsatcrn
+		bucketType = "sl"
 	}
-	if endpointType == "direct" {
-		apiEndpoint = directApiEndpoint
+
+	if bucketType == "sl" {
+		apiEndpoint = SelectSatlocCosApi(bucketType, serviceID, satlc_id)
+
+	} else {
+		apiEndpoint, apiEndpointPrivate, directApiEndpoint = SelectCosApi(bucketLocationConvert(bucketType), bucketRegion)
+		if endpointType == "private" {
+			apiEndpoint = apiEndpointPrivate
+		}
+		if endpointType == "direct" {
+			apiEndpoint = directApiEndpoint
+		}
+
 	}
+
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 	if apiEndpoint == "" {
 		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bucketRegion, endpointType)
@@ -372,26 +400,31 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("failed waiting for bucket %s to be created, %v",
 			bucketName, err)
 	}
-	bucketLocationInput := &s3.GetBucketLocationInput{
-		Bucket: aws.String(bucketName),
-	}
-	bucketLocationConstraint, err := s3Client.GetBucketLocation(bucketLocationInput)
-	if err != nil {
-		return err
-	}
-	bLocationConstraint := *bucketLocationConstraint.LocationConstraint
 
-	if singleSiteLocationRegex.MatchString(bLocationConstraint) {
-		d.Set("single_site_location", strings.Split(bLocationConstraint, "-")[0])
-		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
-	}
-	if regionLocationRegex.MatchString(bLocationConstraint) {
-		d.Set("region_location", fmt.Sprintf("%s-%s", strings.Split(bLocationConstraint, "-")[0], strings.Split(bLocationConstraint, "-")[1]))
-		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[2])
-	}
-	if crossRegionLocationRegex.MatchString(bLocationConstraint) {
-		d.Set("cross_region_location", strings.Split(bLocationConstraint, "-")[0])
-		d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
+	if bucketType != "sl" {
+		bucketLocationInput := &s3.GetBucketLocationInput{
+			Bucket: aws.String(bucketName),
+		}
+		bucketLocationConstraint, err := s3Client.GetBucketLocation(bucketLocationInput)
+		if err != nil {
+			return err
+		}
+		bLocationConstraint := *bucketLocationConstraint.LocationConstraint
+
+		if singleSiteLocationRegex.MatchString(bLocationConstraint) {
+			d.Set("single_site_location", strings.Split(bLocationConstraint, "-")[0])
+			d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
+		}
+		if regionLocationRegex.MatchString(bLocationConstraint) {
+			d.Set("region_location", fmt.Sprintf("%s-%s", strings.Split(bLocationConstraint, "-")[0], strings.Split(bLocationConstraint, "-")[1]))
+			d.Set("storage_class", strings.Split(bLocationConstraint, "-")[2])
+		}
+		if crossRegionLocationRegex.MatchString(bLocationConstraint) {
+			d.Set("cross_region_location", strings.Split(bLocationConstraint, "-")[0])
+			d.Set("storage_class", strings.Split(bLocationConstraint, "-")[1])
+		}
+	} else {
+		d.Set("satellite_location_id", satlc_id)
 	}
 
 	head, err := s3Client.HeadBucket(headInput)
@@ -420,14 +453,20 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	if endpointType == "private" {
 		sess.SetServiceURL("https://config.private.cloud-object-storage.cloud.ibm.com/v1")
 	}
-	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 
+	if bucketType == "sl" {
+		satconfig := fmt.Sprintf("https://config.%s.%s.cloud-object-storage.appdomain.cloud/v1", serviceID, satlc_id)
+
+		sess.SetServiceURL(satconfig)
+
+	}
+
+	bucketPtr, response, err := sess.GetBucketConfig(getBucketConfigOptions)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error in getting bucket info rule: %s\n%s", err, response)
 	}
 
 	if bucketPtr != nil {
-
 		if bucketPtr.Firewall != nil {
 			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
 		}
@@ -520,7 +559,7 @@ func bucketLocationConvert(locationtype string) string {
 		return "rl"
 	}
 	if locationtype == "single_site_location" {
-		return "crl"
+		return "ssl"
 	}
 	return ""
 }
