@@ -26,11 +26,6 @@ func DataSourceIBMCbrZone() *schema.Resource {
 				Required:    true,
 				Description: "The ID of a zone.",
 			},
-			"id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The globally unique ID of the zone.",
-			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -203,10 +198,6 @@ func DataSourceIBMCbrZoneRead(context context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(fmt.Sprintf("%s", *getZoneOptions.ZoneID))
-
-	if err = d.Set("id", zone.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting id: %s", err))
-	}
 
 	if err = d.Set("crn", zone.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))

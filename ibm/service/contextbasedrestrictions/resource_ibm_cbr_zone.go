@@ -29,13 +29,13 @@ func ResourceIBMCbrZone() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cbr_zone", "name"),
 				Description:  "The name of the zone.",
 			},
 			"account_id": &schema.Schema{
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cbr_zone", "account_id"),
 				Description:  "The id of the account owning this zone.",
 			},
@@ -47,13 +47,13 @@ func ResourceIBMCbrZone() *schema.Resource {
 			},
 			"addresses": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The list of addresses in the zone.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The type of address.",
 						},
 						"value": &schema.Schema{
@@ -102,7 +102,7 @@ func ResourceIBMCbrZone() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The type of address.",
 						},
 						"value": &schema.Schema{
@@ -204,7 +204,7 @@ func ResourceIBMCbrZone() *schema.Resource {
 }
 
 func ResourceIBMCbrZoneValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",

@@ -32,9 +32,9 @@ resource "ibm_cbr_zone" "cbr_zone" {
 
 Review the argument reference that you can specify for your resource.
 
-* `account_id` - (Optional, String) The id of the account owning this zone.
+* `account_id` - (Required, String) The id of the account owning this zone.
     * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[a-zA-Z0-9\-]+$`.
-* `addresses` - (Optional, List) The list of addresses in the zone.
+* `addresses` - (Required, List) The list of addresses in the zone.
     * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
       Nested scheme for **addresses**:
         * `ref` - (Optional, List) A service reference value.
@@ -47,7 +47,7 @@ Review the argument reference that you can specify for your resource.
                 * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
             * `service_type` - (Optional, String) The service type.
                 * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-        * `type` - (Optional, String) The type of address.
+        * `type` - (required, String) The type of address.
             * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
         * `value` - (Optional, String) The IP address.
             * Constraints: The maximum length is `45` characters. The minimum length is `2` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
@@ -66,7 +66,7 @@ Review the argument reference that you can specify for your resource.
                 * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
             * `service_type` - (Optional, String) The service type.
                 * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-        * `type` - (Optional, String) The type of address.
+        * `type` - (required, String) The type of address.
             * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
         * `value` - (Optional, String) The IP address.
             * Constraints: The maximum length is `45` characters. The minimum length is `2` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
@@ -77,14 +77,14 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cbr_zone.
-* `address_count` - (Required, Integer) The number of addresses in the zone.
-* `created_at` - (Required, String) The time the resource was created.
-* `created_by_id` - (Required, String) IAM ID of the user or service which created the resource.
-* `crn` - (Required, String) The zone CRN.
-* `excluded_count` - (Required, Integer) The number of excluded addresses in the zone.
-* `href` - (Required, String) The href link to the resource.
-* `last_modified_at` - (Required, String) The last time the resource was modified.
-* `last_modified_by_id` - (Required, String) IAM ID of the user or service which modified the resource.
+* `address_count` - (Integer) The number of addresses in the zone.
+* `created_at` - (String) The time the resource was created.
+* `created_by_id` - (String) IAM ID of the user or service which created the resource.
+* `crn` - (String) The zone CRN.
+* `excluded_count` - (Integer) The number of excluded addresses in the zone.
+* `href` - (String) The href link to the resource.
+* `last_modified_at` - (String) The last time the resource was modified.
+* `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
 * `version` - Version of the cbr_zone.
 

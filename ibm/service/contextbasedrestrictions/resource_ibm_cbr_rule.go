@@ -35,7 +35,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 			},
 			"contexts": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The contexts this rule applies to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -63,7 +63,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 			},
 			"resources": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				Description: "The resources this rule apply to.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -176,7 +176,7 @@ func ResourceIBMCbrRule() *schema.Resource {
 }
 
 func ResourceIBMCbrRuleValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "description",
