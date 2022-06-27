@@ -4,12 +4,14 @@
 package cis
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/networking-go-sdk/mtlsv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,15 +23,19 @@ const (
 	cisMtlsRuleCommonVal = "rule_common"
 	cisMtlsPolicyName    = "policy_name"
 	cisMtlsPolicyAction  = "policy_action"
+	cisMtlsAppCreatedAt  = "app_created_at"
+	cisMtlsAppUpdatedAt  = "app_updated_at"
+	cisMtlsPolCreatedAt  = "pol_created_at"
+	cisMtlsPolUpdatedAt  = "pol_updated_at"
 )
 
 func ResourceIBMCISMtlsApp() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceIBMCISMtlsAppCreate,
-		Read:     ResourceIBMCISMtlsAppRead,
-		Update:   ResourceIBMCISMtlsAppUpdate,
-		Delete:   ResourceIBMCISMtlsAppDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCISMtlsAppCreate,
+		ReadContext:   resourceIBMCISMtlsAppRead,
+		UpdateContext: resourceIBMCISMtlsAppUpdate,
+		DeleteContext: resourceIBMCISMtlsAppDelete,
+		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -75,13 +81,33 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Default:     "non_identity",
 				Description: "Policy Action",
 			},
+			cisMtlsAppCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate Created At",
+			},
+			cisMtlsAppUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate Created At",
+			},
+			cisMtlsPolCreatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate Created At",
+			},
+			cisMtlsPolUpdatedAt: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate Created At",
+			},
 		},
 	}
 }
-func ResourceIBMCISMtlsAppCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 	crn := d.Get(cisID).(string)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
@@ -104,7 +130,7 @@ func ResourceIBMCISMtlsAppCreate(d *schema.ResourceData, meta interface{}) error
 	resultApp, responseApp, operationErrApp := sess.CreateAccessApplication(OptionsApp)
 
 	if operationErrApp != nil || resultApp == nil {
-		return fmt.Errorf("[ERROR] Error creating access application  %v %v %v", operationErrApp, resultApp, responseApp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating access application  %v %v %v", operationErrApp, resultApp, responseApp))
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*resultApp.Result.ID, zoneID, crn))
@@ -117,7 +143,7 @@ func ResourceIBMCISMtlsAppCreate(d *schema.ResourceData, meta interface{}) error
 		Certificate: map[string]interface{}{"certifcate": "CA root certificate"},
 	}
 	policyCnModel := &mtlsv1.PolicyCnRuleCommonName{
-		CommonName: core.StringPtr("Access Testing CA"),
+		CommonName: core.StringPtr("Access CA"),
 	}
 	policyModel := &mtlsv1.PolicyRulePolicyCnRule{
 		CommonName: policyCnModel,
@@ -136,17 +162,17 @@ func ResourceIBMCISMtlsAppCreate(d *schema.ResourceData, meta interface{}) error
 	resultPolicy, responsePolicy, operationErrPolicy := sess.CreateAccessPolicy(optionsPolicy)
 
 	if operationErrPolicy != nil || resultPolicy == nil {
-		return fmt.Errorf("[ERROR] Error creating app policy  %v", responsePolicy)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating app policy  %v", responsePolicy))
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*resultApp.Result.ID, zoneID, *resultPolicy.Result.ID))
-	return ResourceIBMCISMtlsAppRead(d, meta)
+	return resourceIBMCISMtlsAppRead(context, d, meta)
 
 }
-func ResourceIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
 	crn := d.Get(cisID).(string)
@@ -156,22 +182,29 @@ func ResourceIBMCISMtlsAppRead(d *schema.ResourceData, meta interface{}) error {
 	getAppResult, getAppResp, getAppErr := sess.GetAccessApplication(getAppOptions)
 
 	if getAppErr != nil || getAppResult == nil {
-		return fmt.Errorf("[ERROR] Error getting app deatil  %v", getAppResp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting app deatil  %v", getAppResp))
 	}
 
 	getPolicyOptions := sess.NewGetAccessPolicyOptions(zoneID, appID, policyID)
 	getPolicyResult, getPolicyResp, getPolicyErr := sess.GetAccessPolicy(getPolicyOptions)
 
 	if getPolicyErr != nil || getPolicyResult == nil {
-		return fmt.Errorf("[ERROR] Error getting Policy  detail  %v", getPolicyResp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting Policy  detail  %v", getPolicyResp))
 	}
+
+	d.Set(cisID, crn)
+	d.Set(cisDomainID, zoneID)
+	d.Set(cisMtlsAppCreatedAt, *getAppResult.Result.CreatedAt)
+	d.Set(cisMtlsAppUpdatedAt, *getAppResult.Result.UpdatedAt)
+	d.Set(cisMtlsPolCreatedAt, *getPolicyResult.Result.CreatedAt)
+	d.Set(cisMtlsPolUpdatedAt, *getPolicyResult.Result.CreatedAt)
 
 	return nil
 }
-func ResourceIBMCISMtlsAppUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
@@ -196,11 +229,11 @@ func ResourceIBMCISMtlsAppUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 		updateResultApp, updateRespApp, updateErrApp := sess.UpdateAccessApplication(updateOptionApp)
 		if updateErrApp != nil {
-			if updateRespApp != nil && updateRespApp.StatusCode == 404 {
+			if updateRespApp != nil {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", updateResultApp)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", updateResultApp))
 		}
 
 		optionsPolicy := sess.NewCreateAccessPolicyOptions(zoneID, appID)
@@ -214,21 +247,21 @@ func ResourceIBMCISMtlsAppUpdate(d *schema.ResourceData, meta interface{}) error
 		resultPolicy, responsePolicy, operationErrPolicy := sess.CreateAccessPolicy(optionsPolicy)
 
 		if operationErrPolicy != nil {
-			if responsePolicy != nil && responsePolicy.StatusCode == 404 {
+			if responsePolicy != nil {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", resultPolicy)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the applicatoin values %v", resultPolicy))
 		}
 
 	}
 
-	return ResourceIBMCISMtlsAppRead(d, meta)
+	return resourceIBMCISMtlsAppRead(context, d, meta)
 }
-func ResourceIBMCISMtlsAppDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsAppDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
 	crn := d.Get(cisID).(string)
@@ -241,7 +274,7 @@ func ResourceIBMCISMtlsAppDelete(d *schema.ResourceData, meta interface{}) error
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error While getting application detail for deletion")
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While getting application detail for deletion"))
 	}
 	// Delete an access applications
 	for _, appId := range listAccResult.Result {
@@ -253,7 +286,7 @@ func ResourceIBMCISMtlsAppDelete(d *schema.ResourceData, meta interface{}) error
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error While getting policy detail for deletion")
+			return diag.FromErr(fmt.Errorf("[ERROR] Error While getting policy detail for deletion"))
 		}
 		// Delete access policy
 		for _, policyId := range listResultPolicy.Result {
@@ -264,7 +297,7 @@ func ResourceIBMCISMtlsAppDelete(d *schema.ResourceData, meta interface{}) error
 					d.SetId("")
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error While deleting the policy")
+				return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the policy"))
 			}
 
 		}
@@ -275,7 +308,7 @@ func ResourceIBMCISMtlsAppDelete(d *schema.ResourceData, meta interface{}) error
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error While deleting the app")
+			return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the app"))
 		}
 
 	}

@@ -1,26 +1,26 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_cache_settings"
+page_title: "IBM: ibm_cis_mtls_app"
 description: |-
   Provides an IBM Mutual TLS app-policy resource.
 ---
 
-# ibm_cis_mtls
+# ibm_cis_mtls_app
  Provides mutaul TLS(MTLS) app-policy settings resource. The resource allows to create, update, or delete cache settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
 
 ## Example usage
 
 ```terraform
-# Change MTLS setting of the domain
+# Change MTLS setting of CIS instance
 
 resource "ibm_cis_mtls_app" "mtls_app_settings" {
   cis_id             = data.ibm_cis.cis.id
   domain_id          = data.ibm_cis_domain.cis_domain.domain_id
-  app_name        = "MY_APP"
-  url             = "abc.abc.com"
-  duration        = "24h"
-  policy_name     = "MTLS_Policy"
+  app_name           = "MY_APP"
+  url                = "abc.abc.com"
+  duration           = "24h"
+  policy_name        = "MTLS_Policy"
 }
 ```
 
@@ -35,15 +35,15 @@ Review the argument references that you can specify for your resource.
 - `policy_name`     - (Option, String) Valid name for a policy.
 - `duration`        - (Option, String) Duraing in string, default is '24h'.
 - `policy_action`   - (Option, String) Valid policuy action, default is 'non_identity'.
-
-**Note**
-
-Among all the purge actions `purge_all`, `purge_by-urls`, `purge_by_hosts`, and `purge_by_tags`, only one is allowed to give inside a resource.
+- `app_created_at`  - (Computed, String) Time stamp string when App is created'.
+- `app_updated_at`  - (Computed, String) Time stamp string when App is modififed'.
+- `pol_created_at`  - (Computed, String) Time stamp string when Policy is created'.
+- `pol_updated_at`  - (Computed, String) Time stamp string when Policy is modified'.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The record ID. It is a combination of `<domain_id>,<cis_id>` attributes concatenated with `:`.
+- `id` - (String) The record ID. It is a combination of `<mtls_id>,<domain_id>,<cis_id>` attributes concatenated with `:`.
 
 ## Import
 The `ibm_cis_mtls` resource can be imported using the ID. The ID is formed from the domain ID of the domain and the CRN concatenated  using a `:` character.

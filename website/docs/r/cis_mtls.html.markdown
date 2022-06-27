@@ -1,7 +1,7 @@
 ---
 subcategory: "Internet services"
 layout: "ibm"
-page_title: "IBM: ibm_cis_cache_settings"
+page_title: "IBM: ibm_cis_mtls"
 description: |-
   Provides an IBM Mutual TLS resource.
 ---
@@ -12,12 +12,15 @@ description: |-
 ## Example usage
 
 ```terraform
-# Change MTLS setting of the domain
+# Change MTLS setting of CIS instance
 
 resource "ibm_cis_mtls" "mtls_settings" {
   cis_id             = data.ibm_cis.cis.id
   domain_id          = data.ibm_cis_domain.cis_domain.domain_id
-  cert_mtls       = "-----BEGIN CERTIFICATE----- -----END CERTIFICATE-----"
+  cert_mtls       = EOT<<
+                     "-----BEGIN CERTIFICATE----- 
+                     --------END CERTIFICATE-----"
+                     EOT
   cert_name       = "MTLS_Cert"
   host_name       = "abc.abc.abc.com"
 }
@@ -27,20 +30,20 @@ resource "ibm_cis_mtls" "mtls_settings" {
 
 Review the argument references that you can specify for your resource. 
 
-- `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
-- `domain_id` - (Required, String) The ID of the domain to change cache settings.
-- `cert_mtls` - (Required, String) Content of valid MTLS certificate.
-- `cert_name` - (Required, String) Name of certificate. 
-- `host_name` - (Required, String) Valid host name for which we want to add the certificate.
+- `cis_id`      - (Required, String) The ID of the IBM Cloud Internet Services instance.
+- `domain_id`   - (Required, String) The ID of the domain to change cache settings.
+- `cert_mtls`   - (Required, String) Content of valid MTLS certificate.
+- `cert_name`   - (Required, String) Name of certificate. 
+- `host_name`   - (Required, String) Valid host name for which we want to add the certificate.
+- `created_at`  - (Computed, String) Time stamp string when Certificate is created'.
+- `updated_at`  - (Computed, String) Time stamp string when Certificate is modified'.
+- `expires_on`  - (Computed, String) Time stamp string when Cerftificate expires on'.
 
-**Note**
-
-Among all the purge actions `purge_all`, `purge_by-urls`, `purge_by_hosts`, and `purge_by_tags`, only one is allowed to give inside a resource.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The record ID. It is a combination of `<domain_id>,<cis_id>` attributes concatenated with `:`.
+- `id` - (String) The record ID. It is a combination of `<mtls_id>, <domain_id>,<cis_id>` attributes concatenated with `:`.
 
 ## Import
 The `ibm_cis_mtls` resource can be imported using the ID. The ID is formed from the domain ID of the domain and the CRN concatenated  using a `:` character.

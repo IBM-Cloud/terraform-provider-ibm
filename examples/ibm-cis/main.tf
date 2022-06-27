@@ -466,7 +466,11 @@ data "ibm_cis_logpush_jobs" "test" {
 resource "ibm_cis_mtls" “test” {
   cis_id          = ibm_cis.web_domain.id
   domain_id       = ibm_cis_domain.web_domain.id
-  cert_mtls       = "-----BEGIN CERTIFICATE----- -----END CERTIFICATE-----"
+  cert_mtls       = <<EOT 
+                   "-----BEGIN CERTIFICATE----- 
+                    -------END CERTIFICATE-----"
+                    EOT
+
   cert_name       = "MTLS_Cert"
   host_name       = "abc.abc.abc.com"
 }

@@ -4,11 +4,13 @@
 package cis
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -24,11 +26,11 @@ const (
 
 func ResourceIBMCISMtls() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceIBMCISMtlsCreate,
-		Read:     ResourceIBMCISMtlsRead,
-		Update:   ResourceIBMCISMtlsUpdate,
-		Delete:   ResourceIBMCISMtlsDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCISMtlsCreate,
+		ReadContext:   resourceIBMCISMtlsRead,
+		UpdateContext: resourceIBMCISMtlsUpdate,
+		DeleteContext: resourceIBMCISMtlsDelete,
+		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -79,10 +81,10 @@ func ResourceIBMCISMtls() *schema.Resource {
 		},
 	}
 }
-func ResourceIBMCISMtlsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 	crn := d.Get(cisID).(string)
 	zoneID := d.Get(cisDomainID).(string)
@@ -103,18 +105,18 @@ func ResourceIBMCISMtlsCreate(d *schema.ResourceData, meta interface{}) error {
 
 	result, resp, err := sess.CreateAccessCertificate(options)
 	if err != nil || result == nil {
-		return fmt.Errorf("[ERROR] Error creating MTLS access certificate %v", resp)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating MTLS access certificate %v", resp))
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
-	return ResourceIBMCISMtlsRead(d, meta)
+	return resourceIBMCISMtlsRead(context, d, meta)
 
 }
 
-func ResourceIBMCISMtlsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
@@ -128,7 +130,7 @@ func ResourceIBMCISMtlsRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error While reading MTLS access certificate %v:%v:%v", err, response, result)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While reading MTLS access certificate %v:%v:%v", err, response, result))
 	}
 
 	d.Set(cisID, crn)
@@ -141,10 +143,10 @@ func ResourceIBMCISMtlsRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func ResourceIBMCISMtlsUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
 	crn := d.Get(cisID).(string)
@@ -166,26 +168,25 @@ func ResourceIBMCISMtlsUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		updateResult, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
 		if updateErr != nil {
-			if updateResp != nil && updateResp.StatusCode == 404 {
+			if updateResp != nil {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error while updating the MTLS cert options %v", updateResult)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the MTLS cert options %v", updateResult))
 		}
 	}
 
-	return ResourceIBMCISMtlsRead(d, meta)
+	return resourceIBMCISMtlsRead(context, d, meta)
 }
 
-func ResourceIBMCISMtlsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess)
+		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
 	crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
-
 	zoneID := d.Get(cisDomainID).(string)
 
 	listOpt := sess.NewListAccessCertificatesOptions(zoneID)
@@ -196,7 +197,7 @@ func ResourceIBMCISMtlsDelete(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error While deleting the MTLS cert")
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert"))
 	}
 
 	for _, certId := range listResult.Result {
@@ -207,7 +208,7 @@ func ResourceIBMCISMtlsDelete(d *schema.ResourceData, meta interface{}) error {
 				d.SetId("")
 				return nil
 			}
-			return fmt.Errorf("[ERROR] Error While deleting the MTLS cert")
+			return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert"))
 		}
 
 	}
