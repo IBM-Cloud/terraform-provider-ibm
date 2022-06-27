@@ -32,11 +32,11 @@ In addition to all argument reference list, you can access the following attribu
 - `cis_id` - (String) The ID of the CIS service instance.
 - `cis_domain` - (String) The Domain of the CIS service instance.
 - `mtls_certificates` - (List)
-   - `cert_id` - (String) The Certificate ID.
-   - `cert_name` - (String) The Certificate Name.
-   - `cert_fingerprint` - (String) The Certificate Fingerprint.
-   - `cert_associated_hostnames` - (String) The Certificate Associated Hostnames.
-   - `cert_created_at` - (String) The Certificate Created At.
-   - `cert_updated_at` - (String) The Certificate Updated At.
-   - `cert_expires_on` - (String) The Certificate Expires On.
+   - `id` - (String) The Certificate ID.
+   - `name` - (String) The Certificate Name.
+   - `fingerprint` - (String) The Certificate Fingerprint.
+   - `associated_hostnames` - (String) The Certificate Associated Hostnames.
+   - `created_at` - (String) The Certificate Created At.
+   - `updated_at` - (String) The Certificate Updated At.
+   - `expires_on` - (String) The Certificate Expires On.
 

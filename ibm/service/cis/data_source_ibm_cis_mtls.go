@@ -18,13 +18,13 @@ import (
 
 const (
 	cisMtlsOutput                  = "mtls_certificates"
-	cisMtlsCertID                  = "cert_id"
-	cisMtlsCertName                = "cert_name"
-	cisMtlsCertFingerprint         = "cert_fingerprint"
-	cisMtlsCertAssociatedHostnames = "cert_associated_hostnames"
-	cisMtlsCertCreatedAt           = "cert_created_at"
-	cisMtlsCertUpdatedAt           = "cert_updated_at"
-	cisMtlsCertExpiresOn           = "cert_expires_on"
+	cisMtlsCertID                  = "id"
+	cisMtlsCertName                = "name"
+	cisMtlsCertFingerprint         = "fingerprint"
+	cisMtlsCertAssociatedHostnames = "associated_hostnames"
+	cisMtlsCertCreatedAt           = "created_at"
+	cisMtlsCertUpdatedAt           = "updated_at"
+	cisMtlsCertExpiresOn           = "expires_on"
 )
 
 func DataSourceIBMCISMtls() *schema.Resource {

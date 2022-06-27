@@ -137,7 +137,6 @@ func DataSourceIBMCISMtlsApp() *schema.Resource {
 							Computed:    true,
 							Description: "Application Updated At",
 						},
-						// TODO Include, Exclude and Require of Interface type
 					},
 				},
 			},
