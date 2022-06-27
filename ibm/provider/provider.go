@@ -273,6 +273,8 @@ func Provider() *schema.Provider {
 			"ibm_cis_ip_addresses":                  cis.DataSourceIBMCISIP(),
 			"ibm_cis_waf_groups":                    cis.DataSourceIBMCISWAFGroups(),
 			"ibm_cis_alerts":                        cis.DataSourceIBMCISAlert(),
+			"ibm_cis_mtlss":                         cis.DataSourceIBMCISMtls(),
+			"ibm_cis_mtls_apps":                     cis.DataSourceIBMCISMtlsApp(),
 			"ibm_cis_webhooks":                      cis.DataSourceIBMCISWebhooks(),
 			"ibm_cis_logpush_jobs":                  cis.DataSourceIBMCISLogPushJobs(),
 			"ibm_cis_edge_functions_actions":        cis.DataSourceIBMCISEdgeFunctionsActions(),
