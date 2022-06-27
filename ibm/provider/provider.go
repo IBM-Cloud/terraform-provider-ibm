@@ -644,6 +644,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_slack":   eventnotification.DataSourceIBMEnSlackSubscription(),
 			"ibm_en_subscription_safari":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
+			"ibm_en_destination_msteams":  eventnotification.DataSourceIBMEnMSTeamsDestination(),
+			"ibm_en_subscription_msteams": eventnotification.DataSourceIBMEnFCMSubscription(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1005,6 +1007,8 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
 			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
+			"ibm_en_destination_msteams":  eventnotification.ResourceIBMEnMSTeamsDestination(),
+			"ibm_en_subscription_msteams": eventnotification.ResourceIBMEnFCMSubscription(),
 		},
 
 		ConfigureFunc: providerConfigure,

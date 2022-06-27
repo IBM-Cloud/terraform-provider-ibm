@@ -43,7 +43,6 @@ func ResourceIBMEnSource() *schema.Resource {
 			"enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Default:     false,
 				Description: "The enabled flag for source",
 			},
 			"source_id": {

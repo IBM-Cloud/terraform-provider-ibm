@@ -1,26 +1,26 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_slack'
+page_title: 'IBM : ibm_en_destination_msteams'
 description: |-
-  Manages Event Notification Slack destinations.
+  Manages Event Notification MSTeams destinations.
 ---
 
-# ibm_en_destination_slack
+# ibm_en_destination_msteams
 
-Create, update, or delete a Slack destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a MSTeams destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_slack" "slack_en_destination" {
+resource "ibm_en_destination_msteams" "msteams_en_destination" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
-  name          = "My Slack Destination"
-  type          = "slack"
-  description   = "Destination slack for event notification"
+  name          = "MSteams EN Destination"
+  type          = "msteams"
+  description   = "Destination MSTeams for event notification"
   config {
     params {
-      url  = "https://hooks.slack.com/services/G0gyhsush/TYodsjhs/GHTbfidsimkk"
+      url  = "https://xyz.webhook.office.com"
   }
 }
 ```
@@ -35,7 +35,7 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) slack.
+- `type` - (Required, String) msteams.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -50,7 +50,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `slack_en_destination`.
+- `id` - (String) The unique identifier of the `msteams_en_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
@@ -74,5 +74,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_slack.slack_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_msteams.msteams_en_destination <instance_guid>/<destination_id>
 ```
