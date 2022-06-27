@@ -44,6 +44,7 @@ import (
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
+	cismtlsv1 "github.com/IBM/networking-go-sdk/mtlsv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
@@ -260,6 +261,7 @@ type ClientSession interface {
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
+	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -541,6 +543,10 @@ type clientSession struct {
 	//IAM Access Groups
 	iamAccessGroupsErr error
 	iamAccessGroupsAPI *iamaccessgroups.IamAccessGroupsV2
+
+	// MTLS Session options
+	cisMtlsClient *cismtlsv1.MtlsV1
+	cisMtlsErr    error
 
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
@@ -1058,6 +1064,14 @@ func (sess clientSession) CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJ
 	return sess.cisLogpushJobsClient.Clone(), nil
 }
 
+// CIS MTLS session
+func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
+	if sess.cisMtlsErr != nil {
+		return sess.cisMtlsClient, sess.cisMtlsErr
+	}
+	return sess.cisMtlsClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1214,6 +1228,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFGroupErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
 		session.cisCustomPageErr = errEmptyBluemixCredentials
+		session.cisMtlsErr = errEmptyBluemixCredentials
 		session.cisAccessRuleErr = errEmptyBluemixCredentials
 		session.cisUARuleErr = errEmptyBluemixCredentials
 		session.cisLockdownErr = errEmptyBluemixCredentials
@@ -2125,6 +2140,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisWebhooksErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisMtlsErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -2615,6 +2631,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisLogpushJobsClient != nil && session.cisLogpushJobsClient.Service != nil {
 		session.cisLogpushJobsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisLogpushJobsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM MTLS Session
+	cisMtlsOpt := &cismtlsv1.MtlsV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisMtlsClient, session.cisMtlsErr = cismtlsv1.NewMtlsV1(cisMtlsOpt)
+	if session.cisMtlsErr != nil {
+		session.cisMtlsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS MTLS : %s",
+				session.cisMtlsErr)
+	}
+	if session.cisMtlsClient != nil && session.cisMtlsClient.Service != nil {
+		session.cisMtlsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisMtlsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
