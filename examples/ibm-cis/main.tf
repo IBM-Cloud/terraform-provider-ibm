@@ -439,6 +439,18 @@ resource "ibm_cis_alert" "test" {
 data "ibm_cis_alerts" "test1" {
   cis_id = data.ibm_cis.cis.id
 }
+
+# CIS mTLS data source
+data "ibm_cis_mtlss" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+# CIS mTLS Apps data source
+data "ibm_cis_mtls_apps" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+
 # CIS Logpush Job
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id

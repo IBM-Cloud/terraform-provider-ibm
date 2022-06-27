@@ -32,31 +32,28 @@ func ResourceIBMPIKey() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-
-			helpers.PIKeyName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Key name in the PI instance",
-			},
-
-			helpers.PIKey: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "PI instance key info",
-			},
-			helpers.PIKeyDate: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date info",
-			},
-
 			helpers.PICloudInstanceId: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "PI cloud instance ID",
 			},
-
-			"key_id": {
+			helpers.PIKeyName: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Key name in the PI instance",
+			},
+			helpers.PIKey: {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "PI instance key info",
+			},
+			// Computed Attributes
+			PIKeyDate: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date of sshkey creation",
+			},
+			PIKeyID: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Key ID in the PI instance",
@@ -112,8 +109,8 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	d.Set(helpers.PIKeyName, sshkeydata.Name)
 	d.Set(helpers.PIKey, sshkeydata.SSHKey)
-	d.Set(helpers.PIKeyDate, sshkeydata.CreationDate.String())
-	d.Set("key_id", sshkeydata.Name)
+	d.Set(PIKeyDate, sshkeydata.CreationDate.String())
+	d.Set(PIKeyID, sshkeydata.Name)
 
 	return nil
 

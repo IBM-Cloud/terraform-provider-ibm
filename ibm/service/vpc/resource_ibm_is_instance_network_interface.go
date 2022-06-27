@@ -222,7 +222,7 @@ func ResourceIBMIsInstanceNetworkInterface() *schema.Resource {
 }
 
 func ResourceIBMIsInstanceNetworkInterfaceValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isInstanceNicName,
@@ -337,7 +337,7 @@ func resourceIBMIsInstanceNetworkInterfaceCreate(context context.Context, d *sch
 		}
 	}
 
-	isNICKey := "instance_network_interface_key_" + instance_id
+	isNICKey := "instance_key_" + instance_id
 	conns.IbmMutexKV.Lock(isNICKey)
 	defer conns.IbmMutexKV.Unlock(isNICKey)
 
@@ -621,7 +621,7 @@ func resourceIBMIsInstanceNetworkInterfaceUpdate(context context.Context, d *sch
 		hasChange = true
 	}
 	if hasChange {
-		isNICKey := "instance_network_interface_key_" + instance_id
+		isNICKey := "instance_key_" + instance_id
 		conns.IbmMutexKV.Lock(isNICKey)
 		defer conns.IbmMutexKV.Unlock(isNICKey)
 		updateInstanceNetworkInterfaceOptions.NetworkInterfacePatch, _ = patchVals.AsPatch()
@@ -710,7 +710,7 @@ func resourceIBMIsInstanceNetworkInterfaceDelete(context context.Context, d *sch
 	}
 	instance_id := parts[0]
 	network_intf_id := parts[1]
-	isNICKey := "instance_network_interface_key_" + instance_id
+	isNICKey := "instance_key_" + instance_id
 	conns.IbmMutexKV.Lock(isNICKey)
 	defer conns.IbmMutexKV.Unlock(isNICKey)
 

@@ -39,6 +39,7 @@ Review the argument references that you can specify for your data source.
 * `resource_group` - (Optional, string) The id of the resource group.
 * `name` - (Optional, string) The name of the image.
 * `visibility` - (Optional, string) Visibility of the image.
+* `status` - (Optional, string) Status of the image.
 
 ## Attribute reference
 You can access the following attribute references after your data source is created. 

@@ -95,7 +95,7 @@ func ResourceIBMIsBareMetalServerAction() *schema.Resource {
 func ResourceIBMISBareMetalServerActionValidator() *validate.ResourceValidator {
 	bareMetalServerStopTypes := "soft, hard"
 	bareMetalServerActions := "start, restart, stop"
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
