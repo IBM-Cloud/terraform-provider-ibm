@@ -37,10 +37,10 @@ resource "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubinteg
 		token_url = "token_url"
 		type = "new"
 		private_repo = true
+		auto_init = true
 		has_issues = true
 		enable_traceability = true
 		integration_owner = "integration_owner"
-		auto_init = true
   }
   toolchain_id = "toolchain_id"
 }
@@ -66,7 +66,7 @@ Nested scheme for **initialization**:
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Optional, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Optional, String) e.g. https://github.ibm.com/api/v3.
 	* `auto_init` - (Optional, Boolean) Select this checkbox to initialize this repository with a README.

@@ -33,96 +33,6 @@ func ResourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_githubintegrated", "toolchain_id"),
 				Description:  "ID of the toolchain to bind tool to.",
 			},
-			"parameters": &schema.Schema{
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "Parameters to be used to create the tool.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"git_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"api_root_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "e.g. https://github.ibm.com/api/v3.",
-						},
-						"legal": &schema.Schema{
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
-						},
-						"owner_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"repo_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"repo_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Type the URL of the repository that you are linking to.",
-						},
-						"source_repo_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Type the URL of the repository that you are forking or cloning.",
-						},
-						"token_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Integration token URL.",
-						},
-						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"private_repo": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Select this check box to make this repository private.",
-						},
-						"has_issues": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Select this check box to enable GitHub Issues for lightweight issue tracking.",
-						},
-						"enable_traceability": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
-						},
-						"integration_owner": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Select the user which git operations will be performed as.",
-						},
-						"auto_init": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Select this checkbox to initialize this repository with a README.",
-						},
-					},
-				},
-			},
 			"initialization": &schema.Schema{
 				Type:     schema.TypeList,
 				MinItems: 1,
@@ -185,6 +95,95 @@ func ResourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_githubintegrated", "name"),
 				Description:  "Name of tool.",
+			},
+			"parameters": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Parameters to be used to create the tool.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"git_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"api_root_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "e.g. https://github.ibm.com/api/v3.",
+						},
+						"legal": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+							Computed: true,
+						},
+						"owner_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"repo_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Type the URL of the repository that you are linking to.",
+						},
+						"source_repo_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Type the URL of the repository that you are forking or cloning.",
+						},
+						"token_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Integration token URL.",
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"private_repo": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Select this check box to make this repository private.",
+						},
+						"auto_init": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Select this checkbox to initialize this repository with a README.",
+						},
+						"has_issues": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Select this check box to enable GitHub Issues for lightweight issue tracking.",
+						},
+						"enable_traceability": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+						},
+						"integration_owner": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Select the user which git operations will be performed as.",
+						},
+					},
+				},
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -281,11 +280,11 @@ func ResourceIBMCdToolchainToolGithubintegratedCreate(context context.Context, d
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("github_integrated")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolGithubintegrated(), nil)
-	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
 	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolGithubintegrated(), nil)
+	createToolOptions.SetParameters(parametersModel)
 
 	postToolResponse, response, err := cdToolchainClient.CreateToolWithContext(context, createToolOptions)
 	if err != nil {
@@ -327,12 +326,14 @@ func ResourceIBMCdToolchainToolGithubintegratedRead(context context.Context, d *
 	if err = d.Set("toolchain_id", getToolByIDResponse.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolGithubintegrated(), nil)
-	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
-	}
 	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if getToolByIDResponse.Parameters != nil {
+		parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolGithubintegrated(), nil)
+		if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
+		}
 	}
 	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
@@ -389,13 +390,13 @@ func ResourceIBMCdToolchainToolGithubintegratedUpdate(context context.Context, d
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
+	if d.HasChange("name") {
+		updateToolOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
 	if d.HasChange("parameters") {
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolGithubintegrated(), nil)
 		updateToolOptions.SetParameters(parameters)
-		hasChange = true
-	}
-	if d.HasChange("name") {
-		updateToolOptions.SetName(d.Get("name").(string))
 		hasChange = true
 	}
 

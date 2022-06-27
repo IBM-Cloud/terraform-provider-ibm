@@ -58,7 +58,7 @@ Nested scheme for **initialization**:
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Optional, List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Optional, String) e.g. https://gitlab.example.com/api/v4.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
