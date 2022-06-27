@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	cisOriginAuthHostStatus  = "host_status"
 	CisOriginAuthHostName    = "hostname"
 	CisOriginAuthRequestType = "request_type"
 )
@@ -57,7 +56,7 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 				Description: "Certficate list",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"cert_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certificate id",
@@ -68,32 +67,32 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 							Computed:    true,
 							Description: "CIS origin auth certificate detail",
 						},
-						"issuer": {
+						"cert_issuer": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certificate issue",
 						},
-						"signature": {
+						"cert_signature": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certificate signature",
 						},
-						"status": {
+						"cert_status": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certificate active or not",
 						},
-						"expires_on": {
+						"cert_expires_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certificate expiry time",
 						},
-						"uploaded_on": {
+						"cert_uploaded_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certifaate upldate time",
 						},
-						"serial_number": {
+						"cert_serial_number": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "CIS origin auth certifaate upldate time",
@@ -145,13 +144,13 @@ func dataIBMCISOriginAuthRead(d *schema.ResourceData, meta interface{}) error {
 
 		for _, certObj := range zoneCertListResult.Result {
 
-			zoneCertList["id"] = *certObj.ID
+			zoneCertList["cert_id"] = *certObj.ID
 			zoneCertList["certificate"] = *certObj.Certificate
-			zoneCertList["issuer"] = *certObj.Issuer
-			zoneCertList["signature"] = *certObj.Signature
-			zoneCertList["status"] = *certObj.Status
-			zoneCertList["expires_on"] = *certObj.ExpiresOn
-			zoneCertList["uploaded_on"] = *certObj.UploadedOn
+			zoneCertList["cert_issuer"] = *certObj.Issuer
+			zoneCertList["cert_signature"] = *certObj.Signature
+			zoneCertList["cert_status"] = *certObj.Status
+			zoneCertList["cert_expires_on"] = *certObj.ExpiresOn
+			zoneCertList["cert_uploaded_on"] = *certObj.UploadedOn
 
 		}
 		zoneCertLists = append(zoneCertLists, zoneCertList)
