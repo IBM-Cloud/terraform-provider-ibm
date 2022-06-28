@@ -16,18 +16,19 @@ import (
 )
 
 const (
-	cisMtlsAppName       = "name"
-	cisMtlsHostDomain    = "domain"
-	cisMtlsDuration      = "session_duration"
-	cisMtlsRuleCommonVal = "rule_common"
-	cisMtlsPolicyName    = "policy_name"
-	cisMtlsPolicyAction  = "policy_decision"
-	cisMtlsAppCreatedAt  = "app_created_at"
-	cisMtlsAppUpdatedAt  = "app_updated_at"
-	cisMtlsPolCreatedAt  = "pol_created_at"
-	cisMtlsPolUpdatedAt  = "pol_updated_at"
-	cisMtlsAppID         = "app_id"
-	cisMtlsPolicyID      = "policy_id"
+	cisMtlsAppName            = "name"
+	cisMtlsHostDomain         = "domain"
+	cisMtlsDuration           = "session_duration"
+	cisMtlsRuleCommonVal      = "common_rule_val"
+	cisMtlsRuleCertificateVal = "cert_val"
+	cisMtlsPolicyName         = "policy_name"
+	cisMtlsPolicyAction       = "policy_decision"
+	cisMtlsAppCreatedAt       = "app_created_at"
+	cisMtlsAppUpdatedAt       = "app_updated_at"
+	cisMtlsPolCreatedAt       = "pol_created_at"
+	cisMtlsPolUpdatedAt       = "pol_updated_at"
+	cisMtlsAppID              = "app_id"
+	cisMtlsPolicyID           = "policy_id"
 )
 
 func ResourceIBMCISMtlsApp() *schema.Resource {
@@ -68,20 +69,26 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 			cisMtlsPolicyName: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "Default policy",
+				Default:     "mtls-policy",
 				Description: "Policy Name",
 			},
 			cisMtlsPolicyAction: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "Non-identity",
+				Default:     "non_identity",
 				Description: "Policy Action",
 			},
 			cisMtlsRuleCommonVal: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "Access CA",
-				Description: "Policy common rule",
+				Default:     "Access Testing CA",
+				Description: "Policy common rule value",
+			},
+			cisMtlsRuleCertificateVal: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "CA root certificate",
+				Description: "Policy certificate rule value",
 			},
 			cisMtlsAppCreatedAt: {
 				Type:        schema.TypeString,
@@ -91,17 +98,17 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 			cisMtlsAppUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Certificate Created At",
+				Description: "Certificate Updated At",
 			},
 			cisMtlsPolCreatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Certificate Created At",
+				Description: "Policy Created At",
 			},
 			cisMtlsPolUpdatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Certificate Created At",
+				Description: "Policy updated At",
 			},
 			cisMtlsAppID: {
 				Type:        schema.TypeString,
@@ -117,6 +124,8 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 	}
 }
 func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var cert_rule_val string
+	var common_rule_val string
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
@@ -142,7 +151,7 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	resultApp, responseApp, operationErrApp := sess.CreateAccessApplication(OptionsApp)
 
 	if operationErrApp != nil || resultApp == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating access application  %v %v %v", operationErrApp, resultApp, responseApp))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating access application  %v %v", operationErrApp, responseApp))
 	}
 
 	d.SetId(flex.ConvertCisToTfThreeVar(*resultApp.Result.ID, zoneID, crn))
@@ -151,11 +160,19 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	appId := *resultApp.Result.ID
 
 	// Create an access policy
+
+	if cert_val, ok := d.GetOk(cisMtlsRuleCommonVal); ok {
+		cert_rule_val = cert_val.(string)
+	}
+	if com_val, ok := d.GetOk(cisMtlsRuleCommonVal); ok {
+		common_rule_val = com_val.(string)
+	}
+
 	policyRuleModel := &mtlsv1.PolicyRulePolicyCertRule{
-		Certificate: map[string]interface{}{"certifcate": "CA root certificate"},
+		Certificate: map[string]interface{}{"certifcate": cert_rule_val},
 	}
 	policyCnModel := &mtlsv1.PolicyCnRuleCommonName{
-		CommonName: core.StringPtr("Access CA"),
+		CommonName: core.StringPtr(common_rule_val),
 	}
 	policyModel := &mtlsv1.PolicyRulePolicyCnRule{
 		CommonName: policyCnModel,
@@ -177,7 +194,7 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("[ERROR] Error creating app policy  %v", responsePolicy))
 	}
 
-	d.SetId(flex.ConvertCisToTfThreeVar(*resultApp.Result.ID, zoneID, *resultPolicy.Result.ID))
+	d.SetId(flex.ConvertCisToTfFourVar(*resultApp.Result.ID, *resultPolicy.Result.ID, zoneID, crn))
 	return resourceIBMCISMtlsAppRead(context, d, meta)
 
 }
@@ -187,9 +204,8 @@ func resourceIBMCISMtlsAppRead(context context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
-	crn := d.Get(cisID).(string)
+	appID, policyID, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
-	appID, zoneID, policyID, _ := flex.ConvertTfToCisThreeVar(d.Id())
 	getAppOptions := sess.NewGetAccessApplicationOptions(zoneID, appID)
 	getAppResult, getAppResp, getAppErr := sess.GetAccessApplication(getAppOptions)
 
@@ -220,9 +236,9 @@ func resourceIBMCISMtlsAppUpdate(context context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
-	crn := d.Get(cisID).(string)
+
+	appID, _, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
-	appID, zoneID, _, _ := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if d.HasChange(cisMtlsAppName) ||
 		d.HasChange(cisMtlsPolicyName) || d.HasChange(cisMtlsPolicyAction) ||
@@ -274,53 +290,21 @@ func resourceIBMCISMtlsAppDelete(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
-	crn := d.Get(cisID).(string)
-	zoneID := d.Get(cisDomainID).(string)
+	appID, policyID, zoneID, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
+	//crn := d.Get(cisID).(string)
+	//zoneID := d.Get(cisDomainID).(string)
 	sess.Crn = core.StringPtr(crn)
-	listAccOpt := sess.NewListAccessApplicationsOptions(zoneID)
-	listAccResult, listAccResp, listAccErr := sess.ListAccessApplications(listAccOpt)
-	if listAccErr != nil {
-		if listAccResp != nil && listAccResp.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While getting application detail for deletion"))
+
+	delOptPolicy := sess.NewDeleteAccessPolicyOptions(zoneID, appID, policyID)
+	_, delRespPolicy, delErrPolicy := sess.DeleteAccessPolicy(delOptPolicy)
+	if delErrPolicy != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the policy :%v", delRespPolicy))
 	}
-	// Delete an access applications
-	for _, appId := range listAccResult.Result {
-		// List access policy
-		listOptPolicy := sess.NewListAccessPoliciesOptions(zoneID, *appId.ID)
-		listResultPolicy, listRespPolicy, listErrPolicy := sess.ListAccessPolicies(listOptPolicy)
-		if listErrPolicy != nil {
-			if listRespPolicy != nil && listRespPolicy.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error While getting policy detail for deletion"))
-		}
-		// Delete access policy
-		for _, policyId := range listResultPolicy.Result {
-			delOptPolicy := sess.NewDeleteAccessPolicyOptions(zoneID, *appId.ID, *policyId.ID)
-			_, delRespPolicy, delErrPolicy := sess.DeleteAccessPolicy(delOptPolicy)
-			if delErrPolicy != nil {
-				if delRespPolicy != nil && delRespPolicy.StatusCode == 404 {
-					d.SetId("")
-					return nil
-				}
-				return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the policy"))
-			}
 
-		}
-		delAccOpt := sess.NewDeleteAccessApplicationOptions(zoneID, *appId.ID)
-		_, delAccResp, delAccErr := sess.DeleteAccessApplication(delAccOpt)
-		if delAccErr != nil {
-			if delAccResp != nil && delAccResp.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the app"))
-		}
-
+	delAccOpt := sess.NewDeleteAccessApplicationOptions(zoneID, appID)
+	_, delAccResp, delAccErr := sess.DeleteAccessApplication(delAccOpt)
+	if delAccErr != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the app :%v", delAccResp))
 	}
 
 	return nil

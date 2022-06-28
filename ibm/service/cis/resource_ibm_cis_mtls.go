@@ -122,10 +122,11 @@ func resourceIBMCISMtlsRead(context context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
-	crn := d.Get(cisID).(string)
-	sess.Crn = core.StringPtr(crn)
+	//crn := d.Get(cisID).(string)
+	//sess.Crn = core.StringPtr(crn)
 
 	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	sess.Crn = core.StringPtr(crn)
 	getOptions := sess.NewGetAccessCertificateOptions(zoneID, certID)
 	result, response, err := sess.GetAccessCertificate(getOptions)
 
@@ -172,13 +173,9 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 			updateOption.SetName(name.(string))
 		}
 
-		updateResult, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
+		_, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
 		if updateErr != nil {
-			if updateResp != nil {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the MTLS cert options %v", updateResult))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error while updating the MTLS cert options %v", updateResp))
 		}
 	}
 
@@ -191,32 +188,16 @@ func resourceIBMCISMtlsDelete(context context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
 	}
 
-	crn := d.Get(cisID).(string)
+	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	//crn := d.Get(cisID).(string)
 	sess.Crn = core.StringPtr(crn)
-	zoneID := d.Get(cisDomainID).(string)
+	// zoneID := d.Get(cisDomainID).(string)
 
-	listOpt := sess.NewListAccessCertificatesOptions(zoneID)
-	listResult, listResp, listErr := sess.ListAccessCertificates(listOpt)
+	delOpt := sess.NewDeleteAccessCertificateOptions(zoneID, certID)
+	_, delResp, delErr := sess.DeleteAccessCertificate(delOpt)
+	if delErr != nil {
 
-	if listErr != nil {
-		if listResp != nil && listResp.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert"))
-	}
-
-	for _, certId := range listResult.Result {
-		delOpt := sess.NewDeleteAccessCertificateOptions(zoneID, *certId.ID)
-		_, delResp, delErr := sess.DeleteAccessCertificate(delOpt)
-		if delErr != nil {
-			if delResp != nil && delResp.StatusCode == 404 {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert"))
-		}
-
+		return diag.FromErr(fmt.Errorf("[ERROR] Error While deleting the MTLS cert : %v", delResp))
 	}
 
 	return nil

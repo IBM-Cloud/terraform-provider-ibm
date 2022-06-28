@@ -40,7 +40,10 @@ Review the argument references that you can specify for your resource.
 - `pol_created_at`                 - (Computed, String) Time stamp string when Policy is created.
 - `pol_updated_at`                 - (Computed, String) Time stamp string when Policy is modified.
 - `App_ID`                         - (Computed, String) ID of created App.
-- `Policy_ID`                      - (Computed, String) ID of created Policy.
+- `cert_val`                       - (Optional, String) Valid value for certificate rule option.
+- `common_rule_val`                - (Optional, String) Valid value for common rule option.
+- `policy_decision`                - (Optional, String) Valid policy action value e.g. 'non_identity', 'allow', 'deny', 'bypass'. 
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
