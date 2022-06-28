@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_vault"
 description: |-
   Manages vault.
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_vault
@@ -55,7 +55,7 @@ In addition to all argument references listed, you can access the following attr
 You can import the `ibm_hpcs_vault` resource by using `region`, `instance_id`, and `vault_id`.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_hpcs_vault.vault <region>/<instance_id>/<vault_id>
 ```
 

@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_managed_key"
 description: |-
   Manages managed_key.
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_managed_key
@@ -123,7 +123,7 @@ Nested scheme for **verification_patterns**:
 You can import the `ibm_hpcs_managed_key` resource by using `region`, `instance_id`, `vault_id`, and `key_id`.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_hpcs_managed_key.key <region>/<instance_id>/<vault_id>/<key_id>
 ```
 

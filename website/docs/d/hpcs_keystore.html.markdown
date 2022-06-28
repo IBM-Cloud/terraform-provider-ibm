@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_keystore"
 description: |-
   Get information about keystore
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_keystore

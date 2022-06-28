@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_key_template"
 description: |-
   Manages key_template.
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_key_template
@@ -94,7 +94,7 @@ In addition to all argument references listed, you can access the following attr
 You can import the `ibm_hpcs_key_template` resource by using `region`, `instance_id`, `vault_id`, and `template_id`.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_hpcs_key_template.template <region>/<instance_id>/<vault_id>/<template_id>
 ```
 

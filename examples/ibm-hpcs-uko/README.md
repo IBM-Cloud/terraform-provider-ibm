@@ -1,4 +1,4 @@
-# Example for UkoV4
+# Example for Unified Key Orchestrator (UKO) feature of Hyper Protect Crypto Services
 
 This example illustrates how to use the UkoV4 terraform plugin
 
@@ -137,14 +137,6 @@ data "ibm_hpcs_vault" "vault_data" {
 }
 ```
 
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
-
 ## Requirements
 
 | Name | Version |
@@ -198,7 +190,7 @@ data "ibm_hpcs_vault" "vault_data" {
 | azure_location | Azure Location | string | true when type = "azure_key_vault" |
  | azure_service_principal_client_id| Azure Service Principle Client ID | string | true when type = "azure_key_vault" |
  | azure_service_principal_password| Azure Service Principle Password | string | true when type = "azure_key_vault" |
- | azure_tenant =| Azure Tenant | string | true when type = "azure_key_vault" |
+ | azure_tenant | Azure Tenant | string | true when type = "azure_key_vault" |
  | azure_subscription_id| Azure Subscription ID | string | true when type = "azure_key_vault" |
  | azure_environment| Azure Environment | string | true when type = "azure_key_vault" |
  | azure_service_name| Azure Service Name | string | true when type = "azure_key_vault" |

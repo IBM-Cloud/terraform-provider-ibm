@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_keystore"
 description: |-
   Manages keystore.
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_keystore
@@ -202,7 +202,7 @@ Nested scheme for **vault**:
 You can import the `ibm_hpcs_keystore` resource by using `region`, `instance_id`, `vault_id`, and `keystore_id`.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_hpcs_keystore.keystore <region>/<instance_id>/<vault_id>/<keystore_id>
 ```
 
