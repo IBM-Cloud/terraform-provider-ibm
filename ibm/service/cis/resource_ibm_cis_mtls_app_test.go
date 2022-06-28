@@ -22,7 +22,7 @@ func TestAccIBMCisMtlsApp_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisMtlsAppBasic1("test", acc.CisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "associated_hostname", "darunya.austest-10.cistest-load.com"),
+					resource.TestCheckResourceAttr(name, "domain", "darunya.austest-10.cistest-load.com"),
 					resource.TestCheckResourceAttr(name, "name", "MTLS-APP"),
 					resource.TestCheckResourceAttr(name, "policy_name", "MTLS-Policy"),
 				),
@@ -36,7 +36,7 @@ func testAccCheckCisMtlsAppBasic1(id string, CisDomainStatic string) string {
 	resource "ibm_cis_mtls_app" "%[1]s" {
 		cis_id                         = data.ibm_cis.cis.id
 		domain_id                      = data.ibm_cis_domain.cis_domain.domain_id
-		associated_hostname            = "darunya.austest-10.cistest-load.com"
+		domain                         = "darunya.austest-10.cistest-load.com"
 		name                           = "MTLS-APP"
 		policy_name                    = "Default Policy"
 	  }
