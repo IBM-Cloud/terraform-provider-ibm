@@ -79,9 +79,8 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Description: "Policy Action",
 			},
 			cisMtlsRuleCommonVal: {
-				Type:     schema.TypeString,
-				Optional: true,
-				//Default:     "Access Testing CA",
+				Type:        schema.TypeString,
+				Optional:    true,
 				Description: "Policy common rule value",
 			},
 			cisMtlsRuleCertificateVal: {
