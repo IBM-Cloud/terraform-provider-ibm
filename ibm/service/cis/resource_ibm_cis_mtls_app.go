@@ -20,7 +20,7 @@ const (
 	cisMtlsHostDomain         = "domain"
 	cisMtlsDuration           = "session_duration"
 	cisMtlsRuleCommonVal      = "common_rule_val"
-	cisMtlsRuleCertificateVal = "cert_val"
+	cisMtlsRuleCertificateVal = "cert_rule_val"
 	cisMtlsPolicyName         = "policy_name"
 	cisMtlsPolicyAction       = "policy_decision"
 	cisMtlsAppCreatedAt       = "app_created_at"

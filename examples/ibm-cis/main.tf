@@ -494,3 +494,28 @@ resource "ibm_cis_mtls_app" “test” {
   session_duration        = "24h"
   policy_name             = "Default Policy"
 }
+
+# Create Mtls APP and policy with certficate rule and common rule 
+resource "ibm_cis_mtls_app" “test2” {
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
+  cert_rule_val           = "my-valid-cert"
+  common_rule_val         = "valid-common-rule"
+
+}
+
+# Create Mtls APP and policy with policy action
+resource "ibm_cis_mtls_app" “test3” {
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
+  cert_rule_val           = "my-valid-cert"
+  common_rule_val         = "valid-common-rule"
+  policy_decision         = "allow"
+
+}
