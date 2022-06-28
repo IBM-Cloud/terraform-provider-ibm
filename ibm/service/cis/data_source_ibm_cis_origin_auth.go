@@ -4,12 +4,14 @@
 package cis
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,7 +22,7 @@ const (
 
 func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 	return &schema.Resource{
-		Read: dataIBMCISOriginAuthRead,
+		ReadContext: dataIBMCISOriginAuthRead,
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
@@ -105,10 +107,10 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 
 }
 
-func dataIBMCISOriginAuthRead(d *schema.ResourceData, meta interface{}) error {
+func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	crn := d.Get(cisID).(string)
@@ -125,7 +127,7 @@ func dataIBMCISOriginAuthRead(d *schema.ResourceData, meta interface{}) error {
 		zoneSettingsResult, zoneSettingsResponse, zoneSettingsErr := sess.GetZoneOriginPullSettings(zoneSettingsOpt)
 
 		if zoneSettingsErr != nil || zoneSettingsResponse == nil {
-			return fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneSettingsErr)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneSettingsErr))
 		}
 
 		zoneSettings := zoneSettingsResult.Result.Enabled
@@ -136,7 +138,7 @@ func dataIBMCISOriginAuthRead(d *schema.ResourceData, meta interface{}) error {
 		zoneCertListResult, zoneCertListResponse, zoneCertListErr := sess.ListZoneOriginPullCertificates(zoneCertListOpt)
 
 		if zoneCertListErr != nil || zoneCertListResponse == nil {
-			return fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneCertListErr)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneCertListErr))
 		}
 
 		zoneCertLists := make([]map[string]interface{}, 0)
@@ -166,7 +168,7 @@ func dataIBMCISOriginAuthRead(d *schema.ResourceData, meta interface{}) error {
 		hostnameSettingsResult, hostnameSettingsResponse, hostnameSettingsErr := sess.GetHostnameOriginPullSettings(hostnameSettingsOpt)
 
 		if hostnameSettingsErr != nil || hostnameSettingsResponse == nil {
-			return fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", hostnameSettingsErr)
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", hostnameSettingsErr))
 		}
 
 		hostnameSettings := hostnameSettingsResult.Result.Enabled
