@@ -97,6 +97,7 @@ var IksClusterResourceGroupID string
 var IcdDbRegion string
 var IcdDbDeploymentId string
 var IcdDbBackupId string
+var IcdDbTaskId string
 var KmsInstanceID string
 var CrkID string
 
@@ -173,6 +174,9 @@ var Satellite_Resource_instance_id string
 
 //Dedicated host
 var HostPoolID string
+
+// Continuous Delivery
+var CdResourceGroupID string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -550,6 +554,11 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ICD_DB_BACKUP_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3'")
 	}
 
+	IcdDbTaskId = os.Getenv("ICD_DB_TASK_ID")
+	if IcdDbTaskId == "" {
+		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
+	}
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
@@ -932,6 +941,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
 	}
 
+	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
+	if CdResourceGroupID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
+	}
 }
 
 var TestAccProviders map[string]*schema.Provider

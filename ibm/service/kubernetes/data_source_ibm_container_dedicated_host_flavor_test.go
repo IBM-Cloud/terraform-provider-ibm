@@ -34,7 +34,7 @@ func testAccCheckIBMContainerDedicatedHostFlavorDataSourceConfig() string {
 	return `
 	data "ibm_container_dedicated_host_flavor" "test_dhost_flavor" {
 	    host_flavor_id = "bx2d.host.152x608"
-		zone           = "us-south-1"
+		zone           = "us-south-2"
 	}
 `
 }

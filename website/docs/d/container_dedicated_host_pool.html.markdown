@@ -17,7 +17,7 @@ In the following example, you can retrieve a dedicated host pool:
 
 ```terraform
 data "ibm_container_dedicated_host_pool" "test_dhostpool" {
-  host_pool_id = "<dedicated hostpool id>"
+  host_pool_id = "dh-abcdefgh1234567"
 }
 ```
 

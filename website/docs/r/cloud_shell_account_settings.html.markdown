@@ -56,7 +56,7 @@ The following arguments are supported:
 * `regions` - (Optional, List) List of Cloud Shell region settings.
   * `enabled` - (Optional, bool) State of the region.
   * `key` - (Optional, string) Name of the region.
-* `rev` - (Optional, string) Unique revision number for the settings object.
+* `rev` - (Required, string) Unique revision number for the settings object.  Required it this field is available from the data source.
 
 ## Attribute reference
 
