@@ -30,51 +30,10 @@ func TestAccIBMDatabaseTasksDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseDataSourceConfig6(name string) string {
-	return fmt.Sprintf(`
-	data "ibm_resource_group" "test_acc" {
-		is_default = true
-	}
-
-	data "ibm_database" "%[1]s" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = ibm_database.db.name
-	}
-
-	resource "ibm_database" "db" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "%[1]s"
-		service           = "databases-for-postgresql"
-		plan              = "standard"
-		location          = "%[2]s"
-		tags              = ["one:two"]
-	}
-
-	resource "ibm_database" "db_replica" {
-		resource_group_id = data.ibm_resource_group.test_acc.id
-    	remote_leader_id  = ibm_database.db.id
-		name              = "%[1]s-replica"
-		service           = "databases-for-postgresql"
-		plan              = "standard"
-		location          = "%[2]s"
-		tags              = ["one:two"]
-
-    depends_on = [
-      ibm_database.db,
-    ]
-	}
-
-				`, name, acc.IcdDbRegion)
-}
-
 func testAccCheckIBMDatabaseTasksDataSourceConfigBasic(name string) string {
-	return testAccCheckIBMDatabaseDataSourceConfig6(name) + `
+	return fmt.Sprintf(`
 		data "ibm_database_tasks" "database_tasks" {
-			deployment_id = ibm_database.db.id
-
-			depends_on = [
-				ibm_database.db_replica,
-			]
+			deployment_id = "%[1]s"
 		}
-	`
+	`, acc.IcdDbDeploymentId)
 }
