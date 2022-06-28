@@ -88,15 +88,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `version` - Version of the cbr_zone.
 
-## Provider Configuration
-
-The IBM Cloud provider offers a flexible means of providing credentials for authentication. The following methods are supported, in this order, and explained below:
-
-- Static credentials
-- Environment variables
-
-To find which credentials are required for this resource, see the service table [here](https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform?topic=ibm-cloud-provider-for-terraform-provider-reference#required-parameters).
-
 ### Static credentials
 
 You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
