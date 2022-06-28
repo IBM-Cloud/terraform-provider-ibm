@@ -79,9 +79,9 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Description: "Policy Action",
 			},
 			cisMtlsRuleCommonVal: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "Access Testing CA",
+				Type:     schema.TypeString,
+				Optional: true,
+				//Default:     "Access Testing CA",
 				Description: "Policy common rule value",
 			},
 			cisMtlsRuleCertificateVal: {
@@ -126,6 +126,7 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var cert_rule_val string
 	var common_rule_val string
+	var common_rule_set bool
 	sess, err := meta.(conns.ClientSession).CisMtlsSession()
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisMtlsSession() %s %v", err, sess))
@@ -164,19 +165,25 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	if cert_val, ok := d.GetOk(cisMtlsRuleCommonVal); ok {
 		cert_rule_val = cert_val.(string)
 	}
+
+	common_rule_set = false
 	if com_val, ok := d.GetOk(cisMtlsRuleCommonVal); ok {
+		common_rule_set = true
 		common_rule_val = com_val.(string)
+
 	}
 
-	policyRuleModel := &mtlsv1.PolicyRulePolicyCertRule{
-		Certificate: map[string]interface{}{"certifcate": cert_rule_val},
-	}
 	policyCnModel := &mtlsv1.PolicyCnRuleCommonName{
 		CommonName: core.StringPtr(common_rule_val),
 	}
 	policyModel := &mtlsv1.PolicyRulePolicyCnRule{
 		CommonName: policyCnModel,
 	}
+
+	policyRuleModel := &mtlsv1.PolicyRulePolicyCertRule{
+		Certificate: map[string]interface{}{"certifcate": cert_rule_val},
+	}
+
 	optionsPolicy := sess.NewCreateAccessPolicyOptions(zoneID, appId)
 
 	// get policy name and action/decsion
@@ -186,8 +193,11 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 	if action_val, ok := d.GetOk(cisMtlsPolicyAction); ok {
 		optionsPolicy.SetDecision(action_val.(string))
 	}
-
-	optionsPolicy.SetInclude([]mtlsv1.PolicyRuleIntf{policyModel, policyRuleModel})
+	if common_rule_set {
+		optionsPolicy.SetInclude([]mtlsv1.PolicyRuleIntf{policyModel, policyRuleModel})
+	} else {
+		optionsPolicy.SetInclude([]mtlsv1.PolicyRuleIntf{policyRuleModel})
+	}
 	resultPolicy, responsePolicy, operationErrPolicy := sess.CreateAccessPolicy(optionsPolicy)
 
 	if operationErrPolicy != nil || resultPolicy == nil {
