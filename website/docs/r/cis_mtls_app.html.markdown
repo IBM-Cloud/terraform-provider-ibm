@@ -17,9 +17,9 @@ description: |-
 resource "ibm_cis_mtls_app" "mtls_app_settings" {
   cis_id             = data.ibm_cis.cis.id
   domain_id          = data.ibm_cis_domain.cis_domain.domain_id
-  app_name           = "MY_APP"
-  url                = "abc.abc.com"
-  duration           = "24h"
+  name               = "MY_APP"
+  domain             = "abc.abc.com"
+  session_duration   = "24h"
   policy_name        = "MTLS_Policy"
 }
 ```
@@ -31,9 +31,9 @@ Review the argument references that you can specify for your resource.
 - `cis_id`                         - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `domain_id`                      - (Required, String) The ID of the domain to change cache settings.
 - `name`                           - (Required, String) Name for the app which you want to create.
-- `associated_hostname`            - (Required, String) Host name for which we want to create app. 
+- `domain`                         - (Required, String) Host domain for which we want to create app. 
 - `policy_name`                    - (Optional, String) Valid name for a policy.
-- `duration`                       - (Optional, String) Duraing in string, default is '24h'.
+- `session_duration `              - (Optional, String) Duraing in string, default is '24h'.
 - `policy_decision`                - (Optional, String) Valid policuy action, default is 'non_identity'.
 - `app_created_at`                 - (Computed, String) Time stamp string when App is created.
 - `app_updated_at`                 - (Computed, String) Time stamp string when App is modififed.

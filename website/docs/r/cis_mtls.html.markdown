@@ -15,14 +15,14 @@ description: |-
 # Change MTLS setting of CIS instance
 
 resource "ibm_cis_mtls" "mtls_settings" {
-  cis_id             = data.ibm_cis.cis.id
-  domain_id          = data.ibm_cis_domain.cis_domain.domain_id
-  cert_mtls       = EOT<<
-                     "-----BEGIN CERTIFICATE----- 
-                     --------END CERTIFICATE-----"
-                     EOT
-  cert_name       = "MTLS_Cert"
-  host_name       = "abc.abc.abc.com"
+  cis_id                          = data.ibm_cis.cis.id
+  domain_id                       = data.ibm_cis_domain.cis_domain.domain_id
+  certificate                     = EOT<<
+                                  "-----BEGIN CERTIFICATE----- 
+                                  --------END CERTIFICATE-----"
+                                  EOT
+  name                            = "MTLS_Cert"
+  associated_hostnames            = "abc.abc.abc.com"
 }
 ```
 
@@ -34,7 +34,7 @@ Review the argument references that you can specify for your resource.
 - `domain_id`               - (Required, String) The ID of the domain to change cache settings.
 - `certificate`             - (Required, String) Content of valid MTLS certificate.
 - `name`                    - (Required, String) Name of certificate. 
-- `associated_hostname`     - (Required, String) Valid host name for which we want to add the certificate.
+- `associated_hostnames`     - (Required, []String) Valid host names for which we want to add the certificate.
 - `created_at`              - (Computed, String) Time stamp string when Certificate is created'.
 - `updated_at`              - (Computed, String) Time stamp string when Certificate is modified'.
 - `expires_on`              - (Computed, String) Time stamp string when Cerftificate expires on'.

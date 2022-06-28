@@ -483,7 +483,7 @@ resource "ibm_cis_mtls" “test” {
                               -------END CERTIFICATE-----"
                               EOT
   name                       = "MTLS_Cert"
-  associated_hostnames       = "abc.abc.abc.com"
+  associated_hostnames       = ["abc.abc.abc.com"]
 }
 
 #CIS MTLS app and policy instance

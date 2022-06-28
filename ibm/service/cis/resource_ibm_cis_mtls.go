@@ -15,14 +15,10 @@ import (
 )
 
 const (
-	cisMtlsID            = "mtls_id"
-	cisMtlsCert          = "certificate"
-	cisMtlsCertName      = "name"
-	cisMtlsCertID        = "cert_id"
-	cisMtlsHostName      = "associated_hostname"
-	cisMtlsCertCreatedAt = "created_at"
-	cisMtlsCertUpdatedAt = "updated_at"
-	cisMtlsCertExpireOn  = "expires_on"
+	cisMtlsID           = "mtls_id"
+	cisMtlsCert         = "certificate"
+	cisMtlsHostNames    = "associated_hostnames"
+	cisMtlsCertExpireOn = "expires_on"
 )
 
 func ResourceIBMCISMtls() *schema.Resource {
@@ -59,10 +55,11 @@ func ResourceIBMCISMtls() *schema.Resource {
 				Required:    true,
 				Description: "Certificate name",
 			},
-			cisMtlsHostName: {
-				Type:        schema.TypeString,
+			cisMtlsHostNames: {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Required:    true,
-				Description: "Certificate host name",
+				Description: "Host name list to be associated",
 			},
 			cisMtlsCertCreatedAt: {
 				Type:        schema.TypeString,
@@ -105,8 +102,9 @@ func resourceIBMCISMtlsCreate(context context.Context, d *schema.ResourceData, m
 		options.SetCertificate(cert_val.(string))
 	}
 
-	if host_val, ok := d.GetOk(cisMtlsHostName); ok {
-		options.SetAssociatedHostnames([]string{host_val.(string)})
+	if _, ok := d.GetOk(cisMtlsHostNames); ok {
+		options.SetAssociatedHostnames(flex.ExpandStringList(d.Get(cisMtlsHostNames).([]interface{})))
+		//options.SetAssociatedHostnames([]string{host_val.(string)})
 	}
 
 	result, resp, err := sess.CreateAccessCertificate(options)
@@ -162,11 +160,12 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 	certID, zoneID, _, _ := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if d.HasChange(cisMtlsCertName) ||
-		d.HasChange(cisMtlsHostName) {
+		d.HasChange(cisMtlsHostNames) {
 
 		updateOption := sess.NewUpdateAccessCertificateOptions(zoneID, certID)
-		if host_val, ok := d.GetOk(cisMtlsHostName); ok {
-			updateOption.SetAssociatedHostnames([]string{host_val.(string)})
+		if _, ok := d.GetOk(cisMtlsHostNames); ok {
+
+			updateOption.SetAssociatedHostnames(flex.ExpandStringList(d.Get(cisMtlsHostNames).([]interface{})))
 		}
 
 		if name, ok := d.GetOk(cisMtlsCertName); ok {

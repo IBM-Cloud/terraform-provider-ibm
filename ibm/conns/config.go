@@ -263,7 +263,6 @@ type ClientSession interface {
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
 	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
-	CisMtlsSession() (*cismtlsv1.MtlsV1, error) // RG
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
 	CisUARuleClientSession() (*cisuarulev1.UserAgentBlockingRulesV1, error)
@@ -552,10 +551,6 @@ type clientSession struct {
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
 	cisWebhooksErr    error
-
-	// MTLS Session options
-	cisMtlsClient *cismtlsv1.MtlsV1
-	cisMtlsErr    error
 
 	// CIS Filters options
 	cisFiltersClient *cisfiltersv1.FiltersV1
@@ -1085,14 +1080,6 @@ func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	return sess.cisWebhooksClient.Clone(), nil
 }
 
-// CIS MTLS session
-func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
-	if sess.cisMtlsErr != nil {
-		return sess.cisMtlsClient, sess.cisMtlsErr
-	}
-	return sess.cisMtlsClient.Clone(), nil
-}
-
 // CIS Filters
 func (sess clientSession) CisFiltersSession() (*cisfiltersv1.FiltersV1, error) {
 	if sess.cisFiltersErr != nil {
@@ -1251,7 +1238,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
 		session.cisWebhooksErr = errEmptyBluemixCredentials
-		session.cisMtlsErr = errEmptyBluemixCredentials
 		session.cisLogpushJobsErr = errEmptyBluemixCredentials
 		session.schematicsClientErr = errEmptyBluemixCredentials
 		session.satelliteClientErr = errEmptyBluemixCredentials
@@ -2686,26 +2672,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
-
-	// IBM MTLS Session
-	cisMtlsOpt := &cismtlsv1.MtlsV1Options{
-		URL:           cisEndPoint,
-		Crn:           core.StringPtr(""),
-		Authenticator: authenticator,
-	}
-	session.cisMtlsClient, session.cisMtlsErr = cismtlsv1.NewMtlsV1(cisMtlsOpt)
-	if session.cisMtlsErr != nil {
-		session.cisMtlsErr =
-			fmt.Errorf("[ERROR] Error occured while configuring CIS MTLS : %s",
-				session.cisMtlsErr)
-	}
-	if session.cisMtlsClient != nil && session.cisMtlsClient.Service != nil {
-		session.cisMtlsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		session.cisMtlsClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
 	// IBM Network CIS Filters
 	cisFiltersOpt := &cisfiltersv1.FiltersV1Options{
 		URL:           cisEndPoint,

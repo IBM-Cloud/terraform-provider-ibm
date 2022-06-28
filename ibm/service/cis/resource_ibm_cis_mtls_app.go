@@ -17,6 +17,7 @@ import (
 
 const (
 	cisMtlsAppName       = "name"
+	cisMtlsHostDomain    = "domain"
 	cisMtlsDuration      = "session_duration"
 	cisMtlsRuleCommonVal = "rule_common"
 	cisMtlsPolicyName    = "policy_name"
@@ -48,10 +49,10 @@ func ResourceIBMCISMtlsApp() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: suppressDomainIDDiff,
 			},
-			cisMtlsHostName: {
+			cisMtlsHostDomain: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Associated host name",
+				Description: "Associated host domain value",
 			},
 			cisMtlsAppName: {
 				Type:        schema.TypeString,
@@ -130,8 +131,8 @@ func resourceIBMCISMtlsAppCreate(context context.Context, d *schema.ResourceData
 		OptionsApp.SetName(app_val.(string))
 	}
 
-	if host_val, ok := d.GetOk(cisMtlsHostName); ok {
-		OptionsApp.SetDomain(host_val.(string))
+	if host_domain, ok := d.GetOk(cisMtlsHostDomain); ok {
+		OptionsApp.SetDomain(host_domain.(string))
 	}
 
 	if dur_val, ok := d.GetOk(cisMtlsDuration); ok {
