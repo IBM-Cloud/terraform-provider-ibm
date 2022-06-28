@@ -33,8 +33,7 @@ Review the argument references that you can specify for your resource.
 - `name`                           - (Required, String) Name for the app which you want to create.
 - `domain`                         - (Required, String) Host domain for which we want to create app. 
 - `policy_name`                    - (Optional, String) Valid name for a policy.
-- `session_duration `              - (Optional, String) Duraing in string, default is '24h'.
-- `policy_decision`                - (Optional, String) Valid policuy action, default is 'non_identity'.
+- `session_duration `              - (Optional, String) Duration string, default is '24h'.
 - `app_created_at`                 - (Computed, String) Time stamp string when App is created.
 - `app_updated_at`                 - (Computed, String) Time stamp string when App is modififed.
 - `pol_created_at`                 - (Computed, String) Time stamp string when Policy is created.
@@ -42,7 +41,7 @@ Review the argument references that you can specify for your resource.
 - `App_ID`                         - (Computed, String) ID of created App.
 - `cert_val`                       - (Optional, String) Valid value for certificate rule option.
 - `common_rule_val`                - (Optional, String) Valid value for common rule option.
-- `policy_decision`                - (Optional, String) Valid policy action value e.g. 'non_identity', 'allow', 'deny', 'bypass'. 
+- `policy_decision`                - (Optional, String) Valid policy action value e.g. 'non_identity'(default), 'allow', 'deny', 'bypass'. 
 
 
 ## Attribute reference
