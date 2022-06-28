@@ -16,13 +16,21 @@ resource "ibm_container_dedicated_host" "dhost" {
   zone         = var.zone
 }
 
+data "ibm_is_vpc" "vpc" {
+  name = var.vpc_name
+}
+
+data "ibm_is_subnet" "subnet" {
+  name = var.subnet_name
+}
+
 resource "ibm_container_vpc_cluster" "dhost_vpc_cluster" {
   name   = var.cluster_name
-  vpc_id = var.vpc_id
+  vpc_id = data.ibm_is_vpc.vpc.id
   flavor = var.flavor
   zones {
     name      = var.zone
-    subnet_id = var.subnet_id
+    subnet_id = data.ibm_is_subnet.subnet.id
   }
   worker_count      = var.worker_count
   resource_group_id = var.resource_group_id
@@ -43,7 +51,7 @@ resource "ibm_container_vpc_worker_pool" "dhost_vpc_worker_pool" {
   worker_count     = var.worker_count
   zones {
     name      = var.zone
-    subnet_id = var.subnet_id
+    subnet_id = data.ibm_is_subnet.subnet.id
   }
   depends_on = [
     ibm_container_dedicated_host.dhost

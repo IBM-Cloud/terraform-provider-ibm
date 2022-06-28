@@ -30,12 +30,12 @@ variable "worker_pool_name" {
   default = "tf-dhost-vpc-worker-pool"
 }
 
-variable "vpc_id" {
-  default = "1234-a1b2c3d4-abcd-1234-abcd-123456789012"
+variable "vpc_name" {
+  default = "tf-vpc"
 }
 
-variable "subnet_id" {
-  default = "1234-a1b2c3d4-abcd-1234-abcd-123456789012"
+variable "subnet_name" {
+  default = "tf-subnet"
 }
 
 variable "flavor" {
