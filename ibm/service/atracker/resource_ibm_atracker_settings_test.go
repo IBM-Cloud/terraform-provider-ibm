@@ -83,6 +83,7 @@ func testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary string, private
 
 		resource "ibm_atracker_settings" "atracker_settings" {
 			metadata_region_primary = "%s"
+			metadata_region_backup = "us-east"
 			private_api_endpoint_only = %s
 			default_targets = [ ibm_atracker_target.atracker_target.id ]
 			permitted_target_regions = ["us-south", "us-east"]
