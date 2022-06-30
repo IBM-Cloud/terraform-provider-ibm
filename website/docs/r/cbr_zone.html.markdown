@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_cbr_zone"
 description: |-
-  Manages cbr_zone.
+Manages cbr_zone.
 subcategory: "Context Based Restrictions"
 ---
 
@@ -14,12 +14,17 @@ Provides a resource for cbr_zone. This allows cbr_zone to be created, updated an
 
 ```hcl
 resource "ibm_cbr_zone" "cbr_zone" {
-	name = "Test Zone Resource Config Basic"
-	description = "Test Zone Resource Config Basic"
-	addresses {
-		type = "ipRange"
-		value = "169.23.22.0-169.23.22.255"
-	}
+  account_id = "12ab34cd56ef78ab90cd12ef34ab56cd"
+  addresses {
+    type = "ipAddress"
+    value = "value"
+  }
+  description = "this is an example of zone"
+  excluded {
+    type = "ipAddress"
+    value = "value"
+  }
+  name = "an example of zone"
 }
 ```
 
@@ -27,41 +32,46 @@ resource "ibm_cbr_zone" "cbr_zone" {
 
 Review the argument reference that you can specify for your resource.
 
+* `account_id` - (Required, String) The id of the account owning this zone.
+    * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[a-zA-Z0-9\-]+$`.
 * `addresses` - (Required, List) The list of addresses in the zone.
-  * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
-Nested scheme for **addresses**:
-    * `ref` - (Optional, List) A service reference value.
-    Nested scheme for **ref**:
-        * `service_instance` - (Optional, String) The service instance.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-\/]+$`.
-        * `service_name` - (Optional, String) The service name.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
-        * `service_type` - (required, String) The service type.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-    * `type` - (required, String) The type of address.
-      * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
-    * `value` - (required, String) The IP address.
-      * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
+    * Constraints: The maximum length is `1000` items. The minimum length is `1` item.
+      Nested scheme for **addresses**:
+        * `ref` - (Optional, List) A service reference value.
+          Nested scheme for **ref**:
+            * `account_id` - (Required, String) The id of the account owning the service.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[a-zA-Z0-9\-]+$`.
+            * `service_instance` - (Optional, String) The service instance.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-/]+$`.
+            * `service_name` - (Optional, String) The service name.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
+            * `service_type` - (Optional, String) The service type.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
+        * `type` - (required, String) The type of address.
+            * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
+        * `value` - (Optional, String) The IP address.
+            * Constraints: The maximum length is `45` characters. The minimum length is `2` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
 * `description` - (Optional, String) The description of the zone.
-  * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `^[\x20-\xFE]*$`.
+    * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `^[\x20-\xFE]*$`.
 * `excluded` - (Optional, List) The list of excluded addresses in the zone. Only addresses of type `ipAddress`, `ipRange`, and `subnet` can be excluded.
-  * Constraints: The maximum length is `1000` items.
-Nested scheme for **excluded**:
-    * `ref` - (Optional, List) A service reference value.
-    Nested scheme for **ref**:
-        * `service_instance` - (Optional, String) The service instance.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-/]+$`.
-        * `service_name` - (Optional, String) The service name.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
-        * `service_type` - (required, String) The service type.
-          * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
-    * `type` - (required, String) The type of address.
-      * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
-    * `value` - (required, String) The IP address.
-      * Constraints: The maximum length is `45` characters. The minimum length is `7` characters. The value must match regular expression `/^[a-zA-Z0-9:.]+$/`.
-* `name` - (required, String) The name of the zone.
-  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 \\-_]+$/`.
-
+    * Constraints: The maximum length is `1000` items.
+      Nested scheme for **excluded**:
+        * `ref` - (Optional, List) A service reference value.
+          Nested scheme for **ref**:
+            * `account_id` - (Required, String) The id of the account owning the service.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[a-zA-Z0-9\-]+$`.
+            * `service_instance` - (Optional, String) The service instance.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-/]+$`.
+            * `service_name` - (Optional, String) The service name.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z\-]+$`.
+            * `service_type` - (Optional, String) The service type.
+                * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[0-9a-z_]+$`.
+        * `type` - (required, String) The type of address.
+            * Constraints: Allowable values are: `ipAddress`, `ipRange`, `subnet`, `vpc`, `serviceRef`.
+        * `value` - (Optional, String) The IP address.
+            * Constraints: The maximum length is `45` characters. The minimum length is `2` characters. The value must match regular expression `^[a-zA-Z0-9:.]+$`.
+* `name` - (Optional, String) The name of the zone.
+    * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `^[a-zA-Z0-9 \-_]+$`.
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
@@ -77,6 +87,47 @@ In addition to all argument references listed, you can access the following attr
 * `last_modified_by_id` - (String) IAM ID of the user or service which modified the resource.
 
 * `version` - Version of the cbr_zone.
+
+### Static credentials
+
+You can provide your static credentials by adding the `ibmcloud_api_key`, `iaas_classic_username`, and `iaas_classic_api_key` arguments in the IBM Cloud provider block.
+
+Usage:
+```
+provider "ibm" {
+    ibmcloud_api_key = ""
+    iaas_classic_username = ""
+    iaas_classic_api_key = ""
+}
+```
+
+### Environment variables
+
+You can provide your credentials by exporting the `IC_API_KEY`, `IAAS_CLASSIC_USERNAME`, and `IAAS_CLASSIC_API_KEY` environment variables, representing your IBM Cloud platform API key, IBM Cloud Classic Infrastructure (SoftLayer) user name, and IBM Cloud infrastructure API key, respectively.
+
+```
+provider "ibm" {}
+```
+
+Usage:
+```
+export IC_API_KEY="ibmcloud_api_key"
+export IAAS_CLASSIC_USERNAME="iaas_classic_username"
+export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
+terraform plan
+```
+
+Note:
+
+1. Create or find your `ibmcloud_api_key` and `iaas_classic_api_key` [here](https://cloud.ibm.com/iam/apikeys).
+- Select `My IBM Cloud API Keys` option from view dropdown for `ibmcloud_api_key`
+- Select `Classic Infrastructure API Keys` option from view dropdown for `iaas_classic_api_key`
+2. For iaas_classic_username
+- Go to [Users](https://cloud.ibm.com/iam/users)
+- Click on user.
+- Find user name in the `VPN password` section under `User Details` tab
+
+For more informaton, see [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs#authentication).
 
 ## Import
 
