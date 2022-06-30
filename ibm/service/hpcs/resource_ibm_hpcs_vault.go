@@ -109,7 +109,7 @@ func ResourceIbmVaultValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao, au-syd, ch-ctu, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, customer-ral, us-east, br-sao",
+			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "description",
@@ -314,7 +314,7 @@ func getUkoUrl(context context.Context, region string, instance_id string, ukoCl
 			return fmt.Sprintf("https://%s/", v), nil
 		}
 	} else {
-		brokerUrl = fmt.Sprintf("https://broker.%s.hs-crypto.cloud.ibm.com", region)
+		brokerUrl = fmt.Sprintf("https://%s.broker.hs-crypto.cloud.ibm.com", region)
 	}
 
 	builder := core.NewRequestBuilder(core.GET)

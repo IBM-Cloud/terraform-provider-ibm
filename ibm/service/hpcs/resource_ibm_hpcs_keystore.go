@@ -221,7 +221,7 @@ func ResourceIbmKeystoreValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao, au-syd, ch-ctu, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, customer-ral, us-east, br-sao",
+			AllowedValues:              "au-syd, in-che, jp-osa, jp-tok, kr-seo, eu-de, eu-gb, ca-tor, us-south, us-south-test, us-east, br-sao",
 		},
 	)
 
@@ -952,29 +952,37 @@ func ResourceIbmKeystoreVaultReferenceToMap(model *ukov4.VaultReference) (map[st
 
 func DKeystoreToKeystoreBody(d *schema.ResourceData) interface{} {
 	keystoreBody := make(map[string]interface{})
+	keystoreType := d.Get("type").(string)
 
-	keystoreBody["type"] = d.Get("type").(string)
+	keystoreBody["type"] = keystoreType
 	keystoreBody["name"] = d.Get("name").(string)
 	keystoreBody["vault"] = d.Get("vault").([]interface{})
 	keystoreBody["description"] = d.Get("description").(string)
 	keystoreBody["groups"] = d.Get("groups").([]interface{})
-	keystoreBody["aws_region"] = d.Get("aws_region").(string)
-	keystoreBody["aws_access_key_id"] = d.Get("aws_access_key_id").(string)
-	keystoreBody["aws_secret_access_key"] = d.Get("aws_secret_access_key").(string)
-	keystoreBody["azure_service_name"] = d.Get("azure_service_name").(string)
-	keystoreBody["azure_resource_group"] = d.Get("azure_resource_group").(string)
-	keystoreBody["azure_location"] = d.Get("azure_location").(string)
-	keystoreBody["azure_service_principal_client_id"] = d.Get("azure_service_principal_client_id").(string)
-	keystoreBody["azure_service_principal_password"] = d.Get("azure_service_principal_password").(string)
-	keystoreBody["azure_tenant"] = d.Get("azure_tenant").(string)
-	keystoreBody["azure_subscription_id"] = d.Get("azure_subscription_id").(string)
-	keystoreBody["azure_environment"] = d.Get("azure_environment").(string)
-	keystoreBody["ibm_variant"] = d.Get("ibm_variant").(string)
-	keystoreBody["ibm_api_endpoint"] = d.Get("ibm_api_endpoint").(string)
-	keystoreBody["ibm_iam_endpoint"] = d.Get("ibm_iam_endpoint").(string)
-	keystoreBody["ibm_api_key"] = d.Get("ibm_api_key").(string)
-	keystoreBody["ibm_instance_id"] = d.Get("ibm_instance_id").(string)
-	keystoreBody["ibm_key_ring"] = d.Get("ibm_key_ring").(string)
+	if keystoreType == "aws_kms" {
+		keystoreBody["aws_region"] = d.Get("aws_region").(string)
+		keystoreBody["aws_access_key_id"] = d.Get("aws_access_key_id").(string)
+		keystoreBody["aws_secret_access_key"] = d.Get("aws_secret_access_key").(string)
+	} else if keystoreType == "azure_key_vault" {
+		keystoreBody["azure_service_name"] = d.Get("azure_service_name").(string)
+		keystoreBody["azure_resource_group"] = d.Get("azure_resource_group").(string)
+		keystoreBody["azure_location"] = d.Get("azure_location").(string)
+		keystoreBody["azure_service_principal_client_id"] = d.Get("azure_service_principal_client_id").(string)
+		keystoreBody["azure_service_principal_password"] = d.Get("azure_service_principal_password").(string)
+		keystoreBody["azure_tenant"] = d.Get("azure_tenant").(string)
+		keystoreBody["azure_subscription_id"] = d.Get("azure_subscription_id").(string)
+		keystoreBody["azure_environment"] = d.Get("azure_environment").(string)
+	} else if keystoreType == "ibm_cloud_kms" {
+		ibm_variant := d.Get("ibm_variant").(string)
+		keystoreBody["ibm_variant"] = ibm_variant
+		if ibm_variant != "internal" {
+			keystoreBody["ibm_api_endpoint"] = d.Get("ibm_api_endpoint").(string)
+			keystoreBody["ibm_iam_endpoint"] = d.Get("ibm_iam_endpoint").(string)
+			keystoreBody["ibm_api_key"] = d.Get("ibm_api_key").(string)
+			keystoreBody["ibm_instance_id"] = d.Get("ibm_instance_id").(string)
+			keystoreBody["ibm_key_ring"] = d.Get("ibm_key_ring").(string)
+		}
+	}
 
 	return keystoreBody
 }
