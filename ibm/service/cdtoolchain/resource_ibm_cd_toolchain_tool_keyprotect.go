@@ -166,9 +166,8 @@ func ResourceIBMCdToolchainToolKeyprotectCreate(context context.Context, d *sche
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("keyprotect")
 	remapFields := map[string]string{
-		"resource_group":     "resource-group",
-		"instance_name":      "instance-name",
-		"integration_status": "integration-status",
+		"resource_group": "resource-group",
+		"instance_name":  "instance-name",
 	}
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
@@ -217,9 +216,8 @@ func ResourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
-		"resource_group":     "resource-group",
-		"instance_name":      "instance-name",
-		"integration_status": "integration-status",
+		"resource_group": "resource-group",
+		"instance_name":  "instance-name",
 	}
 	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -285,9 +283,8 @@ func ResourceIBMCdToolchainToolKeyprotectUpdate(context context.Context, d *sche
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"resource_group": "resource-group",
+			"instance_name":  "instance-name",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
 		updateToolOptions.SetParameters(parameters)

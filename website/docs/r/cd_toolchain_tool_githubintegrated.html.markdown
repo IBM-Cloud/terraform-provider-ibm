@@ -37,10 +37,10 @@ resource "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubinteg
 		token_url = "token_url"
 		type = "new"
 		private_repo = true
+		auto_init = true
 		has_issues = true
 		enable_traceability = true
 		integration_owner = "integration_owner"
-		auto_init = true
   }
   toolchain_id = "toolchain_id"
 }
