@@ -180,9 +180,8 @@ func DataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 	parameters := []map[string]interface{}{}
 	if getToolByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"resource_group": "resource-group",
+			"instance_name":  "instance-name",
 		}
 		modelMap := GetParametersFromRead(getToolByIDResponse.Parameters, DataSourceIBMCdToolchainToolSecretsmanager(), remapFields)
 		parameters = append(parameters, modelMap)

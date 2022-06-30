@@ -83,6 +83,7 @@ func ResourceIBMCdToolchainToolPagerduty() *schema.Resource {
 						"service_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "service_id.",
 						},
 					},

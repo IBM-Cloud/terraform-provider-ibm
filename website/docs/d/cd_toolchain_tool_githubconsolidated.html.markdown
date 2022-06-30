@@ -37,6 +37,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_githubconsolidated.
 * `crn` - (Required, String) Tool CRN.
 
+
 * `href` - (Required, String) URI representing the tool.
 
 * `name` - (Optional, String) Tool name.
