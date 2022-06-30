@@ -4,8 +4,9 @@
 package kubernetes
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -14,12 +15,12 @@ import (
 
 func DataSourceIBMContainerDedicatedHostFlavor() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMContainerDedicatedHostFlavorRead,
+		ReadContext: dataSourceIBMContainerDedicatedHostFlavorRead,
 		Schema: map[string]*schema.Schema{
 			"zone": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The zones of the dedicated host flavor",
+				Description: "The zone of the dedicated host flavor",
 			},
 			"host_flavor_id": {
 				Type:        schema.TypeString,
@@ -71,18 +72,18 @@ func DataSourceIBMContainerDedicatedHostFlavor() *schema.Resource {
 		},
 	}
 }
-func dataSourceIBMContainerDedicatedHostFlavorRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMContainerDedicatedHostFlavorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	flavorID := d.Get("host_flavor_id").(string)
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	dedicatedHostFlavorAPI := client.DedicatedHostFlavor()
 	targetEnv := v2.ClusterTargetHeader{}
 
 	dedicatedHostFlavors, err := dedicatedHostFlavorAPI.ListDedicatedHostFlavors(d.Get("zone").(string), targetEnv)
 	if err != nil {
-		return err
+		return diag.Errorf("[ERROR] Listing dedicated host flavors in zone %s failed: %v", d.Get("zone").(string), err)
 	}
 
 	var dedicatedHostFlavor *v2.GetDedicatedHostFlavor
@@ -95,7 +96,7 @@ func dataSourceIBMContainerDedicatedHostFlavorRead(d *schema.ResourceData, meta 
 	}
 
 	if dedicatedHostFlavor == nil {
-		return fmt.Errorf("[ERROR] Dedicated host flavor is not found, id : %s", d.Get("id").(string))
+		return diag.Errorf("[ERROR] Dedicated host flavor is not found, id : %s", d.Get("id").(string))
 	}
 
 	d.SetId(dedicatedHostFlavor.ID)

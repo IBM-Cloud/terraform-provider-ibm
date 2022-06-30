@@ -4,8 +4,13 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -13,14 +18,25 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
+const (
+	DedicatedHostPoolStateCreated  = created
+	DedicatedHostPoolStateCreating = creating
+	DedicatedHostPoolStateDeleting = deleting
+	DedicatedHostPoolStateDeleted  = deleted
+)
+
 func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 
 	return &schema.Resource{
-		Create:   resourceIBMContainerDedicatedHostPoolCreate,
-		Read:     resourceIBMContainerDedicatedHostPoolRead,
-		Delete:   resourceIBMContainerDedicatedHostPoolDelete,
-		Importer: &schema.ResourceImporter{},
-		Timeouts: &schema.ResourceTimeout{},
+		CreateContext: resourceIBMContainerDedicatedHostPoolCreate,
+		ReadContext:   resourceIBMContainerDedicatedHostPoolRead,
+		DeleteContext: resourceIBMContainerDedicatedHostPoolDelete,
+		Importer:      &schema.ResourceImporter{},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(time.Minute * 10),
+			Read:   schema.DefaultTimeout(time.Minute * 10),
+			Delete: schema.DefaultTimeout(time.Minute * 10),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -40,6 +56,12 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The flavor class of the dedicated host pool",
+			},
+			"resource_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of the resource group.",
 			},
 			"host_count": {
 				Type:        schema.TypeInt,
@@ -106,13 +128,17 @@ func ResourceIBMContainerDedicatedHostPool() *schema.Resource {
 	}
 }
 
-func resourceIBMContainerDedicatedHostPoolCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerDedicatedHostPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	dedicatedHostPoolAPI := client.DedicatedHostPool()
 	targetEnv := v2.ClusterTargetHeader{}
+
+	if rg, ok := d.GetOk("resource_group_id"); ok {
+		targetEnv.ResourceGroup = rg.(string)
+	}
 
 	params := v2.CreateDedicatedHostPoolRequest{
 		FlavorClass: d.Get("flavor_class").(string),
@@ -122,15 +148,22 @@ func resourceIBMContainerDedicatedHostPoolCreate(d *schema.ResourceData, meta in
 
 	res, err := dedicatedHostPoolAPI.CreateDedicatedHostPool(params, targetEnv)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating host pool %v", err)
+		return diag.Errorf("[ERROR] Error creating host pool %v", err)
 	}
 
 	d.SetId(res.ID)
 
-	return resourceIBMContainerDedicatedHostPoolRead(d, meta)
+	dhp, err := waitForDedicatedHostPoolAvailable(ctx, dedicatedHostPoolAPI, res.ID, d.Timeout(schema.TimeoutCreate), targetEnv)
+	if err != nil {
+		return diag.Errorf("[ERROR] waitForDedicatedHostPoolAvailable failed: %v", err)
+	}
+
+	setDedicatedHostPoolFields(dhp.(v2.GetDedicatedHostPoolResponse), d)
+
+	return nil
 }
 
-func resourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerDedicatedHostPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	err := getIBMContainerDedicatedHostPool(d.Id(), d, meta)
 	if err != nil {
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
@@ -139,7 +172,7 @@ func resourceIBMContainerDedicatedHostPoolRead(d *schema.ResourceData, meta inte
 				return nil
 			}
 		}
-		return fmt.Errorf("[ERROR] Error retrieving host pool details %v", err)
+		return diag.Errorf("[ERROR] Error retrieving host pool details %v", err)
 	}
 	return nil
 }
@@ -157,6 +190,12 @@ func getIBMContainerDedicatedHostPool(hostPoolID string, d *schema.ResourceData,
 		return err
 	}
 
+	setDedicatedHostPoolFields(dedicatedHostPool, d)
+
+	return nil
+}
+
+func setDedicatedHostPoolFields(dedicatedHostPool v2.GetDedicatedHostPoolResponse, d *schema.ResourceData) {
 	d.Set("name", dedicatedHostPool.Name)
 	d.Set("metro", dedicatedHostPool.Metro)
 	d.Set("flavor_class", dedicatedHostPool.FlavorClass)
@@ -184,25 +223,79 @@ func getIBMContainerDedicatedHostPool(hostPoolID string, d *schema.ResourceData,
 		}
 	}
 	d.Set("worker_pools", workerpools)
-
-	return nil
 }
 
-func resourceIBMContainerDedicatedHostPoolDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMContainerDedicatedHostPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	dedicatedHostPoolAPI := client.DedicatedHostPool()
 	targetEnv := v2.ClusterTargetHeader{}
 
+	hostPoolID := d.Id()
+
 	params := v2.RemoveDedicatedHostPoolRequest{
-		HostPoolID: d.Id(),
+		HostPoolID: hostPoolID,
 	}
 
 	if err := dedicatedHostPoolAPI.RemoveDedicatedHostPool(params, targetEnv); err != nil {
-		return fmt.Errorf("[ERROR] Error removing host pool %v", err)
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok {
+			if apiErr.StatusCode() == 404 {
+				log.Printf("[DEBUG] RemoveDedicatedHostPool couldn't find dedicated host pool with id %s", hostPoolID)
+				return nil
+			}
+		}
+		return diag.Errorf("[ERROR] Error removing host pool %v", err)
+	}
+
+	_, err = waitForDedicatedHostPoolRemove(ctx, dedicatedHostPoolAPI, hostPoolID, d.Timeout(schema.TimeoutDelete), targetEnv)
+	if err != nil {
+		return diag.Errorf("[ERROR] waitForDedicatedHostPoolRemove failed: %v", err)
 	}
 
 	return nil
+}
+
+func waitForDedicatedHostPoolAvailable(ctx context.Context, dedicatedHostPoolAPI v2.DedicatedHostPool, hostPoolID string, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
+
+	log.Printf("[DEBUG] Waiting for the dedicated hostpool (%s) to be available.", hostPoolID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{DedicatedHostPoolStateCreating},
+		Target:     []string{DedicatedHostPoolStateCreated},
+		Refresh:    dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI, hostPoolID, target),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func waitForDedicatedHostPoolRemove(ctx context.Context, dedicatedHostPoolAPI v2.DedicatedHostPool, hostPoolID string, timeout time.Duration, target v2.ClusterTargetHeader) (interface{}, error) {
+
+	log.Printf("[DEBUG] Waiting for the dedicated hostpool (%s) to be removed.", hostPoolID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{DedicatedHostPoolStateCreated, DedicatedHostPoolStateDeleting},
+		Target:     []string{DedicatedHostPoolStateDeleted},
+		Refresh:    dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI, hostPoolID, target),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func dedicatedHostPoolStateRefreshFunc(dedicatedHostPoolAPI v2.DedicatedHostPool, hostPoolID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		dedicatedHostPool, err := dedicatedHostPoolAPI.GetDedicatedHostPool(hostPoolID, target)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error retrieving dedicated host pool: %s", err)
+
+		}
+		return dedicatedHostPool, dedicatedHostPool.State, nil
+	}
 }
