@@ -36,3 +36,11 @@ variable "cbr_rule_rule_id" {
   type        = string
   default     = "07bca38c06db1a6e125d9738c701f2c1"
 }
+
+
+// IBM cloud account ID
+variable "ibmcloud_account_id" {
+  description = "Account ID for rule / zone"
+  type        = string
+  default     = "12ab34cd56ef78ab90cd12ef34ab56cd"
+}
