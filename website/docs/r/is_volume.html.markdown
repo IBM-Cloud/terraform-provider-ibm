@@ -56,17 +56,15 @@ The `ibm_is_volume` resource provides the following [Timeouts](https://www.terra
 Review the argument references that you can specify for your resource. 
 
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
-  ~> **NOTE:**
-    - Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity)
-    - Can be updated only if volume is attached to an running virtual server instance.
-    - Stopped instance will be started on update of capacity of the volume.
+
+  ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.
+
 - `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume
 - `delete_all_snapshots` - (Optional, Bool) Deletes all snapshots created from this volume.
 - `encryption_key` - (Optional, Forces new resource, String) The key to use for encrypting this volume.
 - `iops` - (Optional, Integer) The total input/ output operations per second (IOPS) for your storage. This value is required for `custom` storage profiles only.
 
-~> **NOTE:**
-  - `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
+  ~> **NOTE:** `iops` value can be upgraded and downgraged if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 
   This table shows how storage size affects the `iops` ranges:
 
@@ -86,8 +84,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The user-defined name for this volume.No.
 - `profile` - (Required, String) The profile to use for this volume.
 
-  ~> **NOTE:**
-    - tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
+  ~> **NOTE:**  tiered profiles [`general-purpose`, `5iops-tier`, `10iops-tier`] can be upgraded and downgraded into each other if volume is attached to an running virtual server instance. Stopped instances will be started on update of volume.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID for this volume.
 - `resource_controller_url` - (Optional, Forces new resource, String) The URL of the IBM Cloud dashboard that can be used to explore and view details about this instance.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your volume. Tags can help you find your volume more easily later.No.
