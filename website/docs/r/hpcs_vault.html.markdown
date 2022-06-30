@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your resource.
 * `instance_id` - (Required, String) ID of UKO Instance
   * Constraints: Must match the ID of the UKO instance you are trying to work with.
 * `region` - (Required, String) Region of the UKO Instance
-  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd `, `ch-ctu `, `in-che `, `jp-osa `, `jp-tok `, `kr-seo `, `eu-de `, `eu-gb `, `ca-tor `, `us-south `, `us-south-test `, `customer-ral `, `us-east `, `br-sao`.
+  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd`, `in-che`, `jp-osa`, `jp-tok`, `kr-seo`, `eu-de`, `eu-gb`, `ca-tor`, `us-south`, `us-south-test`, `us-east`, `br-sao`.
 * `description` - (Optional, String) Description of the vault.
   * Constraints: The maximum length is `200` characters. The minimum length is `0` characters. The value must match regular expression `/(.|\\n)*/`.
 * `name` - (Required, String) A human-readable name to assign to your vault. To protect your privacy, do not use personal data, such as your name or location.

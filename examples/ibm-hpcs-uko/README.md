@@ -66,7 +66,6 @@ resource "ibm_hpcs_key_template" "key_template_instance" {
 ```
 ibm_hpcs_keystore resource:
 
-IBMCloud KMS keystore
 ```hcl
 resource "ibm_hpcs_keystore" "keystore_instance" {
   instance_id = ibm_hpcs_vault.vault_instance.instance_id
@@ -81,7 +80,7 @@ resource "ibm_hpcs_keystore" "keystore_instance" {
   groups                = ["Production"]
   aws_region            = "eu_central_1"
   aws_access_key_id     = "HSNGYJMKHGFFF"
-  aws_secret_access_key = "JHGSY766YUG67GFV"detect-secrets audit .secrets.baseline
+  aws_secret_access_key = "JHGSY766YUG67GFV"
 }
 ```
 vault resource:
