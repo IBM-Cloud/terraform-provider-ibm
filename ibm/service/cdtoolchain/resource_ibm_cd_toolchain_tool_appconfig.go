@@ -176,11 +176,10 @@ func ResourceIBMCdToolchainToolAppconfigCreate(context context.Context, d *schem
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("appconfig")
 	remapFields := map[string]string{
-		"resource_group":     "resource-group",
-		"instance_name":      "instance-name",
-		"environment_name":   "environment-name",
-		"collection_name":    "collection-name",
-		"integration_status": "integration-status",
+		"resource_group":   "resource-group",
+		"instance_name":    "instance-name",
+		"environment_name": "environment-name",
+		"collection_name":  "collection-name",
 	}
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolAppconfig(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
@@ -229,11 +228,10 @@ func ResourceIBMCdToolchainToolAppconfigRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
-		"resource_group":     "resource-group",
-		"instance_name":      "instance-name",
-		"environment_name":   "environment-name",
-		"collection_name":    "collection-name",
-		"integration_status": "integration-status",
+		"resource_group":   "resource-group",
+		"instance_name":    "instance-name",
+		"environment_name": "environment-name",
+		"collection_name":  "collection-name",
 	}
 	parametersMap := GetParametersFromRead(getToolByIDResponse.Parameters, ResourceIBMCdToolchainToolAppconfig(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -299,11 +297,10 @@ func ResourceIBMCdToolchainToolAppconfigUpdate(context context.Context, d *schem
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"environment_name":   "environment-name",
-			"collection_name":    "collection-name",
-			"integration_status": "integration-status",
+			"resource_group":   "resource-group",
+			"instance_name":    "instance-name",
+			"environment_name": "environment-name",
+			"collection_name":  "collection-name",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolAppconfig(), remapFields)
 		updateToolOptions.SetParameters(parameters)

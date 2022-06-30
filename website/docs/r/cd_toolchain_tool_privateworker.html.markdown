@@ -19,7 +19,7 @@ resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker"
   parameters {
 		name = "name"
 		worker_queue_credentials = "workerQueueCredentials"
-		worker_queue_cdentifier = "workerQueueIdentifier"
+		worker_queue_identifier = "workerQueueIdentifier"
   }
   toolchain_id = "toolchain_id"
 }

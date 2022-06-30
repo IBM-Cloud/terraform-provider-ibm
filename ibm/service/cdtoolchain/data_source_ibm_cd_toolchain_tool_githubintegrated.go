@@ -131,6 +131,11 @@ func DataSourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 							Computed:    true,
 							Description: "Select this check box to make this repository private.",
 						},
+						"auto_init": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Select this checkbox to initialize this repository with a README.",
+						},
 						"has_issues": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -145,11 +150,6 @@ func DataSourceIBMCdToolchainToolGithubintegrated() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
-						},
-						"auto_init": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Select this checkbox to initialize this repository with a README.",
 						},
 					},
 				},
