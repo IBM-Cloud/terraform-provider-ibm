@@ -18,6 +18,11 @@ variable "key_protect_instance_name" {
   description = "Name of the Key Protect Toolchain Service Instance in IBM Cloud"
 }
 
+variable "key_protect_instance_region" {
+  type        = string
+  description = "Region of the Key Protect Toolchain Service Instance in IBM Cloud"
+}
+
 variable "key_protect_instance_guid" {
   type        = string
   description = "GUID of the Key Protect Toolchain Service Instance in IBM Cloud"
