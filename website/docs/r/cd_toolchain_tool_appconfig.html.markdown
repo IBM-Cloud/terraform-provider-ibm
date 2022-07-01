@@ -23,7 +23,6 @@ resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 		instance_name = "instance-name"
 		environment_name = "environment-name"
 		collection_name = "collection-name"
-		integration_status = "integration-status"
   }
   toolchain_id = "toolchain_id"
 }

@@ -21,7 +21,6 @@ resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanage
 		region = "region"
 		resource_group = "resource-group"
 		instance_name = "instance-name"
-		integration_status = "integration-status"
   }
   toolchain_id = "toolchain_id"
 }

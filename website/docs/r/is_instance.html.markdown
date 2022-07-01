@@ -322,8 +322,12 @@ Review the argument references that you can specify for your resource.
     
     ~> **Note:**
     `snapshot` conflicts with `image` id and `instance_template`
-- `dedicated_host` - (Optional, Forces new resource, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
-- `dedicated_host_group` - (Optional, Forces new resource, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
+- `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
+- `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
+
+  -> **NOTE:**
+  An instance can be moved from one dedicated host or group to another host or group. Moving an instance from public to dedicated host or vice versa is not allowed.
+
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
 - `force_action` - (Optional, Boolean) Required with `action`. If set to `true`, the action will be forced immediately, and all queued actions deleted. Ignored for the start action.
@@ -381,6 +385,9 @@ Review the argument references that you can specify for your resource.
   When the `profile` is changed, the VSI is restarted. The new profile must:
     1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
     2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
+  
+  ~> **NOTE**
+   Changing a `profile` without disk to a `profile` with disk or vise versa will result in recreating(forcenew) the resource.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the instance.
 - `instance_template` - (Optional, String) ID of the instance template to create the instance from. To create an instance template, use `ibm_is_instance_template` resource.
   

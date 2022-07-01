@@ -8,9 +8,10 @@ import (
 	"crypto/hmac"
 	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/sha3"
 	"log"
 	"strings"
+
+	"golang.org/x/crypto/sha3"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -253,7 +254,7 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 }
 
 func ResourceIBMTektonPipelineTriggerValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "pipeline_id",

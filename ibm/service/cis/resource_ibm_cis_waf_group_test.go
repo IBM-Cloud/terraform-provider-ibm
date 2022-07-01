@@ -37,6 +37,12 @@ func TestAccIBMCisWAFGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "mode", "on"),
 				),
 			},
+			{
+				Config: testAccCheckCisWAFGroupConfigBasic3("test", acc.CisDomainStatic),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "mode", "on"),
+				),
+			},
 		},
 	})
 }
@@ -82,6 +88,19 @@ func testAccCheckCisWAFGroupConfigBasic2(id string, CisDomainStatic string) stri
 		package_id = "c504870194831cd12c3fc0284f294abb"
 		group_id   = "3d8fb0c18b5a6ba7682c80e94c7937b2"
 		mode       = "off"
+	  }
+`, id)
+}
+
+func testAccCheckCisWAFGroupConfigBasic3(id string, CisDomainStatic string) string {
+	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
+	resource "ibm_cis_waf_group" "%[1]s" {
+		cis_id     = data.ibm_cis.cis.id
+		domain_id  = data.ibm_cis_domain.cis_domain.domain_id
+		package_id = "c504870194831cd12c3fc0284f294abb"
+		group_id   = "3d8fb0c18b5a6ba7682c80e94c7937b2"
+		mode       = "on"
+		check_mode = true
 	  }
 `, id)
 }
