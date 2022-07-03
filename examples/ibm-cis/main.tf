@@ -519,3 +519,63 @@ resource "ibm_cis_mtls_app" “test3” {
   policy_decision         = "allow"
 
 }
+
+# Upload zone level authentication certificate
+resource "ibm_cis_mtls" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              -------END CERTIFICATE-----"
+                              EOT
+  private_key               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              -------END CERTIFICATE-----"
+                              EOT
+}
+
+# Upload host level authentication certificate
+resource "ibm_cis_mtls" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN RSA PRIVATE KEY-----
+                              -------END RSA PRIVATE KEY-----"
+                              EOT
+  private_key               = <<EOT
+                              "-----BEGIN RSA PRIVATE KEY-----
+                              -------END RSA PRIVATE KEY-----"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+}
+
+# Update zone level authentication setting
+resource "ibm_cis_mtls" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              -------END CERTIFICATE-----"
+                              EOT
+  private_key               = <<EOT
+                              "----- BEGIN RSA PRIVATE KEY-----
+                              -------  END RSA PRIVATE KEY-----"
+                              EOT
+  enabled                   = true
+}
+
+# Update host level authentication setting
+resource "ibm_cis_mtls" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              -------END CERTIFICATE-----"
+                              EOT
+  private_key               = <<EOT
+                              "-----   BEGIN RSA PRIVATE KEY    -----
+                              -------  END RSA PRIVATE KEY     -----"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+  enabled                   = true
+}
