@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_key_template"
 description: |-
   Get information about key_template
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_key_template
@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your data source.
 * `instance_id` - (Required, String) ID of UKO Instance
   * Constraints: Must match the ID of the UKO instance you are trying to work with.
 * `region` - (Required, String) Region of the UKO Instance
-  * Constraints: Allowable values are: `au-syd `, `ch-ctu `, `in-che `, `jp-osa `, `jp-tok `, `kr-seo `, `eu-de `, `eu-gb `, `ca-tor `, `us-south `, `us-south-test `, `customer-ral `, `us-east `, `br-sao`.
+  * Constraints: Allowable values are: `au-syd`, `in-che`, `jp-osa`, `jp-tok`, `kr-seo`, `eu-de`, `eu-gb`, `ca-tor`, `us-south`, `us-south-test`, `us-east`, `br-sao`.
 * `template_id` - (Required, Forces new resource, String) UUID of the template.
 * `uko_vault` - (Required, String) The UUID of the Vault in which the update is to take place.
 
