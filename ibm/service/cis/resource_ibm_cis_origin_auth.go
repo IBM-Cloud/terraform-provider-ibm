@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 
+	"strings"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -18,6 +20,7 @@ const (
 	cisOriginAuthID          = "auth_id"
 	cisOriginAuthHost        = "hostname"
 	cisOriginAuthEnable      = "enabled"
+	cisOriginAuthLevel       = "level"
 	cisOriginAuthCertContent = "certificate"
 	cisOriginAuthCertKey     = "private_key"
 	cisOriginAuthCertId      = "cert_id"
@@ -37,13 +40,18 @@ func ResourceIBMCISOriginAuthPull() *schema.Resource {
 			cisID: {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
-				Optional:    true,
+				Required:    true,
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
 				Description:      "Associated CIS domain",
 				Required:         true,
 				DiffSuppressFunc: suppressDomainIDDiff,
+			},
+			cisOriginAuthLevel: {
+				Type:        schema.TypeString,
+				Description: "Origin auth level zone or hostname",
+				Required:    true,
 			},
 			cisOriginAuthHost: {
 				Type:        schema.TypeString,
@@ -100,6 +108,7 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 	var cert_val string
 	var key_val string
 	var zone_config bool
+	var level_val interface{}
 
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
@@ -122,8 +131,10 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 
 	}
 	zone_config = true
-	if _, ok := d.GetOk(cisOriginAuthHost); ok {
-		zone_config = false
+	if level_val, ok := d.GetOk(cisOriginAuthLevel); ok {
+		if strings.ToLower(level_val.(string)) != "zone" {
+			zone_config = false
+		}
 	}
 
 	// Check host level certificate creation or zone level
@@ -136,7 +147,8 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 		if opErr != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate zone level %v", resp))
 		}
-		d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
+
+		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val.(string)))
 
 	} else {
 		options := sess.NewUploadHostnameOriginPullCertificateOptions()
@@ -146,7 +158,8 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 		if opErr != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate host level %v", resp))
 		}
-		d.SetId(flex.ConvertCisToTfThreeVar(*result.Result.ID, zoneID, crn))
+
+		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val.(string)))
 
 	}
 
@@ -160,12 +173,12 @@ func resourceIBMCISOriginAuthPullRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
 	}
 
-	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	certID, zoneID, crn, level_val, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
 	zone_config = true
-	if _, ok := d.GetOk(cisOriginAuthHost); ok {
+	if strings.ToLower(level_val) != "zone" {
 		zone_config = false
 	}
 
@@ -215,15 +228,14 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
 	}
-	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+
+	certID, zoneID, crn, level_val, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
 	zone_config = true
-	if host_val, ok := d.GetOk(cisOriginAuthHost); ok {
+	if strings.ToLower(level_val) != "zone" {
 		zone_config = false
-		host_name = host_val.(string)
-
 	}
 
 	if zone_config {
@@ -242,6 +254,9 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 	} else {
 
 		if d.HasChange(cisOriginAuthEnable) {
+			if host_val, ok := d.GetOk(cisOriginAuthHost); ok {
+				host_name = host_val.(string)
+			}
 
 			model := &authenticatedoriginpullapiv1.HostnameOriginPullSettings{
 				Hostname: core.StringPtr(host_name),
@@ -269,12 +284,12 @@ func resourceIBMCISOriginAuthPullDelete(context context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("[ERROR] Error while getting the CisOrigAuthSession %v", err))
 	}
 
-	certID, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	certID, zoneID, crn, level_val, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 	sess.ZoneIdentifier = core.StringPtr(zoneID)
 
 	zone_config = true
-	if _, ok := d.GetOk(cisOriginAuthHost); ok {
+	if strings.ToLower(level_val) != "zone" {
 		zone_config = false
 	}
 

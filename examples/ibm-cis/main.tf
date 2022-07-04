@@ -532,6 +532,7 @@ resource "ibm_cis_mtls" “test” {
                               "-----BEGIN CERTIFICATE-----
                               -------END CERTIFICATE-----"
                               EOT
+  level                     = "zone"
 }
 
 # Upload host level authentication certificate
@@ -547,6 +548,7 @@ resource "ibm_cis_mtls" “test” {
                               -------END RSA PRIVATE KEY-----"
                               EOT
   hostname                  = "abc.abc.abc.com"
+  level                     = "hostname"
 }
 
 # Update zone level authentication setting
@@ -562,6 +564,7 @@ resource "ibm_cis_mtls" “test” {
                               -------  END RSA PRIVATE KEY-----"
                               EOT
   enabled                   = true
+  level                     = "zone"
 }
 
 # Update host level authentication setting
@@ -578,4 +581,5 @@ resource "ibm_cis_mtls" “test” {
                               EOT
   hostname                  = "abc.abc.abc.com"
   enabled                   = true
+  level                     = "hostname"
 }

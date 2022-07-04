@@ -7,14 +7,14 @@ description: |-
 ---
 
 # ibm_cis_origin_auth
- Provides origin auth settings resource. The resource allows to create, update, or delete cache settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS ORIGIN AUTH](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#authenticated-origin-pull).
+ Provides origin auth settings resource. The resource allows to create, update, or delete cache settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about CIS origin auth, see [CIS ORIGIN AUTH](https://cloud.ibm.com/docs/cis?topic=cis-cli-plugin-cis-cli#authenticated-origin-pull).
 
 ## Example usage
 
 ```terraform
-# Change MTLS setting of CIS instance
+# Change origin auth setting of CIS instance
 
-resource "ibm_cis_mtls" "mtls_settings" {
+resource "ibm_cis_orig_auth" "orig_auth_settings" {
   cis_id                          = data.ibm_cis.cis.id
   domain_id                       = data.ibm_cis_domain.cis_domain.domain_id
   certificate                     = EOT<<
@@ -22,8 +22,8 @@ resource "ibm_cis_mtls" "mtls_settings" {
                                   --------END CERTIFICATE-----"
                                   EOT
   private_key                     = <<EOT 
-                                  "-----  BEGIN RSA PRIVATE KEY    ----- 
-                                  -------   END RSA PRIVATE KEY    -----"
+                                  "-----  BEGIN RSA PRIVATE KEY    -----  # pragma: allowlist secret
+                                  -------   END RSA PRIVATE KEY    -----" # pragma: allowlist secret
                                   EOT
   hostname                        = "abc.abc.abc.com"
 }
@@ -44,7 +44,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `auth_id`      - (Computed, String) The record ID. It is a combination of `<mtls_id>, <domain_id>,<cis_id>` attributes concatenated with `:`.
+- `id`           - (Computed, String) The record ID. It is a combination of `<auth_id>,<domain_id>,<cis_id>` attributes concatenated with `:`.
 - `updated_at`   - (Computed, String) Time stamp string when Certificate is modified'.
 - `expires_on`   - (Computed, String) Time stamp string when Cerftificate expires on'.
 - `cert_id`      - (Computed, String) Uploaded certificate ID.
@@ -63,7 +63,7 @@ The domain ID and CRN will be located on the overview page of the IBM Cloud Inte
 **Syntax**
 
 ```
-$ terraform import ibm_cis_orig_auth.origin_auth_settings <domain-id>:<crn>
+$ terraform import ibm_cis_orig_auth.origin_auth_settings <auth_id>:<domain-id>:<crn>
 ```
 
 **Example**
