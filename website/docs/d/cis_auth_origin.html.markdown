@@ -6,7 +6,7 @@ description: |-
   Get information on an IBM Cloud Internet Services Authentication Origin APIs.
 ---
 
-# ibm_cis_alerts
+# ibm_cis_origin_auths
 
 Retrieve information about an IBM Cloud Internet Services authentication Origin data sources for both Zone level and per hostname. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 

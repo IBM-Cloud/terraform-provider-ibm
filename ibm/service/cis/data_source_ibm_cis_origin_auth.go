@@ -52,7 +52,7 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 				Computed:    true,
 				Description: "CIS origin auth settings enabled or disabled",
 			},
-			"origin_pull_certs_list": {
+			"origin_pull_certs": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Certficate list",
@@ -67,6 +67,7 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 						"certificate": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Sensitive:   true,
 							Description: "CIS origin auth certificate detail",
 						},
 						"cert_issuer": {
@@ -92,12 +93,12 @@ func DataSourceIBMCISOriginAuthPull() *schema.Resource {
 						"cert_uploaded_on": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "CIS origin auth certifaate upldate time",
+							Description: "CIS origin auth certificate upldate time",
 						},
 						"cert_serial_number": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "CIS origin auth certifaate upldate time",
+							Description: "CIS origin auth certificate Serial Number",
 						},
 					},
 				},
@@ -127,7 +128,7 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 		zoneSettingsResult, zoneSettingsResponse, zoneSettingsErr := sess.GetZoneOriginPullSettings(zoneSettingsOpt)
 
 		if zoneSettingsErr != nil || zoneSettingsResponse == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneSettingsErr))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s, Response: %s", zoneSettingsErr, zoneSettingsResponse))
 		}
 
 		zoneSettings := zoneSettingsResult.Result.Enabled
@@ -138,7 +139,7 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 		zoneCertListResult, zoneCertListResponse, zoneCertListErr := sess.ListZoneOriginPullCertificates(zoneCertListOpt)
 
 		if zoneCertListErr != nil || zoneCertListResponse == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s", zoneCertListErr))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Getting Zone Level Origin Pull Settings: %s, Response: %s", zoneCertListErr, zoneCertListResponse))
 		}
 
 		zoneCertLists := make([]map[string]interface{}, 0)
@@ -156,7 +157,7 @@ func dataIBMCISOriginAuthRead(context context.Context, d *schema.ResourceData, m
 
 		}
 		zoneCertLists = append(zoneCertLists, zoneCertList)
-		d.Set("origin_pull_certs_list", zoneCertLists)
+		d.Set("origin_pull_certs", zoneCertLists)
 
 	} else if request_type == "per_hostname" {
 
