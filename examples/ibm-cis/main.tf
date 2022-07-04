@@ -442,8 +442,8 @@ data "ibm_cis_alerts" "test1" {
 
 # CIS Authentication Origin Zone Level Data source
 data "ibm_cis_origin_auths" "test" {
-	cis_id          = data.ibm_cis.cis.id
-	domain_id 		  = data.ibm_cis_domain.cis_domain.domain_id
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
 }
 
 # CIS Authentication Origin Per Hostname Data source
