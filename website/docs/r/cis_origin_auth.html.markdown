@@ -18,12 +18,12 @@ resource "ibm_cis_orig_auth" "orig_auth_settings" {
   cis_id                          = data.ibm_cis.cis.id
   domain_id                       = data.ibm_cis_domain.cis_domain.domain_id
   certificate                     = EOT<<
-                                  "-----BEGIN CERTIFICATE----- 
-                                  --------END CERTIFICATE-----"
+                                  "-----BEGIN CERTIFICATE------ 
+                                   ------END CERTIFICATE-------"
                                   EOT
   private_key                     = <<EOT # pragma: whitelist secret
-                                  "-----  BEGIN    -----  # 
-                                  -------   END    -----" # 
+                                  "-----BEGIN------ 
+                                   ------END--------"  
                                   EOT
   hostname                        = "abc.abc.abc.com"
 }
