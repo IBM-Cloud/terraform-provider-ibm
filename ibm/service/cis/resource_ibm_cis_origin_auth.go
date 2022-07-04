@@ -107,8 +107,8 @@ func ResourceIBMCISOriginAuthPull() *schema.Resource {
 func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var cert_val string
 	var key_val string
+	var level_val string
 	var zone_config bool
-	var level_val interface{}
 
 	sess, err := meta.(conns.ClientSession).CisOrigAuthSession()
 	if err != nil {
@@ -131,8 +131,9 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 
 	}
 	zone_config = true
-	if level_val, ok := d.GetOk(cisOriginAuthLevel); ok {
-		if strings.ToLower(level_val.(string)) != "zone" {
+	if lev_val, ok := d.GetOk(cisOriginAuthLevel); ok {
+		level_val = lev_val.(string)
+		if strings.ToLower(level_val) != "zone" {
 			zone_config = false
 		}
 	}
@@ -148,7 +149,7 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate zone level %v", resp))
 		}
 
-		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val.(string)))
+		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val))
 
 	} else {
 		options := sess.NewUploadHostnameOriginPullCertificateOptions()
@@ -159,7 +160,7 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 			return diag.FromErr(fmt.Errorf("[ERROR] Error while uploading certificate host level %v", resp))
 		}
 
-		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val.(string)))
+		d.SetId(flex.ConvertCisToTfFourVar(*result.Result.ID, zoneID, crn, level_val))
 
 	}
 
