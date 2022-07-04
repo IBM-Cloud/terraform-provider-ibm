@@ -526,11 +526,11 @@ resource "ibm_cis_orig_auth" “test” {
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
-                              -------END CERTIFICATE-----"
+                              ------END CERTIFICATE-------"
                               EOT
   private_key               = <<EOT #pragma: whitelist secret
                               "-----BEGIN-----
-                               -------END------"
+                               -----END-------"
                               EOT
   level                     = "zone"
 }
@@ -541,11 +541,11 @@ resource "ibm_cis_orig_auth" “test” {
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE----
-                              -------END CERTIFICATE-----"
+                              ------END CERTIFICATE------"
                               EOT
   private_key               = <<EOT #pragma: whitelist secret
                               "-----BEGIN-----
-                               -------END------"
+                               -----END-------"
                               EOT
   hostname                  = "abc.abc.abc.com"
   level                     = "hostname"
@@ -557,11 +557,11 @@ resource "ibm_cis_orig_auth" “test” {
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
-                               -------END CERTIFICATE-----"
+                               -----END CERTIFICATE-------"
                               EOT
   private_key               = <<EOT  #pragma: whitelist secret
                               "-----BEGIN------
-                               --------END-------"
+                               -----END--------"
                               EOT
   enabled                   = true
   level                     = "zone"
@@ -573,11 +573,11 @@ resource "ibm_cis_orig_auth" “test” {
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
                               "-----BEGIN CERTIFICATE-----
-                               -------END CERTIFICATE------"
+                               -----END CERTIFICATE-------"
                               EOT
   private_key               = <<EOT #pragma: whitelist secret
                               "-----BEGIN-----
-                               -------END-----"
+                               -----END-------"
                               EOT
   hostname                  = "abc.abc.abc.com"
   enabled                   = true
