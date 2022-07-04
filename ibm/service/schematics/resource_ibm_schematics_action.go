@@ -37,7 +37,7 @@ func ResourceIBMSchematicsAction() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The unique name of your action. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. **Example** you can use the name to stop action.",
-				ValidateFunc: validate.InvokeValidator("ibm_schematics_action", actionName),
+				ValidateFunc: validate.InvokeValidator("ibm_schematics_action", "name"),
 			},
 			"description": {
 				Type:        schema.TypeString,

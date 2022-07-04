@@ -241,7 +241,7 @@ func ResourceIBMIsBareMetalServerNetworkInterfaceValidator() *validate.ResourceV
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,

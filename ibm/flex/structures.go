@@ -981,7 +981,7 @@ func float64Value(f32 *float32) (f float64) {
 	return
 }
 
-func dateToString(d *strfmt.Date) (s string) {
+func DateToString(d *strfmt.Date) (s string) {
 	if d != nil {
 		s = d.String()
 	}
@@ -2274,6 +2274,22 @@ func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 		}
 	}
 
+	return nil
+}
+
+func InstanceProfileValidate(diff *schema.ResourceDiff) error {
+	if diff.Id() != "" && diff.HasChange("profile") {
+		o, n := diff.GetChange("profile")
+		old := o.(string)
+		new := n.(string)
+		log.Println("old profile : ", old)
+		log.Println("new profile : ", new)
+		if !strings.Contains(old, "d") && strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		} else if strings.Contains(old, "d") && !strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		}
+	}
 	return nil
 }
 
