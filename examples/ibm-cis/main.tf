@@ -521,7 +521,7 @@ resource "ibm_cis_mtls_app" “test3” {
 }
 
 # Upload zone level authentication certificate
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_orig_auth" “test” {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
@@ -536,7 +536,7 @@ resource "ibm_cis_mtls" “test” {
 }
 
 # Upload host level authentication certificate
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_orig_auth" “test” {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
@@ -552,7 +552,7 @@ resource "ibm_cis_mtls" “test” {
 }
 
 # Update zone level authentication setting
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_orig_auth" “test” {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
@@ -568,7 +568,7 @@ resource "ibm_cis_mtls" “test” {
 }
 
 # Update host level authentication setting
-resource "ibm_cis_mtls" “test” {
+resource "ibm_cis_orig_auth" “test” {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT

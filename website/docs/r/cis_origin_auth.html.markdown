@@ -22,8 +22,8 @@ resource "ibm_cis_orig_auth" "orig_auth_settings" {
                                   --------END CERTIFICATE-----"
                                   EOT
   private_key                     = <<EOT 
-                                  "-----  BEGIN RSA PRIVATE KEY    -----  # pragma: allowlist secret
-                                  -------   END RSA PRIVATE KEY    -----" # pragma: allowlist secret
+                                  "-----  BEGIN    -----  # 
+                                  -------   END    -----" # 
                                   EOT
   hostname                        = "abc.abc.abc.com"
 }
