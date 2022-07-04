@@ -40,7 +40,7 @@ In addition to all argument reference list, you can access the following attribu
 - `modified_rules_count`-  (Integer) Number of rules modified in WAF Group.
 - `name` - (String) The WAF rule group name.
 - `rules_count` - (Integer)  Number of rules in WAF Group.
-- `check_mode` - (Boolean)  If mode is to be checked before updation.
+- `check_mode` - (Boolean) If `true`, then updating the mode with same ON>ON or OFF>OFF value, will be skipped. By default, check_mode attribute is false, and it won't check the backend value before update.
 
 
 ## Import
