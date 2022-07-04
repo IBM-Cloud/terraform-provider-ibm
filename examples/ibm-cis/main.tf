@@ -448,10 +448,10 @@ data "ibm_cis_origin_auths" "test" {
 
 # CIS Authentication Origin Per Hostname Data source
 data "ibm_cis_origin_auths" "test" {
-	cis_id          = data.ibm_cis.cis.id
-	domain_id 		  = data.ibm_cis_domain.cis_domain.domain_id
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
   request_type    = "per_hostname"
-	hostname        = data.ibm_cis_domain.cis_domain.domain
+  hostname        = data.ibm_cis_domain.cis_domain.domain
 }
 
 # CIS mTLS data source
