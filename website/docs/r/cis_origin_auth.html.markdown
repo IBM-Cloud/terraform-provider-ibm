@@ -21,7 +21,7 @@ resource "ibm_cis_orig_auth" "orig_auth_settings" {
                                   "-----BEGIN CERTIFICATE----- 
                                   --------END CERTIFICATE-----"
                                   EOT
-  private_key                     = <<EOT 
+  private_key                     = <<EOT # pragma: whitelist secret
                                   "-----  BEGIN    -----  # 
                                   -------   END    -----" # 
                                   EOT
@@ -36,7 +36,7 @@ Review the argument references that you can specify for your resource.
 - `cis_id`                  - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `domain_id`               - (Required, String) The ID of the domain to change cache settings.
 - `certificate`             - (Required, String) Content of certificate.
-- `private_key`             - (Required, String) Content of private key.
+- `private_key`             - (Required, String) Content of private key. # pragma: whitelist secret
 - `hostname`                - (optional, String) Valid host names for host level origin auth processing.
 - `enabled`                 - (optional, Bool)   Default is true, it enables/disables the host and zone level origin auth setting .
 

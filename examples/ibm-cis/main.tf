@@ -528,7 +528,7 @@ resource "ibm_cis_orig_auth" “test” {
                               "-----BEGIN CERTIFICATE-----
                               -------END CERTIFICATE-----"
                               EOT
-  private_key               = <<EOT
+  private_key               = <<EOT #pragma: whitelist secret
                               "-----BEGIN CERTIFICATE-----
                               -------END CERTIFICATE-----"
                               EOT
@@ -543,7 +543,7 @@ resource "ibm_cis_orig_auth" “test” {
                               "-----BEGIN RSA PRIVATE KEY-----
                               -------END RSA PRIVATE KEY-----"
                               EOT
-  private_key               = <<EOT
+  private_key               = <<EOT #pragma: whitelist secret
                               "-----BEGIN RSA PRIVATE KEY-----
                               -------END RSA PRIVATE KEY-----"
                               EOT
@@ -559,7 +559,7 @@ resource "ibm_cis_orig_auth" “test” {
                               "-----BEGIN CERTIFICATE-----
                               -------END CERTIFICATE-----"
                               EOT
-  private_key               = <<EOT
+  private_key               = <<EOT  #pragma: whitelist secret
                               "----- BEGIN RSA PRIVATE KEY-----
                               -------  END RSA PRIVATE KEY-----"
                               EOT
@@ -575,7 +575,7 @@ resource "ibm_cis_orig_auth" “test” {
                               "-----BEGIN CERTIFICATE-----
                               -------END CERTIFICATE-----"
                               EOT
-  private_key               = <<EOT
+  private_key               = <<EOT #pragma: whitelist secret
                               "-----   BEGIN RSA PRIVATE KEY    -----
                               -------  END RSA PRIVATE KEY     -----"
                               EOT
