@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 
+	"log"
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -132,12 +133,15 @@ func resourceIBMCISOriginAuthPullCreate(context context.Context, d *schema.Resou
 	}
 	zone_config = true
 	if lev_val, ok := d.GetOk(cisOriginAuthLevel); ok {
+		log.Printf("Zone or host ")
 		level_val = lev_val.(string)
 		if strings.ToLower(level_val) != "zone" {
+			log.Printf("it is host")
 			zone_config = false
 		}
 	}
 
+	log.Printf("[Debug] Level : %v", level_val)
 	// Check host level certificate creation or zone level
 	if zone_config {
 		options := sess.NewUploadZoneOriginPullCertificateOptions()
@@ -183,6 +187,7 @@ func resourceIBMCISOriginAuthPullRead(context context.Context, d *schema.Resourc
 		zone_config = false
 	}
 
+	log.Printf("[Debug] Level : %v", level_val)
 	if zone_config {
 		getOptions := sess.NewGetZoneOriginPullCertificateOptions(certID)
 		getOptions.SetCertIdentifier(certID)
@@ -239,6 +244,7 @@ func resourceIBMCISOriginAuthPullUpdate(context context.Context, d *schema.Resou
 		zone_config = false
 	}
 
+	log.Printf("[Debug] Level : %v", level_val)
 	if zone_config {
 
 		if d.HasChange(cisOriginAuthEnable) {
@@ -294,6 +300,7 @@ func resourceIBMCISOriginAuthPullDelete(context context.Context, d *schema.Resou
 		zone_config = false
 	}
 
+	log.Printf("[Debug] Level : %v", level_val)
 	if zone_config {
 		delOpt := sess.NewDeleteZoneOriginPullCertificateOptions(certID)
 		_, resp, err := sess.DeleteZoneOriginPullCertificate(delOpt)
