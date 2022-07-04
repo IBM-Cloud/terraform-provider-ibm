@@ -70,19 +70,15 @@ func testAccCheckIbmDnsCrSecondaryZonesDataSourceConfig(vpcname, subnetname, zon
 	resource "ibm_dns_secondary_zone" "test" {
 		instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		// instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8	"
-		// resolver_id = "8ae310cb-ab4d-4115-9a10-c704566b85a6"
 		description = "%s"
 		zone = "%s"
 		enabled = true
 		transfer_from = ["10.0.0.8"]
 	}
 	data "ibm_dns_custom_resolver_secondary_zones" "test-sz" {
-		depends_on  = [ibm_dns_custom_resolver.test]
+		depends_on  = [ibm_dns_secondary_zone.test]
 		instance_id	= ibm_dns_custom_resolver.test.instance_id
 		resolver_id = ibm_dns_custom_resolver.test.custom_resolver_id
-		// instance_id = "345ca2c4-83bf-4c04-bb09-5d8ec4d425a8	"
-		// resolver_id = "8ae310cb-ab4d-4115-9a10-c704566b85a6"
 	}
 	`, vpcname, subnetname, zone, cidr, szDescription, szzone)
 }
