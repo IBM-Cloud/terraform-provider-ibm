@@ -55,20 +55,20 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 						},
 						pdnsSZDescription: {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						pdnsSZZone: {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Zone name",
 						},
 						pdnsSZEnabled: {
 							Type:     schema.TypeBool,
-							Optional: true,
+							Computed: true,
 						},
 						pdnsSZTransferFrom: {
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Description: "The source configuration of secondary zone output",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
