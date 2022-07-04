@@ -540,12 +540,12 @@ resource "ibm_cis_orig_auth" “test” {
   cis_id                    = ibm_cis.web_domain.id
   domain_id                 = ibm_cis_domain.web_domain.id
   certificate               = <<EOT
-                              "-----BEGIN RSA PRIVATE KEY-----
-                              -------END RSA PRIVATE KEY-----"
+                              "-----BEGIN     -----
+                              -------END      -----"
                               EOT
   private_key               = <<EOT #pragma: whitelist secret
-                              "-----BEGIN RSA PRIVATE KEY-----
-                              -------END RSA PRIVATE KEY-----"
+                              "-----BEGIN   -----
+                              -------END    -----"
                               EOT
   hostname                  = "abc.abc.abc.com"
   level                     = "hostname"
@@ -560,8 +560,8 @@ resource "ibm_cis_orig_auth" “test” {
                               -------END CERTIFICATE-----"
                               EOT
   private_key               = <<EOT  #pragma: whitelist secret
-                              "----- BEGIN RSA PRIVATE KEY-----
-                              -------  END RSA PRIVATE KEY-----"
+                              "----- BEGIN -----
+                              -------  END ----"
                               EOT
   enabled                   = true
   level                     = "zone"
@@ -576,8 +576,8 @@ resource "ibm_cis_orig_auth" “test” {
                               -------END CERTIFICATE-----"
                               EOT
   private_key               = <<EOT #pragma: whitelist secret
-                              "-----   BEGIN RSA PRIVATE KEY    -----
-                              -------  END RSA PRIVATE KEY     -----"
+                              "-----   BEGIN    -----
+                              -------  END      -----"
                               EOT
   hostname                  = "abc.abc.abc.com"
   enabled                   = true
