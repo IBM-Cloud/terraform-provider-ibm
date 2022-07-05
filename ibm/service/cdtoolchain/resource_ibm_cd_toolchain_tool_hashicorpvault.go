@@ -177,7 +177,7 @@ func ResourceIBMCdToolchainToolHashicorpvault() *schema.Resource {
 }
 
 func ResourceIBMCdToolchainToolHashicorpvaultValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema := make([]validate.ValidateSchema, 1)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "toolchain_id",

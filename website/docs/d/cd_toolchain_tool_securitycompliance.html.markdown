@@ -35,38 +35,38 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_securitycompliance.
-* `crn` - (Required, String) Tool CRN.
+* `crn` - (String) Tool CRN.
 
 
-* `href` - (Required, String) URI representing the tool.
+* `href` - (String) URI representing the tool.
 
-* `name` - (Optional, String) Tool name.
+* `name` - (String) Tool name.
 
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `api_key` - (Optional, String) The IBM Cloud API key is used to access the Security and Compliance API. You can obtain your API key with 'ibmcloud iam api-key-create' or via the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).
+	* `api_key` - (String) The IBM Cloud API key is used to access the Security and Compliance API. You can obtain your API key with 'ibmcloud iam api-key-create' or via the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `evidence_namespace` - (Optional, String) The kind of pipeline evidence to be displayed in Security and Compliance Center for this toolchain. The evidence locker will be searched for CD (Continuous Deployment) pipeline evidence, or for CC (Continuous Compliance) pipeline evidence.
-	* `evidence_repo_name` - (Required, String) To collect and store evidence for all tasks performed, a Git repository is required as an evidence locker.
-	* `location` - (Optional, String)
-	* `name` - (Required, String) Give this tool integration a name, for example: my-security-compliance.
-	* `profile` - (Optional, String) Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles) ![](https://cloud.ibm.com/media/docs/images/icons/launch-glyph.svg).
-	* `scope` - (Optional, String) Select an existing scope name to narrow the focus of the validation scan. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes) ![](https://cloud.ibm.com/media/docs/images/icons/launch-glyph.svg).
-	* `trigger_info` - (Optional, Map) trigger_info.
-	* `trigger_scan` - (Optional, String) Enabling trigger validation scans provides details for a pipeline task to trigger a scan.
+	* `evidence_namespace` - (String) The kind of pipeline evidence to be displayed in Security and Compliance Center for this toolchain. The evidence locker will be searched for CD (Continuous Deployment) pipeline evidence, or for CC (Continuous Compliance) pipeline evidence.
+	* `evidence_repo_name` - (String) To collect and store evidence for all tasks performed, a Git repository is required as an evidence locker.
+	* `location` - (String)
+	* `name` - (String) Give this tool integration a name, for example: my-security-compliance.
+	* `profile` - (String) Select an existing profile, where a profile is a collection of security controls. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-profiles) ![](https://cloud.ibm.com/media/docs/images/icons/launch-glyph.svg).
+	* `scope` - (String) Select an existing scope name to narrow the focus of the validation scan. [Learn more.](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-scopes) ![](https://cloud.ibm.com/media/docs/images/icons/launch-glyph.svg).
+	* `trigger_info` - (Map) trigger_info.
+	* `trigger_scan` - (String) Enabling trigger validation scans provides details for a pipeline task to trigger a scan.
 	  * Constraints: Allowable values are: `disabled`, `enabled`.
 
-* `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
+* `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (Optional, String) URI representing the this resource through an API.
-	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing the this resource through an API.
+	* `ui_href` - (String) URI representing the this resource through the UI.
 
-* `resource_group_id` - (Required, String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where tool can be found.
 
-* `state` - (Required, String) Current configuration state of the tool.
+* `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
-* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
+* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 
-* `updated_at` - (Required, String) Latest tool update timestamp.
+* `updated_at` - (String) Latest tool update timestamp.
 

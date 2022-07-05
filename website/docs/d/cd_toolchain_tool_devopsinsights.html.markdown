@@ -35,24 +35,24 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_devopsinsights.
-* `crn` - (Required, String) Tool CRN.
+* `crn` - (String) Tool CRN.
 
 
-* `href` - (Required, String) URI representing the tool.
+* `href` - (String) URI representing the tool.
 
-* `name` - (Optional, String) Tool name.
+* `name` - (String) Tool name.
 
-* `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
+* `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (Optional, String) URI representing the this resource through an API.
-	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing the this resource through an API.
+	* `ui_href` - (String) URI representing the this resource through the UI.
 
-* `resource_group_id` - (Required, String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where tool can be found.
 
-* `state` - (Required, String) Current configuration state of the tool.
+* `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
-* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
+* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 
-* `updated_at` - (Required, String) Latest tool update timestamp.
+* `updated_at` - (String) Latest tool update timestamp.
 
