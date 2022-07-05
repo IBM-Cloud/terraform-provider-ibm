@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/networking-go-sdk/dnssvcsv1"
+	"github.ibm.com/ibmcloud/networking-go-sdk/dnssvcsv1"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

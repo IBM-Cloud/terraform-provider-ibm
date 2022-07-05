@@ -50,6 +50,7 @@ require (
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
+	github.ibm.com/ibmcloud/networking-go-sdk v1.1.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	gotest.tools v2.2.0+incompatible

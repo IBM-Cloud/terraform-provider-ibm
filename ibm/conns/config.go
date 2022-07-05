@@ -37,7 +37,6 @@ import (
 	dl "github.com/IBM/networking-go-sdk/directlinkv1"
 	cisdnsbulkv1 "github.com/IBM/networking-go-sdk/dnsrecordbulkv1"
 	cisdnsrecordsv1 "github.com/IBM/networking-go-sdk/dnsrecordsv1"
-	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	cisedgefunctionv1 "github.com/IBM/networking-go-sdk/edgefunctionsapiv1"
 	cisfiltersv1 "github.com/IBM/networking-go-sdk/filtersv1"
 	cisfirewallrulesv1 "github.com/IBM/networking-go-sdk/firewallrulesv1"
@@ -84,6 +83,7 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
+	dns "github.ibm.com/ibmcloud/networking-go-sdk/dnssvcsv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
