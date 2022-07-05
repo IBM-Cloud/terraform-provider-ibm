@@ -751,6 +751,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_tls_settings":                      cis.ResourceIBMCISTLSSettings(),
 			"ibm_cis_waf_package":                       cis.ResourceIBMCISWAFPackage(),
 			"ibm_cis_webhook":                           cis.ResourceIBMCISWebhooks(),
+			"ibm_cis_origin_auth":                       cis.ResourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtls":                              cis.ResourceIBMCISMtls(),
 			"ibm_cis_mtls_app":                          cis.ResourceIBMCISMtlsApp(),
 			"ibm_cis_logpush_job":                       cis.ResourceIBMCISLogPushJob(),
