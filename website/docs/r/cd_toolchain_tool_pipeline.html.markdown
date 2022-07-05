@@ -18,7 +18,7 @@ Provides a resource for cd_toolchain_tool_pipeline. This allows cd_toolchain_too
 resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
   parameters {
 		name = "name"
-		type = "classic"
+		type = "tekton"
 		ui_pipeline = true
   }
   toolchain_id = "toolchain_id"
