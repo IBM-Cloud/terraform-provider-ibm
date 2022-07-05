@@ -887,7 +887,7 @@ func init() {
 	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE") == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
-	
+
 	Scc_posture_collector_id = os.Getenv("SCC_POSTURE_COLLECTOR_ID")
 	if Scc_posture_collector_id == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
