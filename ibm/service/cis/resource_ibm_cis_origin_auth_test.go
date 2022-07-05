@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMCisOriginAuth_Basic(t *testing.T) {
-	name := "ibm_cis_orig_auth." + "test"
+	name := "ibm_cis_origin_auth." + "test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
@@ -32,7 +32,7 @@ func TestAccIBMCisOriginAuth_Basic(t *testing.T) {
 
 func testAccCheckCisOriginAuthsBasic1(id string, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
-	resource "ibm_cis_orig_auth" "%[1]s" {
+	resource "ibm_cis_origin_auth" "%[1]s" {
 		cis_id                    = data.ibm_cis.cis.id
 		domain_id                 = data.ibm_cis_domain.cis_domain.domain_id
 		certificate               = "-----BEGIN CERTIFICATE-----\nMIIDpjCCAo4CCQDiw+/u+5c4eTANBgkqhkiG9w0BAQsFADCBlDELMAkGA1UEBhMC\nSU4xEjAQBgNVBAgMCUtBUk5BVEFLQTESMBAGA1UEBwwJQkFOR0FMT1JFMQwwCgYD\nVQQKDANJQk0xEjAQBgNVBAsMCUlCTSBDTE9VRDEXMBUGA1UEAwwOaWJtdGVzdG1h\nY2hpbmUxIjAgBgkqhkiG9w0BCQEWE2RhcnVueWEuZC5jQGlibS5jb20wHhcNMjIw\nNDA0MTM1ODE2WhcNMjMwNDA0MTM1ODE2WjCBlDELMAkGA1UEBhMCSU4xEjAQBgNV\nBAgMCUtBUk5BVEFLQTESMBAGA1UEBwwJQkFOR0FMT1JFMQwwCgYDVQQKDANJQk0x\nEjAQBgNVBAsMCUlCTSBDTE9VRDEXMBUGA1UEAwwOaWJtdGVzdG1hY2hpbmUxIjAg\nBgkqhkiG9w0BCQEWE2RhcnVueWEuZC5jQGlibS5jb20wggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQCxg0xZgI+JExNCL41AK7FSphsHGP18/RsmrVHiQxGS\nONnh4pBtMJ+/HnnqEoko52L9GGWadu9494JG4vb1Oz3jBJx6vyOBAfJX9EIO0JCz\n/bDdOgyAl9L4MzXF0T5Mc511jHcwMH8jLgczC7hPVm2Acz68z3OFajViLEq7d3+a\n3pC1YV93P3BWn0tNCnHMfUmiXTg40iCVSl1BDpg1hwQnY/L6zAAF+k2jhCJ6W8Ny\nCukSbZ0sEzrhNteYASzWS9k2KMJT8PxoX6bmDWiVVIGHW08YnOC9OZjxHG8fagFs\npEn2FDFc0KNpH7lpLc1qMfWI/i/7cOkHjpqahuD6z9xLAgMBAAEwDQYJKoZIhvcN\nAQELBQADggEBAJIMKN23ChGVU6v+2GT3nnUh5IcZO5qb2bEJrvlyb30uVD8FoBkP\nh7dXlOGsh6tReLB0HLGOz9bnDO1Xzls73So8Ep3M2Xk/42JdzKwXL+Bw3KKTEHP/\n9QUijuwqFTW13KIwX2PWfpYpZTkQwWpi6FS7io+JtEAfO/c5MuwjaWLBEGm7t+HX\nIG21Z2TyIMhFfFoprZG98BSJA4bdqW5gZL2gijoKEtXYpkx65u+4txV566jg2dDr\nKwnFm3A0zHZ3ObRWNt6Vat0SUqOnMOeb0yGNNoxgnoc2NSXlg3+PH9e9FBs5uKE8\npfOqqBCXtdq9QUKjIJnujw/CsYWW4vqLNRI=\n-----END CERTIFICATE-----\n"
