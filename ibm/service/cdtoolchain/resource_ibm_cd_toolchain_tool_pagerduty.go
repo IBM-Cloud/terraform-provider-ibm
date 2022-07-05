@@ -83,6 +83,7 @@ func ResourceIBMCdToolchainToolPagerduty() *schema.Resource {
 						"service_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "service_id.",
 						},
 					},
@@ -153,7 +154,7 @@ func ResourceIBMCdToolchainToolPagerduty() *schema.Resource {
 }
 
 func ResourceIBMCdToolchainToolPagerdutyValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "toolchain_id",

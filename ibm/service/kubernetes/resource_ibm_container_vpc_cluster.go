@@ -220,7 +220,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 							Description: "Effect for taint. Accepted values are NoSchedule, PreferNoSchedule and NoExecute.",
 							ValidateFunc: validate.InvokeValidator(
 								"ibm_container_vpc_cluster",
-								"worker_taints"),
+								"effect"),
 						},
 					},
 				},
@@ -236,7 +236,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_container_vpc_cluster", "tag")},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_container_vpc_cluster", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of tags for the resources",
 			},
@@ -432,7 +432,7 @@ func ResourceIBMContainerVpcClusterValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
@@ -440,7 +440,7 @@ func ResourceIBMContainerVpcClusterValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             128},
 		validate.ValidateSchema{
-			Identifier:                 "worker_taints",
+			Identifier:                 "effect",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,

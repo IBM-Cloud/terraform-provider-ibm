@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_hpcs_keystore"
 description: |-
   Manages keystore.
-subcategory: "Hyper Protect Crypto Service (HPCS)"
+subcategory: "Hyper Protect Crypto Services"
 ---
 
 # ibm_hpcs_keystore
@@ -12,7 +12,7 @@ Provides a resource for keystore. This allows keystore to be created, updated an
 
 ## Example Usage
 
-IBMCloud KMS Keystore
+AWS Keystore
 ```hcl
 resource "ibm_hpcs_keystore" "keystore_instance" {
   instance_id = ibm_hpcs_vault.vault_instance.instance_id
@@ -31,6 +31,7 @@ resource "ibm_hpcs_keystore" "keystore_instance" {
 }
 ```
 
+Azure Keystore
 ```hcl
 resource "ibm_hpcs_keystore" "azure_keystore_instance" {
   instance_id = ibm_hpcs_vault.vault_instance.instance_id
@@ -54,6 +55,7 @@ resource "ibm_hpcs_keystore" "azure_keystore_instance" {
 }
 ```
 
+IBMCloud KMS Keystore
 ```hcl
 resource "ibm_hpcs_keystore" "hpcs_keystore_instance" {
   instance_id = ibm_hpcs_vault.vault_instance.instance_id
@@ -75,6 +77,23 @@ resource "ibm_hpcs_keystore" "hpcs_keystore_instance" {
 }
 ```
 
+IBMCloud Internal KMS Keystore
+```hcl
+resource "ibm_hpcs_keystore" "hpcs_keystore_instance" {
+  instance_id = ibm_hpcs_vault.vault_instance.instance_id
+  region = ibm_hpcs_vault.vault_instance.region
+  uko_vault = ibm_hpcs_vault.vault_instance.vault_id
+  type = "ibm_cloud_kms"
+  ibm_variant = "internal"
+  vault {
+    id = ibm_hpcs_vault.vault_instance.vault_id
+  }
+  name = "terraformIBMInternalKeystore"
+  description = "example internal hpcs keystore"
+  groups = [ "Production-HPCS" ]
+}
+```
+
 ## Argument Reference
 
 Review the argument reference that you can specify for your resource.
@@ -82,7 +101,7 @@ Review the argument reference that you can specify for your resource.
 * `instance_id` - (Required, String) ID of UKO Instance
   * Constraints: Must match the ID of the UKO instance you are trying to work with.
 * `region` - (Required, String) Region of the UKO Instance
-  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd `, `ch-ctu `, `in-che `, `jp-osa `, `jp-tok `, `kr-seo `, `eu-de `, `eu-gb `, `ca-tor `, `us-south `, `us-south-test `, `customer-ral `, `us-east `, `br-sao`.
+  * Constraints: Must match the region of the UKO instance you are trying to work with. Allowable values are: `au-syd`, `in-che`, `jp-osa`, `jp-tok`, `kr-seo`, `eu-de`, `eu-gb`, `ca-tor`, `us-south`, `us-south-test`, `us-east`, `br-sao`.
 * `aws_access_key_id` - (Optional, String) The access key id used for connecting to this instance of AWS KMS.
 	* Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-_]*$/`.
 * `aws_region` - (Optional, String) AWS Region.
@@ -202,7 +221,7 @@ Nested scheme for **vault**:
 You can import the `ibm_hpcs_keystore` resource by using `region`, `instance_id`, `vault_id`, and `keystore_id`.
 
 # Syntax
-```
+```bash
 $ terraform import ibm_hpcs_keystore.keystore <region>/<instance_id>/<vault_id>/<keystore_id>
 ```
 

@@ -308,7 +308,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_database", "tag")},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_database", "tags")},
 				Set:      flex.ResourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
@@ -861,7 +861,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
