@@ -2729,12 +2729,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Crn:            core.StringPtr(""),
 		ZoneIdentifier: core.StringPtr(""),
 	}
-	session.cisOriginAuthClient, session.cisOriginAuthPullErr = cisoriginpull.NewAuthenticatedOriginPullApiV1(cisOriginAuthOptions)
 
+	session.cisOriginAuthClient, session.cisOriginAuthPullErr =
+		cisoriginpull.NewAuthenticatedOriginPullApiV1(cisOriginAuthOptions)
 	if session.cisOriginAuthPullErr != nil {
-		session.cisOriginAuthPullErr =
-			fmt.Errorf("Error occured while configuring CIS Authenticated Origin Pullservice: %s",
-				session.cisOriginAuthPullErr)
+		session.cisOriginAuthPullErr = fmt.Errorf(
+			"Error occured while configuring CIS Authenticated Origin Pullservice: %s",
+			session.cisOriginAuthPullErr)
 	}
 	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
 		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
