@@ -533,3 +533,67 @@ resource "ibm_cis_mtls_app" “test3” {
   policy_decision         = "allow"
 
 }
+
+# Upload zone level authentication certificate
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              ------END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  level                     = "zone"
+}
+
+# Upload host level authentication certificate
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE----
+                              ------END CERTIFICATE------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+  level                     = "hostname"
+}
+
+# Update zone level authentication setting
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                               -----END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT  #pragma: whitelist secret
+                              "-----BEGIN------
+                               -----END--------"
+                              EOT
+  enabled                   = true
+  level                     = "zone"
+}
+
+# Update host level authentication setting
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                               -----END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+  enabled                   = true
+  level                     = "hostname"
+}
