@@ -242,7 +242,7 @@ func resourceIBMSatelliteLocationCreate(d *schema.ResourceData, meta interface{}
 
 	if v, ok := d.GetOk("coreos_enabled"); ok {
 		coreosEnabled := v.(bool)
-		createSatLocOptions.CoreosEnabled = &coreosEnabled
+		createSatLocOptions.CoreosEnabled = coreosEnabled
 	}
 	if v, ok := d.GetOk("cos_config"); ok {
 		createSatLocOptions.CosConfig = flex.ExpandCosConfig(v.([]interface{}))
