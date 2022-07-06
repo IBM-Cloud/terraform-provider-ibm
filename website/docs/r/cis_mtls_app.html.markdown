@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_cis_mtls_app
- Provides mutaul TLS(mTLS) app-policy settings resource. The resource allows to create, update, or delete mTLS app settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
+ Provides mutual TLS(mTLS) app-policy settings resource. The resource allows to create, update, or delete mTLS app settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
 
 ## Example usage
 

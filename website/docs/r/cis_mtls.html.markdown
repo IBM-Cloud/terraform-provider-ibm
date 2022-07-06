@@ -7,7 +7,7 @@ description: |-
 ---
 
 # ibm_cis_mtls
- Provides mutaul TLS(mTLS) certificate settings resource. The resource allows to create(upload), update, or delete mTLS certificate settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
+ Provides mutual TLS(mTLS) certificate settings resource. The resource allows to create(upload), update, or delete mTLS certificate settings of a domain of an IBM Cloud Internet Services CIS instance. For more information about mtls, see [CIS MTLS](https://cloud.ibm.com/docs/cis?topic=cis-mtls-features).
 
 ## Example usage
 ```terraform
