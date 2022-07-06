@@ -43,7 +43,7 @@ variable "expire_days" {
 }
 
 variable "expire_date" {
-  default = ""
+  default = "2022-06-09"
 }
 
 variable "expire_prefix" {
@@ -88,4 +88,8 @@ variable "maximum_retention" {
 
 variable "quota" {
   default = "1"
+}
+
+variable "satellite_location_id" {
+  default = ""  
 }

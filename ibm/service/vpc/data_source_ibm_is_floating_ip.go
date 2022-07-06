@@ -214,12 +214,13 @@ func floatingIPGet(d *schema.ResourceData, meta interface{}, name string) error 
 			d.Set(floatingIPZone, *ip.Zone.Name)
 
 			d.Set(floatingIPCRN, *ip.CRN)
-			targetId, targetMap := dataSourceFloatingIPCollectionFloatingIpTargetToMap(ip.Target)
-			d.Set(floatingIPTarget, targetId)
-			targetList := []map[string]interface{}{}
-			targetList = append(targetList, targetMap)
-			d.Set(floatingIPTargets, targetList)
-
+			if ip.Target != nil {
+				targetId, targetMap := dataSourceFloatingIPCollectionFloatingIpTargetToMap(ip.Target)
+				d.Set(floatingIPTarget, targetId)
+				targetList := []map[string]interface{}{}
+				targetList = append(targetList, targetMap)
+				d.Set(floatingIPTargets, targetList)
+			}
 			tags, err := flex.GetTagsUsingCRN(meta, *ip.CRN)
 			if err != nil {
 				fmt.Printf("[ERROR] Error on get of vpc Floating IP (%s) tags: %s", *ip.Address, err)

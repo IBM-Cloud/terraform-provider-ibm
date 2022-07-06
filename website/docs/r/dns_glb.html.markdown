@@ -21,6 +21,7 @@ resource "ibm_dns_glb" "test_pdns_glb" {
   zone_id       = ibm_dns_zone.test_pdns_glb_zone.zone_id
   description   = "new glb"
   ttl           = 120
+  enabled       = true
   fallback_pool = ibm_dns_glb_pool.test_pdns_glb_pool.pool_id
   default_pools = [ibm_dns_glb_pool.test_pdns_glb_pool.pool_id]
   az_pools {
@@ -45,6 +46,7 @@ Review the argument reference that you can specify for your resource.
 - `name` - (Required, String) The name of the Load Balancer.
 - `ttl` - (Optional, Integer) The time to live (TTL) in seconds.
 - `zone_id` - (Required, Forces new resource, String) The ID of the private DNS Zone.
+- `enabled` - (Optional, Bool) Whether the load balancer is enabled.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your resource is created. 

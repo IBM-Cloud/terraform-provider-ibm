@@ -214,7 +214,7 @@ func ResourceIBMISFloatingIP() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_floating_ip", "tag")},
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_floating_ip", "tags")},
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "Floating IP tags",
 			},
@@ -277,7 +277,7 @@ func ResourceIBMISFloatingIPValidator() *validate.ResourceValidator {
 			MaxValueLength:             63})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,

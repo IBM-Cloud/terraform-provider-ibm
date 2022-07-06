@@ -58,6 +58,33 @@ func TestAccIBMContainerVpcClusterWorkerPoolBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterWorkerPoolDedicatedHost(t *testing.T) {
+
+	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	hostpoolID := acc.HostPoolID
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(
+					acc.ClusterName,
+					name,
+					"bx2d.4x16",
+					acc.IksClusterSubnetID,
+					acc.IksClusterVpcID,
+					acc.IksClusterResourceGroupID,
+					hostpoolID,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.vpc_worker_pool", "host_pool_id", hostpoolID),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 
 	wpClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcContainerAPI()
@@ -241,6 +268,24 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(clusterName, name, flavor, subnetID, vpcID, rgroupID, hostpoolID string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_worker_pool" "vpc_worker_pool" {
+		cluster = "%s"
+		flavor = "%s"
+		worker_pool_name = "%s"
+		zones {
+		  subnet_id = "%s"
+		  name      = "us-south-1"
+		}
+		worker_count      = 1
+		vpc_id = "%s"
+		resource_group_id = "%s"
+		host_pool_id      = "%s"
+	  }
+	`, clusterName, flavor, name, subnetID, vpcID, rgroupID, hostpoolID)
 }
 
 func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {

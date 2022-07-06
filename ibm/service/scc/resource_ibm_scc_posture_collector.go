@@ -65,16 +65,16 @@ func ResourceIBMSccPostureCollectors() *schema.Resource {
 }
 
 func ResourceIBMSccPostureCollectorsValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "name",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[a-zA-Z0-9-\\.,_\\s]*$`,
-			MinValueLength:             1,
-			MaxValueLength:             32,
+			Regexp:                     `^[a-zA-Z0-9-.,_\s]*$`,
+			MinValueLength:             3,
+			MaxValueLength:             46,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "managed_by",
@@ -88,18 +88,18 @@ func ResourceIBMSccPostureCollectorsValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
+			Regexp:                     `^[a-zA-Z0-9-._,\s]*$`,
 			MinValueLength:             1,
-			MaxValueLength:             1000,
+			MaxValueLength:             255,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "passphrase",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9-\\._,\\s]*$`,
+			Regexp:                     `^[a-zA-Z0-9-._,\s]*$`,
 			MinValueLength:             1,
-			MaxValueLength:             200,
+			MaxValueLength:             255,
 		},
 	)
 
