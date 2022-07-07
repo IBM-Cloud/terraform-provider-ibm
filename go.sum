@@ -7,8 +7,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47/go.mod h1:tfN
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62 h1:MOkcr6qQGk4tY542ZJ1DggVh2WUP72EEyLB79llFVH8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.1.9 h1:NKG4lxQNe1HHANC+94mRqgogIkiAHo5COMNsqUGdNqg=
-github.com/IBM-Cloud/power-go-client v1.1.9/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
+github.com/IBM-Cloud/power-go-client v1.1.10 h1:NUGZwF5V0j2lFurA5LaigsYyOKDKwz4M0sCpm+YIbig=
+github.com/IBM-Cloud/power-go-client v1.1.10/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -23,8 +23,6 @@ github.com/IBM/cloudant-go-sdk v0.0.43 h1:YxTy4RpAEezX32YIWnds76hrBREmO4u6IkBz1W
 github.com/IBM/cloudant-go-sdk v0.0.43/go.mod h1:WeYrJPaHTw19943ndWnVfwMIlZ5z0XUM2uEXNBrwZ1M=
 github.com/IBM/container-registry-go-sdk v0.0.15 h1:sfEXm4qNj9ZCwTlFOsdjF5P/lvajU/Sc22yNlzg0F9I=
 github.com/IBM/container-registry-go-sdk v0.0.15/go.mod h1:KqSZFO4VIK9QAyF8O1JW6jkyzkfE/BNKUIo+OdzIDk4=
-github.com/IBM/continuous-delivery-go-sdk v0.0.5 h1:nwIvo4S2IAFtndIbloUbTp3unScc3osgapCieD0aD2E=
-github.com/IBM/continuous-delivery-go-sdk v0.0.5/go.mod h1:u63XH83hLREOAeGs+/nbe3BEn21udFP9dddryP24OGM=
 github.com/IBM/continuous-delivery-go-sdk v0.0.6 h1:XrQwFqGU7n3AzS0j0wou11LFqUaWx7q+UYrq+l4vnW8=
 github.com/IBM/continuous-delivery-go-sdk v0.0.6/go.mod h1:u63XH83hLREOAeGs+/nbe3BEn21udFP9dddryP24OGM=
 github.com/IBM/event-notifications-go-admin-sdk v0.1.2 h1:LLA12WFqSD0+Uf16SNdErcu2MVK4EnyXHJmDIkKkudE=
@@ -58,12 +56,8 @@ github.com/IBM/ibm-hpcs-uko-sdk v0.0.4 h1:B3FEq830k/B7HjQqvQubxmz8PxOUvKYD2ZypDq
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.4/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
 github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
-github.com/IBM/networking-go-sdk v0.28.0 h1:kdZnHb9SaVd/NgYFpOlXfXSA8Q/mASBGaiAECxVI2i4=
-github.com/IBM/networking-go-sdk v0.28.0/go.mod h1:tVxXclpQs8nQJYPTr9ZPNC1voaPNQLy8iy/72oVfFtM=
 github.com/IBM/networking-go-sdk v0.30.0 h1:GUfvq4AOK0iTUEodPL2k812y2W1GdZs6hUTa81KUKys=
 github.com/IBM/networking-go-sdk v0.30.0/go.mod h1:tVxXclpQs8nQJYPTr9ZPNC1voaPNQLy8iy/72oVfFtM=
-github.com/IBM/platform-services-go-sdk v0.25.1 h1:hF4EvJNe8KRGiytN0mVJvJaZV4UJHsrJi1xIRgIaa5w=
-github.com/IBM/platform-services-go-sdk v0.25.1/go.mod h1:9/v5qTMXaEBOpFe2marMukgCqv83W8PcjPWr91m2Ids=
 github.com/IBM/platform-services-go-sdk v0.26.1 h1:8maFrdgp8su5H99v5/fith9ft+nE1V7RRpcM3jBUKYs=
 github.com/IBM/platform-services-go-sdk v0.26.1/go.mod h1:ZFuISyKu+qekMfvFebzqJ8AIpNlRqI7a6WuieGfjGuA=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
