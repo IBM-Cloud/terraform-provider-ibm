@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_scc_posture_collector"
 description: |-
   Get information about collector
-subcategory: "Posture Management"
+subcategory: "Security and Compliance Center"
 ---
 
 # ibm_scc_posture_collector
