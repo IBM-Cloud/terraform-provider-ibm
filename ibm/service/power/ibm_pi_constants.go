@@ -4,6 +4,9 @@ import "time"
 
 const (
 
+	// used by all
+	Arg_CloudInstanceID = "pi_cloud_instance_id"
+
 	// Keys
 	PIKeys    = "keys"
 	PIKeyName = "name"
@@ -20,16 +23,21 @@ const (
 	PISAPProfileType      = "type"
 
 	// DHCP
-	PIDhcpStatusBuilding = "Building"
-	PIDhcpStatusActive   = "ACTIVE"
-	PIDhcpDeleting       = "Deleting"
-	PIDhcpDeleted        = "Deleted"
-	PIDhcpId             = "dhcp_id"
-	PIDhcpStatus         = "status"
-	PIDhcpNetwork        = "network"
-	PIDhcpLeases         = "leases"
-	PIDhcpInstanceIp     = "instance_ip"
-	PIDhcpInstanceMac    = "instance_mac"
+	Arg_DhcpCidr              = "pi_cidr"
+	Arg_DhcpID                = "pi_dhcp_id"
+	Arg_DhcpCloudConnectionID = "pi_cloud_connection_id"
+	Arg_DhcpDnsServer         = "pi_dns_server"
+	Arg_DhcpName              = "pi_dhcp_name"
+
+	Attr_DhcpServers           = "servers"
+	Attr_DhcpID                = "dhcp_id"
+	Attr_DhcpLeases            = "leases"
+	Attr_DhcpLeaseInstanceIP   = "instance_ip"
+	Attr_DhcpLeaseInstanceMac  = "instance_mac"
+	Attr_DhcpNetworkDeprecated = "network" // to deprecate
+	Attr_DhcpNetworkID         = "network_id"
+	Attr_DhcpNetworkName       = "network_name"
+	Attr_DhcpStatus            = "status"
 
 	// Instance
 	//Added timeout values for warning  and active status
@@ -66,4 +74,14 @@ const (
 
 	// Cloud Connections
 	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
+
+	// status
+	// common status states
+	StatusShutoff = "SHUTOFF"
+	StatusActive  = "ACTIVE"
+	StatusResize  = "RESIZE"
+	StatusError   = "ERROR"
+	StatusBuild   = "BUILD"
+	SctionStart   = "start"
+	SctionStop    = "stop"
 )
