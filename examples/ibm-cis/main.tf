@@ -39,7 +39,7 @@ resource "ibm_cis_domain_settings" "web_domain_tls_v1.3" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.3"
-  brotli					= "on"
+  brotli          = "on"
   cipher          = []
 }
 
