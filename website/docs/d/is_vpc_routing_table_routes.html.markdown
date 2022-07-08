@@ -47,9 +47,9 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `routing_table_routes` (List) List of all the routing table in a VPC.
+- `routes` (List) List of all the routing table in a VPC.
 
-  Nested scheme for `routing_table_routes`:
+  Nested scheme for `routes`:
 	- `name` - (String) The name for the default routing table.
 	- `route_id` - (String) The unique ID for the route.
 	- `lifecycle_state` - (String) The lifecycle state of the route.
