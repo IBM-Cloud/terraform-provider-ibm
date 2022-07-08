@@ -35,36 +35,36 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_custom.
-* `crn` - (Required, String) Tool CRN.
+* `crn` - (String) Tool CRN.
 
 
-* `href` - (Required, String) URI representing the tool.
+* `href` - (String) URI representing the tool.
 
-* `name` - (Optional, String) Tool name.
+* `name` - (String) Tool name.
 
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `additional_properties` - (Optional, String) (Advanced) Type any information that is needed to integrate with other tools in your toolchain.
-	* `dashboard_url` - (Required, String) Type the URL that you want to navigate to when you click the tool integration card.
-	* `description` - (Optional, String) Type a description for the tool instance.
-	* `documentation_url` - (Optional, String) Type the URL for your tool's documentation.
-	* `image_url` - (Optional, String) Type the URL of the icon to show on your tool integration's card.
-	* `lifecycle_phase` - (Required, String) Select the lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
+	* `additional_properties` - (String) (Advanced) Type any information that is needed to integrate with other tools in your toolchain.
+	* `dashboard_url` - (String) Type the URL that you want to navigate to when you click the tool integration card.
+	* `description` - (String) Type a description for the tool instance.
+	* `documentation_url` - (String) Type the URL for your tool's documentation.
+	* `image_url` - (String) Type the URL of the icon to show on your tool integration's card.
+	* `lifecycle_phase` - (String) Select the lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
 	  * Constraints: Allowable values are: `THINK`, `CODE`, `DELIVER`, `RUN`, `MANAGE`, `LEARN`, `CULTURE`.
-	* `name` - (Required, String) Type a name for this specific tool integration; for example: My Build and Deploy Pipeline.
-	* `type` - (Required, String) Type the name of the tool that you are integrating; for example: Delivery Pipeline.
+	* `name` - (String) Type a name for this specific tool integration; for example: My Build and Deploy Pipeline.
+	* `type` - (String) Type the name of the tool that you are integrating; for example: Delivery Pipeline.
 
-* `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
+* `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (Optional, String) URI representing the this resource through an API.
-	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing the this resource through an API.
+	* `ui_href` - (String) URI representing the this resource through the UI.
 
-* `resource_group_id` - (Required, String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where tool can be found.
 
-* `state` - (Required, String) Current configuration state of the tool.
+* `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
-* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
+* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 
-* `updated_at` - (Required, String) Latest tool update timestamp.
+* `updated_at` - (String) Latest tool update timestamp.
 

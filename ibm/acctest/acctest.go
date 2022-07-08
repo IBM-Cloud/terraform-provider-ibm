@@ -164,6 +164,8 @@ var Scc_posture_credential_id_scope string
 var Scc_posture_credential_id_scope_update string
 var Scc_posture_collector_id_scope []string
 var Scc_posture_collector_id_scope_update []string
+var Scc_posture_collector_id string
+var Scc_posture_credential_id string
 
 //ROKS Cluster
 var ClusterName string
@@ -884,6 +886,16 @@ func init() {
 	Scc_posture_collector_id_scope_update = []string{os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE")}
 	if os.Getenv("SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE") == "" {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
+	}
+
+	Scc_posture_collector_id = os.Getenv("SCC_POSTURE_COLLECTOR_ID")
+	if Scc_posture_collector_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
+	Scc_posture_credential_id = os.Getenv("SCC_POSTURE_CREDENTIAL_ID")
+	if Scc_posture_credential_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
 	}
 
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
