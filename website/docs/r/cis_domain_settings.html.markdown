@@ -11,7 +11,7 @@ description: |-
 
 Customize the IBM Cloud Internet Services domain settings. For more information, about Internet Services domain settings, see [adding domains to your CIS instance](https://cloud.ibm.com/docs/cis?topic=cis-multi-domain-support).
 
-## Example usage
+## Example usage 1
 
 ```terraform
 resource "ibm_cis_domain_settings" "test_domain_settings" {
@@ -69,6 +69,67 @@ resource "ibm_cis_domain_settings" "test" {
   waf             = "on"
   ssl             = "full"
   min_tls_version = "1.2"
+}
+```
+
+## Example usage 2 : For TLS v1.3
+
+```terraform
+resource "ibm_cis_domain_settings" "test_domain_settings" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+  dnssec                      = "disabled"
+  waf                         = "off"
+  ssl                         = "flexible"
+  min_tls_version             = "1.2"
+  cname_flattening            = "flatten_all"
+  opportunistic_encryption    = "off"
+  automatic_https_rewrites    = "on"
+  always_use_https            = "off"
+  ipv6                        = "off"
+  browser_check               = "off"
+  hotlink_protection          = "off"
+  http2                       = "on"
+  image_load_optimization     = "off"
+  image_size_optimization     = "lossless"
+  ip_geolocation              = "off"
+  origin_error_page_pass_thru = "off"
+  brotli                      = "off"
+  pseudo_ipv4                 = "off"
+  prefetch_preload            = "off"
+  response_buffering          = "off"
+  script_load_optimization    = "off"
+  server_side_exclude         = "off"
+  tls_client_auth             = "off"
+  true_client_ip_header       = "off"
+  websockets                  = "off"
+  challenge_ttl               = 31536000
+  max_upload                  = 300
+  cipher                      = []
+  minify {
+    css  = "off"
+    js   = "off"
+    html = "off"
+  }
+  security_header {
+    enabled            = false
+    include_subdomains = false
+    max_age            = 0
+    nosniff            = false
+  }
+  mobile_redirect {
+    status           = "on"
+    mobile_subdomain = "m.domain.com"
+    strip_uri        = true
+  }
+}
+
+resource "ibm_cis_domain_settings" "test" {
+  cis_id          = ibm_cis.instance.id
+  domain_id       = ibm_cis_domain.example.id
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.3"
 }
 ```
 
