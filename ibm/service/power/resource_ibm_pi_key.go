@@ -53,7 +53,7 @@ func ResourceIBMPIKey() *schema.Resource {
 			Attr_KeyCreationDate: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Date of sshkey creation",
+				Description: "Date of SSH Key creation",
 			},
 			Attr_KeyID: {
 				Type:       schema.TypeString,

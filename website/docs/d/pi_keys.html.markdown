@@ -30,7 +30,7 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `keys`:
   - `name` - (String) User defined name for the SSH key
-  - `creation_date` - (String) Date of sshkey creation. 
+  - `creation_date` - (String) Date of SSH Key creation. 
   - `ssh_key` - (String) SSH RSA key.
 
 **Notes**

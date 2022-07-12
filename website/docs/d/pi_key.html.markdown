@@ -29,7 +29,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) User defined name for the SSH key
-- `creation_date` - (String) Date of sshkey creation. 
+- `creation_date` - (String) Date of SSH Key creation. 
 - `ssh_key` - (String) SSH RSA key.
 
 **Notes**
