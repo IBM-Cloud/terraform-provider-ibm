@@ -79,6 +79,17 @@ In addition to all argument reference list, you can access the following attribu
 - `network_acl` - (String) The ID of the network ACL for the subnet.
 - `public_gateway` - (String) The ID of the public gateway for the subnet.
 - `resource_group` - (String) The subnet resource group.
+- `routing_table` -  (List) The routing table for this subnet. 
+  
+  Nested scheme for `routing_table`:
+  - `deleted` -  (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` -  (String) Link to documentation about deleted resources.
+  - `href` -  (String) The URL for this routing table.
+  - `id` -  (String) The unique identifier for this routing table.
+  - `name` -  (String) The user-defined name for this routing table.
+  - `resource_type` -  (String) The type of resource referenced.
 - `status` - (String) The status of the subnet.
 - `tags`  - (String) Tags associated for the instance.
 - `total_ipv4_address_count` - (Integer) The total number of IPv4 addresses.
