@@ -35,7 +35,7 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 			pdnsInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Instance ID",
+				Description: "The GUID of the private DNS service instance.",
 			},
 			pdnsSZResolverID: {
 				Type:        schema.TypeString,
@@ -44,32 +44,34 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 			},
 			pdnsSecondaryZones: {
 				Type:        schema.TypeList,
-				Description: "Secondary Zone details",
+				Description: "List of Secondary Zones",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						pdnsSZId: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Identifier of the Secondary Zone",
+							Description: "The unique identifier of the Secondary Zone",
 						},
 						pdnsSZDescription: {
 							Type:     schema.TypeString,
 							Computed: true,
+							Description: "Descriptive text of the secondary zone.",
 						},
 						pdnsSZZone: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Zone name",
+							Description: "The name of the zone.",
 						},
 						pdnsSZEnabled: {
 							Type:     schema.TypeBool,
 							Computed: true,
+							Description: "Enable/Disable the secondary zone.",
 						},
 						pdnsSZTransferFrom: {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The source configuration of secondary zone output",
+							Description: "The addresses of DNS servers where the secondary zone data should be transferred from.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
