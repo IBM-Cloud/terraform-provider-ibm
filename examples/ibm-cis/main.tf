@@ -32,6 +32,17 @@ resource "ibm_cis_domain_settings" "web_domain" {
   brotli					= "on"
 }
 
+#Domain settings for IBM CIS instance for TLS v1.3
+resource "ibm_cis_domain_settings" "web_domain_tls_v1.3" {
+  cis_id          = ibm_cis.web_domain.id
+  domain_id       = ibm_cis_domain.web_domain.id
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.3"
+  brotli          = "on"
+  cipher          = []
+}
+
 #Adding valid Domain for IBM CIS instance
 resource "ibm_cis_domain" "web_domain" {
   cis_id = ibm_cis.web_domain.id
