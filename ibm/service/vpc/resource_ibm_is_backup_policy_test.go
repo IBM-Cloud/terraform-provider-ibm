@@ -93,7 +93,7 @@ func testAccCheckIBMIsBackupPolicyConfigBasic(backupPolicyName string, vpcname, 
 		profile = "10iops-tier"
 		zone    = "%s"
 		# capacity= 200
-		user_tags 	= ["tag-0"]
+		tags 	= ["tag-0"]
 	  }
 
 	  resource "ibm_is_instance" "testacc_instance" {
