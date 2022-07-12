@@ -101,6 +101,7 @@ func ResourceIBMSatelliteLocation() *schema.Resource {
 			"coreos_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "Enable Red Hat CoreOS features within the Satellite location",
 			},
 			"logging_account_id": {
@@ -324,6 +325,10 @@ func resourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}) 
 	d.Set(satLocation, *instance.Name)
 	if instance.Description != nil {
 		d.Set("description", *instance.Description)
+	}
+
+	if instance.CoreosEnabled != nil {
+		d.Set("coreos_enabled", *instance.CoreosEnabled)
 	}
 
 	if instance.Datacenter != nil {
