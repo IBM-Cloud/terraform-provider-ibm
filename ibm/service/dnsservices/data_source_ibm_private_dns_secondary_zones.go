@@ -54,8 +54,8 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 							Description: "The unique identifier of the Secondary Zone",
 						},
 						pdnsSZDescription: {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
 							Description: "Descriptive text of the secondary zone.",
 						},
 						pdnsSZZone: {
@@ -64,8 +64,8 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 							Description: "The name of the zone.",
 						},
 						pdnsSZEnabled: {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Computed:    true,
 							Description: "Enable/Disable the secondary zone.",
 						},
 						pdnsSZTransferFrom: {
