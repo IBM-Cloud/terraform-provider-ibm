@@ -35,7 +35,7 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 			pdnsInstanceID: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID of the private DNS service instance.",
+				Description: "The GUID of the DNS Services instance.",
 			},
 			pdnsSZResolverID: {
 				Type:        schema.TypeString,
@@ -71,7 +71,7 @@ func DataSourceIBMPrivateDNSSecondaryZones() *schema.Resource {
 						pdnsSZTransferFrom: {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The addresses of DNS servers where the secondary zone data should be transferred from.",
+							Description: "The addresses of DNS servers where the secondary zone data is transferred from.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
