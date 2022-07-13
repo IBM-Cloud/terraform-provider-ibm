@@ -6,7 +6,7 @@ description: |-
   Manages IBM Private DNS custom resolver secondary zone.
 ---
 
-# dns_custom_resolver_secondary_zone
+# ibm_dns_custom_resolver_secondary_zone
 
 The DNS custom resolver secondary zone resource allows users to request and manage secondary zones for a given custom resolver. By creating and enabling a secondary zone resource for a custom resolver, DNS records for a given DNS zone will be transferred from a user provided primary DNS server (on premise) to a private DNS custom resolver hosted on an IBM Cloud VPC. This framework will improve the availability, speed, and security of DNS queries for a given DNS zone.
 
