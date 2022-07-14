@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 const (
 	isInstanceId                             = "instance"
 	isInstanceVolAttVol                      = "volume"
+	isInstanceVolTags                        = "tags"
 	isInstanceVolAttId                       = "volume_attachment_id"
 	isInstanceVolAttIops                     = "volume_iops"
 	isInstanceExistingVolume                 = "existing"
@@ -93,7 +95,7 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				ConflictsWith: []string{isInstanceVolIops, isInstanceVolumeAttVolumeReferenceName, isInstanceVolProfile, isInstanceVolCapacity, isInstanceVolumeSnapshot},
+				ConflictsWith: []string{isInstanceVolIops, isInstanceVolumeAttVolumeReferenceName, isInstanceVolProfile, isInstanceVolCapacity, isInstanceVolumeSnapshot, isInstanceVolTags},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_instance_volume_attachment", isInstanceName),
 				Description:   "Instance id",
 			},
@@ -112,6 +114,16 @@ func ResourceIBMISInstanceVolumeAttachment() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_volume_attachment", isInstanceVolumeAttVolumeReferenceName),
 				Description:  "The unique user-defined name for this volume",
+			},
+
+			isInstanceVolTags: {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{isInstanceVolAttVol},
+				Elem:          &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_volume", "tags")},
+				Set:           flex.ResourceIBMVPCHash,
+				Description:   "UserTags for the volume instance",
 			},
 
 			isInstanceVolProfile: {
@@ -263,7 +275,24 @@ func instanceVolAttachmentCreate(d *schema.ResourceData, meta interface{}, insta
 			volnamestr := volname.(string)
 			volProtoVol.Name = &volnamestr
 		}
-
+		var userTags *schema.Set
+		if v, ok := d.GetOk(isInstanceVolTags); ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				schematicTags := os.Getenv("IC_ENV_TAGS")
+				var envTags []string
+				if schematicTags != "" {
+					envTags = strings.Split(schematicTags, ",")
+					userTagsArray = append(userTagsArray, envTags...)
+				}
+				volProtoVol.UserTags = userTagsArray
+			}
+		}
 		volSnapshotStr := ""
 		if volSnapshot, ok := d.GetOk(isInstanceVolumeSnapshot); ok {
 			volSnapshotStr = volSnapshot.(string)
@@ -499,7 +528,7 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 		volId = volIdOk.(string)
 	}
 
-	if volId != "" && (d.HasChange(isInstanceVolIops) || d.HasChange(isInstanceVolProfile)) {
+	if volId != "" && (d.HasChange(isInstanceVolIops) || d.HasChange(isInstanceVolProfile) || d.HasChange(isInstanceVolTags)) {
 		insId := d.Get(isInstanceId).(string)
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &insId,
@@ -540,6 +569,26 @@ func instanceVolAttUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 			iops := int64(d.Get(isVolumeIops).(int))
 			volumeProfilePatchModel.Iops = &iops
+		}
+		if d.HasChange(isInstanceVolTags) && !d.IsNewResource() {
+			if v, ok := d.GetOk(isInstanceVolTags); ok {
+				userTags := v.(*schema.Set)
+				if userTags != nil && userTags.Len() != 0 {
+					userTagsArray := make([]string, userTags.Len())
+					for i, userTag := range userTags.List() {
+						userTagStr := userTag.(string)
+						userTagsArray[i] = userTagStr
+					}
+					schematicTags := os.Getenv("IC_ENV_TAGS")
+					var envTags []string
+					if schematicTags != "" {
+						envTags = strings.Split(schematicTags, ",")
+						userTagsArray = append(userTagsArray, envTags...)
+					}
+					volumeProfilePatchModel.UserTags = userTagsArray
+				}
+			}
+
 		}
 
 		volumeProfilePatch, err := volumeProfilePatchModel.AsPatch()

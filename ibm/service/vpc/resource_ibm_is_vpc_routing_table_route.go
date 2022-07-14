@@ -164,12 +164,12 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	if add, ok := d.GetOk(rNextHop); ok {
 		item := add.(string)
 		if net.ParseIP(item) == nil {
-			nhConnectionID := &vpcv1.RouteNextHopPrototypeVPNGatewayConnectionIdentity{
+			nhConnectionID := &vpcv1.RoutePrototypeNextHopRouteNextHopPrototypeVPNGatewayConnectionIdentity{
 				ID: core.StringPtr(item),
 			}
 			createVpcRoutingTableRouteOptions.SetNextHop(nhConnectionID)
 		} else {
-			nh := &vpcv1.RouteNextHopPrototypeRouteNextHopIP{
+			nh := &vpcv1.RoutePrototypeNextHopRouteNextHopPrototypeRouteNextHopIP{
 				Address: core.StringPtr(item),
 			}
 			createVpcRoutingTableRouteOptions.SetNextHop(nh)
