@@ -1,6 +1,10 @@
-variable "key_protect_instance_name" {
+variable "kp_name" {
   type        = string
   description = "Name of the Key Protect Toolchain Service Instance in IBM Cloud"
+}
+variable "kp_region" {
+  type        = string
+  description = "Resion of the Key Protect Toolchain Service Instance in IBM Cloud"
 }
 
 variable "cluster_name" {
