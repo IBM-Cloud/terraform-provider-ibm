@@ -21,13 +21,13 @@ data "ibm_resource_group" "rg" {
 # create a VPC for the subnets
 resource "ibm_is_vpc" "test-pdns-cr-vpc" {
   depends_on     = [data.ibm_resource_group.rg]
-  name           = "moises-sdk-testing-cross-account-vpc"
+  name           = "seczone-vpc"
   resource_group = data.ibm_resource_group.rg.id
 }
 
 # create subnets for the custom resolver locations
 resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
-  name            = "moises-sdk-testing-cross-account-subnet1"
+  name            = "seczone-subnet1"
   vpc             = ibm_is_vpc.test-pdns-cr-vpc.id
   zone            = "us-south-1"
   ipv4_cidr_block = "10.240.0.0/24"
@@ -35,7 +35,7 @@ resource "ibm_is_subnet" "test-pdns-cr-subnet1" {
 }
 
 resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
-  name            = "moises-sdk-testing-cross-account-subnet2"
+  name            = "seczone-subnet2"
   vpc             = ibm_is_vpc.test-pdns-cr-vpc.id
   zone            = "us-south-2"
   ipv4_cidr_block = "10.240.64.0/24"
@@ -44,7 +44,7 @@ resource "ibm_is_subnet" "test-pdns-cr-subnet2" {
 
 # create a DNS instance
 resource "ibm_resource_instance" "test-pdns-cr-instance" {
-  name              = "moises-sdk-testing-cross-account-dns1"
+  name              = "seczone-dns1"
   resource_group_id = data.ibm_resource_group.rg.id
   location          = "global"
   service           = "dns-svcs"
@@ -67,17 +67,10 @@ resource "ibm_dns_custom_resolver" "test" {
   }
 }
 
-resource "ibm_dns_zone" "pdns-1-zone" {
-  name        = "moises-zone3.com"
-  instance_id = ibm_resource_instance.test-pdns-cr-instance.guid
-  description = "testdescription"
-  label       = "testlabel"
-}
-
 resource "ibm_dns_custom_resolver_secondary_zone" "test" {
   instance_id   = ibm_resource_instance.test-pdns-cr-instance.guid
   resolver_id   = ibm_dns_custom_resolver.test.custom_resolver_id
-  zone          = "moises-zone4.com"
+  zone          = "example-zone.com"
   enabled       = true
   transfer_from = ["10.0.0.8"]
 }
@@ -86,7 +79,7 @@ resource "ibm_dns_custom_resolver_secondary_zone" "test" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
-- `instance_id` - (Required, String) The GUID of the private DNS service instance.
+- `instance_id` - (Required, String) The unique identifier of a service instance.
 - `resolver_id` - (Required, String) The GUID of the custom resolver.
 - `zone` - (Required, String) DNS records associated with this DNS zone will be transferred to the custom resolver.
 - `enabled`- (Required, Bool) To enable or disable a secondary zone transfer rule. 
