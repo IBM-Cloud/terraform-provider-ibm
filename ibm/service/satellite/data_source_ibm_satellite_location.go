@@ -38,7 +38,6 @@ func DataSourceIBMSatelliteLocation() *schema.Resource {
 			},
 			"coreos_enabled": {
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
 				Description: "If Red Hat CoreOS features are enabled within the Satellite location",
 			},
