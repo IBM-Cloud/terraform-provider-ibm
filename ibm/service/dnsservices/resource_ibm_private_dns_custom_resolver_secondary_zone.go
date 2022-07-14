@@ -61,26 +61,26 @@ func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {
 			pdnsSecondaryZoneZone: {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Secondary Zone Zone",
+				Description: "The name of the zone.",
 			},
 
 			pdnsSecondaryZoneTransferFrom: {
 				Type:        schema.TypeList,
 				Required:    true,
-				Description: "Secondary Zone Zone",
+				Description: "The addresses of DNS servers where the secondary zone data should be transferred from",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 
 			pdnsSecondaryZoneEnabled: {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Description: "Secondary Zone Enabled",
+				Description: "Enable/Disable the secondary zone",
 			},
 
 			pdnsSecondaryZoneDescription: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Secondary Zone Description",
+				Description: "Descriptive text of the secondary zone",
 			},
 
 			pdnsSecondaryZoneCreatedOn: {
@@ -124,7 +124,7 @@ func resourceIBMPrivateDNSSecondaryZoneCreate(ctx context.Context, d *schema.Res
 
 	resource, response, err := sess.CreateSecondaryZone(createSecondaryZoneOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating pdns secondary zone:%s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error creating DNS Services secondary zone:%s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, resolverID, *resource.ID))
@@ -147,7 +147,7 @@ func resourceIBMPrivateDNSSecondaryZoneRead(ctx context.Context, d *schema.Resou
 	resource, response, err := sess.GetSecondaryZone(getSecondaryZoneOptions)
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading pdns secondary zone:%s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
 	}
 
 	transferFrom := []string{}
@@ -208,7 +208,7 @@ func resourceIBMPrivateDNSSecondaryZoneUpdate(ctx context.Context, d *schema.Res
 		_, response, err := sess.UpdateSecondaryZone(updateSecondaryZoneOptions)
 
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating pdns zone:%s\n%s", err, response))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating DNS Services zone:%s\n%s", err, response))
 		}
 	}
 
@@ -235,7 +235,7 @@ func resourceIBMPrivateDNSSecondaryZoneDelete(ctx context.Context, d *schema.Res
 	response, err := sess.DeleteSecondaryZone(deleteSecondaryZoneOptions)
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading pdns secondary zone:%s\n%s", err, response))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
 	}
 
 	d.SetId("")

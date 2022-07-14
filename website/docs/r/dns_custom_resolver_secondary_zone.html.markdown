@@ -81,9 +81,9 @@ Review the argument reference that you can specify for your resource.
 
 - `instance_id` - (Required, String) The unique identifier of a service instance.
 - `resolver_id` - (Required, String) The GUID of the custom resolver.
-- `zone` - (Required, String) DNS records associated with this DNS zone will be transferred to the custom resolver.
-- `enabled`- (Required, Bool) To enable or disable a secondary zone transfer rule. 
-- `transfer_from`- (Required, List of Strings) List of IP addresses. DNS records will be transferred from the primary DNS servers associated with the IP addresses in this list to custom resolvers hosted in an IBM Cloud VPC.
+- `zone` - (Required, String) The name of the zone.
+- `enabled`- (Required, Bool) To enable or disable a secondary zone. 
+- `transfer_from`- (Required, List of Strings)The addresses of DNS servers where the secondary zone data is transferred from.
 - `description` - (Optional, String) Descriptive text of the secondary zone.
 
 ## Attribute reference
@@ -91,10 +91,10 @@ In addition to all argument reference list, you can access the following attribu
 
 - `created_on` - (Timestamp) The time (created On) of the Secondary Zone. 
 - `modified_on` - (Timestamp) The time (modified On) of the Secondary Zone.
-- `secondary_zone_id` - (String) The unique ID of the private DNS custom resolver secondary zone.
+- `secondary_zone_id` - (String) The unique ID of the DNS Services custom resolver secondary zone.
 
 ## Import
-The `ibm_dns_custom_resolver_secondary_zone` can be imported by using private DNS instance ID, Custom Resolver ID, and Secondary Zone ID.
+The `ibm_dns_custom_resolver_secondary_zone` can be imported by using DNS Services instance ID, Custom Resolver ID, and Secondary Zone ID.
 The `id` property can be formed from `instance_id`, `custom_resolver_id` and `secondary_zone_id` in the following format:
 
 ```
