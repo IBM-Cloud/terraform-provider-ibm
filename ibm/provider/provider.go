@@ -16,6 +16,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/catalogmanagement"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtektonpipeline"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cdtoolchain"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/certificatemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/classicinfrastructure"
@@ -271,6 +273,9 @@ func Provider() *schema.Provider {
 			"ibm_cis_ip_addresses":                  cis.DataSourceIBMCISIP(),
 			"ibm_cis_waf_groups":                    cis.DataSourceIBMCISWAFGroups(),
 			"ibm_cis_alerts":                        cis.DataSourceIBMCISAlert(),
+			"ibm_cis_origin_auths":                  cis.DataSourceIBMCISOriginAuthPull(),
+			"ibm_cis_mtlss":                         cis.DataSourceIBMCISMtls(),
+			"ibm_cis_mtls_apps":                     cis.DataSourceIBMCISMtlsApp(),
 			"ibm_cis_webhooks":                      cis.DataSourceIBMCISWebhooks(),
 			"ibm_cis_logpush_jobs":                  cis.DataSourceIBMCISLogPushJobs(),
 			"ibm_cis_edge_functions_actions":        cis.DataSourceIBMCISEdgeFunctionsActions(),
@@ -286,6 +291,8 @@ func Provider() *schema.Provider {
 			"ibm_database_connection":               database.DataSourceIBMDatabaseConnection(),
 			"ibm_database_point_in_time_recovery":   database.DataSourceIBMDatabasePointInTimeRecovery(),
 			"ibm_database_remotes":                  database.DataSourceIBMDatabaseRemotes(),
+			"ibm_database_task":                     database.DataSourceIBMDatabaseTask(),
+			"ibm_database_tasks":                    database.DataSourceIBMDatabaseTasks(),
 			"ibm_database_backup":                   database.DataSourceIBMDatabaseBackup(),
 			"ibm_database_backups":                  database.DataSourceIBMDatabaseBackups(),
 			"ibm_compute_bare_metal":                classicinfrastructure.DataSourceIBMComputeBareMetal(),
@@ -314,6 +321,7 @@ func Provider() *schema.Provider {
 			"ibm_container_dedicated_host_pool":     kubernetes.DataSourceIBMContainerDedicatedHostPool(),
 			"ibm_container_dedicated_host_flavor":   kubernetes.DataSourceIBMContainerDedicatedHostFlavor(),
 			"ibm_container_dedicated_host_flavors":  kubernetes.DataSourceIBMContainerDedicatedHostFlavors(),
+			"ibm_container_dedicated_host":          kubernetes.DataSourceIBMContainerDedicatedHost(),
 			"ibm_cr_namespaces":                     registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":      cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                        cos.DataSourceIBMCosBucket(),
@@ -324,6 +332,10 @@ func Provider() *schema.Provider {
 			"ibm_event_streams_topic":               eventstreams.DataSourceIBMEventStreamsTopic(),
 			"ibm_event_streams_schema":              eventstreams.DataSourceIBMEventStreamsSchema(),
 			"ibm_hpcs":                              hpcs.DataSourceIBMHPCS(),
+			"ibm_hpcs_managed_key":                  hpcs.DataSourceIbmManagedKey(),
+			"ibm_hpcs_key_template":                 hpcs.DataSourceIbmKeyTemplate(),
+			"ibm_hpcs_keystore":                     hpcs.DataSourceIbmKeystore(),
+			"ibm_hpcs_vault":                        hpcs.DataSourceIbmVault(),
 			"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroup(),
 			"ibm_iam_access_group_policy":           iampolicy.DataSourceIBMIAMAccessGroupPolicy(),
 			"ibm_iam_account_settings":              iamidentity.DataSourceIBMIAMAccountSettings(),
@@ -344,6 +356,12 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_links":         iamidentity.DataSourceIBMIamTrustedProfileLinks(),
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
+
+			//backup as Service
+			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
+			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
+			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
@@ -618,12 +636,15 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profile":           scc.DataSourceIBMSccPostureProfileDetails(),
 			"ibm_scc_posture_group_profile":     scc.DataSourceIBMSccPostureGroupProfileDetails(),
 			"ibm_scc_posture_scope_correlation": scc.DataSourceIBMSccPostureScopeCorrelation(),
-
+			"ibm_scc_posture_credential":        scc.DataSourceIBMSccPostureCredential(),
+			"ibm_scc_posture_collector":         scc.DataSourceIBMSccPostureCollector(),
+			"ibm_scc_posture_scope":             scc.DataSourceIBMSccPostureScope(),
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.DataSourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.DataSourceIBMEnDestination(),
 			"ibm_en_destinations":         eventnotification.DataSourceIBMEnDestinations(),
 			"ibm_en_topic":                eventnotification.DataSourceIBMEnTopic(),
@@ -635,6 +656,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_ios":      eventnotification.DataSourceIBMEnAPNSDestination(),
 			"ibm_en_destination_chrome":   eventnotification.DataSourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.DataSourceIBMEnFirefoxDestination(),
+			"ibm_en_destination_slack":    eventnotification.DataSourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.DataSourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.DataSourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.DataSourceIBMEnWebhookSubscription(),
@@ -642,6 +664,40 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.DataSourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.DataSourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.DataSourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.DataSourceIBMEnSafariDestination(),
+
+			// // Added for Toolchain
+			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
+			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
+			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
+			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.DataSourceIBMCdToolchainToolBitbucketgit(),
+			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.DataSourceIBMCdToolchainToolGithubintegrated(),
+			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.DataSourceIBMCdToolchainToolGithubconsolidated(),
+			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.DataSourceIBMCdToolchainToolGitlab(),
+			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.DataSourceIBMCdToolchainToolHostedgit(),
+			"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.DataSourceIBMCdToolchainToolArtifactory(),
+			"ibm_cd_toolchain_tool_custom":             cdtoolchain.DataSourceIBMCdToolchainToolCustom(),
+			"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.DataSourceIBMCdToolchainToolPipeline(),
+			"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.DataSourceIBMCdToolchainToolDevopsinsights(),
+			"ibm_cd_toolchain_tool_slack":              cdtoolchain.DataSourceIBMCdToolchainToolSlack(),
+			"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.DataSourceIBMCdToolchainToolSonarqube(),
+			"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.DataSourceIBMCdToolchainToolHashicorpvault(),
+			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.DataSourceIBMCdToolchainToolSecuritycompliance(),
+			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.DataSourceIBMCdToolchainToolPrivateworker(),
+			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.DataSourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.DataSourceIBMCdToolchainToolJenkins(),
+			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.DataSourceIBMCdToolchainToolNexus(),
+			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
+			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
+
+			// Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -703,6 +759,9 @@ func Provider() *schema.Provider {
 			"ibm_cis_tls_settings":                      cis.ResourceIBMCISTLSSettings(),
 			"ibm_cis_waf_package":                       cis.ResourceIBMCISWAFPackage(),
 			"ibm_cis_webhook":                           cis.ResourceIBMCISWebhooks(),
+			"ibm_cis_origin_auth":                       cis.ResourceIBMCISOriginAuthPull(),
+			"ibm_cis_mtls":                              cis.ResourceIBMCISMtls(),
+			"ibm_cis_mtls_app":                          cis.ResourceIBMCISMtlsApp(),
 			"ibm_cis_logpush_job":                       cis.ResourceIBMCISLogPushJob(),
 			"ibm_cis_alert":                             cis.ResourceIBMCISAlert(),
 			"ibm_cis_routing":                           cis.ResourceIBMCISRouting(),
@@ -745,6 +804,7 @@ func Provider() *schema.Provider {
 			"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachment(),
 			"ibm_container_nlb_dns":                     kubernetes.ResourceIBMContainerNlbDns(),
 			"ibm_container_dedicated_host_pool":         kubernetes.ResourceIBMContainerDedicatedHostPool(),
+			"ibm_container_dedicated_host":              kubernetes.ResourceIBMContainerDedicatedHost(),
 			"ibm_cr_namespace":                          registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                   registry.ResourceIBMCrRetentionPolicy(),
 			"ibm_ob_logging":                            kubernetes.ResourceIBMObLogging(),
@@ -760,6 +820,10 @@ func Provider() *schema.Provider {
 			"ibm_firewall":                              classicinfrastructure.ResourceIBMFirewall(),
 			"ibm_firewall_policy":                       classicinfrastructure.ResourceIBMFirewallPolicy(),
 			"ibm_hpcs":                                  hpcs.ResourceIBMHPCS(),
+			"ibm_hpcs_managed_key":                      hpcs.ResourceIbmManagedKey(),
+			"ibm_hpcs_key_template":                     hpcs.ResourceIbmKeyTemplate(),
+			"ibm_hpcs_keystore":                         hpcs.ResourceIbmKeystore(),
+			"ibm_hpcs_vault":                            hpcs.ResourceIbmVault(),
 			"ibm_iam_access_group":                      iamaccessgroup.ResourceIBMIAMAccessGroup(),
 			"ibm_iam_account_settings":                  iamidentity.ResourceIBMIAMAccountSettings(),
 			"ibm_iam_custom_role":                       iampolicy.ResourceIBMIAMCustomRole(),
@@ -780,6 +844,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_link":              iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":            iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                             classicinfrastructure.ResourceIBMIPSecVPN(),
+
+			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
@@ -984,6 +1051,7 @@ func Provider() *schema.Provider {
 			"ibm_cbr_rule": contextbasedrestrictions.ResourceIBMCbrRule(),
 
 			// // Added for Event Notifications
+			"ibm_en_source":               eventnotification.ResourceIBMEnSource(),
 			"ibm_en_destination":          eventnotification.ResourceIBMEnDestination(),
 			"ibm_en_topic":                eventnotification.ResourceIBMEnTopic(),
 			"ibm_en_subscription":         eventnotification.ResourceIBMEnSubscription(),
@@ -992,6 +1060,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_chrome":   eventnotification.ResourceIBMEnChromeDestination(),
 			"ibm_en_destination_firefox":  eventnotification.ResourceIBMEnFirefoxDestination(),
 			"ibm_en_destination_ios":      eventnotification.ResourceIBMEnAPNSDestination(),
+			"ibm_en_destination_slack":    eventnotification.ResourceIBMEnSlackDestination(),
 			"ibm_en_subscription_sms":     eventnotification.ResourceIBMEnSMSSubscription(),
 			"ibm_en_subscription_email":   eventnotification.ResourceIBMEnEmailSubscription(),
 			"ibm_en_subscription_webhook": eventnotification.ResourceIBMEnWebhookSubscription(),
@@ -999,6 +1068,40 @@ func Provider() *schema.Provider {
 			"ibm_en_subscription_ios":     eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_chrome":  eventnotification.ResourceIBMEnFCMSubscription(),
 			"ibm_en_subscription_firefox": eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_subscription_slack":   eventnotification.ResourceIBMEnSlackSubscription(),
+			"ibm_en_subscription_safari":  eventnotification.ResourceIBMEnFCMSubscription(),
+			"ibm_en_destination_safari":   eventnotification.ResourceIBMEnSafariDestination(),
+
+			// // Added for Toolchain
+			"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchain(),
+			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotect(),
+			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanager(),
+			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgit(),
+			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegrated(),
+			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidated(),
+			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlab(),
+			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgit(),
+			"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.ResourceIBMCdToolchainToolArtifactory(),
+			"ibm_cd_toolchain_tool_custom":             cdtoolchain.ResourceIBMCdToolchainToolCustom(),
+			"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.ResourceIBMCdToolchainToolPipeline(),
+			"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.ResourceIBMCdToolchainToolDevopsinsights(),
+			"ibm_cd_toolchain_tool_slack":              cdtoolchain.ResourceIBMCdToolchainToolSlack(),
+			"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.ResourceIBMCdToolchainToolSonarqube(),
+			"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.ResourceIBMCdToolchainToolHashicorpvault(),
+			"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycompliance(),
+			"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworker(),
+			"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfig(),
+			"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkins(),
+			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
+			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
+			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
+
+			// // Added for Tekton Pipeline
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMTektonPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1056,6 +1159,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_function_trigger":            functions.ResourceIBMFuncTriggerValidator(),
 				"ibm_function_namespace":          functions.ResourceIBMFuncNamespaceValidator(),
 				"ibm_hpcs":                        hpcs.ResourceIBMHPCSValidator(),
+				"ibm_hpcs_managed_key":            hpcs.ResourceIbmManagedKeyValidator(),
+				"ibm_hpcs_keystore":               hpcs.ResourceIbmKeystoreValidator(),
+				"ibm_hpcs_key_template":           hpcs.ResourceIbmKeyTemplateValidator(),
+				"ibm_hpcs_vault":                  hpcs.ResourceIbmVaultValidator(),
+
+				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
+				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),
@@ -1140,10 +1250,41 @@ func Validator() validate.ValidatorDict {
 
 				// // Added for Event Notifications
 				"ibm_en_destination": eventnotification.ResourceIBMEnDestinationValidator(),
+
+				// // Added for Toolchains
+				"ibm_cd_toolchain":                         cdtoolchain.ResourceIBMCdToolchainValidator(),
+				"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotectValidator(),
+				"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanagerValidator(),
+				"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgitValidator(),
+				"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegratedValidator(),
+				"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidatedValidator(),
+				"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlabValidator(),
+				"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgitValidator(),
+				"ibm_cd_toolchain_tool_artifactory":        cdtoolchain.ResourceIBMCdToolchainToolArtifactoryValidator(),
+				"ibm_cd_toolchain_tool_custom":             cdtoolchain.ResourceIBMCdToolchainToolCustomValidator(),
+				"ibm_cd_toolchain_tool_pipeline":           cdtoolchain.ResourceIBMCdToolchainToolPipelineValidator(),
+				"ibm_cd_toolchain_tool_slack":              cdtoolchain.ResourceIBMCdToolchainToolSlackValidator(),
+				"ibm_cd_toolchain_tool_devopsinsights":     cdtoolchain.ResourceIBMCdToolchainToolDevopsinsightsValidator(),
+				"ibm_cd_toolchain_tool_sonarqube":          cdtoolchain.ResourceIBMCdToolchainToolSonarqubeValidator(),
+				"ibm_cd_toolchain_tool_hashicorpvault":     cdtoolchain.ResourceIBMCdToolchainToolHashicorpvaultValidator(),
+				"ibm_cd_toolchain_tool_securitycompliance": cdtoolchain.ResourceIBMCdToolchainToolSecuritycomplianceValidator(),
+				"ibm_cd_toolchain_tool_privateworker":      cdtoolchain.ResourceIBMCdToolchainToolPrivateworkerValidator(),
+				"ibm_cd_toolchain_tool_appconfig":          cdtoolchain.ResourceIBMCdToolchainToolAppconfigValidator(),
+				"ibm_cd_toolchain_tool_jenkins":            cdtoolchain.ResourceIBMCdToolchainToolJenkinsValidator(),
+				"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexusValidator(),
+				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
+				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
+
+				// // Added for Tekton Pipeline
+				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
+				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
+				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
+				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
 				"ibm_is_snapshot":        vpc.DataSourceIBMISSnapshotValidator(),
+				"ibm_is_images":          vpc.DataSourceIBMISImagesValidator(),
 				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
 				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
 

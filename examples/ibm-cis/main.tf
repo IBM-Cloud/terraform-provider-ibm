@@ -32,6 +32,17 @@ resource "ibm_cis_domain_settings" "web_domain" {
   brotli					= "on"
 }
 
+#Domain settings for IBM CIS instance for TLS v1.3
+resource "ibm_cis_domain_settings" "web_domain_tls_v1.3" {
+  cis_id          = ibm_cis.web_domain.id
+  domain_id       = ibm_cis_domain.web_domain.id
+  waf             = "on"
+  ssl             = "full"
+  min_tls_version = "1.3"
+  brotli          = "on"
+  cipher          = []
+}
+
 #Adding valid Domain for IBM CIS instance
 resource "ibm_cis_domain" "web_domain" {
   cis_id = ibm_cis.web_domain.id
@@ -439,6 +450,32 @@ resource "ibm_cis_alert" "test" {
 data "ibm_cis_alerts" "test1" {
   cis_id = data.ibm_cis.cis.id
 }
+
+# CIS Authentication Origin Zone Level Data source
+data "ibm_cis_origin_auths" "test" {
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+}
+
+# CIS Authentication Origin Per Hostname Data source
+data "ibm_cis_origin_auths" "test" {
+  cis_id          = data.ibm_cis.cis.id
+  domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+  request_type    = "per_hostname"
+  hostname        = data.ibm_cis_domain.cis_domain.domain
+}
+
+# CIS mTLS data source
+data "ibm_cis_mtlss" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+# CIS mTLS Apps data source
+data "ibm_cis_mtls_apps" "test" {
+  cis_id    = data.ibm_cis.cis.id
+  domain_id = data.ibm_cis_domain.cis_domain.domain_id
+}
+
 # CIS Logpush Job
 resource "ibm_cis_logpush_job" "test" {
     cis_id          = data.ibm_cis.cis.id
@@ -460,4 +497,114 @@ resource "ibm_cis_logpush_job" "test" {
 data "ibm_cis_logpush_jobs" "test" {
     cis_id          = data.ibm_cis.cis.id
     domain_id       = data.ibm_cis_domain.cis_domain.domain_id
+}
+
+#CIS MTLS instance
+resource "ibm_cis_mtls" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT 
+                              "-----BEGIN CERTIFICATE----- 
+                              -------END CERTIFICATE-----"
+                              EOT
+  name                       = "MTLS_Cert"
+  associated_hostnames       = ["abc.abc.abc.com"]
+}
+
+#CIS MTLS app and policy instance
+resource "ibm_cis_mtls_app" “test” {
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
+}
+
+# Create Mtls APP and policy with certficate rule and common rule 
+resource "ibm_cis_mtls_app" “test2” {
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
+  cert_rule_val           = "my-valid-cert"
+  common_rule_val         = "valid-common-rule"
+
+}
+
+# Create Mtls APP and policy with policy action
+resource "ibm_cis_mtls_app" “test3” {
+  cis_id                  = ibm_cis.web_domain.id
+  domain_id               = ibm_cis_domain.web_domain.id
+  name                    = "MY_APP"
+  session_duration        = "24h"
+  policy_name             = "Default Policy"
+  cert_rule_val           = "my-valid-cert"
+  common_rule_val         = "valid-common-rule"
+  policy_decision         = "allow"
+
+}
+
+# Upload zone level authentication certificate
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                              ------END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  level                     = "zone"
+}
+
+# Upload host level authentication certificate
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE----
+                              ------END CERTIFICATE------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+  level                     = "hostname"
+}
+
+# Update zone level authentication setting
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                               -----END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT  #pragma: whitelist secret
+                              "-----BEGIN------
+                               -----END--------"
+                              EOT
+  enabled                   = true
+  level                     = "zone"
+}
+
+# Update host level authentication setting
+resource "ibm_cis_origin_auth" “test” {
+  cis_id                    = ibm_cis.web_domain.id
+  domain_id                 = ibm_cis_domain.web_domain.id
+  certificate               = <<EOT
+                              "-----BEGIN CERTIFICATE-----
+                               -----END CERTIFICATE-------"
+                              EOT
+  private_key               = <<EOT #pragma: whitelist secret
+                              "-----BEGIN-----
+                               -----END-------"
+                              EOT
+  hostname                  = "abc.abc.abc.com"
+  enabled                   = true
+  level                     = "hostname"
 }

@@ -37,9 +37,11 @@ In addition to all argument reference list, you can access the following attribu
 
 - `description` - (String) The WAF rule group description.
 - `id` - (String) The WAF rule group ID. It is a combination of `<group_id>:<package_id>:<domain-id>:<crn>` attributes concatenated with `:`.
-- `modified_rules_count`-  (String) Number of rules modified in WAF Group.
+- `modified_rules_count`-  (Integer) Number of rules modified in WAF Group.
 - `name` - (String) The WAF rule group name.
-- `rules_count` - (String)  Number of rules in WAF Group.
+- `rules_count` - (Integer)  Number of rules in WAF Group.
+- `check_mode` - (Boolean) If `true`, then updating the mode with same ON>ON or OFF>OFF value, will be skipped. By default, check_mode attribute is false, and it won't check the backend value before update.
+
 
 ## Import
 The `ibm_cis_waf_group` resource can be imported by using the ID. The ID is formed from the WAF Rule Group ID, the WAF rule package ID, the domain ID of the domain and the Cloud Resource Name (CRN) Concatenated  by using `:` character.

@@ -38,7 +38,7 @@ func TestAccIBMContainerDedicatedHostFlavorsDataSource_basic(t *testing.T) {
 func testAccCheckIBMContainerDedicatedHostFlavorsDataSourceConfig() string {
 	return `
 	data "ibm_container_dedicated_host_flavors" "test_dhost_flavors" {
-	  zone           = "us-south-1"
+	  zone           = "us-south-2"
 	}
 `
 }
