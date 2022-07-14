@@ -21,7 +21,8 @@ Create, update, or delete a Virtual Servers for VPC instance. For more informati
     region = "eu-gb"
   }
   ```
-
+  -> **Allowed NIC per profile.** 
+ **&#x2022;** 2-16 vCPUs: Up to 5 vNICs </br> **&#x2022;** 17-48 vCPUs: Up to 10 vNICs </br> **&#x2022;** 49+ vCPUs: Up to 15 vNICs
 ## Example usage
 
 ### Sample for creating an instance in a VPC.
