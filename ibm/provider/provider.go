@@ -357,6 +357,12 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
 
+			//backup as Service
+			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
+			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
+			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
+
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
@@ -839,6 +845,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_policy":            iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                             classicinfrastructure.ResourceIBMIPSecVPN(),
 
+			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
+
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
 			"ibm_is_bare_metal_server_disk":                          vpc.ResourceIBMIsBareMetalServerDisk(),
@@ -1154,6 +1163,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_keystore":               hpcs.ResourceIbmKeystoreValidator(),
 				"ibm_hpcs_key_template":           hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                  hpcs.ResourceIbmVaultValidator(),
+
+				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
+				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),

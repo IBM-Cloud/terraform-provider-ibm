@@ -56,6 +56,54 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
+func TestAccIBMISSnapshotUsertag_basic(t *testing.T) {
+	var snapshot string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	// name2 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	tagname := fmt.Sprintf("tfusertag%d", acctest.RandIntRange(10, 100))
+	tagnameupdate := fmt.Sprintf("tfusertagupd%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSnapshotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISSnapshotConfigUsertag(vpcname, subnetname, sshname, publicKey, volname, name, name1, tagname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "tags.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "tags.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "tags.0", tagname),
+				),
+			},
+			{
+				Config: testAccCheckIBMISSnapshotConfigUsertag(vpcname, subnetname, sshname, publicKey, volname, name, name1, tagnameupdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSnapshotExists("ibm_is_snapshot.testacc_snapshot", snapshot),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "tags.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_snapshot.testacc_snapshot", "tags.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_snapshot.testacc_snapshot", "tags.0", tagnameupdate),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISSnapshotDestroy(s *terraform.State) error {
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
 	for _, rs := range s.RootModule().Resources {
@@ -177,5 +225,46 @@ func testAccCheckIBMISSnapshotConfigUpdate(vpcname, subnetname, sshname, publicK
 		source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
 	  }
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname)
+
+}
+
+func testAccCheckIBMISSnapshotConfigUsertag(vpcname, subnetname, sshname, publicKey, volname, name, sname, usertag string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		  }
+
+		  resource "ibm_is_subnet" "testacc_subnet" {
+			name           				= "%s"
+			vpc             			= ibm_is_vpc.testacc_vpc.id
+			zone            			= "%s"
+			total_ipv4_address_count 	= 16
+		  }
+
+		  resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       = "%s"
+			public_key = "%s"
+		  }
+
+		  resource "ibm_is_instance" "testacc_instance" {
+			name    = "%s"
+			image   = "%s"
+			profile = "%s"
+			primary_network_interface {
+			  subnet     = ibm_is_subnet.testacc_subnet.id
+			}
+			vpc  = ibm_is_vpc.testacc_vpc.id
+			zone = "%s"
+			keys = [ibm_is_ssh_key.testacc_sshkey.id]
+			network_interfaces {
+			  subnet = ibm_is_subnet.testacc_subnet.id
+			  name   = "eth1"
+			}
+		  }
+		resource "ibm_is_snapshot" "testacc_snapshot" {
+			name 			= "%s"
+			source_volume 	= ibm_is_instance.testacc_instance.volume_attachments[0].volume_id
+			tags = ["%s"]
+	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, sname, usertag)
 
 }
