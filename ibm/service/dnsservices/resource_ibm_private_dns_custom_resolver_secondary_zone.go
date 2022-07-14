@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -34,11 +33,6 @@ func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {
 		Exists:        resourceIBMPrivateDNSSecondaryZoneExists,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -235,6 +229,9 @@ func resourceIBMPrivateDNSSecondaryZoneDelete(ctx context.Context, d *schema.Res
 	response, err := sess.DeleteSecondaryZone(deleteSecondaryZoneOptions)
 
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			return nil
+		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
 	}
 
