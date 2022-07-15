@@ -30,7 +30,6 @@ func ResourceIBMPrivateDNSSecondaryZone() *schema.Resource {
 		ReadContext:   resourceIBMPrivateDNSSecondaryZoneRead,
 		UpdateContext: resourceIBMPrivateDNSSecondaryZoneUpdate,
 		DeleteContext: resourceIBMPrivateDNSSecondaryZoneDelete,
-		Exists:        resourceIBMPrivateDNSSecondaryZoneExists,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -242,29 +241,4 @@ func resourceIBMPrivateDNSSecondaryZoneDelete(ctx context.Context, d *schema.Res
 	d.SetId("")
 
 	return nil
-}
-
-func resourceIBMPrivateDNSSecondaryZoneExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
-	if err != nil {
-		return false, err
-	}
-	idSet := strings.Split(d.Id(), "/")
-	if len(idSet) < 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/resolverID/secondaryZoneID", d.Id())
-	}
-	instanceID := idSet[0]
-	resolverID := idSet[1]
-	secondaryZoneID := idSet[2]
-	getSecondaryZoneOptions := sess.NewGetSecondaryZoneOptions(instanceID, resolverID, secondaryZoneID)
-	_, response, err := sess.GetSecondaryZone(getSecondaryZoneOptions)
-
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return true, nil
 }
