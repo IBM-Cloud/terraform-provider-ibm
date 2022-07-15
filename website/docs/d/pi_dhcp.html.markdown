@@ -20,7 +20,26 @@ data "ibm_pi_dhcp" "example" {
 }
 ```
 
-**Notes**
+## Argument reference
+Review the argument references that you can specify for your data source.
+
+- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
+- `pi_dhcp_id` - (Required, String) The ID of the DHCP Server.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
+
+- `id` - (String) The ID of the DHCP Server.
+- `leases` - (List) The list of DHCP Server PVM Instance leases.
+  Nested scheme for `leases`:
+  - `instance_ip` - (String) The IP of the PVM Instance.
+  - `instance_mac` - (String) The MAC Address of the PVM Instance.
+- `network` - (String) The ID of the DHCP Server private network (deprecated - replaced by `network_id`).
+- `network_id`- (String) The ID of the DHCP Server private network.
+- `network_name` - The name of the DHCP Server private network.
+- `status` - (String) The status of the DHCP Server.
+
+**Note**
 
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
@@ -35,21 +54,3 @@ Example usage:
       zone      =   "lon04"
     }
   ```
-  
-## Argument reference
-Review the argument references that you can specify for your data source.
-
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_dhcp_id` - (Required, String) The ID of the DHCP Server.
-
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created.
-
-- `id` - (String) The ID of the DHCP Server.
-- `leases` - (List) The list of DHCP Server PVM Instance leases.
-
-  Nested scheme for `leases`:
-  - `instance_ip` - (String) The IP of the PVM Instance.
-  - `instance_mac` - (String) The MAC Address of the PVM Instance.
-- `network` - (String) The DHCP Server private network.
-- `status` - (String) The status of the DHCP Server.

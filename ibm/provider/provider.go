@@ -273,6 +273,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_ip_addresses":                  cis.DataSourceIBMCISIP(),
 			"ibm_cis_waf_groups":                    cis.DataSourceIBMCISWAFGroups(),
 			"ibm_cis_alerts":                        cis.DataSourceIBMCISAlert(),
+			"ibm_cis_origin_auths":                  cis.DataSourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtlss":                         cis.DataSourceIBMCISMtls(),
 			"ibm_cis_mtls_apps":                     cis.DataSourceIBMCISMtlsApp(),
 			"ibm_cis_webhooks":                      cis.DataSourceIBMCISWebhooks(),
@@ -355,6 +356,12 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_links":         iamidentity.DataSourceIBMIamTrustedProfileLinks(),
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
+
+			//backup as Service
+			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
+			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
+			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
@@ -630,7 +637,9 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_profile":           scc.DataSourceIBMSccPostureProfileDetails(),
 			"ibm_scc_posture_group_profile":     scc.DataSourceIBMSccPostureGroupProfileDetails(),
 			"ibm_scc_posture_scope_correlation": scc.DataSourceIBMSccPostureScopeCorrelation(),
-
+			"ibm_scc_posture_credential":        scc.DataSourceIBMSccPostureCredential(),
+			"ibm_scc_posture_collector":         scc.DataSourceIBMSccPostureCollector(),
+			"ibm_scc_posture_scope":             scc.DataSourceIBMSccPostureScope(),
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
@@ -751,6 +760,7 @@ func Provider() *schema.Provider {
 			"ibm_cis_tls_settings":                      cis.ResourceIBMCISTLSSettings(),
 			"ibm_cis_waf_package":                       cis.ResourceIBMCISWAFPackage(),
 			"ibm_cis_webhook":                           cis.ResourceIBMCISWebhooks(),
+			"ibm_cis_origin_auth":                       cis.ResourceIBMCISOriginAuthPull(),
 			"ibm_cis_mtls":                              cis.ResourceIBMCISMtls(),
 			"ibm_cis_mtls_app":                          cis.ResourceIBMCISMtlsApp(),
 			"ibm_cis_logpush_job":                       cis.ResourceIBMCISLogPushJob(),
@@ -835,6 +845,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_link":              iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":            iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                             classicinfrastructure.ResourceIBMIPSecVPN(),
+
+			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
@@ -1151,6 +1164,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_keystore":               hpcs.ResourceIbmKeystoreValidator(),
 				"ibm_hpcs_key_template":           hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                  hpcs.ResourceIbmVaultValidator(),
+
+				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
+				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),

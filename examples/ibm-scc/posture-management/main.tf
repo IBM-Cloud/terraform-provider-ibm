@@ -29,3 +29,18 @@ data "ibm_scc_posture_scan_summaries" "scan_summaries_instance" {
   scope_id = var.scan_summaries_scope_id
   scan_id = var.scan_summaries_scan_id
 }
+
+// Create scope data source
+data "ibm_scc_posture_scope" "scope_instance" {
+  scope_id = var.scope_id
+}
+
+// Create collector data source
+data "ibm_scc_posture_collector" "collector_instance" {
+  collector_id = var.collector_id
+}
+
+// Create credential data source
+data "ibm_scc_posture_credential" "credential_instance" {
+  credential_id = var.credential_id
+}

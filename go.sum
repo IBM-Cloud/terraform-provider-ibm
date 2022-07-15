@@ -7,8 +7,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47/go.mod h1:tfN
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62 h1:MOkcr6qQGk4tY542ZJ1DggVh2WUP72EEyLB79llFVH8=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20210705152127-41ca00fc9a62/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.1.9 h1:NKG4lxQNe1HHANC+94mRqgogIkiAHo5COMNsqUGdNqg=
-github.com/IBM-Cloud/power-go-client v1.1.9/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
+github.com/IBM-Cloud/power-go-client v1.1.10 h1:NUGZwF5V0j2lFurA5LaigsYyOKDKwz4M0sCpm+YIbig=
+github.com/IBM-Cloud/power-go-client v1.1.10/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -69,8 +69,8 @@ github.com/IBM/schematics-go-sdk v0.1.3 h1:8/2+aOlhdj5BX3bddtYiLRts5kBo8zT9hcOWq
 github.com/IBM/schematics-go-sdk v0.1.3/go.mod h1:tKRsoiYvm6l/7ZV/L1aY84PnQZExrXIJBowwSE7oBg4=
 github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
-github.com/IBM/vpc-go-sdk v0.20.0 h1:xetXFYv/GDSOVTm2h7MSki2D9x2dpNsiwHVRmdSIrPc=
-github.com/IBM/vpc-go-sdk v0.20.0/go.mod h1:YPyIfI+/qhPqlYp+I7dyx2U1GLcXgp/jzVvsZfUH4y8=
+github.com/IBM/vpc-go-sdk v0.21.0 h1:yBvhY0GM6Vpud7JpM1gqry6+4exbd4tfE0xIF8rTwaU=
+github.com/IBM/vpc-go-sdk v0.21.0/go.mod h1:YPyIfI+/qhPqlYp+I7dyx2U1GLcXgp/jzVvsZfUH4y8=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
