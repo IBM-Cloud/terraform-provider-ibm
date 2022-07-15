@@ -141,6 +141,10 @@ func resourceIBMPrivateDNSSecondaryZoneRead(ctx context.Context, d *schema.Resou
 	resource, response, err := sess.GetSecondaryZone(getSecondaryZoneOptions)
 
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error reading DNS Services secondary zone:%s\n%s", err, response))
 	}
 
