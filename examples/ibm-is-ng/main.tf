@@ -1071,3 +1071,49 @@ data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
   name             = "my-backup-policy-plan"
 }
+
+// Vpn Server
+resource "ibm_is_vpn_server" "is_vpn_server" {
+  certificate_crn = var.is_certificate_crn
+  client_authentication {
+    method    = "certificate"
+    client_ca = var.is_client_ca
+  }
+  client_ip_pool         = "10.5.0.0/21"
+  subnets                = [ibm_is_subnet.subnet1.id]
+  client_dns_server_ips  = ["192.168.3.4"]
+  client_idle_timeout    = 2800
+  enable_split_tunneling = false
+  name                   = "example-vpn-server"
+  port                   = 443
+  protocol               = "udp"
+}
+
+resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
+  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+  destination   = "172.16.0.0/16"
+  action        = "translate"
+  name          = "example-vpn-server-route"
+}
+
+data "ibm_is_vpn_server" "is_vpn_server" {
+	identifier = ibm_is_vpn_server.is_vpn_server.vpn_server
+}
+data "ibm_is_vpn_servers" "is_vpn_servers" {
+}
+
+data "ibm_is_vpn_server_routes" "is_vpn_server_routes" {
+	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+}
+
+data "ibm_is_vpn_server_route" "is_vpn_server_route" {
+	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+	identifier = ibm_is_vpn_server_route.is_vpn_server_route.vpn_route
+}
+data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
+	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+}
+data "ibm_is_vpn_server_client" "is_vpn_server_client" {
+	vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+	identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
+}

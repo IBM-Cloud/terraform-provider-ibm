@@ -145,7 +145,7 @@ func vpcRouteCreate(d *schema.ResourceData, meta interface{}, routeName, zoneNam
 		VPCID:       &vpcID,
 		Destination: &cidr,
 		Name:        &routeName,
-		NextHop: &vpcv1.RouteNextHopPrototype{
+		NextHop: &vpcv1.RoutePrototypeNextHopRouteNextHopPrototypeRouteNextHopIP{
 			Address: &nextHop,
 		},
 		Zone: &vpcv1.ZoneIdentity{
