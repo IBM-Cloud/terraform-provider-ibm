@@ -107,6 +107,7 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 									"ibm_api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "The IBM Cloud API Key. This is mandatory for IBM Credential Type.",
 									},
 									"aws_client_id": &schema.Schema{
@@ -117,6 +118,7 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 									"aws_client_secret": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "AWS client secret.This is mandatory for AWS Cloud.",
 									},
 									"aws_region": &schema.Schema{
@@ -137,6 +139,7 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 									"password": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "password of the user.This is mandatory for DataBase, Kerbros,OpenStack Credentials.",
 									},
 									"azure_client_id": &schema.Schema{
@@ -147,6 +150,7 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 									"azure_client_secret": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "Azure client secret.This is mandatory for Azure Credential type.",
 									},
 									"azure_subscription_id": &schema.Schema{
@@ -187,6 +191,7 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 									"ms_365_client_secret": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "The MS365 client secret.This is mandatory for Windows MS365 Credential type.",
 									},
 									"ms_365_tenant_id": &schema.Schema{
