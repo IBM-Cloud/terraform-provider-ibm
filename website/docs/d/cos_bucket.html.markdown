@@ -55,6 +55,12 @@ data "ibm_cos_bucket" "cos-bucket-sat" {
 }
 ```
 
+# ibm_cos_bucket_replication_rule
+
+Retrieves information of replication configuration on an existing bucket. .  For more information, about configuration options, see [Replicating objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-replication-overview). 
+
+To configure a replication policy on a bucket, you must enable object versioning on both source and destination buckets by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
+
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -129,6 +135,16 @@ In addition to all argument reference list, you can access the following attribu
   - `maximum` - (String) Specifies maximum duration of time an object can be kept unmodified in the bucket.
   - `minimum` - (String) Specifies minimum duration of time an object must be kept unmodified in the bucket.
   - `permanent` - (String) Specifies a permanent retention status either enable or disable for a bucket.
+- `replication_rule`- (List) Nested block have the following structure:
+
+  Nested scheme for `replication_rule`:
+  - `rule_id`- (String) The rule id.
+  - `enable`-  (Bool) Specifies whether the rule is enabled. Specify true for Enabling it  or false for Disabling it.
+  - `prefix`- (String) An object key name prefix that identifies the subset of objects to which the rule applies.
+  - `priority`- (Int) A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority
+  - `deletemarker_replication_status`-  (Bool) Specifies whether Object storage replicates delete markers. Specify true for Enabling it  or false for Disabling it.
+  - `destination_bucket_crn`-  (String) The CRN of your destination bucket that you want to replicate to.
+
 - `single_site_location` - (String) The location to create a single site bucket.
 - `storage_class` - (String) The storage class of the bucket.
 - `s3_endpoint_public` - (String) Public endpoint for cos bucket.

@@ -232,6 +232,127 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 ```
 
+## COS REPLICATION
+
+Replication allows users to define rules for automatic, asynchronous copying of objects from a source bucket to a destination bucket in the same or different location.
+
+**Note:**
+
+ you must have `writer` or `manager` platform roles on source bucket and sufficient platform roles to create new [IAM policies](https://cloud.ibm.com/docs/account?topic=account-iamoverview#iamoverview) that allow the source bucket to write to the destination bucket.
+ Add depends_on on ibm_iam_authorization_policy.policy in template to make sure replication only enabled once iam  authorization policy set.
+
+## Example usage
+The following example creates an instance of IBM Cloud Object Storage. Then, multiple buckets are created and configured replication policy.
+
+```terraform
+data "ibm_resource_group" "cos_group" {
+  name = "cos-resource-group"
+}
+
+resource "ibm_resource_instance" "cos_instance_source" {
+  name              = "cos-instance-src"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_resource_instance" "cos_instance_destination" {
+  name              = "cos-instance-dest"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "cos_bucket_source" {
+  bucket_name           = "a-bucket-source"
+  resource_instance_id = ibm_resource_instance.cos_instance_source.id
+  region_location      = "us-south"
+  storage_class         = "standard"
+  object_versioning {
+    enable  = true
+  }
+}
+
+resource "ibm_cos_bucket" "cos_bucket_destination" {
+  bucket_name           = "a-bucket-destination"
+  resource_instance_id = ibm_resource_instance.cos_instance_destination.id
+  region_location      = "us-south"
+  storage_class         = "standard"
+  object_versioning {
+    enable  = true
+  }
+}
+
+
+### Configure IAM authorization policy
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles                  = [
+      "Writer",
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "an-account-id"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = ibm_resource_instance.cos_instance_source.guid
+  }
+  subject_attributes {
+    name  = "resource"
+    value = ibm_cos_bucket.cos_bucket_source.bucket_name
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    value    = "an-account-id"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes { 
+    name  =  "serviceInstance"
+    value =  ibm_resource_instance.cos_instance_destination.guid
+  }
+  resource_attributes { 
+    name  =  "resource"
+    value =   ibm_cos_bucket.cos_bucket_destination.bucket_name
+  }
+  resource_attributes { 
+    name  =  "resourceType"
+    value =  "bucket" 
+  }
+}
+
+### Configure replication policy
+
+resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
+  depends_on = [
+      ibm_iam_authorization_policy.policy
+  ]
+  bucket_crn	    = ibm_cos_bucket.cos_bucket_source.crn
+  bucket_location = ibm_cos_bucket.cos_bucket_source.region_location
+  replication_rule {
+    rule_id = "a-rule-id"
+    enable = "true"
+    prefix = "a-prefix"
+    priority = "a-priority-associated-with-the-rule"
+    deletemarker_replication_status = "Enabled/Suspened"
+    destination_bucket_crn = ibm_cos_bucket.cos_bucket_destination.crn
+  }
+}
+
+```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
@@ -277,4 +398,12 @@ resource "ibm_cos_bucket" "cos_bucket" {
 | permanent | Specifies a permanent retention status either enable or disable for a bucket. | `bool` | no
 | enable | Specifies Versioning status either **enable or suspended** for an objects in the bucket. | `bool` | no
 | hard_quota | sets a maximum amount of storage (in bytes) available for a bucket. | `int` | no
+| bucket\_crn | The CRN of the source COS bucket. | `string` | yes |
+| bucket\_location | The location of the source COS bucket. | `string` | yes |
+| destination_bucket_crn | The CRN of your destination bucket that you want to replicate to. | `String` | yes
+| deletemarker_replication_status | Specifies whether Object storage replicates delete markers.  Specify true for Enabling it or false for Disabling it. | `String` | no
+| status | Specifies whether the rule is enabled. Specify true for Enabling it or false for Disabling it. | `String` | yes
+| rule_id | The rule id. | `String` | no
+| priority | A priority is associated with each rule. The rule will be applied in a higher priority if there are multiple rules configured. The higher the number, the higher the priority | `String` | no
+| prefix | An object key name prefix that identifies the subset of objects to which the rule applies. | `String` | no
 {: caption="inputs"}
