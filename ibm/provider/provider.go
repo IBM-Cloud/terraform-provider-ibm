@@ -818,6 +818,7 @@ func Provider() *schema.Provider {
 			"ibm_ob_logging":                            kubernetes.ResourceIBMObLogging(),
 			"ibm_ob_monitoring":                         kubernetes.ResourceIBMObMonitoring(),
 			"ibm_cos_bucket":                            cos.ResourceIBMCOSBucket(),
+			"ibm_cos_bucket_replication_rule":           cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                     cos.ResourceIBMCOSBucketObject(),
 			"ibm_dns_domain":                            classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":   classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),

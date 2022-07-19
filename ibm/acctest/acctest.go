@@ -184,6 +184,9 @@ var CdResourceGroupID string
 var ISCertificateCrn string
 var ISClientCaCrn string
 
+// COS Replication Bucket
+var IBM_AccountID_REPL string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -970,6 +973,11 @@ func init() {
 	ISClientCaCrn = os.Getenv("IS_CLIENT_CA_CRN")
 	if ISClientCaCrn == "" {
 		fmt.Println("[INFO] Set the environment variable IS_CLIENT_CA_CRN for testing ibm_is_vpn_server resource")
+	}
+
+	IBM_AccountID_REPL = os.Getenv("IBM_AccountID_REPL")
+	if IBM_AccountID_REPL == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_AccountID_REPL for setting up authorization policy to enable replication feature resource or datasource else tests will fail if this is not set correctly")
 	}
 }
 

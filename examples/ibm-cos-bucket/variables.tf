@@ -93,3 +93,23 @@ variable "quota" {
 variable "satellite_location_id" {
   default = ""  
 }
+
+variable "replicate_ruleid" {
+  default = ""
+}
+
+variable "replicate_prefix" {
+  default = ""
+}
+
+variable "replicate_priority" {
+  default = "1"
+}
+
+variable "delmarkerrep_status" {
+  default = true
+}
+
+variable "dest_rep_bkt_crn" {
+  default = ""
+}

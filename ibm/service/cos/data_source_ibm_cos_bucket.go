@@ -318,6 +318,44 @@ func DataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"replication_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Replicate objects between buckets, replicate across source and destination. A container for replication rules can add up to 1,000 rules. The maximum size of a replication configuration is 2 MB.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique identifier for the rule. The maximum value is 255 characters.",
+						},
+						"priority": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an replication rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"deletemarker_replication_status": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether to replicate delete markers. It should be either Enable or Disable",
+						},
+						"destination_bucket_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Cloud Resource Name (CRN) of the bucket where you want COS to store the results",
+						},
+					},
+				},
+			},
 			"hard_quota": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -545,6 +583,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		versioningData := flex.FlattenCosObejctVersioning(versionPtr)
 		if len(versioningData) > 0 {
 			d.Set("object_versioning", versioningData)
+		}
+	}
+
+	// Get the replication rules
+	getBucketReplicationInput := &s3.GetBucketReplicationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	replicationptr, err := s3Client.GetBucketReplication(getBucketReplicationInput)
+
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+		return err
+	}
+
+	if replicationptr != nil {
+		replicationRules := flex.ReplicationRuleGet(replicationptr.ReplicationConfiguration)
+		if len(replicationRules) > 0 {
+			d.Set("replication_rule", replicationRules)
 		}
 	}
 
