@@ -32,7 +32,7 @@
 ####################################################################################
 
 data ibm_resource_instance "key_protect_instance" {
-  name = var.key_protect_instance_name
+  name = var.kp_name
 }
 
 output "key_protect_instance_guid" {

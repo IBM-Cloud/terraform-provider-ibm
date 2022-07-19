@@ -49,6 +49,48 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISVolumeUsertag_basic(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	tagname := fmt.Sprintf("tfusertag%d", acctest.RandIntRange(10, 100))
+	tagnameupdate := fmt.Sprintf("tfusertagupd%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMISVolumeUsertagConfig(name, tagname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "tags.0", tagname),
+				),
+			},
+
+			resource.TestStep{
+				Config: testAccCheckIBMISVolumeUsertagConfig(name, tagnameupdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "tags.0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "tags.0", tagnameupdate),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVolumeUpdateCustom_basic(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -449,5 +491,19 @@ func testAccCheckIBMISVolumeCapacityConfig(vpcname, subnetname, sshname, publicK
 		}	
 
 `, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, volName, acc.ISZoneName, capacity, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
+
+}
+
+func testAccCheckIBMISVolumeUsertagConfig(name, usertag string) string {
+	return fmt.Sprintf(
+		`
+    resource "ibm_is_volume" "storage"{
+        name = "%s"
+        profile = "10iops-tier"
+        zone = "us-south-1"
+        # capacity= 200
+        tags = ["%s"]
+    }
+`, name, usertag)
 
 }
