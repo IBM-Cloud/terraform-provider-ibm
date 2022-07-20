@@ -6,7 +6,7 @@ description: |-
   Get all information about IBM VPC instance group manager action.
 ---
 
-# ibm_is_instance_group_manager_action
+# ibm_is_instance_group_manager_actions
 Retrieve information about an instance group manager. For more information, about VPC instance group manager action, see [managing dedicated hosts and groups](https://cloud.ibm.com/docs/vpc?topic=vpc-manage-dedicated-hosts-groups).
 
 **Note:** 
