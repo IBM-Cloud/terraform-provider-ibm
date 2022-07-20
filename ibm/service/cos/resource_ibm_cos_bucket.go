@@ -38,7 +38,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart",
+	"standard", "vault", "cold", "smart", "flex",
 }
 
 var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
