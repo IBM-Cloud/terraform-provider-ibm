@@ -12,6 +12,14 @@ data "ibm_scc_posture_profiles" "list_profiles_instance" {
   profile_id = var.list_profiles_profile_id
 }
 
+// Create list_credentials data source
+data "ibm_scc_posture_credentials" "list_credentials_instance" {
+}
+
+// Create list_collectors data source
+data "ibm_scc_posture_collectors" "list_collectors_instance" {
+}
+
 // Create list_latest_scans data source
 data "ibm_scc_posture_latest_scans" "list_latest_scans_instance" {
   scan_id = var.list_latest_scans_scan_id
