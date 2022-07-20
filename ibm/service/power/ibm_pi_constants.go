@@ -3,16 +3,20 @@ package power
 import "time"
 
 const (
+	Arg_CloudInstanceID = "pi_cloud_instance_id"
 
 	// used by all
 	Arg_CloudInstanceID = "pi_cloud_instance_id"
 
 	// Keys
-	PIKeys    = "keys"
-	PIKeyName = "name"
-	PIKey     = "ssh_key"
-	PIKeyDate = "creation_date"
-	PIKeyID   = "key_id"
+	Arg_KeyName = "pi_key_name"
+	Arg_Key     = "pi_ssh_key"
+
+	Attr_KeyID           = "key_id"
+	Attr_Keys            = "keys"
+	Attr_KeyCreationDate = "creation_date"
+	Attr_Key             = "ssh_key"
+	Attr_KeyName         = "name"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
