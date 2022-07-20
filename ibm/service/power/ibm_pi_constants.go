@@ -3,8 +3,6 @@ package power
 import "time"
 
 const (
-	Arg_CloudInstanceID = "pi_cloud_instance_id"
-
 	// used by all
 	Arg_CloudInstanceID = "pi_cloud_instance_id"
 
