@@ -3,7 +3,7 @@ subcategory: "Context Based Restrictions"
 layout: "ibm"
 page_title: "IBM : ibm_cbr_zone"
 description: |-
-Get information about cbr_zone
+  Get information about cbr_zone
 ---
 
 # ibm_cbr_zone
