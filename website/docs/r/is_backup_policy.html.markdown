@@ -25,10 +25,9 @@ provider "ibm" {
 ## Example Usage
 
 ```terraform
-resource "ibm_is_backup_policy_plan" "example" {
-  backup_policy_id = "backup_policy_id"
-  cron_spec        = "0 12 * * *"
-  name             = "example-backup-policy-plan"
+resource "ibm_is_backup_policy" "example" {
+  match_user_tags = ["tag1"]
+  name            = "example-backup-policy"
 }
 ```
 
