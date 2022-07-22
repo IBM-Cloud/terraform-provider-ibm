@@ -30,6 +30,7 @@ const (
 	Arg_DhcpCloudConnectionID = "pi_cloud_connection_id"
 	Arg_DhcpDnsServer         = "pi_dns_server"
 	Arg_DhcpName              = "pi_dhcp_name"
+	Arg_DhcpSnatEnabled       = "pi_dhcp_snat_enabled"
 
 	Attr_DhcpServers           = "servers"
 	Attr_DhcpID                = "dhcp_id"
