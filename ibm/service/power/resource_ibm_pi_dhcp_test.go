@@ -133,3 +133,30 @@ func testAccCheckIBMPIDhcpWithCidrNameConfig(name string) string {
 		}
 	`, acc.Pi_cloud_instance_id, name)
 }
+
+func TestAccIBMPIDhcpSNAT(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIDhcpDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIDhcpConfigWithSNATDisabled(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIDhcpExists("ibm_pi_dhcp.dhcp_service"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_pi_dhcp.dhcp_service", "dhcp_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIDhcpConfigWithSNATDisabled() string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_dhcp" "dhcp_service" {
+		pi_cloud_instance_id = "%s"
+		pi_dhcp_snat_enabled = false
+	}
+	`, acc.Pi_cloud_instance_id)
+}
