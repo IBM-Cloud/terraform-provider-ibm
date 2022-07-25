@@ -357,12 +357,6 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
 
-			//backup as Service
-			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
-			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
-			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
-			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
-
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
@@ -569,7 +563,6 @@ func Provider() *schema.Provider {
 			"ibm_dns_glbs":                             dnsservices.DataSourceIBMPrivateDNSGLBs(),
 			"ibm_dns_custom_resolvers":                 dnsservices.DataSourceIBMPrivateDNSCustomResolver(),
 			"ibm_dns_custom_resolver_forwarding_rules": dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
-			"ibm_dns_custom_resolver_secondary_zones":  dnsservices.DataSourceIBMPrivateDNSSecondaryZones(),
 
 			// // Added for Direct Link
 
@@ -644,8 +637,6 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_credential":        scc.DataSourceIBMSccPostureCredential(),
 			"ibm_scc_posture_collector":         scc.DataSourceIBMSccPostureCollector(),
 			"ibm_scc_posture_scope":             scc.DataSourceIBMSccPostureScope(),
-			"ibm_scc_posture_credentials":       scc.DataSourceIBMSccPostureCredentials(),
-			"ibm_scc_posture_collectors":        scc.DataSourceIBMSccPostureCollectors(),
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
@@ -700,11 +691,11 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
 
 			// Added for Tekton Pipeline
-			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
-			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
-			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
-			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
-			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMTektonPipeline(),
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMCdTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMCdTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMCdTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMCdTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -817,7 +808,6 @@ func Provider() *schema.Provider {
 			"ibm_ob_logging":                            kubernetes.ResourceIBMObLogging(),
 			"ibm_ob_monitoring":                         kubernetes.ResourceIBMObMonitoring(),
 			"ibm_cos_bucket":                            cos.ResourceIBMCOSBucket(),
-			"ibm_cos_bucket_replication_rule":           cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                     cos.ResourceIBMCOSBucketObject(),
 			"ibm_dns_domain":                            classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":   classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
@@ -853,9 +843,6 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_link":              iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":            iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                             classicinfrastructure.ResourceIBMIPSecVPN(),
-
-			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
-			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
@@ -914,9 +901,6 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc_route":                                   vpc.ResourceIBMISVpcRoute(),
 			"ibm_is_vpc_routing_table":                           vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                     vpc.ResourceIBMISVPCRoutingTableRoute(),
-			"ibm_is_vpn_server":                                  vpc.ResourceIBMIsVPNServer(),
-			"ibm_is_vpn_server_client":                           vpc.ResourceIBMIsVPNServerClient(),
-			"ibm_is_vpn_server_route":                            vpc.ResourceIBMIsVPNServerRoute(),
 			"ibm_is_image":                                       vpc.ResourceIBMISImage(),
 			"ibm_lb":                                             classicinfrastructure.ResourceIBMLb(),
 			"ibm_lbaas":                                          classicinfrastructure.ResourceIBMLbaas(),
@@ -998,7 +982,6 @@ func Provider() *schema.Provider {
 			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
 			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
-			"ibm_dns_custom_resolver_secondary_zone":  dnsservices.ResourceIBMPrivateDNSSecondaryZone(),
 
 			// //Direct Link related resources
 			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
@@ -1109,11 +1092,11 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
 
 			// // Added for Tekton Pipeline
-			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinition(),
-			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerProperty(),
-			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
-			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
-			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMTektonPipeline(),
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMCdTektonPipeline(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1190,9 +1173,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_key_template":           hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                  hpcs.ResourceIbmVaultValidator(),
 
-				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
-				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
-
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),
 				"ibm_is_bare_metal_server_network_interface": vpc.ResourceIBMIsBareMetalServerNetworkInterfaceValidator(),
@@ -1242,8 +1222,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_vpc_routing_table_route":          vpc.ResourceIBMISVPCRoutingTableRouteValidator(),
 				"ibm_is_vpn_gateway_connection":           vpc.ResourceIBMISVPNGatewayConnectionValidator(),
 				"ibm_is_vpn_gateway":                      vpc.ResourceIBMISVPNGatewayValidator(),
-				"ibm_is_vpn_server":                       vpc.ResourceIBMIsVPNServerValidator(),
-				"ibm_is_vpn_server_route":                 vpc.ResourceIBMIsVPNServerRouteValidator(),
 				"ibm_kms_key_rings":                       kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
@@ -1303,10 +1281,10 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
 
 				// // Added for Tekton Pipeline
-				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMTektonPipelineDefinitionValidator(),
-				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMTektonPipelineTriggerPropertyValidator(),
-				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelinePropertyValidator(),
-				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTriggerValidator(),
+				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinitionValidator(),
+				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerPropertyValidator(),
+				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelinePropertyValidator(),
+				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),

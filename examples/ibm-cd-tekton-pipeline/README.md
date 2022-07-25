@@ -4,11 +4,11 @@ This example illustrates how to use the CdTektonPipelineV2
 
 These types of resources are supported:
 
-* tekton_pipeline_definition
-* tekton_pipeline_trigger_property
-* tekton_pipeline_property
-* tekton_pipeline_trigger
-* tekton_pipeline
+* cd_tekton_pipeline_definition
+* cd_tekton_pipeline_trigger_property
+* cd_tekton_pipeline_property
+* cd_tekton_pipeline_trigger
+* cd_tekton_pipeline
 
 ## Usage
 
@@ -25,97 +25,97 @@ Run `terraform destroy` when you don't need these resources.
 
 ## CdTektonPipelineV2 resources
 
-ibm_cd_tekton_pipeline_definition resource:
+cd_tekton_pipeline_definition resource:
 
 ```hcl
-resource "ibm_cdtekton_pipeline_definition" "tekton_pipeline_definition_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  scm_source = var.tekton_pipeline_definition_scm_source
+resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+  pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
+  scm_source = var.cd_tekton_pipeline_definition_scm_source
 }
 ```
-ibm_cd_tekton_pipeline_trigger_property resource:
+cd_tekton_pipeline_trigger_property resource:
 
 ```hcl
-resource "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_property_trigger_id
-  name = var.tekton_pipeline_trigger_property_name
-  value = var.tekton_pipeline_trigger_property_value
-  enum = var.tekton_pipeline_trigger_property_enum
-  default = var.tekton_pipeline_trigger_property_default
-  type = var.tekton_pipeline_trigger_property_type
-  path = var.tekton_pipeline_trigger_property_path
+resource "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_property_pipeline_id
+  trigger_id = var.cd_tekton_pipeline_trigger_property_trigger_id
+  name = var.cd_tekton_pipeline_trigger_property_name
+  value = var.cd_tekton_pipeline_trigger_property_value
+  enum = var.cd_tekton_pipeline_trigger_property_enum
+  default = var.cd_tekton_pipeline_trigger_property_default
+  type = var.cd_tekton_pipeline_trigger_property_type
+  path = var.cd_tekton_pipeline_trigger_property_path
 }
 ```
-ibm_cd_tekton_pipeline_property resource:
+cd_tekton_pipeline_property resource:
 
 ```hcl
-resource "ibm_cd_tekton_pipeline_property" "tekton_pipeline_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  name = var.tekton_pipeline_property_name
-  value = var.tekton_pipeline_property_value
-  enum = var.tekton_pipeline_property_enum
-  default = var.tekton_pipeline_property_default
-  type = var.tekton_pipeline_property_type
-  path = var.tekton_pipeline_property_path
+resource "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_property_pipeline_id
+  name = var.cd_tekton_pipeline_property_name
+  value = var.cd_tekton_pipeline_property_value
+  enum = var.cd_tekton_pipeline_property_enum
+  default = var.cd_tekton_pipeline_property_default
+  type = var.cd_tekton_pipeline_property_type
+  path = var.cd_tekton_pipeline_property_path
 }
 ```
-ibm_cd_tekton_pipeline_trigger resource:
+cd_tekton_pipeline_trigger resource:
 
 ```hcl
-resource "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger = var.tekton_pipeline_trigger_trigger
+resource "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
+  trigger = var.cd_tekton_pipeline_trigger_trigger
 }
 ```
-ibm_cd_tekton_pipeline resource:
+cd_tekton_pipeline resource:
 
 ```hcl
-resource "ibm_cd_tekton_pipeline" "tekton_pipeline_instance" {
-  worker = var.tekton_pipeline_worker
+resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+  worker = var.cd_tekton_pipeline_worker
 }
 ```
 
 ## CdTektonPipelineV2 Data sources
 
-ibm_cd_tekton_pipeline_definition data source:
+cd_tekton_pipeline_definition data source:
 
 ```hcl
-data "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  definition_id = var.tekton_pipeline_definition_definition_id
+data "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+  pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
+  definition_id = var.cd_tekton_pipeline_definition_definition_id
 }
 ```
-ibm_cd_tekton_pipeline_trigger_property data source:
+cd_tekton_pipeline_trigger_property data source:
 
 ```hcl
-data "ibm_cd_tekton_pipeline_trigger_property" "tekton_pipeline_trigger_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_property_trigger_id
-  property_name = var.tekton_pipeline_trigger_property_property_name
+data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_property_pipeline_id
+  trigger_id = var.cd_tekton_pipeline_trigger_property_trigger_id
+  property_name = var.cd_tekton_pipeline_trigger_property_property_name
 }
 ```
-ibm_cd_tekton_pipeline_property data source:
+cd_tekton_pipeline_property data source:
 
 ```hcl
-data "ibm_cd_tekton_pipeline_property" "tekton_pipeline_property_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  property_name = var.tekton_pipeline_property_property_name
+data "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+  pipeline_id = var.cd_tekton_pipeline_property_pipeline_id
+  property_name = var.cd_tekton_pipeline_property_property_name
 }
 ```
-ibm_cd_tekton_pipeline_trigger data source:
+cd_tekton_pipeline_trigger data source:
 
 ```hcl
-data "ibm_cd_tekton_pipeline_trigger" "tekton_pipeline_trigger_instance" {
-  pipeline_id = var.tekton_pipeline_pipeline_id
-  trigger_id = var.tekton_pipeline_trigger_trigger_id
+data "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
+  trigger_id = var.cd_tekton_pipeline_trigger_trigger_id
 }
 ```
-ibm_cd_tekton_pipeline data source:
+cd_tekton_pipeline data source:
 
 ```hcl
-data "ibm_cd_tekton_pipeline" "tekton_pipeline_instance" {
-  id = var.tekton_pipeline_id
+data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+  id = var.cd_tekton_pipeline_id
 }
 ```
 
@@ -179,13 +179,13 @@ data "ibm_cd_tekton_pipeline" "tekton_pipeline_instance" {
 
 | Name | Description |
 |------|-------------|
-| tekton_pipeline_definition | tekton_pipeline_definition object |
-| tekton_pipeline_trigger_property | tekton_pipeline_trigger_property object |
-| tekton_pipeline_property | tekton_pipeline_property object |
-| tekton_pipeline_trigger | tekton_pipeline_trigger object |
-| tekton_pipeline | tekton_pipeline object |
-| tekton_pipeline_definition | tekton_pipeline_definition object |
-| tekton_pipeline_trigger_property | tekton_pipeline_trigger_property object |
-| tekton_pipeline_property | tekton_pipeline_property object |
-| tekton_pipeline_trigger | tekton_pipeline_trigger object |
-| tekton_pipeline | tekton_pipeline object |
+| cd_tekton_pipeline_definition | cd_tekton_pipeline_definition object |
+| cd_tekton_pipeline_trigger_property | cd_tekton_pipeline_trigger_property object |
+| cd_tekton_pipeline_property | cd_tekton_pipeline_property object |
+| cd_tekton_pipeline_trigger | cd_tekton_pipeline_trigger object |
+| cd_tekton_pipeline | cd_tekton_pipeline object |
+| cd_tekton_pipeline_definition | cd_tekton_pipeline_definition object |
+| cd_tekton_pipeline_trigger_property | cd_tekton_pipeline_trigger_property object |
+| cd_tekton_pipeline_property | cd_tekton_pipeline_property object |
+| cd_tekton_pipeline_trigger | cd_tekton_pipeline_trigger object |
+| cd_tekton_pipeline | cd_tekton_pipeline object |

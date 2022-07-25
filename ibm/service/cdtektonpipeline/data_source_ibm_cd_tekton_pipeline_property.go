@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipelineProperty() *schema.Resource {
+func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelinePropertyRead,
+		ReadContext: dataSourceIBMCdTektonPipelinePropertyRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
@@ -67,7 +67,7 @@ func DataSourceIBMTektonPipelineProperty() *schema.Resource {
 	}
 }
 
-func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)

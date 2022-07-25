@@ -11,10 +11,9 @@ import (
 	"log"
 	"strings"
 
-	"golang.org/x/crypto/sha3"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -23,12 +22,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
+func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMTektonPipelineTriggerPropertyCreate,
-		ReadContext:   ResourceIBMTektonPipelineTriggerPropertyRead,
-		UpdateContext: ResourceIBMTektonPipelineTriggerPropertyUpdate,
-		DeleteContext: ResourceIBMTektonPipelineTriggerPropertyDelete,
+		CreateContext: resourceIBMCdTektonPipelineTriggerPropertyCreate,
+		ReadContext:   resourceIBMCdTektonPipelineTriggerPropertyRead,
+		UpdateContext: resourceIBMCdTektonPipelineTriggerPropertyUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineTriggerPropertyDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -106,7 +105,7 @@ func ResourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 	}
 }
 
-func ResourceIBMTektonPipelineTriggerPropertyValidator() *validate.ResourceValidator {
+func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -176,7 +175,7 @@ func ResourceIBMTektonPipelineTriggerPropertyValidator() *validate.ResourceValid
 	return &resourceValidator
 }
 
-func ResourceIBMTektonPipelineTriggerPropertyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -213,10 +212,10 @@ func ResourceIBMTektonPipelineTriggerPropertyCreate(context context.Context, d *
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", *createTektonPipelineTriggerPropertiesOptions.PipelineID, *createTektonPipelineTriggerPropertiesOptions.TriggerID, *triggerProperty.Name))
 
-	return ResourceIBMTektonPipelineTriggerPropertyRead(context, d, meta)
+	return resourceIBMCdTektonPipelineTriggerPropertyRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineTriggerPropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -273,7 +272,7 @@ func ResourceIBMTektonPipelineTriggerPropertyRead(context context.Context, d *sc
 	return nil
 }
 
-func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -335,10 +334,10 @@ func ResourceIBMTektonPipelineTriggerPropertyUpdate(context context.Context, d *
 		}
 	}
 
-	return ResourceIBMTektonPipelineTriggerPropertyRead(context, d, meta)
+	return resourceIBMCdTektonPipelineTriggerPropertyRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineTriggerPropertyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerPropertyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)

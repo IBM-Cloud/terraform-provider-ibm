@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipelineDefinition() *schema.Resource {
+func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelineDefinitionRead,
+		ReadContext: dataSourceIBMCdTektonPipelineDefinitionRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
@@ -68,7 +68,7 @@ func DataSourceIBMTektonPipelineDefinition() *schema.Resource {
 	}
 }
 
-func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,7 +89,7 @@ func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schem
 
 	scmSource := []map[string]interface{}{}
 	if definition.ScmSource != nil {
-		modelMap, err := DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
+		modelMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -106,7 +106,7 @@ func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schem
 	return nil
 }
 
-func DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.URL != nil {
 		modelMap["url"] = *model.URL

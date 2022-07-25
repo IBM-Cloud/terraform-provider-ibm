@@ -16,9 +16,9 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipeline() *schema.Resource {
+func DataSourceIBMCdTektonPipeline() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelineRead,
+		ReadContext: dataSourceIBMCdTektonPipelineRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
@@ -203,7 +203,7 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "UUID.",
+							Description: "Id.",
 						},
 						"properties": &schema.Schema{
 							Type:        schema.TypeList,
@@ -277,8 +277,9 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 										Description: "worker type.",
 									},
 									"id": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Id.",
 									},
 								},
 							},
@@ -429,8 +430,9 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 							Description: "worker type.",
 						},
 						"id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Id.",
 						},
 					},
 				},
@@ -454,7 +456,7 @@ func DataSourceIBMTektonPipeline() *schema.Resource {
 	}
 }
 
-func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -486,7 +488,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	toolchain := []map[string]interface{}{}
 	if tektonPipeline.Toolchain != nil {
-		modelMap, err := DataSourceIBMTektonPipelineToolchainToMap(tektonPipeline.Toolchain)
+		modelMap, err := dataSourceIBMCdTektonPipelineToolchainToMap(tektonPipeline.Toolchain)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -499,7 +501,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 	definitions := []map[string]interface{}{}
 	if tektonPipeline.Definitions != nil {
 		for _, modelItem := range tektonPipeline.Definitions {
-			modelMap, err := DataSourceIBMTektonPipelineDefinitionToMap(&modelItem)
+			modelMap, err := dataSourceIBMCdTektonPipelineDefinitionToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -513,7 +515,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 	properties := []map[string]interface{}{}
 	if tektonPipeline.Properties != nil {
 		for _, modelItem := range tektonPipeline.Properties {
-			modelMap, err := DataSourceIBMTektonPipelinePropertyToMap(&modelItem)
+			modelMap, err := dataSourceIBMCdTektonPipelinePropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -534,7 +536,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	pipelineDefinition := []map[string]interface{}{}
 	if tektonPipeline.PipelineDefinition != nil {
-		modelMap, err := DataSourceIBMTektonPipelineTektonPipelinePipelineDefinitionToMap(tektonPipeline.PipelineDefinition)
+		modelMap, err := dataSourceIBMCdTektonPipelineTektonPipelinePipelineDefinitionToMap(tektonPipeline.PipelineDefinition)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -547,7 +549,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 	triggers := []map[string]interface{}{}
 	if tektonPipeline.Triggers != nil {
 		for _, modelItem := range tektonPipeline.Triggers {
-			modelMap, err := DataSourceIBMTektonPipelineTriggerToMap(modelItem)
+			modelMap, err := dataSourceIBMCdTektonPipelineTriggerToMap(modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -560,7 +562,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 
 	worker := []map[string]interface{}{}
 	if tektonPipeline.Worker != nil {
-		modelMap, err := DataSourceIBMTektonPipelineWorkerToMap(tektonPipeline.Worker)
+		modelMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(tektonPipeline.Worker)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -585,7 +587,7 @@ func DataSourceIBMTektonPipelineRead(context context.Context, d *schema.Resource
 	return nil
 }
 
-func DataSourceIBMTektonPipelineToolchainToMap(model *cdtektonpipelinev2.Toolchain) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineToolchainToMap(model *cdtektonpipelinev2.Toolchain) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -596,10 +598,10 @@ func DataSourceIBMTektonPipelineToolchainToMap(model *cdtektonpipelinev2.Toolcha
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Definition) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Definition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ScmSource != nil {
-		scmSourceMap, err := DataSourceIBMTektonPipelineDefinitionScmSourceToMap(model.ScmSource)
+		scmSourceMap, err := dataSourceIBMCdTektonPipelineDefinitionScmSourceToMap(model.ScmSource)
 		if err != nil {
 			return modelMap, err
 		}
@@ -614,7 +616,7 @@ func DataSourceIBMTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Defini
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.URL != nil {
 		modelMap["url"] = *model.URL
@@ -631,7 +633,7 @@ func DataSourceIBMTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipeline
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Property) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Property) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -654,7 +656,7 @@ func DataSourceIBMTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Property
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTektonPipelinePipelineDefinitionToMap(model *cdtektonpipelinev2.TektonPipelinePipelineDefinition) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTektonPipelinePipelineDefinitionToMap(model *cdtektonpipelinev2.TektonPipelinePipelineDefinition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Status != nil {
 		modelMap["status"] = *model.Status
@@ -665,24 +667,23 @@ func DataSourceIBMTektonPipelineTektonPipelinePipelineDefinitionToMap(model *cdt
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
-		return DataSourceIBMTektonPipelineTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
+		return dataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
-		return DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
+		return dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerTimerTrigger); ok {
-		return DataSourceIBMTektonPipelineTriggerTimerTriggerToMap(model.(*cdtektonpipelinev2.TriggerTimerTrigger))
+		return dataSourceIBMCdTektonPipelineTriggerTimerTriggerToMap(model.(*cdtektonpipelinev2.TriggerTimerTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerGenericTrigger); ok {
-		return DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model.(*cdtektonpipelinev2.TriggerGenericTrigger))
+		return dataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model.(*cdtektonpipelinev2.TriggerGenericTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-
-		if model.Type != nil {
-			modelMap["type"] = *model.Type
-		}
 		if model.Name != nil {
 			modelMap["name"] = *model.Name
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
 		}
 		if model.EventListener != nil {
 			modelMap["event_listener"] = *model.EventListener
@@ -693,7 +694,7 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 		if model.Properties != nil {
 			properties := []map[string]interface{}{}
 			for _, propertiesItem := range model.Properties {
-				propertiesItemMap, err := DataSourceIBMTektonPipelineTriggerPropertiesItemToMap(&propertiesItem)
+				propertiesItemMap, err := dataSourceIBMCdTektonPipelineTriggerPropertiesItemToMap(&propertiesItem)
 				if err != nil {
 					return modelMap, err
 				}
@@ -705,14 +706,14 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 			modelMap["tags"] = model.Tags
 		}
 		if model.Worker != nil {
-			workerMap, err := DataSourceIBMTektonPipelineWorkerToMap(model.Worker)
+			workerMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(model.Worker)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["worker"] = []map[string]interface{}{workerMap}
 		}
 		if model.Concurrency != nil {
-			concurrencyMap, err := DataSourceIBMTektonPipelineConcurrencyToMap(model.Concurrency)
+			concurrencyMap, err := dataSourceIBMCdTektonPipelineConcurrencyToMap(model.Concurrency)
 			if err != nil {
 				return modelMap, err
 			}
@@ -722,14 +723,14 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 			modelMap["disabled"] = *model.Disabled
 		}
 		if model.ScmSource != nil {
-			scmSourceMap, err := DataSourceIBMTektonPipelineTriggerScmSourceToMap(model.ScmSource)
+			scmSourceMap, err := dataSourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
 			if err != nil {
 				return modelMap, err
 			}
 			modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
 		}
 		if model.Events != nil {
-			eventsMap, err := DataSourceIBMTektonPipelineEventsToMap(model.Events)
+			eventsMap, err := dataSourceIBMCdTektonPipelineEventsToMap(model.Events)
 			if err != nil {
 				return modelMap, err
 			}
@@ -745,7 +746,7 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 			modelMap["timezone"] = *model.Timezone
 		}
 		if model.Secret != nil {
-			secretMap, err := DataSourceIBMTektonPipelineGenericSecretToMap(model.Secret)
+			secretMap, err := dataSourceIBMCdTektonPipelineGenericSecretToMap(model.Secret)
 			if err != nil {
 				return modelMap, err
 			}
@@ -757,7 +758,7 @@ func DataSourceIBMTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 	}
 }
 
-func DataSourceIBMTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -783,7 +784,7 @@ func DataSourceIBMTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipeli
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -797,7 +798,7 @@ func DataSourceIBMTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (m
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineConcurrencyToMap(model *cdtektonpipelinev2.Concurrency) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineConcurrencyToMap(model *cdtektonpipelinev2.Concurrency) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = *model.MaxConcurrentRuns
@@ -805,7 +806,7 @@ func DataSourceIBMTektonPipelineConcurrencyToMap(model *cdtektonpipelinev2.Concu
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.URL != nil {
 		modelMap["url"] = *model.URL
@@ -825,7 +826,7 @@ func DataSourceIBMTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Push != nil {
 		modelMap["push"] = *model.Push
@@ -839,7 +840,7 @@ func DataSourceIBMTektonPipelineEventsToMap(model *cdtektonpipelinev2.Events) (m
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.GenericSecret) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.GenericSecret) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -859,7 +860,7 @@ func DataSourceIBMTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.Gen
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelinev2.TriggerManualTrigger) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelinev2.TriggerManualTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -876,7 +877,7 @@ func DataSourceIBMTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelin
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := DataSourceIBMTektonPipelineTriggerManualTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := dataSourceIBMCdTektonPipelineTriggerManualTriggerPropertiesItemToMap(&propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -888,14 +889,14 @@ func DataSourceIBMTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelin
 		modelMap["tags"] = model.Tags
 	}
 	if model.Worker != nil {
-		workerMap, err := DataSourceIBMTektonPipelineWorkerToMap(model.Worker)
+		workerMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(model.Worker)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := DataSourceIBMTektonPipelineConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := dataSourceIBMCdTektonPipelineConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -907,7 +908,7 @@ func DataSourceIBMTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelin
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerManualTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerManualTriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerManualTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerManualTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -933,7 +934,7 @@ func DataSourceIBMTektonPipelineTriggerManualTriggerPropertiesItemToMap(model *c
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2.TriggerScmTrigger) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2.TriggerScmTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -950,7 +951,7 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := DataSourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := dataSourceIBMCdTektonPipelineTriggerScmTriggerPropertiesItemToMap(&propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -962,14 +963,14 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 		modelMap["tags"] = model.Tags
 	}
 	if model.Worker != nil {
-		workerMap, err := DataSourceIBMTektonPipelineWorkerToMap(model.Worker)
+		workerMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(model.Worker)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := DataSourceIBMTektonPipelineConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := dataSourceIBMCdTektonPipelineConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -979,14 +980,14 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 		modelMap["disabled"] = *model.Disabled
 	}
 	if model.ScmSource != nil {
-		scmSourceMap, err := DataSourceIBMTektonPipelineTriggerScmSourceToMap(model.ScmSource)
+		scmSourceMap, err := dataSourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
 	}
 	if model.Events != nil {
-		eventsMap, err := DataSourceIBMTektonPipelineEventsToMap(model.Events)
+		eventsMap, err := dataSourceIBMCdTektonPipelineEventsToMap(model.Events)
 		if err != nil {
 			return modelMap, err
 		}
@@ -998,7 +999,7 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerScmTriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerScmTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1024,7 +1025,7 @@ func DataSourceIBMTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cdte
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipelinev2.TriggerTimerTrigger) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipelinev2.TriggerTimerTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -1041,7 +1042,7 @@ func DataSourceIBMTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeline
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := DataSourceIBMTektonPipelineTriggerTimerTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := dataSourceIBMCdTektonPipelineTriggerTimerTriggerPropertiesItemToMap(&propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -1053,14 +1054,14 @@ func DataSourceIBMTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeline
 		modelMap["tags"] = model.Tags
 	}
 	if model.Worker != nil {
-		workerMap, err := DataSourceIBMTektonPipelineWorkerToMap(model.Worker)
+		workerMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(model.Worker)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := DataSourceIBMTektonPipelineConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := dataSourceIBMCdTektonPipelineConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1078,7 +1079,7 @@ func DataSourceIBMTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeline
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerTimerTriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerTimerTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -1104,7 +1105,7 @@ func DataSourceIBMTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *cd
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipelinev2.TriggerGenericTrigger) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipelinev2.TriggerGenericTrigger) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -1121,7 +1122,7 @@ func DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
-			propertiesItemMap, err := DataSourceIBMTektonPipelineTriggerGenericTriggerPropertiesItemToMap(&propertiesItem)
+			propertiesItemMap, err := dataSourceIBMCdTektonPipelineTriggerGenericTriggerPropertiesItemToMap(&propertiesItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -1133,14 +1134,14 @@ func DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 		modelMap["tags"] = model.Tags
 	}
 	if model.Worker != nil {
-		workerMap, err := DataSourceIBMTektonPipelineWorkerToMap(model.Worker)
+		workerMap, err := dataSourceIBMCdTektonPipelineWorkerToMap(model.Worker)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["worker"] = []map[string]interface{}{workerMap}
 	}
 	if model.Concurrency != nil {
-		concurrencyMap, err := DataSourceIBMTektonPipelineConcurrencyToMap(model.Concurrency)
+		concurrencyMap, err := dataSourceIBMCdTektonPipelineConcurrencyToMap(model.Concurrency)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1150,7 +1151,7 @@ func DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 		modelMap["disabled"] = *model.Disabled
 	}
 	if model.Secret != nil {
-		secretMap, err := DataSourceIBMTektonPipelineGenericSecretToMap(model.Secret)
+		secretMap, err := dataSourceIBMCdTektonPipelineGenericSecretToMap(model.Secret)
 		if err != nil {
 			return modelMap, err
 		}
@@ -1159,7 +1160,7 @@ func DataSourceIBMTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 	return modelMap, nil
 }
 
-func DataSourceIBMTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerGenericTriggerPropertiesItem) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerGenericTriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name

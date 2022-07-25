@@ -15,9 +15,9 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipelineTriggerProperty() *schema.Resource {
+func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelineTriggerPropertyRead,
+		ReadContext: dataSourceIBMCdTektonPipelineTriggerPropertyRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
@@ -72,7 +72,7 @@ func DataSourceIBMTektonPipelineTriggerProperty() *schema.Resource {
 	}
 }
 
-func DataSourceIBMTektonPipelineTriggerPropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,7 +109,6 @@ func DataSourceIBMTektonPipelineTriggerPropertyRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
 	}
-
 	if err = d.Set("type", triggerProperty.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}

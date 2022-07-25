@@ -18,12 +18,12 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 )
 
-func ResourceIBMTektonPipelineDefinition() *schema.Resource {
+func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMTektonPipelineDefinitionCreate,
-		ReadContext:   ResourceIBMTektonPipelineDefinitionRead,
-		UpdateContext: ResourceIBMTektonPipelineDefinitionUpdate,
-		DeleteContext: ResourceIBMTektonPipelineDefinitionDelete,
+		CreateContext: resourceIBMCdTektonPipelineDefinitionCreate,
+		ReadContext:   resourceIBMCdTektonPipelineDefinitionRead,
+		UpdateContext: resourceIBMCdTektonPipelineDefinitionUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineDefinitionDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -44,6 +44,7 @@ func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "General href URL.",
 						},
 						"branch": &schema.Schema{
@@ -78,7 +79,7 @@ func ResourceIBMTektonPipelineDefinition() *schema.Resource {
 	}
 }
 
-func ResourceIBMTektonPipelineDefinitionValidator() *validate.ResourceValidator {
+func ResourceIBMCdTektonPipelineDefinitionValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -96,7 +97,7 @@ func ResourceIBMTektonPipelineDefinitionValidator() *validate.ResourceValidator 
 	return &resourceValidator
 }
 
-func ResourceIBMTektonPipelineDefinitionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineDefinitionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +107,7 @@ func ResourceIBMTektonPipelineDefinitionCreate(context context.Context, d *schem
 
 	createTektonPipelineDefinitionOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	if _, ok := d.GetOk("scm_source"); ok {
-		scmSourceModel, err := ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
+		scmSourceModel, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -121,10 +122,10 @@ func ResourceIBMTektonPipelineDefinitionCreate(context context.Context, d *schem
 
 	d.SetId(fmt.Sprintf("%s/%s", *createTektonPipelineDefinitionOptions.PipelineID, *definition.ID))
 
-	return ResourceIBMTektonPipelineDefinitionRead(context, d, meta)
+	return resourceIBMCdTektonPipelineDefinitionRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -154,7 +155,7 @@ func ResourceIBMTektonPipelineDefinitionRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
 	if definition.ScmSource != nil {
-		scmSourceMap, err := ResourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
+		scmSourceMap, err := resourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -172,7 +173,7 @@ func ResourceIBMTektonPipelineDefinitionRead(context context.Context, d *schema.
 	return nil
 }
 
-func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -193,7 +194,7 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 	hasChange := false
 
 	if d.HasChange("scm_source") {
-		scmSource, err := ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
+		scmSource, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -209,10 +210,10 @@ func ResourceIBMTektonPipelineDefinitionUpdate(context context.Context, d *schem
 		}
 	}
 
-	return ResourceIBMTektonPipelineDefinitionRead(context, d, meta)
+	return resourceIBMCdTektonPipelineDefinitionRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineDefinitionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineDefinitionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -239,7 +240,7 @@ func ResourceIBMTektonPipelineDefinitionDelete(context context.Context, d *schem
 	return nil
 }
 
-func ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.DefinitionScmSource, error) {
+func resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.DefinitionScmSource, error) {
 	model := &cdtektonpipelinev2.DefinitionScmSource{}
 	model.URL = core.StringPtr(modelMap["url"].(string))
 	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
@@ -252,7 +253,7 @@ func ResourceIBMTektonPipelineDefinitionMapToDefinitionScmSource(modelMap map[st
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	if model.Branch != nil {

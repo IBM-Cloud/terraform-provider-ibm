@@ -11,10 +11,9 @@ import (
 	"log"
 	"strings"
 
-	"golang.org/x/crypto/sha3"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -23,12 +22,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func ResourceIBMTektonPipelineProperty() *schema.Resource {
+func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMTektonPipelinePropertyCreate,
-		ReadContext:   ResourceIBMTektonPipelinePropertyRead,
-		UpdateContext: ResourceIBMTektonPipelinePropertyUpdate,
-		DeleteContext: ResourceIBMTektonPipelinePropertyDelete,
+		CreateContext: resourceIBMCdTektonPipelinePropertyCreate,
+		ReadContext:   resourceIBMCdTektonPipelinePropertyRead,
+		UpdateContext: resourceIBMCdTektonPipelinePropertyUpdate,
+		DeleteContext: resourceIBMCdTektonPipelinePropertyDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -99,7 +98,7 @@ func ResourceIBMTektonPipelineProperty() *schema.Resource {
 	}
 }
 
-func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
+func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -160,7 +159,7 @@ func ResourceIBMTektonPipelinePropertyValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelinePropertyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,10 +200,10 @@ func ResourceIBMTektonPipelinePropertyCreate(context context.Context, d *schema.
 
 	d.SetId(fmt.Sprintf("%s/%s", *createTektonPipelinePropertiesOptions.PipelineID, *property.Name))
 
-	return ResourceIBMTektonPipelinePropertyRead(context, d, meta)
+	return resourceIBMCdTektonPipelinePropertyRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -257,7 +256,7 @@ func ResourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -314,10 +313,10 @@ func ResourceIBMTektonPipelinePropertyUpdate(context context.Context, d *schema.
 		}
 	}
 
-	return ResourceIBMTektonPipelinePropertyRead(context, d, meta)
+	return resourceIBMCdTektonPipelinePropertyRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelinePropertyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelinePropertyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
