@@ -166,62 +166,6 @@ func DataSourceIBMAppConfigSegments() *schema.Resource {
 					},
 				},
 			},
-			"next": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "URL to navigate to the next list of records.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL of the response.",
-						},
-					},
-				},
-			},
-			"first": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "URL to navigate to the first page of records.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL of the response.",
-						},
-					},
-				},
-			},
-			"previous": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "URL to navigate to the previous list of records.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL of the response.",
-						},
-					},
-				},
-			},
-			"last": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "URL to navigate to the last page of records.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL of the response.",
-						},
-					},
-				},
-			},
 		},
 	}
 }
@@ -231,7 +175,7 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 
 	appconfigClient, err := getAppConfigClient(meta, guid)
 	if err != nil {
-		return err
+		return fmt.Errorf("getAppConfigClient failed %s", err)
 	}
 
 	options := &appconfigurationv1.ListSegmentsOptions{}
@@ -271,7 +215,7 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 		segmentsList = result
 		if err != nil {
 			log.Printf("[DEBUG] ListSegments failed %s\n%s", err, response)
-			return err
+			return fmt.Errorf("ListSegments failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0
@@ -307,30 +251,6 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 	if segmentsList.TotalCount != nil {
 		if err = d.Set("total_count", segmentsList.TotalCount); err != nil {
 			return fmt.Errorf("[ERROR] Error setting total_count: %s", err)
-		}
-	}
-	if segmentsList.First != nil {
-		err = d.Set("first", dataSourceSegmentListFlattenPagination(*segmentsList.First))
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting first %s", err)
-		}
-	}
-	if segmentsList.Previous != nil {
-		err = d.Set("previous", dataSourceSegmentListFlattenPagination(*segmentsList.Previous))
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting previous %s", err)
-		}
-	}
-	if segmentsList.Last != nil {
-		err = d.Set("last", dataSourceSegmentListFlattenPagination(*segmentsList.Last))
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting last %s", err)
-		}
-	}
-	if segmentsList.Next != nil {
-		err = d.Set("next", dataSourceSegmentListFlattenPagination(*segmentsList.Next))
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error setting next %s", err)
 		}
 	}
 	return nil
@@ -426,24 +346,6 @@ func dataSourceSegmentsListSegmentRulesToMap(segmentRulesItem appconfigurationv1
 	segmentRulesMap["operator"] = segmentRulesItem.Operator
 
 	return segmentRulesMap
-}
-
-func dataSourceSegmentListFlattenPagination(result appconfigurationv1.PageHrefResponse) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceSegmentListURLToMap(result)
-	finalList = append(finalList, finalMap)
-
-	return finalList
-}
-
-func dataSourceSegmentListURLToMap(urlItem appconfigurationv1.PageHrefResponse) (urlMap map[string]interface{}) {
-	urlMap = map[string]interface{}{}
-
-	if urlItem.Href != nil {
-		urlMap["href"] = urlItem.Href
-	}
-
-	return urlMap
 }
 
 func dataSourceSegmentsListSegmentsFeaturesToMap(featuresItem appconfigurationv1.FeatureOutput) (featuresMap map[string]interface{}) {

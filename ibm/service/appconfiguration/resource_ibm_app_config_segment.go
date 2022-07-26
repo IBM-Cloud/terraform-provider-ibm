@@ -122,7 +122,7 @@ func resourceIbmIbmAppConfigSegmentCreate(d *schema.ResourceData, meta interface
 
 	if err != nil {
 		log.Printf("CreateSegment failed %s\n%s", err, response)
-		return err
+		return fmt.Errorf("CreateSegment failed %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", guid, *segment.SegmentID))
 	return resourceIbmIbmAppConfigSegmentRead(d, meta)
@@ -146,6 +146,9 @@ func resourceIbmIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return nil
 	}
+	if len(parts) != 2 {
+		return fmt.Errorf("Kindly check the id")
+	}
 
 	appconfigClient, err := getAppConfigClient(meta, parts[0])
 	if err != nil {
@@ -157,6 +160,9 @@ func resourceIbmIbmAppConfigSegmentRead(d *schema.ResourceData, meta interface{}
 
 	result, response, err := appconfigClient.GetSegment(options)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+		}
 		return fmt.Errorf("[DEBUG] GetSegment failed %s\n%s", err, response)
 	}
 

@@ -24,17 +24,17 @@ func DataSourceIBMAppConfigSegment() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Segment name.",
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Segment description.",
 			},
 			"tags": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Tags associated with the segment.",
 			},
 			"includes": {
