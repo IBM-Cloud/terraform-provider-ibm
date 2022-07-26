@@ -276,6 +276,7 @@ resource "ibm_is_instance" "example" {
   boot_volume {
     name     = "boot-restore"
     snapshot = ibm_is_snapshot.example.id
+    tags     = ["tags-0"]
   }
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -322,6 +323,7 @@ Review the argument references that you can specify for your resource.
     
     ~> **Note:**
     `snapshot` conflicts with `image` id and `instance_template`
+  - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 

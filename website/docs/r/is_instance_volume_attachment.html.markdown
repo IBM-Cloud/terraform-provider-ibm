@@ -207,6 +207,8 @@ Review the argument references that you can specify for your resource.
         <li> If `capacity` is not present or less than `minimum_capacity` of the snapshot, `minimum_capacity` is taken as the volume capacity.</li></ul>
 - `volume` - (Optional, String) The unique identifier for the existing volume
 - `volume_name` - (Optional, String) The unique user-defined name for this new volume.
+- `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
