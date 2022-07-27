@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -125,7 +127,6 @@ func ResourceIbmIsShare() *schema.Resource {
 			"profile": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The globally unique name for this share profile.",
 			},
 			"replica_share": &schema.Schema{
@@ -305,6 +306,14 @@ func ResourceIbmIsShare() *schema.Resource {
 				ForceNew:    true,
 				Description: "The globally unique name of the zone this file share will reside in.",
 			},
+			isFileShareTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", isFileShareTags)},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "User Tags for the snapshot",
+			},
 			isFileShareAccessTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -313,14 +322,14 @@ func ResourceIbmIsShare() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-			isFileShareTags: {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", "tag")},
-				Set:         flex.ResourceIBMVPCHash,
-				Description: "List of tags",
-			},
+			// isFileShareTags: {
+			// 	Type:        schema.TypeSet,
+			// 	Optional:    true,
+			// 	Computed:    true,
+			// 	Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", "tag")},
+			// 	Set:         flex.ResourceIBMVPCHash,
+			// 	Description: "List of tags",
+			// },
 			"share_targets": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -427,7 +436,7 @@ func ResourceIbmIsShareValidator() *validate.ResourceValidator {
 			MaxValue:                   "32000",
 		},
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 isFileShareTags,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
@@ -500,7 +509,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 				model.Name = core.StringPtr(replicaShare["name"].(string))
 			}
 			if replicaShare["profile"] != nil {
-				model.Profile = &vpcv1.SharePrototypeShareContextProfile{
+				model.Profile = &vpcv1.ShareProfileIdentity{
 					Name: core.StringPtr(replicaShare["profile"].(string)),
 				}
 
@@ -548,7 +557,7 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 	}
 	if profileIntf, ok := d.GetOk("profile"); ok {
 		profileStr := profileIntf.(string)
-		profile := &vpcv1.SharePrototypeProfile{
+		profile := &vpcv1.ShareProfileIdentity{
 			Name: &profileStr,
 		}
 		sharePrototype.Profile = profile
@@ -570,6 +579,24 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		}
 		sharePrototype.Zone = zone
 	}
+	var userTags *schema.Set
+	if v, ok := d.GetOk(isFileShareTags); ok {
+		userTags = v.(*schema.Set)
+		if userTags != nil && userTags.Len() != 0 {
+			userTagsArray := make([]string, userTags.Len())
+			for i, userTag := range userTags.List() {
+				userTagStr := userTag.(string)
+				userTagsArray[i] = userTagStr
+			}
+			schematicTags := os.Getenv("IC_ENV_TAGS")
+			var envTags []string
+			if schematicTags != "" {
+				envTags = strings.Split(schematicTags, ",")
+				userTagsArray = append(userTagsArray, envTags...)
+			}
+			sharePrototype.UserTags = userTagsArray
+		}
+	}
 	createShareOptions.SetSharePrototype(sharePrototype)
 	share, response, err := vpcClient.CreateShareWithContext(context, createShareOptions)
 	if err != nil {
@@ -589,14 +616,15 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 		}
 	}
 	d.SetId(*share.ID)
-	if _, ok := d.GetOk(isFileShareTags); ok {
-		oldList, newList := d.GetChange(isFileShareTags)
-		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.CRN, "", isUserTagType)
-		if err != nil {
-			log.Printf(
-				"Error creating file share (%s) tags: %s", d.Id(), err)
-		}
-	}
+	// if _, ok := d.GetOk(isFileShareTags); ok {
+	// 	oldList, newList := d.GetChange(isFileShareTags)
+	// 	err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.CRN, "", isUserTagType)
+	// 	if err != nil {
+	// 		log.Printf(
+	// 			"Error creating file share (%s) tags: %s", d.Id(), err)
+	// 	}
+	// }
+
 	if _, ok := d.GetOk(isFileShareAccessTags); ok {
 		oldList, newList := d.GetChange(isFileShareAccessTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *share.CRN, "", isAccessTagType)
@@ -743,11 +771,11 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		status_reasons = append(status_reasons, status_reason)
 	}
 	d.Set("replication_status_reasons", status_reasons)
-	tags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isUserTagType)
-	if err != nil {
-		log.Printf(
-			"Error getting shares (%s) tags: %s", d.Id(), err)
-	}
+	// tags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isUserTagType)
+	// if err != nil {
+	// 	log.Printf(
+	// 		"Error getting shares (%s) tags: %s", d.Id(), err)
+	// }
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
 	if err != nil {
@@ -755,7 +783,13 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 			"Error getting shares (%s) access tags: %s", d.Id(), err)
 	}
 
-	d.Set(isFileShareTags, tags)
+	// d.Set(isFileShareTags, tags)
+	if share.UserTags != nil {
+		if err = d.Set(isFileShareTags, share.UserTags); err != nil {
+			log.Printf(
+				"Error setting shares (%s) user tags: %s", d.Id(), err)
+		}
+	}
 	d.Set(isFileShareAccessTags, accesstags)
 	return nil
 }
@@ -790,15 +824,38 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 		sharePatchModel.Iops = &iops
 		hasChange = true
 	}
-	/*
-		if d.HasChange("profile") {
-			profile := d.Get("profile").(string)
-			sharePatchModel.Profile = &vpcv1.ShareProfileIdentity{
-				Name: &profile,
-			}
-			hasChange = true
-		}
 
+	if d.HasChange("profile") {
+		profile := d.Get("profile").(string)
+		sharePatchModel.Profile = &vpcv1.ShareProfileIdentity{
+			Name: &profile,
+		}
+		hasChange = true
+	}
+
+	if d.HasChange(isFileShareTags) {
+		var userTags *schema.Set
+		if v, ok := d.GetOk(isFileShareTags); ok {
+
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				schematicTags := os.Getenv("IC_ENV_TAGS")
+				var envTags []string
+				if schematicTags != "" {
+					envTags = strings.Split(schematicTags, ",")
+					userTagsArray = append(userTagsArray, envTags...)
+				}
+
+				sharePatchModel.UserTags = userTagsArray
+			}
+		}
+	}
+	/*
 		if d.HasChange("replication_cron_spec") {
 			replication_cron_spec := d.Get("replication_cron_spec").(string)
 			sharePatchModel.ReplicationCronSpec = &replication_cron_spec

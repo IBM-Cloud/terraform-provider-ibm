@@ -247,12 +247,12 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("Error setting resource_type: %s", err))
 	}
 
-	if shareTarget.Subnet != nil {
-		err = d.Set("subnet", dataSourceShareTargetFlattenSubnet(*shareTarget.Subnet))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
-		}
-	}
+	// if shareTarget.Subnet != nil {
+	// 	err = d.Set("subnet", dataSourceShareTargetFlattenSubnet(*shareTarget.Subnet))
+	// 	if err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting subnet %s", err))
+	// 	}
+	// }
 
 	if shareTarget.VPC != nil {
 		err = d.Set("vpc", dataSourceShareTargetFlattenVpc(*shareTarget.VPC))
@@ -264,13 +264,13 @@ func dataSourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func dataSourceShareTargetFlattenSubnet(result vpcv1.SubnetReference) (finalList []map[string]interface{}) {
-	finalList = []map[string]interface{}{}
-	finalMap := dataSourceShareTargetSubnetToMap(result)
-	finalList = append(finalList, finalMap)
+// func dataSourceShareTargetFlattenSubnet(result vpcv1.SubnetReference) (finalList []map[string]interface{}) {
+// 	finalList = []map[string]interface{}{}
+// 	finalMap := dataSourceShareTargetSubnetToMap(result)
+// 	finalList = append(finalList, finalMap)
 
-	return finalList
-}
+// 	return finalList
+// }
 
 func dataSourceShareTargetSubnetToMap(subnetItem vpcv1.SubnetReference) (subnetMap map[string]interface{}) {
 	subnetMap = map[string]interface{}{}
