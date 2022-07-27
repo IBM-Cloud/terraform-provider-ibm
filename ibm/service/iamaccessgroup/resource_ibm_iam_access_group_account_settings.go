@@ -19,8 +19,13 @@ func ResourceIBMIAMAccessGroupAccountSettings() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"public_access_enabled": {
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Required:    true,
 				Description: "Flag to enable/disable public access groups",
+			},
+			"account_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Id of the account",
 			},
 		},
 	}
@@ -42,10 +47,11 @@ func resourceIBMIAMAccessGroupAccountSettingGet(context context.Context, d *sche
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group: %s. API Response: %s", err, detailedResponse))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group account setting: %s. API Response: %s", err, detailedResponse))
 	}
 	d.SetId(*accountSetting.AccountID)
 	d.Set("public_access_enabled", accountSetting.PublicAccessEnabled)
+	d.Set("account_id", accountSetting.AccountID)
 	return nil
 }
 
@@ -65,7 +71,7 @@ func resourceIBMIAMAccessGroupAccountSettingSet(context context.Context, d *sche
 	updateAccountSettingsOptions.PublicAccessEnabled = core.BoolPtr(publicAccessEnabled)
 	accountSetting, detailedResponse, err := iamAccessGroupsClient.UpdateAccountSettings(updateAccountSettingsOptions)
 	if err != nil || accountSetting == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error updating access group public account setting: %s. API Response: %s", err, detailedResponse))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error updating access public account setting: %s. API Response: %s", err, detailedResponse))
 	}
 	d.SetId(*accountSetting.AccountID)
 	d.Set("public_access_enabled", *accountSetting.PublicAccessEnabled)
@@ -76,6 +82,5 @@ func resourceIBMIAMAccessGroupAccountSettingUnSet(context context.Context, d *sc
 
 	// DELETE NOT SUPPORTED
 	d.SetId("")
-
 	return nil
 }

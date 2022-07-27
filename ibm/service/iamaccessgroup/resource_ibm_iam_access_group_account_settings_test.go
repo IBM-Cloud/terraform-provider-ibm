@@ -71,6 +71,7 @@ func testAccCheckIbmIamAccessGroupAccountSettingsConfigBasic() string {
 	return `
 
 		resource "ibm_iam_access_group_account_settings" "iam_access_group_account_settings" {
+			public_access_enabled = true
 		}
 	`
 }

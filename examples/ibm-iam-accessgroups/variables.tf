@@ -1,5 +1,5 @@
 variable "ag_name" {
-  description = "Enter the IBM ID of the user"
+  description = "Enter the name of the access group"
 }
 
 variable "resource_group" {
