@@ -49,6 +49,13 @@ resource "ibm_cis_domain" "web_domain" {
   domain = var.domain
 }
 
+#Adding valid partial Domain for IBM CIS instance
+resource "ibm_cis_domain" "web_domain" {
+  cis_id = ibm_cis.web_domain.id
+  domain = var.domain
+  type   = "partial"
+}
+
 # CIS GLB Monitor|HealthCheck
 resource "ibm_cis_healthcheck" "root" {
   cis_id         = ibm_cis.web_domain.id

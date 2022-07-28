@@ -18,6 +18,9 @@ const (
 	cisDomainStatus              = "status"
 	cisDomainNameServers         = "name_servers"
 	cisDomainOriginalNameServers = "original_name_servers"
+	cisDomainType                = "type"
+	cisDomainVerificationKey     = "verification_key"
+	cisDomainCnameSuffix         = "cname_suffix"
 )
 
 func ResourceIBMCISDomain() *schema.Resource {
@@ -32,6 +35,12 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CISzone - Domain",
 				Required:    true,
+			},
+			cisDomainType: {
+				Type:        schema.TypeString,
+				Description: "CISzone - Domain Type",
+				Default:     "full",
+				Optional:    true,
 			},
 			cisDomainPaused: {
 				Type:     schema.TypeBool,
@@ -55,6 +64,14 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			cisDomainVerificationKey: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			cisDomainCnameSuffix: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Create:   resourceCISdomainCreate,
 		Read:     resourceCISdomainRead,
@@ -74,9 +91,12 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	crn := d.Get(cisID).(string)
 	cisClient.Crn = core.StringPtr(crn)
 	zoneName := d.Get(cisDomain).(string)
+	zoneType := d.Get(cisDomainType).(string)
 
 	opt := cisClient.NewCreateZoneOptions()
 	opt.SetName(zoneName)
+	opt.SetType(zoneType)
+
 	result, resp, err := cisClient.CreateZone(opt)
 	if err != nil {
 		log.Printf("CreateZones Failed %s", resp)
@@ -110,6 +130,9 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisDomainPaused, result.Result.Paused)
 	d.Set(cisDomainNameServers, result.Result.NameServers)
 	d.Set(cisDomainOriginalNameServers, result.Result.OriginalNameServers)
+	d.Set(cisDomainType, result.Result.Type)
+	d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
+	d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
 
 	return nil
 }

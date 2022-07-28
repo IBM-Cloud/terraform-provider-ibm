@@ -28,6 +28,12 @@ func DataSourceIBMCISDomain() *schema.Resource {
 				Description: "CISzone - Domain",
 				Required:    true,
 			},
+			cisDomainType: {
+				Type:        schema.TypeString,
+				Description: "CISzone - Domain Type",
+				Default:     "full",
+				Optional:    true,
+			},
 			cisDomainPaused: {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -47,6 +53,14 @@ func DataSourceIBMCISDomain() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			cisDomainID: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			cisDomainVerificationKey: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			cisDomainCnameSuffix: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -84,6 +98,9 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(cisDomainNameServers, zone.NameServers)
 			d.Set(cisDomainOriginalNameServers, zone.OriginalNameServers)
 			d.Set(cisDomainID, *zone.ID)
+			d.Set(cisDomainType, *zone.Type)
+			d.Set(cisDomainVerificationKey, *zone.VerificationKey)
+			d.Set(cisDomainCnameSuffix, *zone.CnameSuffix)
 			zoneFound = true
 		}
 	}
