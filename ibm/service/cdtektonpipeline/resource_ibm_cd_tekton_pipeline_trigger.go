@@ -5,22 +5,17 @@ package cdtektonpipeline
 
 import (
 	"context"
-	"crypto/hmac"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"golang.org/x/crypto/sha3"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/google/go-cmp/cmp"
 )
 
 func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
@@ -46,6 +41,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Description: "Tekton pipeline trigger object.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"source_trigger_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "source trigger ID to clone from.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
@@ -212,21 +212,10 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 										Description: "Secret type.",
 									},
 									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Secret value, not needed if secret type is \"internalValidation\".",
-										DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-											segs := []string{d.Get("pipeline_id").(string), d.Get("trigger.0.id").(string)}
-											secret := strings.Join(segs, ".")
-											mac := hmac.New(sha3.New512, []byte(secret))
-											mac.Write([]byte(new))
-											secureHmac := hex.EncodeToString(mac.Sum(nil))
-											hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
-											if hasEnvChange {
-												return false
-											}
-											return true
-										},
+										Type:             schema.TypeString,
+										Optional:         true,
+										DiffSuppressFunc: flex.SuppressGenericWebhookRawSecret,
+										Description:      "Secret value, not needed if secret type is \"internalValidation\".",
 									},
 									"source": &schema.Schema{
 										Type:        schema.TypeString,
@@ -473,6 +462,9 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 
 func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{}) (cdtektonpipelinev2.TriggerIntf, error) {
 	model := &cdtektonpipelinev2.Trigger{}
+	if modelMap["source_trigger_id"] != nil && modelMap["source_trigger_id"].(string) != "" {
+		model.SourceTriggerID = core.StringPtr(modelMap["source_trigger_id"].(string))
+	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
@@ -481,6 +473,9 @@ func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interfac
 	}
 	if modelMap["event_listener"] != nil && modelMap["event_listener"].(string) != "" {
 		model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
+	}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
 	}
 	if modelMap["tags"] != nil {
 		tags := []string{}
@@ -538,9 +533,9 @@ func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interfac
 	}
 	return model, nil
 }
+
 func resourceIBMCdTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*cdtektonpipelinev2.Worker, error) {
 	model := &cdtektonpipelinev2.Worker{}
-	// TODO double check if working
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
@@ -561,9 +556,7 @@ func resourceIBMCdTektonPipelineTriggerMapToConcurrency(modelMap map[string]inte
 
 func resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerScmSource, error) {
 	model := &cdtektonpipelinev2.TriggerScmSource{}
-	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
-		model.URL = core.StringPtr(modelMap["url"].(string))
-	}
+	model.URL = core.StringPtr(modelMap["url"].(string))
 	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
 		model.Branch = core.StringPtr(modelMap["branch"].(string))
 	}
@@ -608,7 +601,9 @@ func resourceIBMCdTektonPipelineTriggerMapToGenericSecret(modelMap map[string]in
 }
 
 func resourceIBMCdTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
+	if _, ok := model.(*cdtektonpipelinev2.TriggerDuplicateTrigger); ok {
+		return resourceIBMCdTektonPipelineTriggerTriggerDuplicateTriggerToMap(model.(*cdtektonpipelinev2.TriggerDuplicateTrigger))
+	} else if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
 		return resourceIBMCdTektonPipelineTriggerTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
 		return resourceIBMCdTektonPipelineTriggerTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
@@ -619,6 +614,9 @@ func resourceIBMCdTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.Tri
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
+		if model.SourceTriggerID != nil {
+			modelMap["source_trigger_id"] = model.SourceTriggerID
+		}
 		if model.Name != nil {
 			modelMap["name"] = model.Name
 		}
@@ -709,9 +707,7 @@ func resourceIBMCdTektonPipelineTriggerConcurrencyToMap(model *cdtektonpipelinev
 
 func resourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.URL != nil {
-		modelMap["url"] = model.URL
-	}
+	modelMap["url"] = model.URL
 	if model.Branch != nil {
 		modelMap["branch"] = model.Branch
 	}
@@ -758,6 +754,13 @@ func resourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelin
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = model.Algorithm
 	}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineTriggerTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["source_trigger_id"] = model.SourceTriggerID
+	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 

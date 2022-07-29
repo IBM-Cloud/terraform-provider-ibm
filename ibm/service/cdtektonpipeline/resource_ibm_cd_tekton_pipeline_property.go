@@ -5,21 +5,16 @@ package cdtektonpipeline
 
 import (
 	"context"
-	"crypto/hmac"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"golang.org/x/crypto/sha3"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
-	"github.com/google/go-cmp/cmp"
 )
 
 func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
@@ -46,29 +41,11 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "value"),
-				Description:  "String format property value.",
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if d.Get("type").(string) == "SECURE" {
-						segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
-						secret := strings.Join(segs, ".")
-						mac := hmac.New(sha3.New512, []byte(secret))
-						mac.Write([]byte(new))
-						secureHmac := hex.EncodeToString(mac.Sum(nil))
-						hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
-						if hasEnvChange {
-							return false
-						}
-						return true
-					} else {
-						if old == new {
-							return true
-						}
-						return false
-					}
-				},
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.SuppressPipelinePropertyRawSecret,
+				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "value"),
+				Description:      "String format property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,

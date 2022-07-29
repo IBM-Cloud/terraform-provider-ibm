@@ -104,17 +104,18 @@ func dataSourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d
 		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}
 
-	if triggerProperty.Enum != nil {
-		if err = d.Set("enum", triggerProperty.Enum); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
-		}
-	}
 	if err = d.Set("type", triggerProperty.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 
 	if err = d.Set("path", triggerProperty.Path); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting path: %s", err))
+	}
+
+	if triggerProperty.Enum != nil {
+		if err = d.Set("enum", triggerProperty.Enum); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
+		}
 	}
 
 	return nil

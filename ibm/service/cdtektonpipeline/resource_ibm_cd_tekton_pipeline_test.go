@@ -61,7 +61,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic(tcName string, rgID string) stri
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			worker {
 				id = "public"
-			}			
+			}
 		}
 	`, tcName, rgID)
 }

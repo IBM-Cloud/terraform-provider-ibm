@@ -30,6 +30,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Required:    true,
 				Description: "The trigger ID.",
 			},
+			"source_trigger_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "source trigger ID to clone from.",
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -273,6 +278,10 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	trigger := TriggerIntf.(*cdtektonpipelinev2.Trigger)
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
+
+	if err = d.Set("source_trigger_id", trigger.SourceTriggerID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting source_trigger_id: %s", err))
+	}
 
 	if err = d.Set("name", trigger.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))

@@ -5,21 +5,16 @@ package cdtektonpipeline
 
 import (
 	"context"
-	"crypto/hmac"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"golang.org/x/crypto/sha3"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
-	"github.com/google/go-cmp/cmp"
 )
 
 func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
@@ -53,29 +48,11 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description:  "String format property value.",
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if d.Get("type").(string) == "SECURE" {
-						segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string), d.Get("name").(string)}
-						secret := strings.Join(segs, ".")
-						mac := hmac.New(sha3.New512, []byte(secret))
-						mac.Write([]byte(new))
-						secureHmac := hex.EncodeToString(mac.Sum(nil))
-						hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
-						if hasEnvChange {
-							return false
-						}
-						return true
-					} else {
-						if old == new {
-							return true
-						}
-						return false
-					}
-				},
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
+				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
+				Description:      "String format property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -192,7 +169,12 @@ func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d
 		createTektonPipelineTriggerPropertiesOptions.SetValue(d.Get("value").(string))
 	}
 	if _, ok := d.GetOk("enum"); ok {
-		createTektonPipelineTriggerPropertiesOptions.SetEnum(d.Get("enum").([]string))
+		enumInterface := d.Get("enum").([]interface{})
+		enum := make([]string, len(enumInterface))
+		for i, v := range enumInterface {
+			enum[i] = fmt.Sprint(v)
+		}
+		createTektonPipelineTriggerPropertiesOptions.SetEnum(enum)
 	}
 	if _, ok := d.GetOk("default"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetDefault(d.Get("default").(string))

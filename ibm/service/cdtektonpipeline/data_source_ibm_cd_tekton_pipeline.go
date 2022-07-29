@@ -185,6 +185,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 				Description: "Tekton pipeline triggers list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"source_trigger_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "source trigger ID to clone from.",
+						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -668,7 +673,9 @@ func dataSourceIBMCdTektonPipelineTektonPipelinePipelineDefinitionToMap(model *c
 }
 
 func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
+	if _, ok := model.(*cdtektonpipelinev2.TriggerDuplicateTrigger); ok {
+		return dataSourceIBMCdTektonPipelineTriggerDuplicateTriggerToMap(model.(*cdtektonpipelinev2.TriggerDuplicateTrigger))
+	} else if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
 		return dataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
 		return dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
@@ -679,6 +686,9 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
+		if model.SourceTriggerID != nil {
+			modelMap["source_trigger_id"] = *model.SourceTriggerID
+		}
 		if model.Name != nil {
 			modelMap["name"] = *model.Name
 		}
@@ -856,6 +866,17 @@ func dataSourceIBMCdTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.G
 	}
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = *model.Algorithm
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMCdTektonPipelineTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SourceTriggerID != nil {
+		modelMap["source_trigger_id"] = *model.SourceTriggerID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
