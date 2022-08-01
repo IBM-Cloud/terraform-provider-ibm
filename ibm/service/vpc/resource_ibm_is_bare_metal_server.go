@@ -1231,6 +1231,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 	if bms.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)
 		for _, intfc := range bms.NetworkInterfaces {
+			flagAllowFloat := false
 			if *intfc.ID != *bms.PrimaryNetworkInterface.ID {
 				currentNic := map[string]interface{}{}
 				subnetId := *intfc.Subnet.ID
@@ -1309,6 +1310,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
 					{
 						bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
+						if bmsnic.AllowInterfaceToFloat != nil {
+							flagAllowFloat = *bmsnic.AllowInterfaceToFloat
+						}
 						currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
 						currentNic[isBareMetalServerNicEnableInfraNAT] = *bmsnic.EnableInfrastructureNat
 						currentNic[isBareMetalServerNicPortSpeed] = *bmsnic.PortSpeed
@@ -1325,7 +1329,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 						}
 					}
 				}
-				interfacesList = append(interfacesList, currentNic)
+				if !flagAllowFloat {
+					interfacesList = append(interfacesList, currentNic)
+				}
 			}
 		}
 		d.Set(isBareMetalServerNetworkInterfaces, interfacesList)
