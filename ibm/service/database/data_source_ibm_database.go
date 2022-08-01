@@ -105,7 +105,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Description: "Key protect key id",
 							Type:        schema.TypeString,
 							Computed:    true,
-							Deprecated:  "This field is deprecated please use disk_encryption_key_crn",
+							Deprecated:  "This field is deprecated and has been replaced by disk_encryption_key_crn",
 						},
 						"disk_encryption_key_crn": {
 							Description: "Disk encryption key crn",
