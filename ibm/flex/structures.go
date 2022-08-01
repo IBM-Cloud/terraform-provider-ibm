@@ -1664,7 +1664,6 @@ func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 	return entries
 }
 
-// Cloud Internet Services
 func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
 	pltOptions := make([]map[string]interface{}, 0, 1)
 	pltOption := make(map[string]interface{})
