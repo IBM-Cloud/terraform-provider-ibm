@@ -19,7 +19,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	// "github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 )
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
