@@ -1,3 +1,67 @@
+# 1.44.0 (Aug 2, 2022)
+Features
+* Support Internt Services
+    - **DataSources**
+        - ibm_cis_mtlss
+        - ibm_cis_mtls_apps
+        - ibm_cis_origin_auths
+    - **Resources**
+        - ibm_cis_mtls
+        - ibm_cis_mtls_app
+        - ibm_cis_origin_auth
+* Support Internt Services
+    - **DataSources**
+        - ibm_database_task
+        - ibm_database_tasks
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_credential
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credentials
+        - ibm_scc_posture_collectors
+* Support Virtual Private Cloud
+    - **DataSources**
+        - ibm_is_backup_policy
+        - ibm_is_backup_policies
+        - ibm_is_backup_policy_plan
+        - ibm_is_backup_policy_plans
+        - ibm_is_vpn_server
+        - ibm_is_vpn_servers
+        - ibm_is_vpn_server_client
+        - ibm_is_vpn_server_client_configuration
+        - ibm_is_vpn_server_clients
+        - ibm_is_vpn_server_route
+        - ibm_is_vpn_server_routes
+    - **Resources**
+        - ibm_is_backup_policy
+        - ibm_is_backup_policy_plan
+        - ibm_is_vpn_server
+        - ibm_is_vpn_server_route
+* Support IBM Cloud Storage 
+    - **DataSources**
+        - ibm_cos_bucket_replication_rule
+* Support Private DNS
+    - **DataSources**
+        - ibm_dns_custom_resolver_secondary_zones
+    - **Resources**
+        - ibm_dns_custom_resolver_secondary_zones
+
+Enhancements
+* Routing Table in Subnet Datasource ([3909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3909))
+* Added cidr param to dhcp ([3916](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3916))
+* Add CoreOS-enabled option for Satellite location create ([3914](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3914))
+
+BUG FIXES
+* fix(documentation): error statement fix on security group and is_volumes ([3993](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3893))
+* CIS WAF Group Documentation Fix ([3997](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3897))
+* CD doc fix from generator utility ([3905](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3905))
+* added note for default cipher values ([3915](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3915))
+* Deprecation of vpc_route resource & correction in vpc_routing_table_route ([3919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3919))
+* Roll back the strogae types for existing buckets ([3928](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
+* Fix the subcategory for cbr docs ([3928](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
+* terraform versions 1.1 added to validator check ([3930](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3920))
+* fix(is_bare_metal_server): removed nics with allow float from server nics ([3938](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
 # 1.44.0-beta0 (Jul 20, 2022)
 Features
 * Support Internt Services
