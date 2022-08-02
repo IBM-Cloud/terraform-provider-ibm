@@ -39,6 +39,8 @@ func ResourceIBMCISFirewallrules() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CIS instance crn",
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_cis_firewall_rules",
+					"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -258,7 +260,14 @@ func ResourceIBMCISFirewallrulesDelete(context context.Context, d *schema.Resour
 }
 func ResourceIBMCISFirewallrulesValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 cisFirewallrulesAction,
