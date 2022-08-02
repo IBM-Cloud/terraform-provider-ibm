@@ -30,8 +30,10 @@ func ResourceIBMCISDomain() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS object id",
+				Description: "CIS instance crn",
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_cis_domain",
+					"cis_id"),
 			},
 			cisDomain: {
 				Type:        schema.TypeString,
@@ -84,6 +86,21 @@ func ResourceIBMCISDomain() *schema.Resource {
 		Delete:   resourceCISdomainDelete,
 		Importer: &schema.ResourceImporter{},
 	}
+}
+func ResourceIBMCISDomainValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
+	ibmCISDomainValidator := validate.ResourceValidator{
+		ResourceName: "ibm_cis_domain",
+		Schema:       validateSchema}
+	return &ibmCISDomainValidator
 }
 
 func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
