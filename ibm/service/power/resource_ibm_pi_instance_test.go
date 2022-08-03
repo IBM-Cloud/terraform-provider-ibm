@@ -44,12 +44,12 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 	  }
 	  resource "ibm_pi_instance" "power_instance" {
 		pi_memory             = "2"
-		pi_processors         = "0.25"
+		pi_processors         = "1"
 		pi_instance_name      = "%[2]s"
-		pi_proc_type          = "shared"
+		pi_proc_type          = "dedicated"
 		pi_image_id           = data.ibm_pi_image.power_image.id
 		pi_key_pair_name      = ibm_pi_key.key.key_id
-		pi_sys_type           = "s922"
+		pi_sys_type           = "e980"
 		pi_cloud_instance_id  = "%[1]s"
 		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
 		pi_health_status      = "%[5]s"
@@ -57,8 +57,9 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 		pi_network {
 			network_id = data.ibm_pi_network.power_networks.id
 		}
+		pi_deployment_type          = "%[6]s"
 	  }
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.Pi_instance_deployment_type)
 }
 
 func testAccIBMPIInstanceNetworkConfig(name, privateNetIP string) string {

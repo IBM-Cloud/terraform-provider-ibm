@@ -48,6 +48,7 @@ const (
 	activeTimeOut  = 2 * time.Minute
 	// power service instance capabilities
 	CUSTOM_VIRTUAL_CORES          = "custom-virtualcores"
+	PIInstanceDeploymentType      = "pi_deployment_type"
 	PIInstanceNetwork             = "pi_network"
 	PIInstanceStoragePool         = "pi_storage_pool"
 	PISAPInstanceProfileID        = "pi_sap_profile_id"
