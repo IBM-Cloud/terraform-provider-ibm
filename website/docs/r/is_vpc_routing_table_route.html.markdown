@@ -51,7 +51,7 @@ Review the argument references that you can specify for your resource.
 - `action` - (Optional, String) The action to perform with a packet matching the route `delegate`, `delegate_vpc`, `deliver`, `drop`.
 - `destination` - (Required, Forces new resource, String) The destination of the route. 
 - `name` - (Optional, String) The user-defined name of the route. If unspecified, the name will be a hyphenated list of randomly selected words. You need to provide unique name within the VPC routing table the route resides in.
-- `next_hop` - (Required, Forces new resource, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
+- `next_hop` - (Required, String) The next hop of the route. It accepts IP address or a VPN connection ID. For `action` other than `deliver`, you must specify `0.0.0.0`. 
 - `routing_table` - (Required, String) The routing table ID.
 - `vpc` - (Required, Forces new resource, String) The VPC ID.
 - `zone` - (Required, Forces new resource, String)  Name of the zone. 
@@ -82,6 +82,7 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` - (String) The lifecycle state of the route.
 - `origin` - (Optional, String) The origin of this route:- `service`: route was directly created by a service- `user`: route was directly created by a userThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
   - Constraints: Allowable values are: `learned`, `service`, `user`.
+- `priority` - (Integer) The route's priority. Smaller values have higher priority. If a routing table contains routes with the same destination, the route with the highest priority (smallest value) is selected. For Example (2), supports values from 0 to 4.
 - `resource_type` - (String) The resource type.
 
 ## Import

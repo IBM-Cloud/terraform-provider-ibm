@@ -66,9 +66,9 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Description: "The zone to apply the route to. Traffic from subnets in this zone will be subject to this route.",
 			},
 			rNextHop: {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true, // recheck as the generated says it as, not required.
+				// ForceNew:    true,
 				Description: "If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
 			},
 			rAction: {
@@ -156,6 +156,11 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Computed:    true,
 				Description: "Routing table route Lifecycle State",
 			},
+			"priority": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The route's priority. Smaller values have higher priority.",
+			},
 			rtOrigin: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -235,6 +240,11 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 		createVpcRoutingTableRouteOptions.SetName(routeName)
 	}
 
+	if priority, ok := d.GetOk("priority"); ok {
+		routePriority := priority.(int64)
+		createVpcRoutingTableRouteOptions.SetPriority(routePriority)
+	}
+
 	route, response, err := sess.CreateVPCRoutingTableRoute(createVpcRoutingTableRouteOptions)
 	if err != nil {
 		log.Printf("[DEBUG] Create VPC Routing table route err %s\n%s", err, response)
@@ -265,7 +275,6 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 
 	d.Set(rID, *route.ID)
 	d.Set(rName, *route.Name)
-	d.Set(rDestination, *route.Destination)
 	if route.NextHop != nil {
 		nexthop := route.NextHop.(*vpcv1.RouteNextHop)
 		if nexthop.Address != nil {
@@ -295,6 +304,7 @@ func resourceIBMISVPCRoutingTableRouteRead(d *schema.ResourceData, meta interfac
 
 		d.Set("creator", creator)
 	}
+	d.Set("priority", route.Priority)
 	return nil
 }
 
@@ -305,20 +315,44 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 	}
 
 	idSet := strings.Split(d.Id(), "/")
-	if d.HasChange(rName) {
-		routePatch := make(map[string]interface{})
-		updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
+	hasChange := false
+	routePatch := make(map[string]interface{})
+	updateVpcRoutingTableRouteOptions := sess.NewUpdateVPCRoutingTableRouteOptions(idSet[0], idSet[1], idSet[2], routePatch)
 
-		// Construct an instance of the RoutePatch model
-		routePatchModel := new(vpcv1.RoutePatch)
+	// Construct an instance of the RoutePatch model
+	routePatchModel := new(vpcv1.RoutePatch)
+	if d.HasChange(rName) {
 		name := d.Get(rName).(string)
 		routePatchModel.Name = &name
-		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
+		hasChange = true
+	}
+	if d.HasChange("priority") {
+		routePriority := d.Get("priority").(int64)
+		routePatchModel.Priority = &routePriority
+		hasChange = true
+	}
 
+	if d.HasChange(rNextHop) {
+		if add, ok := d.GetOk(rNextHop); ok {
+			item := add.(string)
+			if net.ParseIP(item) == nil {
+				routePatchModel.NextHop = &vpcv1.RouteNextHopPatch{
+					ID: core.StringPtr(item),
+				}
+				hasChange = true
+			} else {
+				routePatchModel.NextHop = &vpcv1.RouteNextHopPatch{
+					Address: core.StringPtr(item),
+				}
+				hasChange = true
+			}
+		}
+	}
+	if hasChange {
+		routePatchModelAsPatch, patchErr := routePatchModel.AsPatch()
 		if patchErr != nil {
 			return fmt.Errorf("[ERROR] Error calling asPatch for VPC Routing Table Route Patch: %s", patchErr)
 		}
-
 		updateVpcRoutingTableRouteOptions.RoutePatch = routePatchModelAsPatch
 		_, response, err := sess.UpdateVPCRoutingTableRoute(updateVpcRoutingTableRouteOptions)
 		if err != nil {
@@ -326,7 +360,6 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 			return err
 		}
 	}
-
 	return resourceIBMISVPCRoutingTableRouteRead(d, meta)
 }
 
