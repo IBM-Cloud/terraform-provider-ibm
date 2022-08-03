@@ -1141,6 +1141,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_rate_limit":              cis.ResourceIBMCISRateLimitValidator(),
 				"ibm_cis":                         cis.ResourceIBMCISValidator(),
 				"ibm_cis_domain_settings":         cis.ResourceIBMCISDomainSettingValidator(),
+				"ibm_cis_domain":                  cis.ResourceIBMCISDomainValidator(),
 				"ibm_cis_tls_settings":            cis.ResourceIBMCISTLSSettingsValidator(),
 				"ibm_cis_routing":                 cis.ResourceIBMCISRoutingValidator(),
 				"ibm_cis_page_rule":               cis.ResourceIBMCISPageRuleValidator(),

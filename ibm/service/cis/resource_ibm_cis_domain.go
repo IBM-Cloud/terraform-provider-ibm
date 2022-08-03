@@ -22,7 +22,7 @@ const (
 	cisDomainType                = "type"
 	cisDomainVerificationKey     = "verification_key"
 	cisDomainCnameSuffix         = "cname_suffix"
-	cisDomainSettings            = "cis_domain_settings"
+	ibmCISDomain                 = "ibm_cis_domain"
 )
 
 func ResourceIBMCISDomain() *schema.Resource {
@@ -43,7 +43,7 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Description: "CISzone - Domain Type",
 				Default:     "full",
 				Optional:    true,
-				ValidateFunc: validate.InvokeValidator(cisDomainSettings,
+				ValidateFunc: validate.InvokeValidator(ibmCISDomain,
 					cisDomainType),
 			},
 			cisDomainPaused: {
@@ -198,7 +198,7 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func ResourceIBMCISDomainSettingsValidator() *validate.ResourceValidator {
+func ResourceIBMCISDomainValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 
 	validateSchema = append(validateSchema,
@@ -209,8 +209,8 @@ func ResourceIBMCISDomainSettingsValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			AllowedValues:              "full, parital"})
 
-	ibmCISDomainSettingsResourceValidator := validate.ResourceValidator{
-		ResourceName: cisDomainSettings,
+	ibmCISDomainResourceValidator := validate.ResourceValidator{
+		ResourceName: ibmCISDomain,
 		Schema:       validateSchema}
-	return &ibmCISDomainSettingsResourceValidator
+	return &ibmCISDomainResourceValidator
 }
