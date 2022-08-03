@@ -481,11 +481,6 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("Error setting zone %s", err))
 		}
 	}
-	tags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isUserTagType)
-	if err != nil {
-		log.Printf(
-			"Error getting shares (%s) tags: %s", d.Id(), err)
-	}
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
 	if err != nil {
@@ -493,7 +488,13 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 			"Error getting shares (%s) access tags: %s", d.Id(), err)
 	}
 
-	d.Set(isFileShareTags, tags)
+	if share.UserTags != nil {
+		if err = d.Set(isFileShareTags, share.UserTags); err != nil {
+			log.Printf(
+				"Error setting shares (%s) user tags: %s", d.Id(), err)
+		}
+	}
+
 	d.Set(isFileShareAccessTags, accesstags)
 
 	return nil

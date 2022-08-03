@@ -61,7 +61,7 @@ func dataSourceIbmIsShareProfileRead(context context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(dataSourceIbmIsShareProfileID(d))
+	d.SetId(*shareProfile.Name)
 	if err = d.Set("family", shareProfile.Family); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting family: %s", err))
 	}

@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.50.0-af9e48c4-20220523-163800
+ * IBM OpenAPI SDK Code Generator Version: 3.43.0-49eab5c7-20211117-152138
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -41,7 +41,7 @@ import (
 type VpcV1 struct {
 	Service *core.BaseService
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-07-25`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-08-03`
 	// and today's date (UTC).
 	Version *string
 
@@ -62,7 +62,7 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-07-25`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-08-03`
 	// and today's date (UTC).
 	Version *string
 }
@@ -118,6 +118,10 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 		if err != nil {
 			return
 		}
+	}
+
+	if options.Version == nil {
+		options.Version = core.StringPtr("2022-03-29")
 	}
 
 	service = &VpcV1{
@@ -3039,6 +3043,9 @@ func (vpc *VpcV1) CreateSubnetReservedIPWithContext(ctx context.Context, createS
 
 // DeleteSubnetReservedIP : Delete a reserved IP
 // This request releases a reserved IP. This operation cannot be reversed.
+//
+// For this request to succeed, the reserved IP must not be required by another resource, such as a network interface
+// for which it is the primary IP. A provider-owned reserved IP is not allowed to be deleted.
 func (vpc *VpcV1) DeleteSubnetReservedIP(deleteSubnetReservedIPOptions *DeleteSubnetReservedIPOptions) (response *core.DetailedResponse, err error) {
 	return vpc.DeleteSubnetReservedIPWithContext(context.Background(), deleteSubnetReservedIPOptions)
 }
@@ -3156,6 +3163,8 @@ func (vpc *VpcV1) GetSubnetReservedIPWithContext(ctx context.Context, getSubnetR
 // UpdateSubnetReservedIP : Update a reserved IP
 // This request updates a reserved IP with the information in a provided reserved IP patch. The reserved IP patch object
 // is structured in the same way as a retrieved reserved IP and contains only the information to be updated.
+//
+// A provider-owned reserved IP is not allowed to be updated.
 func (vpc *VpcV1) UpdateSubnetReservedIP(updateSubnetReservedIPOptions *UpdateSubnetReservedIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
 	return vpc.UpdateSubnetReservedIPWithContext(context.Background(), updateSubnetReservedIPOptions)
 }
@@ -18171,7 +18180,9 @@ func (vpc *VpcV1) GetLoadBalancerWithContext(ctx context.Context, getLoadBalance
 }
 
 // UpdateLoadBalancer : Update a load balancer
-// This request updates a load balancer.
+// This request updates a load balancer with the information in a provided load balancer patch. The load balancer patch
+// object is structured in the same way as a retrieved load balancer and contains only the information to be updated. A
+// load balancer can only be updated if its `provisioning_status` is `active`.
 func (vpc *VpcV1) UpdateLoadBalancer(updateLoadBalancerOptions *UpdateLoadBalancerOptions) (result *LoadBalancer, response *core.DetailedResponse, err error) {
 	return vpc.UpdateLoadBalancerWithContext(context.Background(), updateLoadBalancerOptions)
 }
@@ -23080,7 +23091,7 @@ func UnmarshalBackupPolicyPlanPrototype(m map[string]json.RawMessage, result int
 
 // BackupPolicyPlanReference : BackupPolicyPlanReference struct
 type BackupPolicyPlanReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *BackupPolicyPlanReferenceDeleted `json:"deleted,omitempty"`
 
@@ -23130,7 +23141,7 @@ func UnmarshalBackupPolicyPlanReference(m map[string]json.RawMessage, result int
 	return
 }
 
-// BackupPolicyPlanReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// BackupPolicyPlanReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type BackupPolicyPlanReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -23333,7 +23344,7 @@ func UnmarshalBareMetalServer(m map[string]json.RawMessage, result interface{}) 
 // Models which "extend" this model:
 // - BareMetalServerBootTargetBareMetalServerDiskReference
 type BareMetalServerBootTarget struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *BareMetalServerDiskReferenceDeleted `json:"deleted,omitempty"`
 
@@ -23705,7 +23716,7 @@ func (bareMetalServerDiskPatch *BareMetalServerDiskPatch) AsPatch() (_patch map[
 	return
 }
 
-// BareMetalServerDiskReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// BareMetalServerDiskReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type BareMetalServerDiskReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -27452,9 +27463,9 @@ func (options *CreateLoadBalancerListenerPolicyRuleOptions) SetHeaders(param map
 
 // CreateLoadBalancerOptions : The CreateLoadBalancer options.
 type CreateLoadBalancerOptions struct {
-	// Indicates whether this load balancer is public or private.
+	// Indicates whether this load balancer is public.
 	//
-	// At present, if route mode is enabled, the load balancer must be private.
+	// At present, if route mode is enabled, the load balancer must not be public.
 	IsPublic *bool `json:"is_public" validate:"required"`
 
 	// The subnets to provision this load balancer in.  The load balancer's availability will depend on the availability of
@@ -27467,11 +27478,10 @@ type CreateLoadBalancerOptions struct {
 	Listeners []LoadBalancerListenerPrototypeLoadBalancerContext `json:"listeners,omitempty"`
 
 	// The logging configuration to use for this load balancer. See [VPC Datapath
-	// Logging](https://cloud.ibm.com/docs/vpc?topic=vpc-datapath-logging)
-	// on the logging format, fields and permitted values.
+	// Logging](https://cloud.ibm.com/docs/vpc?topic=vpc-datapath-logging) on the logging
+	// format, fields and permitted values.
 	//
-	// To activate logging, the load balancer profile must support the specified logging
-	// type.
+	// To activate logging, the load balancer profile must support the specified logging type.
 	Logging *LoadBalancerLogging `json:"logging,omitempty"`
 
 	// The user-defined name for this load balancer. If unspecified, the name will be a hyphenated list of
@@ -27481,7 +27491,7 @@ type CreateLoadBalancerOptions struct {
 	// The pools of this load balancer.
 	Pools []LoadBalancerPoolPrototype `json:"pools,omitempty"`
 
-	// The profile to use for this load balancer
+	// The profile to use for this load balancer.
 	//
 	// If unspecified, `application` will be used.
 	Profile LoadBalancerProfileIdentityIntf `json:"profile,omitempty"`
@@ -28522,9 +28532,8 @@ type CreateVPCRouteOptions struct {
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to the system's built-in routes
-	// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-	//   routes
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 	// - `deliver`: deliver the packet to the specified `next_hop`
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
@@ -28543,9 +28552,8 @@ type CreateVPCRouteOptions struct {
 
 // Constants associated with the CreateVPCRouteOptions.Action property.
 // The action to perform with a packet matching the route:
-// - `delegate`: delegate to the system's built-in routes
-// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-//   routes
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 // - `deliver`: deliver the packet to the specified `next_hop`
 // - `drop`: drop the packet.
 const (
@@ -28735,9 +28743,8 @@ type CreateVPCRoutingTableRouteOptions struct {
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to the system's built-in routes
-	// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-	//   routes
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 	// - `deliver`: deliver the packet to the specified `next_hop`
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
@@ -28756,9 +28763,8 @@ type CreateVPCRoutingTableRouteOptions struct {
 
 // Constants associated with the CreateVPCRoutingTableRouteOptions.Action property.
 // The action to perform with a packet matching the route:
-// - `delegate`: delegate to the system's built-in routes
-// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-//   routes
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 // - `deliver`: deliver the packet to the specified `next_hop`
 // - `drop`: drop the packet.
 const (
@@ -29896,7 +29902,7 @@ type DedicatedHostGroupReference struct {
 	// The CRN for this dedicated host group.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *DedicatedHostGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -29950,7 +29956,7 @@ func UnmarshalDedicatedHostGroupReference(m map[string]json.RawMessage, result i
 	return
 }
 
-// DedicatedHostGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// DedicatedHostGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type DedicatedHostGroupReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -30760,7 +30766,7 @@ type DedicatedHostReference struct {
 	// The CRN for this dedicated host.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *DedicatedHostReferenceDeleted `json:"deleted,omitempty"`
 
@@ -30814,7 +30820,7 @@ func UnmarshalDedicatedHostReference(m map[string]json.RawMessage, result interf
 	return
 }
 
-// DedicatedHostReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// DedicatedHostReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type DedicatedHostReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -33409,7 +33415,7 @@ func (endpointGatewayPatch *EndpointGatewayPatch) AsPatch() (_patch map[string]i
 	return
 }
 
-// EndpointGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// EndpointGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type EndpointGatewayReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -33976,7 +33982,7 @@ type FloatingIPReference struct {
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *FloatingIPReferenceDeleted `json:"deleted,omitempty"`
 
@@ -34021,7 +34027,7 @@ func UnmarshalFloatingIPReference(m map[string]json.RawMessage, result interface
 	return
 }
 
-// FloatingIPReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// FloatingIPReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type FloatingIPReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -34044,7 +34050,7 @@ func UnmarshalFloatingIPReferenceDeleted(m map[string]json.RawMessage, result in
 // - FloatingIPTargetNetworkInterfaceReference
 // - FloatingIPTargetPublicGatewayReference
 type FloatingIPTarget struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -34413,7 +34419,7 @@ func (flowLogCollectorPatch *FlowLogCollectorPatch) AsPatch() (_patch map[string
 // - FlowLogCollectorTargetSubnetReference
 // - FlowLogCollectorTargetVPCReference
 type FlowLogCollectorTarget struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceTargetContextDeleted `json:"deleted,omitempty"`
 
@@ -34524,7 +34530,7 @@ func UnmarshalFlowLogCollectorTargetPrototype(m map[string]json.RawMessage, resu
 	return
 }
 
-// GenericResourceReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// GenericResourceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type GenericResourceReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -37425,7 +37431,7 @@ func (ikePolicyPatch *IkePolicyPatch) AsPatch() (_patch map[string]interface{}, 
 
 // IkePolicyReference : IkePolicyReference struct
 type IkePolicyReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *IkePolicyReferenceDeleted `json:"deleted,omitempty"`
 
@@ -37827,7 +37833,7 @@ func (iPsecPolicyPatch *IPsecPolicyPatch) AsPatch() (_patch map[string]interface
 
 // IPsecPolicyReference : IPsecPolicyReference struct
 type IPsecPolicyReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *IPsecPolicyReferenceDeleted `json:"deleted,omitempty"`
 
@@ -37877,7 +37883,7 @@ func UnmarshalIPsecPolicyReference(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// IPsecPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// IPsecPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type IPsecPolicyReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -37929,7 +37935,7 @@ func UnmarshalIkePolicyCollectionNext(m map[string]json.RawMessage, result inter
 	return
 }
 
-// IkePolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// IkePolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type IkePolicyReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -38458,7 +38464,7 @@ type ImageReference struct {
 	// The CRN for this image.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *ImageReferenceDeleted `json:"deleted,omitempty"`
 
@@ -38499,7 +38505,7 @@ func UnmarshalImageReference(m map[string]json.RawMessage, result interface{}) (
 	return
 }
 
-// ImageReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// ImageReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type ImageReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -38593,6 +38599,16 @@ type Instance struct {
 	// The image the virtual server instance was provisioned from.
 	Image *ImageReference `json:"image,omitempty"`
 
+	// The reasons for the current `lifecycle_state` (if any).
+	//
+	// The enumerated reason code values for this property will expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the
+	// unexpected reason code was encountered.
+	LifecycleReasons []LifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the virtual server instance.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
 	// The amount of memory, truncated to whole gibibytes.
 	Memory *int64 `json:"memory" validate:"required"`
 
@@ -38624,6 +38640,10 @@ type Instance struct {
 	Startable *bool `json:"startable" validate:"required"`
 
 	// The status of the virtual server instance.
+	//
+	// The enumerated values for this property will expand in the future. When processing this property, check for and log
+	// unknown values. Optionally halt processing and surface the error, or bypass the instance on which the unexpected
+	// property value was encountered.
 	Status *string `json:"status" validate:"required"`
 
 	// The reasons for the current status (if any).
@@ -38654,6 +38674,18 @@ type Instance struct {
 	Zone *ZoneReference `json:"zone" validate:"required"`
 }
 
+// Constants associated with the Instance.LifecycleState property.
+// The lifecycle state of the virtual server instance.
+const (
+	InstanceLifecycleStateDeletingConst  = "deleting"
+	InstanceLifecycleStateFailedConst    = "failed"
+	InstanceLifecycleStatePendingConst   = "pending"
+	InstanceLifecycleStateStableConst    = "stable"
+	InstanceLifecycleStateSuspendedConst = "suspended"
+	InstanceLifecycleStateUpdatingConst  = "updating"
+	InstanceLifecycleStateWaitingConst   = "waiting"
+)
+
 // Constants associated with the Instance.ResourceType property.
 // The resource type.
 const (
@@ -38662,14 +38694,15 @@ const (
 
 // Constants associated with the Instance.Status property.
 // The status of the virtual server instance.
+//
+// The enumerated values for this property will expand in the future. When processing this property, check for and log
+// unknown values. Optionally halt processing and surface the error, or bypass the instance on which the unexpected
+// property value was encountered.
 const (
 	InstanceStatusDeletingConst   = "deleting"
 	InstanceStatusFailedConst     = "failed"
-	InstanceStatusPausedConst     = "paused"
-	InstanceStatusPausingConst    = "pausing"
 	InstanceStatusPendingConst    = "pending"
 	InstanceStatusRestartingConst = "restarting"
-	InstanceStatusResumingConst   = "resuming"
 	InstanceStatusRunningConst    = "running"
 	InstanceStatusStartingConst   = "starting"
 	InstanceStatusStoppedConst    = "stopped"
@@ -38720,6 +38753,14 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		return
 	}
 	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalLifecycleReason)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
 	if err != nil {
 		return
 	}
@@ -39303,7 +39344,7 @@ func (instanceDiskPatch *InstanceDiskPatch) AsPatch() (_patch map[string]interfa
 
 // InstanceDiskReference : InstanceDiskReference struct
 type InstanceDiskReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceDiskReferenceDeleted `json:"deleted,omitempty"`
 
@@ -39353,7 +39394,7 @@ func UnmarshalInstanceDiskReference(m map[string]json.RawMessage, result interfa
 	return
 }
 
-// InstanceDiskReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceDiskReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceDiskReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -40068,7 +40109,7 @@ func UnmarshalInstanceGroupManagerActionPrototype(m map[string]json.RawMessage, 
 
 // InstanceGroupManagerActionReference : InstanceGroupManagerActionReference struct
 type InstanceGroupManagerActionReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupManagerActionReferenceDeleted `json:"deleted,omitempty"`
 
@@ -40118,7 +40159,7 @@ func UnmarshalInstanceGroupManagerActionReference(m map[string]json.RawMessage, 
 	return
 }
 
-// InstanceGroupManagerActionReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceGroupManagerActionReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceGroupManagerActionReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -40681,7 +40722,7 @@ func UnmarshalInstanceGroupManagerPolicyPrototype(m map[string]json.RawMessage, 
 
 // InstanceGroupManagerPolicyReference : InstanceGroupManagerPolicyReference struct
 type InstanceGroupManagerPolicyReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupManagerPolicyReferenceDeleted `json:"deleted,omitempty"`
 
@@ -40718,7 +40759,7 @@ func UnmarshalInstanceGroupManagerPolicyReference(m map[string]json.RawMessage, 
 	return
 }
 
-// InstanceGroupManagerPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceGroupManagerPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceGroupManagerPolicyReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -40815,7 +40856,7 @@ func UnmarshalInstanceGroupManagerPrototype(m map[string]json.RawMessage, result
 
 // InstanceGroupManagerReference : InstanceGroupManagerReference struct
 type InstanceGroupManagerReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupManagerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -40852,7 +40893,7 @@ func UnmarshalInstanceGroupManagerReference(m map[string]json.RawMessage, result
 	return
 }
 
-// InstanceGroupManagerReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceGroupManagerReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceGroupManagerReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -40917,7 +40958,7 @@ func UnmarshalInstanceGroupManagerScheduledActionGroupPrototype(m map[string]jso
 // Models which "extend" this model:
 // - InstanceGroupManagerScheduledActionManagerAutoScale
 type InstanceGroupManagerScheduledActionManager struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupManagerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -41324,7 +41365,7 @@ type InstanceGroupReference struct {
 	// The CRN for this instance group.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -41365,7 +41406,7 @@ func UnmarshalInstanceGroupReference(m map[string]json.RawMessage, result interf
 	return
 }
 
-// InstanceGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceGroupReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -41539,6 +41580,7 @@ type InstancePatch struct {
 	// - Be compatible with any `placement_target` constraints. For example, if the
 	//   instance is placed on a dedicated host, the requested profile `family` must be
 	//   the same as the dedicated host `family`.
+	// - Have the same `vcpu_architecture`.
 	Profile InstancePatchProfileIntf `json:"profile,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
@@ -41596,6 +41638,7 @@ func (instancePatch *InstancePatch) AsPatch() (_patch map[string]interface{}, er
 // - Be compatible with any `placement_target` constraints. For example, if the
 //   instance is placed on a dedicated host, the requested profile `family` must be
 //   the same as the dedicated host `family`.
+// - Have the same `vcpu_architecture`.
 // Models which "extend" this model:
 // - InstancePatchProfileInstanceProfileIdentityByName
 // - InstancePatchProfileInstanceProfileIdentityByHref
@@ -41639,7 +41682,7 @@ type InstancePlacementTarget struct {
 	// The CRN for this dedicated host group.
 	CRN *string `json:"crn,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *DedicatedHostGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -43032,7 +43075,7 @@ type InstanceReference struct {
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -43073,7 +43116,7 @@ func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}
 	return
 }
 
-// InstanceReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -43651,7 +43694,7 @@ type InstanceTemplateReference struct {
 	// The CRN for this instance template.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceTemplateReferenceDeleted `json:"deleted,omitempty"`
 
@@ -43692,7 +43735,7 @@ func UnmarshalInstanceTemplateReference(m map[string]json.RawMessage, result int
 	return
 }
 
-// InstanceTemplateReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// InstanceTemplateReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type InstanceTemplateReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -43998,7 +44041,7 @@ type KeyReference struct {
 	// The CRN for this key.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *KeyReferenceDeleted `json:"deleted,omitempty"`
 
@@ -44047,7 +44090,7 @@ func UnmarshalKeyReference(m map[string]json.RawMessage, result interface{}) (er
 	return
 }
 
-// KeyReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// KeyReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type KeyReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -47679,7 +47722,15 @@ type LoadBalancer struct {
 	// The profile for this load balancer.
 	Profile *LoadBalancerProfileReference `json:"profile" validate:"required"`
 
-	// The provisioning status of this load balancer.
+	// The provisioning status of this load balancer:
+	//
+	// - `active`: The load balancer is running.
+	// - `create_pending`: The load balancer is being created.
+	// - `delete_pending`: The load balancer is being deleted.
+	// - `maintenance_pending`: The load balancer is unavailable due to an internal
+	//       error (contact IBM support).
+	// - `update_pending`: The load balancer is being updated
+	//                     to the requested configuration.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The public IP addresses assigned to this load balancer.
@@ -47721,7 +47772,15 @@ const (
 )
 
 // Constants associated with the LoadBalancer.ProvisioningStatus property.
-// The provisioning status of this load balancer.
+// The provisioning status of this load balancer:
+//
+// - `active`: The load balancer is running.
+// - `create_pending`: The load balancer is being created.
+// - `delete_pending`: The load balancer is being deleted.
+// - `maintenance_pending`: The load balancer is unavailable due to an internal
+//       error (contact IBM support).
+// - `update_pending`: The load balancer is being updated
+//                     to the requested configuration.
 const (
 	LoadBalancerProvisioningStatusActiveConst             = "active"
 	LoadBalancerProvisioningStatusCreatePendingConst      = "create_pending"
@@ -48651,7 +48710,7 @@ func UnmarshalLoadBalancerListenerPolicyPrototype(m map[string]json.RawMessage, 
 
 // LoadBalancerListenerPolicyReference : LoadBalancerListenerPolicyReference struct
 type LoadBalancerListenerPolicyReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerListenerPolicyReferenceDeleted `json:"deleted,omitempty"`
 
@@ -48681,7 +48740,7 @@ func UnmarshalLoadBalancerListenerPolicyReference(m map[string]json.RawMessage, 
 	return
 }
 
-// LoadBalancerListenerPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerListenerPolicyReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerListenerPolicyReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -48985,7 +49044,7 @@ func UnmarshalLoadBalancerListenerPolicyRulePrototype(m map[string]json.RawMessa
 
 // LoadBalancerListenerPolicyRuleReference : LoadBalancerListenerPolicyRuleReference struct
 type LoadBalancerListenerPolicyRuleReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerListenerPolicyRuleReferenceDeleted `json:"deleted,omitempty"`
 
@@ -49015,7 +49074,7 @@ func UnmarshalLoadBalancerListenerPolicyRuleReference(m map[string]json.RawMessa
 	return
 }
 
-// LoadBalancerListenerPolicyRuleReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerListenerPolicyRuleReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerListenerPolicyRuleReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -49041,7 +49100,7 @@ func UnmarshalLoadBalancerListenerPolicyRuleReferenceDeleted(m map[string]json.R
 // - LoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirectURL
 // - LoadBalancerListenerPolicyTargetLoadBalancerListenerHTTPSRedirect
 type LoadBalancerListenerPolicyTarget struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerPoolReferenceDeleted `json:"deleted,omitempty"`
 
@@ -49365,7 +49424,7 @@ func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json
 
 // LoadBalancerListenerReference : LoadBalancerListenerReference struct
 type LoadBalancerListenerReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerListenerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -49395,7 +49454,7 @@ func UnmarshalLoadBalancerListenerReference(m map[string]json.RawMessage, result
 	return
 }
 
-// LoadBalancerListenerReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerListenerReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerListenerReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -49413,7 +49472,7 @@ func UnmarshalLoadBalancerListenerReferenceDeleted(m map[string]json.RawMessage,
 	return
 }
 
-// LoadBalancerLogging : The logging configuration for this load balancer.
+// LoadBalancerLogging : LoadBalancerLogging struct
 type LoadBalancerLogging struct {
 	// The datapath logging configuration for this load balancer.
 	Datapath *LoadBalancerLoggingDatapath `json:"datapath,omitempty"`
@@ -50159,7 +50218,7 @@ func UnmarshalLoadBalancerPoolMemberPrototype(m map[string]json.RawMessage, resu
 
 // LoadBalancerPoolMemberReference : LoadBalancerPoolMemberReference struct
 type LoadBalancerPoolMemberReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerPoolMemberReferenceDeleted `json:"deleted,omitempty"`
 
@@ -50189,7 +50248,7 @@ func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, resu
 	return
 }
 
-// LoadBalancerPoolMemberReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerPoolMemberReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerPoolMemberReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -50217,7 +50276,7 @@ type LoadBalancerPoolMemberTarget struct {
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -50550,7 +50609,7 @@ func UnmarshalLoadBalancerPoolPrototype(m map[string]json.RawMessage, result int
 
 // LoadBalancerPoolReference : LoadBalancerPoolReference struct
 type LoadBalancerPoolReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerPoolReferenceDeleted `json:"deleted,omitempty"`
 
@@ -50587,7 +50646,7 @@ func UnmarshalLoadBalancerPoolReference(m map[string]json.RawMessage, result int
 	return
 }
 
-// LoadBalancerPoolReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerPoolReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerPoolReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -50730,7 +50789,7 @@ type LoadBalancerPrivateIpsItem struct {
 	// error, or bypass the resource on which the unexpected IP address format was encountered.
 	Address *string `json:"address" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *ReservedIPReferenceDeleted `json:"deleted,omitempty"`
 
@@ -51151,7 +51210,7 @@ func UnmarshalLoadBalancerProfileUDPSupported(m map[string]json.RawMessage, resu
 	return
 }
 
-// LoadBalancerReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// LoadBalancerReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type LoadBalancerReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -51506,7 +51565,7 @@ type NetworkACLReference struct {
 	// The CRN for this network ACL.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkACLReferenceDeleted `json:"deleted,omitempty"`
 
@@ -51547,7 +51606,7 @@ func UnmarshalNetworkACLReference(m map[string]json.RawMessage, result interface
 	return
 }
 
-// NetworkACLReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkACLReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkACLReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -52273,7 +52332,7 @@ func UnmarshalNetworkACLRulePrototypeNetworkACLContext(m map[string]json.RawMess
 
 // NetworkACLRuleReference : NetworkACLRuleReference struct
 type NetworkACLRuleReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkACLRuleReferenceDeleted `json:"deleted,omitempty"`
 
@@ -52310,7 +52369,7 @@ func UnmarshalNetworkACLRuleReference(m map[string]json.RawMessage, result inter
 	return
 }
 
-// NetworkACLRuleReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkACLRuleReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkACLRuleReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -52453,7 +52512,7 @@ func UnmarshalNetworkInterface(m map[string]json.RawMessage, result interface{})
 
 // NetworkInterfaceBareMetalServerContextReference : NetworkInterfaceBareMetalServerContextReference struct
 type NetworkInterfaceBareMetalServerContextReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceBareMetalServerContextReferenceDeleted `json:"deleted,omitempty"`
 
@@ -52516,7 +52575,7 @@ func UnmarshalNetworkInterfaceBareMetalServerContextReference(m map[string]json.
 	return
 }
 
-// NetworkInterfaceBareMetalServerContextReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkInterfaceBareMetalServerContextReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkInterfaceBareMetalServerContextReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -52597,7 +52656,7 @@ func UnmarshalNetworkInterfaceIPPrototype(m map[string]json.RawMessage, result i
 
 // NetworkInterfaceInstanceContextReference : NetworkInterfaceInstanceContextReference struct
 type NetworkInterfaceInstanceContextReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceInstanceContextReferenceDeleted `json:"deleted,omitempty"`
 
@@ -52660,7 +52719,7 @@ func UnmarshalNetworkInterfaceInstanceContextReference(m map[string]json.RawMess
 	return
 }
 
-// NetworkInterfaceInstanceContextReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkInterfaceInstanceContextReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkInterfaceInstanceContextReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -52775,7 +52834,7 @@ func UnmarshalNetworkInterfacePrototype(m map[string]json.RawMessage, result int
 	return
 }
 
-// NetworkInterfaceReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkInterfaceReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkInterfaceReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -52793,7 +52852,7 @@ func UnmarshalNetworkInterfaceReferenceDeleted(m map[string]json.RawMessage, res
 	return
 }
 
-// NetworkInterfaceReferenceTargetContextDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// NetworkInterfaceReferenceTargetContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type NetworkInterfaceReferenceTargetContextDeleted struct {
 	// Link to documentation about deleted resources.
@@ -53267,7 +53326,7 @@ func (placementGroupPatch *PlacementGroupPatch) AsPatch() (_patch map[string]int
 	return
 }
 
-// PlacementGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// PlacementGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type PlacementGroupReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -53487,7 +53546,7 @@ type PublicGatewayFloatingIP struct {
 	// The CRN for this floating IP.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *FloatingIPReferenceDeleted `json:"deleted,omitempty"`
 
@@ -53672,7 +53731,7 @@ type PublicGatewayReference struct {
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *PublicGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -53726,7 +53785,7 @@ func UnmarshalPublicGatewayReference(m map[string]json.RawMessage, result interf
 	return
 }
 
-// PublicGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// PublicGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type PublicGatewayReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -54641,7 +54700,7 @@ type ReservedIPReference struct {
 	// error, or bypass the resource on which the unexpected IP address format was encountered.
 	Address *string `json:"address" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *ReservedIPReferenceDeleted `json:"deleted,omitempty"`
 
@@ -54695,7 +54754,7 @@ func UnmarshalReservedIPReference(m map[string]json.RawMessage, result interface
 	return
 }
 
-// ReservedIPReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// ReservedIPReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type ReservedIPReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -54727,7 +54786,7 @@ type ReservedIPTarget struct {
 	// The CRN for this endpoint gateway.
 	CRN *string `json:"crn,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *EndpointGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -54938,9 +54997,8 @@ func (options *RestartBareMetalServerOptions) SetHeaders(param map[string]string
 // Route : Route struct
 type Route struct {
 	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to the system's built-in routes
-	// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-	//   routes
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 	// - `deliver`: deliver the packet to the specified `next_hop`
 	// - `drop`: drop the packet.
 	Action *string `json:"action" validate:"required"`
@@ -54948,9 +55006,9 @@ type Route struct {
 	// The date and time that the route was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// If present, the resource that created the route. Routes with this property present cannot be
-	// directly deleted. All routes with an `origin` of `learned` or `service` will have this
-	// property set, and future `origin` values may also have this property set.
+	// If present, the resource that created the route. Routes with this property present cannot
+	// be directly deleted. All routes with an `origin` of `service` will have this property set,
+	// and future `origin` values may also have this property set.
 	Creator RouteCreatorIntf `json:"creator,omitempty"`
 
 	// The destination of the route.
@@ -54979,7 +55037,7 @@ type Route struct {
 	// The enumerated values for this property are expected to expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the
 	// unexpected property value was encountered.
-	Origin *string `json:"origin,omitempty"`
+	Origin *string `json:"origin" validate:"required"`
 
 	// The zone the route applies to. (Traffic from subnets in this zone will be
 	// subject to this route.).
@@ -54988,9 +55046,8 @@ type Route struct {
 
 // Constants associated with the Route.Action property.
 // The action to perform with a packet matching the route:
-// - `delegate`: delegate to the system's built-in routes
-// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-//   routes
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 // - `deliver`: deliver the packet to the specified `next_hop`
 // - `drop`: drop the packet.
 const (
@@ -55169,8 +55226,8 @@ func UnmarshalRouteCollectionNext(m map[string]json.RawMessage, result interface
 }
 
 // RouteCreator : If present, the resource that created the route. Routes with this property present cannot be directly deleted. All
-// routes with an `origin` of `learned` or `service` will have this property set, and future `origin` values may also
-// have this property set.
+// routes with an `origin` of `service` will have this property set, and future `origin` values may also have this
+// property set.
 // Models which "extend" this model:
 // - RouteCreatorVPNGatewayReference
 // - RouteCreatorVPNServerReference
@@ -55178,7 +55235,7 @@ type RouteCreator struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -55252,7 +55309,7 @@ type RouteNextHop struct {
 	// error, or bypass the resource on which the unexpected IP address format was encountered.
 	Address *string `json:"address,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayConnectionReferenceDeleted `json:"deleted,omitempty"`
 
@@ -55344,9 +55401,8 @@ func (routePatch *RoutePatch) AsPatch() (_patch map[string]interface{}, err erro
 // RoutePrototype : RoutePrototype struct
 type RoutePrototype struct {
 	// The action to perform with a packet matching the route:
-	// - `delegate`: delegate to the system's built-in routes
-	// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-	//   routes
+	// - `delegate`: delegate to system-provided routes
+	// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 	// - `deliver`: deliver the packet to the specified `next_hop`
 	// - `drop`: drop the packet.
 	Action *string `json:"action,omitempty"`
@@ -55371,9 +55427,8 @@ type RoutePrototype struct {
 
 // Constants associated with the RoutePrototype.Action property.
 // The action to perform with a packet matching the route:
-// - `delegate`: delegate to the system's built-in routes
-// - `delegate_vpc`: delegate to the system's built-in routes, ignoring Internet-bound
-//   routes
+// - `delegate`: delegate to system-provided routes
+// - `delegate_vpc`: delegate to system-provided routes, ignoring Internet-bound routes
 // - `deliver`: deliver the packet to the specified `next_hop`
 // - `drop`: drop the packet.
 const (
@@ -55469,7 +55524,7 @@ func UnmarshalRoutePrototypeNextHop(m map[string]json.RawMessage, result interfa
 
 // RouteReference : RouteReference struct
 type RouteReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *RouteReferenceDeleted `json:"deleted,omitempty"`
 
@@ -55506,7 +55561,7 @@ func UnmarshalRouteReference(m map[string]json.RawMessage, result interface{}) (
 	return
 }
 
-// RouteReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// RouteReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type RouteReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -55794,9 +55849,9 @@ func UnmarshalRoutingTableIdentity(m map[string]json.RawMessage, result interfac
 // RoutingTablePatch : RoutingTablePatch struct
 type RoutingTablePatch struct {
 	// The filters specifying the resources that may create routes in this routing table
-	// (replacing any existing filters). All routes learned from resources that match a given filter will be removed when
-	// an existing filter is removed. Therefore, if an empty array is specified, all filters will be removed, resulting in
-	// all learned routes being removed.
+	// (replacing any existing filters). All routes created by resources that match a given filter will be removed when an
+	// existing filter is removed. Therefore, if an empty array is specified, all filters will be removed, resulting in all
+	// routes not directly created by the user being removed.
 	//
 	// At present, only the `resource_type` filter is permitted, and only the `vpn_server` value is supported, but filter
 	// support is expected to expand in the future.
@@ -55882,7 +55937,7 @@ func (routingTablePatch *RoutingTablePatch) AsPatch() (_patch map[string]interfa
 
 // RoutingTableReference : RoutingTableReference struct
 type RoutingTableReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *RoutingTableReferenceDeleted `json:"deleted,omitempty"`
 
@@ -55932,7 +55987,7 @@ func UnmarshalRoutingTableReference(m map[string]json.RawMessage, result interfa
 	return
 }
 
-// RoutingTableReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// RoutingTableReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type RoutingTableReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -56190,7 +56245,7 @@ type SecurityGroupReference struct {
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SecurityGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -56231,7 +56286,7 @@ func UnmarshalSecurityGroupReference(m map[string]json.RawMessage, result interf
 	return
 }
 
-// SecurityGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// SecurityGroupReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type SecurityGroupReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -56255,7 +56310,7 @@ func UnmarshalSecurityGroupReferenceDeleted(m map[string]json.RawMessage, result
 // - SecurityGroupRuleSecurityGroupRuleProtocolIcmp
 // - SecurityGroupRuleSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRule struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The URL for this security group rule.
@@ -56272,16 +56327,16 @@ type SecurityGroupRule struct {
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The IP addresses or security groups from which this rule allows traffic (or to which,
-	// for outbound rules). Can be specified as an IP address, a CIDR block, or a security
-	// group. A CIDR block of `0.0.0.0/0` allows traffic from any source (or to any source,
-	// for outbound rules).
+	// The IP addresses or security groups from which this rule allows traffic (or to which, for
+	// outbound rules). Can be specified as an IP address, a CIDR block, or a security group. A
+	// CIDR block of `0.0.0.0/0` allows traffic from any source (or to any destination, for
+	// outbound rules).
 	Remote SecurityGroupRuleRemoteIntf `json:"remote" validate:"required"`
 
-	// The ICMP traffic code to allow.
+	// The ICMP traffic code to allow. If absent, all codes are allowed.
 	Code *int64 `json:"code,omitempty"`
 
-	// The ICMP traffic type to allow.
+	// The ICMP traffic type to allow. If absent, all types are allowed.
 	Type *int64 `json:"type,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
@@ -56292,7 +56347,7 @@ type SecurityGroupRule struct {
 }
 
 // Constants associated with the SecurityGroupRule.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRuleDirectionInboundConst  = "inbound"
 	SecurityGroupRuleDirectionOutboundConst = "outbound"
@@ -56304,6 +56359,15 @@ const (
 // (network interfaces) in that group matching this IP version.
 const (
 	SecurityGroupRuleIPVersionIpv4Const = "ipv4"
+)
+
+// Constants associated with the SecurityGroupRule.Protocol property.
+// The protocol to enforce.
+const (
+	SecurityGroupRuleProtocolAllConst  = "all"
+	SecurityGroupRuleProtocolIcmpConst = "icmp"
+	SecurityGroupRuleProtocolTCPConst  = "tcp"
+	SecurityGroupRuleProtocolUDPConst  = "udp"
 )
 
 func (*SecurityGroupRule) isaSecurityGroupRule() bool {
@@ -56360,10 +56424,12 @@ func UnmarshalSecurityGroupRuleCollection(m map[string]json.RawMessage, result i
 
 // SecurityGroupRulePatch : SecurityGroupRulePatch struct
 type SecurityGroupRulePatch struct {
-	// The ICMP traffic code to allow. Specify `null` to remove an existing ICMP traffic code value.
+	// The ICMP traffic code to allow. If set, `type` must also be set.
+	//
+	// Specify `null` to remove an existing ICMP traffic code.
 	Code *int64 `json:"code,omitempty"`
 
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction,omitempty"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they
@@ -56371,26 +56437,30 @@ type SecurityGroupRulePatch struct {
 	// (network interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
-	// The inclusive upper bound of the protocol port range. Specify `null` to clear an existing upper bound. If a lower
-	// bound has been set, the upper bound must also be set, and must not be smaller.
+	// The inclusive upper bound of the protocol port range. If set, `port_min` must also be set, and must not be larger.
+	//
+	// Specify `null` to remove an existing upper bound.
 	PortMax *int64 `json:"port_max,omitempty"`
 
-	// The inclusive lower bound of the protocol port range. Specify `null` to clear an existing lower bound. If an upper
-	// bound has been set, the lower bound must also be set, and must not be larger.
+	// The inclusive lower bound of the protocol port range. If set, `port_max` must also be set, and must not be smaller.
+	//
+	// Specify `null` to remove an existing lower bound.
 	PortMin *int64 `json:"port_min,omitempty"`
 
 	// The IP addresses or security groups from which this rule will allow traffic (or to
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
 	// security group. A CIDR block of `0.0.0.0/0` will allow traffic from any source (or to
-	// any source, for outbound rules).
+	// any destination, for outbound rules).
 	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
 
-	// The ICMP traffic type to allow. Specify `null` to remove an existing ICMP traffic type value.
+	// The ICMP traffic type to allow.
+	//
+	// Specify `null` to remove an existing ICMP traffic type value.
 	Type *int64 `json:"type,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePatch.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRulePatchDirectionInboundConst  = "inbound"
 	SecurityGroupRulePatchDirectionOutboundConst = "outbound"
@@ -56455,7 +56525,7 @@ func (securityGroupRulePatch *SecurityGroupRulePatch) AsPatch() (_patch map[stri
 // - SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp
 // - SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp
 type SecurityGroupRulePrototype struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they
@@ -56466,27 +56536,39 @@ type SecurityGroupRulePrototype struct {
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. If omitted, a CIDR block of `0.0.0.0/0` will be used to allow traffic
-	// from any source (or to any source, for outbound rules).
+	// The IP addresses or security groups from which this rule will allow traffic (or to which,
+	// for outbound rules). Can be specified as an IP address, a CIDR block, or a security group
+	// within the VPC.
+	//
+	// If unspecified, a CIDR block of `0.0.0.0/0` will be used to allow traffic from any source
+	// (or to any destination, for outbound rules).
 	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic code to allow.
+	//
+	// If specified, `type` must also be specified.  If unspecified, all codes are allowed.
 	Code *int64 `json:"code,omitempty"`
 
 	// The ICMP traffic type to allow.
+	//
+	// If unspecified, all types are allowed.
 	Type *int64 `json:"type,omitempty"`
 
 	// The inclusive upper bound of TCP/UDP port range.
+	//
+	// If specified, `port_min` must also be specified, and must not be larger. If unspecified, `port_min` must also be
+	// unspecified, allowing traffic on all ports.
 	PortMax *int64 `json:"port_max,omitempty"`
 
-	// The inclusive lower bound of TCP/UDP port range.
+	// The inclusive lower bound of TCP/UDP port range
+	//
+	// If specified, `port_max` must also be specified, and must not be smaller. If unspecified, `port_max` must also be
+	// unspecified, allowing traffic on all ports.
 	PortMin *int64 `json:"port_min,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePrototype.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRulePrototypeDirectionInboundConst  = "inbound"
 	SecurityGroupRulePrototypeDirectionOutboundConst = "outbound"
@@ -56537,7 +56619,7 @@ func UnmarshalSecurityGroupRulePrototype(m map[string]json.RawMessage, result in
 
 // SecurityGroupRuleRemote : The IP addresses or security groups from which this rule allows traffic (or to which, for outbound rules). Can be
 // specified as an IP address, a CIDR block, or a security group. A CIDR block of `0.0.0.0/0` allows traffic from any
-// source (or to any source, for outbound rules).
+// source (or to any destination, for outbound rules).
 // Models which "extend" this model:
 // - SecurityGroupRuleRemoteIP
 // - SecurityGroupRuleRemoteCIDR
@@ -56558,7 +56640,7 @@ type SecurityGroupRuleRemote struct {
 	// The security group's CRN.
 	CRN *string `json:"crn,omitempty"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SecurityGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -56617,7 +56699,7 @@ func UnmarshalSecurityGroupRuleRemote(m map[string]json.RawMessage, result inter
 
 // SecurityGroupRuleRemotePatch : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
 // specified as an IP address, a CIDR block, or a security group. A CIDR block of `0.0.0.0/0` will allow traffic from
-// any source (or to any source, for outbound rules).
+// any source (or to any destination, for outbound rules).
 // Models which "extend" this model:
 // - SecurityGroupRuleRemotePatchIP
 // - SecurityGroupRuleRemotePatchCIDR
@@ -56681,8 +56763,10 @@ func UnmarshalSecurityGroupRuleRemotePatch(m map[string]json.RawMessage, result 
 }
 
 // SecurityGroupRuleRemotePrototype : The IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules). Can be
-// specified as an IP address, a CIDR block, or a security group. If omitted, a CIDR block of `0.0.0.0/0` will be used
-// to allow traffic from any source (or to any source, for outbound rules).
+// specified as an IP address, a CIDR block, or a security group within the VPC.
+//
+// If unspecified, a CIDR block of `0.0.0.0/0` will be used to allow traffic from any source
+// (or to any destination, for outbound rules).
 // Models which "extend" this model:
 // - SecurityGroupRuleRemotePrototypeIP
 // - SecurityGroupRuleRemotePrototypeCIDR
@@ -56846,7 +56930,7 @@ func UnmarshalSecurityGroupTargetCollectionNext(m map[string]json.RawMessage, re
 // - SecurityGroupTargetReferenceEndpointGatewayReference
 // - SecurityGroupTargetReferenceVPNServerReference
 type SecurityGroupTargetReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceTargetContextDeleted `json:"deleted,omitempty"`
 
@@ -57050,7 +57134,7 @@ type Share struct {
 	Targets []ShareTargetReference `json:"targets" validate:"required"`
 
 	// Tags for this resource.
-	UserTags *ShareUserTags `json:"user_tags" validate:"required"`
+	UserTags []string `json:"user_tags" validate:"required"`
 
 	// The zone this file share will reside in.
 	Zone *ZoneReference `json:"zone" validate:"required"`
@@ -57206,7 +57290,7 @@ func UnmarshalShare(m map[string]json.RawMessage, result interface{}) (err error
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "user_tags", &obj.UserTags, UnmarshalShareUserTags)
+	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
 	if err != nil {
 		return
 	}
@@ -58022,7 +58106,7 @@ type ShareReference struct {
 	// The CRN for this file share.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *ShareReferenceDeleted `json:"deleted,omitempty"`
 
@@ -58076,7 +58160,7 @@ func UnmarshalShareReference(m map[string]json.RawMessage, result interface{}) (
 	return
 }
 
-// ShareReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// ShareReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type ShareReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -58325,7 +58409,7 @@ func UnmarshalShareTargetPrototype(m map[string]json.RawMessage, result interfac
 
 // ShareTargetReference : ShareTargetReference struct
 type ShareTargetReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *ShareTargetReferenceDeleted `json:"deleted,omitempty"`
 
@@ -58375,7 +58459,7 @@ func UnmarshalShareTargetReference(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// ShareTargetReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// ShareTargetReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type ShareTargetReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -58809,7 +58893,7 @@ type SnapshotReference struct {
 	// The CRN of this snapshot.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SnapshotReferenceDeleted `json:"deleted,omitempty"`
 
@@ -58863,7 +58947,7 @@ func UnmarshalSnapshotReference(m map[string]json.RawMessage, result interface{}
 	return
 }
 
-// SnapshotReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// SnapshotReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type SnapshotReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -59452,7 +59536,7 @@ type SubnetReference struct {
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SubnetReferenceDeleted `json:"deleted,omitempty"`
 
@@ -59506,7 +59590,7 @@ func UnmarshalSubnetReference(m map[string]json.RawMessage, result interface{}) 
 	return
 }
 
-// SubnetReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// SubnetReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type SubnetReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -62334,7 +62418,7 @@ type VPCReference struct {
 	// The CRN for this VPC.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPCReferenceDeleted `json:"deleted,omitempty"`
 
@@ -62388,7 +62472,7 @@ func UnmarshalVPCReference(m map[string]json.RawMessage, result interface{}) (er
 	return
 }
 
-// VPCReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VPCReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VPCReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -63314,7 +63398,7 @@ func UnmarshalVPNGatewayConnectionPrototype(m map[string]json.RawMessage, result
 
 // VPNGatewayConnectionReference : VPNGatewayConnectionReference struct
 type VPNGatewayConnectionReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayConnectionReferenceDeleted `json:"deleted,omitempty"`
 
@@ -63364,7 +63448,7 @@ func UnmarshalVPNGatewayConnectionReference(m map[string]json.RawMessage, result
 	return
 }
 
-// VPNGatewayConnectionReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VPNGatewayConnectionReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VPNGatewayConnectionReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -63552,7 +63636,7 @@ func UnmarshalVPNGatewayPrototype(m map[string]json.RawMessage, result interface
 	return
 }
 
-// VPNGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VPNGatewayReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VPNGatewayReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -64366,7 +64450,7 @@ func (vpnServerPatch *VPNServerPatch) AsPatch() (_patch map[string]interface{}, 
 	return
 }
 
-// VPNServerReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VPNServerReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VPNServerReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -64846,7 +64930,9 @@ type VolumeAttachment struct {
 	Type *string `json:"type" validate:"required"`
 
 	// The attached volume.
-	Volume *VolumeReference `json:"volume" validate:"required"`
+	//
+	// This property will be absent if the volume has not yet been provisioned.
+	Volume *VolumeReference `json:"volume,omitempty"`
 }
 
 // Constants associated with the VolumeAttachment.Status property.
@@ -65194,7 +65280,7 @@ func UnmarshalVolumeAttachmentPrototypeVolume(m map[string]json.RawMessage, resu
 
 // VolumeAttachmentReferenceInstanceContext : VolumeAttachmentReferenceInstanceContext struct
 type VolumeAttachmentReferenceInstanceContext struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VolumeAttachmentReferenceInstanceContextDeleted `json:"deleted,omitempty"`
 
@@ -65213,7 +65299,9 @@ type VolumeAttachmentReferenceInstanceContext struct {
 	Name *string `json:"name" validate:"required"`
 
 	// The attached volume.
-	Volume *VolumeReference `json:"volume" validate:"required"`
+	//
+	// This property will be absent if the volume has not yet been provisioned.
+	Volume *VolumeReference `json:"volume,omitempty"`
 }
 
 // UnmarshalVolumeAttachmentReferenceInstanceContext unmarshals an instance of VolumeAttachmentReferenceInstanceContext from the specified map of raw messages.
@@ -65247,7 +65335,7 @@ func UnmarshalVolumeAttachmentReferenceInstanceContext(m map[string]json.RawMess
 	return
 }
 
-// VolumeAttachmentReferenceInstanceContextDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VolumeAttachmentReferenceInstanceContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VolumeAttachmentReferenceInstanceContextDeleted struct {
 	// Link to documentation about deleted resources.
@@ -65270,7 +65358,7 @@ type VolumeAttachmentReferenceVolumeContext struct {
 	// If set to true, when deleting the instance the volume will also be deleted.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VolumeAttachmentReferenceVolumeContextDeleted `json:"deleted,omitempty"`
 
@@ -65341,7 +65429,7 @@ func UnmarshalVolumeAttachmentReferenceVolumeContext(m map[string]json.RawMessag
 	return
 }
 
-// VolumeAttachmentReferenceVolumeContextDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VolumeAttachmentReferenceVolumeContextDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VolumeAttachmentReferenceVolumeContextDeleted struct {
 	// Link to documentation about deleted resources.
@@ -66057,7 +66145,7 @@ type VolumeReference struct {
 	// The CRN for this volume.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VolumeReferenceDeleted `json:"deleted,omitempty"`
 
@@ -66098,7 +66186,7 @@ func UnmarshalVolumeReference(m map[string]json.RawMessage, result interface{}) 
 	return
 }
 
-// VolumeReferenceDeleted : If present, this property indicates the referenced resource has been deleted and provides some supplementary
+// VolumeReferenceDeleted : If present, this property indicates the referenced resource has been deleted, and provides some supplementary
 // information.
 type VolumeReferenceDeleted struct {
 	// Link to documentation about deleted resources.
@@ -66278,7 +66366,7 @@ func UnmarshalZoneReference(m map[string]json.RawMessage, result interface{}) (e
 // BareMetalServerBootTargetBareMetalServerDiskReference : BareMetalServerBootTargetBareMetalServerDiskReference struct
 // This model "extends" BareMetalServerBootTarget
 type BareMetalServerBootTargetBareMetalServerDiskReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *BareMetalServerDiskReferenceDeleted `json:"deleted,omitempty"`
 
@@ -69320,7 +69408,7 @@ func UnmarshalFloatingIPTargetPatchNetworkInterfaceIdentityByID(m map[string]jso
 // FloatingIPTargetNetworkInterfaceReference : FloatingIPTargetNetworkInterfaceReference struct
 // This model "extends" FloatingIPTarget
 type FloatingIPTargetNetworkInterfaceReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -69386,7 +69474,7 @@ type FloatingIPTargetPublicGatewayReference struct {
 	// The CRN for this public gateway.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *PublicGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -69638,7 +69726,7 @@ type FlowLogCollectorTargetInstanceReference struct {
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -69686,7 +69774,7 @@ func UnmarshalFlowLogCollectorTargetInstanceReference(m map[string]json.RawMessa
 // FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext : FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext struct
 // This model "extends" FlowLogCollectorTarget
 type FlowLogCollectorTargetNetworkInterfaceReferenceTargetContext struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceTargetContextDeleted `json:"deleted,omitempty"`
 
@@ -69746,7 +69834,7 @@ type FlowLogCollectorTargetSubnetReference struct {
 	// The CRN for this subnet.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SubnetReferenceDeleted `json:"deleted,omitempty"`
 
@@ -69810,7 +69898,7 @@ type FlowLogCollectorTargetVPCReference struct {
 	// The CRN for this VPC.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPCReferenceDeleted `json:"deleted,omitempty"`
 
@@ -70804,7 +70892,7 @@ func UnmarshalInstanceGroupManagerScheduled(m map[string]json.RawMessage, result
 // InstanceGroupManagerScheduledActionManagerAutoScale : InstanceGroupManagerScheduledActionManagerAutoScale struct
 // This model "extends" InstanceGroupManagerScheduledActionManager
 type InstanceGroupManagerScheduledActionManagerAutoScale struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceGroupManagerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -71229,7 +71317,7 @@ type InstancePlacementTargetDedicatedHostGroupReference struct {
 	// The CRN for this dedicated host group.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *DedicatedHostGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -71293,7 +71381,7 @@ type InstancePlacementTargetDedicatedHostReference struct {
 	// The CRN for this dedicated host.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *DedicatedHostReferenceDeleted `json:"deleted,omitempty"`
 
@@ -71357,7 +71445,7 @@ type InstancePlacementTargetPlacementGroupReference struct {
 	// The CRN for this placement group.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *PlacementGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -74703,7 +74791,7 @@ func UnmarshalLoadBalancerListenerPolicyTargetLoadBalancerListenerPolicyRedirect
 // LoadBalancerListenerPolicyTargetLoadBalancerPoolReference : LoadBalancerListenerPolicyTargetLoadBalancerPoolReference struct
 // This model "extends" LoadBalancerListenerPolicyTarget
 type LoadBalancerListenerPolicyTargetLoadBalancerPoolReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerPoolReferenceDeleted `json:"deleted,omitempty"`
 
@@ -74922,7 +75010,7 @@ type LoadBalancerPoolMemberTargetInstanceReference struct {
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *InstanceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -75326,15 +75414,6 @@ type NetworkACLPrototypeNetworkACLByRules struct {
 	// The prototype objects for rules to create along with this network ACL. If unspecified, no rules will be created,
 	// resulting in all traffic being denied.
 	Rules []NetworkACLRulePrototypeNetworkACLContextIntf `json:"rules,omitempty"`
-}
-
-// NewNetworkACLPrototypeNetworkACLByRules : Instantiate NetworkACLPrototypeNetworkACLByRules (Generic Model Constructor)
-func (*VpcV1) NewNetworkACLPrototypeNetworkACLByRules(vpc VPCIdentityIntf) (_model *NetworkACLPrototypeNetworkACLByRules, err error) {
-	_model = &NetworkACLPrototypeNetworkACLByRules{
-		VPC: vpc,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
 }
 
 func (*NetworkACLPrototypeNetworkACLByRules) isaNetworkACLPrototype() bool {
@@ -77384,7 +77463,7 @@ type ReservedIPTargetEndpointGatewayReference struct {
 	// The CRN for this endpoint gateway.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *EndpointGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77448,7 +77527,7 @@ type ReservedIPTargetGenericResourceReference struct {
 	// The CRN for the resource.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *GenericResourceReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77491,7 +77570,7 @@ type ReservedIPTargetLoadBalancerReference struct {
 	// The load balancer's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77552,7 +77631,7 @@ func UnmarshalReservedIPTargetLoadBalancerReference(m map[string]json.RawMessage
 // ReservedIPTargetNetworkInterfaceReferenceTargetContext : ReservedIPTargetNetworkInterfaceReferenceTargetContext struct
 // This model "extends" ReservedIPTarget
 type ReservedIPTargetNetworkInterfaceReferenceTargetContext struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceTargetContextDeleted `json:"deleted,omitempty"`
 
@@ -77612,7 +77691,7 @@ type ReservedIPTargetVPNGatewayReference struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77676,7 +77755,7 @@ type ReservedIPTargetVPNServerReference struct {
 	// The CRN for this VPN server.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNServerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77771,7 +77850,7 @@ type RouteCreatorVPNGatewayReference struct {
 	// The VPN gateway's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77835,7 +77914,7 @@ type RouteCreatorVPNServerReference struct {
 	// The CRN for this VPN server.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNServerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -77922,7 +78001,7 @@ func UnmarshalRouteNextHopIP(m map[string]json.RawMessage, result interface{}) (
 // RouteNextHopVPNGatewayConnectionReference : RouteNextHopVPNGatewayConnectionReference struct
 // This model "extends" RouteNextHop
 type RouteNextHopVPNGatewayConnectionReference struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNGatewayConnectionReferenceDeleted `json:"deleted,omitempty"`
 
@@ -78207,11 +78286,10 @@ func UnmarshalSecurityGroupIdentityByID(m map[string]json.RawMessage, result int
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
-// `code`.
+// SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll : A rule allowing traffic for all supported protocols.
 // This model "extends" SecurityGroupRulePrototype
 type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they
@@ -78219,18 +78297,14 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll struct {
 	// (network interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
+
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. If omitted, a CIDR block of `0.0.0.0/0` will be used to allow traffic
-	// from any source (or to any source, for outbound rules).
-	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolAll.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllDirectionInboundConst  = "inbound"
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAllDirectionOutboundConst = "outbound"
@@ -78275,11 +78349,11 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll(m map[strin
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -78287,15 +78361,10 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolAll(m map[strin
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp : When `protocol` is `icmp`, the `type` property may optionally be specified. If specified, then ICMP traffic is
-// allowed only for the specified ICMP type. Further, if `type` is specified, the `code` property may optionally be
-// specified to allow traffic only for the specified ICMP code.
+// SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp : A rule specifying the ICMP traffic to allow.
 // This model "extends" SecurityGroupRulePrototype
 type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp struct {
-	// The ICMP traffic code to allow.
-	Code *int64 `json:"code,omitempty"`
-
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they
@@ -78303,21 +78372,24 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp struct {
 	// (network interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
+
+	// The ICMP traffic code to allow.
+	//
+	// If specified, `type` must also be specified.  If unspecified, all codes are allowed.
+	Code *int64 `json:"code,omitempty"`
+
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. If omitted, a CIDR block of `0.0.0.0/0` will be used to allow traffic
-	// from any source (or to any source, for outbound rules).
-	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
-
 	// The ICMP traffic type to allow.
+	//
+	// If unspecified, all types are allowed.
 	Type *int64 `json:"type,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpDirectionInboundConst  = "inbound"
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpDirectionOutboundConst = "outbound"
@@ -78354,10 +78426,6 @@ func (*SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp) isaSecurityGroup
 // UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp unmarshals an instance of SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp from the specified map of raw messages.
 func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp)
-	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
-	if err != nil {
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "direction", &obj.Direction)
 	if err != nil {
 		return
@@ -78366,11 +78434,15 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(m map[stri
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
 	if err != nil {
 		return
 	}
@@ -78382,12 +78454,13 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp(m map[stri
 	return
 }
 
-// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp : If `protocol` is either `tcp` or `udp`, then the rule may also contain `port_min` and
-// `port_max`. Either both must be set, or neither. When neither is set then traffic is allowed on all ports. For a
-// single port, set both to the same value.
+// SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp : A rule specifying the TCP or UDP traffic to allow.
+//
+// Either both `port_min` and `port_max` will be present, or neither. When neither is present, all ports are allowed for
+// the protocol. When both have the same value, that single port is allowed.
 // This model "extends" SecurityGroupRulePrototype
 type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they
@@ -78395,24 +78468,26 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp struct {
 	// (network interfaces) in that group matching this IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
+	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
+
 	// The inclusive upper bound of TCP/UDP port range.
+	//
+	// If specified, `port_min` must also be specified, and must not be larger. If unspecified, `port_min` must also be
+	// unspecified, allowing traffic on all ports.
 	PortMax *int64 `json:"port_max,omitempty"`
 
-	// The inclusive lower bound of TCP/UDP port range.
+	// The inclusive lower bound of TCP/UDP port range
+	//
+	// If specified, `port_max` must also be specified, and must not be smaller. If unspecified, `port_max` must also be
+	// unspecified, allowing traffic on all ports.
 	PortMin *int64 `json:"port_min,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
-
-	// The IP addresses or security groups from which this rule will allow traffic (or to
-	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. If omitted, a CIDR block of `0.0.0.0/0` will be used to allow traffic
-	// from any source (or to any source, for outbound rules).
-	Remote SecurityGroupRuleRemotePrototypeIntf `json:"remote,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpDirectionInboundConst  = "inbound"
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpDirectionOutboundConst = "outbound"
@@ -78458,6 +78533,10 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(m map[st
 	if err != nil {
 		return
 	}
+	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
+	if err != nil {
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "port_max", &obj.PortMax)
 	if err != nil {
 		return
@@ -78467,10 +78546,6 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp(m map[st
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "protocol", &obj.Protocol)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "remote", &obj.Remote, UnmarshalSecurityGroupRuleRemotePrototype)
 	if err != nil {
 		return
 	}
@@ -78768,7 +78843,7 @@ type SecurityGroupRuleRemoteSecurityGroupReference struct {
 	// The security group's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *SecurityGroupReferenceDeleted `json:"deleted,omitempty"`
 
@@ -78813,11 +78888,10 @@ func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.Ra
 	return
 }
 
-// SecurityGroupRuleSecurityGroupRuleProtocolAll : When `protocol` is `all`, then it's invalid to specify `port_min`, `port_max`, `type` or
-// `code`.
+// SecurityGroupRuleSecurityGroupRuleProtocolAll : A rule allowing traffic for all supported protocols.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolAll struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The URL for this security group rule.
@@ -78838,7 +78912,7 @@ type SecurityGroupRuleSecurityGroupRuleProtocolAll struct {
 }
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolAll.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRuleSecurityGroupRuleProtocolAllDirectionInboundConst  = "inbound"
 	SecurityGroupRuleSecurityGroupRuleProtocolAllDirectionOutboundConst = "outbound"
@@ -78893,12 +78967,10 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolAll(m map[string]json.Ra
 	return
 }
 
-// SecurityGroupRuleSecurityGroupRuleProtocolIcmp : When `protocol` is `icmp`, the `type` property may optionally be specified. If specified, then ICMP traffic is
-// allowed only for the specified ICMP type. Further, if `type` is specified, the `code` property may optionally be
-// specified to allow traffic only for the specified ICMP code.
+// SecurityGroupRuleSecurityGroupRuleProtocolIcmp : A rule specifying the ICMP traffic to allow.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The URL for this security group rule.
@@ -78914,18 +78986,18 @@ type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
 
 	Remote SecurityGroupRuleRemoteIntf `json:"remote" validate:"required"`
 
-	// The ICMP traffic code to allow.
+	// The ICMP traffic code to allow. If absent, all codes are allowed.
 	Code *int64 `json:"code,omitempty"`
 
 	// The protocol to enforce.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The ICMP traffic type to allow.
+	// The ICMP traffic type to allow. If absent, all types are allowed.
 	Type *int64 `json:"type,omitempty"`
 }
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRuleSecurityGroupRuleProtocolIcmpDirectionInboundConst  = "inbound"
 	SecurityGroupRuleSecurityGroupRuleProtocolIcmpDirectionOutboundConst = "outbound"
@@ -78988,12 +79060,13 @@ func UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp(m map[string]json.R
 	return
 }
 
-// SecurityGroupRuleSecurityGroupRuleProtocolTcpudp : If `protocol` is either `tcp` or `udp`, then the rule may also contain `port_min` and
-// `port_max`. Either both must be set, or neither. When neither is set then traffic is allowed on all ports. For a
-// single port, set both to the same value.
+// SecurityGroupRuleSecurityGroupRuleProtocolTcpudp : A rule specifying the TCP or UDP traffic to allow.
+//
+// Either both `port_min` and `port_max` will be present, or neither. When neither is present, all ports are allowed for
+// the protocol. When both have the same value, that single port is allowed.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
-	// The direction of traffic to enforce, either `inbound` or `outbound`.
+	// The direction of traffic to enforce.
 	Direction *string `json:"direction" validate:"required"`
 
 	// The URL for this security group rule.
@@ -79020,7 +79093,7 @@ type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
 }
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.Direction property.
-// The direction of traffic to enforce, either `inbound` or `outbound`.
+// The direction of traffic to enforce.
 const (
 	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpDirectionInboundConst  = "inbound"
 	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpDirectionOutboundConst = "outbound"
@@ -79090,7 +79163,7 @@ type SecurityGroupTargetReferenceEndpointGatewayReference struct {
 	// The CRN for this endpoint gateway.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *EndpointGatewayReferenceDeleted `json:"deleted,omitempty"`
 
@@ -79154,7 +79227,7 @@ type SecurityGroupTargetReferenceLoadBalancerReference struct {
 	// The load balancer's CRN.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *LoadBalancerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -79215,7 +79288,7 @@ func UnmarshalSecurityGroupTargetReferenceLoadBalancerReference(m map[string]jso
 // SecurityGroupTargetReferenceNetworkInterfaceReferenceTargetContext : SecurityGroupTargetReferenceNetworkInterfaceReferenceTargetContext struct
 // This model "extends" SecurityGroupTargetReference
 type SecurityGroupTargetReferenceNetworkInterfaceReferenceTargetContext struct {
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *NetworkInterfaceReferenceTargetContextDeleted `json:"deleted,omitempty"`
 
@@ -79275,7 +79348,7 @@ type SecurityGroupTargetReferenceVPNServerReference struct {
 	// The CRN for this VPN server.
 	CRN *string `json:"crn" validate:"required"`
 
-	// If present, this property indicates the referenced resource has been deleted and provides
+	// If present, this property indicates the referenced resource has been deleted, and provides
 	// some supplementary information.
 	Deleted *VPNServerReferenceDeleted `json:"deleted,omitempty"`
 
@@ -79697,18 +79770,6 @@ func UnmarshalSharePrototypeShareBySourceShare(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// ShareUserTags : Tags for this resource.
-// This model "extends" String
-type ShareUserTags struct {
-}
-
-// UnmarshalShareUserTags unmarshals an instance of ShareUserTags from the specified map of raw messages.
-func UnmarshalShareUserTags(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(ShareUserTags)
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -81003,16 +81064,6 @@ const (
 	VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototypeRoutingProtocolNoneConst = "none"
 )
 
-// NewVPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype : Instantiate VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype(peerAddress string, psk string) (_model *VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype, err error) {
-	_model = &VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype{
-		PeerAddress: core.StringPtr(peerAddress),
-		Psk:         core.StringPtr(psk),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
 func (*VPNGatewayConnectionPrototypeVPNGatewayConnectionStaticRouteModePrototype) isaVPNGatewayConnectionPrototype() bool {
 	return true
 }
@@ -81355,15 +81406,6 @@ const (
 	VPNGatewayPrototypeVPNGatewayPolicyModePrototypeModePolicyConst = "policy"
 )
 
-// NewVPNGatewayPrototypeVPNGatewayPolicyModePrototype : Instantiate VPNGatewayPrototypeVPNGatewayPolicyModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayPrototypeVPNGatewayPolicyModePrototype(subnet SubnetIdentityIntf) (_model *VPNGatewayPrototypeVPNGatewayPolicyModePrototype, err error) {
-	_model = &VPNGatewayPrototypeVPNGatewayPolicyModePrototype{
-		Subnet: subnet,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
 func (*VPNGatewayPrototypeVPNGatewayPolicyModePrototype) isaVPNGatewayPrototype() bool {
 	return true
 }
@@ -81410,15 +81452,6 @@ type VPNGatewayPrototypeVPNGatewayRouteModePrototype struct {
 const (
 	VPNGatewayPrototypeVPNGatewayRouteModePrototypeModeRouteConst = "route"
 )
-
-// NewVPNGatewayPrototypeVPNGatewayRouteModePrototype : Instantiate VPNGatewayPrototypeVPNGatewayRouteModePrototype (Generic Model Constructor)
-func (*VpcV1) NewVPNGatewayPrototypeVPNGatewayRouteModePrototype(subnet SubnetIdentityIntf) (_model *VPNGatewayPrototypeVPNGatewayRouteModePrototype, err error) {
-	_model = &VPNGatewayPrototypeVPNGatewayRouteModePrototype{
-		Subnet: subnet,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
 
 func (*VPNGatewayPrototypeVPNGatewayRouteModePrototype) isaVPNGatewayPrototype() bool {
 	return true

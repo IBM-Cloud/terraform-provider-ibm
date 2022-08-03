@@ -23,14 +23,13 @@ data "ibm_is_share_profile" "example" {
 
 The following arguments are supported:
 
-* `name` - (Required, string) The file share profile name.
+- `name` - (Required, string) The file share profile name.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `id` - The unique identifier of the ShareProfile.
-* `family` - The product family this share profile belongs to.
-* `href` - The URL for this share profile.
-* `resource_type` - The resource type.
+- `family` - The product family this share profile belongs to.
+- `href` - The URL for this share profile.
+- `resource_type` - The resource type.
 
