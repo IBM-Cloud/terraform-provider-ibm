@@ -496,11 +496,6 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.Zone != nil {
 		sharesMap["zone"] = *sharesItem.Zone.Name
 	}
-	tags, err := flex.GetGlobalTagsUsingCRN(meta, *sharesItem.CRN, "", isUserTagType)
-	if err != nil {
-		log.Printf(
-			"Error getting shares (%s) tags: %s", *sharesItem.ID, err)
-	}
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *sharesItem.CRN, "", isAccessTagType)
 	if err != nil {
@@ -508,7 +503,9 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 			"Error gettings shares (%s) access tags: %s", *sharesItem.ID, err)
 	}
 
-	sharesMap[isFileShareTags] = tags
+	if sharesItem.UserTags != nil {
+		sharesMap[isFileShareTags] = sharesItem.UserTags
+	}
 	sharesMap[isFileShareAccessTags] = accesstags
 	return sharesMap
 }

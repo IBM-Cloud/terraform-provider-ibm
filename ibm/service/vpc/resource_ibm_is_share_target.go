@@ -46,11 +46,11 @@ func ResourceIbmIsShareTarget() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_share_target", "name"),
 				Description:  "The user-defined name for this share target. Names must be unique within the share the share target resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
-			"subnet": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The unique identifier of the subnet associated with this file share target.Only virtual server instances in the same VPC as this subnet will be allowed to mount the file share. In the future, this property may be required and used to assign an IP address for the file share target.",
-			},
+			// "subnet": {
+			// 	Type:        schema.TypeString,
+			// 	Optional:    true,
+			// 	Description: "The unique identifier of the subnet associated with this file share target.Only virtual server instances in the same VPC as this subnet will be allowed to mount the file share. In the future, this property may be required and used to assign an IP address for the file share target.",
+			// },
 			"share_target": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -113,20 +113,20 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 
 	createShareTargetOptions.SetShareID(d.Get("share").(string))
 	vpcid := d.Get("vpc").(string)
-	vpc := &vpcv1.ShareTargetPrototypeVPC{
+	vpc := &vpcv1.VPCIdentity{
 		ID: &vpcid,
 	}
 	createShareTargetOptions.SetVPC(vpc)
 	if _, ok := d.GetOk("name"); ok {
 		createShareTargetOptions.SetName(d.Get("name").(string))
 	}
-	if subnetIntf, ok := d.GetOk("subnet"); ok {
-		subnet := subnetIntf.(string)
-		subnetIdentity := &vpcv1.SubnetIdentity{
-			ID: &subnet,
-		}
-		createShareTargetOptions.Subnet = subnetIdentity
-	}
+	// if subnetIntf, ok := d.GetOk("subnet"); ok {
+	// 	subnet := subnetIntf.(string)
+	// 	subnetIdentity := &vpcv1.SubnetIdentity{
+	// 		ID: &subnet,
+	// 	}
+	// 	createShareTargetOptions.Subnet = subnetIdentity
+	// }
 
 	shareTarget, response, err := vpcClient.CreateShareTargetWithContext(context, createShareTargetOptions)
 	if err != nil {
@@ -178,11 +178,11 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("name", *shareTarget.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if shareTarget.Subnet != nil {
-		if err = d.Set("subnet", *shareTarget.Subnet.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subnet: %s", err))
-		}
-	}
+	// if shareTarget.Subnet != nil {
+	// 	if err = d.Set("subnet", *shareTarget.Subnet.ID); err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting subnet: %s", err))
+	// 	}
+	// }
 	if err = d.Set("created_at", shareTarget.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}

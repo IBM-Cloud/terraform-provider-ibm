@@ -192,6 +192,14 @@ func ResourceIbmIsShare() *schema.Resource {
 								},
 							},
 						},
+						isFileShareTags: {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", isFileShareTags)},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "User Tags for the replica share",
+						},
 						"zone": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -312,7 +320,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", isFileShareTags)},
 				Set:         flex.ResourceIBMVPCHash,
-				Description: "User Tags for the snapshot",
+				Description: "User Tags for the file share",
 			},
 			isFileShareAccessTags: {
 				Type:        schema.TypeSet,
@@ -322,14 +330,6 @@ func ResourceIbmIsShare() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access management tags",
 			},
-			// isFileShareTags: {
-			// 	Type:        schema.TypeSet,
-			// 	Optional:    true,
-			// 	Computed:    true,
-			// 	Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_share", "tag")},
-			// 	Set:         flex.ResourceIBMVPCHash,
-			// 	Description: "List of tags",
-			// },
 			"share_targets": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -534,6 +534,26 @@ func resourceIbmIsShareCreate(context context.Context, d *schema.ResourceData, m
 				}
 				model.Targets = targets
 			}
+
+			var userTags *schema.Set
+			if v, ok := replicaShare[isFileShareTags]; ok {
+				userTags = v.(*schema.Set)
+				if userTags != nil && userTags.Len() != 0 {
+					userTagsArray := make([]string, userTags.Len())
+					for i, userTag := range userTags.List() {
+						userTagStr := userTag.(string)
+						userTagsArray[i] = userTagStr
+					}
+					schematicTags := os.Getenv("IC_ENV_TAGS")
+					var envTags []string
+					if schematicTags != "" {
+						envTags = strings.Split(schematicTags, ",")
+						userTagsArray = append(userTagsArray, envTags...)
+					}
+					sharePrototype.UserTags = userTagsArray
+				}
+			}
+
 			sharePrototype.ReplicaShare = model
 		}
 	} else {
@@ -645,7 +665,7 @@ func resourceIbmIsShareMapToShareTargetPrototype(shareTargetPrototypeMap map[str
 
 	if vpcIntf, ok := shareTargetPrototypeMap["vpc"]; ok && vpcIntf != "" {
 		vpc := vpcIntf.(string)
-		shareTargetPrototype.VPC = &vpcv1.ShareTargetPrototypeVPC{
+		shareTargetPrototype.VPC = &vpcv1.VPCIdentity{
 			ID: &vpc,
 		}
 	}

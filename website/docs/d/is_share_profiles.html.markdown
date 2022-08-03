@@ -22,10 +22,10 @@ data "ibm_is_share_profiles" "example" {
 
 The following attributes are exported:
 
-* `profiles` - Collection of share profiles. Nested `profiles` blocks have the following structure:
-	* `family` - The product family this share profile belongs to.
-	* `href` - The URL for this share profile.
-	* `name` - The globally unique name for this share profile.
-	* `resource_type` - The resource type.
-* `total_count` - The total number of resources across all pages.
+- `profiles` - Collection of share profiles. Nested `profiles` blocks have the following structure:
+	- `family` - The product family this share profile belongs to.
+	- `href` - The URL for this share profile.
+	- `name` - The globally unique name for this share profile.
+	- `resource_type` - The resource type.
+- `total_count` - The total number of resources across all pages.
 
