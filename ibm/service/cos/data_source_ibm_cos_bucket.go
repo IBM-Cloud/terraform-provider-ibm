@@ -5,6 +5,9 @@ package cos
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -15,8 +18,6 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strings"
-	"time"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -593,7 +594,7 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 
 	replicationptr, err := s3Client.GetBucketReplication(getBucketReplicationInput)
 
-	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") {
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") && !strings.Contains(err.Error(), "The replication configuration was not found") {
 		return err
 	}
 
