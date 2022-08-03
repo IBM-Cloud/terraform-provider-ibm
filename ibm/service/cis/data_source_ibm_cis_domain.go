@@ -31,8 +31,7 @@ func DataSourceIBMCISDomain() *schema.Resource {
 			cisDomainType: {
 				Type:        schema.TypeString,
 				Description: "CISzone - Domain Type",
-				Default:     "full",
-				Optional:    true,
+				Computed:    true,
 			},
 			cisDomainPaused: {
 				Type:     schema.TypeBool,

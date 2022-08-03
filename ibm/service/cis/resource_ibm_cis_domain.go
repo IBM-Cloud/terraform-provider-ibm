@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -21,6 +22,7 @@ const (
 	cisDomainType                = "type"
 	cisDomainVerificationKey     = "verification_key"
 	cisDomainCnameSuffix         = "cname_suffix"
+	cisDomainSettings            = "cis_domain_settings"
 )
 
 func ResourceIBMCISDomain() *schema.Resource {
@@ -41,6 +43,8 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Description: "CISzone - Domain Type",
 				Default:     "full",
 				Optional:    true,
+				ValidateFunc: validate.InvokeValidator(cisDomainSettings,
+					cisDomainType),
 			},
 			cisDomainPaused: {
 				Type:     schema.TypeBool,
@@ -192,4 +196,21 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func ResourceIBMCISDomainSettingsValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainType,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "full, parital"})
+
+	ibmCISDomainSettingsResourceValidator := validate.ResourceValidator{
+		ResourceName: cisDomainSettings,
+		Schema:       validateSchema}
+	return &ibmCISDomainSettingsResourceValidator
 }

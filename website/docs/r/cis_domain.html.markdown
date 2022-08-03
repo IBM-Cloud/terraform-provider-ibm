@@ -43,6 +43,7 @@ Review the argument references that you can specify for your resource.
 
 - `cis_id` - (Required, String) The ID of the IBM Cloud Internet Services instance.
 - `domain` - (Required, String) The DNS domain name that you want to add to your IBM Cloud Internet Services instance.
+- `type` - (String) The type of domain to be created. Default value is noted to be `full`- for regular domains, & to create a partial domain for CNAME setup, value to be used is `partial`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -53,7 +54,6 @@ In addition to all argument reference list, you can access the following attribu
 - `original_name_servers` - (String) The name servers that were used when the domain was first registered with the DNS Registrar.
 - `paused`- (Bool) Indicates if the domain is paused and network traffic bypasses your IBM Cloud Internet Services instance. The default values is **false**.
 - `status` - (String) The status of the domain. Valid values are `active`, `pending`, `initializing`, `moved`, `deleted`, and `deactivated`. After creation, the status remains pending until the DNS Registrar is updated with the CIS name servers, exported in the `name_servers` variable.
-- `type` - (String) The type of domain to be created. Default value is noted to be `full`- for regular domains, & to create a partial domain for CNAME setup, value to be used is `partial`.
 - `verification_key` - (String) The verification key of the domain.
 - `cname_suffix` - (String) The cname suffix of the domain.
 
