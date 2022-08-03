@@ -1,3 +1,9 @@
+# 1.44.1 (Aug 3, 2022)
+BUG FIXES
+* Fix the breaking change of cos bucket with replication configuration ([3945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3945))
+* fix the firewall allowed_ip issue ([3894](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3894))
+* Fix the nil pointer for coreos enabled ([3948](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3948))
+
 # 1.44.0 (Aug 2, 2022)
 Features
 * Support Internt Services
