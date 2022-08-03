@@ -177,7 +177,9 @@ func dataSourceIBMSatelliteLocationRead(d *schema.ResourceData, meta interface{}
 	d.SetId(*instance.ID)
 	d.Set("location", location)
 	d.Set("description", *instance.Description)
-	d.Set("coreos_enabled", *instance.CoreosEnabled)
+	if instance.CoreosEnabled != nil {
+		d.Set("coreos_enabled", *instance.CoreosEnabled)
+	}
 	d.Set("zones", instance.WorkerZones)
 	d.Set("managed_from", *instance.Datacenter)
 	d.Set("crn", *instance.Crn)
