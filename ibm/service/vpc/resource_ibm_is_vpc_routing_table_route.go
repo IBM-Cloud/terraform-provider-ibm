@@ -67,7 +67,7 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 			},
 			rNextHop: {
 				Type:     schema.TypeString,
-				Required: true, // recheck as the generated says it as, not required.
+				Required: true,
 				// ForceNew:    true,
 				Description: "If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
 			},
