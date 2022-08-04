@@ -66,9 +66,8 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Description: "The zone to apply the route to. Traffic from subnets in this zone will be subject to this route.",
 			},
 			rNextHop: {
-				Type:     schema.TypeString,
-				Required: true,
-				// ForceNew:    true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "If action is deliver, the next hop that packets will be delivered to. For other action values, its address will be 0.0.0.0.",
 			},
 			rAction: {
