@@ -44,6 +44,20 @@ resource "ibm_is_vpc_routing_table_route" "example" {
   next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
 }
 ```
+Route priority support:
+
+```
+resource "ibm_is_vpc_routing_table_route" "example" {
+  vpc           = ibm_is_vpc.example.id
+  routing_table = ibm_is_vpc_routing_table.example.routing_table
+  zone          = "us-south-1"
+  name          = "custom-route-2"
+  destination   = "192.168.4.0/24"
+  action        = "deliver"
+  next_hop      = ibm_is_vpn_gateway_connection.example.gateway_connection // Example value "10.0.0.4"
+  priority      = 1
+}
+```
 
 ## Argument reference
 Review the argument references that you can specify for your resource. 
