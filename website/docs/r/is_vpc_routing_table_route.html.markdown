@@ -46,7 +46,7 @@ resource "ibm_is_vpc_routing_table_route" "example" {
 ```
 Route priority support:
 
-```
+```terraform
 resource "ibm_is_vpc_routing_table_route" "example" {
   vpc           = ibm_is_vpc.example.id
   routing_table = ibm_is_vpc_routing_table.example.routing_table
