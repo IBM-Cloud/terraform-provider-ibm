@@ -158,6 +158,7 @@ func testAccCheckIBMISSubnetsDataSourceFilterResourceGroupConfig(vpcname, name, 
 	}
 	  
 	data "ibm_is_subnets" "ds_subnets_resource_group" {
+		depends_on = [ibm_is_subnet.testacc_subnet]
 		resource_group = data.ibm_resource_group.resourceGroup.id
 	}
 	`, vpcname, name, zone, cidr)
@@ -190,7 +191,8 @@ func testAccCheckIBMISSubnetsDataSourceFilterRoutingTableConfig(vpcname, name, z
 	}
 	  
 	data "ibm_is_subnets" "ds_subnets_routing_table" {
-		routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.id
+		depends_on = [ibm_is_subnet.testacc_subnet ]
+		routing_table = ibm_is_vpc_routing_table.test_cr_route_table1.routing_table
 	}
 	`, vpcname, name, zone, cidr)
 }

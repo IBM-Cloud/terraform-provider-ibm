@@ -6,6 +6,7 @@ package resourcecontroller
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -135,6 +136,9 @@ func dataSourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) erro
 
 	d.SetId(key.ID)
 
+	if redacted, ok := key.Credentials["redacted"].(string); ok {
+		log.Printf("Credentials are redacted with code: %s.The User doesn't have the correct access to view the credentials. Refer to the API documentation for additional details.", redacted)
+	}
 	if roleCrn, ok := key.Parameters["role_crn"].(string); ok {
 		d.Set("role", roleCrn[strings.LastIndex(roleCrn, ":")+1:])
 	} else if roleCrn, ok := key.Credentials["iam_role_crn"].(string); ok {

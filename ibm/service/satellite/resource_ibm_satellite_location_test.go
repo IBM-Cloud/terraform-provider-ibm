@@ -20,6 +20,7 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
+	coreos_enabled := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,11 +29,12 @@ func TestAccSatelliteLocation_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "managed_from", managed_from),
+					resource.TestCheckResourceAttr("ibm_satellite_location.location", "coreos_enabled", coreos_enabled),
 				),
 			},
 		},
@@ -43,6 +45,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 	var instance string
 	name := fmt.Sprintf("tf_location_%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
+	coreos_enabled := "true"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -51,7 +54,7 @@ func TestAccSatelliteLocation_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteLocationCreate(name, managed_from),
+				Config: testAccCheckSatelliteLocationCreate(name, managed_from, coreos_enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteLocationExists("ibm_satellite_location.location", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_location.location", "location", name),
@@ -123,7 +126,7 @@ func testAccCheckSatelliteLocationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteLocationCreate(name, managed_from string) string {
+func testAccCheckSatelliteLocationCreate(name, managed_from string, coreos_enabled string) string {
 	return fmt.Sprintf(`
 
 	data "ibm_resource_group" "res_group" {
@@ -133,11 +136,12 @@ func testAccCheckSatelliteLocationCreate(name, managed_from string) string {
 	resource "ibm_satellite_location" "location" {
 		location = "%s"
 		managed_from = "%s"
+		coreos_enabled = "%s"
 		description = "test"
 		zones = ["us-east-1", "us-east-2", "us-east-3"]
 		resource_group_id = data.ibm_resource_group.res_group.id
 		tags = ["env:dev"]
 	}
 	  
-`, name, managed_from)
+`, name, managed_from, coreos_enabled)
 }

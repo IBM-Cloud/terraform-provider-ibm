@@ -31,7 +31,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `description`  - (String) The WAF rule group description.
 - `group_id` - (String) The WAF group ID.
-- `modified_rules_count` - (String)  Number of rules modified in WAF Group.
+- `modified_rules_count` - (Integer)  Number of rules modified in WAF Group.
 - `mode`  - (String) The `on`, or `off` mode setting of the WAF rule group.
 - `name` - (String) The name of the  WAF rule group.
-- `rules_count` - (String)   Number of rules in WAF Group.
+- `rules_count` - (Integer)   Number of rules in WAF Group.

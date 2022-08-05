@@ -49,6 +49,9 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
+	Nested scheme for **accept_routes_from**:
+	- `resource_type` - (String) The resource type.
 - `created_at` - (String) The date and time that this routing table was created.
 - `href` - (String) The URL for this routing table.
 - `id` - (String) The unique identifier of the RoutingTable.
