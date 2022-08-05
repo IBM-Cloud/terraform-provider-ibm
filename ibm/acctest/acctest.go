@@ -90,10 +90,16 @@ var HpcsAdmin2 string
 var HpcsToken2 string
 var RealmName string
 var IksSa string
+var IksClusterID string
 var IksClusterVpcID string
 var IksClusterSubnetID string
 var IksClusterResourceGroupID string
 var IcdDbRegion string
+var IcdDbDeploymentId string
+var IcdDbBackupId string
+var IcdDbTaskId string
+var KmsInstanceID string
+var CrkID string
 
 // For Power Colo
 
@@ -158,9 +164,28 @@ var Scc_posture_credential_id_scope string
 var Scc_posture_credential_id_scope_update string
 var Scc_posture_collector_id_scope []string
 var Scc_posture_collector_id_scope_update []string
+var Scc_posture_collector_id string
+var Scc_posture_credential_id string
 
 //ROKS Cluster
 var ClusterName string
+
+// Satellite instance
+var Satellite_location_id string
+var Satellite_Resource_instance_id string
+
+//Dedicated host
+var HostPoolID string
+
+// Continuous Delivery
+var CdResourceGroupID string
+
+// VPN Server
+var ISCertificateCrn string
+var ISClientCaCrn string
+
+// COS Replication Bucket
+var IBM_AccountID_REPL string
 
 func init() {
 	testlogger := os.Getenv("TF_LOG")
@@ -526,6 +551,23 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable ICD_DB_REGION for testing ibm_cloud_databases else it is set to default value 'eu-gb'")
 	}
 
+	IcdDbDeploymentId = os.Getenv("ICD_DB_DEPLOYMENT_ID")
+	if IcdDbDeploymentId == "" {
+		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+	}
+
+	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")
+	if IcdDbBackupId == "" {
+		IcdDbBackupId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_BACKUP_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251:backup:0d862fdb-4faa-42e5-aecb-5057f4d399c3'")
+	}
+
+	IcdDbTaskId = os.Getenv("ICD_DB_TASK_ID")
+	if IcdDbTaskId == "" {
+		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
+		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
+	}
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
@@ -853,6 +895,16 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID_SCOPE_UPDATE for testing SCC Posture resource or datasource else  tests will fail if this is not set correctly")
 	}
 
+	Scc_posture_collector_id = os.Getenv("SCC_POSTURE_COLLECTOR_ID")
+	if Scc_posture_collector_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_COLLECTOR_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
+	Scc_posture_credential_id = os.Getenv("SCC_POSTURE_CREDENTIAL_ID")
+	if Scc_posture_credential_id == "" {
+		fmt.Println("[INFO] Set the environment variable SCC_POSTURE_CREDENTIAL_ID for testing SCC Posture resources or datasource resource else  tests will fail if this is not set correctly")
+	}
+
 	CloudShellAccountID = os.Getenv("IBM_CLOUD_SHELL_ACCOUNT_ID")
 	if CloudShellAccountID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLOUD_SHELL_ACCOUNT_ID for ibm-cloud-shell resource or datasource else tests will fail if this is not set correctly")
@@ -876,6 +928,56 @@ func init() {
 	ClusterName = os.Getenv("IBM_CONTAINER_CLUSTER_NAME")
 	if ClusterName == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_CLUSTER_NAME for ibm_container_nlb_dns resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	Satellite_location_id = os.Getenv("SATELLITE_LOCATION_ID")
+	if Satellite_location_id == "" {
+		fmt.Println("[INFO] Set the environment variable SATELLITE_LOCATION_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	Satellite_Resource_instance_id = os.Getenv("SATELLITE_RESOURCE_INSTANCE_ID")
+	if Satellite_Resource_instance_id == "" {
+		fmt.Println("[INFO] Set the environment variable SATELLITE_RESOURCE_INSTANCE_ID for ibm_cos_bucket satellite location resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	HostPoolID = os.Getenv("IBM_CONTAINER_DEDICATEDHOST_POOL_ID")
+	if HostPoolID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CONTAINER_DEDICATEDHOST_POOL_ID for ibm_container_vpc_cluster resource to test dedicated host functionality")
+	}
+
+	KmsInstanceID = os.Getenv("IBM_KMS_INSTANCE_ID")
+	if KmsInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_KMS_INSTANCE_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	CrkID = os.Getenv("IBM_CRK_ID")
+	if CrkID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CRK_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	IksClusterID = os.Getenv("IBM_CLUSTER_ID")
+	if IksClusterID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
+	if CdResourceGroupID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
+	if ISCertificateCrn == "" {
+		fmt.Println("[INFO] Set the environment variable IS_CERTIFICATE_CRN for testing ibm_is_vpn_server resource")
+	}
+
+	ISClientCaCrn = os.Getenv("IS_CLIENT_CA_CRN")
+	if ISClientCaCrn == "" {
+		fmt.Println("[INFO] Set the environment variable IS_CLIENT_CA_CRN for testing ibm_is_vpn_server resource")
+	}
+
+	IBM_AccountID_REPL = os.Getenv("IBM_AccountID_REPL")
+	if IBM_AccountID_REPL == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_AccountID_REPL for setting up authorization policy to enable replication feature resource or datasource else tests will fail if this is not set correctly")
 	}
 }
 

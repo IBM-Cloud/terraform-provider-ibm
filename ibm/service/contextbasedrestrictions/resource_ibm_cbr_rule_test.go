@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package contextbasedrestrictions_test
@@ -25,7 +25,7 @@ func TestAccIBMCbrRuleBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMCbrRuleConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
@@ -38,48 +38,55 @@ func TestAccIBMCbrRuleBasic(t *testing.T) {
 func TestAccIBMCbrRuleAllArgs(t *testing.T) {
 	var conf contextbasedrestrictionsv1.Rule
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	enforcementMode := "enabled"
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	enforcementModeUpdate := "report"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCbrRuleConfig(description),
+			resource.TestStep{
+				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule", conf),
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", description),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementMode),
 				),
 			},
-			{
-				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate),
+			resource.TestStep{
+				Config: testAccCheckIBMCbrRuleConfig(descriptionUpdate, enforcementModeUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule", "enforcement_mode", enforcementModeUpdate),
 				),
 			},
-			{
+			resource.TestStep{
 				ResourceName:      "ibm_cbr_rule.cbr_rule",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"transaction_id"},
 			},
 		},
 	})
 }
 
 func testAccCheckIBMCbrRuleConfigBasic() string {
-	return `
+	return fmt.Sprintf(`
+
 		resource "ibm_cbr_rule" "cbr_rule" {
   			description = "test rule config basic"
   			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "322af80e125f6842cded8ba7a1008370"
+      				value = "559052eb8f43302824e7ae490c0281eb"
     			}
   			}
- 			 resources {
+			resources {
+    			attributes {
+      				name = "accountId"
+      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+    			}
     			attributes {
       				name = "serviceName"
       				value = "user-management"
@@ -89,12 +96,12 @@ func testAccCheckIBMCbrRuleConfigBasic() string {
       				value    = "tag_value"
     			}
   			}
+			enforcement_mode = "disabled"
 		}
-	`
+	`)
 }
 
-func testAccCheckIBMCbrRuleConfig(description string) string {
-	// func testAccCheckIBMCbrRuleConfig(description string) string {
+func testAccCheckIBMCbrRuleConfig(description string, enforcementMode string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cbr_rule" "cbr_rule" {
@@ -102,21 +109,27 @@ func testAccCheckIBMCbrRuleConfig(description string) string {
 			contexts {
     			attributes {
       				name = "networkZoneId"
-      				value = "322af80e125f6842cded8ba7a1008370"
+      				value = "559052eb8f43302824e7ae490c0281eb"
     			}
 			}
 			resources {
     			attributes {
+      				name = "accountId"
+      				value = "12ab34cd56ef78ab90cd12ef34ab56cd"
+    			}
+    			attributes {
       				name = "serviceName"
       				value = "user-management"
     			}
-    			tags {
-      				name     = "tag_name"
-      				value    = "tag_value"
-    			}
+				tags {
+					name = "name"
+					value = "value"
+					operator = "stringEquals"
+				}
 			}
+			enforcement_mode = "%s"
 		}
-	`, description)
+	`, description, enforcementMode)
 }
 
 func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule) resource.TestCheckFunc {
@@ -166,7 +179,7 @@ func testAccCheckIBMCbrRuleDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("cbr_rule still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for cbr_rule (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for cbr_rule (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

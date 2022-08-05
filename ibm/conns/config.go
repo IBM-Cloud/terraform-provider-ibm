@@ -29,6 +29,7 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
+	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -44,6 +45,7 @@ import (
 	cisglbpoolv0 "github.com/IBM/networking-go-sdk/globalloadbalancerpoolsv0"
 	cisglbv1 "github.com/IBM/networking-go-sdk/globalloadbalancerv1"
 	cislogpushjobsapiv1 "github.com/IBM/networking-go-sdk/logpushjobsapiv1"
+	cismtlsv1 "github.com/IBM/networking-go-sdk/mtlsv1"
 	cispagerulev1 "github.com/IBM/networking-go-sdk/pageruleapiv1"
 	cisrangeappv1 "github.com/IBM/networking-go-sdk/rangeapplicationsv1"
 	cisroutingv1 "github.com/IBM/networking-go-sdk/routingv1"
@@ -60,6 +62,7 @@ import (
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
 	"github.com/IBM/platform-services-go-sdk/atrackerv1"
+	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
@@ -106,8 +109,11 @@ import (
 	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	ibmpisession "github.com/IBM-Cloud/power-go-client/ibmpisession"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
+	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
+	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
 )
 
@@ -235,9 +241,11 @@ type ClientSession interface {
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
+	UkoV4() (*ukov4.UkoV4, error)
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
@@ -254,6 +262,7 @@ type ClientSession interface {
 	CisRoutingClientSession() (*cisroutingv1.RoutingV1, error)
 	CisWAFGroupClientSession() (*ciswafgroupv1.WafRuleGroupsApiV1, error)
 	CisCacheClientSession() (*ciscachev1.CachingApiV1, error)
+	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -274,12 +283,15 @@ type ClientSession interface {
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
+	AtrackerV2() (*atrackerv2.AtrackerV2, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
 	ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error)
 	PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error)
+	CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error)
+	CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error)
 }
 
 type clientSession struct {
@@ -366,6 +378,9 @@ type clientSession struct {
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
 
+	ukoClient    *ukov4.UkoV4
+	ukoClientErr error
+
 	pDNSClient *dns.DnsSvcsV1
 	pDNSErr    error
 
@@ -404,6 +419,10 @@ type clientSession struct {
 	// CIS Alerts
 	cisAlertsClient *cisalertsv1.AlertsV1
 	cisAlertsErr    error
+
+	// CIS Authenticated Origin Pull
+	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
+	cisOriginAuthPullErr error
 
 	// CIS dns service options
 	cisDNSErr           error
@@ -529,6 +548,10 @@ type clientSession struct {
 	iamAccessGroupsErr error
 	iamAccessGroupsAPI *iamaccessgroups.IamAccessGroupsV2
 
+	// MTLS Session options
+	cisMtlsClient *cismtlsv1.MtlsV1
+	cisMtlsErr    error
+
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
 	cisWebhooksErr    error
@@ -544,6 +567,9 @@ type clientSession struct {
 	//Atracker
 	atrackerClient    *atrackerv1.AtrackerV1
 	atrackerClientErr error
+
+	atrackerClientV2    *atrackerv2.AtrackerV2
+	atrackerClientV2Err error
 
 	//Satellite link service
 	satelliteLinkClient    *satellitelinkv1.SatelliteLinkV1
@@ -571,6 +597,14 @@ type clientSession struct {
 	// context Based Restrictions (CBR)
 	contextBasedRestrictionsClient    *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
 	contextBasedRestrictionsClientErr error
+
+	// CD Toolchain
+	cdToolchainClient    *cdtoolchainv2.CdToolchainV2
+	cdToolchainClientErr error
+
+	// CD Tekton Pipeline
+	cdTektonPipelineClient    *cdtektonpipelinev2.CdTektonPipelineV2
+	cdTektonPipelineClientErr error
 }
 
 // AppIDAPI provides AppID Service APIs ...
@@ -645,6 +679,11 @@ func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1,
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
 func (sess clientSession) HpcsEndpointAPI() (hpcs.HPCSV2, error) {
 	return sess.hpcsEndpointAPI, sess.hpcsEndpointErr
+}
+
+// UKO
+func (session clientSession) UkoV4() (*ukov4.UkoV4, error) {
+	return session.ukoClient, session.ukoClientErr
 }
 
 // UserManagementAPI provides User management APIs ...
@@ -981,6 +1020,14 @@ func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1
 	return sess.cisWAFRuleClient.Clone(), nil
 }
 
+// CIS Authenticated Origin Pull
+func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error) {
+	if sess.cisOriginAuthPullErr != nil {
+		return sess.cisOriginAuthClient, sess.cisOriginAuthPullErr
+	}
+	return sess.cisOriginAuthClient.Clone(), nil
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1025,6 +1072,14 @@ func (sess clientSession) CisLogpushJobsSession() (*cislogpushjobsapiv1.LogpushJ
 	return sess.cisLogpushJobsClient.Clone(), nil
 }
 
+// CIS MTLS session
+func (sess clientSession) CisMtlsSession() (*cismtlsv1.MtlsV1, error) {
+	if sess.cisMtlsErr != nil {
+		return sess.cisMtlsClient, sess.cisMtlsErr
+	}
+	return sess.cisMtlsClient.Clone(), nil
+}
+
 // CIS Webhooks
 func (sess clientSession) CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error) {
 	if sess.cisWebhooksErr != nil {
@@ -1052,6 +1107,10 @@ func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.Firewal
 // Activity Tracker API
 func (session clientSession) AtrackerV1() (*atrackerv1.AtrackerV1, error) {
 	return session.atrackerClient, session.atrackerClientErr
+}
+
+func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
+	return session.atrackerClientV2, session.atrackerClientV2Err
 }
 
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
@@ -1086,6 +1145,16 @@ func (session clientSession) PostureManagementV2() (*posturemanagementv2.Posture
 // Context Based Restrictions
 func (session clientSession) ContextBasedRestrictionsV1() (*contextbasedrestrictionsv1.ContextBasedRestrictionsV1, error) {
 	return session.contextBasedRestrictionsClient, session.contextBasedRestrictionsClientErr
+}
+
+// CD Toolchain
+func (session clientSession) CdToolchainV2() (*cdtoolchainv2.CdToolchainV2, error) {
+	return session.cdToolchainClient, session.cdToolchainClientErr
+}
+
+// CD Tekton Pipeline
+func (session clientSession) CdTektonPipelineV2() (*cdtektonpipelinev2.CdTektonPipelineV2, error) {
+	return session.cdTektonPipelineClient, session.cdTektonPipelineClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1159,6 +1228,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFGroupErr = errEmptyBluemixCredentials
 		session.cisCacheErr = errEmptyBluemixCredentials
 		session.cisCustomPageErr = errEmptyBluemixCredentials
+		session.cisMtlsErr = errEmptyBluemixCredentials
 		session.cisAccessRuleErr = errEmptyBluemixCredentials
 		session.cisUARuleErr = errEmptyBluemixCredentials
 		session.cisLockdownErr = errEmptyBluemixCredentials
@@ -1178,6 +1248,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientErr = errEmptyBluemixCredentials
 		session.postureManagementClientErrv2 = errEmptyBluemixCredentials
 		session.configServiceApiClientErr = errEmptyBluemixCredentials
+		session.cdTektonPipelineClientErr = errEmptyBluemixCredentials
+		session.cdToolchainClientErr = errEmptyBluemixCredentials
 
 		return session, nil
 	}
@@ -1399,6 +1471,24 @@ func (c *Config) ClientSession() (interface{}, error) {
 		}
 	}
 
+	// Construct an "options" struct for creating the service client.
+	ukoClientOptions := &ukov4.UkoV4Options{
+		Authenticator: authenticator,
+	}
+
+	// Construct the service client.
+	session.ukoClient, err = ukov4.NewUkoV4(ukoClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.ukoClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.ukoClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.ukoClientErr = fmt.Errorf("Error occurred while configuring HPCS UKO service: %q", err)
+	}
+
 	// APPID Service
 	appIDEndpoint := fmt.Sprintf("https://%s.appid.cloud.ibm.com", c.Region)
 	if c.Visibility == "private" {
@@ -1431,7 +1521,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
 	}
-	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.ContextBasedRestrictionsV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
 	}
@@ -1509,6 +1599,37 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+	// Version 2 Atracker
+	var atrackerClientV2URL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		atrackerClientV2URL = atrackerv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		atrackerClientV2URL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientV2URL)
+	}
+	atrackerClientV2Options := &atrackerv2.AtrackerV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientV2URL),
+	}
+	session.atrackerClientV2, err = atrackerv2.NewAtrackerV2(atrackerClientV2Options)
+	if err == nil {
+		// Enable retries for API calls
+		session.atrackerClientV2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.atrackerClientV2.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
 	}
 
 	// SCC ADMIN Service
@@ -1987,6 +2108,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisWAFRuleErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisFiltersErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 		session.cisWebhooksErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
+		session.cisMtlsErr = fmt.Errorf("CIS Service doesnt support private endpoints.")
 
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -2481,6 +2603,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
+	// IBM MTLS Session
+	cisMtlsOpt := &cismtlsv1.MtlsV1Options{
+		URL:           cisEndPoint,
+		Crn:           core.StringPtr(""),
+		Authenticator: authenticator,
+	}
+	session.cisMtlsClient, session.cisMtlsErr = cismtlsv1.NewMtlsV1(cisMtlsOpt)
+	if session.cisMtlsErr != nil {
+		session.cisMtlsErr =
+			fmt.Errorf("[ERROR] Error occured while configuring CIS MTLS : %s",
+				session.cisMtlsErr)
+	}
+	if session.cisMtlsClient != nil && session.cisMtlsClient.Service != nil {
+		session.cisMtlsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisMtlsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
 	// IBM Network CIS Webhooks
 	cisWebhooksOpt := &ciswebhooksv1.WebhooksV1Options{
 		URL:           cisEndPoint,
@@ -2531,6 +2672,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
 		session.cisFirewallRulesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisFirewallRulesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS Authenticated Origin Pull
+	cisOriginAuthOptions := &cisoriginpull.AuthenticatedOriginPullApiV1Options{
+		URL:            cisEndPoint,
+		Authenticator:  authenticator,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+	}
+
+	session.cisOriginAuthClient, session.cisOriginAuthPullErr =
+		cisoriginpull.NewAuthenticatedOriginPullApiV1(cisOriginAuthOptions)
+	if session.cisOriginAuthPullErr != nil {
+		session.cisOriginAuthPullErr = fmt.Errorf(
+			"Error occured while configuring CIS Authenticated Origin Pullservice: %s",
+			session.cisOriginAuthPullErr)
+	}
+	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
+		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisOriginAuthClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
@@ -2926,6 +3089,73 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.postureManagementClientv2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	}
+
+	// Construct an "options" struct for creating the service client.
+	var cdToolchainClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		cdToolchainClientURL, err = cdtoolchainv2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		cdToolchainClientURL = cdtoolchainv2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdToolchainClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TOOLCHAIN_ENDPOINT", c.Region, cdToolchainClientURL)
+	}
+	cdToolchainClientOptions := &cdtoolchainv2.CdToolchainV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TOOLCHAIN_ENDPOINT"}, cdToolchainClientURL),
+	}
+
+	// Construct the service client.
+	session.cdToolchainClient, err = cdtoolchainv2.NewCdToolchainV2(cdToolchainClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cdToolchainClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cdToolchainClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cdToolchainClientErr = fmt.Errorf("Error occurred while configuring Toolchain service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the tekton pipeline service client.
+	var cdTektonPipelineClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		cdTektonPipelineClientURL, err = cdtektonpipelinev2.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		cdTektonPipelineClientURL = cdtektonpipelinev2.DefaultServiceURL
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		cdTektonPipelineClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_TEKTON_PIPELINE_ENDPOINT", c.Region, cdTektonPipelineClientURL)
+	}
+	cdTektonPipelineClientOptions := &cdtektonpipelinev2.CdTektonPipelineV2Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_TEKTON_PIPELINE_ENDPOINT"}, cdTektonPipelineClientURL),
+	}
+	// Construct the service client.
+	session.cdTektonPipelineClient, err = cdtektonpipelinev2.NewCdTektonPipelineV2(cdTektonPipelineClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.cdTektonPipelineClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.cdTektonPipelineClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.cdTektonPipelineClientErr = fmt.Errorf("Error occurred while configuring CD Tekton Pipeline service: %q", err)
 	}
 
 	if os.Getenv("TF_LOG") != "" {

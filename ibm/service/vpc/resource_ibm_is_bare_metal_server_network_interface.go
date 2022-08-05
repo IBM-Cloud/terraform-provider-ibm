@@ -228,7 +228,7 @@ func ResourceIBMIsBareMetalServerNetworkInterface() *schema.Resource {
 
 func ResourceIBMIsBareMetalServerNetworkInterfaceValidator() *validate.ResourceValidator {
 
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isBareMetalServerName,
@@ -241,7 +241,7 @@ func ResourceIBMIsBareMetalServerNetworkInterfaceValidator() *validate.ResourceV
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,

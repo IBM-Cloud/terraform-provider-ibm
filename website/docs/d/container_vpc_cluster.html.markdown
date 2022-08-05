@@ -67,6 +67,7 @@ In addition to all argument reference list, you can access the following attribu
 	- `worker_count` - (Integer) The total number of worker nodes in this worker pool.
 	- `isolation` - (String) The level of hardware isolation for the worker node. For VPC clusters, this value is always `shared`.
 	- `id` - (String) The ID of the worker pool.
+	- `host_pool_id` - (String) The ID of the dedicated host pool.
 	- `labels` - List of strings - A list of labels that are added to the worker pool.
 	- `zones` - List of objects - A list of zones that are attached to the worker pool.
 

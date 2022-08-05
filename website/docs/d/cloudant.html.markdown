@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cloudant"
 description: |-
   Get information about Cloudant instance.
-subcategory: "Cloud Databases"
+subcategory: "Cloudant Databases"
 ---
 
 # ibm_cloudant

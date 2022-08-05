@@ -3,12 +3,18 @@ package power
 import "time"
 
 const (
+	// used by all
+	Arg_CloudInstanceID = "pi_cloud_instance_id"
 
 	// Keys
-	PIKeys    = "keys"
-	PIKeyName = "name"
-	PIKey     = "ssh_key"
-	PIKeyDate = "creation_date"
+	Arg_KeyName = "pi_key_name"
+	Arg_Key     = "pi_ssh_key"
+
+	Attr_KeyID           = "key_id"
+	Attr_Keys            = "keys"
+	Attr_KeyCreationDate = "creation_date"
+	Attr_Key             = "ssh_key"
+	Attr_KeyName         = "name"
 
 	// SAP Profile
 	PISAPProfiles         = "profiles"
@@ -19,16 +25,21 @@ const (
 	PISAPProfileType      = "type"
 
 	// DHCP
-	PIDhcpStatusBuilding = "Building"
-	PIDhcpStatusActive   = "ACTIVE"
-	PIDhcpDeleting       = "Deleting"
-	PIDhcpDeleted        = "Deleted"
-	PIDhcpId             = "dhcp_id"
-	PIDhcpStatus         = "status"
-	PIDhcpNetwork        = "network"
-	PIDhcpLeases         = "leases"
-	PIDhcpInstanceIp     = "instance_ip"
-	PIDhcpInstanceMac    = "instance_mac"
+	Arg_DhcpCidr              = "pi_cidr"
+	Arg_DhcpID                = "pi_dhcp_id"
+	Arg_DhcpCloudConnectionID = "pi_cloud_connection_id"
+	Arg_DhcpDnsServer         = "pi_dns_server"
+	Arg_DhcpName              = "pi_dhcp_name"
+
+	Attr_DhcpServers           = "servers"
+	Attr_DhcpID                = "dhcp_id"
+	Attr_DhcpLeases            = "leases"
+	Attr_DhcpLeaseInstanceIP   = "instance_ip"
+	Attr_DhcpLeaseInstanceMac  = "instance_mac"
+	Attr_DhcpNetworkDeprecated = "network" // to deprecate
+	Attr_DhcpNetworkID         = "network_id"
+	Attr_DhcpNetworkName       = "network_name"
+	Attr_DhcpStatus            = "status"
 
 	// Instance
 	//Added timeout values for warning  and active status
@@ -39,6 +50,7 @@ const (
 	PIInstanceNetwork             = "pi_network"
 	PIInstanceStoragePool         = "pi_storage_pool"
 	PISAPInstanceProfileID        = "pi_sap_profile_id"
+	PISAPInstanceDeploymentType   = "pi_sap_deployment_type"
 	PIInstanceStoragePoolAffinity = "pi_storage_pool_affinity"
 
 	// Placement Group
@@ -61,4 +73,17 @@ const (
 	PIVPNConnectionDeadPeerDetectionThreshold = "threshold"
 	PIVPNConnectionLocalGatewayAddress        = "local_gateway_address"
 	PIVPNConnectionVpnGatewayAddress          = "gateway_address"
+
+	// Cloud Connections
+	PICloudConnectionTransitEnabled = "pi_cloud_connection_transit_enabled"
+
+	// status
+	// common status states
+	StatusShutoff = "SHUTOFF"
+	StatusActive  = "ACTIVE"
+	StatusResize  = "RESIZE"
+	StatusError   = "ERROR"
+	StatusBuild   = "BUILD"
+	SctionStart   = "start"
+	SctionStop    = "stop"
 )

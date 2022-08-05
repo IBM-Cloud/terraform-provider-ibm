@@ -21,6 +21,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   target_service_name = "kms"
   roles               = ["Reader"]
   description         = "Authorization Policy"
+  transaction_id     = "terraformAuthorizationPolicy"
 }
 
 ```
@@ -139,6 +140,7 @@ Review the argument references that you can specify for your resource.
 
 - `description`  (Optional, String) The description of the Authorization Policy.
 - `roles` - (Required, list) The comma separated list of roles. For more information, about supported service specific roles, see  [IAM roles and actions](https://cloud.ibm.com/docs/account?topic=account-iam-service-roles-actions)
+
 - `source_service_account` - (Optional, Forces new resource, string) The account GUID of source service.**Note** Conflicts with `subject_attributes`.
 - `source_service_name` - (Required, Forces new resource, string) The source service name.**Note** Conflicts with `subject_attributes`.
 - `target_service_name` - (Required, Forces new resource, string) The target service name.**Note** Conflicts with `resource_attributes`.
@@ -161,7 +163,6 @@ Review the argument references that you can specify for your resource.
   - `name` - (Required, String) The name of an attribute. Supported values are `serviceName` , `serviceInstance` , `region` , `resource` , `resourceType` , `resourceGroupId` `accountId`.
   - `value` - (Required, String) The value of an attribute.
   - `operator` - (Optional, String) Operator of an attribute. The default value is `stringEquals`.
-
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 

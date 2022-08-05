@@ -135,3 +135,21 @@ variable "scope_correlation_correlation_id" {
   description = "A correlation_Id is created when a scope is created and discovery task is triggered or when a validation is triggered on a Scope. This is used to get the status of the task(discovery or validation)."
   type        = string
 }
+
+// Data source arguments for scope
+variable "scope_id" {
+	description = "The scope ID. This can be obtained from the Security and Compliance Center UI by clicking on the scope name. The URL contains the ID."
+  	type        = string
+}
+
+// Data source arguments for credential
+variable "credential_id" {
+	description = "The collector ID. This can be obtained from the Security and Compliance Center UI by clicking on the credential name. The network tab contains the ID."
+  	type        = string
+}
+
+// Data source arguments for collector
+variable "collector_id" {
+	description = "The collector ID. This can be obtained from the Security and Compliance Center UI by clicking on the collector name. The network tab contains the ID."
+  	type        = string
+}
