@@ -1169,6 +1169,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_worker_pool":       kubernetes.ResourceIBMContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool":   kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
 				"ibm_container_vpc_cluster":       kubernetes.ResourceIBMContainerVpcClusterValidator(),
+				"ibm_cos_bucket":                  cos.ResourceIBMCOSBucketValidator(),
 				"ibm_cr_namespace":                registry.ResourceIBMCrNamespaceValidator(),
 				"ibm_tg_gateway":                  transitgateway.ResourceIBMTGValidator(),
 				"ibm_app_config_feature":          appconfiguration.ResourceIBMAppConfigFeatureValidator(),
@@ -1252,6 +1253,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_schematics_inventory":                schematics.ResourceIBMSchematicsInventoryValidator(),
 				"ibm_schematics_resource_query":           schematics.ResourceIBMSchematicsResourceQueryValidator(),
 				"ibm_resource_instance":                   resourcecontroller.ResourceIBMResourceInstanceValidator(),
+				"ibm_resource_key":                        resourcecontroller.ResourceIBMResourceKeyValidator(),
 				"ibm_is_virtual_endpoint_gateway":         vpc.ResourceIBMISEndpointGatewayValidator(),
 				"ibm_resource_tag":                        globaltagging.ResourceIBMResourceTagValidator(),
 				"ibm_satellite_location":                  satellite.ResourceIBMSatelliteLocationValidator(),
@@ -1312,6 +1314,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_images":          vpc.DataSourceIBMISImagesValidator(),
 				"ibm_dl_offering_speeds": directlink.DataSourceIBMDLOfferingSpeedsValidator(),
 				"ibm_dl_routers":         directlink.DataSourceIBMDLRoutersValidator(),
+				"ibm_resource_instance":  resourcecontroller.DataSourceIBMResourceInstanceValidator(),
+				"ibm_resource_key":       resourcecontroller.DataSourceIBMResourceKeyValidator(),
+				"ibm_resource_group":     resourcemanager.DataSourceIBMResourceGroupValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
@@ -1346,6 +1351,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_waf_packages":            cis.DataSourceIBMCISWAFPackagesValidator(),
 				"ibm_cis_waf_rules":               cis.DataSourceIBMCISWAFRulesValidator(),
 				"ibm_cis_logpush_jobs":            cis.DataSourceIBMCISLogPushJobsValidator(),
+
+				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
 			},
 		}
 	})
