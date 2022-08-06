@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -597,8 +597,6 @@ func Provider() *schema.Provider {
 			"ibm_enterprise_accounts":       enterprise.DataSourceIBMEnterpriseAccounts(),
 
 			// //Added for Secrets Manager
-			"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecrets(),
-			"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecret(),
 
 			// //Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1117,6 +1115,8 @@ func Provider() *schema.Provider {
 			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMTektonPipelineProperty(),
 			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMTektonPipelineTrigger(),
 			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.ResourceIBMTektonPipeline(),
+
+			"ibm_secret_group": secretsmanager.ResourceIbmSecretGroup(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -1308,12 +1308,11 @@ func Validator() validate.ValidatorDict {
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
 
-				"ibm_is_vpc":                  vpc.DataSourceIBMISVpcValidator(),
-				"ibm_is_volume":               vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_scc_si_notes":            scc.DataSourceIBMSccSiNotesValidator(),
-				"ibm_scc_si_occurrences":      scc.DataSourceIBMSccSiOccurrencesValidator(),
-				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
-				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
+				"ibm_is_vpc":             vpc.DataSourceIBMISVpcValidator(),
+				"ibm_is_volume":          vpc.DataSourceIBMISVolumeValidator(),
+				"ibm_scc_si_notes":       scc.DataSourceIBMSccSiNotesValidator(),
+				"ibm_scc_si_occurrences": scc.DataSourceIBMSccSiOccurrencesValidator(),
+				"ibm_secret_group":       secretsmanager.ResourceIbmSecretGroupValidator(),
 			},
 		}
 	})

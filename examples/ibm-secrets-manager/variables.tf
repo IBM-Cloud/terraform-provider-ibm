@@ -3,30 +3,14 @@ variable "ibmcloud_api_key" {
   type        = string
 }
 
-variable "region" {
-  description = "Secrets Manager Instance region"
-  default     = null
-}
-
-variable "secrets_manager_instance_id" {
-  description = "Secrets Manager Instance GUID"
+// Resource arguments for secret_group
+variable "secret_group_name" {
+  description = "The name of your secret group."
   type        = string
+  default     = "my-secret-group"
 }
-
-// Data source arguments for secrets_manager_secrets
-variable "secrets_manager_secrets_secret_type" {
-  description = "The secret type."
+variable "secret_group_description" {
+  description = "An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group."
   type        = string
-  default     = null
-}
-
-// Data source arguments for secrets_manager_secret
-variable "secrets_manager_secret_secret_type" {
-  description = "The secret type. Supported options include: arbitrary, iam_credentials, username_password."
-  type        = string
-  default     = "arbitrary"
-}
-variable "secrets_manager_secret_id" {
-  description = "The v4 UUID that uniquely identifies the secret."
-  type        = string
+  default     = "Extended description for this group."
 }

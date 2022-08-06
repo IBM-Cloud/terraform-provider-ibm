@@ -1,9 +1,10 @@
-# Example for Fetching SecretsManager Secrets
+# Example for SecretsManagerV1
 
-This example illustrates how to use the SecretsManagerV1 to fetch SecretsManager Secrets
+This example illustrates how to use the SecretsManagerV1
 
 These types of resources are supported:
 
+* SecretGroup
 
 ## Usage
 
@@ -20,26 +21,17 @@ Run `terraform destroy` when you don't need these resources.
 
 ## SecretsManagerV1 resources
 
+secret_group resource:
+
+```hcl
+resource "secret_group" "secret_group_instance" {
+  name = var.secret_group_name
+  description = var.secret_group_description
+}
+```
 
 ## SecretsManagerV1 Data sources
 
-secrets_manager_secrets data source:
-
-```hcl
-data "ibm_secrets_manager_secrets" "secrets_manager_secrets_instance" {
-  instance_id = var.secrets_manager_instance_id
-  secret_type = var.secrets_manager_secrets_secret_type
-}
-```
-secrets_manager_secret data source:
-
-```hcl
-data "ibm_secrets_manager_secret" "secrets_manager_secret_instance" {
-  instance_id = var.secrets_manager_instance_id
-  secret_type = var.secrets_manager_secret_secret_type
-  secret_id = var.secrets_manager_secret_id
-}
-```
 
 ## Assumptions
 
@@ -59,22 +51,18 @@ data "ibm_secrets_manager_secret" "secrets_manager_secret_instance" {
 
 | Name | Version |
 |------|---------|
-| ibm | 1.22.0 |
+| ibm | 1.13.1 |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| ibmcloud\_api\_key | IBM Cloud API key | `string` |  | true |
-| region | Secrets Manager Instance region | `string` | us-south | false |
-| secrets\_manager\_instance\_id | Secrets Manager Instance GUID | `string` |  | true |
-| secrets\_manager\_secrets\_secret\_type | The secret type. Supported options include: arbitrary, iam_credentials, username_password. | `string` | null | false |
-| secrets\_manager\_secret\_secret\_type | The secret type. Supported options include: arbitrary, iam_credentials, username_password. | `string` |  | true |
-| secret\_id | The v4 UUID that uniquely identifies the secret. | `string` |  | true |
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of your secret group. | `string` | true |
+| description | An extended description of your secret group.To protect your privacy, do not use personal data, such as your name or location, as a description for your secret group. | `string` | false |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| secrets\_manager\_secrets | secrets\_manager\_secrets object |
-| secrets\_manager\_secret | secrets\_manager\_secret object |
+| secret_group | secret_group object |

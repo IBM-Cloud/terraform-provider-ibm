@@ -20,6 +20,7 @@ import (
 
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/container-services-go-sdk/satellitelinkv1"
+	"github.com/IBM-Cloud/secrets-manager-mt-go-sdk/secretsmanagerv1"
 	apigateway "github.com/IBM/apigateway-go-sdk/apigatewaycontrollerapiv1"
 	"github.com/IBM/appconfiguration-go-admin-sdk/appconfigurationv1"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
@@ -79,7 +80,6 @@ import (
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
-	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
@@ -1055,7 +1055,10 @@ func (sess clientSession) ResourceControllerV2API() (*resourcecontroller.Resourc
 
 // SecretsManager Session
 func (session clientSession) SecretsManagerV1() (*secretsmanagerv1.SecretsManagerV1, error) {
-	return session.secretsManagerClient, session.secretsManagerClientErr
+	if session.secretsManagerClientErr != nil {
+		return session.secretsManagerClient, session.secretsManagerClientErr
+	}
+	return session.secretsManagerClient.Clone(), nil
 }
 
 // Satellite Link
@@ -2959,23 +2962,25 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.resourceControllerAPI = resourceControllerClient
 
 	// SECRETS MANAGER Service
+	// Construct an "options" struct for creating the service client.
 	secretsManagerClientOptions := &secretsmanagerv1.SecretsManagerV1Options{
 		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"MOCK_ENDPOINT"}, secretsmanagerv1.DefaultServiceURL),
+		XInstanceCrn:  core.StringPtr("crn:v1:bluemix:public:secrets-manager:us-south:a/321f5eb20987423e97aa9876f18b7c11:b49ad24d-71d4-4ebc-b9b9-a0937d1c84d0::"),
 	}
-	/// Construct the service client.
+
+	// Construct the service client.
 	session.secretsManagerClient, err = secretsmanagerv1.NewSecretsManagerV1(secretsManagerClientOptions)
-	if err != nil {
-		session.secretsManagerClientErr = fmt.Errorf("[ERROR] Error occurred while configuring IBM Cloud Secrets Manager API service: %q", err)
-	}
-	if session.secretsManagerClient != nil && session.secretsManagerClient.Service != nil {
+	if err == nil {
 		// Enable retries for API calls
 		session.secretsManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.secretsManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
+	} else {
+		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager Basic API service: %q", err)
 	}
-
 	// SATELLITE Service
 	containerEndpoint := kubernetesserviceapiv1.DefaultServiceURL
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
