@@ -325,9 +325,6 @@ Nested scheme for **data**:
 					* `offering_id` - (Optional, String) Id of the offering the IBM Catalog.
 					* `offering_version_id` - (Optional, String) Id of the offering version the IBM Catalog.
 					* `offering_repo_url` - (Optional, String) Repo Url of the offering, in the IBM Catalog.
-				* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket. MaxItems: 1.
-				Nested scheme for **cos_bucket**:
-					* `cos_bucket_url` - (Optional, String) COS Bucket Url.
 			* `inputs` - (Optional, List) Input variables data for the workItem used in FlowJob.
 			Nested scheme for **inputs**:
 				* `name` - (Optional, String) Name of the variable.

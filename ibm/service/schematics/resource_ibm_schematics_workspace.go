@@ -749,9 +749,9 @@ func resourceIBMSchematicsWorkspaceMapToTemplateSourceDataRequest(templateSource
 		templateSourceDataRequest.Values = core.StringPtr(templateSourceDataRequestMap["values"].(string))
 	}
 	if templateSourceDataRequestMap["values_metadata"] != nil {
-		valuesMetadata := []interface{}{}
+		valuesMetadata := make([]schematicsv1.VariableMetadata, 0)
 		for _, valuesMetadataItem := range templateSourceDataRequestMap["values_metadata"].([]interface{}) {
-			valuesMetadata = append(valuesMetadata, valuesMetadataItem.(interface{}))
+			valuesMetadata = append(valuesMetadata, valuesMetadataItem.(schematicsv1.VariableMetadata))
 		}
 		templateSourceDataRequest.ValuesMetadata = valuesMetadata
 	}

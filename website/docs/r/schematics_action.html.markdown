@@ -177,9 +177,6 @@ Nested scheme for **source**:
 		* `offering_id` - (Optional, String) Id of the offering the IBM Catalog.
 		* `offering_version_id` - (Optional, String) Id of the offering version the IBM Catalog.
 		* `offering_repo_url` - (Optional, String) Repo Url of the offering, in the IBM Catalog.
-	* `cos_bucket` - (Optional, List) Connection details to a IBM Cloud Object Storage bucket. MaxItems: 1.
-	Nested scheme for **cos_bucket**:
-		* `cos_bucket_url` - (Optional, String) COS Bucket Url.
 * `source_readme_url` - (Optional, String) URL of the `README` file, for the source URL.
 * `source_type` - (Optional, String) Type of source for the Template.
   * Constraints: Allowable values are: local, git_hub, git_hub_enterprise, git_lab, ibm_git_lab, ibm_cloud_catalog, external_scm, cos_bucket
