@@ -1098,6 +1098,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 
 		if bucketPtr.Firewall != nil {
 			d.Set("allowed_ip", flex.FlattenStringList(bucketPtr.Firewall.AllowedIp))
+		} else {
+
+			d.Set("allowed_ip", []string{})
 		}
 		if bucketPtr.ActivityTracking != nil {
 			d.Set("activity_tracking", flex.FlattenActivityTrack(bucketPtr.ActivityTracking))
@@ -1107,6 +1110,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		if bucketPtr.HardQuota != nil {
 			d.Set("hard_quota", bucketPtr.HardQuota)
+		} else {
+			d.Set("hard_quota", 0)
 		}
 	}
 	// Read the lifecycle configuration (archive & expiration or non current version or abort incomplete multipart upload)

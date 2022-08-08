@@ -298,6 +298,9 @@ func resourceIBMResourceKeyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.Set("name", *resourceKey.Name)
 	d.Set("status", *resourceKey.State)
+	if resourceKey.Credentials != nil && resourceKey.Credentials.Redacted != nil {
+		log.Printf("Credentials are redacted with code: %s.The User doesn't have the correct access to view the credentials. Refer to the API documentation for additional details.", *resourceKey.Credentials.Redacted)
+	}
 	if resourceKey.Credentials != nil && resourceKey.Credentials.IamRoleCRN != nil {
 		roleCrn := *resourceKey.Credentials.IamRoleCRN
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
