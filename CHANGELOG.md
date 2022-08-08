@@ -1,3 +1,7 @@
+# 1.44.2 (Aug 8, 2022)
+BUG FIXES
+* fix: schematics template metadata issue ([3953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3953))
+
 # 1.44.1 (Aug 3, 2022)
 BUG FIXES
 * Fix the breaking change of cos bucket with replication configuration ([3945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3945))
