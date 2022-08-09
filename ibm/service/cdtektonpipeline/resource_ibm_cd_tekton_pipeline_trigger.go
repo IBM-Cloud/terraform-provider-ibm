@@ -37,7 +37,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"trigger": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Optional:    true,
+				Required:    true,
 				Description: "Tekton pipeline trigger object.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
