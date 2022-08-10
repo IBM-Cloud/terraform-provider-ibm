@@ -22,7 +22,7 @@ data "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 
 Review the argument reference that you can specify for your data source.
 
-* `id` - (Required, Forces new resource, String) ID of current instance.
+* `pipeline_id` - (Required, Forces new resource, String) ID of current instance.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
 ## Attribute Reference
