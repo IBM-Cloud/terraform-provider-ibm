@@ -357,6 +357,12 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profiles":              iamidentity.DataSourceIBMIamTrustedProfiles(),
 			"ibm_iam_trusted_profile_policy":        iampolicy.DataSourceIBMIAMTrustedProfilePolicy(),
 
+			//backup as Service
+			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policies":     vpc.DataSourceIBMIsBackupPolicies(),
+			"ibm_is_backup_policy_plan":  vpc.DataSourceIBMIsBackupPolicyPlan(),
+			"ibm_is_backup_policy_plans": vpc.DataSourceIBMIsBackupPolicyPlans(),
+
 			// bare_metal_server
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
@@ -563,6 +569,7 @@ func Provider() *schema.Provider {
 			"ibm_dns_glbs":                             dnsservices.DataSourceIBMPrivateDNSGLBs(),
 			"ibm_dns_custom_resolvers":                 dnsservices.DataSourceIBMPrivateDNSCustomResolver(),
 			"ibm_dns_custom_resolver_forwarding_rules": dnsservices.DataSourceIBMPrivateDNSForwardingRules(),
+			"ibm_dns_custom_resolver_secondary_zones":  dnsservices.DataSourceIBMPrivateDNSSecondaryZones(),
 
 			// // Added for Direct Link
 
@@ -620,10 +627,15 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
+			"ibm_scc_si_providers":                  scc.DataSourceIBMSccSiProviders(),
+			"ibm_scc_si_note":                       scc.DataSourceIBMSccSiNote(),
+			"ibm_scc_si_notes":                      scc.DataSourceIBMSccSiNotes(),
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
 			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
 			"ibm_scc_account_location_settings":     scc.DataSourceIBMSccAccountLocationSettings(),
 			"ibm_scc_account_notification_settings": scc.DataSourceIBMSccNotificationSettings(),
+			"ibm_scc_si_occurrence":                 scc.DataSourceIBMSccSiOccurrence(),
+			"ibm_scc_si_occurrences":                scc.DataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":            scc.DataSourceIBMSccPostureScopes(),
@@ -637,6 +649,8 @@ func Provider() *schema.Provider {
 			"ibm_scc_posture_credential":        scc.DataSourceIBMSccPostureCredential(),
 			"ibm_scc_posture_collector":         scc.DataSourceIBMSccPostureCollector(),
 			"ibm_scc_posture_scope":             scc.DataSourceIBMSccPostureScope(),
+			"ibm_scc_posture_credentials":       scc.DataSourceIBMSccPostureCredentials(),
+			"ibm_scc_posture_collectors":        scc.DataSourceIBMSccPostureCollectors(),
 			// // Added for Context Based Restrictions
 			"ibm_cbr_zone": contextbasedrestrictions.DataSourceIBMCbrZone(),
 			"ibm_cbr_rule": contextbasedrestrictions.DataSourceIBMCbrRule(),
@@ -691,11 +705,11 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
 
 			// Added for Tekton Pipeline
-			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMCdTektonPipelineDefinition(),
-			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMCdTektonPipelineTriggerProperty(),
-			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMCdTektonPipelineProperty(),
-			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMCdTektonPipelineTrigger(),
-			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMCdTektonPipeline(),
+			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMTektonPipelineDefinition(),
+			"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.DataSourceIBMTektonPipelineTriggerProperty(),
+			"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.DataSourceIBMTektonPipelineProperty(),
+			"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.DataSourceIBMTektonPipelineTrigger(),
+			"ibm_cd_tekton_pipeline":                  cdtektonpipeline.DataSourceIBMTektonPipeline(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -808,6 +822,7 @@ func Provider() *schema.Provider {
 			"ibm_ob_logging":                            kubernetes.ResourceIBMObLogging(),
 			"ibm_ob_monitoring":                         kubernetes.ResourceIBMObMonitoring(),
 			"ibm_cos_bucket":                            cos.ResourceIBMCOSBucket(),
+			"ibm_cos_bucket_replication_rule":           cos.ResourceIBMCOSBucketReplicationConfiguration(),
 			"ibm_cos_bucket_object":                     cos.ResourceIBMCOSBucketObject(),
 			"ibm_dns_domain":                            classicinfrastructure.ResourceIBMDNSDomain(),
 			"ibm_dns_domain_registration_nameservers":   classicinfrastructure.ResourceIBMDNSDomainRegistrationNameservers(),
@@ -843,6 +858,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_link":              iamidentity.ResourceIBMIAMTrustedProfileLink(),
 			"ibm_iam_trusted_profile_policy":            iampolicy.ResourceIBMIAMTrustedProfilePolicy(),
 			"ibm_ipsec_vpn":                             classicinfrastructure.ResourceIBMIPSecVPN(),
+
+			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
+			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
 
 			// bare_metal_server
 			"ibm_is_bare_metal_server_action":                        vpc.ResourceIBMIsBareMetalServerAction(),
@@ -901,6 +919,9 @@ func Provider() *schema.Provider {
 			"ibm_is_vpc_route":                                   vpc.ResourceIBMISVpcRoute(),
 			"ibm_is_vpc_routing_table":                           vpc.ResourceIBMISVPCRoutingTable(),
 			"ibm_is_vpc_routing_table_route":                     vpc.ResourceIBMISVPCRoutingTableRoute(),
+			"ibm_is_vpn_server":                                  vpc.ResourceIBMIsVPNServer(),
+			"ibm_is_vpn_server_client":                           vpc.ResourceIBMIsVPNServerClient(),
+			"ibm_is_vpn_server_route":                            vpc.ResourceIBMIsVPNServerRoute(),
 			"ibm_is_image":                                       vpc.ResourceIBMISImage(),
 			"ibm_lb":                                             classicinfrastructure.ResourceIBMLb(),
 			"ibm_lbaas":                                          classicinfrastructure.ResourceIBMLbaas(),
@@ -982,6 +1003,7 @@ func Provider() *schema.Provider {
 			"ibm_dns_custom_resolver":                 dnsservices.ResourceIBMPrivateDNSCustomResolver(),
 			"ibm_dns_custom_resolver_location":        dnsservices.ResourceIBMPrivateDNSCRLocation(),
 			"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRule(),
+			"ibm_dns_custom_resolver_secondary_zone":  dnsservices.ResourceIBMPrivateDNSSecondaryZone(),
 
 			// //Direct Link related resources
 			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
@@ -1030,7 +1052,9 @@ func Provider() *schema.Provider {
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
 			// //Security and Compliance Center
+			"ibm_scc_si_note":             scc.ResourceIBMSccSiNote(),
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
+			"ibm_scc_si_occurrence":       scc.ResourceIBMSccSiOccurrence(),
 			"ibm_scc_rule":                scc.ResourceIBMSccRule(),
 			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
 			"ibm_scc_template":            scc.ResourceIBMSccTemplate(),
@@ -1121,7 +1145,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_rate_limit":              cis.ResourceIBMCISRateLimitValidator(),
 				"ibm_cis":                         cis.ResourceIBMCISValidator(),
 				"ibm_cis_domain_settings":         cis.ResourceIBMCISDomainSettingValidator(),
-				"ibm_cis_domain":                  cis.ResourceIBMCISDomainValidator(),
 				"ibm_cis_tls_settings":            cis.ResourceIBMCISTLSSettingsValidator(),
 				"ibm_cis_routing":                 cis.ResourceIBMCISRoutingValidator(),
 				"ibm_cis_page_rule":               cis.ResourceIBMCISPageRuleValidator(),
@@ -1173,6 +1196,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_hpcs_key_template":           hpcs.ResourceIbmKeyTemplateValidator(),
 				"ibm_hpcs_vault":                  hpcs.ResourceIbmVaultValidator(),
 
+				"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicyValidator(),
+				"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlanValidator(),
+
 				// bare_metal_server
 				"ibm_is_bare_metal_server_disk":              vpc.ResourceIBMIsBareMetalServerDiskValidator(),
 				"ibm_is_bare_metal_server_network_interface": vpc.ResourceIBMIsBareMetalServerNetworkInterfaceValidator(),
@@ -1222,6 +1248,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_vpc_routing_table_route":          vpc.ResourceIBMISVPCRoutingTableRouteValidator(),
 				"ibm_is_vpn_gateway_connection":           vpc.ResourceIBMISVPNGatewayConnectionValidator(),
 				"ibm_is_vpn_gateway":                      vpc.ResourceIBMISVPNGatewayValidator(),
+				"ibm_is_vpn_server":                       vpc.ResourceIBMIsVPNServerValidator(),
+				"ibm_is_vpn_server_route":                 vpc.ResourceIBMIsVPNServerRouteValidator(),
 				"ibm_kms_key_rings":                       kms.ResourceIBMKeyRingValidator(),
 				"ibm_dns_glb_monitor":                     dnsservices.ResourceIBMPrivateDNSGLBMonitorValidator(),
 				"ibm_dns_custom_resolver_forwarding_rule": dnsservices.ResourceIBMPrivateDNSForwardingRuleValidator(),
@@ -1241,7 +1269,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_route":                      atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                   atracker.ResourceIBMAtrackerSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
+				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),
+				"ibm_scc_si_occurrence":                   scc.ResourceIBMSccSiOccurrenceValidator(),
 				"ibm_scc_posture_collector":               scc.ResourceIBMSccPostureCollectorsValidator(),
 				"ibm_scc_posture_scope":                   scc.ResourceIBMSccPostureScopesValidator(),
 				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
@@ -1299,38 +1329,10 @@ func Validator() validate.ValidatorDict {
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
 
-				"ibm_is_vpc":                      vpc.DataSourceIBMISVpcValidator(),
-				"ibm_is_volume":                   vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_secrets_manager_secret":      secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
-				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
-				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
-				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
-				"ibm_cis_cache_settings":          cis.DataSourceIBMCISCacheSettingsValidator(),
-				"ibm_cis_custom_certificates":     cis.DataSourceIBMCISCustomCertificatesValidator(),
-				"ibm_cis_custom_pages":            cis.DataSourceIBMCISCustomPagesValidator(),
-				"ibm_cis_dns_records":             cis.DataSourceIBMCISDNSRecordsValidator(),
-				"ibm_cis_domain":                  cis.DataSourceIBMCISDomainValidator(),
-				"ibm_cis_certificates":            cis.DataSourceIBMCISCertificatesValidator(),
-				"ibm_cis_edge_functions_actions":  cis.DataSourceIBMCISEdgeFunctionsActionsValidator(),
-				"ibm_cis_edge_functions_triggers": cis.DataSourceIBMCISEdgeFunctionsTriggersValidator(),
-				"ibm_cis_filters":                 cis.DataSourceIBMCISFiltersValidator(),
-				"ibm_cis_firewall_rules":          cis.DataSourceIBMCISFirewallRulesValidator(),
-				"ibm_cis_firewall":                cis.DataSourceIBMCISFirewallsRecordValidator(),
-				"ibm_cis_global_load_balancers":   cis.DataSourceIBMCISGlbsValidator(),
-				"ibm_cis_healthchecks":            cis.DataSourceIBMCISHealthChecksValidator(),
-				"ibm_cis_mtls_apps":               cis.DataSourceIBMCISMtlsAppValidator(),
-				"ibm_cis_mtlss":                   cis.DataSourceIBMCISMtlsValidator(),
-				"ibm_cis_origin_auths":            cis.DataSourceIBMCISOriginAuthPullValidator(),
-				"ibm_cis_origin_pools":            cis.DataSourceIBMCISOriginPoolsValidator(),
-				"ibm_cis_page_rules":              cis.DataSourceIBMCISPageRulesValidator(),
-				"ibm_cis_range_apps":              cis.DataSourceIBMCISRangeAppsValidator(),
-				"ibm_cis_rate_limit":              cis.DataSourceIBMCISRateLimitValidator(),
-				"ibm_cis_waf_groups":              cis.DataSourceIBMCISWAFGroupsValidator(),
-				"ibm_cis_waf_packages":            cis.DataSourceIBMCISWAFPackagesValidator(),
-				"ibm_cis_waf_rules":               cis.DataSourceIBMCISWAFRulesValidator(),
-				"ibm_cis_logpush_jobs":            cis.DataSourceIBMCISLogPushJobsValidator(),
-
-				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
+				"ibm_is_vpc":                  vpc.DataSourceIBMISVpcValidator(),
+				"ibm_is_volume":               vpc.DataSourceIBMISVolumeValidator(),
+				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
+				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 			},
 		}
 	})
