@@ -625,15 +625,10 @@ func Provider() *schema.Provider {
 			"ibm_atracker_endpoints": atracker.DataSourceIBMAtrackerEndpoints(),
 
 			//Security and Compliance Center
-			"ibm_scc_si_providers":                  scc.DataSourceIBMSccSiProviders(),
-			"ibm_scc_si_note":                       scc.DataSourceIBMSccSiNote(),
-			"ibm_scc_si_notes":                      scc.DataSourceIBMSccSiNotes(),
 			"ibm_scc_account_location":              scc.DataSourceIBMSccAccountLocation(),
 			"ibm_scc_account_locations":             scc.DataSourceIBMSccAccountLocations(),
 			"ibm_scc_account_location_settings":     scc.DataSourceIBMSccAccountLocationSettings(),
 			"ibm_scc_account_notification_settings": scc.DataSourceIBMSccNotificationSettings(),
-			"ibm_scc_si_occurrence":                 scc.DataSourceIBMSccSiOccurrence(),
-			"ibm_scc_si_occurrences":                scc.DataSourceIBMSccSiOccurrences(),
 
 			// Compliance Posture Management
 			"ibm_scc_posture_scopes":            scc.DataSourceIBMSccPostureScopes(),
@@ -1048,9 +1043,7 @@ func Provider() *schema.Provider {
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
 			// //Security and Compliance Center
-			"ibm_scc_si_note":             scc.ResourceIBMSccSiNote(),
 			"ibm_scc_account_settings":    scc.ResourceIBMSccAccountSettings(),
-			"ibm_scc_si_occurrence":       scc.ResourceIBMSccSiOccurrence(),
 			"ibm_scc_rule":                scc.ResourceIBMSccRule(),
 			"ibm_scc_rule_attachment":     scc.ResourceIBMSccRuleAttachment(),
 			"ibm_scc_template":            scc.ResourceIBMSccTemplate(),
@@ -1252,9 +1245,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_route":                      atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                   atracker.ResourceIBMAtrackerSettingsValidator(),
 				"ibm_satellite_endpoint":                  satellite.ResourceIBMSatelliteEndpointValidator(),
-				"ibm_scc_si_note":                         scc.ResourceIBMSccSiNoteValidator(),
 				"ibm_scc_account_settings":                scc.ResourceIBMSccAccountSettingsValidator(),
-				"ibm_scc_si_occurrence":                   scc.ResourceIBMSccSiOccurrenceValidator(),
 				"ibm_scc_posture_collector":               scc.ResourceIBMSccPostureCollectorsValidator(),
 				"ibm_scc_posture_scope":                   scc.ResourceIBMSccPostureScopesValidator(),
 				"ibm_scc_posture_credential":              scc.ResourceIBMSccPostureCredentialsValidator(),
@@ -1311,8 +1302,6 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_is_vpc":                  vpc.DataSourceIBMISVpcValidator(),
 				"ibm_is_volume":               vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_scc_si_notes":            scc.DataSourceIBMSccSiNotesValidator(),
-				"ibm_scc_si_occurrences":      scc.DataSourceIBMSccSiOccurrencesValidator(),
 				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
 				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 			},
