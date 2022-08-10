@@ -123,7 +123,21 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
 	}
 	if len(rg.Resources) < 1 {
-		return fmt.Errorf("[ERROR] Given Resource Group is not found in the account : %s %s", err, resp)
+		fmt.Printf("[WARNING] Given Resource Group is not found in the account : %s %s\n", err, resp)
+		d.Set("name", nil)
+		d.Set("is_default", nil)
+		d.Set("state", nil)
+		d.Set("crn", nil)
+		d.Set("created_at", nil)
+		d.Set("updated_at", nil)
+		d.Set("teams_url", nil)
+		d.Set("payment_methods_url", nil)
+		d.Set("quota_url", nil)
+		d.Set("quota_id", nil)
+		d.Set("account_id", nil)
+		d.Set("resource_linkages", nil)
+
+		return nil
 	}
 	resourceGroup := rg.Resources[0]
 	d.SetId(*resourceGroup.ID)
