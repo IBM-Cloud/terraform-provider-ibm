@@ -116,7 +116,6 @@ var Pi_network_name string
 var Pi_cloud_instance_id string
 var Pi_instance_name string
 var Pi_dhcp_id string
-var Pi_instance_deployment_type string
 var PiCloudConnectionName string
 var PiSAPProfileID string
 var Pi_placement_group_name string
@@ -636,11 +635,6 @@ func init() {
 	if Pi_instance_name == "" {
 		Pi_instance_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_PVM_INSTANCE_ID for testing Pi_instance_name resource else it is set to default value 'terraform-test-power'")
-	}
-
-	Pi_instance_deployment_type = os.Getenv("PI_INSTANCE_DEPLOYMENT_TYPE")
-	if Pi_instance_deployment_type == "" {
-		fmt.Println("[INFO] Set the environment variable PI_INSTANCE_DEPLOYMENT_TYPE for testing ibm_pi_instance resource else tests will fail if this is not set correctly")
 	}
 
 	Pi_dhcp_id = os.Getenv("PI_DHCP_ID")
