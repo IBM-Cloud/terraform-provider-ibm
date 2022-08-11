@@ -1,0 +1,29 @@
+---
+  ###########################################################
+  # High availability Wordpress instalation, Apache, Mariadb. 
+  # - Multiple app servers per site with single DB host
+  # - Automatic configuration of HA across data centers, if inventory indicates app and db servers
+  #   deployed in two data centers. Master-Master database replication configured.  
+  # - Assumes IBM Cloud Load Balancer configured in each DC 
+  # - Cloud Internet Services as Global Load Balacer across both DCs. 
+  # - Domain name registered with CIS/CloudFlare  
+  ###########################################################
+
+  # configure hosts files with hostnames to improve readability and ease of human login access
+  # to hosts
+- import_playbook: hostsfile.yml
+
+  # Install tools on control workstation for stack_status.yml
+- import_playbook: control.yml 
+
+  # Setup Mariadb on Centos
+- import_playbook: database.yml
+
+  # Setup httpd webserver on Centos
+- import_playbook: webserver.yml
+
+  # execute setup of DB replication if more than one DB host found. Means there are two DCs.
+- import_playbook: dbrepl.yml
+  when: ( ( groups['database'] | length ) == 2 )
+
+  

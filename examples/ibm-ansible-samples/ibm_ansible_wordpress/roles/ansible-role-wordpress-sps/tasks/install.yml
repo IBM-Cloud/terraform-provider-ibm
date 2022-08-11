@@ -1,0 +1,24 @@
+# roles/wordpress/tasks/install.yml
+---
+
+- name: Ensure repository is installed
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items: "{{ wordpress_repository }}"
+  tags: wordpress
+
+- name: Check whether Apache is already installed
+  stat:
+    path: "{{ wordpress_httpd_service }}"
+  register: wordpress_httpd_status
+  failed_when: not wordpress_httpd_status.stat.exists
+  tags: wordpress
+
+- name: Install Wordpress
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items: "{{ wordpress_packages }}"
+  tags: wordpress
+

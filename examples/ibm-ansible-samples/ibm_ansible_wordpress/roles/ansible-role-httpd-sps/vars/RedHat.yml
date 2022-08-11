@@ -1,0 +1,16 @@
+# roles/httpd/vars/RedHat.yml
+---
+
+httpd_packages:
+  - httpd
+  - mod_ssl
+
+httpd_scripting_packages:
+  none: []
+  php:
+    - php
+    - php-xml
+
+httpd_config: /etc/httpd/conf/httpd.conf
+httpd_ssl_config:  /etc/httpd/conf.d/ssl.conf
+httpd_status_config: /etc/httpd/conf.d/status.conf

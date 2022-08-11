@@ -1,0 +1,10 @@
+# roles/wordpress/defaults/main.yml
+---
+
+wordpress_database_host: localhost
+wordpress_database: wordpress
+wordpress_user: wordpress
+wordpress_password: wordpress
+
+wordpress_plugins: []
+wordpress_themes: []

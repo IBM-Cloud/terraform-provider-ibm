@@ -1,0 +1,14 @@
+# roles/mariadb/tasks/main.yml
+---
+
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+  tags: mariadb
+
+- include_tasks: install.yml
+- include_tasks: config.yml
+- include_tasks: root-password.yml
+- include_tasks: databases.yml
+- include_tasks: users.yml

@@ -1,0 +1,8 @@
+---
+# tasks file for control
+# Install httpdlib2 for start_status.yml
+- name: install tools
+  pip: name={{item}} state=present  
+  with_items: 
+    - httplib2
+

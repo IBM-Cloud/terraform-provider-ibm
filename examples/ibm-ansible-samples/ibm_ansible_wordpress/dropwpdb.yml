@@ -1,0 +1,36 @@
+---
+
+# Remove wordpress database in preparation for reloading fresh instance
+# follow with 
+# - 'ansible-playbook -i inventory site.yml -l database' to recreate DB
+# - stack_restart.yml to restart all app servers
+
+
+- hosts: database
+  become: true
+  vars:
+    mariadb_databases:
+      - name: wordpress
+    mariadb_users:
+      - name: wordpress
+        password: wordpress
+        host: '%'
+        priv: wordpress.*:ALL
+    mariadb_root_password: 'password'
+    mariadb_bind_address: '0.0.0.0'
+  tasks:
+  - name: Remove the wordpress database
+    mysql_db:
+      name: "{{ item.name }}"
+      login_user: root
+      login_password: "{{ mariadb_root_password }}"
+      state: absent
+    with_items: "{{ mariadb_databases }}"  
+    tags: mariadb
+
+  - debug:
+      var: db_delete
+      verbosity: 2  
+
+
+#

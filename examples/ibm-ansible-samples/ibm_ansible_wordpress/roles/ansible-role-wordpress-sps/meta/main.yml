@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Bert Van Vreckem
+  description: Installs Wordpress on a RedHat based distribution (RHEL/CentOS, Fedora)
+  license: BSD
+  min_ansible_version: 2.0
+  platforms:
+    - name: EL
+      versions:
+        - 7
+    - name: Fedora
+      versions:
+        - 23
+        - 24
+        - 25
+  galaxy_tags:
+    - web
+# dependencies:
+  # - bertvv.httpd

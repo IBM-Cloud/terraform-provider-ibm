@@ -1,0 +1,51 @@
+---
+########################################################################################
+# Author: Steve Strutt   steve_strutt@uk.ibm.com
+# Deploy Apache/httpd on Centos
+# Deploy Wordpress and update httpd configuration
+# - dynamically determines DB host name based on APP server data center location
+# - Updated versions of Bert Van Vreckem's mariadb and wordpress roles used. Copied localy
+# to fix identifed issues
+# 
+########################################################################################
+
+  - hosts: webserver
+    become: true
+    pre_tasks:
+    - name: install tools
+      yum: name=libselinux-python state=present update_cache=yes
+    
+    - name: db name
+      set_fact:
+        # retrieve the db server in the same data center as the app server - region var
+        wordpress_database_host: '{{ item }}'
+      with_items: "{{ groups['database'] }}"
+      when: hostvars[item].region == region
+      # debug:
+      #   msg: "{{ database_host }}" 
+
+       
+    roles:
+      - role: ansible-role-httpd-sps
+
+        vars:
+          httpd_scripting: 'php'
+          httpd_Listen: 80
+          httpd_DocumentRoot: '/usr/share/wordpress'
+
+        # Wordpress database host name retrieved at start of playbook.
+        # updated Role for idempotent execution with Salts file 
+      - role: ansible-role-wordpress-sps
+        # vars:
+        #   wordpress_database_host: 
+        wordpress_packages:
+          - libsemanage-python # sps - requird for network access to DB
+          - php-mysql  
+          # - php-mysqlnd if installed on single host after PHP update
+          - wordpress
+          - unzip       # for installing plugins
+
+  
+
+
+    

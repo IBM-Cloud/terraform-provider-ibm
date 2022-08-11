@@ -1,0 +1,185 @@
+---
+
+subcategory: "VPC infrastructure"
+page_title: "IBM : lb_listener_policy"
+description: |-
+  Manages IBM VPC load balancer listener policy.
+---
+
+# ibm_is_lb_listener_policy
+Create, update, or delete a load balancer listener policy. For more information, about VPC load balance listener policy, see [monitoring application Load Balancer for VPC metrics](https://cloud.ibm.com/docs/vpc?topic=vpc-monitoring-metrics-alb).
+
+**Note:** 
+VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+
+**provider.tf**
+
+```terraform
+provider "ibm" {
+  region = "eu-gb"
+}
+```
+
+## Example usage
+
+### Sample to create a load balancer listener policy for a `redirect` action.
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
+  port     = "9086"
+  protocol = "http"
+}
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                      = ibm_is_lb.example.id
+  listener                = ibm_is_lb_listener.example.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "example-listener-policy"
+  target_http_status_code = 302
+  target_url              = "https://www.redirect.com"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+```
+
+### Sample to create a load balancer listener policy for a `https_redirect` action.
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+
+resource "ibm_is_lb_listener" "example" {
+  lb                   = ibm_is_lb.example.id
+  port                 = "9086"
+  protocol             = "https"
+  certificate_instance = "crn:v1:staging:public:cloudcerts:us-south:a2d1bace7b46e4815a81e52c6ffeba5cf:af925157-b125-4db2-b642-adacb8b9c7f5:certificate:c81627a1bf6f766379cc4b98fd2a44ed"
+}
+resource "ibm_is_lb_listener_policy" "example" {
+  lb                                = ibm_is_lb.example.id
+  action                            = "https_redirect"
+  priority                          = 2
+  name                              = "example-listener"
+  taget_https_redirect_listener     = ibm_is_lb_listener.example.listener_id
+  target_https_redirect_status_code = 301
+  target_https_redirect_uri         = "/example?doc=geta"
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+```
+
+###  Creating a load balancer listener policy for a `forward` action by using `lb` and `lb listener`.
+
+
+```terraform
+resource "ibm_is_lb" "example" {
+  name    = "example-lb"
+  subnets = [ibm_is_subnet.example.id]
+}
+
+resource "ibm_is_lb_listener" "example" {
+  lb       = ibm_is_lb.example.id
+  port     = "9086"
+  protocol = "http"
+}
+
+resource "ibm_is_lb_pool" "example" {
+  name           = "example-lb-pool"
+  lb             = ibm_is_lb.example.id
+  algorithm      = "round_robin"
+  protocol       = "http"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "http"
+}
+
+resource "ibm_is_lb_listener_policy" "example" {
+  lb        = ibm_is_lb.example.id
+  listener  = ibm_is_lb_listener.example.listener_id
+  action    = "forward"
+  priority  = 2
+  name      = "example-listener"
+  target_id = ibm_is_lb_pool.example.pool_id
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+```
+## Timeouts
+The `ibm_is_lb_listener_policy` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create**: The creation of the load balancer listener policy is considered `failed` if no response is received for 10 minutes. 
+- **delete**: The deletion of the load balancer listener policy is considered `failed` if no response is received for 10 minutes.
+- **update**: The creation of the load balancer listener policy is considered `failed` if no response is received for 10 minutes. 
+
+
+## Argument reference
+Review the argument references that you can specify for your resource. 
+
+- `action` - (Required, Forces new resource, String) The action that you want to specify for your policy. Supported values are `forward`, `redirect`, `reject`, and `https_redirect`.
+- `lb` - (Required, Forces new resource, String) The ID of the load balancer for which you want to create a load balancer listener policy. 
+- `listener` - (Required, Forces new resource, String) The ID of the load balancer listener.
+- `name` - (Optional, String) The name for the load balancer policy. Names must be unique within a load balancer listener.
+- `priority`- (Required, Integer) The priority of the load balancer policy. Low values indicate a high priority. The value must be between 1 and 10.Yes.
+- `rules`- (Required, List) A list of rules that you want to apply to your load balancer policy. Note that rules can be created only. You cannot update the rules for a load balancer policy.
+
+  Nested scheme for `rules`:
+  - `condition` - (Required, String) The condition that you want to apply to your rule. Supported values are `contains`, `equals`, and `matches_regex`.
+  - `type` - (Required, String) The data type where you want to apply the rule condition. Supported values are `header`, `hostname`,  and `path`.
+  - `value`- (Required, Integer) The value that must be found in the HTTP header, hostname or path to apply the load balancer listener rule. The value that you define can be between 1 and 128 characters long.
+  - `field`- (Required, Integer) If you selected `header` as the data type where you want to apply the rule condition, enter the name of the HTTP header that you want to check. The name of the header can be between 1 and 128 characters long.
+- `target_id` - (Optional, Integer) When `action` is set to **forward**, specify the ID of the load balancer pool that the load balancer forwards network traffic to.
+- `target_http_status_code` - (Optional, Integer) When `action` is set to **redirect**, specify the HTTP response code that must be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, and `308`. 
+- `target_url` - (Optional, Integer) When `action` is set to **redirect**, specify the URL that is used in the redirect response.
+- `target_https_redirect_listener` - (Optional, String) When `action` is set to **https_redirect**, specify the ID of the listener that will be set as http redirect target.
+- `target_https_redirect_status_code` - (Optional, Integer) When `action` is set to **https_redirect**, specify the HTTP status code to be returned in the redirect response. Supported values are `301`, `302`, `303`, `307`, `308`.
+- `target_https_redirect_uri` - (Optional, String) When `action` is set to **https_redirect**, specify the target URI where traffic will be redirected.
+
+~> **Note:**
+
+When action is `forward`, `target_id` should specify which pool the load balancer forwards the traffic to.
+When action is `redirect`, `target_url` should specify the `url` and `target_http_status_code` to specify the code used in the redirect response.
+When action is `https_redirect`, `target_https_redirect_listener` should specify the ID of the listener, `target_https_redirect_status_code` to specify the code used in the redirect response and `target_https_redirect_uri` to specify the target URI where traffic will be redirected.
+Network load balancer does not support `ibm_is_lb_listener_policy`.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The ID of the load balancer listener policy. The ID is composed of `<lb_ID>/<listener_ID>/<policy_ID>`.
+- `policy_id` - (String) The ID of the load balancer listener policy.
+- `status` - (String) The status of the load balancer listener policy.
+
+
+## Import
+The resource can be imported by using the ID. The ID is composed of `<lb_ID>/<listener_ID>/<policy_ID>`.
+
+**Synatx**
+
+```
+$ terraform import ibm_is_lb_listener_policy.example <lb_ID>/<listener_ID>/<policy_ID>
+```
+
+**Example**
+
+```
+$ terraform import ibm_is_lb_listener_policy.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009
+```

@@ -1,0 +1,15 @@
+# MariaDB Custom server configuration
+#
+# {{ ansible_managed }}
+
+{% for section_name, section_contents in mariadb_custom_cnf.iteritems() %}
+[{{ section_name }}]
+{% for key, value in section_contents.iteritems() %}
+{% if value is defined and value %}
+{{ key }}={{ value }}
+{% else %}
+{{ key }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}

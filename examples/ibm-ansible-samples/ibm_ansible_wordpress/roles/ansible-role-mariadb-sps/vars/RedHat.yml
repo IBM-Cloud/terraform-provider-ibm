@@ -1,0 +1,14 @@
+# roles/mariadb/vars/RedHat.yml
+---
+
+mariadb_packages:
+  - MariaDB
+  - MariaDB-server
+  - MySQL-python
+
+mariadb_service: mariadb
+mariadb_socket: /var/lib/mysql/mysql.sock
+
+mariadb_config_network: /etc/my.cnf.d/network.cnf
+mariadb_config_server: /etc/my.cnf.d/server.cnf
+mariadb_config_custom: /etc/my.cnf.d/custom.cnf
