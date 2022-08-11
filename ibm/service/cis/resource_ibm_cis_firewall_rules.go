@@ -238,6 +238,21 @@ func ResourceIBMCISFirewallrulesDelete(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting the  custom resolver %s:%s", err, response))
 	}
 
+	if id, ok := d.GetOk(cisFilterID); ok {
+
+		cisFilterClient, err := meta.(conns.ClientSession).CisFiltersSession()
+		if err != nil {
+			return nil
+		}
+
+		filter_id := id.(string)
+		filterOpt := cisFilterClient.NewDeleteFiltersOptions(xAuthtoken, crn, zoneID, filter_id)
+		_, _, err = cisFilterClient.DeleteFilters(filterOpt)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error deleting Filter: %s", err))
+		}
+	}
+
 	d.SetId("")
 	return nil
 }
