@@ -98,7 +98,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "UUID.",
+							Description: "ID of the SCM repository service instance.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -369,7 +369,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "UUID.",
+							Description: "ID of the repository service instance.",
 						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,

@@ -44,7 +44,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"source_trigger_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "source trigger ID to clone from.",
+							Description: "ID of the trigger to clone. Only needed when duplicating a trigger.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -63,7 +63,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Id.",
 						},
@@ -187,7 +186,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "UUID.",
+							Description: "ID of the repository service instance.",
 						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,

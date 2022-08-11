@@ -68,7 +68,7 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 			"service_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "UUID.",
+				Description: "ID of the SCM repository service instance.",
 			},
 			"definition_id": &schema.Schema{
 				Type:        schema.TypeString,

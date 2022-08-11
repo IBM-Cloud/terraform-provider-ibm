@@ -209,7 +209,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"service_instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "UUID.",
+				Description: "ID of the repository service instance.",
 			},
 			"cron": &schema.Schema{
 				Type:        schema.TypeString,
