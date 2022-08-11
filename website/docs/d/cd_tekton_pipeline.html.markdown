@@ -14,7 +14,7 @@ Provides a read-only data source for cd_tekton_pipeline. You can then reference 
 
 ```hcl
 data "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
-	id = "94619026-912b-4d92-8f51-6c74f0692d90"
+	pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
 }
 ```
 
