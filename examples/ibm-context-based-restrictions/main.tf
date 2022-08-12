@@ -37,11 +37,16 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
     }
     attributes {
       name = "serviceName"
-      value = "network-policy-enabled"
+      value = "containers-kubernetes"
     }
     tags {
       name     = "tag_name"
       value    = "tag_value"
+    }
+  }
+  operations {
+    api_types {
+      api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
     }
   }
   enforcement_mode = "disabled"
