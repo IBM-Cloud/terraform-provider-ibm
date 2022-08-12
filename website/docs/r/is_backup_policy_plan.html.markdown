@@ -51,7 +51,10 @@ backup_policy_plan_id
   
   Nested scheme for `deletion_trigger`:
   - `delete_after` - (Optional, Integer) The maximum number of days to keep each backup after creation. Default value is 30.
-  - `delete_over_count` - (Optional, Integer) The maximum number of recent backups to keep. If unspecified, there will be no maximum.
+  - `delete_over_count` - (Optional, String) The maximum number of recent backups to keep. If unspecified, there will be no maximum.
+    
+      ->**Note** Assign back to "null" to reset to no maximum.
+
 - `name` - (Optional, String) The user-defined name for this backup policy plan. Names must be unique within the backup policy this plan resides in. If unspecified, the name will be a hyphenated list of randomly-selected words.
 
 ## Attribute Reference

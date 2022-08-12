@@ -1051,7 +1051,7 @@ resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
   copy_user_tags = true
   deletion_trigger {
     delete_after      = 20
-    delete_over_count = 20
+    delete_over_count = "20"
   }
   name = "my-backup-policy-plan-1"
 }
