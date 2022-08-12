@@ -62,3 +62,20 @@ In addition to all argument references list, you can access the following attrib
   Nested scheme for `properties`:
     - `property_id` - (String) Property id.
     - `name` - (String) Property name.
+
+## Import
+
+The `ibm_app_config_segment` resource can be imported by using `guid` of the App Configuration instance and `segmentId`. Get the `guid` from the service instance credentials section of the dashboard.
+
+**Syntax**
+
+```
+terraform import ibm_app_config_segment.sample  <guid/segmentId>
+
+```
+
+**Example**
+
+```
+terraform import ibm_app_config_segment.sample 272111153-c118-4116-8116-b811fbc31132/sample_segment
+```
