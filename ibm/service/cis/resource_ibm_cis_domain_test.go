@@ -40,6 +40,28 @@ func TestAccIBMCisDomain_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMCisPartialDomain_basic(t *testing.T) {
+	name := "ibm_cis_domain." + "cis_domain"
+	testPartialDomain := uuid.New().String() + ".test.com"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckCis(t) },
+		Providers: acc.TestAccProviders,
+		// No requirement for CheckDestory of this resource as by reaching this test it must have already been deleted
+		// correctly during the resource destroy phase of test. The destroy of resource_ibm_cis used in testAccCheckCisPoolConfigBasic
+		// will fail if this resource is not correctly deleted.
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckCisPartialDomainConfigCisRIbasic("test_acc", testPartialDomain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "domain", testPartialDomain),
+					resource.TestCheckResourceAttr(name, "type", "partial"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMCisDomain_CreateAfterManualDestroy(t *testing.T) {
 	// Manual destroy of Domain resource
 	//t.Parallel()
@@ -222,6 +244,17 @@ func testAccCheckCisDomainConfigCisRIbasic(resourceName string, domain string) s
 	resource "ibm_cis_domain" "cis_domain" {
 		cis_id = data.ibm_cis.cis.id
 		domain = "%[1]s"
+	  }
+	`, domain)
+}
+
+func testAccCheckCisPartialDomainConfigCisRIbasic(resourceName string, domain string) string {
+	// Cis dynamically created resource instance
+	return testAccCheckIBMCisDataSourceConfig(acc.CisInstance) + fmt.Sprintf(`
+	resource "ibm_cis_domain" "cis_domain" {
+		cis_id = data.ibm_cis.cis.id
+		domain = "%[1]s"
+		type   = "partial"
 	  }
 	`, domain)
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -18,6 +19,10 @@ const (
 	cisDomainStatus              = "status"
 	cisDomainNameServers         = "name_servers"
 	cisDomainOriginalNameServers = "original_name_servers"
+	cisDomainType                = "type"
+	cisDomainVerificationKey     = "verification_key"
+	cisDomainCnameSuffix         = "cname_suffix"
+	ibmCISDomain                 = "ibm_cis_domain"
 )
 
 func ResourceIBMCISDomain() *schema.Resource {
@@ -32,6 +37,14 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "CISzone - Domain",
 				Required:    true,
+			},
+			cisDomainType: {
+				Type:        schema.TypeString,
+				Description: "CISzone - Domain Type",
+				Default:     "full",
+				Optional:    true,
+				ValidateFunc: validate.InvokeValidator(ibmCISDomain,
+					cisDomainType),
 			},
 			cisDomainPaused: {
 				Type:     schema.TypeBool,
@@ -55,6 +68,14 @@ func ResourceIBMCISDomain() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			cisDomainVerificationKey: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			cisDomainCnameSuffix: {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Create:   resourceCISdomainCreate,
 		Read:     resourceCISdomainRead,
@@ -74,9 +95,12 @@ func resourceCISdomainCreate(d *schema.ResourceData, meta interface{}) error {
 	crn := d.Get(cisID).(string)
 	cisClient.Crn = core.StringPtr(crn)
 	zoneName := d.Get(cisDomain).(string)
+	zoneType := d.Get(cisDomainType).(string)
 
 	opt := cisClient.NewCreateZoneOptions()
 	opt.SetName(zoneName)
+	opt.SetType(zoneType)
+
 	result, resp, err := cisClient.CreateZone(opt)
 	if err != nil {
 		log.Printf("CreateZones Failed %s", resp)
@@ -110,6 +134,9 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisDomainPaused, result.Result.Paused)
 	d.Set(cisDomainNameServers, result.Result.NameServers)
 	d.Set(cisDomainOriginalNameServers, result.Result.OriginalNameServers)
+	d.Set(cisDomainType, result.Result.Type)
+	d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
+	d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
 
 	return nil
 }
@@ -169,4 +196,21 @@ func resourceCISdomainDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func ResourceIBMCISDomainValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainType,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "full, parital"})
+
+	ibmCISDomainResourceValidator := validate.ResourceValidator{
+		ResourceName: ibmCISDomain,
+		Schema:       validateSchema}
+	return &ibmCISDomainResourceValidator
 }

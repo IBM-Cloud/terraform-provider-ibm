@@ -2567,9 +2567,17 @@ func DefaultResourceGroup(meta interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return "", err
+	}
+	accountID := userDetails.UserAccount
 	defaultGrp := true
 	resourceGroupList := rg.ListResourceGroupsOptions{
 		Default: &defaultGrp,
+	}
+	if accountID != "" {
+		resourceGroupList.AccountID = &accountID
 	}
 	grpList, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
 	if err != nil || grpList == nil || grpList.Resources == nil {

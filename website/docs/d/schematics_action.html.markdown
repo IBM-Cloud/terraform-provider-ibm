@@ -201,9 +201,6 @@ Nested scheme for **source**:
 		* `offering_id` - (String) Id of the offering the IBM Catalog.
 		* `offering_version_id` - (String) Id of the offering version the IBM Catalog.
 		* `offering_repo_url` - (String) Repo Url of the offering, in the IBM Catalog.
-	* `cos_bucket` - (List) Connection details to a IBM Cloud Object Storage bucket.
-	Nested scheme for **cos_bucket**:
-		* `cos_bucket_url` - (String) COS Bucket Url.
 
 * `source_created_at` - (String) Action Playbook Source creation time.
 
