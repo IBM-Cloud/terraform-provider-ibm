@@ -81,8 +81,8 @@ func ResourceIBMAtrackerSettingsValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9 -_]`,
-			MinValueLength:             3,
+			Regexp:                     `^[a-zA-Z0-9 -_]*`,
+			MinValueLength:             0,
 			MaxValueLength:             256,
 		},
 	)
