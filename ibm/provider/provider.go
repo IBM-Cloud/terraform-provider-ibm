@@ -503,6 +503,8 @@ func Provider() *schema.Provider {
 			"ibm_app_config_environments":            appconfiguration.DataSourceIBMAppConfigEnvironments(),
 			"ibm_app_config_feature":                 appconfiguration.DataSourceIBMAppConfigFeature(),
 			"ibm_app_config_features":                appconfiguration.DataSourceIBMAppConfigFeatures(),
+			"ibm_app_config_segment":                 appconfiguration.DataSourceIBMAppConfigSegment(),
+			"ibm_app_config_segments":                appconfiguration.DataSourceIBMAppConfigSegments(),
 
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
@@ -937,6 +939,7 @@ func Provider() *schema.Provider {
 			"ibm_pn_application_chrome":                          pushnotification.ResourceIBMPNApplicationChrome(),
 			"ibm_app_config_environment":                         appconfiguration.ResourceIBMAppConfigEnvironment(),
 			"ibm_app_config_feature":                             appconfiguration.ResourceIBMIbmAppConfigFeature(),
+			"ibm_app_config_segment":                             appconfiguration.ResourceIBMIbmAppConfigSegment(),
 			"ibm_kms_key":                                        kms.ResourceIBMKmskey(),
 			"ibm_kms_key_alias":                                  kms.ResourceIBMKmskeyAlias(),
 			"ibm_kms_key_rings":                                  kms.ResourceIBMKmskeyRings(),
