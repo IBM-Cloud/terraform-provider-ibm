@@ -1104,9 +1104,16 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		if bucketPtr.ActivityTracking != nil {
 			d.Set("activity_tracking", flex.FlattenActivityTrack(bucketPtr.ActivityTracking))
+		} else {
+
+			d.Set("activity_tracking", []interface{}{})
 		}
+
 		if bucketPtr.MetricsMonitoring != nil {
 			d.Set("metrics_monitoring", flex.FlattenMetricsMonitor(bucketPtr.MetricsMonitoring))
+		} else {
+
+			d.Set("metrics_monitoring", []interface{}{})
 		}
 		if bucketPtr.HardQuota != nil {
 			d.Set("hard_quota", bucketPtr.HardQuota)
