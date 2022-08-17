@@ -481,7 +481,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("min_virtual_cores", powervmdata.VirtualCores.Min)
 	}
 	d.Set(helpers.PIInstanceLicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
-
+	d.Set(PIInstanceDeploymentType, powervmdata.DeploymentType)
 	return nil
 }
 
