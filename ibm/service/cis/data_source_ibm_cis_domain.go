@@ -58,10 +58,12 @@ func DataSourceIBMCISDomain() *schema.Resource {
 			cisDomainVerificationKey: {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			cisDomainCnameSuffix: {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 		},
 	}
@@ -98,8 +100,11 @@ func dataSourceIBMCISDomainRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(cisDomainOriginalNameServers, zone.OriginalNameServers)
 			d.Set(cisDomainID, *zone.ID)
 			d.Set(cisDomainType, *zone.Type)
-			d.Set(cisDomainVerificationKey, *zone.VerificationKey)
-			d.Set(cisDomainCnameSuffix, *zone.CnameSuffix)
+
+			if cisDomainType == "partial" {
+				d.Set(cisDomainVerificationKey, *zone.VerificationKey)
+				d.Set(cisDomainCnameSuffix, *zone.CnameSuffix)
+			}
 			zoneFound = true
 		}
 	}
