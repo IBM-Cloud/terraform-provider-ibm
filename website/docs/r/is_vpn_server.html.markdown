@@ -49,11 +49,11 @@ Review the argument references that you can specify for your resource.
 	  - Constraints: Allowable values are: certificate, username
     
    -> **NOTE:** 
-      `identity_provider` and `client_ca_crn` are mutually exclusive, which means either one must be provided.
+      `identity_provider` and `client_ca_crn` are mutually exclusive, which means either one must be provided. When `method` has `certificate` as value `client_ca_crn` must be provided and when `method` has `username` as value `identity_provider` must be provided.
 
-	- `identity_provider` - (Optional, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access managementThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+	- `identity_provider` - (Required, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access managementThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
 		  - Constraints: Allowable values are: iam
-	- `client_ca_crn` - (Optional, String)  The CRN of the certificate instance or CRN of the secret from secrets manager to use for the VPN client certificate authority (CA). As the usage of certificate CRN from Certificate Manager is getting deprecated, It is recommended to use Secret manger for same.
+	- `client_ca_crn` - (Required, String)  The CRN of the certificate instance or CRN of the secret from secrets manager to use for the VPN client certificate authority (CA). As the usage of certificate CRN from Certificate Manager is getting deprecated, It is recommended to use Secret manger for same.
 	- `crl` - (Optional, String) The certificate revocation list contents, encoded in PEM format.
       - Constraints: The maximum length is `2` items. The minimum length is `1` item.
 
