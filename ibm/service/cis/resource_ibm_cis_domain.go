@@ -71,12 +71,10 @@ func ResourceIBMCISDomain() *schema.Resource {
 			cisDomainVerificationKey: {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 			cisDomainCnameSuffix: {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 		},
 		Create:   resourceCISdomainCreate,
