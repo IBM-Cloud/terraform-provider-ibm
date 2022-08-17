@@ -833,6 +833,7 @@ func Provider() *schema.Provider {
 			"ibm_hpcs_keystore":                         hpcs.ResourceIbmKeystore(),
 			"ibm_hpcs_vault":                            hpcs.ResourceIbmVault(),
 			"ibm_iam_access_group":                      iamaccessgroup.ResourceIBMIAMAccessGroup(),
+			"ibm_iam_access_group_account_settings":     iamaccessgroup.ResourceIBMIAMAccessGroupAccountSettings(),
 			"ibm_iam_account_settings":                  iamidentity.ResourceIBMIAMAccountSettings(),
 			"ibm_iam_custom_role":                       iampolicy.ResourceIBMIAMCustomRole(),
 			"ibm_iam_access_group_dynamic_rule":         iamaccessgroup.ResourceIBMIAMDynamicRule(),
