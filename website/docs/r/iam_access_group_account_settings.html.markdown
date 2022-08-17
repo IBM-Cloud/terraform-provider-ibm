@@ -1,5 +1,5 @@
 ---
-subcategory: "IAM Access Groups"
+subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
 page_title: "IBM : iam_access_group_account_settings"
 description: |-
