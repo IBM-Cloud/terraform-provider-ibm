@@ -53,6 +53,7 @@ In addition to all argument reference list, you can access the following attribu
   - `network_id` - (String) The network ID of the instance.
   - `network_name` - (String) The network name of the instance.
   - `type` - (String) The type of the network.
+- `deployment_type` - (String) Custom deployment type information (For Internal Use Only).
 - `health_status` - (String) The health of the instance.
 - `id` - (String) The unique identifier of the instance.
 - `license_repository_capacity` - The VTL license repository capacity TB value. Only available with VTL instances.
