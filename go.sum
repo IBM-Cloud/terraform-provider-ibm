@@ -4,8 +4,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47 h1:lpClRYyGuSXX4m3PRO2fruDQiesshUrObgbnPi+Xbxk=
 github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47/go.mod h1:tfNN3lCKuA2+SQvndt0+5CjPr2qn/wdNLjrue1GrOhY=
-github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220622142911-811d18c8c775 h1:hTj8cRqWv76Io/j+fUKq0Rrq1AjBA7uvRLs634ea/+8=
-github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220622142911-811d18c8c775/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
+github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220728135852-60ff775f7a8d h1:cHu5Iev9ggo1fktwmHbmPqDOkt3VYmdUGn1U7/Zb238=
+github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220728135852-60ff775f7a8d/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM-Cloud/power-go-client v1.1.11 h1:/qTWCCuSZsmiksvQSfhM+mZKkY/Vli/W6b82WoYD2NM=
 github.com/IBM-Cloud/power-go-client v1.1.11/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
@@ -13,8 +13,8 @@ github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKO
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca/go.mod h1:IjXrnOcTe92Q4pEBHmui3H/GM1hw5Pd0zXA5cw5/iZU=
-github.com/IBM/appconfiguration-go-admin-sdk v0.2.3 h1:BI4YId5K6eyfCVz3NpyoJr4D85ZXVgoFciBGO9eOStg=
-github.com/IBM/appconfiguration-go-admin-sdk v0.2.3/go.mod h1:xPxAYhr/uywUIDEo/JqWbkUdTryPdzRdYBfUpA5IjoE=
+github.com/IBM/appconfiguration-go-admin-sdk v0.3.0 h1:OqFxnDxro0JiRwHBKytCcseY2YKD4n87JN1UcaOD4Ss=
+github.com/IBM/appconfiguration-go-admin-sdk v0.3.0/go.mod h1:xPxAYhr/uywUIDEo/JqWbkUdTryPdzRdYBfUpA5IjoE=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f h1:4c1kqY4GqmkQ+tO03rneDb74Tv7BhTj8jDiDB1p8mdM=
 github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f/go.mod h1:d22kTYY7RYBWcQlZpqrSdshpB/lJ16viWS5Sbjtlc8s=
 github.com/IBM/cloud-databases-go-sdk v0.2.0 h1:OkyYpj1LjUnBEgAkp5LMYyla40keEg4ZzWdEXAig4nk=

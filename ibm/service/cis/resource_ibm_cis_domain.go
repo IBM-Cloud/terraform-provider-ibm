@@ -135,8 +135,11 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisDomainNameServers, result.Result.NameServers)
 	d.Set(cisDomainOriginalNameServers, result.Result.OriginalNameServers)
 	d.Set(cisDomainType, result.Result.Type)
-	d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
-	d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
+
+	if cisDomainType == "partial" {
+		d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
+		d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
+	}
 
 	return nil
 }
@@ -207,7 +210,7 @@ func ResourceIBMCISDomainValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "full, parital"})
+			AllowedValues:              "full, partial"})
 
 	ibmCISDomainResourceValidator := validate.ResourceValidator{
 		ResourceName: ibmCISDomain,
