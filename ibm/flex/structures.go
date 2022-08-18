@@ -1664,6 +1664,16 @@ func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 	return entries
 }
 
+func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
+	pltOptions := make([]map[string]interface{}, 0, 1)
+	pltOption := make(map[string]interface{})
+	pltOption["key_protect_key_id"] = platformOptions.KeyProtectKey
+	pltOption["disk_encryption_key_crn"] = platformOptions.DiskENcryptionKeyCrn
+	pltOption["backup_encryption_key_crn"] = platformOptions.BackUpEncryptionKeyCrn
+	pltOptions = append(pltOptions, pltOption)
+	return pltOptions
+}
+
 func expandStringMap(inVal interface{}) map[string]string {
 	outVal := make(map[string]string)
 	if inVal == nil {
