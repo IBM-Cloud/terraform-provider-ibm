@@ -29,7 +29,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `enum` - (Optional, List) Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-* `name` - (Optional, String) Property name.
+* `name` - (Optional, Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
 * `path` - (Optional, String) A dot notation path for INTEGRATION type properties to select a value from the tool integration.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
