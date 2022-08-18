@@ -23,7 +23,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -33,7 +33,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"property_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The property's name.",
+				Description: "The property name.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -43,12 +43,12 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "String format property value.",
+				Description: "Property value. Can be empty and should be omitted for SINGLE_SELECT property type.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Options for SINGLE_SELECT property type.",
+				Description: "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -56,7 +56,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"default": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Default option for SINGLE_SELECT property type.",
+				Description: "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -66,7 +66,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "property path for INTEGRATION type properties.",
+				Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 			},
 		},
 	}

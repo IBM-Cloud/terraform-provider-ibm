@@ -31,6 +31,7 @@ cd_tekton_pipeline_definition resource:
 resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
   scm_source = var.cd_tekton_pipeline_definition_scm_source
+  service_instance_id = var.cd_tekton_pipeline_definition_service_instance_id
 }
 ```
 cd_tekton_pipeline_trigger_property resource:
@@ -144,34 +145,35 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| scm_source | Scm source for tekton pipeline defintion. | `` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
+| scm_source | SCM source for Tekton pipeline definition. | `` | false |
+| service_instance_id | ID of the SCM repository service instance. | `string` | false |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger_id | The trigger ID. | `string` | true |
 | name | Property name. | `string` | false |
-| value | String format property value. | `string` | false |
-| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
-| default | Default option for SINGLE_SELECT property type. | `string` | false |
+| value | Property value. Can be empty and should be omitted for SINGLE_SELECT property type. | `string` | false |
+| enum | Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type. | `list(string)` | false |
+| default | Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type. | `string` | false |
 | type | Property type. | `string` | false |
-| path | property path for INTEGRATION type properties. | `string` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
+| path | A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected. | `string` | false |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
 | name | Property name. | `string` | false |
-| value | String format property value. | `string` | false |
-| enum | Options for SINGLE_SELECT property type. | `list(string)` | false |
-| default | Default option for SINGLE_SELECT property type. | `string` | false |
+| value | Property value. | `string` | false |
+| enum | Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type. | `list(string)` | false |
+| default | Default option for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type. | `string` | false |
 | type | Property type. | `string` | false |
-| path | property path for INTEGRATION type properties. | `string` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| trigger | Tekton pipeline trigger object. | `` | false |
-| worker | Worker object with worker ID only. | `` | false |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
+| path | A dot notation path for INTEGRATION type properties to select a value from the tool integration. | `string` | false |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
+| trigger | Tekton pipeline trigger. | `` | false |
+| worker | Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default. | `` | false |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
 | definition_id | The definition ID. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger_id | The trigger ID. | `string` | true |
-| property_name | The property's name. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
-| property_name | The property's name. | `string` | true |
-| pipeline_id | The tekton pipeline ID. | `string` | true |
+| property_name | The property name. | `string` | true |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
+| property_name | The property name. | `string` | true |
+| pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger_id | The trigger ID. | `string` | true |
 | id | ID of current instance. | `string` | true |
 

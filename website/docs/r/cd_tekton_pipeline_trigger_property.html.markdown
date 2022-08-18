@@ -26,21 +26,21 @@ resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_p
 
 Review the argument reference that you can specify for your resource.
 
-* `default` - (Optional, String) Default option for SINGLE_SELECT property type.
+* `default` - (Optional, String) Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-* `enum` - (Optional, List) Options for SINGLE_SELECT property type.
+* `enum` - (Optional, List) Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `name` - (Optional, Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-* `path` - (Optional, String) property path for INTEGRATION type properties.
+* `path` - (Optional, String) A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
-* `pipeline_id` - (Required, Forces new resource, String) The tekton pipeline ID.
+* `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `trigger_id` - (Required, Forces new resource, String) The trigger ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `type` - (Optional, String) Property type.
   * Constraints: Allowable values are: `SECURE`, `TEXT`, `INTEGRATION`, `SINGLE_SELECT`, `APPCONFIG`.
-* `value` - (Optional, String) String format property value.
+* `value` - (Optional, String) Property value. Can be empty and should be omitted for SINGLE_SELECT property type.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 
 ## Attribute Reference
@@ -107,9 +107,9 @@ The `name` property can be formed from `pipeline_id`, `trigger_id`, and `propert
 ```
 <pipeline_id>/<trigger_id>/<property_name>
 ```
-* `pipeline_id`: A string in the format `94619026-912b-4d92-8f51-6c74f0692d90`. The tekton pipeline ID.
+* `pipeline_id`: A string in the format `94619026-912b-4d92-8f51-6c74f0692d90`. The Tekton pipeline ID.
 * `trigger_id`: A string in the format `1bb892a1-2e04-4768-a369-b1159eace147`. The trigger ID.
-* `property_name`: A string in the format `debug-pipeline`. The property's name.
+* `property_name`: A string in the format `debug-pipeline`. The property name.
 
 # Syntax
 ```

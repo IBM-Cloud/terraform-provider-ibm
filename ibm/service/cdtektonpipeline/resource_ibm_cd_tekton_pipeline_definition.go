@@ -20,47 +20,47 @@ import (
 
 func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMCdTektonPipelineDefinitionCreate,
-		ReadContext:   resourceIBMCdTektonPipelineDefinitionRead,
-		UpdateContext: resourceIBMCdTektonPipelineDefinitionUpdate,
-		DeleteContext: resourceIBMCdTektonPipelineDefinitionDelete,
-		Importer:      &schema.ResourceImporter{},
+		CreateContext:   resourceIBMCdTektonPipelineDefinitionCreate,
+		ReadContext:     resourceIBMCdTektonPipelineDefinitionRead,
+		UpdateContext:   resourceIBMCdTektonPipelineDefinitionUpdate,
+		DeleteContext:   resourceIBMCdTektonPipelineDefinitionDelete,
+		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_definition", "pipeline_id"),
-				Description:  "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Scm source for tekton pipeline defintion.",
+				Description: "SCM source for Tekton pipeline definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
-							Description: "General href URL.",
+							Description: "URL of the definition repository.",
 						},
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A branch of the repo, branch field doesn't coexist with tag field.",
+							Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
 						},
 						"tag": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A tag of the repo.",
+							Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
 						},
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The path to the definitions yaml files.",
+							Description: "The path to the definition's yaml files.",
 						},
 					},
 				},
@@ -112,6 +112,9 @@ func resourceIBMCdTektonPipelineDefinitionCreate(context context.Context, d *sch
 			return diag.FromErr(err)
 		}
 		createTektonPipelineDefinitionOptions.SetScmSource(scmSourceModel)
+	}
+	if _, ok := d.GetOk("service_instance_id"); ok {
+		createTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 	}
 
 	definition, response, err := cdTektonPipelineClient.CreateTektonPipelineDefinitionWithContext(context, createTektonPipelineDefinitionOptions)
@@ -193,12 +196,20 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 
 	hasChange := false
 
+	if d.HasChange("pipeline_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
+				" The resource must be re-created to update this property.", "pipeline_id"))
+	}
 	if d.HasChange("scm_source") {
 		scmSource, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		replaceTektonPipelineDefinitionOptions.SetScmSource(scmSource)
+		hasChange = true
+	}
+	if d.HasChange("service_instance_id") {
+		replaceTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 		hasChange = true
 	}
 

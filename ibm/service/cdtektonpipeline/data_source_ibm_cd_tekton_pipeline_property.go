@@ -23,12 +23,12 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"property_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The property's name.",
+				Description: "The property name.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -38,12 +38,12 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "String format property value.",
+				Description: "Property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Options for SINGLE_SELECT property type.",
+				Description: "Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -51,7 +51,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"default": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Default option for SINGLE_SELECT property type.",
+				Description: "Default option for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -61,7 +61,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "property path for INTEGRATION type properties.",
+				Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration.",
 			},
 		},
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
@@ -23,7 +24,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -33,17 +34,22 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"source_trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "source trigger ID to clone from.",
+				Description: "ID of the trigger to duplicate. Only needed when duplicating a trigger.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "name of the duplicated trigger.",
+				Description: "Trigger name.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Trigger type.",
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the trigger.",
 			},
 			"event_listener": &schema.Schema{
 				Type:        schema.TypeString,
@@ -64,12 +70,12 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "String format property value.",
+							Description: "Property value. Can be empty and should be omitted for SINGLE_SELECT property type.",
 						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Options for SINGLE_SELECT property type.",
+							Description: "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -77,7 +83,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"default": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Default option for SINGLE_SELECT property type.",
+							Description: "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -87,12 +93,12 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "property path for INTEGRATION type properties.",
+							Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "General href URL.",
+							Description: "API URL for interacting with the trigger property.",
 						},
 					},
 				},
@@ -108,76 +114,67 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"worker": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Trigger worker used to run the trigger, the trigger worker overrides the default pipeline worker.If not exist, this trigger uses default pipeline worker.",
+				Description: "Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "worker name.",
+							Description: "Name of the worker. Computed based on the worker ID.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "worker type.",
+							Description: "Type of the worker. Computed based on the worker ID.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Id.",
+							Description: "ID of the worker.",
 						},
 					},
 				},
 			},
-			"concurrency": &schema.Schema{
-				Type:        schema.TypeList,
+			"max_concurrent_runs": &schema.Schema{
+				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Concurrency object.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"max_concurrent_runs": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Defines the maximum number of concurrent runs for this trigger.",
-						},
-					},
-				},
+				Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
 			},
 			"disabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "flag whether the trigger is disabled.",
+				Description: "Flag whether the trigger is disabled. If omitted the trigger is enabled by default.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Scm source for git type tekton pipeline trigger.",
+				Description: "SCM source repository for a Git trigger. Only needed for Git triggers.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Needed only for git trigger type. Repo URL that listening to.",
+							Description: "URL of the repository to which the trigger is listening.",
 						},
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Needed only for git trigger type. Branch name of the repo. Branch field doesn't coexist with pattern field.",
+							Description: "Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.",
 						},
 						"pattern": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Needed only for git trigger type. Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
+							Description: "Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Needed only for git trigger type. Branch name of the repo.",
+							Description: "Set this boolean to true if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. False by default.",
 						},
 						"hook_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Webhook ID.",
+							Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 						},
 					},
 				},
@@ -185,23 +182,23 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"events": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Needed only for git trigger type. Events object defines the events this git trigger listening to.",
+				Description: "Only needed for Git triggers. Events object defines the events to which this Git trigger listens.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"push": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If true, the trigger starts when tekton pipeline service receive a repo's 'push' git webhook event.",
+							Description: "If true, the trigger listens for 'push' Git webhook events.",
 						},
 						"pull_request_closed": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'close' git webhook event.",
+							Description: "If true, the trigger listens for 'close pull request' Git webhook events.",
 						},
 						"pull_request": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'open' or 'update' git webhook event.",
+							Description: "If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.",
 						},
 					},
 				},
@@ -214,17 +211,17 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"cron": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Needed only for timer trigger type. Cron expression for timer trigger. Maximum frequency is every 5 minutes.",
+				Description: "Only needed for timer triggers. Cron expression for timer trigger. Maximum frequency is every 5 minutes.",
 			},
 			"timezone": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Needed only for timer trigger type. Timezones for timer trigger.",
+				Description: "Only needed for timer triggers. Timezone for timer trigger.",
 			},
 			"secret": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Needed only for generic trigger type. Secret used to start generic trigger.",
+				Description: "Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
@@ -250,7 +247,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"algorithm": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Algorithm used for \"digestMatches\" secret type.",
+							Description: "Algorithm used for \"digestMatches\" secret type. Only needed for \"digestMatches\" secret type.",
 						},
 					},
 				},
@@ -291,13 +288,17 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 
+	if err = d.Set("href", trigger.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+
 	if err = d.Set("event_listener", trigger.EventListener); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
 	}
 
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
-		for _, modelItem := range trigger.Properties {
+		for _, modelItem := range trigger.Properties { 
 			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -321,16 +322,8 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting worker %s", err))
 	}
 
-	concurrency := []map[string]interface{}{}
-	if trigger.Concurrency != nil {
-		modelMap, err := dataSourceIBMCdTektonPipelineTriggerConcurrencyToMap(trigger.Concurrency)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		concurrency = append(concurrency, modelMap)
-	}
-	if err = d.Set("concurrency", concurrency); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting concurrency %s", err))
+	if err = d.Set("max_concurrent_runs", flex.IntValue(trigger.MaxConcurrentRuns)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
 	}
 
 	if err = d.Set("disabled", trigger.Disabled); err != nil {
@@ -424,14 +417,6 @@ func dataSourceIBMCdTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.W
 	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMCdTektonPipelineTriggerConcurrencyToMap(model *cdtektonpipelinev2.Concurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = *model.MaxConcurrentRuns
 	}
 	return modelMap, nil
 }

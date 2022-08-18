@@ -11,6 +11,7 @@ resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_inst
     tag = "tag"
     path = "path"
   }
+  service_instance_id = var.cd_tekton_pipeline_definition_service_instance_id
 }
 
 // Provision cd_tekton_pipeline_trigger_property resource instance
