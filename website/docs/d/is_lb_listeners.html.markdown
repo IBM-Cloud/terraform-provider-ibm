@@ -33,6 +33,9 @@ In addition to all argument references listed, you can access the following attr
 	- `certificate_instance` - (List) The certificate instance used for SSL termination. It is applicable only to `https`protocol.
 		Nested scheme for `certificate_instance`:
 		- `crn` - (String) The CRN for this certificate instance.
+
+		-> **NOTE:** Certificate Manager is deprecated. Migrate your load balancer certificates from Certificate Manager to Secrets Manager.
+
     - `connection_limit` - (Integer) The connection limit of the listener.
     - `created_at` - (String) The date and time that this listener was created.
     - `default_pool` - (List) The default pool associated with the listener.
