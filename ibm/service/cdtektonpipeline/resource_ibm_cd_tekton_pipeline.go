@@ -300,13 +300,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
 										Computed:    true,
 										Description: "Name of the worker. Computed based on the worker ID.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
-										Optional:    true,
 										Computed:    true,
 										Description: "Type of the worker. Computed based on the worker ID.",
 									},
