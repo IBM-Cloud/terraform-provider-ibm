@@ -206,7 +206,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"members_disk_allocation_mb": {
 				Description:   "Disk allocation required for cluster",
@@ -214,7 +214,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"members_cpu_allocation_count": {
 				Description:   "CPU allocation required for cluster",
@@ -222,7 +222,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"node_count", "node_memory_allocation_mb", "node_disk_allocation_mb", "node_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"node_count": {
 				Description:   "Total number of nodes in the cluster",
@@ -230,7 +230,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"node_memory_allocation_mb": {
 				Description:   "Memory allocation per node",
@@ -238,7 +238,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"node_disk_allocation_mb": {
 				Description:   "Disk allocation per node",
@@ -246,7 +246,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"node_cpu_allocation_count": {
 				Description:   "CPU allocation per node",
@@ -254,7 +254,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"members_memory_allocation_mb", "members_disk_allocation_mb", "members_cpu_allocation_count", "group"},
-				Deprecated:    "This field is deprecated please use groups",
+				Deprecated:    "use group instead",
 			},
 			"plan_validation": {
 				Description: "For elasticsearch and postgres perform database parameter validation during the plan phase. Otherwise, database parameter validation happens in apply phase.",
@@ -1363,14 +1363,14 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 				continue
 			}
 
-			if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
+			if g.Members != nil && g.Members.Allocation*nodeCount != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
 				nodeCount = g.Members.Allocation
 			}
-			if g.Memory != nil && g.Memory.Allocation != currentGroup.Memory.Allocation {
+			if g.Memory != nil && g.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
 				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(g.Memory.Allocation * nodeCount))}
 			}
-			if g.Disk != nil && g.Disk.Allocation != currentGroup.Disk.Allocation {
+			if g.Disk != nil && g.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
 				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
 			}
 			if g.CPU != nil && g.CPU.Allocation != currentGroup.CPU.Allocation {
@@ -1926,14 +1926,14 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			}
 			nodeCount := currentGroup.Members.Allocation
 
-			if group.Members != nil && group.Members.Allocation != currentGroup.Members.Allocation {
+			if group.Members != nil && group.Members.Allocation*nodeCount != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(group.Members.Allocation))}
 				nodeCount = group.Members.Allocation
 			}
-			if group.Memory != nil && group.Memory.Allocation != currentGroup.Memory.Allocation {
+			if group.Memory != nil && group.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
 				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(group.Memory.Allocation * nodeCount))}
 			}
-			if group.Disk != nil && group.Disk.Allocation != currentGroup.Disk.Allocation {
+			if group.Disk != nil && group.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
 				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(group.Disk.Allocation * nodeCount))}
 			}
 			if group.CPU != nil && group.CPU.Allocation != currentGroup.CPU.Allocation {
@@ -1950,7 +1950,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				setDeploymentScalingGroupResponse, response, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
 
 				if response.StatusCode > 300 {
-					return diag.FromErr(err)
+					return diag.FromErr(fmt.Errorf("[ERROR] SetDeploymentScalingGroup (%s) failed %s\n%s", group.ID, err, response))
 				}
 
 				taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
