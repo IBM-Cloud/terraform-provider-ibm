@@ -116,6 +116,12 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 				},
 				Description: "The OpenShift Container Platform version",
 			},
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Operating system of the default worker pool. Options are RHEL7, RHEL8, or RHCOS."
+			}
 			"wait_for_worker_update": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -325,6 +331,11 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOk("kube_version"); ok {
 		kube_version := v.(string)
 		createClusterOptions.KubeVersion = &kube_version
+	}
+
+	if v, ok := d.GetOk("operating_system"); ok {
+		operating_system := v.(string)
+		createClusterOptions.OperatingSystem = &operating_system
 	}
 
 	if res, ok := d.GetOk("zones"); ok {
