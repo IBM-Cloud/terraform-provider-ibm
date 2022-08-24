@@ -112,6 +112,12 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Operating system of the worker pool. Options are RHEL7, RHEL8, or RHCOS.",
+			},
 			"worker_count": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -203,6 +209,11 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 			"X-Auth-Resource-Group": v.(string),
 		}
 		createWorkerPoolOptions.Headers = pathParamsMap
+	}
+
+	if v, ok := d.GetOk("operating_system"); ok {
+		operating_system := v.(string)
+		createClusterOptions.OperatingSystem = &operating_system
 	}
 
 	if v, ok := d.GetOk("worker_count"); ok {
