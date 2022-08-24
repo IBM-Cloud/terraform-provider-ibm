@@ -1,3 +1,116 @@
+
+# 1.45.0-beta0 (Aug 18, 2022)
+Features
+* Support App Configuration
+    - **DataSources**
+        - ibm_app_config_segment
+        - ibm_app_config_segment
+    - **Resources**
+        - ibm_app_config_segment
+* Support IAM Access Group
+    - **Resources**
+        - ibm_iam_access_group_account_settings
+
+Enhancements
+* CIS CNAME Setup : Create Partial Zone ([3937](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3937))
+* deprecating Security Insights ([3755](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3755))
+* Add SNAP enabled bool for DHCP create function ([3932](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3932))
+* Support for EPIC offering Create flow ([3949](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3949))
+* Add minimum role notes ([3962](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3962))
+* enhancement(is_vpc): added support for identifier in vpc data source ([3959](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3959))
+* Atracker v2 metadata backup ([3887](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3887))
+* coreos host attach support ([3968](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3968))
+* add CBR rule API type support ([3971](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3971))
+* Mark key_protect_key_id as deprecate in database datasource ([3939](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3939))
+* doc changes for VPC Load Balancer ([3872](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3872))
+
+BUG FIXES
+* added log entry for redacted credentials ([3942](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3942))
+* stack trace with ibm_pi_dhcps data resource ([3951](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3951)) 
+* Fix crash on schematics_action resource ([3969](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3969)) 
+* Fix duplicate VPC entries in cloud connection create
+operation ([3958](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3958)) 
+* fix: account_id issue when service id apikey is used ([3950](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3950))
+* Delete Over Count Bug Fix ([3946](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3946))
+* Fix the setting of monitoring if it fails with error during update ([3974](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3974))
+* CIS - Delete filter on deletion of Firewall Rules ([3963](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3963))
+* Fix VPN Server clientAuthentication ([3947](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3947))
+* fix(security_group): added wait logic to wait for target removal to avoid 409 ([3957](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3957))
+
+# 1.44.2 (Aug 8, 2022)
+BUG FIXES
+* fix: schematics template metadata issue ([3953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3953))
+
+# 1.44.1 (Aug 3, 2022)
+BUG FIXES
+* Fix the breaking change of cos bucket with replication configuration ([3945](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3945))
+* fix the firewall allowed_ip issue ([3894](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3894))
+* Fix the nil pointer for coreos enabled ([3948](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3948))
+
+# 1.44.0 (Aug 2, 2022)
+Features
+* Support Internt Services
+    - **DataSources**
+        - ibm_cis_mtlss
+        - ibm_cis_mtls_apps
+        - ibm_cis_origin_auths
+    - **Resources**
+        - ibm_cis_mtls
+        - ibm_cis_mtls_app
+        - ibm_cis_origin_auth
+* Support Internt Services
+    - **DataSources**
+        - ibm_database_task
+        - ibm_database_tasks
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_credential
+        - ibm_scc_posture_collector
+        - ibm_scc_posture_scope
+        - ibm_scc_posture_credentials
+        - ibm_scc_posture_collectors
+* Support Virtual Private Cloud
+    - **DataSources**
+        - ibm_is_backup_policy
+        - ibm_is_backup_policies
+        - ibm_is_backup_policy_plan
+        - ibm_is_backup_policy_plans
+        - ibm_is_vpn_server
+        - ibm_is_vpn_servers
+        - ibm_is_vpn_server_client
+        - ibm_is_vpn_server_client_configuration
+        - ibm_is_vpn_server_clients
+        - ibm_is_vpn_server_route
+        - ibm_is_vpn_server_routes
+    - **Resources**
+        - ibm_is_backup_policy
+        - ibm_is_backup_policy_plan
+        - ibm_is_vpn_server
+        - ibm_is_vpn_server_route
+* Support IBM Cloud Storage 
+    - **DataSources**
+        - ibm_cos_bucket_replication_rule
+* Support Private DNS
+    - **DataSources**
+        - ibm_dns_custom_resolver_secondary_zones
+    - **Resources**
+        - ibm_dns_custom_resolver_secondary_zones
+
+Enhancements
+* Routing Table in Subnet Datasource ([3909](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3909))
+* Added cidr param to dhcp ([3916](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3916))
+* Add CoreOS-enabled option for Satellite location create ([3914](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3914))
+
+BUG FIXES
+* fix(documentation): error statement fix on security group and is_volumes ([3993](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3893))
+* CIS WAF Group Documentation Fix ([3997](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3897))
+* CD doc fix from generator utility ([3905](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3905))
+* added note for default cipher values ([3915](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3915))
+* Deprecation of vpc_route resource & correction in vpc_routing_table_route ([3919](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3919))
+* Roll back the strogae types for existing buckets ([3928](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
+* Fix the subcategory for cbr docs ([3928](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
+* terraform versions 1.1 added to validator check ([3930](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3920))
+* fix(is_bare_metal_server): removed nics with allow float from server nics ([3938](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3928))
 # 1.44.0-beta0 (Jul 20, 2022)
 Features
 * Support Internt Services

@@ -23,15 +23,19 @@ resource "ibm_pi_dhcp" "example" {
 
 Review the argument references that you can specify for your resource. 
 
+- `pi_cidr` - (Optional, String) The CIDR for the DHCP private network.
+- `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with the DHCP private network.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with DHCP private network.
+- `pi_dhcp_name` - (Optional, String) The name of the DHCP Service that will be prefixed by the DHCP identifier.
+- `pi_dhcp_snat_enabled` - (Optional, Bool) Indicates if SNAT will be enabled for the DHCP service. The default value is **true**.
+- `pi_dns_server` - (Optional, String) The DNS Server for the DHCP service.
 
 ## Attribute reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the DHCP Server. The ID is composed of `<power_instance_id>/<dhcp_id>`.
 - `dhcp_id` - (String) The ID of the DHCP Server.
+- `id` - (String) The unique identifier of the DHCP Server. The ID is composed of `<power_instance_id>/<dhcp_id>`.
 - `leases` - (List) The list of DHCP Server PVM Instance leases.
   Nested scheme for `leases`:
   - `instance_ip` - (String) The IP of the PVM Instance.

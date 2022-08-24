@@ -16,6 +16,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
@@ -55,6 +56,8 @@ func ResourceIBMResourceKey() *schema.Resource {
 				ForceNew:      true,
 				Description:   "The id of the resource instance for which to create resource key",
 				ConflictsWith: []string{"resource_alias_id"},
+				ValidateFunc: validate.InvokeValidator("ibm_resource_key",
+					"resource_instance_id"),
 			},
 
 			"resource_alias_id": {
@@ -188,6 +191,21 @@ func ResourceIBMResourceKey() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMResourceKeyValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_instance_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:%s"},
+			Optional:                   true})
+
+	ibmResourceKeyResourceValidator := validate.ResourceValidator{ResourceName: "ibm_resource_key", Schema: validateSchema}
+	return &ibmResourceKeyResourceValidator
 }
 
 func resourceIBMResourceKeyCreate(d *schema.ResourceData, meta interface{}) error {

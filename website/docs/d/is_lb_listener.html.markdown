@@ -33,8 +33,10 @@ In addition to all argument references listed, you can access the following attr
 - `accept_proxy_protocol` - (Boolean) If set to `true`, this listener will accept and forward PROXY protocol information. Supported by load balancers in the `application` family (otherwise always `false`). Additional restrictions:- If this listener has `https_redirect` specified, its `accept_proxy_protocol` value must  match the `accept_proxy_protocol` value of the `https_redirect` listener.- If this listener is the target of another listener's `https_redirect`, its  `accept_proxy_protocol` value must match that listener's `accept_proxy_protocol` value.
 
 - `certificate_instance` - (List) The certificate instance used for SSL termination. It is applicable only to `https`protocol.
-Nested scheme for `certificate_instance`:
+	Nested scheme for `certificate_instance`:
 	- `crn` - (String) The CRN for this certificate instance.
+
+	-> **NOTE:** Certificate Manager is deprecated. Migrate your load balancer certificates from Certificate Manager to Secrets Manager.
 
 - `connection_limit` - (Integer) The connection limit of the listener.
 

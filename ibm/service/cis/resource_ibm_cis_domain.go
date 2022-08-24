@@ -30,8 +30,10 @@ func ResourceIBMCISDomain() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS object id",
+				Description: "CIS instance crn",
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_cis_domain",
+					"cis_id"),
 			},
 			cisDomain: {
 				Type:        schema.TypeString,
@@ -135,8 +137,11 @@ func resourceCISdomainRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisDomainNameServers, result.Result.NameServers)
 	d.Set(cisDomainOriginalNameServers, result.Result.OriginalNameServers)
 	d.Set(cisDomainType, result.Result.Type)
-	d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
-	d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
+
+	if cisDomainType == "partial" {
+		d.Set(cisDomainVerificationKey, result.Result.VerificationKey)
+		d.Set(cisDomainCnameSuffix, result.Result.CnameSuffix)
+	}
 
 	return nil
 }
@@ -207,7 +212,15 @@ func ResourceIBMCISDomainValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "full, parital"})
+			AllowedValues:              "full, partial"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
 
 	ibmCISDomainResourceValidator := validate.ResourceValidator{
 		ResourceName: ibmCISDomain,

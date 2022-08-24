@@ -65,6 +65,13 @@ func ResourceIBMPIDhcp() *schema.Resource {
 				Description: "Optional name of DHCP Service (will be prefixed by DHCP identifier)",
 				ForceNew:    true,
 			},
+			Arg_DhcpSnatEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Indicates if SNAT will be enabled for the DHCP service",
+				ForceNew:    true,
+			},
 
 			// Attributes
 			Attr_DhcpID: {
@@ -144,6 +151,8 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 		n := name.(string)
 		body.Name = &n
 	}
+	snatEnabled := d.Get(Arg_DhcpSnatEnabled).(bool)
+	body.SnatEnabled = &snatEnabled
 
 	// create dhcp
 	client := st.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
