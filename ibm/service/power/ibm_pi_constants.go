@@ -43,6 +43,17 @@ const (
 	Attr_DhcpStatus            = "status"
 
 	// Instance
+	Arg_PVMInstanceId           = "pi_instance_id"
+	Arg_PVMInstanceActionType   = "pi_action"
+	Arg_PVMInstanceHealthStatus = "pi_health_status"
+
+	Attr_Status       = "status"
+	Attr_Progress     = "progress"
+	Attr_HealthStatus = "health_status"
+
+	PVMInstanceHealthOk      = "OK"
+	PVMInstanceHealthWarning = "WARNING"
+
 	//Added timeout values for warning  and active status
 	warningTimeOut = 60 * time.Second
 	activeTimeOut  = 2 * time.Minute
@@ -86,6 +97,7 @@ const (
 	StatusResize  = "RESIZE"
 	StatusError   = "ERROR"
 	StatusBuild   = "BUILD"
+	StatusPending = "PENDING"
 	SctionStart   = "start"
 	SctionStop    = "stop"
 )
