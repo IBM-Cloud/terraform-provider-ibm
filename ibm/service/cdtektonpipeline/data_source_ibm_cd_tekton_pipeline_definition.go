@@ -56,13 +56,13 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 							Computed:    true,
 							Description: "The path to the definition's yaml files.",
 						},
+						"service_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the SCM repository service instance.",
+						},
 					},
 				},
-			},
-			"service_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the SCM repository service instance.",
 			},
 		},
 	}
@@ -99,10 +99,6 @@ func dataSourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *sch
 		return diag.FromErr(fmt.Errorf("Error setting scm_source %s", err))
 	}
 
-	if err = d.Set("service_instance_id", definition.ServiceInstanceID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_instance_id: %s", err))
-	}
-
 	return nil
 }
 
@@ -119,6 +115,9 @@ func dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdte
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }

@@ -20,6 +20,7 @@ resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
 		branch = "branch"
 		tag = "tag"
 		path = "path"
+		service_instance_id = "service_instance_id"
   }
 }
 ```
@@ -36,12 +37,12 @@ Nested scheme for **scm_source**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `path` - (Required, String) The path to the definition's yaml files.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	* `service_instance_id` - (Optional, String) ID of the SCM repository service instance.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `tag` - (Optional, String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
 	* `url` - (Required, Forces new resource, String) URL of the definition repository.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `service_instance_id` - (Optional, String) ID of the SCM repository service instance.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
 ## Attribute Reference
 

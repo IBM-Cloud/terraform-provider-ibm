@@ -33,7 +33,7 @@ Nested scheme for **trigger**:
 	* `cron` - (Optional, String) Only needed for timer triggers. Cron expression for timer trigger. Maximum frequency is every 5 minutes.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 	* `disabled` - (Optional, Boolean) Flag whether the trigger is disabled. If omitted the trigger is enabled by default.
-	* `event_listener` - (Optional, String) Event listener name.
+	* `event_listener` - (Optional, String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `events` - (Optional, List) Only needed for Git triggers. Events object defines the events to which this Git trigger listens.
 	Nested scheme for **events**:
@@ -72,6 +72,8 @@ Nested scheme for **trigger**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 		* `pattern` - (Optional, String) Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,235}$/`.
+		* `service_instance_id` - (Optional, String) ID of the repository service instance.
+		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Required, Forces new resource, String) URL of the repository to which the trigger is listening.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `secret` - (Optional, List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
@@ -86,8 +88,6 @@ Nested scheme for **trigger**:
 		  * Constraints: Allowable values are: `tokenMatches`, `digestMatches`, `internalValidation`.
 		* `value` - (Optional, String) Secret value, not needed if secret type is "internalValidation".
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
-	* `service_instance_id` - (Optional, String) ID of the repository service instance.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `source_trigger_id` - (Optional, String) ID of the trigger to duplicate. Only needed when duplicating a trigger.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `tags` - (Optional, List) Trigger tags array.
@@ -99,7 +99,7 @@ Nested scheme for **trigger**:
 	  * Constraints: Allowable values are: .
 	* `worker` - (Optional, List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 	Nested scheme for **worker**:
-		* `id` - (Required, String) ID of the worker.
+		* `id` - (Required, Forces new resource, String) ID of the worker.
 		* `name` - (Optional, String) Name of the worker. Computed based on the worker ID.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,235}$/`.
 		* `type` - (Optional, String) Type of the worker. Computed based on the worker ID.
@@ -113,7 +113,7 @@ In addition to all argument references listed, you can access the following attr
 * `cron` - (String) Only needed for timer triggers. Cron expression for timer trigger. Maximum frequency is every 5 minutes.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 * `disabled` - (Boolean) Flag whether the trigger is disabled. If omitted the trigger is enabled by default.
-* `event_listener` - (String) Event listener name.
+* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `events` - (List) Only needed for Git triggers. Events object defines the events to which this Git trigger listens.
 Nested scheme for **events**:
@@ -150,6 +150,8 @@ Nested scheme for **scm_source**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `pattern` - (String) Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,235}$/`.
+	* `service_instance_id` - (String) ID of the repository service instance.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
@@ -164,8 +166,6 @@ Nested scheme for **secret**:
 	  * Constraints: Allowable values are: `tokenMatches`, `digestMatches`, `internalValidation`.
 	* `value` - (String) Secret value, not needed if secret type is "internalValidation".
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
-* `service_instance_id` - (String) ID of the repository service instance.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `source_trigger_id` - (String) ID of the trigger to duplicate. Only needed when duplicating a trigger.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `tags` - (List) Trigger tags array.
@@ -178,7 +178,7 @@ Nested scheme for **secret**:
   * Constraints: Allowable values are: .
 * `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 Nested scheme for **worker**:
-	* `id` - (String) ID of the worker.
+	* `id` - (Forces new resource, String) ID of the worker.
 	* `name` - (String) Name of the worker. Computed based on the worker ID.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,235}$/`.
 	* `type` - (String) Type of the worker. Computed based on the worker ID.

@@ -62,13 +62,13 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 							Required:    true,
 							Description: "The path to the definition's yaml files.",
 						},
+						"service_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the SCM repository service instance.",
+						},
 					},
 				},
-			},
-			"service_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the SCM repository service instance.",
 			},
 			"definition_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -112,9 +112,6 @@ func resourceIBMCdTektonPipelineDefinitionCreate(context context.Context, d *sch
 			return diag.FromErr(err)
 		}
 		createTektonPipelineDefinitionOptions.SetScmSource(scmSourceModel)
-	}
-	if _, ok := d.GetOk("service_instance_id"); ok {
-		createTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 	}
 
 	definition, response, err := cdTektonPipelineClient.CreateTektonPipelineDefinitionWithContext(context, createTektonPipelineDefinitionOptions)
@@ -166,9 +163,6 @@ func resourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schem
 			return diag.FromErr(fmt.Errorf("Error setting scm_source: %s", err))
 		}
 	}
-	if err = d.Set("service_instance_id", definition.ServiceInstanceID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_instance_id: %s", err))
-	}
 	if err = d.Set("definition_id", definition.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting definition_id: %s", err))
 	}
@@ -191,7 +185,6 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
-	replaceTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 	replaceTektonPipelineDefinitionOptions.SetID(parts[1])
 
 	hasChange := false
@@ -206,10 +199,6 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 			return diag.FromErr(err)
 		}
 		replaceTektonPipelineDefinitionOptions.SetScmSource(scmSource)
-		hasChange = true
-	}
-	if d.HasChange("service_instance_id") {
-		replaceTektonPipelineDefinitionOptions.SetServiceInstanceID(d.Get("service_instance_id").(string))
 		hasChange = true
 	}
 
@@ -261,6 +250,9 @@ func resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(modelMap map[
 		model.Tag = core.StringPtr(modelMap["tag"].(string))
 	}
 	model.Path = core.StringPtr(modelMap["path"].(string))
+	if modelMap["service_instance_id"] != nil && modelMap["service_instance_id"].(string) != "" {
+		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
+	}
 	return model, nil
 }
 
@@ -274,5 +266,8 @@ func resourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtekt
 		modelMap["tag"] = model.Tag
 	}
 	modelMap["path"] = model.Path
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = model.ServiceInstanceID
+	}
 	return modelMap, nil
 }

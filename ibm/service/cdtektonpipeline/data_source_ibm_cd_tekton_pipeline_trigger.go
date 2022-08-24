@@ -54,7 +54,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"event_listener": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Event listener name.",
+				Description: "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
 			},
 			"properties": &schema.Schema{
 				Type:        schema.TypeList,
@@ -176,6 +176,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Computed:    true,
 							Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 						},
+						"service_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the repository service instance.",
+						},
 					},
 				},
 			},
@@ -202,11 +207,6 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 					},
 				},
-			},
-			"service_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the repository service instance.",
 			},
 			"cron": &schema.Schema{
 				Type:        schema.TypeString,
@@ -310,6 +310,7 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
 
+
 	worker := []map[string]interface{}{}
 	if trigger.Worker != nil {
 		modelMap, err := dataSourceIBMCdTektonPipelineTriggerWorkerToMap(trigger.Worker)
@@ -352,10 +353,6 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	}
 	if err = d.Set("events", events); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting events %s", err))
-	}
-
-	if err = d.Set("service_instance_id", trigger.ServiceInstanceID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_instance_id: %s", err))
 	}
 
 	if err = d.Set("cron", trigger.Cron); err != nil {
@@ -437,6 +434,9 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpi
 	}
 	if model.HookID != nil {
 		modelMap["hook_id"] = *model.HookID
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }

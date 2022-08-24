@@ -94,6 +94,7 @@ func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
 
+
 	if err = d.Set("default", property.Default); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}

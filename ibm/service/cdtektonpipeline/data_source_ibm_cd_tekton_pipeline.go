@@ -92,13 +92,13 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 										Computed:    true,
 										Description: "The path to the definition's yaml files.",
 									},
+									"service_instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the SCM repository service instance.",
+									},
 								},
 							},
-						},
-						"service_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the SCM repository service instance.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -160,25 +160,6 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 				Computed:    true,
 				Description: "Standard RFC 3339 Date Time String.",
 			},
-			"pipeline_definition": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Tekton pipeline definition object. If this property is absent or empty, the pipeline has no definitions added.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"status": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The pipeline definition status.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID.",
-						},
-					},
-				},
-			},
 			"triggers": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -208,7 +189,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"event_listener": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Event listener name.",
+							Description: "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -335,6 +316,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 										Computed:    true,
 										Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 									},
+									"service_instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the repository service instance.",
+									},
 								},
 							},
 						},
@@ -361,11 +347,6 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									},
 								},
 							},
-						},
-						"service_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the repository service instance.",
 						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,
@@ -535,18 +516,6 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	pipelineDefinition := []map[string]interface{}{}
-	if tektonPipeline.PipelineDefinition != nil {
-		modelMap, err := dataSourceIBMCdTektonPipelineTektonPipelinePipelineDefinitionToMap(tektonPipeline.PipelineDefinition)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		pipelineDefinition = append(pipelineDefinition, modelMap)
-	}
-	if err = d.Set("pipeline_definition", pipelineDefinition); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting pipeline_definition %s", err))
-	}
-
 	triggers := []map[string]interface{}{}
 	if tektonPipeline.Triggers != nil {
 		for _, modelItem := range tektonPipeline.Triggers { 
@@ -608,9 +577,6 @@ func dataSourceIBMCdTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Defi
 		}
 		modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
 	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = *model.ServiceInstanceID
-	}
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
 	}
@@ -630,6 +596,9 @@ func dataSourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipeli
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }
@@ -653,17 +622,6 @@ func dataSourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Proper
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMCdTektonPipelineTektonPipelinePipelineDefinitionToMap(model *cdtektonpipelinev2.TektonPipelinePipelineDefinition) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Status != nil {
-		modelMap["status"] = *model.Status
-	}
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
 	}
 	return modelMap, nil
 }
@@ -741,9 +699,6 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 			}
 			modelMap["events"] = []map[string]interface{}{eventsMap}
 		}
-		if model.ServiceInstanceID != nil {
-			modelMap["service_instance_id"] = *model.ServiceInstanceID
-		}
 		if model.Cron != nil {
 			modelMap["cron"] = *model.Cron
 		}
@@ -819,6 +774,9 @@ func dataSourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev
 	}
 	if model.HookID != nil {
 		modelMap["hook_id"] = *model.HookID
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }
@@ -998,9 +956,6 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 			return modelMap, err
 		}
 		modelMap["events"] = []map[string]interface{}{eventsMap}
-	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }

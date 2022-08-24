@@ -9,11 +9,6 @@ variable "cd_tekton_pipeline_definition_pipeline_id" {
   type        = string
   default     = "94619026-912b-4d92-8f51-6c74f0692d90"
 }
-variable "cd_tekton_pipeline_definition_service_instance_id" {
-  description = "ID of the SCM repository service instance."
-  type        = string
-  default     = "service_instance_id"
-}
 
 // Resource arguments for cd_tekton_pipeline_trigger_property
 variable "cd_tekton_pipeline_trigger_property_pipeline_id" {

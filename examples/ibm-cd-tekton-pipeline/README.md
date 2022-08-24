@@ -31,7 +31,6 @@ cd_tekton_pipeline_definition resource:
 resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
   scm_source = var.cd_tekton_pipeline_definition_scm_source
-  service_instance_id = var.cd_tekton_pipeline_definition_service_instance_id
 }
 ```
 cd_tekton_pipeline_trigger_property resource:
@@ -147,7 +146,6 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | scm_source | SCM source for Tekton pipeline definition. | `` | false |
-| service_instance_id | ID of the SCM repository service instance. | `string` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger_id | The trigger ID. | `string` | true |
 | name | Property name. | `string` | false |

@@ -100,6 +100,7 @@ func dataSourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
 
+
 	if err = d.Set("default", triggerProperty.Default); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}

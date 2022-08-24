@@ -64,7 +64,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"event_listener": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Event listener name.",
+							Description: "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -100,6 +100,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
+										ForceNew:    true,
 										Description: "ID of the worker.",
 									},
 								},
@@ -148,6 +149,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 										Computed:    true,
 										Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 									},
+									"service_instance_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the repository service instance.",
+									},
 								},
 							},
 						},
@@ -175,11 +181,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 									},
 								},
 							},
-						},
-						"service_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the repository service instance.",
 						},
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,
@@ -340,12 +341,25 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 
 	hasChange := false
 
+	patchVals := &cdtektonpipelinev2.TriggerPatch{}
+	if d.HasChange("pipeline_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
+				" The resource must be re-created to update this property.", "pipeline_id"))
+	}
 	if d.HasChange("trigger.0.name") {
-		updateTektonPipelineTriggerOptions.SetName(d.Get("trigger.0.name").(string))
+		patchVals.Name = core.StringPtr(d.Get("trigger.0.name").(string))
+		hasChange = true
+	}
+	if d.HasChange("trigger.0.events") {
+		events, err := resourceIBMCdTektonPipelineTriggerMapToEvents(d.Get("trigger.0.events").([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		patchVals.Events = events
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.event_listener") {
-		updateTektonPipelineTriggerOptions.SetEventListener(d.Get("trigger.0.event_listener").(string))
+		patchVals.EventListener = core.StringPtr(d.Get("trigger.0.event_listener").(string))
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.tags") {
@@ -353,7 +367,7 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		for _, tagsItem := range d.Get("trigger.0.tags").([]interface{}) {
 			tags = append(tags, tagsItem.(string))
 		}
-		updateTektonPipelineTriggerOptions.SetTags(tags)
+		patchVals.Tags = tags
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.worker") {
@@ -361,56 +375,44 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetWorker(worker)
+		patchVals.Worker = worker
 		hasChange = true
 	}
-
 	if d.HasChange("trigger.0.max_concurrent_runs") {
-		updateTektonPipelineTriggerOptions.SetMaxConcurrentRuns(int64(d.Get("trigger.0.max_concurrent_runs").(int)))
+		patchVals.MaxConcurrentRuns = core.Int64Ptr(int64(d.Get("trigger.0.max_concurrent_runs").(int)))
 		hasChange = true
 	}
-
 	if d.HasChange("trigger.0.secret") {
 		secret, err := resourceIBMCdTektonPipelineTriggerMapToGenericSecret(d.Get("trigger.0.secret").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetSecret(secret)
+		patchVals.Secret = secret
 		hasChange = true
 	}
-
 	if d.HasChange("trigger.0.scm_source") {
-		secret, err := resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(d.Get("trigger.0.scm_source").([]interface{})[0].(map[string]interface{}))
+		scmSource, err := resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(d.Get("trigger.0.scm_source").([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetScmSource(secret)
+		patchVals.ScmSource = scmSource
 		hasChange = true
 	}
-
-	if d.HasChange("trigger.0.events") {
-		events, err := resourceIBMCdTektonPipelineTriggerMapToEvents(d.Get("trigger.0.events").([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateTektonPipelineTriggerOptions.SetEvents(events)
-		hasChange = true
-	}
-
 	if d.HasChange("trigger.0.cron") {
-		updateTektonPipelineTriggerOptions.SetCron(d.Get("trigger.0.cron").(string))
+		patchVals.Cron = core.StringPtr(d.Get("trigger.0.cron").(string))
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.timezone") {
-		updateTektonPipelineTriggerOptions.SetTimezone(d.Get("trigger.0.timezone").(string))
+		patchVals.Timezone = core.StringPtr(d.Get("trigger.0.timezone").(string))
 		hasChange = true
 	}
 	if d.HasChange("trigger.0.disabled") {
-		updateTektonPipelineTriggerOptions.SetDisabled(d.Get("trigger.0.disabled").(bool))
+		patchVals.Disabled = core.BoolPtr(d.Get("trigger.0.disabled").(bool))
 		hasChange = true
 	}
 
 	if hasChange {
+		updateTektonPipelineTriggerOptions.TriggerPatch, _ = patchVals.AsPatch()
 		_, response, err := cdTektonPipelineClient.UpdateTektonPipelineTriggerWithContext(context, updateTektonPipelineTriggerOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateTektonPipelineTriggerWithContext failed %s\n%s", err, response)
@@ -502,9 +504,6 @@ func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interfac
 		}
 		model.Events = EventsModel
 	}
-	if modelMap["service_instance_id"] != nil && modelMap["service_instance_id"].(string) != "" {
-		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
-	}
 	if modelMap["cron"] != nil && modelMap["cron"].(string) != "" {
 		model.Cron = core.StringPtr(modelMap["cron"].(string))
 	}
@@ -520,7 +519,6 @@ func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interfac
 	}
 	return model, nil
 }
-
 
 func resourceIBMCdTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*cdtektonpipelinev2.Worker, error) {
 	model := &cdtektonpipelinev2.Worker{}
@@ -542,6 +540,9 @@ func resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string
 	}
 	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
 		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
+	}
+	if modelMap["service_instance_id"] != nil && modelMap["service_instance_id"].(string) != "" {
+		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
 	}
 	return model, nil
 }
@@ -642,9 +643,6 @@ func resourceIBMCdTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.Tri
 			}
 			modelMap["events"] = []map[string]interface{}{eventsMap}
 		}
-		if model.ServiceInstanceID != nil {
-			modelMap["service_instance_id"] = model.ServiceInstanceID
-		}
 		if model.Cron != nil {
 			modelMap["cron"] = model.Cron
 		}
@@ -690,6 +688,9 @@ func resourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpipe
 	}
 	if model.HookID != nil {
 		modelMap["hook_id"] = model.HookID
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = model.ServiceInstanceID
 	}
 	return modelMap, nil
 }
@@ -801,9 +802,6 @@ func resourceIBMCdTektonPipelineTriggerTriggerScmTriggerToMap(model *cdtektonpip
 			return modelMap, err
 		}
 		modelMap["events"] = []map[string]interface{}{eventsMap}
-	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = model.ServiceInstanceID
 	}
 	return modelMap, nil
 }
