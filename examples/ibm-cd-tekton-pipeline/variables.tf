@@ -27,27 +27,27 @@ variable "cd_tekton_pipeline_trigger_property_name" {
   default     = "key1"
 }
 variable "cd_tekton_pipeline_trigger_property_value" {
-  description = "Property value. Can be empty and should be omitted for SINGLE_SELECT property type."
+  description = "Property value. Can be empty and should be omitted for single_select property type."
   type        = string
   default     = "https://github.com/IBM/tekton-tutorial.git"
 }
 variable "cd_tekton_pipeline_trigger_property_enum" {
-  description = "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type."
+  description = "Options for single_select property type. Only needed for single_select property type."
   type        = list(string)
   default     = [ "enum" ]
 }
 variable "cd_tekton_pipeline_trigger_property_default" {
-  description = "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type."
+  description = "Default option for single_select property type. Only needed for single_select property type."
   type        = string
   default     = "default"
 }
 variable "cd_tekton_pipeline_trigger_property_type" {
   description = "Property type."
   type        = string
-  default     = "TEXT"
+  default     = "text"
 }
 variable "cd_tekton_pipeline_trigger_property_path" {
-  description = "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected."
+  description = "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected."
   type        = string
   default     = "path"
 }
@@ -69,22 +69,22 @@ variable "cd_tekton_pipeline_property_value" {
   default     = "https://github.com/IBM/tekton-tutorial.git"
 }
 variable "cd_tekton_pipeline_property_enum" {
-  description = "Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type."
+  description = "Options for single_select property type. Only needed when using single_select property type."
   type        = list(string)
   default     = [ "enum" ]
 }
 variable "cd_tekton_pipeline_property_default" {
-  description = "Default option for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type."
+  description = "Default option for single_select property type. Only needed when using single_select property type."
   type        = string
   default     = "default"
 }
 variable "cd_tekton_pipeline_property_type" {
   description = "Property type."
   type        = string
-  default     = "TEXT"
+  default     = "text"
 }
 variable "cd_tekton_pipeline_property_path" {
-  description = "A dot notation path for INTEGRATION type properties to select a value from the tool integration."
+  description = "A dot notation path for integration type properties to select a value from the tool integration."
   type        = string
   default     = "path"
 }

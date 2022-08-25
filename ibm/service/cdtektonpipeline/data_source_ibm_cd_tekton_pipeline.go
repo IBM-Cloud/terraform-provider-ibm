@@ -127,7 +127,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
+							Description: "Options for single_select property type. Only needed when using single_select property type.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -135,7 +135,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"default": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Default option for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
+							Description: "Default option for single_select property type. Only needed when using single_select property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -145,7 +145,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration.",
+							Description: "A dot notation path for integration type properties to select a value from the tool integration.",
 						},
 					},
 				},
@@ -210,12 +210,12 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Property value. Can be empty and should be omitted for SINGLE_SELECT property type.",
+										Description: "Property value. Can be empty and should be omitted for single_select property type.",
 									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+										Description: "Options for single_select property type. Only needed for single_select property type.",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -223,7 +223,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"default": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+										Description: "Default option for single_select property type. Only needed for single_select property type.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -233,7 +233,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+										Description: "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -419,10 +419,10 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 					},
 				},
 			},
-			"html_url": &schema.Schema{
+			"runs_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Dashboard URL of this pipeline.",
+				Description: "URL for this pipeline showing the list of pipeline runs.",
 			},
 			"build_number": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -542,8 +542,8 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Error setting worker %s", err))
 	}
 
-	if err = d.Set("html_url", tektonPipeline.HTMLURL); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting html_url: %s", err))
+	if err = d.Set("runs_url", tektonPipeline.RunsURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting runs_url: %s", err))
 	}
 
 	if err = d.Set("build_number", flex.IntValue(tektonPipeline.BuildNumber)); err != nil {

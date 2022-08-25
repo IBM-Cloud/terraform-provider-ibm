@@ -43,12 +43,12 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Property value. Can be empty and should be omitted for SINGLE_SELECT property type.",
+				Description: "Property value. Can be empty and should be omitted for single_select property type.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+				Description: "Options for single_select property type. Only needed for single_select property type.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -56,7 +56,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"default": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+				Description: "Default option for single_select property type. Only needed for single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -66,7 +66,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+				Description: "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 			},
 		},
 	}

@@ -65,7 +65,7 @@ func SuppressHashedRawSecret(k, old, new string, d *schema.ResourceData) bool {
 
 func SuppressPipelinePropertyRawSecret(k, old, new string, d *schema.ResourceData) bool {
 	// ResourceIBMCdTektonPipelineProperty
-	if d.Get("type").(string) == "SECURE" {
+	if d.Get("type").(string) == "secure" {
 		segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
 		secret := strings.Join(segs, ".")
 		mac := hmac.New(sha3.New512, []byte(secret))
@@ -79,7 +79,7 @@ func SuppressPipelinePropertyRawSecret(k, old, new string, d *schema.ResourceDat
 
 func SuppressTriggerPropertyRawSecret(k, old, new string, d *schema.ResourceData) bool {
 	// ResourceIBMCdTektonPipelineTriggerProperty
-	if d.Get("type").(string) == "SECURE" {
+	if d.Get("type").(string) == "secure" {
 		segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string), d.Get("name").(string)}
 		secret := strings.Join(segs, ".")
 		mac := hmac.New(sha3.New512, []byte(secret))

@@ -50,14 +50,14 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Options for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
+				Description: "Options for single_select property type. Only needed when using single_select property type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"default": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "default"),
-				Description: "Default option for SINGLE_SELECT property type. Only needed when using SINGLE_SELECT property type.",
+				Description: "Default option for single_select property type. Only needed when using single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -69,7 +69,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "path"),
-				Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration.",
+				Description: "A dot notation path for integration type properties to select a value from the tool integration.",
 			},
 		},
 	}
@@ -119,7 +119,7 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "APPCONFIG, INTEGRATION, SECURE, SINGLE_SELECT, TEXT",
+			AllowedValues:              "appconfig, integration, secure, single_select, text",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "path",
@@ -262,13 +262,13 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 				" The resource must be re-created to update this property.", "name"))
 	}
 
-	if d.Get("type").(string) == "INTEGRATION" {
+	if d.Get("type").(string) == "integration" {
 		if d.HasChange("value") || d.HasChange("path") {
 			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 			hasChange = true
 		}
-	} else if d.Get("type").(string) == "SINGLE_SELECT" {
+	} else if d.Get("type").(string) == "single_select" {
 		if d.HasChange("enum") || d.HasChange("default") {
 			enumInterface := d.Get("enum").([]interface{})
 			enum := make([]string, len(enumInterface))

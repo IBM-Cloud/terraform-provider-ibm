@@ -52,19 +52,19 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:    true,
 				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description: "Property value. Can be empty and should be omitted for SINGLE_SELECT property type.",
+				Description: "Property value. Can be empty and should be omitted for single_select property type.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Options for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+				Description: "Options for single_select property type. Only needed for single_select property type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"default": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "default"),
-				Description: "Default option for SINGLE_SELECT property type. Only needed for SINGLE_SELECT property type.",
+				Description: "Default option for single_select property type. Only needed for single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -76,7 +76,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description: "A dot notation path for INTEGRATION type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+				Description: "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 			},
 		},
 	}
@@ -135,7 +135,7 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "APPCONFIG, INTEGRATION, SECURE, SINGLE_SELECT, TEXT",
+			AllowedValues:              "appconfig, integration, secure, single_select, text",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "path",
@@ -288,13 +288,13 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 				" The resource must be re-created to update this property.", "name"))
 	}
 
-	if d.Get("type").(string) == "INTEGRATION" {
+	if d.Get("type").(string) == "integration" {
 		if d.HasChange("value") || d.HasChange("path") {
 			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
 			replaceTektonPipelineTriggerPropertyOptions.SetPath(d.Get("path").(string))
 			hasChange = true
 		}
-	} else if d.Get("type").(string) == "SINGLE_SELECT" {
+	} else if d.Get("type").(string) == "single_select" {
 		if d.HasChange("enum") || d.HasChange("default") {
 			enumInterface := d.Get("enum").([]interface{})
 			enum := make([]string, len(enumInterface))
