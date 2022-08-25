@@ -68,10 +68,11 @@ resource "ibm_is_lb_listener" "example" {
 }
 resource "ibm_is_lb_listener_policy" "example" {
   lb                                = ibm_is_lb.example.id
+  listener                          = ibm_is_lb_listener.example.listener_id
   action                            = "https_redirect"
   priority                          = 2
   name                              = "example-listener"
-  taget_https_redirect_listener     = ibm_is_lb_listener.example.listener_id
+  target_https_redirect_listener    = ibm_is_lb_listener.example.listener_id
   target_https_redirect_status_code = 301
   target_https_redirect_uri         = "/example?doc=geta"
   rules {
