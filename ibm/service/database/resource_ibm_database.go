@@ -1692,6 +1692,10 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database groups: %s", err))
 	}
+	if groupList.Groups[0].Members.AllocationCount == 0 {
+		return diag.FromErr(fmt.Errorf("[ERROR] This database appears to have have 0 members. Unable to proceed"))
+	}
+
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
 	d.Set("node_count", groupList.Groups[0].Members.AllocationCount)
 
