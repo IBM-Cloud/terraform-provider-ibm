@@ -372,22 +372,22 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret value, not needed if secret type is \"internalValidation\".",
+										Description: "Secret value, not needed if secret type is \"internal_validation\".",
 									},
 									"source": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret location, not needed if secret type is \"internalValidation\".",
+										Description: "Secret location, not needed if secret type is \"internal_validation\".",
 									},
 									"key_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret name, not needed if type is \"internalValidation\".",
+										Description: "Secret name, not needed if type is \"internal_validation\".",
 									},
 									"algorithm": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Algorithm used for \"digestMatches\" secret type. Only needed for \"digestMatches\" secret type.",
+										Description: "Algorithm used for \"digest_matches\" secret type. Only needed for \"digest_matches\" secret type.",
 									},
 								},
 							},

@@ -138,15 +138,15 @@ Nested scheme for **triggers**:
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
 	Nested scheme for **secret**:
-		* `algorithm` - (String) Algorithm used for "digestMatches" secret type. Only needed for "digestMatches" secret type.
+		* `algorithm` - (String) Algorithm used for "digest_matches" secret type. Only needed for "digest_matches" secret type.
 		  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
-		* `key_name` - (String) Secret name, not needed if type is "internalValidation".
+		* `key_name` - (String) Secret name, not needed if type is "internal_validation".
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-		* `source` - (String) Secret location, not needed if secret type is "internalValidation".
+		* `source` - (String) Secret location, not needed if secret type is "internal_validation".
 		  * Constraints: Allowable values are: `header`, `payload`, `query`.
 		* `type` - (String) Secret type.
-		  * Constraints: Allowable values are: `tokenMatches`, `digestMatches`, `internalValidation`.
-		* `value` - (String) Secret value, not needed if secret type is "internalValidation".
+		  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
+		* `value` - (String) Secret value, not needed if secret type is "internal_validation".
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 	* `source_trigger_id` - (String) ID of the trigger to duplicate. Only needed when duplicating a trigger.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
