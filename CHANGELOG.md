@@ -1,3 +1,8 @@
+# 1.44.3 (Aug 29, 2022)
+BUG FIXES
+* The IBM database fails with Error: Unprocessable Entity ([3964](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3964))
+* Prevent runtime error on 0 member allocations ([3992](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3992))
+
 # 1.44.2 (Aug 8, 2022)
 BUG FIXES
 * fix: schematics template metadata issue ([3953](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3953))
