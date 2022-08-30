@@ -28,8 +28,6 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The default value is `false`.
 * `enable_slack_notifications` - (Optional, Boolean) Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain.
   * Constraints: The default value is `false`.
-* `enabled` - (Optional, Boolean) Flag whether this pipeline is enabled.
-  * Constraints: The default value is `true`.
 * `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
 Nested scheme for **worker**:
 	* `id` - (Required, String)
@@ -58,6 +56,7 @@ Nested scheme for **definitions**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
 		* `url` - (Forces new resource, String) URL of the definition repository.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `enabled` - (Boolean) Flag whether this pipeline is enabled.
 * `name` - (String) String.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
 * `properties` - (List) Tekton pipeline's environment properties.

@@ -38,12 +38,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Default:     false,
 				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work.",
 			},
-			"enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Flag whether this pipeline is enabled.",
-			},
 			"worker": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -441,6 +435,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Computed:    true,
 				Description: "The latest pipeline run build number. If this property is absent, the pipeline hasn't had any pipeline runs.",
 			},
+			"enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag whether this pipeline is enabled.",
+			},
 		},
 	}
 }
@@ -458,9 +457,6 @@ func resourceIBMCdTektonPipelineCreate(context context.Context, d *schema.Resour
 	}
 	if _, ok := d.GetOk("enable_partial_cloning"); ok {
 		createTektonPipelineOptions.SetEnablePartialCloning(d.Get("enable_partial_cloning").(bool))
-	}
-	if _, ok := d.GetOk("enabled"); ok {
-		createTektonPipelineOptions.SetEnabled(d.Get("enabled").(bool))
 	}
 	if _, ok := d.GetOk("worker"); ok {
 		workerModel, err := resourceIBMCdTektonPipelineMapToWorkerWithID(d.Get("worker.0").(map[string]interface{}))
@@ -509,9 +505,6 @@ func resourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resource
 	}
 	if err = d.Set("enable_partial_cloning", tektonPipeline.EnablePartialCloning); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting enable_partial_cloning: %s", err))
-	}
-	if err = d.Set("enabled", tektonPipeline.Enabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
 	}
 	if tektonPipeline.Worker != nil {
 		workerMap, err := resourceIBMCdTektonPipelineWorkerWithIDToMap(tektonPipeline.Worker)
@@ -586,6 +579,9 @@ func resourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resource
 	if err = d.Set("build_number", flex.IntValue(tektonPipeline.BuildNumber)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting build_number: %s", err))
 	}
+	if err = d.Set("enabled", tektonPipeline.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
+	}
 
 	return nil
 }
@@ -609,10 +605,6 @@ func resourceIBMCdTektonPipelineUpdate(context context.Context, d *schema.Resour
 	}
 	if d.HasChange("enable_partial_cloning") {
 		patchVals.EnablePartialCloning = core.BoolPtr(d.Get("enable_partial_cloning").(bool))
-		hasChange = true
-	}
-	if d.HasChange("enabled") {
-		patchVals.Enabled = core.BoolPtr(d.Get("enabled").(bool))
 		hasChange = true
 	}
 	if d.HasChange("worker") {

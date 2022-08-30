@@ -72,7 +72,6 @@ cd_tekton_pipeline resource:
 resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
   enable_slack_notifications = var.cd_tekton_pipeline_enable_slack_notifications
   enable_partial_cloning = var.cd_tekton_pipeline_enable_partial_cloning
-  enabled = var.cd_tekton_pipeline_enabled
   worker = var.cd_tekton_pipeline_worker
 }
 ```
@@ -164,7 +163,6 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | trigger | Tekton pipeline trigger. | `` | false |
 | enable_slack_notifications | Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain. | `bool` | false |
 | enable_partial_cloning | Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work. | `bool` | false |
-| enabled | Flag whether this pipeline is enabled. | `bool` | false |
 | worker | Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default. | `` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | definition_id | The definition ID. | `string` | true |

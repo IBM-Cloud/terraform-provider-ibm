@@ -48,7 +48,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
 resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
   enable_slack_notifications = var.cd_tekton_pipeline_enable_slack_notifications
   enable_partial_cloning = var.cd_tekton_pipeline_enable_partial_cloning
-  enabled = var.cd_tekton_pipeline_enabled
   worker {
     id = "id"
   }

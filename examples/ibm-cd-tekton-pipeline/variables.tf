@@ -97,11 +97,6 @@ variable "cd_tekton_pipeline_enable_partial_cloning" {
   type        = bool
   default     = true
 }
-variable "cd_tekton_pipeline_enabled" {
-  description = "Flag whether this pipeline is enabled."
-  type        = bool
-  default     = true
-}
 
 // Data source arguments for cd_tekton_pipeline_definition
 variable "cd_tekton_pipeline_definition_pipeline_id" {
