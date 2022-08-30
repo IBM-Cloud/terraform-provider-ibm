@@ -1773,7 +1773,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database whitelist: %s", err))
 		}
 		d.Set("whitelist", flex.FlattenWhitelist(whitelist))
-	} else if _, ok := d.GetOk("allowlist"); ok {
+	} else {
 		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 		alEntry := &clouddatabasesv5.GetAllowlistOptions{
 			ID: &instanceID,
