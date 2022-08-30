@@ -24,6 +24,12 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 
 Review the argument reference that you can specify for your resource.
 
+* `enable_partial_cloning` - (Optional, Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work.
+  * Constraints: The default value is `false`.
+* `enable_slack_notifications` - (Optional, Boolean) Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain.
+  * Constraints: The default value is `false`.
+* `enabled` - (Optional, Boolean) Flag whether this pipeline is enabled.
+  * Constraints: The default value is `true`.
 * `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
 Nested scheme for **worker**:
 	* `id` - (Required, String)
@@ -52,9 +58,6 @@ Nested scheme for **definitions**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
 		* `url` - (Forces new resource, String) URL of the definition repository.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `enable_partial_cloning` - (Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work.
-* `enable_slack_notifications` - (Boolean) Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain.
-* `enabled` - (Boolean) Flag whether this pipeline is enabled.
 * `name` - (String) String.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
 * `properties` - (List) Tekton pipeline's environment properties.

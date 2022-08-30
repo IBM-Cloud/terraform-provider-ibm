@@ -87,6 +87,21 @@ variable "cd_tekton_pipeline_trigger_pipeline_id" {
 }
 
 // Resource arguments for cd_tekton_pipeline
+variable "cd_tekton_pipeline_enable_slack_notifications" {
+  description = "Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain."
+  type        = bool
+  default     = true
+}
+variable "cd_tekton_pipeline_enable_partial_cloning" {
+  description = "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work."
+  type        = bool
+  default     = true
+}
+variable "cd_tekton_pipeline_enabled" {
+  description = "Flag whether this pipeline is enabled."
+  type        = bool
+  default     = true
+}
 
 // Data source arguments for cd_tekton_pipeline_definition
 variable "cd_tekton_pipeline_definition_pipeline_id" {
