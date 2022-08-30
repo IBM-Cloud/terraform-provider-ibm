@@ -38,6 +38,15 @@ Review the argument references that you can specify for your resource.
 - `class` - (Required, String) The dedicated host profile class for hosts in this group.
 - `family` - (Required, String) The dedicated host profile family for hosts in this group.
 - `name` - (Optional, String) The unique user defined name for this dedicated host group. If unspecified, the name will be a hyphenated list of randomly selected words.
+- `numa` - The NUMA configuration for this dedicated host.
+  
+  Nested scheme for `numa`:
+    - `count` - The total number of NUMA nodes for this dedicated host.
+    - `nodes` - The NUMA nodes for this dedicated host.
+      
+      Nested scheme for `nodes`:
+        - `available_vcpu` - The available VCPU for this NUMA node.
+        - `vcpu` - The total VCPU capacity for this NUMA node.
 - `resource_group` - (Optional, String) The unique ID of the resource group to use. If unspecified, the account's default resource group is used.
 - `zone` - (Required, String) The globally unique name of the zone this dedicated host group will reside in.
 

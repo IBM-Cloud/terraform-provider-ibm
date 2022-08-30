@@ -470,6 +470,7 @@ Review the argument references that you can specify for your resource.
   - `protocol` - (Optional, String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled. Default is **http**
   - `response_hop_limit` - (Optional, Integer) The hop limit (IP time to live) for IP response packets from the metadata service. Default is **1**
 - `name` - (Optional, String) The instance name.
+- `numa_count` - (Boolean) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
     -> **Allowed vNIC per profile.** Follow the vNIC count as per the instance profile's `network_interface_count`. For details see  [`is_instance_profile`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profile) or [`is_instance_profiles`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/is_instance_profiles).

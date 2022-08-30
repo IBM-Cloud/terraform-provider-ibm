@@ -486,6 +486,11 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"numa_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of NUMA nodes this virtual server instance is provisioned on. This property may be absent if the instance's `status` is not `running`.",
+			},
 			"port_speed": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -692,6 +697,12 @@ func instanceProfileGet(d *schema.ResourceData, meta interface{}, name string) e
 	}
 	if profile.NetworkInterfaceCount != nil {
 		err = d.Set("network_interface_count", dataSourceInstanceProfileFlattenNetworkInterfaceCount(*profile.NetworkInterfaceCount.(*vpcv1.InstanceProfileNetworkInterfaceCount)))
+		if err != nil {
+			return err
+		}
+	}
+	if profile.NumaCount != nil {
+		err := d.Set("numa_count", profile.NumaCount)
 		if err != nil {
 			return err
 		}
