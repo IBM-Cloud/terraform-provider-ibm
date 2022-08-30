@@ -52,19 +52,13 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:    true,
 				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description: "Property value. Can be empty and should be omitted for single_select property type.",
+				Description: "Property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Options for single_select property type. Only needed for single_select property type.",
+				Description: "Options for `single_select` property type. Only needed for `single_select` property type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "default"),
-				Description: "Default option for single_select property type. Only needed for single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -76,7 +70,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description: "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+				Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 			},
 		},
 	}
@@ -120,15 +114,6 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			Regexp:                     `.`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "default",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,235}$`,
-			MinValueLength:             1,
-			MaxValueLength:             253,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "type",
@@ -175,9 +160,6 @@ func resourceIBMCdTektonPipelineTriggerPropertyCreate(context context.Context, d
 			enum[i] = fmt.Sprint(v)
 		}
 		createTektonPipelineTriggerPropertiesOptions.SetEnum(enum)
-	}
-	if _, ok := d.GetOk("default"); ok {
-		createTektonPipelineTriggerPropertiesOptions.SetDefault(d.Get("default").(string))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelineTriggerPropertiesOptions.SetType(d.Get("type").(string))
@@ -241,9 +223,6 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
 	}
-	if err = d.Set("default", triggerProperty.Default); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
-	}
 	if err = d.Set("type", triggerProperty.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
@@ -295,14 +274,14 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 			hasChange = true
 		}
 	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("default") {
+		if d.HasChange("enum") || d.HasChange("value") {
 			enumInterface := d.Get("enum").([]interface{})
 			enum := make([]string, len(enumInterface))
 			for i, v := range enumInterface {
 				enum[i] = fmt.Sprint(v)
 			}
 			replaceTektonPipelineTriggerPropertyOptions.SetEnum(enum)
-			replaceTektonPipelineTriggerPropertyOptions.SetDefault(d.Get("default").(string))
+			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
 			hasChange = true
 		}
 	} else {

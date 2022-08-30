@@ -42,7 +42,6 @@ resource "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_prope
   name = var.cd_tekton_pipeline_trigger_property_name
   value = var.cd_tekton_pipeline_trigger_property_value
   enum = var.cd_tekton_pipeline_trigger_property_enum
-  default = var.cd_tekton_pipeline_trigger_property_default
   type = var.cd_tekton_pipeline_trigger_property_type
   path = var.cd_tekton_pipeline_trigger_property_path
 }
@@ -55,7 +54,6 @@ resource "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
   name = var.cd_tekton_pipeline_property_name
   value = var.cd_tekton_pipeline_property_value
   enum = var.cd_tekton_pipeline_property_enum
-  default = var.cd_tekton_pipeline_property_default
   type = var.cd_tekton_pipeline_property_type
   path = var.cd_tekton_pipeline_property_path
 }
@@ -149,18 +147,16 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger_id | The trigger ID. | `string` | true |
 | name | Property name. | `string` | false |
-| value | Property value. Can be empty and should be omitted for single_select property type. | `string` | false |
-| enum | Options for single_select property type. Only needed for single_select property type. | `list(string)` | false |
-| default | Default option for single_select property type. Only needed for single_select property type. | `string` | false |
+| value | Property value. | `string` | false |
+| enum | Options for `single_select` property type. Only needed for `single_select` property type. | `list(string)` | false |
 | type | Property type. | `string` | false |
-| path | A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected. | `string` | false |
+| path | A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected. | `string` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | name | Property name. | `string` | false |
 | value | Property value. | `string` | false |
-| enum | Options for single_select property type. Only needed when using single_select property type. | `list(string)` | false |
-| default | Default option for single_select property type. Only needed when using single_select property type. | `string` | false |
+| enum | Options for `single_select` property type. Only needed when using `single_select` property type. | `list(string)` | false |
 | type | Property type. | `string` | false |
-| path | A dot notation path for integration type properties to select a value from the tool integration. | `string` | false |
+| path | A dot notation path for `integration` type properties to select a value from the tool integration. | `string` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | trigger | Tekton pipeline trigger. | `` | false |
 | worker | Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default. | `` | false |

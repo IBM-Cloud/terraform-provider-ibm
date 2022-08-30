@@ -21,7 +21,6 @@ resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_p
   name = var.cd_tekton_pipeline_trigger_property_name
   value = var.cd_tekton_pipeline_trigger_property_value
   enum = var.cd_tekton_pipeline_trigger_property_enum
-  default = var.cd_tekton_pipeline_trigger_property_default
   type = var.cd_tekton_pipeline_trigger_property_type
   path = var.cd_tekton_pipeline_trigger_property_path
 }
@@ -32,7 +31,6 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
   name = var.cd_tekton_pipeline_property_name
   value = var.cd_tekton_pipeline_property_value
   enum = var.cd_tekton_pipeline_property_enum
-  default = var.cd_tekton_pipeline_property_default
   type = var.cd_tekton_pipeline_property_type
   path = var.cd_tekton_pipeline_property_path
 }

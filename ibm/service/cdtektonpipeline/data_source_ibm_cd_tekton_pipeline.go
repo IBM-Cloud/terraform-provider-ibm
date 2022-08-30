@@ -127,15 +127,10 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Options for single_select property type. Only needed when using single_select property type.",
+							Description: "Options for `single_select` property type. Only needed when using `single_select` property type.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-						},
-						"default": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Default option for single_select property type. Only needed when using single_select property type.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -145,7 +140,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A dot notation path for integration type properties to select a value from the tool integration.",
+							Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
 						},
 					},
 				},
@@ -210,20 +205,15 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Property value. Can be empty and should be omitted for single_select property type.",
+										Description: "Property value. Can be empty and should be omitted for `single_select` property type.",
 									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Options for single_select property type. Only needed for single_select property type.",
+										Description: "Options for `single_select` property type. Only needed for `single_select` property type.",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
-									},
-									"default": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Default option for single_select property type. Only needed for single_select property type.",
 									},
 									"type": &schema.Schema{
 										Type:        schema.TypeString,
@@ -233,7 +223,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -372,22 +362,22 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"value": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret value, not needed if secret type is \"internal_validation\".",
+										Description: "Secret value, not needed if secret type is `internal_validation`.",
 									},
 									"source": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret location, not needed if secret type is \"internal_validation\".",
+										Description: "Secret location, not needed if secret type is `internal_validation`.",
 									},
 									"key_name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Secret name, not needed if type is \"internal_validation\".",
+										Description: "Secret name, not needed if type is `internal_validation`.",
 									},
 									"algorithm": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Algorithm used for \"digest_matches\" secret type. Only needed for \"digest_matches\" secret type.",
+										Description: "Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.",
 									},
 								},
 							},
@@ -428,6 +418,16 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The latest pipeline run build number. If this property is absent, the pipeline hasn't had any pipeline runs.",
+			},
+			"enable_slack_notifications": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain.",
+			},
+			"enable_partial_cloning": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work.",
 			},
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -550,6 +550,14 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("Error setting build_number: %s", err))
 	}
 
+	if err = d.Set("enable_slack_notifications", tektonPipeline.EnableSlackNotifications); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enable_slack_notifications: %s", err))
+	}
+
+	if err = d.Set("enable_partial_cloning", tektonPipeline.EnablePartialCloning); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enable_partial_cloning: %s", err))
+	}
+
 	if err = d.Set("enabled", tektonPipeline.Enabled); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
 	}
@@ -613,9 +621,6 @@ func dataSourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Proper
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
-	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -728,9 +733,6 @@ func dataSourceIBMCdTektonPipelineTriggerPropertiesItemToMap(model *cdtektonpipe
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
-	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -884,9 +886,6 @@ func dataSourceIBMCdTektonPipelineTriggerManualTriggerPropertiesItemToMap(model 
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
-	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
 	}
@@ -971,9 +970,6 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerPropertiesItemToMap(model *cd
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
 	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
-	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
 	}
@@ -1049,9 +1045,6 @@ func dataSourceIBMCdTektonPipelineTriggerTimerTriggerPropertiesItemToMap(model *
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
-	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
@@ -1129,9 +1122,6 @@ func dataSourceIBMCdTektonPipelineTriggerGenericTriggerPropertiesItemToMap(model
 	}
 	if model.Enum != nil {
 		modelMap["enum"] = model.Enum
-	}
-	if model.Default != nil {
-		modelMap["default"] = *model.Default
 	}
 	if model.Type != nil {
 		modelMap["type"] = *model.Type

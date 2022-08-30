@@ -43,15 +43,10 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Options for single_select property type. Only needed when using single_select property type.",
+				Description: "Options for `single_select` property type. Only needed when using `single_select` property type.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-			},
-			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Default option for single_select property type. Only needed when using single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -61,7 +56,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A dot notation path for integration type properties to select a value from the tool integration.",
+				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
 			},
 		},
 	}
@@ -94,10 +89,6 @@ func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
 	}
 
-
-	if err = d.Set("default", property.Default); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
-	}
 
 	if err = d.Set("type", property.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))

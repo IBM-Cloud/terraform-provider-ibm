@@ -57,19 +57,17 @@ Nested scheme for **events**:
 
 * `properties` - (List) Trigger properties.
 Nested scheme for **properties**:
-	* `default` - (String) Default option for single_select property type. Only needed for single_select property type.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `enum` - (List) Options for single_select property type. Only needed for single_select property type.
+	* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `href` - (String) API URL for interacting with the trigger property.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-	* `path` - (String) A dot notation path for integration type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
+	* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `type` - (String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
-	* `value` - (String) Property value. Can be empty and should be omitted for single_select property type.
+	* `value` - (String) Property value. Can be empty and should be omitted for `single_select` property type.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 
 * `scm_source` - (List) SCM source repository for a Git trigger. Only needed for Git triggers.
@@ -88,15 +86,15 @@ Nested scheme for **scm_source**:
 
 * `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
 Nested scheme for **secret**:
-	* `algorithm` - (String) Algorithm used for "digest_matches" secret type. Only needed for "digest_matches" secret type.
+	* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
 	  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
-	* `key_name` - (String) Secret name, not needed if type is "internal_validation".
+	* `key_name` - (String) Secret name, not needed if type is `internal_validation`.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `source` - (String) Secret location, not needed if secret type is "internal_validation".
+	* `source` - (String) Secret location, not needed if secret type is `internal_validation`.
 	  * Constraints: Allowable values are: `header`, `payload`, `query`.
 	* `type` - (String) Secret type.
 	  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
-	* `value` - (String) Secret value, not needed if secret type is "internal_validation".
+	* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 
 * `source_trigger_id` - (String) ID of the trigger to duplicate. Only needed when duplicating a trigger.

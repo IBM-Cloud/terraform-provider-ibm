@@ -50,14 +50,8 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Options for single_select property type. Only needed when using single_select property type.",
+				Description: "Options for `single_select` property type. Only needed when using `single_select` property type.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "default"),
-				Description: "Default option for single_select property type. Only needed when using single_select property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -69,7 +63,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "path"),
-				Description: "A dot notation path for integration type properties to select a value from the tool integration.",
+				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
 			},
 		},
 	}
@@ -104,15 +98,6 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			Regexp:                     `.`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "default",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,235}$`,
-			MinValueLength:             1,
-			MaxValueLength:             253,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "type",
@@ -158,9 +143,6 @@ func resourceIBMCdTektonPipelinePropertyCreate(context context.Context, d *schem
 			enum[i] = fmt.Sprint(v)
 		}
 		createTektonPipelinePropertiesOptions.SetEnum(enum)
-	}
-	if _, ok := d.GetOk("default"); ok {
-		createTektonPipelinePropertiesOptions.SetDefault(d.Get("default").(string))
 	}
 	if _, ok := d.GetOk("type"); ok {
 		createTektonPipelinePropertiesOptions.SetType(d.Get("type").(string))
@@ -220,9 +202,6 @@ func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.
 			return diag.FromErr(fmt.Errorf("Error setting enum: %s", err))
 		}
 	}
-	if err = d.Set("default", property.Default); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
-	}
 	if err = d.Set("type", property.Type); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
@@ -269,14 +248,14 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 			hasChange = true
 		}
 	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("default") {
+		if d.HasChange("enum") || d.HasChange("value") {
 			enumInterface := d.Get("enum").([]interface{})
 			enum := make([]string, len(enumInterface))
 			for i, v := range enumInterface {
 				enum[i] = fmt.Sprint(v)
 			}
 			replaceTektonPipelinePropertyOptions.SetEnum(enum)
-			replaceTektonPipelinePropertyOptions.SetDefault(d.Get("default").(string))
+			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
 			hasChange = true
 		}
 	} else {
