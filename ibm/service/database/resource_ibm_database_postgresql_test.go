@@ -109,6 +109,22 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresGroupMigration(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
+					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
+					resource.TestCheckResourceAttr(name, "users.#", "0"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
+					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+				),
+			},
 			// {
 			// 	ResourceName:      name,
 			// 	ImportState:       true,
@@ -568,6 +584,36 @@ func testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup string
 		service_endpoints            = "public"
 		tags                         = ["one:two"]
 	  }
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresGroupMigration(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-postgresql"
+		plan                         = "standard"
+		location                     = "%[3]s"
+		adminpassword                = "password12"
+		service_endpoints            = "public"
+		tags                         = ["one:two"]
+
+		group {
+			group_id = "member"
+
+			memory {
+				allocation_mb = 1024
+			}
+			 disk {
+				allocation_mb = 7168
+			}
+		}
+	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 

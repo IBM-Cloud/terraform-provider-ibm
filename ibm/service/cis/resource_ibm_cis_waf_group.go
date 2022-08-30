@@ -22,6 +22,7 @@ const (
 	cisWAFGroupRulesCount         = "rules_count"
 	cisWAFGroupModifiedRulesCount = "modified_rules_count"
 	cisWAFGroupDesc               = "description"
+	cisWAFCheckMode               = "check_mode"
 )
 
 func ResourceIBMCISWAFGroup() *schema.Resource {
@@ -36,6 +37,8 @@ func ResourceIBMCISWAFGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "CIS Intance CRN",
+				ValidateFunc: validate.InvokeValidator("ibm_cis_waf_group",
+					"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -73,14 +76,20 @@ func ResourceIBMCISWAFGroup() *schema.Resource {
 				Description: "WAF Rule group description",
 			},
 			cisWAFGroupRulesCount: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "WAF Rule group rules count",
 			},
 			cisWAFGroupModifiedRulesCount: {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "WAF Rule group modified rules count",
+			},
+			cisWAFCheckMode: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Check Mode before making a create/update request",
+				Default:     false,
 			},
 		},
 	}
@@ -91,6 +100,14 @@ func ResourceIBMCISWAFGroupValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	mode := "on, off"
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 cisWAFGroupMode,
@@ -114,9 +131,26 @@ func ResourceIBMCISWAFGroupUpdate(d *schema.ResourceData, meta interface{}) erro
 	cisClient.ZoneID = core.StringPtr(zoneID)
 	packageID, _, _, _ := flex.ConvertTfToCisThreeVar(d.Get(cisWAFGroupPackageID).(string))
 	groupID := d.Get(cisWAFGroupID).(string)
+	mode := d.Get(cisWAFGroupMode).(string)
+
+	checkMode := d.Get(cisWAFCheckMode)
+
+	if checkMode == true {
+		opt := cisClient.NewGetWafRuleGroupOptions(packageID, groupID)
+		result, _, error := cisClient.GetWafRuleGroup(opt)
+		if err != nil {
+			log.Printf("Get waf rule group setting failed: %v", error)
+			return err
+		}
+
+		actualMode := *result.Result.Mode
+		if actualMode == mode {
+			d.SetId(flex.ConvertCisToTfFourVar(groupID, packageID, zoneID, crn))
+			return ResourceIBMCISWAFGroupRead(d, meta)
+		}
+	}
 
 	if d.HasChange(cisWAFGroupMode) {
-		mode := d.Get(cisWAFGroupMode).(string)
 		opt := cisClient.NewUpdateWafRuleGroupOptions(packageID, groupID)
 		opt.SetMode(mode)
 		_, response, err := cisClient.UpdateWafRuleGroup(opt)

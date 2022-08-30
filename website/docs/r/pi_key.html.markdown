@@ -21,6 +21,29 @@ resource "ibm_pi_key" "testacc_sshkey" {
 }
 ```
 
+## Argument reference
+Review the argument references that you can specify for your resource. 
+
+- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
+- `pi_key_name`  - (Required, String) User defined name for the SSH key. 
+- `pi_ssh_key` - (Required, String) SSH RSA key. 
+
+## Attribute reference
+ In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `id` - (String) The unique identifier of the key. The ID is composed of `<pi_cloud_instance_id>/<pi_key_name>`.
+- `key_id` - (String) User defined name for the SSH key (deprecated - replaced by `name`).
+- `name` - (String) User defined name for the SSH key
+- `creation_date` - (String) Date of SSH Key creation. 
+- `ssh_key` - (String) SSH RSA key.
+
+## Timeouts
+
+ibm_pi_key provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create** - (Default 60 minutes) Used for creating a SSH key.
+- **delete** - (Default 60 minutes) Used for deleting a SSH key.
+
 **Note**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
@@ -35,30 +58,6 @@ resource "ibm_pi_key" "testacc_sshkey" {
       zone      =   "lon04"
     }
   ```
-
-## Timeouts
-
-ibm_pi_key provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
-
-- **create** - (Default 60 minutes) Used for creating a SSH key.
-- **delete** - (Default 60 minutes) Used for deleting a SSH key.
-
-
-## Argument reference
-Review the argument references that you can specify for your resource. 
-
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_key_name`  - (Required, Integer) The name of the SSH key that you uploaded to IBM Cloud. 
-- `pi_ssh_key` - (Required, String) The value of the public SSH key. 
-
-
-## Attribute reference
- In addition to all argument reference list, you can access the following attribute reference after your resource is created.
-
-- `creation_date` - (String) The date when the SSH key was created. 
-- `id` - (String) The unique identifier of the key. The ID is composed of `<pi_cloud_instance_id>/<pi_key_name>`.
-- `key_id` - (String) The unique identifier of the key.
-
 ## Import
 
 The `ibm_pi_key` resource can be imported by using `pi_cloud_instance_id` and `pi_key_name`.

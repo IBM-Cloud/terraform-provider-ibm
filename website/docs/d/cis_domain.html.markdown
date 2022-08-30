@@ -38,3 +38,4 @@ In addition to all argument reference list, you can access the following attribu
 - `original_name_servers` - (String) The name servers from when the Domain was initially registered with the DNS Registrar.
 - `paused` -  (Bool) If set to **true**, network traffic to this domain is paused. If set to **false**, network traffic to this domain is permitted. The default value is **false**.
 - `status` - (String) The status of your domain. Valid values are `active`, `pending`, `initializing`, `moved`, `deleted`, and `deactivated`. After creation, the status remains pending until the DNS Registrar is updated with the CIS name servers, exported in the ‘name_servers’ variable.
+- `type` - (String) The type of domain created. `full`- for regular domains, & `partial` for partial domain for CNAME setup.

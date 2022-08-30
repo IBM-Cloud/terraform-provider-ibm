@@ -873,6 +873,43 @@ func FlattenCosObejctVersioning(in *s3.GetBucketVersioningOutput) []interface{} 
 	return versioning
 }
 
+func ReplicationRuleGet(in *s3.ReplicationConfiguration) []map[string]interface{} {
+	rules := make([]map[string]interface{}, 0, 1)
+	if in != nil {
+		for _, replicaterule := range in.Rules {
+			replicationConfig := make(map[string]interface{})
+			if replicaterule.DeleteMarkerReplication != nil {
+				if *(replicaterule.DeleteMarkerReplication).Status == "Enabled" {
+					replicationConfig["deletemarker_replication_status"] = true
+				} else {
+					replicationConfig["deletemarker_replication_status"] = false
+				}
+			}
+			if replicaterule.Destination != nil {
+				replicationConfig["destination_bucket_crn"] = *(replicaterule.Destination).Bucket
+			}
+			if replicaterule.ID != nil {
+				replicationConfig["rule_id"] = *replicaterule.ID
+			}
+			if replicaterule.Priority != nil {
+				replicationConfig["priority"] = int(*replicaterule.Priority)
+			}
+			if replicaterule.Status != nil {
+				if *replicaterule.Status == "Enabled" {
+					replicationConfig["enable"] = true
+				} else {
+					replicationConfig["enable"] = false
+				}
+			}
+			if replicaterule.Filter != nil && replicaterule.Filter.Prefix != nil {
+				replicationConfig["prefix"] = *(replicaterule.Filter).Prefix
+			}
+			rules = append(rules, replicationConfig)
+		}
+	}
+	return rules
+}
+
 func FlattenLimits(in *whisk.Limits) []interface{} {
 	att := make(map[string]interface{})
 	if in.Timeout != nil {
@@ -1654,6 +1691,16 @@ func FlattenGetAllowlist(allowlist clouddatabasesv5.GetAllowlistResponse) []map[
 	return entries
 }
 
+func ExpandPlatformOptions(platformOptions icdv4.PlatformOptions) []map[string]interface{} {
+	pltOptions := make([]map[string]interface{}, 0, 1)
+	pltOption := make(map[string]interface{})
+	pltOption["key_protect_key_id"] = platformOptions.KeyProtectKey
+	pltOption["disk_encryption_key_crn"] = platformOptions.DiskENcryptionKeyCrn
+	pltOption["backup_encryption_key_crn"] = platformOptions.BackUpEncryptionKeyCrn
+	pltOptions = append(pltOptions, pltOption)
+	return pltOptions
+}
+
 func expandStringMap(inVal interface{}) map[string]string {
 	outVal := make(map[string]string)
 	if inVal == nil {
@@ -2304,6 +2351,22 @@ func ResourceVolumeAttachmentValidate(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func InstanceProfileValidate(diff *schema.ResourceDiff) error {
+	if diff.Id() != "" && diff.HasChange("profile") {
+		o, n := diff.GetChange("profile")
+		old := o.(string)
+		new := n.(string)
+		log.Println("old profile : ", old)
+		log.Println("new profile : ", new)
+		if !strings.Contains(old, "d") && strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		} else if strings.Contains(old, "d") && !strings.Contains(new, "d") {
+			diff.ForceNew("profile")
+		}
+	}
+	return nil
+}
+
 func ResourceVolumeValidate(diff *schema.ResourceDiff) error {
 
 	if diff.Id() != "" && diff.HasChange("capacity") {
@@ -2541,9 +2604,17 @@ func DefaultResourceGroup(meta interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return "", err
+	}
+	accountID := userDetails.UserAccount
 	defaultGrp := true
 	resourceGroupList := rg.ListResourceGroupsOptions{
 		Default: &defaultGrp,
+	}
+	if accountID != "" {
+		resourceGroupList.AccountID = &accountID
 	}
 	grpList, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
 	if err != nil || grpList == nil || grpList.Resources == nil {

@@ -5,6 +5,7 @@ provider "ibm" {
 // Provision cbr_zone resource instance
 resource "ibm_cbr_zone" "cbr_zone_instance" {
   name = "A terraform example of network zone"
+  account_id = var.ibmcloud_account_id
   description = "A terraform example of network zone"
   addresses {
     type = "ipAddress"
@@ -31,14 +32,24 @@ resource "ibm_cbr_rule" "cbr_rule_instance" {
   }
   resources {
     attributes {
+      name = "accountId"
+      value = var.ibmcloud_account_id
+    }
+    attributes {
       name = "serviceName"
-      value = "network-policy-enabled"
+      value = "containers-kubernetes"
     }
     tags {
       name     = "tag_name"
       value    = "tag_value"
     }
   }
+  operations {
+    api_types {
+      api_type_id = "crn:v1:bluemix:public:containers-kubernetes::::api-type:management"
+    }
+  }
+  enforcement_mode = "disabled"
 }
 
 // Create cbr_zone data source

@@ -98,6 +98,176 @@ resource "ibm_cos_bucket" "cos_bucket" {
     noncurrent_days = var.nc_exp_days
   }
 }
+//Replication
+resource "ibm_resource_instance" "cos_instance_source" {
+  name              = "cos-instance-src"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "cos_bucket_source" {
+  bucket_name           = "sourcetest"
+  resource_instance_id = ibm_resource_instance.cos_instance_source.id
+  region_location      = var.regional_loc
+  storage_class         = var.storage
+  object_versioning {
+    enable  = true
+  }
+}
+
+resource "ibm_resource_instance" "cos_instance_destination" {
+  name              = "cos-instance-dest"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "cos_bucket_destination" {
+  bucket_name           = "desttest"
+  resource_instance_id = ibm_resource_instance.cos_instance_destination.id
+  region_location      = var.regional_loc
+  storage_class         = var.storage
+  object_versioning {
+    enable  = true
+  }
+}
+
+resource "ibm_cos_bucket" "cos_bucket_destination_1" {
+  bucket_name           = "desttest01"
+  resource_instance_id = ibm_resource_instance.cos_instance_destination.id
+  region_location      = var.regional_loc
+  storage_class         = var.storage
+  object_versioning {
+    enable  = true
+  }
+}
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles                  = [
+      "Writer",
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "12345"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = ibm_resource_instance.cos_instance_source.guid
+  }
+  subject_attributes {
+    name  = "resource"
+    value = ibm_cos_bucket.cos_bucket_source.bucket_name
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "12345"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes { 
+    name  =  "serviceInstance"
+    operator = "stringEquals"
+    value =  ibm_resource_instance.cos_instance_destination.guid
+  }
+  resource_attributes { 
+    name  =  "resource"
+    operator = "stringEquals"
+    value =  ibm_cos_bucket.cos_bucket_destination.bucket_name
+  }
+  resource_attributes { 
+    name  =  "resourceType"
+    operator = "stringEquals"
+    value =  "bucket" 
+  }
+}
+
+resource "ibm_iam_authorization_policy" "policy1" {
+  roles                  = [
+      "Writer",
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "12345"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = ibm_resource_instance.cos_instance_source.guid
+  }
+  subject_attributes {
+    name  = "resource"
+    value = ibm_cos_bucket.cos_bucket_source.bucket_name
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "12345"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes { 
+    name  =  "serviceInstance"
+    operator = "stringEquals"
+    value =  ibm_resource_instance.cos_instance_destination.guid
+  }
+  resource_attributes { 
+    name  =  "resource"
+    operator = "stringEquals"
+    value =  ibm_cos_bucket.cos_bucket_destination_1.bucket_name
+  }
+  resource_attributes { 
+    name  =  "resourceType"
+    operator = "stringEquals"
+    value =  "bucket" 
+  }
+}
+
+
+resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
+  depends_on = [
+      ibm_iam_authorization_policy.policy, ibm_iam_authorization_policy.policy1
+  ]
+  bucket_crn      = ibm_cos_bucket.cos_bucket_source.crn
+  bucket_location = ibm_cos_bucket.cos_bucket_source.region_location
+  replication_rule {
+    enable = true
+    prefix = var.replicate_prefix
+    priority = var.replicate_priority
+    deletemarker_replication_status = var.delmarkerrep_status
+    destination_bucket_crn = ibm_cos_bucket.cos_bucket_destination.crn
+  }
+  replication_rule {
+    enable = true
+    priority = "2"
+    deletemarker_replication_status = var.delmarkerrep_status
+    destination_bucket_crn = ibm_cos_bucket.cos_bucket_destination_1.crn
+  }
+}
 
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn

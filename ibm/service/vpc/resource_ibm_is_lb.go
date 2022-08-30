@@ -190,7 +190,7 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_lb", "tag")},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_lb", "tags")},
 				Set:      flex.ResourceIBMVPCHash,
 			},
 
@@ -280,7 +280,7 @@ func ResourceIBMISLBValidator() *validate.ResourceValidator {
 			AllowedValues:              isLBProfileAllowedValues})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,

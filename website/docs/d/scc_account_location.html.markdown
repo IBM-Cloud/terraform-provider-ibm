@@ -45,8 +45,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `results_endpoint_url` - (Optional, String) The endpoint that is used to get the results for the Configuration Governance component.
 
-* `si_endpoint_url` - (Optional, String) The endpoint that is used to call the Security Insights APIs.
-
 * `regions` - (Optional, List) Nested scheme for **regions**:
 	* `id` - (Required, String) The programatic ID of the available regions.
 	  * Constraints: Allowable values are: `us`, `eu`, `uk`.

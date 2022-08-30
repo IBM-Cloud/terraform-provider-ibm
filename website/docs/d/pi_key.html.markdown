@@ -18,6 +18,19 @@ data "ibm_pi_key" "ds_instance" {
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
+  
+## Argument reference
+Review the argument references that you can specify for your data source. 
+
+- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
+- `pi_key_name`  - (Required, String) User defined name for the SSH key. 
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
+
+- `id` - (String) User defined name for the SSH key
+- `creation_date` - (String) Date of SSH Key creation. 
+- `ssh_key` - (String) SSH RSA key.
 
 **Notes**
 
@@ -34,16 +47,3 @@ Example usage:
       zone      =   "lon04"
     }
   ```
-  
-## Argument reference
-Review the argument references that you can specify for your data source. 
-
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_key_name` - (Required, String) The name of the key.
-
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created. 
-
-- `creation_date` - Timestamp - The timestamp when the SSH key was created.
-- `id` - (String) The unique identifier of the SSH key.
-- `ssh_key` - (String) The public SSH key value.

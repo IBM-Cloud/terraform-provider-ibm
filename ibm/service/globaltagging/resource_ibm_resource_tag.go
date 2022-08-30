@@ -68,7 +68,7 @@ func ResourceIBMResourceTag() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", "tag_type"),
+				ValidateFunc: validate.InvokeValidator("ibm_resource_tag", tagType),
 				Description:  "Type of the tag. Only allowed values are: user, or service or access (default value : user)",
 			},
 			acccountID: {

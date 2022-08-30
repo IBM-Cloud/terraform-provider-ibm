@@ -80,6 +80,8 @@ func ResourceIBMResourceInstance() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Type:        schema.TypeString,
+				ValidateFunc: validate.InvokeValidator("ibm_resource_instance",
+					"location"),
 			},
 
 			"resource_group_id": {
@@ -88,6 +90,8 @@ func ResourceIBMResourceInstance() *schema.Resource {
 				ForceNew:    true,
 				Type:        schema.TypeString,
 				Computed:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_resource_instance",
+					"resource_group_id"),
 			},
 
 			"parameters": {
@@ -114,8 +118,10 @@ func ResourceIBMResourceInstance() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_resource_instance", "tag")},
+				Elem:     &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_resource_instance", "tags")},
 				Set:      flex.ResourceIBMVPCHash,
+				ValidateFunc: validate.InvokeValidator("ibm_resource_instance",
+					"tags"),
 			},
 
 			"status": {
@@ -354,7 +360,28 @@ func ResourceIBMResourceInstanceValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "tag",
+			Identifier:                 "resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceGroup",
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "Tags",
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "Region",
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
