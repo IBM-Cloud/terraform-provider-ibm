@@ -6,7 +6,7 @@ description: |-
   Get information about a MSTeams subscription
 ---
 
-# ibm_en_subscription_slack
+# ibm_en_subscription_msteams
 
 Provides a read-only data source for subscription. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
