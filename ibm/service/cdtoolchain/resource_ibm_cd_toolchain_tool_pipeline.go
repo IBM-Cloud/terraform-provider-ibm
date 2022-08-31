@@ -123,7 +123,7 @@ func ResourceIBMCdToolchainToolPipeline() *schema.Resource {
 }
 
 func ResourceIBMCdToolchainToolPipelineValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 1)
+	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "toolchain_id",

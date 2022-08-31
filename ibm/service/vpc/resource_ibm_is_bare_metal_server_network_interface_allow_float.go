@@ -226,16 +226,16 @@ func createVlanTypeNetworkInterfaceAllowFloat(context context.Context, d *schema
 	}
 	nicOptions.InterfaceType = &interfaceType
 
-	if ais, ok := d.GetOk(isBareMetalServerNicAllowIPSpoofing); ok {
-		allowIPSpoofing := ais.(bool)
-		if allowIPSpoofing {
-			nicOptions.AllowIPSpoofing = &allowIPSpoofing
-		}
+	if aisOk, ok := d.GetOkExists(isBareMetalServerNicAllowIPSpoofing); ok {
+		allowIPSpoofing := aisOk.(bool)
+		nicOptions.AllowIPSpoofing = &allowIPSpoofing
 	}
-	if ein, ok := d.GetOk(isBareMetalServerNicEnableInfraNAT); ok {
+
+	if ein, ok := d.GetOkExists(isBareMetalServerNicEnableInfraNAT); ok {
 		enableInfrastructureNat := ein.(bool)
 		nicOptions.EnableInfrastructureNat = &enableInfrastructureNat
 	}
+
 	if subnetOk, ok := d.GetOk(isBareMetalServerNicSubnet); ok {
 		subnet := subnetOk.(string)
 		nicOptions.Subnet = &vpcv1.SubnetIdentity{

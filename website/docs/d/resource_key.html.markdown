@@ -68,3 +68,6 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the resource key.
 - `role` - (String) The user role.
 - `status` - (String) The status of the resource key.  
+
+## Note
+Credentials will be seen as redacted, if the user does not have access equal to or greater than the access of the service credentials. Please refer to the documentation to access credentials - https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui.

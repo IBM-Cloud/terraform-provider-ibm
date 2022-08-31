@@ -480,6 +480,13 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 								},
 							},
 						},
+						isVolumeTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "User Tags for the Volume",
+						},
 					},
 				},
 			},
@@ -645,7 +652,9 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMa
 		zoneList = append(zoneList, zoneMap)
 		volumesMap[isVolumesZone] = zoneList
 	}
-
+	if volumesItem.UserTags != nil {
+		volumesMap[isVolumeTags] = volumesItem.UserTags
+	}
 	return volumesMap
 }
 

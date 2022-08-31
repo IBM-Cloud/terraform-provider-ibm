@@ -17,6 +17,21 @@ data "ibm_pi_keys" "example" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
+  
+## Argument reference
+Review the argument references that you can specify for your data source.
+
+- `pi_cloud_instance_id` - (Required, String) Cloud Instance ID of a PCloud Instance.
+
+## Attribute reference
+In addition to all argument reference list, you can access the following attribute references after your data source is created.
+
+- `keys` - (List) List of all the SSH keys.
+
+  Nested scheme for `keys`:
+  - `name` - (String) User defined name for the SSH key
+  - `creation_date` - (String) Date of SSH Key creation. 
+  - `ssh_key` - (String) SSH RSA key.
 
 **Notes**
 
@@ -33,18 +48,3 @@ Example usage:
       zone      =   "lon04"
     }
   ```
-  
-## Argument reference
-Review the argument references that you can specify for your data source.
-
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute references after your data source is created.
-
-- `keys` - (List) List of all the SSH keys.
-
-  Nested scheme for `keys`:
-  - `creation_date` - (String) Date of SSH key creation.
-  - `name` - (String) User defined name for the SSH key.
-  - `ssh_key` - (String) SSH RSA key.

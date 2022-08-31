@@ -44,6 +44,9 @@ In addition to the argument reference list, you can access the following attribu
 - `routing_tables` (List) List of all the routing tables in a VPC.
 
   Nested scheme for `routing_tables`:
+	- `accept_routes_from` - (List) The filters specifying the resources that may create routes in this routing table.At present, only the `resource_type` filter is permitted, and only the `vpn_gateway` value is supported, but filter support is expected to expand in the future.
+		Nested scheme for **accept_routes_from**:
+		- `resource_type` - (String) The resource type.		
     - `created_at` - (Timestamp)  The date and time the routing table was created.
 	- `href` - (String) The routing table URL.
 	- `is_default` - (String)  Indicates whether the default routing table.

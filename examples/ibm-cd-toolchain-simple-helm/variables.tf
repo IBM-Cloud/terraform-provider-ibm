@@ -81,6 +81,12 @@ variable "kp_name" {
   default     = "Key Protect Service"
 }
 
+variable "kp_region" {
+  type        = string
+  description = "IBM Cloud Region where the Key Protect Instance is created."
+  default     = "ibm:yp1:us-south"
+}
+
 variable "app_repo" {
   type        = string
   description = "Repository url for the repository containing application source code."

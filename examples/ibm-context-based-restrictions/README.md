@@ -27,6 +27,7 @@ cbr_zone resource:
 ```hcl
 resource "cbr_zone" "cbr_zone_instance" {
   name = var.cbr_zone_name
+  account_id = var.cbr_zone_account_id
   description = var.cbr_zone_description
   addresses = var.cbr_zone_addresses
   excluded = var.cbr_zone_excluded
@@ -59,14 +60,6 @@ data "cbr_rule" "cbr_rule_instance" {
 }
 ```
 
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
-
 ## Requirements
 
 | Name | Version |
@@ -85,12 +78,15 @@ data "cbr_rule" "cbr_rule_instance" {
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name of the zone. | `string` | false |
+| account_id | The id of the account owning this zone. | `string` | false |
 | description | The description of the zone. | `string` | false |
 | addresses | The list of addresses in the zone. | `list()` | false |
-| excluded | The list of excluded addresses in the zone. | `list()` | false |
+| excluded | The list of excluded addresses in the zone. Only addresses of type `ipAddress`, `ipRange`, and `subnet` can be excluded. | `list()` | false |
 | description | The description of the rule. | `string` | false |
 | contexts | The contexts this rule applies to. | `list()` | false |
 | resources | The resources this rule apply to. | `list()` | false |
+| operations | The operations this rule applies to. | `` | false |
+| enforcement_mode | The rule enforcement mode: * `enabled` - The restrictions are enforced and reported. This is the default. * `disabled` - The restrictions are disabled. Nothing is enforced or reported. * `report` - The restrictions are evaluated and reported, but not enforced. | `string` | false |
 | zone_id | The ID of a zone. | `string` | true |
 | rule_id | The ID of a rule. | `string` | true |
 

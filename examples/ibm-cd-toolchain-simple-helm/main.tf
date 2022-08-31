@@ -71,25 +71,27 @@ module "pipeline-pr" {
 }
 
 module "services" {
-  source                    = "./services"
-  key_protect_instance_name = var.kp_name
-  region                    = var.region
-  ibm_cloud_api             = var.ibm_cloud_api   
-  cluster_name              = var.cluster_name
-  cluster_namespace         = var.cluster_namespace
-  cluster_region            = var.cluster_region
-  registry_namespace        = var.registry_namespace
-  registry_region           = var.registry_region   
+  source                      = "./services"
+  kp_name                     = var.kp_name
+  kp_region                   = var.kp_region
+  region                      = var.region
+  ibm_cloud_api               = var.ibm_cloud_api   
+  cluster_name                = var.cluster_name
+  cluster_namespace           = var.cluster_namespace
+  cluster_region              = var.cluster_region
+  registry_namespace          = var.registry_namespace
+  registry_region             = var.registry_region   
 }
 
 module "integrations" {
-  source                    = "./integrations"
-  depends_on                = [ module.repositories, module.services ]
-  toolchain_id              = ibm_cd_toolchain.toolchain_instance.id
-  region                    = var.region  
-  resource_group            = var.resource_group
-  key_protect_instance_name = module.services.key_protect_instance_name
-  key_protect_instance_guid = module.services.key_protect_instance_guid
+  source                      = "./integrations"
+  depends_on                  = [ module.repositories, module.services ]
+  toolchain_id                = ibm_cd_toolchain.toolchain_instance.id
+  region                      = var.region  
+  resource_group              = var.resource_group
+  key_protect_instance_region = var.kp_region
+  key_protect_instance_name   = module.services.key_protect_instance_name
+  key_protect_instance_guid   = module.services.key_protect_instance_guid
 }
 
 output "toolchain_id" {
