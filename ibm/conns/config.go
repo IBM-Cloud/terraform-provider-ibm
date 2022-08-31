@@ -29,6 +29,7 @@ import (
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
+	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	ciscachev1 "github.com/IBM/networking-go-sdk/cachingapiv1"
 	cisipv1 "github.com/IBM/networking-go-sdk/cisipapiv1"
 	ciscustompagev1 "github.com/IBM/networking-go-sdk/custompagesv1"
@@ -73,7 +74,6 @@ import (
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
-	"github.com/IBM/scc-go-sdk/findingsv1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
 	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
@@ -245,6 +245,7 @@ type ClientSession interface {
 	FunctionIAMNamespaceAPI() (functions.FunctionServiceAPI, error)
 	CisZonesV1ClientSession() (*ciszonesv1.ZonesV1, error)
 	CisAlertsSession() (*cisalertsv1.AlertsV1, error)
+	CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error)
 	CisDNSRecordClientSession() (*cisdnsrecordsv1.DnsRecordsV1, error)
 	CisDNSRecordBulkClientSession() (*cisdnsbulkv1.DnsRecordBulkV1, error)
 	CisGLBClientSession() (*cisglbv1.GlobalLoadBalancerV1, error)
@@ -284,7 +285,6 @@ type ClientSession interface {
 	AtrackerV1() (*atrackerv1.AtrackerV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
-	FindingsV1() (*findingsv1.FindingsV1, error)
 	AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error)
 	ConfigurationGovernanceV1() (*configurationgovernancev1.ConfigurationGovernanceV1, error)
 	PostureManagementV1() (*posturemanagementv1.PostureManagementV1, error)
@@ -419,6 +419,10 @@ type clientSession struct {
 	// CIS Alerts
 	cisAlertsClient *cisalertsv1.AlertsV1
 	cisAlertsErr    error
+
+	// CIS Authenticated Origin Pull
+	cisOriginAuthClient  *cisoriginpull.AuthenticatedOriginPullApiV1
+	cisOriginAuthPullErr error
 
 	// CIS dns service options
 	cisDNSErr           error
@@ -573,10 +577,6 @@ type clientSession struct {
 
 	esSchemaRegistryClient *schemaregistryv1.SchemaregistryV1
 	esSchemaRegistryErr    error
-
-	// Security and Compliance Center (SCC)
-	findingsClient    *findingsv1.FindingsV1
-	findingsClientErr error
 
 	// Security and Compliance Center (SCC) Admin
 	adminServiceApiClient    *adminserviceapiv1.AdminServiceApiV1
@@ -1020,6 +1020,14 @@ func (sess clientSession) CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1
 	return sess.cisWAFRuleClient.Clone(), nil
 }
 
+// CIS Authenticated Origin Pull
+func (sess clientSession) CisOrigAuthSession() (*cisoriginpull.AuthenticatedOriginPullApiV1, error) {
+	if sess.cisOriginAuthPullErr != nil {
+		return sess.cisOriginAuthClient, sess.cisOriginAuthPullErr
+	}
+	return sess.cisOriginAuthClient.Clone(), nil
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1107,14 +1115,6 @@ func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 
 func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error) {
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
-}
-
-// Security and Compliance center Findings API
-func (session clientSession) FindingsV1() (*findingsv1.FindingsV1, error) {
-	if session.findingsClientErr != nil {
-		return session.findingsClient, session.findingsClientErr
-	}
-	return session.findingsClient.Clone(), nil
 }
 
 //Security and Compliance center Admin API
@@ -1521,7 +1521,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		cbrURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT", c.Region, cbrURL)
 	}
-	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.Options{
+	contextBasedRestrictionsClientOptions := &contextbasedrestrictionsv1.ContextBasedRestrictionsV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT"}, cbrURL),
 	}
@@ -1630,38 +1630,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
-	}
-
-	// SCC FINDINGS Service
-	var findingsClientURL string
-	if c.Visibility == "public" || c.Visibility == "public-and-private" {
-		findingsClientURL, err = findingsv1.GetServiceURLForRegion(c.Region)
-		if err != nil {
-			session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service:  `%s` region not supported", c.Region)
-		}
-	} else {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: `%v` visibility not supported", c.Visibility)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		findingsClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCC_FINDINGS_API_ENDPOINT", c.Region, findingsClientURL)
-	}
-	findingsClientOptions := &findingsv1.FindingsV1Options{
-		Authenticator: authenticator,
-		URL:           EnvFallBack([]string{"IBMCLOUD_SCC_FINDINGS_API_ENDPOINT"}, findingsClientURL),
-		AccountID:     core.StringPtr(userConfig.UserAccount),
-	}
-	// Construct the service client.
-	session.findingsClient, err = findingsv1.NewFindingsV1(findingsClientOptions)
-	if err != nil {
-		session.findingsClientErr = fmt.Errorf("[ERROR] Error occurred while configuring Security Insights Findings API service: %q", err)
-	}
-	if session.findingsClient != nil && session.findingsClient.Service != nil {
-		// Enable retries for API calls
-		session.findingsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		// Add custom header for analytics
-		session.findingsClient.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
 	}
 
 	// SCC ADMIN Service
@@ -2704,6 +2672,28 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisFirewallRulesClient != nil && session.cisFirewallRulesClient.Service != nil {
 		session.cisFirewallRulesClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisFirewallRulesClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM Network CIS Authenticated Origin Pull
+	cisOriginAuthOptions := &cisoriginpull.AuthenticatedOriginPullApiV1Options{
+		URL:            cisEndPoint,
+		Authenticator:  authenticator,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+	}
+
+	session.cisOriginAuthClient, session.cisOriginAuthPullErr =
+		cisoriginpull.NewAuthenticatedOriginPullApiV1(cisOriginAuthOptions)
+	if session.cisOriginAuthPullErr != nil {
+		session.cisOriginAuthPullErr = fmt.Errorf(
+			"Error occured while configuring CIS Authenticated Origin Pullservice: %s",
+			session.cisOriginAuthPullErr)
+	}
+	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
+		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisOriginAuthClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

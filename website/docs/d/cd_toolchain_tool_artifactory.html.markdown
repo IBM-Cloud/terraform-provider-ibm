@@ -35,38 +35,38 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the cd_toolchain_tool_artifactory.
-* `crn` - (Required, String) Tool CRN.
+* `crn` - (String) Tool CRN.
 
 
-* `href` - (Required, String) URI representing the tool.
+* `href` - (String) URI representing the tool.
 
-* `name` - (Optional, String) Tool name.
+* `name` - (String) Tool name.
 
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (List) Parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `dashboard_url` - (Optional, String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
-	* `mirror_url` - (Optional, String) Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.
-	* `release_url` - (Optional, String) Type the URL for your Artifactory release repository.
-	* `repository_name` - (Optional, String) Type the name of your artifactory repository where your docker images are located.
-	* `repository_url` - (Optional, String) Type the URL of your artifactory repository where your docker images are located.
-	* `snapshot_url` - (Optional, String) Type the URL for your Artifactory snapshot repository.
-	* `token` - (Optional, String) Type the API key for your Artifactory repository.
-	* `type` - (Required, String) Choose the type of repository for your Artifactory integration.
+	* `dashboard_url` - (String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
+	* `mirror_url` - (String) Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
+	* `name` - (String) Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.
+	* `release_url` - (String) Type the URL for your Artifactory release repository.
+	* `repository_name` - (String) Type the name of your artifactory repository where your docker images are located.
+	* `repository_url` - (String) Type the URL of your artifactory repository where your docker images are located.
+	* `snapshot_url` - (String) Type the URL for your Artifactory snapshot repository.
+	* `token` - (String) Type the API key for your Artifactory repository.
+	* `type` - (String) Choose the type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
-	* `user_id` - (Optional, String) Type the User ID or email for your Artifactory repository.
+	* `user_id` - (String) Type the User ID or email for your Artifactory repository.
 
-* `referent` - (Required, List) Information on URIs to access this resource through the UI or API.
+* `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (Optional, String) URI representing the this resource through an API.
-	* `ui_href` - (Optional, String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing the this resource through an API.
+	* `ui_href` - (String) URI representing the this resource through the UI.
 
-* `resource_group_id` - (Required, String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where tool can be found.
 
-* `state` - (Required, String) Current configuration state of the tool.
+* `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
-* `toolchain_crn` - (Required, String) CRN of toolchain which the tool is bound to.
+* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 
-* `updated_at` - (Required, String) Latest tool update timestamp.
+* `updated_at` - (String) Latest tool update timestamp.
 

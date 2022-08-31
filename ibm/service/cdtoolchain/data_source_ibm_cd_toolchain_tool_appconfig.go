@@ -190,11 +190,10 @@ func DataSourceIBMCdToolchainToolAppconfigRead(context context.Context, d *schem
 	parameters := []map[string]interface{}{}
 	if getToolByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"environment_name":   "environment-name",
-			"collection_name":    "collection-name",
-			"integration_status": "integration-status",
+			"resource_group":   "resource-group",
+			"instance_name":    "instance-name",
+			"environment_name": "environment-name",
+			"collection_name":  "collection-name",
 		}
 		modelMap := GetParametersFromRead(getToolByIDResponse.Parameters, DataSourceIBMCdToolchainToolAppconfig(), remapFields)
 		parameters = append(parameters, modelMap)

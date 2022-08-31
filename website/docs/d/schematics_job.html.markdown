@@ -333,9 +333,6 @@ Nested scheme for **data**:
 					* `offering_id` - (String) Id of the offering the IBM Catalog.
 					* `offering_version_id` - (String) Id of the offering version the IBM Catalog.
 					* `offering_repo_url` - (String) Repo Url of the offering, in the IBM Catalog.
-				* `cos_bucket` - (List) Connection details to a IBM Cloud Object Storage bucket.
-				Nested scheme for **cos_bucket**:
-					* `cos_bucket_url` - (String) COS Bucket Url.
 			* `inputs` - (List) Input variables data for the workItem used in FlowJob.
 			Nested scheme for **inputs**:
 				* `name` - (String) Name of the variable.

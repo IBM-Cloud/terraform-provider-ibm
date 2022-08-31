@@ -7,6 +7,7 @@ description: |-
   Manages IBM IS VPC route.
 ---
 
+~>**Note**  This resource is deprecated, use `ibm_is_vpc_routing_table_route` instead.
 # ibm_is_vpc_route
 Create, update, or delete a VPC route. For more information, about VPC routes, see [setting up advanced routing in VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes).
 

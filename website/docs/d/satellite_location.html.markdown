@@ -26,6 +26,7 @@ Review the argument references that you can specify for your data source.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+- `coreos_enabled` - (Bool) If Red Hat CoreOS features are enabled within the Satellite location.
 - `crn` - (String) The CRN for this satellite location.
 - `created_on` - (Timestamp) The created time of the satellite location.
 - `description` - (String) Description of the new Satellite location.

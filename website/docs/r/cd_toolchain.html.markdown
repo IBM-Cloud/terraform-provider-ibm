@@ -38,14 +38,14 @@ Review the argument reference that you can specify for your resource.
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cd_toolchain.
-* `account_id` - (Required, String) Account ID where toolchain can be found.
-* `created_at` - (Required, String) Toolchain creation timestamp.
-* `created_by` - (Required, String) Identity that created the toolchain.
-* `crn` - (Required, String) Toolchain CRN.
-* `href` - (Required, String) URI that can be used to retrieve toolchain.
-* `location` - (Required, String) Toolchain region.
-* `tags` - (Required, List) Tags associated with the toolchain.
-* `updated_at` - (Required, String) Latest toolchain update timestamp.
+* `account_id` - (String) Account ID where toolchain can be found.
+* `created_at` - (String) Toolchain creation timestamp.
+* `created_by` - (String) Identity that created the toolchain.
+* `crn` - (String) Toolchain CRN.
+* `href` - (String) URI that can be used to retrieve toolchain.
+* `location` - (String) Toolchain region.
+* `tags` - (List) Tags associated with the toolchain.
+* `updated_at` - (String) Latest toolchain update timestamp.
 
 ## Provider Configuration
 

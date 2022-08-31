@@ -166,3 +166,5 @@ In addition to all argument reference list, you can access the following attribu
 - `updated_by` - (String) The subject who updated the key.
 - `url` - (String) When you created a new key, a relative URL path is created identifying the location of the key.
 
+## Note
+Credentials will be seen as redacted, if the user does not have access equal to or greater than the access of the service credentials. Please refer to the documentation to access credentials - https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui.

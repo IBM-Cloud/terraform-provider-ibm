@@ -19,6 +19,38 @@ resource "ibm_pi_dhcp" "example" {
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
+## Argument reference
+
+Review the argument references that you can specify for your resource. 
+
+- `pi_cidr` - (Optional, String) The CIDR for the DHCP private network.
+- `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with the DHCP private network.
+- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_dhcp_name` - (Optional, String) The name of the DHCP Service that will be prefixed by the DHCP identifier.
+- `pi_dhcp_snat_enabled` - (Optional, Bool) Indicates if SNAT will be enabled for the DHCP service. The default value is **true**.
+- `pi_dns_server` - (Optional, String) The DNS Server for the DHCP service.
+
+## Attribute reference
+
+In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+
+- `dhcp_id` - (String) The ID of the DHCP Server.
+- `id` - (String) The unique identifier of the DHCP Server. The ID is composed of `<power_instance_id>/<dhcp_id>`.
+- `leases` - (List) The list of DHCP Server PVM Instance leases.
+  Nested scheme for `leases`:
+  - `instance_ip` - (String) The IP of the PVM Instance.
+  - `instance_mac` - (String) The MAC Address of the PVM Instance.
+- `network` - (String) The ID of the DHCP Server private network (deprecated - replaced by `network_id`).
+- `network_id`- (String) The ID of the DHCP Server private network.
+- `network_name` - The name of the DHCP Server private network.
+- `status` - (String) The status of the DHCP Server.
+
+## Timeouts
+
+The `ibm_pi_dhcp` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
+
+- **create** - (Default 30 minutes) Used for creating a DHCP Server.
+- **delete** - (Default 10 minutes) Used for deleting a DHCP Server.
 
 **Note**
 
@@ -35,41 +67,10 @@ resource "ibm_pi_dhcp" "example" {
       zone      =   "lon04"
     }
   ```
-
-## Timeouts
-
-The `ibm_pi_dhcp` provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
-
-- **create** - (Default 30 minutes) Used for creating a DHCP Server.
-- **delete** - (Default 10 minutes) Used for deleting a DHCP Server.
-
-## Argument reference
-
-Review the argument references that you can specify for your resource. 
-
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_cloud_connection_id` - (Optional, String) The Cloud Connection UUID to connect with DHCP private network.
-
-## Attribute reference
-
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
-
-- `id` - (String) The unique identifier of the DHCP Server. The ID is composed of `<power_instance_id>/<dhcp_id>`.
-- `dhcp_id` - (String) The ID of the DHCP Server.
-- `leases` - (List) The list of DHCP Server PVM Instance leases.
-
-  Nested scheme for `leases`:
-  - `instance_ip` - (String) The IP of the PVM Instance.
-  - `instance_mac` - (String) The MAC Address of the PVM Instance.
-- `network` - (String) The DHCP Server private network.
-- `status` - (String) The status of the DHCP Server.
-
 ## Import
 
 The `ibm_pi_dhcp` resource can be imported by using `pi_cloud_instance_id` and `dhcp_id`.
 
-**Example**
-
-```sh
-$ terraform import ibm_pi_dhcp.example d7bec597-4726-451f-8a63-e62e6f19c32c/0e48e1be-9f54-4a67-ba55-7e31ce98b65a
+```terraform
+terraform import ibm_pi_dhcp.example d7bec597-4726-451f-8a63-e62e6f19c32c/0e48e1be-9f54-4a67-ba55-7e31ce98b65a
 ```

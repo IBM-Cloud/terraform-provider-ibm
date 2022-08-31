@@ -70,6 +70,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `id` - (String) The unique identifier of cloud connection.
 - `cloud_connection_id` - (String) The cloud connection ID.
+- `connection_mode` - (String) Type of service the gateway is attached to.
 - `gre_source_address` - (String) The GRE auto-assigned source IP address.
 - `ibm_ip_address` - (String) The IBM IP address.
 - `port` - (String) Port.

@@ -5,6 +5,9 @@ package cos
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -15,8 +18,6 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/aws/session"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"strings"
-	"time"
 )
 
 var bucketTypes = []string{"single_site_location", "region_location", "cross_region_location"}
@@ -31,8 +32,9 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				Required: true,
 			},
 			"bucket_type": {
-				Type:          schema.TypeString,
-				ValidateFunc:  validate.ValidateAllowedStringValues(bucketTypes),
+				Type: schema.TypeString,
+				// ValidateFunc:  validate.ValidateAllowedStringValues(bucketTypes),
+				ValidateFunc:  validate.InvokeDataSourceValidator("ibm_cos_bucket", "bucket_type"),
 				Optional:      true,
 				RequiredWith:  []string{"bucket_region"},
 				ConflictsWith: []string{"satellite_location_id"},
@@ -44,8 +46,9 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				ConflictsWith: []string{"satellite_location_id"},
 			},
 			"resource_instance_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_cos_bucket", "resource_instance_id"),
 			},
 			"satellite_location_id": {
 				Type:          schema.TypeString,
@@ -54,9 +57,10 @@ func DataSourceIBMCosBucket() *schema.Resource {
 				ExactlyOneOf:  []string{"satellite_location_id", "bucket_region"},
 			},
 			"endpoint_type": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ValidateFunc:  validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
+				Type:     schema.TypeString,
+				Optional: true,
+				// ValidateFunc:  validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
+				ValidateFunc:  validate.InvokeDataSourceValidator("ibm_cos_bucket", "endpoint_type"),
 				Description:   "public or private",
 				ConflictsWith: []string{"satellite_location_id"},
 				Default:       "public",
@@ -318,6 +322,44 @@ func DataSourceIBMCosBucket() *schema.Resource {
 					},
 				},
 			},
+			"replication_rule": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Replicate objects between buckets, replicate across source and destination. A container for replication rules can add up to 1,000 rules. The maximum size of a replication configuration is 2 MB.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A unique identifier for the rule. The maximum value is 255 characters.",
+						},
+						"priority": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"enable": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable or disable an replication rule for a bucket",
+						},
+						"prefix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rule applies to any objects with keys that match this prefix",
+						},
+						"deletemarker_replication_status": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether to replicate delete markers. It should be either Enable or Disable",
+						},
+						"destination_bucket_crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Cloud Resource Name (CRN) of the bucket where you want COS to store the results",
+						},
+					},
+				},
+			},
 			"hard_quota": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -327,6 +369,37 @@ func DataSourceIBMCosBucket() *schema.Resource {
 	}
 }
 
+func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_instance_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:cloud-object-storage"}})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "bucket_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "single_site_location,region_location,cross_region_location",
+		})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "endpoint_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "public,private,direct",
+		})
+
+	ibmCOSBucketDataSourceValidator := validate.ResourceValidator{ResourceName: "ibm_cos_bucket", Schema: validateSchema}
+	return &ibmCOSBucketDataSourceValidator
+}
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
@@ -545,6 +618,24 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 		versioningData := flex.FlattenCosObejctVersioning(versionPtr)
 		if len(versioningData) > 0 {
 			d.Set("object_versioning", versioningData)
+		}
+	}
+
+	// Get the replication rules
+	getBucketReplicationInput := &s3.GetBucketReplicationInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	replicationptr, err := s3Client.GetBucketReplication(getBucketReplicationInput)
+
+	if err != nil && !strings.Contains(err.Error(), "AccessDenied: Access Denied") && !strings.Contains(err.Error(), "The replication configuration was not found") {
+		return err
+	}
+
+	if replicationptr != nil {
+		replicationRules := flex.ReplicationRuleGet(replicationptr.ReplicationConfiguration)
+		if len(replicationRules) > 0 {
+			d.Set("replication_rule", replicationRules)
 		}
 	}
 

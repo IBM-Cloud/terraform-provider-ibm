@@ -180,9 +180,8 @@ func DataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *sche
 	parameters := []map[string]interface{}{}
 	if getToolByIDResponse.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group":     "resource-group",
-			"instance_name":      "instance-name",
-			"integration_status": "integration-status",
+			"resource_group": "resource-group",
+			"instance_name":  "instance-name",
 		}
 		modelMap := GetParametersFromRead(getToolByIDResponse.Parameters, DataSourceIBMCdToolchainToolKeyprotect(), remapFields)
 		parameters = append(parameters, modelMap)

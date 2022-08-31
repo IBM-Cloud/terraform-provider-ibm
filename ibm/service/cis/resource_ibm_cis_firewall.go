@@ -73,6 +73,8 @@ func ResourceIBMCISFirewallRecord() *schema.Resource {
 				Description: "CIS object id",
 				Required:    true,
 				ForceNew:    true,
+				ValidateFunc: validate.InvokeValidator("ibm_cis_firewall",
+					"cis_id"),
 			},
 			cisDomainID: {
 				Type:             schema.TypeString,
@@ -185,7 +187,7 @@ func ResourceIBMCISFirewallRecord() *schema.Resource {
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									cisFirewallUARuleConfigurationTarget: {
+									cisFirewallAccessRuleConfigurationTarget: {
 										Type:        schema.TypeString,
 										Required:    true,
 										ForceNew:    true,
@@ -269,6 +271,14 @@ func ResourceIBMCISFirewallRecord() *schema.Resource {
 func ResourceIBMCISFirewallValidator() *validate.ResourceValidator {
 	firewallTypes := "access_rules, ua_rules, lockdowns"
 	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cis_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "ResourceInstance",
+			CloudDataRange:             []string{"service:internet-svcs"},
+			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 cisFirewallType,

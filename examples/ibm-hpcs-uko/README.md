@@ -1,4 +1,4 @@
-# Example for UkoV4
+# Example for Unified Key Orchestrator (UKO) feature of Hyper Protect Crypto Services
 
 This example illustrates how to use the UkoV4 terraform plugin
 
@@ -66,7 +66,6 @@ resource "ibm_hpcs_key_template" "key_template_instance" {
 ```
 ibm_hpcs_keystore resource:
 
-IBMCloud KMS keystore
 ```hcl
 resource "ibm_hpcs_keystore" "keystore_instance" {
   instance_id = ibm_hpcs_vault.vault_instance.instance_id
@@ -81,7 +80,7 @@ resource "ibm_hpcs_keystore" "keystore_instance" {
   groups                = ["Production"]
   aws_region            = "eu_central_1"
   aws_access_key_id     = "HSNGYJMKHGFFF"
-  aws_secret_access_key = "JHGSY766YUG67GFV"detect-secrets audit .secrets.baseline
+  aws_secret_access_key = "JHGSY766YUG67GFV"
 }
 ```
 vault resource:
@@ -137,14 +136,6 @@ data "ibm_hpcs_vault" "vault_data" {
 }
 ```
 
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
-
 ## Requirements
 
 | Name | Version |
@@ -198,7 +189,7 @@ data "ibm_hpcs_vault" "vault_data" {
 | azure_location | Azure Location | string | true when type = "azure_key_vault" |
  | azure_service_principal_client_id| Azure Service Principle Client ID | string | true when type = "azure_key_vault" |
  | azure_service_principal_password| Azure Service Principle Password | string | true when type = "azure_key_vault" |
- | azure_tenant =| Azure Tenant | string | true when type = "azure_key_vault" |
+ | azure_tenant | Azure Tenant | string | true when type = "azure_key_vault" |
  | azure_subscription_id| Azure Subscription ID | string | true when type = "azure_key_vault" |
  | azure_environment| Azure Environment | string | true when type = "azure_key_vault" |
  | azure_service_name| Azure Service Name | string | true when type = "azure_key_vault" |

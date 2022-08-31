@@ -48,6 +48,11 @@ module "cloudant-database" {
 
 ```
 
+## Notes
+
+1. The credentials used by the Terraform provider must at a minimum have these roles or equivalent actions:
+    - `Manager` role for Cloudant Service
+
 ## Requirements
 
 | Name | Version |
