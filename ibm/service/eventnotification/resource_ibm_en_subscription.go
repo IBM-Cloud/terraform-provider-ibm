@@ -327,7 +327,17 @@ func attributesMapToAttributes(attributeMap map[string]interface{}) (en.Subscrip
 			to = append(to, toItem.(string))
 		}
 		attributesCreate.To = to
-		attributesUpdate.To = to
+
+		updateTo := new(en.SmSupdateAttributesTo)
+		if attributeMap["to"] != nil {
+			To := []string{}
+			for _, updateToitem := range attributeMap["to"].([]interface{}) {
+				To = append(To, updateToitem.(string))
+			}
+
+			updateTo.Add = To
+		}
+		attributesUpdate.To = updateTo
 	}
 
 	if attributeMap["add_notification_payload"] != nil {
