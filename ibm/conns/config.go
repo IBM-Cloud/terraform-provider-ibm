@@ -1664,15 +1664,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// SCHEMATICS Service
-	schematicsEndpoint := "https://schematics.cloud.ibm.com"
+	// schematicsEndpoint := "https://schematics.cloud.ibm.com"
+	schematicsEndpoint := ContructEndpoint(fmt.Sprintf("%s.schematics", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			schematicsEndpoint = ContructEndpoint("private-us.schematics", cloudEndpoint)
-		} else if c.Region == "eu-gb" || c.Region == "eu-de" {
-			schematicsEndpoint = ContructEndpoint("private-eu.schematics", cloudEndpoint)
-		} else {
-			schematicsEndpoint = "https://schematics.cloud.ibm.com"
-		}
+		schematicsEndpoint = ContructEndpoint(fmt.Sprintf("private-%s.schematics", c.Region), cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		schematicsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCHEMATICS_API_ENDPOINT", c.Region, schematicsEndpoint)
