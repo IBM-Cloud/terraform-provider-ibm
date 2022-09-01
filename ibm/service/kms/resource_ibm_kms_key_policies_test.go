@@ -2,7 +2,6 @@ package kms_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -100,22 +99,24 @@ func TestAccIBMKMSKeyPolicy_dualAuth_check_with_Alias(t *testing.T) {
 	})
 }
 
-func TestAccIBMKMSKeyPolicy_invalid_interval_check(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
-	rotation_interval := 13
-	dual_auth_delete := false
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval, dual_auth_delete),
-				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
-			},
-		},
-	})
-}
+// This test is invalid as ibm_kms_key does not support policies anymore
+
+// func TestAccIBMKMSKeyPolicy_invalid_interval_check(t *testing.T) {
+// 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+// 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+// 	rotation_interval := 13
+// 	dual_auth_delete := false
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:  func() { acc.TestAccPreCheck(t) },
+// 		Providers: acc.TestAccProviders,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config:      testAccCheckIBMKmsKeyPolicyStandardConfig(instanceName, keyName, rotation_interval, dual_auth_delete),
+// 				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
+// 			},
+// 		},
+// 	})
+// }
 
 func testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, KeyName string, rotation_interval int, dual_auth_delete bool) string {
 	return fmt.Sprintf(`
