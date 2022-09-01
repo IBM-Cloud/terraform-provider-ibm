@@ -31,20 +31,15 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Required:    true,
 				Description: "The trigger ID.",
 			},
-			"source_trigger_id": &schema.Schema{
+			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "ID of the trigger to duplicate. Only needed when duplicating a trigger.",
+				Description: "Trigger type.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Trigger name.",
-			},
-			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Trigger type.",
 			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
@@ -271,16 +266,12 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%s", *getTektonPipelineTriggerOptions.PipelineID, *getTektonPipelineTriggerOptions.TriggerID))
 
-	if err = d.Set("source_trigger_id", trigger.SourceTriggerID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting source_trigger_id: %s", err))
+	if err = d.Set("type", trigger.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 
 	if err = d.Set("name", trigger.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
-	}
-
-	if err = d.Set("type", trigger.Type); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
 
 	if err = d.Set("href", trigger.Href); err != nil {

@@ -161,20 +161,15 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 				Description: "Tekton pipeline triggers list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"source_trigger_id": &schema.Schema{
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the trigger to duplicate. Only needed when duplicating a trigger.",
+							Description: "Trigger type.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Trigger name.",
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Trigger type.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -632,9 +627,7 @@ func dataSourceIBMCdTektonPipelinePropertyToMap(model *cdtektonpipelinev2.Proper
 }
 
 func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerDuplicateTrigger); ok {
-		return dataSourceIBMCdTektonPipelineTriggerDuplicateTriggerToMap(model.(*cdtektonpipelinev2.TriggerDuplicateTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
+	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
 		return dataSourceIBMCdTektonPipelineTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
 		return dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
@@ -645,14 +638,11 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-		if model.SourceTriggerID != nil {
-			modelMap["source_trigger_id"] = *model.SourceTriggerID
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
 		}
 		if model.Name != nil {
 			modelMap["name"] = *model.Name
-		}
-		if model.Type != nil {
-			modelMap["type"] = *model.Type
 		}
 		if model.Href != nil {
 			modelMap["href"] = *model.Href
@@ -813,17 +803,6 @@ func dataSourceIBMCdTektonPipelineGenericSecretToMap(model *cdtektonpipelinev2.G
 	}
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = *model.Algorithm
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMCdTektonPipelineTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.SourceTriggerID != nil {
-		modelMap["source_trigger_id"] = *model.SourceTriggerID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }

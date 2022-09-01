@@ -41,20 +41,15 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Description: "Tekton pipeline trigger.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"source_trigger_id": &schema.Schema{
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "ID of the trigger to duplicate. Only needed when duplicating a trigger.",
+							Required:    true,
+							Description: "Trigger type.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Trigger name.",
-						},
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Trigger type.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -452,14 +447,11 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 
 func resourceIBMCdTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{}) (cdtektonpipelinev2.TriggerIntf, error) {
 	model := &cdtektonpipelinev2.Trigger{}
-	if modelMap["source_trigger_id"] != nil && modelMap["source_trigger_id"].(string) != "" {
-		model.SourceTriggerID = core.StringPtr(modelMap["source_trigger_id"].(string))
+	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
+		model.Type = core.StringPtr(modelMap["type"].(string))
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
 	}
 	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
@@ -582,9 +574,7 @@ func resourceIBMCdTektonPipelineTriggerMapToGenericSecret(modelMap map[string]in
 }
 
 func resourceIBMCdTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerDuplicateTrigger); ok {
-		return resourceIBMCdTektonPipelineTriggerTriggerDuplicateTriggerToMap(model.(*cdtektonpipelinev2.TriggerDuplicateTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
+	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
 		return resourceIBMCdTektonPipelineTriggerTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
 	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
 		return resourceIBMCdTektonPipelineTriggerTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
@@ -595,14 +585,11 @@ func resourceIBMCdTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.Tri
 	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*cdtektonpipelinev2.Trigger)
-		if model.SourceTriggerID != nil {
-			modelMap["source_trigger_id"] = model.SourceTriggerID
+		if model.Type != nil {
+			modelMap["type"] = model.Type
 		}
 		if model.Name != nil {
 			modelMap["name"] = model.Name
-		}
-		if model.Type != nil {
-			modelMap["type"] = model.Type
 		}
 		if model.Href != nil {
 			modelMap["href"] = model.Href
@@ -726,13 +713,6 @@ func resourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelin
 	if model.Algorithm != nil {
 		modelMap["algorithm"] = model.Algorithm
 	}
-	return modelMap, nil
-}
-
-func resourceIBMCdTektonPipelineTriggerTriggerDuplicateTriggerToMap(model *cdtektonpipelinev2.TriggerDuplicateTrigger) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["source_trigger_id"] = model.SourceTriggerID
-	modelMap["name"] = model.Name
 	return modelMap, nil
 }
 

@@ -16,8 +16,27 @@ Provides a resource for cd_tekton_pipeline_trigger. This allows cd_tekton_pipeli
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   trigger {
-		source_trigger_id = "source_trigger_id"
+		type = "type"
 		name = "start-deploy"
+		href = "href"
+		event_listener = "event_listener"
+		id = "id"
+		properties {
+			name = "name"
+			value = "value"
+			enum = [ "enum" ]
+			type = "secure"
+			path = "path"
+			href = "href"
+		}
+		tags = [ "tags" ]
+		worker {
+			name = "name"
+			type = "private"
+			id = "id"
+		}
+		max_concurrent_runs = 4
+		disabled = true
   }
 }
 ```
@@ -86,8 +105,6 @@ Nested scheme for **trigger**:
 		  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
 		* `value` - (Optional, String) Secret value, not needed if secret type is `internal_validation`.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
-	* `source_trigger_id` - (Optional, String) ID of the trigger to duplicate. Only needed when duplicating a trigger.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `tags` - (Optional, List) Trigger tags array.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 	* `timezone` - (Optional, String) Only needed for timer triggers. Timezone for timer trigger.
@@ -160,8 +177,6 @@ Nested scheme for **secret**:
 	  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
 	* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
-* `source_trigger_id` - (String) ID of the trigger to duplicate. Only needed when duplicating a trigger.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `tags` - (List) Trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 * `timezone` - (String) Only needed for timer triggers. Timezone for timer trigger.

@@ -39,8 +39,27 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
   trigger {
-    source_trigger_id = "source_trigger_id"
+    type = "type"
     name = "start-deploy"
+    href = "href"
+    event_listener = "event_listener"
+    id = "id"
+    properties {
+      name = "name"
+      value = "value"
+      enum = [ "enum" ]
+      type = "secure"
+      path = "path"
+      href = "href"
+    }
+    tags = [ "tags" ]
+    worker {
+      name = "name"
+      type = "private"
+      id = "id"
+    }
+    max_concurrent_runs = 4
+    disabled = true
   }
 }
 
