@@ -7,87 +7,99 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 )
 
-func DataSourceIBMSccPostureProfileDetails() *schema.Resource {
+func ResourceIBMSccPostureProfileImport() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMSccPostureProfileDetailsRead,
+		CreateContext: resourceIBMSccPostureProfileImport,
+		ReadContext:   resourceIBMSccPostureProfileImportRead,
+		UpdateContext: resourceIBMSccPostureProfileImportRead,
+		DeleteContext: resourceIBMSccPostureProfileImportDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"file": {
+				Type:        schema.TypeString,
+				Description: "File to import",
+				Required:    true,
+				ForceNew:    true,
+			},
 			"profile_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The id for the given API.",
-			},
-			"profile_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The profile type ID. This will be 4 for profiles and 6 for group profiles.",
 			},
 			"name": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The name of the profile.",
 			},
 			"description": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "A description of the profile.",
 			},
 			"version": {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "The version of the profile.",
 			},
 			"created_by": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The user who created the profile.",
 			},
 			"modified_by": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The user who last modified the profile.",
 			},
-			"reason_for_delete": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "A reason that you want to delete a profile.",
-			},
 			"base_profile": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The base profile that the controls are pulled from.",
 			},
 			"type": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The type of profile.",
 			},
 			"no_of_controls": {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
 				Description: "no of Controls.",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The time that the profile was created in UTC.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The time that the profile was most recently modified in UTC.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
 				Description: "The profile status. If the profile is enabled, the value is true. If the profile is disabled, the value is false.",
 			},
@@ -95,7 +107,40 @@ func DataSourceIBMSccPostureProfileDetails() *schema.Resource {
 	}
 }
 
-func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMSccPostureProfileImport(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting userDetails %s", err))
+	}
+
+	importProfilesOptions := &posturemanagementv2.ImportProfilesOptions{}
+	accountID := userDetails.UserAccount
+	importProfilesOptions.SetAccountID(accountID)
+
+	f, err := os.Open(d.Get("file").(string))
+	if err != nil {
+		log.Printf("[DEBUG] ImportProfilesWithContext failed to read file %s", err)
+		return diag.FromErr(fmt.Errorf("ImportProfilesWithContext failed to read file %s", err))
+	}
+	importProfilesOptions.SetFile(f)
+
+	profile, response, err := postureManagementClient.ImportProfilesWithContext(context, importProfilesOptions)
+	if err != nil {
+		log.Printf("[DEBUG] ImportProfilesWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ImportProfilesWithContext failed %s\n%s", err, response))
+	}
+
+	d.SetId(*profile.ProfileID)
+
+	return resourceIBMSccPostureProfileImportRead(context, d, meta)
+}
+
+func resourceIBMSccPostureProfileImportRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	postureManagementClient, err := meta.(conns.ClientSession).PostureManagementV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -110,8 +155,8 @@ func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schem
 	accountID := userDetails.UserAccount
 	getProfileOptions.SetAccountID(accountID)
 
-	getProfileOptions.SetID(d.Get("profile_id").(string))
-	getProfileOptions.SetProfileType(d.Get("profile_type").(string))
+	getProfileOptions.SetID(d.Id())
+	getProfileOptions.SetProfileType("custom")
 
 	profile, response, err := postureManagementClient.GetProfileWithContext(context, getProfileOptions)
 	if err != nil {
@@ -135,9 +180,6 @@ func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schem
 	if err = d.Set("modified_by", profile.ModifiedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting modified_by: %s", err))
 	}
-	if err = d.Set("reason_for_delete", profile.ReasonForDelete); err != nil {
-		return nil //return diag.FromErr(fmt.Errorf("[ERROR] Error setting reason_for_delete: %s", err))
-	}
 	if err = d.Set("base_profile", profile.BaseProfile); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting base_profile: %s", err))
 	}
@@ -157,5 +199,10 @@ func dataSourceIBMSccPostureProfileDetailsRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enabled: %s", err))
 	}
 
+	return nil
+}
+
+func resourceIBMSccPostureProfileImportDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId("")
 	return nil
 }
