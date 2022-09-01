@@ -308,6 +308,12 @@ func getPolicyFromSchema(d *schema.ResourceData) kp.Policy {
 			policy.Rotation = &kp.Rotation{
 				Interval: rotationPolicyMap["interval_month"].(int),
 			}
+			// Adding check as kms_key_policies resource does not support enabled parameter
+			// Todo: remove this comment once enabled is supported
+			// if _, ok := rotationPolicyMap["enabled"]; ok {
+			// 	enabled := rotationPolicyMap["enabled"].(bool)
+			// 	policy.Rotation.Enabled = &enabled
+			// }
 		}
 	}
 	if dualAuthPolicyInfo, ok := d.GetOk("dual_auth_delete"); ok {
