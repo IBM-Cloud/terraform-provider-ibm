@@ -1363,7 +1363,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 				continue
 			}
 
-			if g.Members != nil && g.Members.Allocation*nodeCount != currentGroup.Members.Allocation {
+			if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
 				nodeCount = g.Members.Allocation
 			}
@@ -1373,7 +1373,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if g.Disk != nil && g.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
 				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
 			}
-			if g.CPU != nil && g.CPU.Allocation != currentGroup.CPU.Allocation {
+			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
 			}
 
@@ -1930,7 +1930,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			}
 			nodeCount := currentGroup.Members.Allocation
 
-			if group.Members != nil && group.Members.Allocation*nodeCount != currentGroup.Members.Allocation {
+			if group.Members != nil && group.Members.Allocation != currentGroup.Members.Allocation {
 				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(group.Members.Allocation))}
 				nodeCount = group.Members.Allocation
 			}
@@ -1940,7 +1940,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			if group.Disk != nil && group.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
 				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(group.Disk.Allocation * nodeCount))}
 			}
-			if group.CPU != nil && group.CPU.Allocation != currentGroup.CPU.Allocation {
+			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
 				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
 			}
 
