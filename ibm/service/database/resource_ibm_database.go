@@ -1953,16 +1953,19 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 				setDeploymentScalingGroupResponse, response, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
 
-				if response.StatusCode > 300 {
+				if err != nil {
 					return diag.FromErr(fmt.Errorf("[ERROR] SetDeploymentScalingGroup (%s) failed %s\n%s", group.ID, err, response))
 				}
 
-				taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
+				// API may return HTTP 204 No Content if no change made
+				if response.StatusCode == 200 {
+					taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
 
-				_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+					_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
 
-				if err != nil {
-					return diag.FromErr(err)
+					if err != nil {
+						return diag.FromErr(err)
+					}
 				}
 			}
 		}
