@@ -203,7 +203,10 @@ func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.Resour
 			description := des.(string)
 			updatefirewallrules.Description = &description
 		}
-
+		if priority, ok := d.GetOk(cisFirewallrulesPriority); ok {
+			rulePriority := int64(priority.(int))
+			updatefirewallrules.Priority = &rulePriority
+		}
 		if id, ok := d.GetOk(cisFilterID); ok {
 			filterid := id.(string)
 			filterUpdate, _ := cisClient.NewFirewallRulesUpdateInputItemFilter(filterid)
