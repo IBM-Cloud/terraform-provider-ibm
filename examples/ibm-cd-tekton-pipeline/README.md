@@ -63,7 +63,18 @@ cd_tekton_pipeline_trigger resource:
 ```hcl
 resource "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
-  trigger = var.cd_tekton_pipeline_trigger_trigger
+  type = var.cd_tekton_pipeline_trigger_type
+  name = var.cd_tekton_pipeline_trigger_name
+  event_listener = var.cd_tekton_pipeline_trigger_event_listener
+  tags = var.cd_tekton_pipeline_trigger_tags
+  worker = var.cd_tekton_pipeline_trigger_worker
+  max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
+  disabled = var.cd_tekton_pipeline_trigger_disabled
+  secret = var.cd_tekton_pipeline_trigger_secret
+  cron = var.cd_tekton_pipeline_trigger_cron
+  timezone = var.cd_tekton_pipeline_trigger_timezone
+  scm_source = var.cd_tekton_pipeline_trigger_scm_source
+  events = var.cd_tekton_pipeline_trigger_events
 }
 ```
 cd_tekton_pipeline resource:
@@ -160,7 +171,18 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | type | Property type. | `string` | false |
 | path | A dot notation path for `integration` type properties to select a value from the tool integration. | `string` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
-| trigger | Tekton pipeline trigger. | `` | false |
+| type | Trigger type. | `string` | false |
+| name | Trigger name. | `string` | false |
+| event_listener | Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline. | `string` | false |
+| tags | Trigger tags array. | `list(string)` | false |
+| worker | Worker used to run the trigger. If not specified the trigger will use the default pipeline worker. | `` | false |
+| max_concurrent_runs | Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit. | `number` | false |
+| disabled | Flag whether the trigger is disabled. If omitted the trigger is enabled by default. | `bool` | false |
+| secret | Only needed for generic webhook trigger type. Secret used to start generic webhook trigger. | `` | false |
+| cron | Only needed for timer triggers. Cron expression for timer trigger. | `string` | false |
+| timezone | Only needed for timer triggers. Timezone for timer trigger. | `string` | false |
+| scm_source | SCM source repository for a Git trigger. Only needed for Git triggers. | `` | false |
+| events | Only needed for Git triggers. Events object defines the events to which this Git trigger listens. | `` | false |
 | enable_slack_notifications | Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain. | `bool` | false |
 | enable_partial_cloning | Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work. | `bool` | false |
 | worker | Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default. | `` | false |

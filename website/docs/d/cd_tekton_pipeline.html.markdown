@@ -125,7 +125,7 @@ Nested scheme for **triggers**:
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `scm_source` - (List) SCM source repository for a Git trigger. Only needed for Git triggers.
 	Nested scheme for **scm_source**:
-		* `blind_connection` - (Boolean) Set this boolean to true if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. False by default.
+		* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
 		* `branch` - (String) Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 		* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.

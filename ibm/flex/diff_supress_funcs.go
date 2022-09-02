@@ -93,7 +93,7 @@ func SuppressTriggerPropertyRawSecret(k, old, new string, d *schema.ResourceData
 
 func SuppressGenericWebhookRawSecret(k, old, new string, d *schema.ResourceData) bool {
 	// ResourceIBMCdTektonPipelineTrigger
-	segs := []string{d.Get("pipeline_id").(string), d.Get("trigger.0.id").(string)}
+	segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string)}
 	secret := strings.Join(segs, ".")
 	mac := hmac.New(sha3.New512, []byte(secret))
 	mac.Write([]byte(new))

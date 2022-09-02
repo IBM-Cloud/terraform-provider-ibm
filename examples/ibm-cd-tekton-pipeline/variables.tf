@@ -85,6 +85,46 @@ variable "cd_tekton_pipeline_trigger_pipeline_id" {
   type        = string
   default     = "94619026-912b-4d92-8f51-6c74f0692d90"
 }
+variable "cd_tekton_pipeline_trigger_type" {
+  description = "Trigger type."
+  type        = string
+  default     = "manual"
+}
+variable "cd_tekton_pipeline_trigger_name" {
+  description = "Trigger name."
+  type        = string
+  default     = "Manual Trigger"
+}
+variable "cd_tekton_pipeline_trigger_event_listener" {
+  description = "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline."
+  type        = string
+  default     = "pr-listener"
+}
+variable "cd_tekton_pipeline_trigger_tags" {
+  description = "Trigger tags array."
+  type        = list(string)
+  default     = [ "tags" ]
+}
+variable "cd_tekton_pipeline_trigger_max_concurrent_runs" {
+  description = "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit."
+  type        = number
+  default     = 3
+}
+variable "cd_tekton_pipeline_trigger_disabled" {
+  description = "Flag whether the trigger is disabled. If omitted the trigger is enabled by default."
+  type        = bool
+  default     = false
+}
+variable "cd_tekton_pipeline_trigger_cron" {
+  description = "Only needed for timer triggers. Cron expression for timer trigger."
+  type        = string
+  default     = "cron"
+}
+variable "cd_tekton_pipeline_trigger_timezone" {
+  description = "Only needed for timer triggers. Timezone for timer trigger."
+  type        = string
+  default     = "timezone"
+}
 
 // Resource arguments for cd_tekton_pipeline
 variable "cd_tekton_pipeline_enable_slack_notifications" {

@@ -38,28 +38,38 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
 // Provision cd_tekton_pipeline_trigger resource instance
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
-  trigger {
-    type = "type"
-    name = "start-deploy"
-    href = "href"
-    event_listener = "event_listener"
+  type = var.cd_tekton_pipeline_trigger_type
+  name = var.cd_tekton_pipeline_trigger_name
+  event_listener = var.cd_tekton_pipeline_trigger_event_listener
+  tags = var.cd_tekton_pipeline_trigger_tags
+  worker {
+    name = "name"
+    type = "private"
     id = "id"
-    properties {
-      name = "name"
-      value = "value"
-      enum = [ "enum" ]
-      type = "secure"
-      path = "path"
-      href = "href"
-    }
-    tags = [ "tags" ]
-    worker {
-      name = "name"
-      type = "private"
-      id = "id"
-    }
-    max_concurrent_runs = 4
-    disabled = true
+  }
+  max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
+  disabled = var.cd_tekton_pipeline_trigger_disabled
+  secret {
+    type = "token_matches"
+    value = "value"
+    source = "header"
+    key_name = "key_name"
+    algorithm = "md4"
+  }
+  cron = var.cd_tekton_pipeline_trigger_cron
+  timezone = var.cd_tekton_pipeline_trigger_timezone
+  scm_source {
+    url = "url"
+    branch = "branch"
+    pattern = "pattern"
+    blind_connection = true
+    hook_id = "hook_id"
+    service_instance_id = "service_instance_id"
+  }
+  events {
+    push = true
+    pull_request_closed = true
+    pull_request = true
   }
 }
 

@@ -159,7 +159,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Set this boolean to true if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide. False by default.",
+							Description: "True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
 						},
 						"hook_id": &schema.Schema{
 							Type:        schema.TypeString,
