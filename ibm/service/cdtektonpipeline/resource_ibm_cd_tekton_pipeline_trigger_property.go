@@ -19,40 +19,40 @@ import (
 
 func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCdTektonPipelineTriggerPropertyCreate,
-		ReadContext:     resourceIBMCdTektonPipelineTriggerPropertyRead,
-		UpdateContext:   resourceIBMCdTektonPipelineTriggerPropertyUpdate,
-		DeleteContext:   resourceIBMCdTektonPipelineTriggerPropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCdTektonPipelineTriggerPropertyCreate,
+		ReadContext:   resourceIBMCdTektonPipelineTriggerPropertyRead,
+		UpdateContext: resourceIBMCdTektonPipelineTriggerPropertyUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineTriggerPropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "pipeline_id"),
-				Description: "The Tekton pipeline ID.",
+				Description:  "The Tekton pipeline ID.",
 			},
 			"trigger_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "trigger_id"),
-				Description: "The trigger ID.",
+				Description:  "The trigger ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "name"),
-				Description: "Property name.",
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:             schema.TypeString,
+				Optional:         true,
 				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description: "Property value.",
+				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
+				Description:      "Property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -61,16 +61,16 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "type"),
-				Description: "Property type.",
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 			},
 		},
 	}
@@ -255,16 +255,16 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("trigger_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "trigger_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "trigger_id"))
 	}
 	if d.HasChange("name") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "name"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
 	}
 
 	if d.Get("type").(string) == "integration" {

@@ -284,7 +284,7 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 
 	properties := []map[string]interface{}{}
 	if trigger.Properties != nil {
-		for _, modelItem := range trigger.Properties { 
+		for _, modelItem := range trigger.Properties {
 			modelMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -295,7 +295,6 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	if err = d.Set("properties", properties); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
-
 
 	worker := []map[string]interface{}{}
 	if trigger.Worker != nil {

@@ -477,7 +477,7 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 
 	definitions := []map[string]interface{}{}
 	if tektonPipeline.Definitions != nil {
-		for _, modelItem := range tektonPipeline.Definitions { 
+		for _, modelItem := range tektonPipeline.Definitions {
 			modelMap, err := dataSourceIBMCdTektonPipelineDefinitionToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -491,7 +491,7 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 
 	properties := []map[string]interface{}{}
 	if tektonPipeline.Properties != nil {
-		for _, modelItem := range tektonPipeline.Properties { 
+		for _, modelItem := range tektonPipeline.Properties {
 			modelMap, err := dataSourceIBMCdTektonPipelinePropertyToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
@@ -513,7 +513,7 @@ func dataSourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resour
 
 	triggers := []map[string]interface{}{}
 	if tektonPipeline.Triggers != nil {
-		for _, modelItem := range tektonPipeline.Triggers { 
+		for _, modelItem := range tektonPipeline.Triggers {
 			modelMap, err := dataSourceIBMCdTektonPipelineTriggerToMap(modelItem)
 			if err != nil {
 				return diag.FromErr(err)

@@ -19,33 +19,33 @@ import (
 
 func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCdTektonPipelinePropertyCreate,
-		ReadContext:     resourceIBMCdTektonPipelinePropertyRead,
-		UpdateContext:   resourceIBMCdTektonPipelinePropertyUpdate,
-		DeleteContext:   resourceIBMCdTektonPipelinePropertyDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCdTektonPipelinePropertyCreate,
+		ReadContext:   resourceIBMCdTektonPipelinePropertyRead,
+		UpdateContext: resourceIBMCdTektonPipelinePropertyUpdate,
+		DeleteContext: resourceIBMCdTektonPipelinePropertyDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "pipeline_id"),
-				Description: "The Tekton pipeline ID.",
+				Description:  "The Tekton pipeline ID.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "name"),
-				Description: "Property name.",
+				Description:  "Property name.",
 			},
 			"value": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:             schema.TypeString,
+				Optional:         true,
 				DiffSuppressFunc: flex.SuppressPipelinePropertyRawSecret,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "value"),
-				Description: "Property value.",
+				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "value"),
+				Description:      "Property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -54,16 +54,16 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "type"),
-				Description: "Property type.",
+				Description:  "Property type.",
 			},
 			"path": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "path"),
-				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
+				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration.",
 			},
 		},
 	}
@@ -233,12 +233,12 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("name") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "name"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "name"))
 	}
 
 	if d.Get("type").(string) == "integration" {

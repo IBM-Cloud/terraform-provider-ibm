@@ -20,19 +20,19 @@ import (
 
 func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCdTektonPipelineDefinitionCreate,
-		ReadContext:     resourceIBMCdTektonPipelineDefinitionRead,
-		UpdateContext:   resourceIBMCdTektonPipelineDefinitionUpdate,
-		DeleteContext:   resourceIBMCdTektonPipelineDefinitionDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCdTektonPipelineDefinitionCreate,
+		ReadContext:   resourceIBMCdTektonPipelineDefinitionRead,
+		UpdateContext: resourceIBMCdTektonPipelineDefinitionUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineDefinitionDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_definition", "pipeline_id"),
-				Description: "The Tekton pipeline ID.",
+				Description:  "The Tekton pipeline ID.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -190,8 +190,8 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 	hasChange := false
 
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("scm_source") {
 		scmSource, err := resourceIBMCdTektonPipelineDefinitionMapToDefinitionScmSource(d.Get("scm_source.0").(map[string]interface{}))

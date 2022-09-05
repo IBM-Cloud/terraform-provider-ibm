@@ -20,37 +20,37 @@ import (
 
 func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMCdTektonPipelineTriggerCreate,
-		ReadContext:     resourceIBMCdTektonPipelineTriggerRead,
-		UpdateContext:   resourceIBMCdTektonPipelineTriggerUpdate,
-		DeleteContext:   resourceIBMCdTektonPipelineTriggerDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMCdTektonPipelineTriggerCreate,
+		ReadContext:   resourceIBMCdTektonPipelineTriggerRead,
+		UpdateContext: resourceIBMCdTektonPipelineTriggerUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineTriggerDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "pipeline_id"),
-				Description: "The Tekton pipeline ID.",
+				Description:  "The Tekton pipeline ID.",
 			},
 			"type": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "type"),
-				Description: "Trigger type.",
+				Description:  "Trigger type.",
 			},
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "name"),
-				Description: "Trigger name.",
+				Description:  "Trigger name.",
 			},
 			"event_listener": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "event_listener"),
-				Description: "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
+				Description:  "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
 			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
@@ -109,10 +109,10 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Description: "Secret type.",
 						},
 						"value": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
+							Type:             schema.TypeString,
+							Optional:         true,
 							DiffSuppressFunc: flex.SuppressGenericWebhookRawSecret,
-							Description: "Secret value, not needed if secret type is `internal_validation`.",
+							Description:      "Secret value, not needed if secret type is `internal_validation`.",
 						},
 						"source": &schema.Schema{
 							Type:        schema.TypeString,
@@ -133,10 +133,10 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				},
 			},
 			"cron": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "cron"),
-				Description: "Only needed for timer triggers. Cron expression for timer trigger.",
+				Description:  "Only needed for timer triggers. Cron expression for timer trigger.",
 			},
 			"timezone": &schema.Schema{
 				Type:        schema.TypeString,
@@ -227,10 +227,10 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Description: "Property name.",
 						},
 						"value": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
+							Type:             schema.TypeString,
+							Optional:         true,
 							DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
-							Description: "Property value. Can be empty and should be omitted for `single_select` property type.",
+							Description:      "Property value. Can be empty and should be omitted for `single_select` property type.",
 						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
@@ -530,8 +530,8 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 
 	patchVals := &cdtektonpipelinev2.TriggerPatch{}
 	if d.HasChange("pipeline_id") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation." +
-				" The resource must be re-created to update this property.", "pipeline_id"))
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("type") {
 		patchVals.Type = core.StringPtr(d.Get("type").(string))
