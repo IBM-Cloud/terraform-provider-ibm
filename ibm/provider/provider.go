@@ -1321,10 +1321,10 @@ func Validator() validate.ValidatorDict {
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),
 
-				"ibm_is_vpc":                  vpc.DataSourceIBMISVpcValidator(),
-				"ibm_is_volume":               vpc.DataSourceIBMISVolumeValidator(),
-				"ibm_secrets_manager_secret":  secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
-				"ibm_secrets_manager_secrets": secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
+				"ibm_is_vpc":                      vpc.DataSourceIBMISVpcValidator(),
+				"ibm_is_volume":                   vpc.DataSourceIBMISVolumeValidator(),
+				"ibm_secrets_manager_secret":      secretsmanager.DataSourceIBMSecretsManagerSecretValidator(),
+				"ibm_secrets_manager_secrets":     secretsmanager.DataSourceIBMSecretsManagerSecretsValidator(),
 				"ibm_cis_webhooks":                cis.DataSourceIBMCISAlertWebhooksValidator(),
 				"ibm_cis_alerts":                  cis.DataSourceIBMCISAlertsValidator(),
 				"ibm_cis_cache_settings":          cis.DataSourceIBMCISCacheSettingsValidator(),
