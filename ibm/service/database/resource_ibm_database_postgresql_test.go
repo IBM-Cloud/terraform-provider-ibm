@@ -93,43 +93,57 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "14336"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
-					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(name, "tags.#", "1"),
-				),
-			},
-			{
-				Config: testAccCheckIBMDatabaseInstancePostgresGroupMigration(databaseResourceGroup, testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
-					resource.TestCheckResourceAttr(name, "plan", "standard"),
-					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
-					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "14336"),
-					resource.TestCheckResourceAttr(name, "whitelist.#", "0"),
-					resource.TestCheckResourceAttr(name, "users.#", "0"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "1"),
-					resource.TestCheckResourceAttr(name, "tags.#", "1"),
-				),
-			},
 			// {
 			// 	ResourceName:      name,
 			// 	ImportState:       true,
 			// 	ImportStateVerify: true,
 			// },
+		},
+	})
+}
+
+func TestAccIBMDatabaseInstancePostgresGroupMigration(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresGroupDeprecated(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
+					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
+					resource.TestCheckResourceAttr(name, "members_memory_allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "10240"),
+					resource.TestCheckResourceAttr(name, "members_cpu_allocation_count", "6"),
+				),
+			},
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresGroupMigrated(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard"),
+					resource.TestCheckResourceAttr(name, "location", acc.IcdDbRegion),
+					resource.TestCheckResourceAttr(name, "adminuser", "admin"),
+					resource.TestCheckResourceAttr(name, "groups.0.count", "2"),
+					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "2048"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "10240"),
+					resource.TestCheckResourceAttr(name, "groups.0.cpu.0.allocation_count", "6"),
+				),
+			},
 		},
 	})
 }
@@ -587,7 +601,30 @@ func testAccCheckIBMDatabaseInstancePostgresReduced(databaseResourceGroup string
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
 
-func testAccCheckIBMDatabaseInstancePostgresGroupMigration(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgresGroupDeprecated(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id             = data.ibm_resource_group.test_acc.id
+		name                          = "%[2]s"
+		service                       = "databases-for-postgresql"
+		plan                          = "standard"
+		location                      = "%[3]s"
+		adminpassword                 = "password12"
+		service_endpoints             = "public"
+		tags                          = ["one:two"]
+
+		members_memory_allocation_mb  = 2048
+		members_disk_allocation_mb    = 10240
+		members_cpu_allocation_count  = 6
+	}
+				`, databaseResourceGroup, name, acc.IcdDbRegion)
+}
+
+func testAccCheckIBMDatabaseInstancePostgresGroupMigrated(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -609,8 +646,17 @@ func testAccCheckIBMDatabaseInstancePostgresGroupMigration(databaseResourceGroup
 			memory {
 				allocation_mb = 1024
 			}
-			 disk {
-				allocation_mb = 7168
+
+			disk {
+				allocation_mb = 5120
+			}
+
+			cpu {
+				allocation_count = 3
+			}
+
+			members {
+				allocation_count = 2
 			}
 		}
 	}
