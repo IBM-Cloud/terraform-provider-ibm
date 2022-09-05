@@ -166,6 +166,11 @@ func ResourceIBMKmskeyPolicies() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the resource",
 			},
+			flex.ResourceControllerURL: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about the resource",
+			},
 		},
 	}
 }
@@ -174,7 +179,7 @@ func resourceIBMKmsKeyPolicyCreate(context context.Context, d *schema.ResourceDa
 	var id string
 	if v, ok := d.GetOk("key_id"); ok {
 		id = v.(string)
-		d.Set("key_id", id)
+		// d.Set("key_id", id)
 	}
 	if v, ok := d.GetOk("alias"); ok {
 		id = v.(string)

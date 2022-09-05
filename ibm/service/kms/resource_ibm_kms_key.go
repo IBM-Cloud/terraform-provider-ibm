@@ -301,7 +301,7 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
@@ -407,8 +407,7 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 		exturl = extensions["endpoints"].(map[string]interface{})["private"]
 	}
 
-	endpointURL := conns.EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, exturl.(string))
-	url1 := fmt.Sprintf("%s/api/v2/keys", endpointURL)
+	url1 := fmt.Sprintf("%s/api/v2/keys", conns.EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, exturl.(string)))
 	u, err := url.Parse(url1)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")

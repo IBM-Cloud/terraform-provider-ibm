@@ -24,16 +24,16 @@ func TestAccIBMKMSKeyPolicy_basic_check(t *testing.T) {
 				Config: testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, keyName, rotation_interval, dual_auth_delete),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "3"),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "dual_auth_delete.0.enabled", "false"),
 				),
 			},
 			{
 				Config: testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, keyName, rotation_interval_new, dual_auth_delete),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "5"),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "rotation.0.interval_month", "5"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "dual_auth_delete.0.enabled", "false"),
 				),
 			},
 		},
@@ -52,7 +52,7 @@ func TestAccIBMKMSKeyPolicy_rotation_check(t *testing.T) {
 				Config: testAccCheckIBMKmsKeyPolicyRotationCheck(instanceName, keyName, rotation_interval),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "rotation.0.interval_month", "3"),
 				),
 			},
 		},
@@ -71,7 +71,7 @@ func TestAccIBMKMSKeyPolicy_dualAuth_check(t *testing.T) {
 				Config: testAccCheckIBMKmsKeyPolicyDualAuthCheck(instanceName, keyName, dual_auth_delete),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "dual_auth_delete.0.enabled", "false"),
 				),
 			},
 		},
@@ -91,8 +91,8 @@ func TestAccIBMKMSKeyPolicy_dualAuth_check_with_Alias(t *testing.T) {
 				Config: testAccCheckIBMKmsKeyPolicyDualAuthCheckWithAlias(instanceName, keyName, aliasName, dual_auth_delete),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "alias", aliasName),
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_key_alias.alias_test", "alias", aliasName),
+					resource.TestCheckResourceAttr("ibm_kms_key_policies.Policy", "dual_auth_delete.0.enabled", "false"),
 				),
 			},
 		},

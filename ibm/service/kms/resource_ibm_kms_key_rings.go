@@ -70,7 +70,7 @@ func resourceIBMKmsKeyRingCreate(d *schema.ResourceData, meta interface{}) error
 	keyRingID := d.Get("key_ring_id").(string)
 	kpAPI, instanceCRN, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	err = kpAPI.CreateKeyRing(context.Background(), keyRingID)
