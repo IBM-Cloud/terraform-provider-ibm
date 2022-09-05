@@ -70,7 +70,7 @@ Review the argument references that you can specify for your resource.
   - Constraints: The maximum value is `65535`. The minimum value is `1`.
 - `protocol` - (Optional, String) The transport protocol to use for this VPN server.
   - Constraints: The default value is `udp`. Allowable values are: udp, tcp
-- `resource_group` - (Optional, Forces new resource, String) The resource group where the VPN gateway to be created.
+- `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
 - `security_groups` - (Optional, List) The security groups to use for this VPN server. If unspecified, the VPC's default security group is used.
 
   Nested scheme for **security_groups**:

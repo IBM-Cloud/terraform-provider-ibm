@@ -57,7 +57,7 @@ Review the argument references that you can specify for your resource.
 
 - `mode`- (Optional, String) Mode in VPN gateway. Supported values are `route` or `policy`. The default value is `route`.
 - `name` - (Required, String) The name of the VPN gateway.
-- `resource_group` - (Optional, Forces new resource, String) The resource group where the VPN gateway to be created.
+- `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
 - `subnet` - (Required, Forces new resource, String) The unique identifier for this subnet.
 - `tags`- (Optional, Array of Strings) A list of tags that you want to add to your VPN gateway. Tags can help you find your VPN gateway more easily later.
 

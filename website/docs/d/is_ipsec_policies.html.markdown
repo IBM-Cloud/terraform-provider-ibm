@@ -42,7 +42,7 @@ In addition to all argument references listed, you can access the following attr
 	- `key_lifetime` - (Required, Integer) The key lifetime in seconds.
 	- `name` - (Required, String) The user-defined name for this IPsec policy.
 	- `pfs` - (Required, String) Perfect Forward Secrecy.
-	- `resource_group` - (Required, List) The resource group for this IPsec policy.
+	- `resource_group` - (Required, List) The resource group id, for this IPsec policy.
 	  Nested scheme for **resource_group**:
 		- `href` - (Required, String) The URL for this resource group.
 		- `id` - (Required, String) The unique identifier for this resource group.
