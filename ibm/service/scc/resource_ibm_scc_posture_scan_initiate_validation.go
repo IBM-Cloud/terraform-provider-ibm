@@ -21,7 +21,6 @@ func ResourceIBMSccPostureScanInitiateValidation() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMSccPostureScanInitiateValidation,
 		ReadContext:   resourceIBMSccPostureScanInitiateRead,
-		UpdateContext: resourceIBMSccPostureScanInitiateRead,
 		DeleteContext: resourceIBMSccPostureScanInitiateDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -43,34 +42,40 @@ func ResourceIBMSccPostureScanInitiateValidation() *schema.Resource {
 			"group_profile_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				Description:  "The ID of the profile group.",
 				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scan_initiate_validation", "group_profile_id"),
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				Description:  "The name of a scheduled scan.",
 				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scan_initiate_validation", "name"),
 			},
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				Description:  "The description of a scheduled scan.",
 				ValidateFunc: validate.InvokeValidator("ibm_scc_posture_scan_initiate_validation", "description"),
 			},
 			"frequency": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The frequency at which a scan is run specified in milliseconds.",
 			},
 			"no_of_occurrences": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The number of times that a scan should be run.",
 			},
 			"end_time": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "The date on which a scan should stop running specified in UTC.",
 			},
 			"result": {
@@ -178,7 +183,7 @@ func resourceIBMSccPostureScanInitiateValidation(context context.Context, d *sch
 	}
 
 	result, response, err := postureManagementClient.CreateValidationWithContext(context, createValidationOptions)
-	if err != nil {
+	if result == nil || err != nil {
 		log.Printf("[DEBUG] CreateValidationWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateValidationWithContext failed %s\n%s", err, response))
 	}
