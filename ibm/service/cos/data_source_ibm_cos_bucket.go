@@ -378,7 +378,7 @@ func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			CloudDataType:              "ResourceInstance",
+			CloudDataType:              "resource_instance",
 			CloudDataRange:             []string{"service:cloud-object-storage"}})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
