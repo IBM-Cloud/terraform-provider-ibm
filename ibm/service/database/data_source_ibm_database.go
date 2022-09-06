@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
@@ -30,18 +31,27 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Resource instance name for example, my Database instance",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"name"),
 			},
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The id of the resource group in which the Database instance is present",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"resource_group_id"),
 			},
 
 			"location": {
 				Description: "The location or the region in which the Database instance exists",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database",
+					"location"),
 			},
 
 			"guid": {
@@ -573,6 +583,37 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 		},
 	}
+}
+
+func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cloud-database",
+			CloudDataRange:             []string{"resolved_to:name"}})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "region",
+			Optional:                   true})
+
+	iBMDatabaseInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
+	return &iBMDatabaseInstanceValidator
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {

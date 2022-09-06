@@ -27,6 +27,9 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Deployment ID.",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database_connection",
+					"deployment_id"),
 			},
 			"user_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -1603,6 +1606,22 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 			},
 		},
 	}
+}
+func DataSourceIBMDatabaseConnectionValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "deployment_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cloud-database",
+			CloudDataRange:             []string{"resolved_to:id"}})
+
+	iBMDatabaseConnectionsValidator := validate.ResourceValidator{ResourceName: "ibm_database_connection", Schema: validateSchema}
+	return &iBMDatabaseConnectionsValidator
 }
 
 func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

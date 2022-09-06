@@ -127,6 +127,7 @@ func DataSourceIBMResourceInstanceValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateCloudData,
 			Type:                       validate.TypeString,
 			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
 			Optional:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
