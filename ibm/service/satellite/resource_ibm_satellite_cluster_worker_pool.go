@@ -213,7 +213,7 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 
 	if v, ok := d.GetOk("operating_system"); ok {
 		operating_system := v.(string)
-		createClusterOptions.OperatingSystem = &operating_system
+		createWorkerPoolOptions.OperatingSystem = &operating_system
 	}
 
 	if v, ok := d.GetOk("worker_count"); ok {
