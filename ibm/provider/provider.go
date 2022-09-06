@@ -1356,6 +1356,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_logpush_jobs":            cis.DataSourceIBMCISLogPushJobsValidator(),
 
 				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
+
+				"ibm_database_backups":                database.DataSourceIBMDatabaseBackupsValidator(),
+				"ibm_database_connection":             database.DataSourceIBMDatabaseConnectionValidator(),
+				"ibm_database_point_in_time_recovery": database.DataSourceIBMDatabasePointInTimeRecoveryValidator(),
+				"ibm_database_remotes":                database.DataSourceIBMDatabaseRemotesValidator(),
+				"ibm_database_tasks":                  database.DataSourceIBMDatabaseTasksValidator(),
+				"ibm_database":                        database.DataSourceIBMDatabaseInstanceValidator(),
 			},
 		}
 	})
