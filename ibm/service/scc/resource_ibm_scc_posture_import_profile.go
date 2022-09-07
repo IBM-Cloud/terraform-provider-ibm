@@ -31,13 +31,9 @@ func ResourceIBMSccPostureProfileImport() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"profile_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The id for the given API.",
-			},
 			"name": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The name of the profile.",
 			},
