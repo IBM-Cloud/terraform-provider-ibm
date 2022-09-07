@@ -68,6 +68,7 @@ const (
 	isLBListenerPolicyAction                  = "action"
 	isLBListenerPolicyTargetID                = "target_id"
 	isLBListenerPolicyTargetURL               = "target_url"
+	isLBListenerPolicyTargetHTTPStatusCode    = "target_http_status_code"
 	isLBListenerPolicyHTTPSRedirectStatusCode = "target_https_redirect_status_code"
 	isLBListenerPolicyHTTPSRedirectURI        = "target_https_redirect_uri"
 	isLBListenerPolicyHTTPSRedirectListener   = "target_https_redirect_listener"
@@ -2276,10 +2277,10 @@ func ResourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
 			return fmt.Errorf("Load balancer listener policy: When action is forward please specify target_id")
 		}
 	} else if policyAction == "redirect" {
-		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyHTTPSRedirectStatusCode)
+		_, httpsStatusCodeSet := diff.GetOk(isLBListenerPolicyTargetHTTPStatusCode)
 		_, targetURLSet := diff.GetOk(isLBListenerPolicyTargetURL)
 
-		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyHTTPSRedirectStatusCode) {
+		if !httpsStatusCodeSet && diff.NewValueKnown(isLBListenerPolicyTargetHTTPStatusCode) {
 			return fmt.Errorf("Load balancer listener policy: When action is redirect please specify target_http_status_code")
 		}
 
