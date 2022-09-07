@@ -15,7 +15,7 @@ Provides a resource for credentials. This allows credentials to be created, upda
 ```hcl
 resource "ibm_scc_posture_credential" "credentials" {
   description = "This credential is used for testing."
-  display_fields = {"password":"testpassword","username":"test"}
+  display_fields {"password":"testpassword","username":"test"}
   enabled = true
   group = {"id":"1","passphrase":"passphrase"}
   name = "test_create"
