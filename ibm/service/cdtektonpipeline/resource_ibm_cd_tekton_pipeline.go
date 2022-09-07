@@ -19,11 +19,11 @@ import (
 
 func ResourceIBMCdTektonPipeline() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMCdTektonPipelineCreate,
-		ReadContext:   resourceIBMCdTektonPipelineRead,
-		UpdateContext: resourceIBMCdTektonPipelineUpdate,
-		DeleteContext: resourceIBMCdTektonPipelineDelete,
-		Importer:      &schema.ResourceImporter{},
+		CreateContext:   resourceIBMCdTektonPipelineCreate,
+		ReadContext:     resourceIBMCdTektonPipelineRead,
+		UpdateContext:   resourceIBMCdTektonPipelineUpdate,
+		DeleteContext:   resourceIBMCdTektonPipelineDelete,
+		Importer: &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"enable_slack_notifications": &schema.Schema{
@@ -157,10 +157,10 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Description: "Property name.",
 						},
 						"value": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
+							Type:        schema.TypeString,
+							Optional:    true,
 							DiffSuppressFunc: flex.SuppressPipelinePropertyRawSecret,
-							Description:      "Property value.",
+							Description: "Property value.",
 						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
@@ -235,10 +235,10 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Description: "Property name.",
 									},
 									"value": &schema.Schema{
-										Type:             schema.TypeString,
-										Optional:         true,
+										Type:        schema.TypeString,
+										Optional:    true,
 										DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
-										Description:      "Property value. Can be empty and should be omitted for `single_select` property type.",
+										Description: "Property value. Can be empty and should be omitted for `single_select` property type.",
 									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
@@ -395,10 +395,10 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Description: "Secret type.",
 									},
 									"value": &schema.Schema{
-										Type:             schema.TypeString,
-										Optional:         true,
+										Type:        schema.TypeString,
+										Optional:    true,
 										DiffSuppressFunc: flex.SuppressGenericWebhookRawSecret,
-										Description:      "Secret value, not needed if secret type is `internal_validation`.",
+										Description: "Secret value, not needed if secret type is `internal_validation`.",
 									},
 									"source": &schema.Schema{
 										Type:        schema.TypeString,
@@ -417,6 +417,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									},
 								},
 							},
+						},
+						"webhook_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Webhook URL that can be used to trigger pipeline runs.",
 						},
 					},
 				},
@@ -791,6 +796,9 @@ func resourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 			}
 			modelMap["secret"] = []map[string]interface{}{secretMap}
 		}
+		if model.WebhookURL != nil {
+			modelMap["webhook_url"] = model.WebhookURL
+		}
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized cdtektonpipelinev2.TriggerIntf subtype encountered")
@@ -1119,6 +1127,9 @@ func resourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 			return modelMap, err
 		}
 		modelMap["secret"] = []map[string]interface{}{secretMap}
+	}
+	if model.WebhookURL != nil {
+		modelMap["webhook_url"] = model.WebhookURL
 	}
 	return modelMap, nil
 }

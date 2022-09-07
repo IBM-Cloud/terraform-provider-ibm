@@ -81,7 +81,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "name"
+				name = "pipeline-name"
 				type = "tekton"
 				ui_pipeline = true
 			}
@@ -109,7 +109,7 @@ func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enab
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "name"
+				name = "pipeline-name"
 				type = "tekton"
 				ui_pipeline = true
 			}

@@ -257,6 +257,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 					},
 				},
 			},
+			"webhook_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Webhook URL that can be used to trigger pipeline runs.",
+			},
 			"trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -512,6 +517,9 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 	if err = d.Set("properties", properties); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+	}
+	if err = d.Set("webhook_url", trigger.WebhookURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting webhook_url: %s", err))
 	}
 	if err = d.Set("trigger_id", trigger.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))
