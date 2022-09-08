@@ -2,7 +2,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

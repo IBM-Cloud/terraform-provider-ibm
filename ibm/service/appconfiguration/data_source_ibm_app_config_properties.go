@@ -4,7 +4,6 @@ package appconfiguration
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"strconv"
