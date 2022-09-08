@@ -74,9 +74,7 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
   event_listener = var.cd_tekton_pipeline_trigger_event_listener
   tags = var.cd_tekton_pipeline_trigger_tags
   worker {
-    name = "name"
-    type = "public "
-    id = "id"
+    id = "public"
   }
   max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
   disabled = var.cd_tekton_pipeline_trigger_disabled
