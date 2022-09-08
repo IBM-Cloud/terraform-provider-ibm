@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMCdToolchainToolPipelineBasic(t *testing.T) {
-	var conf cdtoolchainv2.GetToolByIDResponse
+	var conf cdtoolchainv2.ToolchainTool
 	rgID := acc.CdResourceGroupID
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -39,7 +39,7 @@ func TestAccIBMCdToolchainToolPipelineBasic(t *testing.T) {
 }
 
 func TestAccIBMCdToolchainToolPipelineAllArgs(t *testing.T) {
-	var conf cdtoolchainv2.GetToolByIDResponse
+	var conf cdtoolchainv2.ToolchainTool
 	rgID := acc.CdResourceGroupID
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -113,7 +113,7 @@ func testAccCheckIBMCdToolchainToolPipelineConfig(tcName string, rgID string, na
 	`, tcName, rgID, name)
 }
 
-func testAccCheckIBMCdToolchainToolPipelineExists(n string, obj cdtoolchainv2.GetToolByIDResponse) resource.TestCheckFunc {
+func testAccCheckIBMCdToolchainToolPipelineExists(n string, obj cdtoolchainv2.ToolchainTool) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
