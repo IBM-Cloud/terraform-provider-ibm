@@ -15,7 +15,9 @@ variable "clone_repo" {
   default     = "https://github.com/open-toolchain/hello-tekton"
 }
 
-variable "repo_name" {
+// Resource arguments for cd_tekton_pipeline_property
+variable "cd_tekton_pipeline_property_pipeline_id" {
+  description = "The Tekton pipeline ID."
   type        = string
   description = "Name of the new repo that will be created in the toolchain"
   default     = "simple-tekton"
