@@ -19,6 +19,8 @@ import (
 
 const (
 	isInstanceTemplateBootVolume                   = "boot_volume"
+	isInstanceTemplateBootVolumeTags               = "tags"
+	isInstanceTemplateVolAttTags                   = "tags"
 	isInstanceTemplateCRN                          = "crn"
 	isInstanceTemplateVolAttVolAutoDelete          = "auto_delete"
 	isInstanceTemplateVolAttVol                    = "volume"
@@ -239,6 +241,14 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 										ForceNew:    true,
 										Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
 									},
+									isInstanceTemplateVolAttTags: {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										ForceNew:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", "tags")},
+										Set:         flex.ResourceIBMVPCHash,
+										Description: "UserTags for the volume instance",
+									},
 								},
 							},
 						},
@@ -437,6 +447,14 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						isInstanceTemplateBootVolumeTags: {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", "tags")},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "UserTags for the volume instance",
+						},
 						isInstanceTemplateBootEncryption: {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -521,7 +539,15 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              host_failure})
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 	ibmISInstanceTemplateValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
 }
@@ -671,6 +697,19 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 			volTemplate.Name = &namestr
 		}
 
+		var userTags *schema.Set
+		if v, ok := bootvol[isInstanceTemplateBootVolumeTags]; ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volTemplate.UserTags = userTagsArray
+			}
+		}
+
 		volcap := 100
 		volcapint64 := int64(volcap)
 		volprof := "general-purpose"
@@ -738,6 +777,18 @@ func instanceTemplateCreate(d *schema.ResourceData, meta interface{}, profile, n
 				if encryptionKey != "" {
 					volPrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
 						CRN: &encryptionKey,
+					}
+				}
+				var userTags *schema.Set
+				if v, ok := newvol[isInstanceTemplateVolAttTags]; ok {
+					userTags = v.(*schema.Set)
+					if userTags != nil && userTags.Len() != 0 {
+						userTagsArray := make([]string, userTags.Len())
+						for i, userTag := range userTags.List() {
+							userTagStr := userTag.(string)
+							userTagsArray[i] = userTagStr
+						}
+						volPrototype.UserTags = userTagsArray
 					}
 				}
 				volInterface.Volume = volPrototype
@@ -1184,6 +1235,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 				encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
 				newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
 			}
+			if volumeInst.UserTags != nil {
+				newVolume[isInstanceTemplateVolAttTags] = volumeInst.UserTags
+			}
 			if len(newVolume) > 0 {
 				newVolumeArr = append(newVolumeArr, newVolume)
 			}
@@ -1209,6 +1263,9 @@ func instanceTemplateGet(d *schema.ResourceData, meta interface{}, ID string) er
 				volEncryption := volumeIntf.EncryptionKey
 				volEncryptionIntf := volEncryption.(*vpcv1.EncryptionKeyIdentity)
 				bootVol[isInstanceTemplateBootEncryption] = volEncryptionIntf.CRN
+			}
+			if volumeIntf.UserTags != nil {
+				bootVol[isVolumeTags] = volumeIntf.UserTags
 			}
 		}
 

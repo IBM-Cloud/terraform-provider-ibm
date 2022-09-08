@@ -181,6 +181,7 @@ Review the argument references that you can specify for your resource.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
+  - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
@@ -233,9 +234,9 @@ Review the argument references that you can specify for your resource.
     - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
     - `iops` - (Optional, Integer) The maximum input and output operations per second (IOPS) for the volume.
     - `profile` - (Optional, String) The global unique name for the volume profile to use for the volume.
+    - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
     
     ~>**Note:** 
-    
     `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.
 - `user_data` -  (Optional, String) The user data provided for the instance.
