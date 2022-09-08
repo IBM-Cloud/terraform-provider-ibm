@@ -66,48 +66,39 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
   type = "text"
 }
 
-// Provision pipeline properties
-resource "ibm_cd_tekton_pipeline_property" "apikey" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "apikey"
-  value = var.ibmcloud_api_key
-  type = "secure"
-}
-resource "ibm_cd_tekton_pipeline_property" "cluster_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "cluster"
-  value = var.cluster
-  type = "text"
-}
-resource "ibm_cd_tekton_pipeline_property" "cluster_namespace_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "clusterNamespace"
-  value = var.cluster_namespace
-  type = "text"
-}
-resource "ibm_cd_tekton_pipeline_property" "cluster_region_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "clusterRegion"
-  value = var.region
-  type = "text"
-}
-resource "ibm_cd_tekton_pipeline_property" "registry_region_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "registryRegion"
-  value = var.region
-  type = "text"
-}
-resource "ibm_cd_tekton_pipeline_property" "registry_namespace_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "registryNamespace"
-  value = var.registry_namespace
-  type = "text"
-}
-resource "ibm_cd_tekton_pipeline_property" "repository_property" {
-  pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  name = "repository"
-  value = ibm_cd_toolchain_tool_hostedgit.tekton_repo.parameters[0].repo_url
-  type = "text"
+// Provision cd_tekton_pipeline_trigger resource instance
+resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+  pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
+  type = var.cd_tekton_pipeline_trigger_type
+  name = var.cd_tekton_pipeline_trigger_name
+  event_listener = var.cd_tekton_pipeline_trigger_event_listener
+  tags = var.cd_tekton_pipeline_trigger_tags
+  worker {
+    name = "name"
+    type = "public "
+    id = "id"
+  }
+  max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
+  disabled = var.cd_tekton_pipeline_trigger_disabled
+  secret {
+    type = "token_matches"
+    value = "value"
+    source = "header"
+    key_name = "key_name"
+    algorithm = "md4"
+  }
+  cron = var.cd_tekton_pipeline_trigger_cron
+  timezone = var.cd_tekton_pipeline_trigger_timezone
+  scm_source {
+    url = "url"
+    branch = "branch"
+    pattern = "pattern"
+  }
+  events {
+    push = true
+    pull_request_closed = true
+    pull_request = true
+  }
 }
 
 // Provision cd_tekton_pipeline_trigger resource instance
