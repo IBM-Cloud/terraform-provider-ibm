@@ -3,8 +3,7 @@ subcategory: 'App Configuration'
 layout: 'ibm'
 page_title: 'IBM : App Configuration properties'
 description: |-
-List all the properties.
-
+  List all the properties.
 ---
 
 # ibm_app_config_properties
@@ -76,14 +75,22 @@ In addition to all argument references list, you can access the following attrib
 - `limit` - Number of records returned
 - `offset` - Skipped number of records
 
-- `first` - URL to navigate to the first page of records. Nested `first` blocks have the following structure:
-    - `href` - URL.
+- `first` - (List) The URL to navigate to the first page of records.
 
-- `previous` - URL to navigate to the previous list of records. Nested `previous` blocks have the following structure:
-    - `href` - (String) The previous `href` URL.
+  Nested scheme for `first`:
+  - `href` - (String) The first `href` URL.
 
-- `last` - URL to navigate to the last list of records. Nested `last` blocks have the following structure:
-    - `href` - URL.
+- `previous` - (List) The URL to navigate to the previous list of records.
 
-- `next` - URL to navigate to the next list of records.. Nested `next` blocks have the following structure:
-    - `href` - URL.
+  Nested scheme for `previous`:
+  - `href` - (String) The previous `href` URL.
+
+- `last` - (List) The URL to navigate to the last list of records.
+
+  Nested scheme for `last`:
+  - `href` - (String) The last `href` URL.
+
+- `next` - (List) The URL to navigate to the next list of records.
+
+  Nested scheme for `next`:
+  - `href` - (String) The next `href` URL.

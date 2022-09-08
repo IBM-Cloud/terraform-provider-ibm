@@ -3,7 +3,7 @@ subcategory: 'App Configuration'
 layout: 'ibm'
 page_title: 'IBM : App Configuration property'
 description: |-
-Manages property.
+  Manages property.
 ---
 
 # ibm_app_config_property

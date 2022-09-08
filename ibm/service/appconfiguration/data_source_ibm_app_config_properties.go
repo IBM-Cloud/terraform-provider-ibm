@@ -257,7 +257,6 @@ func dataSourceIbmAppConfigPropertiesRead(d *schema.ResourceData, meta interface
 		result, response, err := appconfigClient.ListProperties(options)
 		propertiesList = result
 		if err != nil {
-			log.Printf("[DEBUG] ListProperties failed %s\n%s", err, response)
 			return fmt.Errorf("ListProperties failed %s\n%s", err, response)
 		}
 		if isLimit {

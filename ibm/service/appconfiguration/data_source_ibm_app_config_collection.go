@@ -142,7 +142,6 @@ func dataSourceIbmAppConfigCollectionRead(d *schema.ResourceData, meta interface
 
 	result, response, err := appconfigClient.GetCollection(options)
 	if err != nil {
-		log.Printf("[DEBUG] GetCollection failed %s\n%s", err, response)
 		return fmt.Errorf("GetCollection failed %s\n%s", err, response)
 	}
 

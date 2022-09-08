@@ -3,7 +3,7 @@ subcategory: 'App Configuration'
 layout: 'ibm'
 page_title: 'IBM : App Configuration collections'
 description: |-
-List all the collections.
+  List all the collections.
 ---
 
 # ibm_app_config_collections
@@ -75,17 +75,22 @@ In addition to all argument references list, you can access the following attrib
 
 - `total_count` - Number of records returned in the current response.
 
-- `first` - URL to navigate to the first page of records. Nested `first` blocks have the following structure:
+- `first` - (List) The URL to navigate to the first page of records.
 
-- `href` - URL.
+  Nested scheme for `first`:
+  - `href` - (String) The first `href` URL.
+  
+- `previous` - (List) The URL to navigate to the previous list of records.
 
-- `previous` - URL to navigate to the previous list of records. Nested `previous` blocks have the following structure:
+  Nested scheme for `previous`:
+  - `href` - (String) The previous `href` URL.
 
-- `href` - URL.
+- `last` - (List) The URL to navigate to the last list of records.
 
-- `last` - URL to navigate to the last list of records. Nested `last` blocks have the following structure:
+  Nested scheme for `last`:
+  - `href` - (String) The last `href` URL.
 
-- `href` - URL.
+- `next` - (List) The URL to navigate to the next list of records.
 
-- `next` - URL to navigate to the next list of records.. Nested `next` blocks have the following structure:
-- `href` - URL.
+  Nested scheme for `next`:
+  - `href` - (String) The next `href` URL.

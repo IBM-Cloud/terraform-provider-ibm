@@ -93,7 +93,6 @@ func resourceIbmIbmAppConfigCollectiontCreate(d *schema.ResourceData, meta inter
 	collection, response, err := appconfigClient.CreateCollection(options)
 
 	if err != nil {
-		log.Printf("CreateCollection failed %s\n%s", err, response)
 		return fmt.Errorf("CreateCollection failed %s\n%s", err, response)
 	}
 	d.SetId(fmt.Sprintf("%s/%s", guid, *collection.CollectionID))
@@ -259,7 +258,6 @@ func resourceIbmIbmAppConfigCollectionUpdate(d *schema.ResourceData, meta interf
 
 		_, response, err := appconfigClient.UpdateCollection(options)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateCollection %s\n%s", err, response)
 			return fmt.Errorf("UpdateCollection failed %s\n%s", err, response)
 		}
 		return resourceIbmIbmAppConfigCollectiontRead(d, meta)

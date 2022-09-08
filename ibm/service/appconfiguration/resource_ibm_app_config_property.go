@@ -193,7 +193,6 @@ func resourceIbmIbmAppConfigPropertyCreate(d *schema.ResourceData, meta interfac
 
 	result, response, err := appconfigClient.CreateProperty(options)
 	if err != nil {
-		log.Printf("[DEBUG] CreateProperty failed %s\n%s", err, response)
 		return fmt.Errorf("CreateProperty failed %s\n%s", err, response)
 	}
 
@@ -359,7 +358,6 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		}
 		_, response, err := appconfigClient.UpdateProperty(options)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateProperty failed %s\n%s", err, response)
 			return fmt.Errorf("UpdateProperty failed %s\n%s", err, response)
 		}
 

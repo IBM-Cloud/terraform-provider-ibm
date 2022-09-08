@@ -206,7 +206,6 @@ func dataSourceIbmAppConfigCollectionsRead(d *schema.ResourceData, meta interfac
 		result, response, err := appconfigClient.ListCollections(options)
 		collectionsList = result
 		if err != nil {
-			log.Printf("[DEBUG] ListCollections failed %s\n%s", err, response)
 			return fmt.Errorf("ListCollections failed %s\n%s", err, response)
 		}
 		if isLimit {

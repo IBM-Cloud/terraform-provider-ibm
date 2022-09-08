@@ -3,7 +3,7 @@ subcategory: 'App Configuration'
 layout: 'ibm'
 page_title: 'IBM : App Configuration collection'
 description: |-
-Manages Collection.
+  Manages Collection.
 ---
 
 # ibm_app_config_collection

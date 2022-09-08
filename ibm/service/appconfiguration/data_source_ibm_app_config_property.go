@@ -159,7 +159,6 @@ func dataSourceIbmAppConfigPropertyRead(d *schema.ResourceData, meta interface{}
 	property, response, err := appconfigClient.GetProperty(options)
 
 	if err != nil {
-		log.Printf("[DEBUG] GetProperty failed %s\n%s", err, response)
 		return fmt.Errorf("GetProperty failed %s\n%s", err, response)
 	}
 
