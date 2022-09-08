@@ -558,6 +558,10 @@ func Provider() *schema.Provider {
 			"ibm_pi_pvm_snapshots":          power.DataSourceIBMPISnapshot(),
 			"ibm_pi_sap_profile":            power.DataSourceIBMPISAPProfile(),
 			"ibm_pi_sap_profiles":           power.DataSourceIBMPISAPProfiles(),
+			"ibm_pi_shared_processor_pool":  power.DataSourceIBMPISharedProcessorPool(),
+			"ibm_pi_shared_processor_pools": power.DataSourceIBMPISharedProcessorPools(),
+			"ibm_pi_spp_placement_group":    power.DataSourceIBMPISPPPlacementGroup(),
+			"ibm_pi_spp_placement_groups":   power.DataSourceIBMPISPPPlacementGroups(),
 			"ibm_pi_storage_pool_capacity":  power.DataSourceIBMPIStoragePoolCapacity(),
 			"ibm_pi_storage_pools_capacity": power.DataSourceIBMPIStoragePoolsCapacity(),
 			"ibm_pi_storage_type_capacity":  power.DataSourceIBMPIStorageTypeCapacity(),
@@ -994,6 +998,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
 			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
+			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
+			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 
 			// //Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),

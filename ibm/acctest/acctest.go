@@ -121,8 +121,10 @@ var Pi_dhcp_id string
 var PiCloudConnectionName string
 var PiSAPProfileID string
 var Pi_placement_group_name string
+var Pi_spp_placement_group_id string
 var PiStoragePool string
 var PiStorageType string
+var Pi_shared_processor_pool_id string
 
 var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
@@ -674,6 +676,11 @@ func init() {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
+	Pi_spp_placement_group_id = os.Getenv("PI_SPP_PLACEMENT_GROUP_ID")
+	if Pi_spp_placement_group_id == "" {
+		Pi_spp_placement_group_id = "tf-pi-spp-placement-group"
+		fmt.Println("[WARN] Set the environment variable PI_SPP_PLACEMENT_GROUP_ID for testing ibm_pi_spp_placement_group resource else it is set to default value 'tf-pi-spp-placement-group'")
+	}
 	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
 	if PiStoragePool == "" {
 		PiStoragePool = "terraform-test-power"
@@ -701,6 +708,12 @@ func init() {
 	if Pi_capture_cloud_storage_secret_key == "" {
 		Pi_capture_cloud_storage_secret_key = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY for testing Pi_capture_cloud_storage_secret_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_shared_processor_pool_id = os.Getenv("PI_SHARED_PROCESSOR_POOL_ID")
+	if Pi_shared_processor_pool_id == "" {
+		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
+		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
