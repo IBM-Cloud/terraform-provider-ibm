@@ -44,7 +44,7 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
   tags = var.cd_tekton_pipeline_trigger_tags
   worker {
     name = "name"
-    type = "private"
+    type = "public "
     id = "id"
   }
   max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
@@ -62,9 +62,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
     url = "url"
     branch = "branch"
     pattern = "pattern"
-    blind_connection = true
-    hook_id = "hook_id"
-    service_instance_id = "service_instance_id"
   }
   events {
     push = true
@@ -78,7 +75,7 @@ resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
   enable_slack_notifications = var.cd_tekton_pipeline_enable_slack_notifications
   enable_partial_cloning = var.cd_tekton_pipeline_enable_partial_cloning
   worker {
-    id = "id"
+    id = "public"
   }
 }
 

@@ -46,8 +46,9 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the worker.",
 						},
 					},
 				},
@@ -253,7 +254,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,

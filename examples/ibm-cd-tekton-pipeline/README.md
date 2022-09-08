@@ -163,7 +163,7 @@ data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 | value | Property value. | `string` | false |
 | enum | Options for `single_select` property type. Only needed for `single_select` property type. | `list(string)` | false |
 | type | Property type. | `string` | false |
-| path | A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected. | `string` | false |
+| path | A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used. | `string` | false |
 | pipeline_id | The Tekton pipeline ID. | `string` | true |
 | name | Property name. | `string` | false |
 | value | Property value. | `string` | false |
