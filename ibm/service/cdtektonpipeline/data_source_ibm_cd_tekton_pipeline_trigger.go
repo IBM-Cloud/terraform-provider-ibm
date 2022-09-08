@@ -286,11 +286,6 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	if err = d.Set("event_listener", trigger.EventListener); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
 	}
-	if trigger.Tags != nil {
-		if err = d.Set("tags", trigger.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
-		}
-	}
 
 	if trigger.Tags != nil {
 		if err = d.Set("tags", trigger.Tags); err != nil {
