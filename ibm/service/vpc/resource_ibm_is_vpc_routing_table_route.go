@@ -158,6 +158,7 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 			"priority": {
 				Type:        schema.TypeInt,
 				Computed:    true,
+				Optional:    true,
 				Description: "The route's priority. Smaller values have higher priority.",
 			},
 			rtOrigin: {
@@ -240,8 +241,8 @@ func resourceIBMISVPCRoutingTableRouteCreate(d *schema.ResourceData, meta interf
 	}
 
 	if priority, ok := d.GetOk("priority"); ok {
-		routePriority := priority.(int64)
-		createVpcRoutingTableRouteOptions.SetPriority(routePriority)
+		routePriority := priority.(int)
+		createVpcRoutingTableRouteOptions.SetPriority(int64(routePriority))
 	}
 
 	route, response, err := sess.CreateVPCRoutingTableRoute(createVpcRoutingTableRouteOptions)
@@ -326,7 +327,8 @@ func resourceIBMISVPCRoutingTableRouteUpdate(d *schema.ResourceData, meta interf
 		hasChange = true
 	}
 	if d.HasChange("priority") {
-		routePriority := d.Get("priority").(int64)
+		rp := d.Get("priority").(int)
+		routePriority := int64(rp)
 		routePatchModel.Priority = &routePriority
 		hasChange = true
 	}
