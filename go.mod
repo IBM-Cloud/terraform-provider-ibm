@@ -51,8 +51,9 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	gotest.tools v2.2.0+incompatible
+	k8s.io/api v0.25.0
+	k8s.io/client-go v0.25.0
 )
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
