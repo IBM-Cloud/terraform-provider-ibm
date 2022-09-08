@@ -2,26 +2,25 @@
 layout: "ibm"
 page_title: "IBM : ibm_cd_tekton_pipeline_definition"
 description: |-
-  Manages tekton_pipeline_definition.
+  Manages cd_tekton_pipeline_definition.
 subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_cd_tekton_pipeline_definition
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
-Provides a resource for tekton_pipeline_definition. This allows tekton_pipeline_definition to be created, updated and deleted.
+Provides a resource for cd_tekton_pipeline_definition. This allows cd_tekton_pipeline_definition to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
+resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   scm_source {
 		url = "url"
 		branch = "branch"
 		tag = "tag"
 		path = "path"
+		service_instance_id = "service_instance_id"
   }
 }
 ```
@@ -30,27 +29,27 @@ resource "ibm_cd_tekton_pipeline_definition" "tekton_pipeline_definition" {
 
 Review the argument reference that you can specify for your resource.
 
-* `pipeline_id` - (Required, Forces new resource, String) The tekton pipeline ID.
+* `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `scm_source` - (Optional, List) Scm source for tekton pipeline defintion.
+* `scm_source` - (Optional, List) SCM source for Tekton pipeline definition.
 Nested scheme for **scm_source**:
-	* `branch` - (Optional, String) A branch of the repo, branch field doesn't coexist with tag field.
+	* `branch` - (Optional, String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `path` - (Required, String) The path to the definitions yaml files.
+	* `path` - (Required, String) The path to the definition's yaml files.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
-	* `tag` - (Optional, String) A tag of the repo.
+	* `service_instance_id` - (Optional, String) ID of the SCM repository service instance.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+	* `tag` - (Optional, String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
-	* `url` - (Required, String) General href URL.
+	* `url` - (Required, Forces new resource, String) URL of the definition repository.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the tekton_pipeline_definition.
-* `definition_id` - (Required, String) UUID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `service_instance_id` - (Required, String) UUID.
+* `id` - The unique identifier of the cd_tekton_pipeline_definition.
+* `definition_id` - (String) UUID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
 ## Provider Configuration
@@ -111,10 +110,10 @@ The `id` property can be formed from `pipeline_id`, and `definition_id` in the f
 ```
 <pipeline_id>/<definition_id>
 ```
-* `pipeline_id`: A string in the format `94619026-912b-4d92-8f51-6c74f0692d90`. The tekton pipeline ID.
+* `pipeline_id`: A string in the format `94619026-912b-4d92-8f51-6c74f0692d90`. The Tekton pipeline ID.
 * `definition_id`: A string in the format `94299034-d45f-4e9a-8ed5-6bd5c7bb7ada`. The definition ID.
 
 # Syntax
 ```
-$ terraform import ibm_cd_tekton_pipeline_definition.tekton_pipeline_definition <pipeline_id>/<definition_id>
+$ terraform import ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition <pipeline_id>/<definition_id>
 ```
