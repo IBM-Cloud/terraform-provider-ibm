@@ -8,9 +8,7 @@ resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_inst
   scm_source {
     url = "url"
     branch = "branch"
-    tag = "tag"
     path = "path"
-    service_instance_id = "service_instance_id"
   }
 }
 
@@ -20,9 +18,7 @@ resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_p
   trigger_id = var.cd_tekton_pipeline_trigger_property_trigger_id
   name = var.cd_tekton_pipeline_trigger_property_name
   value = var.cd_tekton_pipeline_trigger_property_value
-  enum = var.cd_tekton_pipeline_trigger_property_enum
   type = var.cd_tekton_pipeline_trigger_property_type
-  path = var.cd_tekton_pipeline_trigger_property_path
 }
 
 // Provision cd_tekton_pipeline_property resource instance
@@ -30,9 +26,7 @@ resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance
   pipeline_id = var.cd_tekton_pipeline_property_pipeline_id
   name = var.cd_tekton_pipeline_property_name
   value = var.cd_tekton_pipeline_property_value
-  enum = var.cd_tekton_pipeline_property_enum
   type = var.cd_tekton_pipeline_property_type
-  path = var.cd_tekton_pipeline_property_path
 }
 
 // Provision cd_tekton_pipeline_trigger resource instance
@@ -47,25 +41,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" 
   }
   max_concurrent_runs = var.cd_tekton_pipeline_trigger_max_concurrent_runs
   disabled = var.cd_tekton_pipeline_trigger_disabled
-  secret {
-    type = "token_matches"
-    value = "value"
-    source = "header"
-    key_name = "key_name"
-    algorithm = "md4"
-  }
-  cron = var.cd_tekton_pipeline_trigger_cron
-  timezone = var.cd_tekton_pipeline_trigger_timezone
-  scm_source {
-    url = "url"
-    branch = "branch"
-    pattern = "pattern"
-  }
-  events {
-    push = true
-    pull_request_closed = true
-    pull_request = true
-  }
 }
 
 // Provision cd_tekton_pipeline resource instance
