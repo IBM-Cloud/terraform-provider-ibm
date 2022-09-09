@@ -17,6 +17,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
 func ResourceIBMContainerAddOns() *schema.Resource {
@@ -37,6 +38,9 @@ func ResourceIBMContainerAddOns() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Cluster Name or ID",
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_container_addons",
+					"cluster"),
 			},
 			"resource_group_id": {
 				Type:        schema.TypeString,
@@ -114,6 +118,20 @@ func ResourceIBMContainerAddOns() *schema.Resource {
 			},
 		},
 	}
+}
+func ResourceIBMContainerAddOnsValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cluster",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cluster",
+			CloudDataRange:             []string{"resolved_to:name"}})
+
+	iBMContainerAddOnsValidator := validate.ResourceValidator{ResourceName: "ibm_container_addons", Schema: validateSchema}
+	return &iBMContainerAddOnsValidator
 }
 func resourceIBMContainerAddOnsCreate(d *schema.ResourceData, meta interface{}) error {
 	csClient, err := meta.(conns.ClientSession).ContainerAPI()
