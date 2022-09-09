@@ -1319,6 +1319,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerPropertyValidator(),
 				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelinePropertyValidator(),
 				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerValidator(),
+
+				"ibm_container_addons":                      kubernetes.ResourceIBMContainerAddOnsValidator(),
+				"ibm_container_alb_create":                  kubernetes.ResourceIBMContainerAlbCreateValidator(),
+				"ibm_container_nlb_dns":                     kubernetes.ResourceIBMContainerNlbDnsValidator(),
+				"ibm_container_vpc_alb_create":              kubernetes.ResourceIBMContainerVpcAlbCreateNewValidator(),
+				"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
+				"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1372,6 +1379,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_database_remotes":                database.DataSourceIBMDatabaseRemotesValidator(),
 				"ibm_database_tasks":                  database.DataSourceIBMDatabaseTasksValidator(),
 				"ibm_database":                        database.DataSourceIBMDatabaseInstanceValidator(),
+
+				"ibm_container_addons":                  kubernetes.DataSourceIBMContainerAddOnsValidator(),
+				"ibm_container_nlb_dns":                 kubernetes.DataSourceIBMContainerNLBDNSValidator(),
+				"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
+				"ibm_container_vpc_cluster_worker_pool": kubernetes.DataSourceIBMContainerVpcClusterWorkerPoolValidator(),
+				"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPoolValidator(),
 			},
 		}
 	})
