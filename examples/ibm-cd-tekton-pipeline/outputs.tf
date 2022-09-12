@@ -1,3 +1,9 @@
+// This allows cd_tekton_pipeline data to be referenced by other resources and the terraform CLI
+// Modify this if only certain data should be exposed"
+output "ibm_cd_tekton_pipeline" {
+  value       = ibm_cd_tekton_pipeline.cd_pipeline_instance
+  description = "cd_pipeline_instance resource instance"
+}
 // This allows cd_tekton_pipeline_definition data to be referenced by other resources and the terraform CLI
 // Modify this if only certain data should be exposed
 output "ibm_cd_tekton_pipeline_definition" {
@@ -21,10 +27,4 @@ output "ibm_cd_tekton_pipeline_property" {
 output "ibm_cd_tekton_pipeline_trigger" {
   value       = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance
   description = "cd_tekton_pipeline_trigger resource instance"
-}
-// This allows cd_tekton_pipeline data to be referenced by other resources and the terraform CLI
-// Modify this if only certain data should be exposed
-output "ibm_cd_tekton_pipeline" {
-  value       = ibm_cd_tekton_pipeline.cd_tekton_pipeline_instance
-  description = "cd_tekton_pipeline resource instance"
 }
