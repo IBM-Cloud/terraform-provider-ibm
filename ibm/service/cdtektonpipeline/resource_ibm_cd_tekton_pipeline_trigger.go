@@ -5,13 +5,8 @@ package cdtektonpipeline
 
 import (
 	"context"
-	"crypto/hmac"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
-
-	"golang.org/x/crypto/sha3"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,15 +16,14 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/google/go-cmp/cmp"
 )
 
-func ResourceIBMTektonPipelineTrigger() *schema.Resource {
+func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMTektonPipelineTriggerCreate,
-		ReadContext:   ResourceIBMTektonPipelineTriggerRead,
-		UpdateContext: ResourceIBMTektonPipelineTriggerUpdate,
-		DeleteContext: ResourceIBMTektonPipelineTriggerDelete,
+		CreateContext: resourceIBMCdTektonPipelineTriggerCreate,
+		ReadContext:   resourceIBMCdTektonPipelineTriggerRead,
+		UpdateContext: resourceIBMCdTektonPipelineTriggerUpdate,
+		DeleteContext: resourceIBMCdTektonPipelineTriggerDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,222 +32,240 @@ func ResourceIBMTektonPipelineTrigger() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "pipeline_id"),
-				Description:  "The tekton pipeline ID.",
+				Description:  "The Tekton pipeline ID.",
 			},
-			"trigger": &schema.Schema{
+			"type": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "type"),
+				Description:  "Trigger type.",
+			},
+			"name": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "name"),
+				Description:  "Trigger name.",
+			},
+			"event_listener": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "event_listener"),
+				Description:  "Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.",
+			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Trigger tags array.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"worker": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Required:    true,
-				Description: "Tekton pipeline trigger object.",
+				Optional:    true,
+				Description: "Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Name of the worker. Computed based on the worker ID.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Type of the worker. Computed based on the worker ID.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "ID of the worker.",
+						},
+					},
+				},
+			},
+			"max_concurrent_runs": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
+			},
+			"disabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Flag whether the trigger is disabled. If omitted the trigger is enabled by default.",
+			},
+			"secret": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Secret type.",
+						},
+						"value": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressGenericWebhookRawSecret,
+							Description:      "Secret value, not needed if secret type is `internal_validation`.",
+						},
+						"source": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret location, not needed if secret type is `internal_validation`.",
+						},
+						"key_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Secret name, not needed if type is `internal_validation`.",
+						},
+						"algorithm": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.",
+						},
+					},
+				},
+			},
+			"cron": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "cron"),
+				Description:  "Only needed for timer triggers. Cron expression for timer trigger.",
+			},
+			"timezone": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Only needed for timer triggers. Timezone for timer trigger.",
+			},
+			"scm_source": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "SCM source repository for a Git trigger. Only needed for Git triggers.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "URL of the repository to which the trigger is listening.",
+						},
+						"branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.",
+						},
+						"pattern": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
+						},
+						"blind_connection": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
+						},
+						"hook_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
+						},
+						"service_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the repository service instance.",
+						},
+					},
+				},
+			},
+			"events": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Only needed for Git triggers. Events object defines the events to which this Git trigger listens.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"push": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger listens for 'push' Git webhook events.",
+						},
+						"pull_request_closed": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger listens for 'close pull request' Git webhook events.",
+						},
+						"pull_request": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.",
+						},
+					},
+				},
+			},
+			"href": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "API URL for interacting with the trigger.",
+			},
+			"properties": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Trigger properties.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "name of the duplicated trigger.",
+							ForceNew:    true,
+							Description: "Property name.",
+						},
+						"value": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
+							Description:      "Property value. Can be empty and should be omitted for `single_select` property type.",
+						},
+						"enum": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Options for `single_select` property type. Only needed for `single_select` property type.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Trigger type.",
+							Description: "Property type.",
 						},
-						"event_listener": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Event listener name.",
-						},
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "UUID.",
-						},
-						"tags": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Trigger tags array.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"worker": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Trigger worker used to run the trigger, the trigger worker overrides the default pipeline worker.If not exist, this trigger uses default pipeline worker.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "worker name.",
-									},
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "worker type.",
-									},
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Id.",
-									},
-								},
-							},
-						},
-						"concurrency": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Concurrency object.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"max_concurrent_runs": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "Defines the maximum number of concurrent runs for this trigger.",
-									},
-								},
-							},
-						},
-						"disabled": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "flag whether the trigger is disabled.",
-						},
-						"scm_source": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Scm source for git type tekton pipeline trigger.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"url": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Needed only for git trigger type. Repo URL that listening to.",
-									},
-									"branch": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Needed only for git trigger type. Branch name of the repo. Branch field doesn't coexist with pattern field.",
-									},
-									"pattern": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Needed only for git trigger type. Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
-									},
-									"blind_connection": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Computed:    true,
-										Description: "Needed only for git trigger type. Branch name of the repo.",
-									},
-									"hook_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "Webhook ID.",
-									},
-								},
-							},
-						},
-						"events": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Needed only for git trigger type. Events object defines the events this git trigger listening to.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"push": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "If true, the trigger starts when tekton pipeline service receive a repo's 'push' git webhook event.",
-									},
-									"pull_request_closed": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'close' git webhook event.",
-									},
-									"pull_request": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "If true, the trigger starts when tekton pipeline service receive a repo pull reqeust's 'open' or 'update' git webhook event.",
-									},
-								},
-							},
-						},
-						"service_instance_id": &schema.Schema{
+						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
-							Description: "UUID.",
+							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
 						},
-						"cron": &schema.Schema{
+						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Needed only for timer trigger type. Cron expression for timer trigger. Maximum frequency is every 5 minutes.",
-						},
-						"timezone": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Needed only for timer trigger type. Timezones for timer trigger.",
-						},
-						"secret": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Needed only for generic trigger type. Secret used to start generic trigger.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Secret type.",
-									},
-									"value": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Secret value, not needed if secret type is \"internalValidation\".",
-										DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-											segs := []string{d.Get("pipeline_id").(string), d.Get("trigger.0.id").(string)}
-											secret := strings.Join(segs, ".")
-											mac := hmac.New(sha3.New512, []byte(secret))
-											mac.Write([]byte(new))
-											secureHmac := hex.EncodeToString(mac.Sum(nil))
-											hasEnvChange := !cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
-											if hasEnvChange {
-												return false
-											}
-											return true
-										},
-									},
-									"source": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Secret location, not needed if secret type is \"internalValidation\".",
-									},
-									"key_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Secret name, not needed if type is \"internalValidation\".",
-									},
-									"algorithm": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Algorithm used for \"digestMatches\" secret type.",
-									},
-								},
-							},
+							Description: "API URL for interacting with the trigger property.",
 						},
 					},
 				},
+			},
+			"trigger_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID.",
 			},
 		},
 	}
 }
 
-func ResourceIBMTektonPipelineTriggerValidator() *validate.ResourceValidator {
+func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -265,13 +277,47 @@ func ResourceIBMTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			MinValueLength:             36,
 			MaxValueLength:             36,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "generic, manual, scm, timer",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$`,
+			MinValueLength:             1,
+			MaxValueLength:             253,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "event_listener",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,235}$`,
+			MinValueLength:             1,
+			MaxValueLength:             253,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "cron",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$`,
+			MinValueLength:             5,
+			MaxValueLength:             253,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_tekton_pipeline_trigger", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func ResourceIBMTektonPipelineTriggerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -280,12 +326,61 @@ func ResourceIBMTektonPipelineTriggerCreate(context context.Context, d *schema.R
 	createTektonPipelineTriggerOptions := &cdtektonpipelinev2.CreateTektonPipelineTriggerOptions{}
 
 	createTektonPipelineTriggerOptions.SetPipelineID(d.Get("pipeline_id").(string))
-	if _, ok := d.GetOk("trigger"); ok {
-		triggerModel, err := ResourceIBMTektonPipelineTriggerMapToTrigger(d.Get("trigger.0").(map[string]interface{}))
+	if _, ok := d.GetOk("type"); ok {
+		createTektonPipelineTriggerOptions.SetType(d.Get("type").(string))
+	}
+	if _, ok := d.GetOk("name"); ok {
+		createTektonPipelineTriggerOptions.SetName(d.Get("name").(string))
+	}
+	if _, ok := d.GetOk("event_listener"); ok {
+		createTektonPipelineTriggerOptions.SetEventListener(d.Get("event_listener").(string))
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		tags := []string{}
+		for _, tagsItem := range d.Get("tags").([]interface{}) {
+			tags = append(tags, tagsItem.(string))
+		}
+		createTektonPipelineTriggerOptions.SetTags(tags)
+	}
+	if _, ok := d.GetOk("worker"); ok {
+		workerModel, err := resourceIBMCdTektonPipelineTriggerMapToWorker(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createTektonPipelineTriggerOptions.SetTrigger(triggerModel)
+		createTektonPipelineTriggerOptions.SetWorker(workerModel)
+	}
+	if _, ok := d.GetOk("max_concurrent_runs"); ok {
+		createTektonPipelineTriggerOptions.SetMaxConcurrentRuns(int64(d.Get("max_concurrent_runs").(int)))
+	}
+	if _, ok := d.GetOk("disabled"); ok {
+		createTektonPipelineTriggerOptions.SetDisabled(d.Get("disabled").(bool))
+	}
+	if _, ok := d.GetOk("secret"); ok {
+		secretModel, err := resourceIBMCdTektonPipelineTriggerMapToGenericSecret(d.Get("secret.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createTektonPipelineTriggerOptions.SetSecret(secretModel)
+	}
+	if _, ok := d.GetOk("cron"); ok {
+		createTektonPipelineTriggerOptions.SetCron(d.Get("cron").(string))
+	}
+	if _, ok := d.GetOk("timezone"); ok {
+		createTektonPipelineTriggerOptions.SetTimezone(d.Get("timezone").(string))
+	}
+	if _, ok := d.GetOk("scm_source"); ok {
+		scmSourceModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(d.Get("scm_source.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createTektonPipelineTriggerOptions.SetScmSource(scmSourceModel)
+	}
+	if _, ok := d.GetOk("events"); ok {
+		eventsModel, err := resourceIBMCdTektonPipelineTriggerMapToEvents(d.Get("events.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createTektonPipelineTriggerOptions.SetEvents(eventsModel)
 	}
 
 	triggerIntf, response, err := cdTektonPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
@@ -297,10 +392,10 @@ func ResourceIBMTektonPipelineTriggerCreate(context context.Context, d *schema.R
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
 	d.SetId(fmt.Sprintf("%s/%s", *createTektonPipelineTriggerOptions.PipelineID, *trigger.ID))
 
-	return ResourceIBMTektonPipelineTriggerRead(context, d, meta)
+	return resourceIBMCdTektonPipelineTriggerRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -326,22 +421,96 @@ func ResourceIBMTektonPipelineTriggerRead(context context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("GetTektonPipelineTriggerWithContext failed %s\n%s", err, response))
 	}
 
+	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
 	if err = d.Set("pipeline_id", getTektonPipelineTriggerOptions.PipelineID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting pipeline_id: %s", err))
 	}
-
-	trigger, err := ResourceIBMTektonPipelineTriggerTriggerToMap(triggerIntf)
-	if err != nil {
-		return diag.FromErr(err)
+	if err = d.Set("type", trigger.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting type: %s", err))
 	}
-	if err = d.Set("trigger", []map[string]interface{}{trigger}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting trigger: %s", err))
+	if err = d.Set("name", trigger.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+	}
+	if err = d.Set("event_listener", trigger.EventListener); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
+	}
+	if trigger.Tags != nil {
+		if err = d.Set("tags", trigger.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+		}
+	}
+	if trigger.Worker != nil {
+		workerMap, err := resourceIBMCdTektonPipelineTriggerWorkerToMap(trigger.Worker)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("worker", []map[string]interface{}{workerMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting worker: %s", err))
+		}
+	}
+	if err = d.Set("max_concurrent_runs", flex.IntValue(trigger.MaxConcurrentRuns)); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
+	}
+	if err = d.Set("disabled", trigger.Disabled); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting disabled: %s", err))
+	}
+	if trigger.Secret != nil {
+		secretMap, err := resourceIBMCdTektonPipelineTriggerGenericSecretToMap(trigger.Secret)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("secret", []map[string]interface{}{secretMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting secret: %s", err))
+		}
+	}
+	if err = d.Set("cron", trigger.Cron); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting cron: %s", err))
+	}
+	if err = d.Set("timezone", trigger.Timezone); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting timezone: %s", err))
+	}
+	if trigger.ScmSource != nil {
+		scmSourceMap, err := resourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(trigger.ScmSource)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("scm_source", []map[string]interface{}{scmSourceMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting scm_source: %s", err))
+		}
+	}
+	if trigger.Events != nil {
+		eventsMap, err := resourceIBMCdTektonPipelineTriggerEventsToMap(trigger.Events)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("events", []map[string]interface{}{eventsMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting events: %s", err))
+		}
+	}
+	if err = d.Set("href", trigger.Href); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+	properties := []map[string]interface{}{}
+	if trigger.Properties != nil {
+		for _, propertiesItem := range trigger.Properties {
+			propertiesItemMap, err := resourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(&propertiesItem)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			properties = append(properties, propertiesItemMap)
+		}
+	}
+	if err = d.Set("properties", properties); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+	}
+	if err = d.Set("trigger_id", trigger.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -359,81 +528,82 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 
 	hasChange := false
 
-	if d.HasChange("trigger.0.name") {
-		updateTektonPipelineTriggerOptions.SetName(d.Get("trigger.0.name").(string))
+	patchVals := &cdtektonpipelinev2.TriggerPatch{}
+	if d.HasChange("pipeline_id") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "pipeline_id"))
+	}
+	if d.HasChange("type") {
+		patchVals.Type = core.StringPtr(d.Get("type").(string))
 		hasChange = true
 	}
-	if d.HasChange("trigger.0.event_listener") {
-		updateTektonPipelineTriggerOptions.SetEventListener(d.Get("trigger.0.event_listener").(string))
+	if d.HasChange("name") {
+		patchVals.Name = core.StringPtr(d.Get("name").(string))
 		hasChange = true
 	}
-	if d.HasChange("trigger.0.tags") {
+	if d.HasChange("event_listener") {
+		patchVals.EventListener = core.StringPtr(d.Get("event_listener").(string))
+		hasChange = true
+	}
+	if d.HasChange("tags") {
 		tags := []string{}
-		for _, tagsItem := range d.Get("trigger.0.tags").([]interface{}) {
+		for _, tagsItem := range d.Get("tags").([]interface{}) {
 			tags = append(tags, tagsItem.(string))
 		}
-		updateTektonPipelineTriggerOptions.SetTags(tags)
+		patchVals.Tags = tags
 		hasChange = true
 	}
-	if d.HasChange("trigger.0.worker") {
-		worker, err := ResourceIBMTektonPipelineTriggerMapToWorker(d.Get("trigger.0.worker").([]interface{})[0].(map[string]interface{}))
+	if d.HasChange("worker") {
+		worker, err := resourceIBMCdTektonPipelineTriggerMapToWorker(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetWorker(worker)
+		patchVals.Worker = worker
 		hasChange = true
 	}
-
-	if d.HasChange("trigger.0.concurrency") {
-		concurrency, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(d.Get("trigger.0.concurrency").([]interface{})[0].(map[string]interface{}))
+	if d.HasChange("max_concurrent_runs") {
+		patchVals.MaxConcurrentRuns = core.Int64Ptr(int64(d.Get("max_concurrent_runs").(int)))
+		hasChange = true
+	}
+	if d.HasChange("disabled") {
+		patchVals.Disabled = core.BoolPtr(d.Get("disabled").(bool))
+		hasChange = true
+	}
+	if d.HasChange("secret") {
+		secret, err := resourceIBMCdTektonPipelineTriggerMapToGenericSecret(d.Get("secret.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetConcurrency(concurrency)
+		patchVals.Secret = secret
 		hasChange = true
 	}
-
-	if d.HasChange("trigger.0.secret") {
-		secret, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(d.Get("trigger.0.secret").([]interface{})[0].(map[string]interface{}))
+	if d.HasChange("cron") {
+		patchVals.Cron = core.StringPtr(d.Get("cron").(string))
+		hasChange = true
+	}
+	if d.HasChange("timezone") {
+		patchVals.Timezone = core.StringPtr(d.Get("timezone").(string))
+		hasChange = true
+	}
+	if d.HasChange("scm_source") {
+		scmSource, err := resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(d.Get("scm_source.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetSecret(secret)
+		patchVals.ScmSource = scmSource
 		hasChange = true
 	}
-
-	if d.HasChange("trigger.0.scm_source") {
-		secret, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(d.Get("trigger.0.scm_source").([]interface{})[0].(map[string]interface{}))
+	if d.HasChange("events") {
+		events, err := resourceIBMCdTektonPipelineTriggerMapToEvents(d.Get("events.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateTektonPipelineTriggerOptions.SetScmSource(secret)
-		hasChange = true
-	}
-
-	if d.HasChange("trigger.0.events") {
-		events, err := ResourceIBMTektonPipelineTriggerMapToEvents(d.Get("trigger.0.events").([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateTektonPipelineTriggerOptions.SetEvents(events)
-		hasChange = true
-	}
-
-	if d.HasChange("trigger.0.cron") {
-		updateTektonPipelineTriggerOptions.SetCron(d.Get("trigger.0.cron").(string))
-		hasChange = true
-	}
-	if d.HasChange("trigger.0.timezone") {
-		updateTektonPipelineTriggerOptions.SetTimezone(d.Get("trigger.0.timezone").(string))
-		hasChange = true
-	}
-	if d.HasChange("trigger.0.disabled") {
-		updateTektonPipelineTriggerOptions.SetDisabled(d.Get("trigger.0.disabled").(bool))
+		patchVals.Events = events
 		hasChange = true
 	}
 
 	if hasChange {
+		updateTektonPipelineTriggerOptions.TriggerPatch, _ = patchVals.AsPatch()
 		_, response, err := cdTektonPipelineClient.UpdateTektonPipelineTriggerWithContext(context, updateTektonPipelineTriggerOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateTektonPipelineTriggerWithContext failed %s\n%s", err, response)
@@ -441,10 +611,10 @@ func ResourceIBMTektonPipelineTriggerUpdate(context context.Context, d *schema.R
 		}
 	}
 
-	return ResourceIBMTektonPipelineTriggerRead(context, d, meta)
+	return resourceIBMCdTektonPipelineTriggerRead(context, d, meta)
 }
 
-func ResourceIBMTektonPipelineTriggerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -471,77 +641,8 @@ func ResourceIBMTektonPipelineTriggerDelete(context context.Context, d *schema.R
 	return nil
 }
 
-func ResourceIBMTektonPipelineTriggerMapToTrigger(modelMap map[string]interface{}) (cdtektonpipelinev2.TriggerIntf, error) {
-	model := &cdtektonpipelinev2.Trigger{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
-		model.Type = core.StringPtr(modelMap["type"].(string))
-	}
-	if modelMap["event_listener"] != nil && modelMap["event_listener"].(string) != "" {
-		model.EventListener = core.StringPtr(modelMap["event_listener"].(string))
-	}
-	if modelMap["tags"] != nil {
-		tags := []string{}
-		for _, tagsItem := range modelMap["tags"].([]interface{}) {
-			tags = append(tags, tagsItem.(string))
-		}
-		model.Tags = tags
-	}
-	if modelMap["worker"] != nil && len(modelMap["worker"].([]interface{})) > 0 {
-		WorkerModel, err := ResourceIBMTektonPipelineTriggerMapToWorker(modelMap["worker"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Worker = WorkerModel
-	}
-	if modelMap["concurrency"] != nil && len(modelMap["concurrency"].([]interface{})) > 0 {
-		ConcurrencyModel, err := ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap["concurrency"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Concurrency = ConcurrencyModel
-	}
-	if modelMap["disabled"] != nil {
-		model.Disabled = core.BoolPtr(modelMap["disabled"].(bool))
-	}
-	if modelMap["scm_source"] != nil && len(modelMap["scm_source"].([]interface{})) > 0 {
-		ScmSourceModel, err := ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap["scm_source"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ScmSource = ScmSourceModel
-	}
-	if modelMap["events"] != nil && len(modelMap["events"].([]interface{})) > 0 {
-		EventsModel, err := ResourceIBMTektonPipelineTriggerMapToEvents(modelMap["events"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Events = EventsModel
-	}
-	if modelMap["service_instance_id"] != nil && modelMap["service_instance_id"].(string) != "" {
-		model.ServiceInstanceID = core.StringPtr(modelMap["service_instance_id"].(string))
-	}
-	if modelMap["cron"] != nil && modelMap["cron"].(string) != "" {
-		model.Cron = core.StringPtr(modelMap["cron"].(string))
-	}
-	if modelMap["timezone"] != nil && modelMap["timezone"].(string) != "" {
-		model.Timezone = core.StringPtr(modelMap["timezone"].(string))
-	}
-	if modelMap["secret"] != nil && len(modelMap["secret"].([]interface{})) > 0 {
-		SecretModel, err := ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap["secret"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.Secret = SecretModel
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*cdtektonpipelinev2.Worker, error) {
+func resourceIBMCdTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}) (*cdtektonpipelinev2.Worker, error) {
 	model := &cdtektonpipelinev2.Worker{}
-	//TODO double check if working
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
@@ -552,43 +653,7 @@ func ResourceIBMTektonPipelineTriggerMapToWorker(modelMap map[string]interface{}
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineTriggerMapToConcurrency(modelMap map[string]interface{}) (*cdtektonpipelinev2.Concurrency, error) {
-	model := &cdtektonpipelinev2.Concurrency{}
-	if modelMap["max_concurrent_runs"] != nil {
-		model.MaxConcurrentRuns = core.Int64Ptr(int64(modelMap["max_concurrent_runs"].(int)))
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerScmSource, error) {
-	model := &cdtektonpipelinev2.TriggerScmSource{}
-	if modelMap["url"] != nil && modelMap["url"].(string) != "" {
-		model.URL = core.StringPtr(modelMap["url"].(string))
-	}
-	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
-		model.Branch = core.StringPtr(modelMap["branch"].(string))
-	}
-	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
-		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelineTriggerMapToEvents(modelMap map[string]interface{}) (*cdtektonpipelinev2.Events, error) {
-	model := &cdtektonpipelinev2.Events{}
-	if modelMap["push"] != nil {
-		model.Push = core.BoolPtr(modelMap["push"].(bool))
-	}
-	if modelMap["pull_request_closed"] != nil {
-		model.PullRequestClosed = core.BoolPtr(modelMap["pull_request_closed"].(bool))
-	}
-	if modelMap["pull_request"] != nil {
-		model.PullRequest = core.BoolPtr(modelMap["pull_request"].(bool))
-	}
-	return model, nil
-}
-
-func ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap map[string]interface{}) (*cdtektonpipelinev2.GenericSecret, error) {
+func resourceIBMCdTektonPipelineTriggerMapToGenericSecret(modelMap map[string]interface{}) (*cdtektonpipelinev2.GenericSecret, error) {
 	model := &cdtektonpipelinev2.GenericSecret{}
 	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
 		model.Type = core.StringPtr(modelMap["type"].(string))
@@ -608,87 +673,33 @@ func ResourceIBMTektonPipelineTriggerMapToGenericSecret(modelMap map[string]inte
 	return model, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerToMap(model cdtektonpipelinev2.TriggerIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*cdtektonpipelinev2.TriggerManualTrigger); ok {
-		return ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model.(*cdtektonpipelinev2.TriggerManualTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerScmTrigger); ok {
-		return ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model.(*cdtektonpipelinev2.TriggerScmTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerTimerTrigger); ok {
-		return ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model.(*cdtektonpipelinev2.TriggerTimerTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.TriggerGenericTrigger); ok {
-		return ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model.(*cdtektonpipelinev2.TriggerGenericTrigger))
-	} else if _, ok := model.(*cdtektonpipelinev2.Trigger); ok {
-		modelMap := make(map[string]interface{})
-		model := model.(*cdtektonpipelinev2.Trigger)
-		if model.Name != nil {
-			modelMap["name"] = model.Name
-		}
-		if model.Type != nil {
-			modelMap["type"] = model.Type
-		}
-		if model.EventListener != nil {
-			modelMap["event_listener"] = model.EventListener
-		}
-		if model.ID != nil {
-			modelMap["id"] = model.ID
-		}
-		if model.Tags != nil {
-			modelMap["tags"] = model.Tags
-		}
-		if model.Worker != nil {
-			workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(model.Worker)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["worker"] = []map[string]interface{}{workerMap}
-		}
-		if model.Concurrency != nil {
-			concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["concurrency"] = []map[string]interface{}{concurrencyMap}
-		}
-		if model.Disabled != nil {
-			modelMap["disabled"] = model.Disabled
-		}
-		if model.ScmSource != nil {
-			scmSourceMap, err := ResourceIBMTektonPipelineTriggerTriggerScmSourceToMap(model.ScmSource)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
-		}
-		if model.Events != nil {
-			eventsMap, err := ResourceIBMTektonPipelineTriggerEventsToMap(model.Events)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["events"] = []map[string]interface{}{eventsMap}
-		}
-		if model.ServiceInstanceID != nil {
-			modelMap["service_instance_id"] = model.ServiceInstanceID
-		}
-		if model.Cron != nil {
-			modelMap["cron"] = model.Cron
-		}
-		if model.Timezone != nil {
-			modelMap["timezone"] = model.Timezone
-		}
-		if model.Secret != nil {
-			secretMap, err := ResourceIBMTektonPipelineTriggerGenericSecretToMap(model.Secret)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["secret"] = []map[string]interface{}{secretMap}
-		}
-		return modelMap, nil
-	} else {
-		return nil, fmt.Errorf("Unrecognized cdtektonpipelinev2.TriggerIntf subtype encountered")
+func resourceIBMCdTektonPipelineTriggerMapToTriggerScmSource(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerScmSource, error) {
+	model := &cdtektonpipelinev2.TriggerScmSource{}
+	model.URL = core.StringPtr(modelMap["url"].(string))
+	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
+		model.Branch = core.StringPtr(modelMap["branch"].(string))
 	}
+	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
+		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
+	}
+	return model, nil
 }
 
-func ResourceIBMTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerMapToEvents(modelMap map[string]interface{}) (*cdtektonpipelinev2.Events, error) {
+	model := &cdtektonpipelinev2.Events{}
+	if modelMap["push"] != nil {
+		model.Push = core.BoolPtr(modelMap["push"].(bool))
+	}
+	if modelMap["pull_request_closed"] != nil {
+		model.PullRequestClosed = core.BoolPtr(modelMap["pull_request_closed"].(bool))
+	}
+	if modelMap["pull_request"] != nil {
+		model.PullRequest = core.BoolPtr(modelMap["pull_request"].(bool))
+	}
+	return model, nil
+}
+
+func resourceIBMCdTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
@@ -700,49 +711,7 @@ func ResourceIBMTektonPipelineTriggerWorkerToMap(model *cdtektonpipelinev2.Worke
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerConcurrencyToMap(model *cdtektonpipelinev2.Concurrency) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.MaxConcurrentRuns != nil {
-		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.URL != nil {
-		modelMap["url"] = model.URL
-	}
-	if model.Branch != nil {
-		modelMap["branch"] = model.Branch
-	}
-	if model.Pattern != nil {
-		modelMap["pattern"] = model.Pattern
-	}
-	if model.BlindConnection != nil {
-		modelMap["blind_connection"] = model.BlindConnection
-	}
-	if model.HookID != nil {
-		modelMap["hook_id"] = model.HookID
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Push != nil {
-		modelMap["push"] = model.Push
-	}
-	if model.PullRequestClosed != nil {
-		modelMap["pull_request_closed"] = model.PullRequestClosed
-	}
-	if model.PullRequest != nil {
-		modelMap["pull_request"] = model.PullRequest
-	}
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelinev2.GenericSecret) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelinev2.GenericSecret) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = model.Type
@@ -762,74 +731,20 @@ func ResourceIBMTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelinev
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerManualTriggerToMap(model *cdtektonpipelinev2.TriggerManualTrigger) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["type"] = model.Type
-	modelMap["name"] = model.Name
-	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	modelMap["url"] = model.URL
+	if model.Branch != nil {
+		modelMap["branch"] = model.Branch
 	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
+	if model.Pattern != nil {
+		modelMap["pattern"] = model.Pattern
 	}
-	if model.Worker != nil {
-		workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(model.Worker)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["worker"] = []map[string]interface{}{workerMap}
+	if model.BlindConnection != nil {
+		modelMap["blind_connection"] = model.BlindConnection
 	}
-	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["concurrency"] = []map[string]interface{}{concurrencyMap}
-	}
-	modelMap["disabled"] = model.Disabled
-	return modelMap, nil
-}
-
-func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *cdtektonpipelinev2.TriggerScmTrigger) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["type"] = model.Type
-	modelMap["name"] = model.Name
-	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
-	}
-	if model.Worker != nil {
-		workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(model.Worker)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["worker"] = []map[string]interface{}{workerMap}
-	}
-	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["concurrency"] = []map[string]interface{}{concurrencyMap}
-	}
-	modelMap["disabled"] = model.Disabled
-	if model.ScmSource != nil {
-		scmSourceMap, err := ResourceIBMTektonPipelineTriggerTriggerScmSourceToMap(model.ScmSource)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
-	}
-	if model.Events != nil {
-		eventsMap, err := ResourceIBMTektonPipelineTriggerEventsToMap(model.Events)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["events"] = []map[string]interface{}{eventsMap}
+	if model.HookID != nil {
+		modelMap["hook_id"] = model.HookID
 	}
 	if model.ServiceInstanceID != nil {
 		modelMap["service_instance_id"] = model.ServiceInstanceID
@@ -837,73 +752,35 @@ func ResourceIBMTektonPipelineTriggerTriggerScmTriggerToMap(model *cdtektonpipel
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerTimerTriggerToMap(model *cdtektonpipelinev2.TriggerTimerTrigger) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["type"] = model.Type
-	modelMap["name"] = model.Name
-	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	if model.Push != nil {
+		modelMap["push"] = model.Push
 	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
+	if model.PullRequestClosed != nil {
+		modelMap["pull_request_closed"] = model.PullRequestClosed
 	}
-	if model.Worker != nil {
-		workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(model.Worker)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["worker"] = []map[string]interface{}{workerMap}
-	}
-	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["concurrency"] = []map[string]interface{}{concurrencyMap}
-	}
-	modelMap["disabled"] = model.Disabled
-	if model.Cron != nil {
-		modelMap["cron"] = model.Cron
-	}
-	if model.Timezone != nil {
-		modelMap["timezone"] = model.Timezone
+	if model.PullRequest != nil {
+		modelMap["pull_request"] = model.PullRequest
 	}
 	return modelMap, nil
 }
 
-func ResourceIBMTektonPipelineTriggerTriggerGenericTriggerToMap(model *cdtektonpipelinev2.TriggerGenericTrigger) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerPropertiesItemToMap(model *cdtektonpipelinev2.TriggerPropertiesItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["type"] = model.Type
 	modelMap["name"] = model.Name
-	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
+	if model.Value != nil {
+		modelMap["value"] = model.Value
 	}
-	if model.Tags != nil {
-		modelMap["tags"] = model.Tags
+	if model.Enum != nil {
+		modelMap["enum"] = model.Enum
 	}
-	if model.Worker != nil {
-		workerMap, err := ResourceIBMTektonPipelineTriggerWorkerToMap(model.Worker)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["worker"] = []map[string]interface{}{workerMap}
+	modelMap["type"] = model.Type
+	if model.Path != nil {
+		modelMap["path"] = model.Path
 	}
-	if model.Concurrency != nil {
-		concurrencyMap, err := ResourceIBMTektonPipelineTriggerConcurrencyToMap(model.Concurrency)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["concurrency"] = []map[string]interface{}{concurrencyMap}
-	}
-	modelMap["disabled"] = model.Disabled
-	if model.Secret != nil {
-		secretMap, err := ResourceIBMTektonPipelineTriggerGenericSecretToMap(model.Secret)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["secret"] = []map[string]interface{}{secretMap}
+	if model.Href != nil {
+		modelMap["href"] = model.Href
 	}
 	return modelMap, nil
 }
