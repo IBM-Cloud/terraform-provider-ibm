@@ -26,6 +26,11 @@ func DataSourceIBMSchematicsAction() *schema.Resource {
 				Required:    true,
 				Description: "Action Id.  Use GET /actions API to look up the Action Ids in your IBM Cloud account.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Region of the workspace.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -948,7 +953,11 @@ func dataSourceIBMSchematicsActionRead(context context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	if r, ok := d.GetOk("region"); ok {
+		region := r.(string)
+		schematicsURL, _ := SchematicsEndpointURL(region, meta)
+		schematicsClient.Service.Options.URL = schematicsURL
+	}
 	getActionOptions := &schematicsv1.GetActionOptions{}
 
 	getActionOptions.SetActionID(d.Get("action_id").(string))
