@@ -26,6 +26,11 @@ func DataSourceIBMSchematicsInventory() *schema.Resource {
 				Required:    true,
 				Description: "Resource Inventory Id.  Use `GET /v2/inventories` API to look up the Resource Inventory definition Ids  in your IBM Cloud account.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Region of the workspace.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -92,6 +97,11 @@ func dataSourceIBMSchematicsInventoryRead(context context.Context, d *schema.Res
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if r, ok := d.GetOk("region"); ok {
+		region := r.(string)
+		schematicsURL, _ := SchematicsEndpointURL(region, meta)
+		schematicsClient.Service.Options.URL = schematicsURL
 	}
 
 	getInventoryOptions := &schematicsv1.GetInventoryOptions{}

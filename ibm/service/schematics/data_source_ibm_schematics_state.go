@@ -29,6 +29,11 @@ func DataSourceIBMSchematicsState() *schema.Resource {
 				Required:    true,
 				Description: "The ID of the workspace for which you want to retrieve the Terraform statefile URL.  To find the workspace ID, use the GET /v1/workspaces API.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Region of the workspace.",
+			},
 			"template_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -55,6 +60,11 @@ func dataSourceIBMSchematicsStateRead(context context.Context, d *schema.Resourc
 	schematicsClient, err := meta.(conns.ClientSession).SchematicsV1()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if r, ok := d.GetOk("region"); ok {
+		region := r.(string)
+		schematicsURL, _ := SchematicsEndpointURL(region, meta)
+		schematicsClient.Service.Options.URL = schematicsURL
 	}
 
 	getWorkspaceTemplateStateOptions := &schematicsv1.GetWorkspaceTemplateStateOptions{}
