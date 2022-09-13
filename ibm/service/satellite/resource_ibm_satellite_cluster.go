@@ -552,19 +552,7 @@ func resourceIBMSatelliteClusterRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("tags", tags)
 	d.Set("default_worker_pool_labels", flex.IgnoreSystemLabels(workerPool.Labels))
 	d.Set("host_labels", flex.FlattenWorkerPoolHostLabels(workerPool.HostLabels))
-
-	//check to see the operating system of the default worker pool
-	var operatingSystem string
-
-	if workerPool.OperatingSystem == "RHCOS" {
-		operatingSystem = "RHCOS"
-	} else if workerPool.OperatingSystem == "RHEL_8_64" {
-		operatingSystem = "RHEL8"
-	} else {
-		operatingSystem = "RHEL7"
-	}
-
-	d.Set("operating_system", operatingSystem)
+	d.Set("operating_system", workerPool.OperatingSystem)
 
 	return nil
 }
