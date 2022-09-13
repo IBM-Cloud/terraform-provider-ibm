@@ -36,6 +36,8 @@ Review the argument references that you can specify for your data source.
 - `workspace_id` - (Required, String) The ID of the workspace for which you want to retrieve output values. To find the workspace ID, use the `GET /workspaces` API.
 - `template_id` - (Required, String) The ID of the template
 - `output_json` - (Optional, String)  The json output in string
+* `location` - (Optional,String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
