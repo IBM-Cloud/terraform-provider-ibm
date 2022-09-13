@@ -23,6 +23,8 @@ data "ibm_schematics_workspace" "schematics_workspace" {
 
 Review the argument reference that you can specify for your data source.
 
+* `region` - (Optional, String) The region of the workspace.
+
 * `workspace_id` - (Required, Forces new resource, String) The ID of the workspace.  To find the workspace ID, use the `GET /v1/workspaces` API.
 
 ## Attribute reference

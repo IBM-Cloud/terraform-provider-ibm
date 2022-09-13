@@ -46,8 +46,9 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "ID of the worker.",
 						},
 					},
 				},
@@ -253,7 +254,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -416,6 +417,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									},
 								},
 							},
+						},
+						"webhook_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Webhook URL that can be used to trigger pipeline runs.",
 						},
 					},
 				},
@@ -790,6 +796,9 @@ func resourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 			}
 			modelMap["secret"] = []map[string]interface{}{secretMap}
 		}
+		if model.WebhookURL != nil {
+			modelMap["webhook_url"] = model.WebhookURL
+		}
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized cdtektonpipelinev2.TriggerIntf subtype encountered")
@@ -1118,6 +1127,9 @@ func resourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 			return modelMap, err
 		}
 		modelMap["secret"] = []map[string]interface{}{secretMap}
+	}
+	if model.WebhookURL != nil {
+		modelMap["webhook_url"] = model.WebhookURL
 	}
 	return modelMap, nil
 }

@@ -55,6 +55,7 @@ Review the argument references that you can specify for your resource.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base volume anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base volume anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_replication_enabled` - (Opttional, Bool) Indicates if the volume should be replication enabled or not.
 - `pi_volume_name` - (Required, String) The name of the volume.
 - `pi_volume_pool` - (Optional, String) Volume pool where the volume will be created; if provided then `pi_volume_type` and `pi_affinity_policy` values will be ignored.
 - `pi_volume_shareable` - (Required, Bool) If set to **true**, the volume can be shared across Power Systems Virtual Server instances. If set to **false**, you can attach it only to one instance. 
@@ -64,8 +65,17 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `auxiliary` - (Bool) Indicates if the volume is auxiliary or not.
+- `aux_volume_name` - (String) The auxiliary volume name.
+- `consistency_group_name` - (String) The consistency group name if volume is a part of volume group.
 - `delete_on_termination` - (Bool) Indicates if the volume should be deleted when the server terminates.
+- `group_id` - (String) The volume group id in which the volume belongs.
 - `id` - (String) The unique identifier of the volume. The ID is composed of `<power_instance_id>/<volume_id>`.
+- `master_volume_name` - (String) The master volume name.
+- `mirroring_state` - (String) The mirroring state for replication enabled volume.
+- `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
+- `replication_status` - (String) The replication status of the volume.
+- `replication_type` - (String) The replication type of the volume `metro` or `global`.
 - `volume_id` - (String) The unique identifier of the volume.
 - `volume_status` - (String) The status of the volume.
 - `wwn` - (String) The world wide name of the volume.

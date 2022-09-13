@@ -83,7 +83,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -242,6 +242,11 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 					},
 				},
 			},
+			"webhook_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Webhook URL that can be used to trigger pipeline runs.",
+			},
 		},
 	}
 }
@@ -280,6 +285,12 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 
 	if err = d.Set("event_listener", trigger.EventListener); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting event_listener: %s", err))
+	}
+
+	if trigger.Tags != nil {
+		if err = d.Set("tags", trigger.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+		}
 	}
 
 	properties := []map[string]interface{}{}
@@ -358,6 +369,10 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	}
 	if err = d.Set("secret", secret); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting secret %s", err))
+	}
+
+	if err = d.Set("webhook_url", trigger.WebhookURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting webhook_url: %s", err))
 	}
 
 	return nil

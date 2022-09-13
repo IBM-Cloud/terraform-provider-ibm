@@ -384,8 +384,8 @@ func testAccCheckIBMISInstanceTemplateWithVolume(vpcName, subnetName, sshKeyName
         delete_volume_on_instance_delete = true
         name                             = "%s"
 			volume_prototype {
-				iops = 9000
-				profile = "general-purpose"
+				iops = 6000
+				profile = "custom"
 				capacity = 100
 			}   
     	}

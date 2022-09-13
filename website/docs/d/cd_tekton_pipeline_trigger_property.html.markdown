@@ -37,12 +37,12 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_tekton_pipeline_trigger_property.
 * `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
-  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
 
 * `name` - (Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
 
-* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
+* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 
 * `type` - (String) Property type.

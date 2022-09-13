@@ -189,7 +189,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 			isInstanceTemplateVolumeAttachments: {
 				Type:     schema.TypeList,
 				Optional: true,
-				Computed: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isInstanceTemplateVolumeDeleteOnInstanceDelete: {
