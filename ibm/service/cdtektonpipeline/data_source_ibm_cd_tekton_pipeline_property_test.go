@@ -71,7 +71,6 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipeli
 			parameters {
 				name = "pipeline-name"
 				type = "tekton"
-				ui_pipeline = true
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -109,7 +108,6 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig(propertyPipelineID 
 			parameters {
 				name = "pipeline-name"
 				type = "tekton"
-				ui_pipeline = true
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
