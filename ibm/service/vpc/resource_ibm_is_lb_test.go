@@ -114,6 +114,42 @@ func TestAccIBMISLB_basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISLB_basic_subnet(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	subnetname1 := fmt.Sprintf("tflb-subnet-name1-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBSubnetConfig(vpcname, subnetname, subnetname1, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "hostname"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBSubnetConfig(vpcname, subnetname, subnetname1, acc.ISZoneName, acc.ISCIDR, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISLB_basic_rip(t *testing.T) {
 	var lb string
 	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
@@ -389,6 +425,33 @@ func testAccCheckIBMISLBConfig(vpcname, subnetname, zone, cidr, name string) str
 		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 }`, vpcname, subnetname, zone, cidr, name)
+
+}
+
+func testAccCheckIBMISLBSubnetConfig(vpcname, subnetname, subnetname1, zone, cidr, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id, ibm_is_subnet.testacc_subnet1.id]
+}`, vpcname, subnetname, zone, cidr, subnetname1, acc.ISZoneName2, acc.ISCIDR2, name)
 
 }
 
