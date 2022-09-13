@@ -22,6 +22,7 @@ resource "ibm_schematics_resource_query" "schematics_resource_query" {
 Review the argument reference that you can specify for your resource.
 
 - `name` - (Optional, String) Resource query name.
+* `location` - (Optional, String) The region of the workspace.
 - `queries` - (Optional, List) 
 Nested scheme for **queries**:
 	- `query_type` - (Optional, String) Type of the query(workspaces).

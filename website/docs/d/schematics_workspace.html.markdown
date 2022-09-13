@@ -23,7 +23,8 @@ data "ibm_schematics_workspace" "schematics_workspace" {
 
 Review the argument reference that you can specify for your data source.
 
-* `region` - (Optional, String) The region of the workspace.
+* `location` - (Optional,String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
 * `workspace_id` - (Required, Forces new resource, String) The ID of the workspace.  To find the workspace ID, use the `GET /v1/workspaces` API.
 
@@ -56,8 +57,6 @@ Nested scheme for **catalog_ref**:
 * `id` - (String) The unique identifier of the workspace.
 
 * `last_health_check_at` - (String) The timestamp when the last health check was performed by Schematics.
-
-* `location` - (String) The IBM Cloud location where your workspace was provisioned.
 
 * `name` - (String) The name of the workspace.
 
