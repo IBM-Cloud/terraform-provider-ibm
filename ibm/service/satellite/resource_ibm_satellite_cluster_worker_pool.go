@@ -307,6 +307,7 @@ func resourceIBMSatelliteClusterWorkerPoolRead(d *schema.ResourceData, meta inte
 	d.Set("cluster", clusterID)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("isolation", workerPool.Isolation)
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("worker_pool_labels", flex.IgnoreSystemLabels(workerPool.Labels))
 	d.Set("host_labels", flex.FlattenWorkerPoolHostLabels(workerPool.HostLabels))
