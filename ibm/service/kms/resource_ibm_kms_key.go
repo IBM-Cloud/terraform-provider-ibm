@@ -446,7 +446,7 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 }
 
-//Construct KMS URL
+// Construct KMS URL
 func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string]interface{}) (*url.URL, error) {
 
 	exturl := extensions["endpoints"].(map[string]interface{})["public"]

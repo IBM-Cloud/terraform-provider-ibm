@@ -78,7 +78,7 @@ const (
 	isLBType                                  = "type"
 )
 
-//HashInt ...
+// HashInt ...
 func HashInt(v interface{}) int { return v.(int) }
 
 func ExpandStringList(input []interface{}) []string {

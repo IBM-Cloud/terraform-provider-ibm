@@ -1589,7 +1589,7 @@ func SelectCosApi(apiType string, bLocation string) (string, string, string) {
 	return "", "", ""
 }
 
-///Satellite ENdpoint configuration
+// /Satellite ENdpoint configuration
 func SelectSatlocCosApi(apiType string, serviceID string, bLocation string) string {
 	if apiType == "sl" {
 		return fmt.Sprintf("s3.%s.%s.cloud-object-storage.appdomain.cloud", serviceID, bLocation)
