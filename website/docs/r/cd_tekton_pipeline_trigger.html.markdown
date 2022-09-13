@@ -14,7 +14,6 @@ Provides a resource for cd_tekton_pipeline_trigger. This allows cd_tekton_pipeli
 
 ```hcl
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
-  disabled = false
   event_listener = "pr-listener"
   events {
 		push = true
@@ -28,9 +27,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 		url = "url"
 		branch = "branch"
 		pattern = "pattern"
-		blind_connection = true
-		hook_id = "hook_id"
-		service_instance_id = "service_instance_id"
   }
   secret {
 		type = "token_matches"
@@ -41,9 +37,7 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
   }
   type = "manual"
   worker {
-		name = "name"
-		type = "private"
-		id = "id"
+		id = "public"
   }
 }
 ```
@@ -93,17 +87,19 @@ Nested scheme for **secret**:
 	* `value` - (Optional, String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 * `tags` - (Optional, List) Trigger tags array.
-  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
 * `timezone` - (Optional, String) Only needed for timer triggers. Timezone for timer trigger.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_., \/]{1,234}$/`.
 * `type` - (Optional, String) Trigger type.
   * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 * `worker` - (Optional, List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 Nested scheme for **worker**:
 	* `id` - (Required, Forces new resource, String) ID of the worker.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^(public)|(preview)|([-0-9a-fA-F]{36})$/`.
 	* `name` - (Optional, String) Name of the worker. Computed based on the worker ID.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,235}$/`.
 	* `type` - (Optional, String) Type of the worker. Computed based on the worker ID.
-	  * Constraints: Allowable values are: `private`, `public`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
 
 ## Attribute Reference
 
@@ -113,14 +109,15 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) API URL for interacting with the trigger.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `properties` - (List) Trigger properties.
+  * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
-	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the trigger property.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-	* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
+	* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `type` - (String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
@@ -128,6 +125,8 @@ Nested scheme for **properties**:
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 * `trigger_id` - (String) ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+* `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
 ## Provider Configuration
 

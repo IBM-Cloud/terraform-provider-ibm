@@ -70,7 +70,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 		},
 	}

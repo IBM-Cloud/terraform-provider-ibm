@@ -18,8 +18,6 @@ import (
 
 func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 	var conf cdtektonpipelinev2.TektonPipeline
-	rgID := acc.CdResourceGroupID
-	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,7 +25,7 @@ func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfigBasic(tcName, rgID),
+				Config: testAccCheckIBMCdTektonPipelineConfigBasic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
 				),
@@ -38,8 +36,6 @@ func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 
 func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 	var conf cdtektonpipelinev2.TektonPipeline
-	rgID := acc.CdResourceGroupID
-	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	enableSlackNotifications := "true"
 	enablePartialCloning := "true"
 	enableSlackNotificationsUpdate := "false"
@@ -51,7 +47,7 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(tcName, rgID, enableSlackNotifications, enablePartialCloning),
+				Config: testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications, enablePartialCloning),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_slack_notifications", enableSlackNotifications),
@@ -59,7 +55,7 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(tcName, rgID, enableSlackNotificationsUpdate, enablePartialCloningUpdate),
+				Config: testAccCheckIBMCdTektonPipelineConfig(enableSlackNotificationsUpdate, enablePartialCloningUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_slack_notifications", enableSlackNotificationsUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloningUpdate),
@@ -74,47 +70,50 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdTektonPipelineConfigBasic(tcName string, rgID string) string {
+func testAccCheckIBMCdTektonPipelineConfigBasic() string {
+	rgID := acc.CdResourceGroupID
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
 			resource_group_id = "%s"
 		}
-
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "name"
+				name = "pipeline-name"
 				type = "tekton"
 				ui_pipeline = true
 			}
 		}
-
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			worker {
 				id = "public"
 			}
+			depends_on = [
+				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
+			]
 		}
 	`, tcName, rgID)
 }
 
-func testAccCheckIBMCdTektonPipelineConfig(tcName string, rgID string, enableSlackNotifications string, enablePartialCloning string) string {
+func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enablePartialCloning string) string {
+	rgID := acc.CdResourceGroupID
+	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
 			resource_group_id = "%s"
 		}
-
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "name"
+				name = "pipeline-name"
 				type = "tekton"
 				ui_pipeline = true
 			}
 		}
-
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			enable_slack_notifications = %s
@@ -122,6 +121,9 @@ func testAccCheckIBMCdTektonPipelineConfig(tcName string, rgID string, enableSla
 			worker {
 				id = "public"
 			}
+			depends_on = [
+				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
+			]
 		}
 	`, tcName, rgID, enableSlackNotifications, enablePartialCloning)
 }
