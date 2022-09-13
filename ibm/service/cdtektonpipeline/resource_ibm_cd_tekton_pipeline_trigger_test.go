@@ -154,7 +154,6 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string) string
 			parameters {
 				name = "pipeline-name"
 				type = "tekton"
-				ui_pipeline = true
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -211,7 +210,6 @@ func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar str
 			parameters {
 				name = "pipeline-name"
 				type = "tekton"
-				ui_pipeline = true
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
