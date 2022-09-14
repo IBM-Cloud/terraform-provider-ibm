@@ -134,6 +134,26 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableSlackNo
 				type = "tekton"
 			}
 		}
+		resource "ibm_cd_toolchain_tool_githubconsolidated" "definition-repo" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			name = "definition-repo"
+			initialization {
+				type = "link"
+				repo_url = "https://github.com/open-toolchain/hello-tekton.git"
+			}
+			parameters {}
+		}
+		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
+			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			scm_source {
+				url = "https://github.com/open-toolchain/hello-tekton.git"
+				branch = "master"
+				path = ".tekton"
+			}
+			depends_on = [
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+			]
+		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			enable_slack_notifications = %s
@@ -144,6 +164,12 @@ func testAccCheckIBMCdTektonPipelineDataSourceConfig(tektonPipelineEnableSlackNo
 			depends_on = [
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
+		}
+		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			name = "property1"
+			type="text"
+			value="prop1"
 		}
 		data "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id

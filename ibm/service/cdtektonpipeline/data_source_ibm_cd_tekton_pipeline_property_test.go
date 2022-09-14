@@ -36,7 +36,7 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceBasic(t *testing.T) {
 func TestAccIBMCdTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 	propertyName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	propertyValue := fmt.Sprintf("tf_value_%d", acctest.RandIntRange(10, 100))
-	propertyType := "secure"
+	propertyType := "text"
 	propertyPath := fmt.Sprintf("tf_path_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
