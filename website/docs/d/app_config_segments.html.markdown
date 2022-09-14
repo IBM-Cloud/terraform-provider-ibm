@@ -3,7 +3,7 @@ subcategory: 'App Configuration'
 layout: 'ibm'
 page_title: 'IBM : App Configuration segments'
 description: |-
-List all the segments.
+  List all the segments.
 ---
 
 # ibm_app_config_segments
