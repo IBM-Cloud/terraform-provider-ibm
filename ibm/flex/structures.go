@@ -2661,6 +2661,29 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 	return nil
 }
 
+func FlattenKeyPoliciesKey(policies []kp.Policy) []map[string]interface{} {
+	policyMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyInstance := map[string]interface{}{}
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *(policy.Rotation.Enabled)
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	tempMap := map[string]interface{}{
+		"rotation":         rotationMap,
+		"dual_auth_delete": dualAuthMap,
+	}
+	policyMap = append(policyMap, tempMap)
+	return policyMap
+}
+
 // IgnoreSystemLabels returns non-IBM tag keys.
 func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	result := make(map[string]string)
