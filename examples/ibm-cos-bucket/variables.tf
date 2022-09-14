@@ -113,3 +113,36 @@ variable "delmarkerrep_status" {
 variable "dest_rep_bkt_crn" {
   default = ""
 }
+
+variable "location" {
+  default     = "us-south"
+  type        = string
+}
+variable "hpcs_plan" {
+  default     = "standard"
+  type        = string
+}
+variable "units" {
+  type        = number
+  default     = 2
+}
+variable "signature_threshold" {
+  type        = number
+  default     = 1
+}
+variable "revocation_threshold" {
+  type        = number
+  default     = 1
+}
+variable "admins" {
+  type = list(object({
+    name  = string
+    key   = string
+    token = string
+  }))
+}
+
+# Key name that has to be created on the HPCS Instance
+variable "key_name" {
+  type        = string
+}

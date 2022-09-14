@@ -289,6 +289,91 @@ resource "ibm_cos_bucket" "cos_bucket" {
 }
 ```
 
+
+# Key Protect enabled COS bucket
+
+Create or delete an COS bucket with a key protect standard or root key.For more details about key protect see https://cloud.ibm.com/docs/key-protect?topic=key-protect-about  .We  need to create and manage root key / standard key using  **ibm_kms_key** resource. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key
+
+## Example usage
+
+```terraform
+resource "ibm_resource_instance" "kms_instance" {
+  name     = "instance-name"
+  service  = "kms"
+  plan     = "tiered-pricing"
+  location = "us-south"
+}
+resource "ibm_kms_key" "test" {
+  instance_id  = ibm_resource_instance.kms_instance.guid
+  key_name     = "key-name"
+  standard_key = false
+  force_delete =true
+}
+resource "ibm_iam_authorization_policy" "policy" {
+	source_service_name = "cloud-object-storage"
+	target_service_name = "kms"
+	roles               = ["Reader"]
+}
+resource "ibm_cos_bucket" "smart-us-south" {
+  depends_on           = [ibm_iam_authorization_policy.policy]
+  bucket_name          = "atest-bucket"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "smart"
+  key_protect          = ibm_kms_key.test.id
+}
+```
+
+
+# HPCS enabled COS bucket
+
+Create or delete an COS bucket with a Hyper Protect Crypto Services (HPCS) standard or root key.For more details about HPCS see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started .Firstly we need to create a HPCS instance.After that is done you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm only for HPCS instance. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. For more details about creation of HPCS instance using terraform see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs
+
+
+## Example usage
+
+```terraform
+resource ibm_hpcs hpcs {
+  location             = "us-south"
+  name                 = "test-hpcs"
+  plan                 = "standard"
+  units                = 2
+  signature_threshold  = 1
+  revocation_threshold = 1
+  admins {
+    name  = "admin1"
+    key   = "/cloudTKE/1.sigkey"
+    token = "<sensitive1234>"
+  }
+  admins {
+    name  = "admin2"
+    key   = "/cloudTKE/2.sigkey"
+    token = "<sensitive1234>"
+  }
+}
+resource "ibm_kms_key" "key" {
+  instance_id  = ibm_hpcs.hpcs.guid
+  key_name     = "key-name"
+  standard_key = false
+  force_delete = true
+}
+
+resource "ibm_iam_authorization_policy" "policy1" {
+  source_service_name = "cloud-object-storage"
+  target_service_name = "hs-crypto"
+  roles               = ["Reader"]
+}
+resource "ibm_cos_bucket" "smart-us-south" {
+  depends_on           = [ibm_iam_authorization_policy.policy]
+  bucket_name          = "atest-bucket"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location      = "us-south"
+  storage_class        = "smart"
+  key_protect          = ibm_kms_key.key.id
+}
+
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 

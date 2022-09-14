@@ -269,6 +269,44 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
   }
 }
 
+//HPCS 
+resource ibm_hpcs hpcs {
+  location             = var.location
+  name                 = "hpcs-instance"
+  plan                 = var.hpcs_plan
+  units                = var.units
+  signature_threshold  = var.signature_threshold
+  revocation_threshold = var.revocation_threshold
+  dynamic admins {
+    for_each = var.admins
+    content {
+      name  = admins.value.name
+      key   = admins.value.key
+      token = admins.value.token
+    }
+  }
+}
+resource "ibm_iam_authorization_policy" "policy" {
+  source_service_name = "cloud-object-storage"
+  target_service_name = "hs-crypto"
+  roles               = ["Reader"]
+}
+resource "ibm_kms_key" "key" {
+  instance_id  = ibm_hpcs.hpcs.guid
+  key_name     = var.key_name
+  standard_key = false
+  force_delete = true
+}
+
+resource "ibm_cos_bucket" "hpcs-enabled" {
+  depends_on           = [ibm_iam_authorization_policy.policy]
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.storage
+  key_protect          = ibm_kms_key.test.id
+}
+
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
