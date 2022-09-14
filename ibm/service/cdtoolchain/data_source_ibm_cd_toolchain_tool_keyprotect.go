@@ -18,7 +18,7 @@ import (
 
 func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMCdToolchainToolKeyprotectRead,
+		ReadContext: dataSourceIBMCdToolchainToolKeyprotectRead,
 
 		Schema: map[string]*schema.Schema{
 			"toolchain_id": &schema.Schema{
@@ -83,7 +83,7 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
@@ -118,7 +118,7 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func DataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -129,37 +129,37 @@ func DataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *sche
 	getToolByIDOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	getToolByIDOptions.SetToolID(d.Get("tool_id").(string))
 
-	getToolByIDResponse, response, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
+	toolchainTool, response, err := cdToolchainClient.GetToolByIDWithContext(context, getToolByIDOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetToolByIDWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetToolByIDWithContext failed %s\n%s", err, response))
 	}
 
-	if *getToolByIDResponse.ToolTypeID != "keyprotect" {
-		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *getToolByIDResponse.ToolTypeID))
+	if *toolchainTool.ToolTypeID != "keyprotect" {
+		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *toolchainTool.ToolTypeID))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *getToolByIDOptions.ToolchainID, *getToolByIDOptions.ToolID))
 
-	if err = d.Set("resource_group_id", getToolByIDResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", toolchainTool.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
 
-	if err = d.Set("crn", getToolByIDResponse.CRN); err != nil {
+	if err = d.Set("crn", toolchainTool.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 
-	if err = d.Set("toolchain_crn", getToolByIDResponse.ToolchainCRN); err != nil {
+	if err = d.Set("toolchain_crn", toolchainTool.ToolchainCRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_crn: %s", err))
 	}
 
-	if err = d.Set("href", getToolByIDResponse.Href); err != nil {
+	if err = d.Set("href", toolchainTool.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
 	referent := []map[string]interface{}{}
-	if getToolByIDResponse.Referent != nil {
-		modelMap, err := DataSourceIBMCdToolchainToolKeyprotectToolReferentToMap(getToolByIDResponse.Referent)
+	if toolchainTool.Referent != nil {
+		modelMap, err := dataSourceIBMCdToolchainToolKeyprotectToolModelReferentToMap(toolchainTool.Referent)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -169,35 +169,35 @@ func DataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("Error setting referent %s", err))
 	}
 
-	if err = d.Set("name", getToolByIDResponse.Name); err != nil {
+	if err = d.Set("name", toolchainTool.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(getToolByIDResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(toolchainTool.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
 	parameters := []map[string]interface{}{}
-	if getToolByIDResponse.Parameters != nil {
+	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
 			"resource_group": "resource-group",
 			"instance_name":  "instance-name",
 		}
-		modelMap := GetParametersFromRead(getToolByIDResponse.Parameters, DataSourceIBMCdToolchainToolKeyprotect(), remapFields)
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolKeyprotect(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters %s", err))
 	}
 
-	if err = d.Set("state", getToolByIDResponse.State); err != nil {
+	if err = d.Set("state", toolchainTool.State); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting state: %s", err))
 	}
 
 	return nil
 }
 
-func DataSourceIBMCdToolchainToolKeyprotectToolReferentToMap(model *cdtoolchainv2.ToolReferent) (map[string]interface{}, error) {
+func dataSourceIBMCdToolchainToolKeyprotectToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = *model.UIHref
