@@ -1,3 +1,7 @@
+# 1.45.1 (Sep 14, 2022)
+Enhancements
+* Support location argument to target the respective Schematics region service ([4030](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4030))
+
 # 1.45.0 (Sep 05, 2022)
 Features
 * Support App Configuration
