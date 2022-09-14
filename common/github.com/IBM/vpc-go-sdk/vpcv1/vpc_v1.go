@@ -11140,6 +11140,136 @@ func (vpc *VpcV1) AddBareMetalServerNetworkInterfaceFloatingIPWithContext(ctx co
 	return
 }
 
+// ListBareMetalServerNetworkInterfaceIps : List all reserved IPs bound to a network interface
+// This request lists all reserved IPs bound to a network interface.
+func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIps(listBareMetalServerNetworkInterfaceIpsOptions *ListBareMetalServerNetworkInterfaceIpsOptions) (result *ReservedIPCollectionNetworkInterfaceContext, response *core.DetailedResponse, err error) {
+	return vpc.ListBareMetalServerNetworkInterfaceIpsWithContext(context.Background(), listBareMetalServerNetworkInterfaceIpsOptions)
+}
+
+// ListBareMetalServerNetworkInterfaceIpsWithContext is an alternate form of the ListBareMetalServerNetworkInterfaceIps method which supports a Context parameter
+func (vpc *VpcV1) ListBareMetalServerNetworkInterfaceIpsWithContext(ctx context.Context, listBareMetalServerNetworkInterfaceIpsOptions *ListBareMetalServerNetworkInterfaceIpsOptions) (result *ReservedIPCollectionNetworkInterfaceContext, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listBareMetalServerNetworkInterfaceIpsOptions, "listBareMetalServerNetworkInterfaceIpsOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(listBareMetalServerNetworkInterfaceIpsOptions, "listBareMetalServerNetworkInterfaceIpsOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"bare_metal_server_id": *listBareMetalServerNetworkInterfaceIpsOptions.BareMetalServerID,
+		"network_interface_id": *listBareMetalServerNetworkInterfaceIpsOptions.NetworkInterfaceID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/bare_metal_servers/{bare_metal_server_id}/network_interfaces/{network_interface_id}/ips`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range listBareMetalServerNetworkInterfaceIpsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListBareMetalServerNetworkInterfaceIps")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservedIPCollectionNetworkInterfaceContext)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetBareMetalServerNetworkInterfaceIP : Retrieve bound reserved IP
+// This request a retrieves the specified reserved IP address if it is bound to the network interface and bare metal
+// server specified in the URL.
+func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceIP(getBareMetalServerNetworkInterfaceIPOptions *GetBareMetalServerNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
+	return vpc.GetBareMetalServerNetworkInterfaceIPWithContext(context.Background(), getBareMetalServerNetworkInterfaceIPOptions)
+}
+
+// GetBareMetalServerNetworkInterfaceIPWithContext is an alternate form of the GetBareMetalServerNetworkInterfaceIP method which supports a Context parameter
+func (vpc *VpcV1) GetBareMetalServerNetworkInterfaceIPWithContext(ctx context.Context, getBareMetalServerNetworkInterfaceIPOptions *GetBareMetalServerNetworkInterfaceIPOptions) (result *ReservedIP, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getBareMetalServerNetworkInterfaceIPOptions, "getBareMetalServerNetworkInterfaceIPOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(getBareMetalServerNetworkInterfaceIPOptions, "getBareMetalServerNetworkInterfaceIPOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"bare_metal_server_id": *getBareMetalServerNetworkInterfaceIPOptions.BareMetalServerID,
+		"network_interface_id": *getBareMetalServerNetworkInterfaceIPOptions.NetworkInterfaceID,
+		"id":                   *getBareMetalServerNetworkInterfaceIPOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/bare_metal_servers/{bare_metal_server_id}/network_interfaces/{network_interface_id}/ips/{id}`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range getBareMetalServerNetworkInterfaceIPOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetBareMetalServerNetworkInterfaceIP")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalReservedIP)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // DeleteBareMetalServer : Delete a bare metal server
 // This request deletes a bare metal server. This operation cannot be reversed. Any floating IPs associated with the
 // bare metal server's network interfaces are implicitly disassociated.
@@ -18104,6 +18234,9 @@ func (vpc *VpcV1) DeleteLoadBalancerWithContext(ctx context.Context, deleteLoadB
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
+	if deleteLoadBalancerOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*deleteLoadBalancerOptions.IfMatch))
+	}
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
@@ -18222,6 +18355,9 @@ func (vpc *VpcV1) UpdateLoadBalancerWithContext(ctx context.Context, updateLoadB
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateLoadBalancerOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateLoadBalancerOptions.IfMatch))
+	}
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.generation))
@@ -24862,8 +24998,10 @@ type CreateBareMetalServerOptions struct {
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The VPC the bare metal server is to be a part of. If specified, it must match the
-	// VPC referenced by the subnets of the server's network interfaces.
+	// The VPC this bare metal server will reside in.
+	//
+	// If specified, it must match the VPC for the subnets of the server's network
+	// interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -25039,7 +25177,7 @@ type CreateEndpointGatewayOptions struct {
 	// The target for this endpoint gateway.
 	Target EndpointGatewayTargetPrototypeIntf `json:"target" validate:"required"`
 
-	// The VPC this endpoint gateway will serve.
+	// The VPC this endpoint gateway will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The reserved IPs to bind to this endpoint gateway. At most one reserved IP per zone is allowed.
@@ -25596,20 +25734,23 @@ type CreateInstanceGroupOptions struct {
 	// The subnets to use when creating new instances.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
-	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
-	// port for the load balancer pool member.
+	// The port to use for new load balancer pool members created by this instance group.
+	//
+	// This property must be specified if and only if `load_balancer_pool` has been specified.
 	ApplicationPort *int64 `json:"application_port,omitempty"`
 
-	// The load balancer associated with the specified load balancer pool.
-	// Required if `load_balancer_pool` is specified.
+	// The load balancer associated with `load_balancer_pool`.
+	//
+	// This property must be specified if and only if `load_balancer_pool` has been
+	// specified.
 	//
 	// At present, only load balancers in the `application` family are supported.
 	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer,omitempty"`
 
-	// If specified, the load balancer pool will be managed by this
-	// group. Instances created by this group will have a new load
-	// balancer pool member in that pool created. Must be used with
-	// `application_port`.
+	// If specified, the load balancer pool this instance group will manage. A pool member
+	// will be created for each instance created by this group.
+	//
+	// If specified, `load_balancer` and `application_port` must also be specified.
 	LoadBalancerPool LoadBalancerPoolIdentityIntf `json:"load_balancer_pool,omitempty"`
 
 	// The number of instances in the instance group.
@@ -26460,8 +26601,8 @@ type CreateLoadBalancerOptions struct {
 	// At present, if route mode is enabled, the load balancer must not be public.
 	IsPublic *bool `json:"is_public" validate:"required"`
 
-	// The subnets to provision this load balancer in.  The load balancer's availability will depend on the availability of
-	// the zones the specified subnets reside in.
+	// The subnets to provision this load balancer in. The subnets must be in the same VPC. The load balancer's
+	// availability will depend on the availability of the zones that the subnets reside in.
 	//
 	// Load balancers in the `network` family allow only one subnet to be specified.
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
@@ -26926,7 +27067,7 @@ func (options *CreatePlacementGroupOptions) SetHeaders(param map[string]string) 
 
 // CreatePublicGatewayOptions : The CreatePublicGateway options.
 type CreatePublicGatewayOptions struct {
-	// The VPC this public gateway will serve.
+	// The VPC this public gateway will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The zone this public gateway will reside in.
@@ -26992,7 +27133,7 @@ func (options *CreatePublicGatewayOptions) SetHeaders(param map[string]string) *
 
 // CreateSecurityGroupOptions : The CreateSecurityGroup options.
 type CreateSecurityGroupOptions struct {
-	// The VPC this security group is to be a part of.
+	// The VPC this security group will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The user-defined name for this security group. If unspecified, the name will be a hyphenated list of
@@ -27199,8 +27340,12 @@ type CreateSubnetReservedIPOptions struct {
 	// for provider-owned resources.
 	Name *string `json:"name,omitempty"`
 
-	// The target this reserved IP is to be bound to. The target must be an endpoint gateway not
-	// already bound to a reserved IP in the subnet's zone.
+	// The target to bind this reserved IP to.  The target must be in the same VPC.
+	//
+	// At present, only endpoint gateway targets are supported.  The endpoint gateway must
+	// not be already bound to a reserved IP in the subnet's zone.
+	//
+	// If unspecified, the reserved IP will be created unbound.
 	Target ReservedIPTargetPrototypeIntf `json:"target,omitempty"`
 
 	// Allows users to set headers on API requests
@@ -29776,7 +29921,7 @@ type DefaultNetworkACL struct {
 	// The subnets to which this network ACL is attached.
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
 
-	// The VPC this network ACL is a part of.
+	// The VPC this network ACL resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -29994,7 +30139,7 @@ type DefaultSecurityGroup struct {
 	// The targets for this security group.
 	Targets []SecurityGroupTargetReferenceIntf `json:"targets" validate:"required"`
 
-	// The VPC this security group is a part of.
+	// The VPC this security group resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -30980,6 +31125,9 @@ type DeleteLoadBalancerOptions struct {
 	// The load balancer identifier.
 	ID *string `json:"id" validate:"required,ne="`
 
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	IfMatch *string `json:"If-Match,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -30994,6 +31142,12 @@ func (*VpcV1) NewDeleteLoadBalancerOptions(id string) *DeleteLoadBalancerOptions
 // SetID : Allow user to set ID
 func (_options *DeleteLoadBalancerOptions) SetID(id string) *DeleteLoadBalancerOptions {
 	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *DeleteLoadBalancerOptions) SetIfMatch(ifMatch string) *DeleteLoadBalancerOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
 	return _options
 }
 
@@ -31997,7 +32151,7 @@ type EndpointGateway struct {
 	// The target for this endpoint gateway.
 	Target EndpointGatewayTargetIntf `json:"target" validate:"required"`
 
-	// The VPC this endpoint gateway is serving.
+	// The VPC this endpoint gateway resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -32953,7 +33107,7 @@ type FlowLogCollector struct {
 	// target that are themselves the target of a more specific flow log collector.
 	Target FlowLogCollectorTargetIntf `json:"target" validate:"required"`
 
-	// The VPC this flow log collector is associated with.
+	// The VPC this flow log collector resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -33465,6 +33619,54 @@ func (_options *GetBareMetalServerNetworkInterfaceFloatingIPOptions) SetID(id st
 
 // SetHeaders : Allow user to set Headers
 func (options *GetBareMetalServerNetworkInterfaceFloatingIPOptions) SetHeaders(param map[string]string) *GetBareMetalServerNetworkInterfaceFloatingIPOptions {
+	options.Headers = param
+	return options
+}
+
+// GetBareMetalServerNetworkInterfaceIPOptions : The GetBareMetalServerNetworkInterfaceIP options.
+type GetBareMetalServerNetworkInterfaceIPOptions struct {
+	// The bare metal server identifier.
+	BareMetalServerID *string `json:"bare_metal_server_id" validate:"required,ne="`
+
+	// The network interface identifier.
+	NetworkInterfaceID *string `json:"network_interface_id" validate:"required,ne="`
+
+	// The reserved IP identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewGetBareMetalServerNetworkInterfaceIPOptions : Instantiate GetBareMetalServerNetworkInterfaceIPOptions
+func (*VpcV1) NewGetBareMetalServerNetworkInterfaceIPOptions(bareMetalServerID string, networkInterfaceID string, id string) *GetBareMetalServerNetworkInterfaceIPOptions {
+	return &GetBareMetalServerNetworkInterfaceIPOptions{
+		BareMetalServerID:  core.StringPtr(bareMetalServerID),
+		NetworkInterfaceID: core.StringPtr(networkInterfaceID),
+		ID:                 core.StringPtr(id),
+	}
+}
+
+// SetBareMetalServerID : Allow user to set BareMetalServerID
+func (_options *GetBareMetalServerNetworkInterfaceIPOptions) SetBareMetalServerID(bareMetalServerID string) *GetBareMetalServerNetworkInterfaceIPOptions {
+	_options.BareMetalServerID = core.StringPtr(bareMetalServerID)
+	return _options
+}
+
+// SetNetworkInterfaceID : Allow user to set NetworkInterfaceID
+func (_options *GetBareMetalServerNetworkInterfaceIPOptions) SetNetworkInterfaceID(networkInterfaceID string) *GetBareMetalServerNetworkInterfaceIPOptions {
+	_options.NetworkInterfaceID = core.StringPtr(networkInterfaceID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetBareMetalServerNetworkInterfaceIPOptions) SetID(id string) *GetBareMetalServerNetworkInterfaceIPOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetBareMetalServerNetworkInterfaceIPOptions) SetHeaders(param map[string]string) *GetBareMetalServerNetworkInterfaceIPOptions {
 	options.Headers = param
 	return options
 }
@@ -38080,8 +38282,9 @@ func UnmarshalInstanceGpu(m map[string]json.RawMessage, result interface{}) (err
 
 // InstanceGroup : InstanceGroup struct
 type InstanceGroup struct {
-	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
-	// port for the load balancer pool member.
+	// The port used for new load balancer pool members created by this instance group.
+	//
+	// This property will be present if and only if `load_balancer_pool` is present.
 	ApplicationPort *int64 `json:"application_port,omitempty"`
 
 	// The date and time that the instance group was created.
@@ -38099,9 +38302,8 @@ type InstanceGroup struct {
 	// The template used to create new instances for this group.
 	InstanceTemplate *InstanceTemplateReference `json:"instance_template" validate:"required"`
 
-	// The load balancer pool managed by this group. Instances created
-	// by this group will have a new load balancer pool member in that
-	// pool created.
+	// If present, the load balancer pool this instance group manages. A pool member will
+	// be created for each instance created by this group.
 	LoadBalancerPool *LoadBalancerPoolReference `json:"load_balancer_pool,omitempty"`
 
 	// The managers for the instance group.
@@ -39911,8 +40113,9 @@ func (instanceGroupMembershipPatch *InstanceGroupMembershipPatch) AsPatch() (_pa
 
 // InstanceGroupPatch : To add or update load balancer specification for an instance group the `membership_count` must first be set to 0.
 type InstanceGroupPatch struct {
-	// Required if specifying a load balancer pool only. Used by the instance group when scaling up instances to supply the
-	// port for the load balancer pool member.
+	// The port to use for new load balancer pool members created by this instance group.
+	//
+	// This property must be set if and only if `load_balancer_pool` has been set.
 	ApplicationPort *int64 `json:"application_port,omitempty"`
 
 	// Instance template to use when creating new instances.
@@ -39921,16 +40124,18 @@ type InstanceGroupPatch struct {
 	// `default_trusted_profile.auto_link`.
 	InstanceTemplate InstanceTemplateIdentityIntf `json:"instance_template,omitempty"`
 
-	// The load balancer associated with the specified load balancer pool.
-	// Required if `load_balancer_pool` is specified.
+	// The load balancer associated with `load_balancer_pool`.
+	//
+	// This property must be specified if and only if `load_balancer_pool` has been
+	// specified.
 	//
 	// At present, only load balancers in the `application` family are supported.
 	LoadBalancer LoadBalancerIdentityIntf `json:"load_balancer,omitempty"`
 
-	// If specified, the load balancer pool will be managed by this
-	// group. Instances created by this group will have a new load
-	// balancer pool member in that pool created. Must be used with
-	// `application_port`.
+	// If specified, the load balancer pool this instance group will manage. A pool member
+	// will be created for each instance created by this group.
+	//
+	// If specified, `load_balancer` and `application_port` must also be specified.
 	LoadBalancerPool LoadBalancerPoolIdentityIntf `json:"load_balancer_pool,omitempty"`
 
 	// The number of instances in the instance group.
@@ -41594,8 +41799,10 @@ type InstancePrototype struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match
-	// the VPC referenced by the subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.
+	//
+	// If specified, it must match the VPC for the subnets of the instance's network
+	// interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -41887,8 +42094,10 @@ type InstanceTemplate struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match
-	// the VPC referenced by the subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.
+	//
+	// If specified, it must match the VPC for the subnets of the instance's network
+	// interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -42157,6 +42366,7 @@ func (instanceTemplatePatch *InstanceTemplatePatch) AsPatch() (_patch map[string
 // Models which "extend" this model:
 // - InstanceTemplatePrototypeInstanceByImage
 // - InstanceTemplatePrototypeInstanceBySourceTemplate
+// - InstanceTemplatePrototypeInstanceBySourceSnapshot
 type InstanceTemplatePrototype struct {
 	// The availability policy to use for this virtual server instance.
 	AvailabilityPolicy *InstanceAvailabilityPrototype `json:"availability_policy,omitempty"`
@@ -42219,8 +42429,10 @@ type InstanceTemplatePrototype struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match
-	// the VPC referenced by the subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.
+	//
+	// If specified, it must match the VPC for the subnets of the instance's network
+	// interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -42987,6 +43199,44 @@ func (_options *ListBareMetalServerNetworkInterfaceFloatingIpsOptions) SetNetwor
 
 // SetHeaders : Allow user to set Headers
 func (options *ListBareMetalServerNetworkInterfaceFloatingIpsOptions) SetHeaders(param map[string]string) *ListBareMetalServerNetworkInterfaceFloatingIpsOptions {
+	options.Headers = param
+	return options
+}
+
+// ListBareMetalServerNetworkInterfaceIpsOptions : The ListBareMetalServerNetworkInterfaceIps options.
+type ListBareMetalServerNetworkInterfaceIpsOptions struct {
+	// The bare metal server identifier.
+	BareMetalServerID *string `json:"bare_metal_server_id" validate:"required,ne="`
+
+	// The network interface identifier.
+	NetworkInterfaceID *string `json:"network_interface_id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewListBareMetalServerNetworkInterfaceIpsOptions : Instantiate ListBareMetalServerNetworkInterfaceIpsOptions
+func (*VpcV1) NewListBareMetalServerNetworkInterfaceIpsOptions(bareMetalServerID string, networkInterfaceID string) *ListBareMetalServerNetworkInterfaceIpsOptions {
+	return &ListBareMetalServerNetworkInterfaceIpsOptions{
+		BareMetalServerID:  core.StringPtr(bareMetalServerID),
+		NetworkInterfaceID: core.StringPtr(networkInterfaceID),
+	}
+}
+
+// SetBareMetalServerID : Allow user to set BareMetalServerID
+func (_options *ListBareMetalServerNetworkInterfaceIpsOptions) SetBareMetalServerID(bareMetalServerID string) *ListBareMetalServerNetworkInterfaceIpsOptions {
+	_options.BareMetalServerID = core.StringPtr(bareMetalServerID)
+	return _options
+}
+
+// SetNetworkInterfaceID : Allow user to set NetworkInterfaceID
+func (_options *ListBareMetalServerNetworkInterfaceIpsOptions) SetNetworkInterfaceID(networkInterfaceID string) *ListBareMetalServerNetworkInterfaceIpsOptions {
+	_options.NetworkInterfaceID = core.StringPtr(networkInterfaceID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListBareMetalServerNetworkInterfaceIpsOptions) SetHeaders(param map[string]string) *ListBareMetalServerNetworkInterfaceIpsOptions {
 	options.Headers = param
 	return options
 }
@@ -46183,9 +46433,16 @@ type LoadBalancer struct {
 	// - `create_pending`: The load balancer is being created.
 	// - `delete_pending`: The load balancer is being deleted.
 	// - `maintenance_pending`: The load balancer is unavailable due to an internal
-	//       error (contact IBM support).
+	//                           error (contact IBM support).
+	// - `migrate_pending`: The load balancer is migrating to the requested configuration.
+	//                       Performance may be degraded.
 	// - `update_pending`: The load balancer is being updated
-	//                     to the requested configuration.
+	//     to the requested configuration.
+	//
+	//   The enumerated values for this property are expected to expand in the future. When
+	//   processing this property, check for and log unknown values. Optionally halt
+	//   processing and surface the error, or bypass the load balancer on which the
+	//   unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The public IP addresses assigned to this load balancer.
@@ -46212,7 +46469,10 @@ type LoadBalancer struct {
 	// Indicates whether this load balancer supports security groups.
 	SecurityGroupsSupported *bool `json:"security_groups_supported" validate:"required"`
 
-	// The subnets this load balancer is part of.
+	// The subnets this load balancer is provisioned in.  The load balancer's availability depends on the availability of
+	// the zones that the subnets reside in.
+	//
+	// All subnets will be in the same VPC.
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
 
 	// Indicates whether this load balancer supports UDP.
@@ -46233,15 +46493,23 @@ const (
 // - `create_pending`: The load balancer is being created.
 // - `delete_pending`: The load balancer is being deleted.
 // - `maintenance_pending`: The load balancer is unavailable due to an internal
-//       error (contact IBM support).
+//                           error (contact IBM support).
+// - `migrate_pending`: The load balancer is migrating to the requested configuration.
+//                       Performance may be degraded.
 // - `update_pending`: The load balancer is being updated
-//                     to the requested configuration.
+//     to the requested configuration.
+//
+//   The enumerated values for this property are expected to expand in the future. When
+//   processing this property, check for and log unknown values. Optionally halt
+//   processing and surface the error, or bypass the load balancer on which the
+//   unexpected property value was encountered.
 const (
 	LoadBalancerProvisioningStatusActiveConst             = "active"
 	LoadBalancerProvisioningStatusCreatePendingConst      = "create_pending"
 	LoadBalancerProvisioningStatusDeletePendingConst      = "delete_pending"
 	LoadBalancerProvisioningStatusFailedConst             = "failed"
 	LoadBalancerProvisioningStatusMaintenancePendingConst = "maintenance_pending"
+	LoadBalancerProvisioningStatusMigratePendingConst     = "migrate_pending"
 	LoadBalancerProvisioningStatusUpdatePendingConst      = "update_pending"
 )
 
@@ -46537,7 +46805,11 @@ type LoadBalancerListener struct {
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The provisioning status of this listener.
+	// The provisioning status of this listener
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the listener on which the
+	// unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 }
 
@@ -46555,14 +46827,17 @@ const (
 )
 
 // Constants associated with the LoadBalancerListener.ProvisioningStatus property.
-// The provisioning status of this listener.
+// The provisioning status of this listener
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the listener on which the
+// unexpected property value was encountered.
 const (
-	LoadBalancerListenerProvisioningStatusActiveConst             = "active"
-	LoadBalancerListenerProvisioningStatusCreatePendingConst      = "create_pending"
-	LoadBalancerListenerProvisioningStatusDeletePendingConst      = "delete_pending"
-	LoadBalancerListenerProvisioningStatusFailedConst             = "failed"
-	LoadBalancerListenerProvisioningStatusMaintenancePendingConst = "maintenance_pending"
-	LoadBalancerListenerProvisioningStatusUpdatePendingConst      = "update_pending"
+	LoadBalancerListenerProvisioningStatusActiveConst        = "active"
+	LoadBalancerListenerProvisioningStatusCreatePendingConst = "create_pending"
+	LoadBalancerListenerProvisioningStatusDeletePendingConst = "delete_pending"
+	LoadBalancerListenerProvisioningStatusFailedConst        = "failed"
+	LoadBalancerListenerProvisioningStatusUpdatePendingConst = "update_pending"
 )
 
 // UnmarshalLoadBalancerListener unmarshals an instance of LoadBalancerListener from the specified map of raw messages.
@@ -46951,7 +47226,11 @@ type LoadBalancerListenerPolicy struct {
 	// Priority of the policy. Lower value indicates higher priority.
 	Priority *int64 `json:"priority" validate:"required"`
 
-	// The provisioning status of this policy.
+	// The provisioning status of this policy
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the policy on which the
+	// unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The rules for this policy.
@@ -46977,14 +47256,17 @@ const (
 )
 
 // Constants associated with the LoadBalancerListenerPolicy.ProvisioningStatus property.
-// The provisioning status of this policy.
+// The provisioning status of this policy
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the policy on which the
+// unexpected property value was encountered.
 const (
-	LoadBalancerListenerPolicyProvisioningStatusActiveConst             = "active"
-	LoadBalancerListenerPolicyProvisioningStatusCreatePendingConst      = "create_pending"
-	LoadBalancerListenerPolicyProvisioningStatusDeletePendingConst      = "delete_pending"
-	LoadBalancerListenerPolicyProvisioningStatusFailedConst             = "failed"
-	LoadBalancerListenerPolicyProvisioningStatusMaintenancePendingConst = "maintenance_pending"
-	LoadBalancerListenerPolicyProvisioningStatusUpdatePendingConst      = "update_pending"
+	LoadBalancerListenerPolicyProvisioningStatusActiveConst        = "active"
+	LoadBalancerListenerPolicyProvisioningStatusCreatePendingConst = "create_pending"
+	LoadBalancerListenerPolicyProvisioningStatusDeletePendingConst = "delete_pending"
+	LoadBalancerListenerPolicyProvisioningStatusFailedConst        = "failed"
+	LoadBalancerListenerPolicyProvisioningStatusUpdatePendingConst = "update_pending"
 )
 
 // UnmarshalLoadBalancerListenerPolicy unmarshals an instance of LoadBalancerListenerPolicy from the specified map of raw messages.
@@ -47240,7 +47522,11 @@ type LoadBalancerListenerPolicyRule struct {
 	// The rule's unique identifier.
 	ID *string `json:"id" validate:"required"`
 
-	// The provisioning status of this rule.
+	// The provisioning status of this rule
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the rule on which the
+	// unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The type of the rule.
@@ -47263,14 +47549,17 @@ const (
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRule.ProvisioningStatus property.
-// The provisioning status of this rule.
+// The provisioning status of this rule
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the rule on which the
+// unexpected property value was encountered.
 const (
-	LoadBalancerListenerPolicyRuleProvisioningStatusActiveConst             = "active"
-	LoadBalancerListenerPolicyRuleProvisioningStatusCreatePendingConst      = "create_pending"
-	LoadBalancerListenerPolicyRuleProvisioningStatusDeletePendingConst      = "delete_pending"
-	LoadBalancerListenerPolicyRuleProvisioningStatusFailedConst             = "failed"
-	LoadBalancerListenerPolicyRuleProvisioningStatusMaintenancePendingConst = "maintenance_pending"
-	LoadBalancerListenerPolicyRuleProvisioningStatusUpdatePendingConst      = "update_pending"
+	LoadBalancerListenerPolicyRuleProvisioningStatusActiveConst        = "active"
+	LoadBalancerListenerPolicyRuleProvisioningStatusCreatePendingConst = "create_pending"
+	LoadBalancerListenerPolicyRuleProvisioningStatusDeletePendingConst = "delete_pending"
+	LoadBalancerListenerPolicyRuleProvisioningStatusFailedConst        = "failed"
+	LoadBalancerListenerPolicyRuleProvisioningStatusUpdatePendingConst = "update_pending"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRule.Type property.
@@ -48008,6 +48297,15 @@ type LoadBalancerPatch struct {
 
 	// The unique user-defined name for this load balancer.
 	Name *string `json:"name,omitempty"`
+
+	// The subnets to provision this load balancer in. The load balancer's availability will depend on the availability of
+	// the zones that the subnets reside in.
+	//
+	// The specified subnets must be in the same VPC as the existing subnets, and will completely replace the existing
+	// subnets.
+	//
+	// The load balancer must be in the `application` family.
+	Subnets []SubnetIdentityIntf `json:"subnets,omitempty"`
 }
 
 // UnmarshalLoadBalancerPatch unmarshals an instance of LoadBalancerPatch from the specified map of raw messages.
@@ -48018,6 +48316,10 @@ func UnmarshalLoadBalancerPatch(m map[string]json.RawMessage, result interface{}
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "subnets", &obj.Subnets, UnmarshalSubnetIdentity)
 	if err != nil {
 		return
 	}
@@ -48068,7 +48370,11 @@ type LoadBalancerPool struct {
 	// unexpected property value was encountered.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The provisioning status of this pool.
+	// The provisioning status of this pool
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
+	// unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The PROXY protocol setting for this pool:
@@ -48110,14 +48416,17 @@ const (
 )
 
 // Constants associated with the LoadBalancerPool.ProvisioningStatus property.
-// The provisioning status of this pool.
+// The provisioning status of this pool
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool on which the
+// unexpected property value was encountered.
 const (
-	LoadBalancerPoolProvisioningStatusActiveConst             = "active"
-	LoadBalancerPoolProvisioningStatusCreatePendingConst      = "create_pending"
-	LoadBalancerPoolProvisioningStatusDeletePendingConst      = "delete_pending"
-	LoadBalancerPoolProvisioningStatusFailedConst             = "failed"
-	LoadBalancerPoolProvisioningStatusMaintenancePendingConst = "maintenance_pending"
-	LoadBalancerPoolProvisioningStatusUpdatePendingConst      = "update_pending"
+	LoadBalancerPoolProvisioningStatusActiveConst        = "active"
+	LoadBalancerPoolProvisioningStatusCreatePendingConst = "create_pending"
+	LoadBalancerPoolProvisioningStatusDeletePendingConst = "delete_pending"
+	LoadBalancerPoolProvisioningStatusFailedConst        = "failed"
+	LoadBalancerPoolProvisioningStatusUpdatePendingConst = "update_pending"
 )
 
 // Constants associated with the LoadBalancerPool.ProxyProtocol property.
@@ -48207,33 +48516,35 @@ func UnmarshalLoadBalancerPoolCollection(m map[string]json.RawMessage, result in
 
 // LoadBalancerPoolHealthMonitor : LoadBalancerPoolHealthMonitor struct
 type LoadBalancerPoolHealthMonitor struct {
-	// The health check interval in seconds. Interval must be greater than timeout value.
+	// The seconds to wait between health checks.
 	Delay *int64 `json:"delay" validate:"required"`
 
 	// The health check max retries.
 	MaxRetries *int64 `json:"max_retries" validate:"required"`
 
-	// The health check port number. If specified, this overrides the ports specified in the server member resources.
+	// The health check port.
+	//
+	// If present, this overrides the pool member port values.
 	Port *int64 `json:"port,omitempty"`
 
-	// The health check timeout in seconds.
+	// The seconds to wait for a response to a health check.
 	Timeout *int64 `json:"timeout" validate:"required"`
 
-	// The protocol type of this load balancer pool health monitor.
+	// The protocol type to use for health checks.
 	//
 	// The enumerated values for this property are expected to expand in the future. When processing this property, check
 	// for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
 	// the unexpected property value was encountered.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or
-	// `https`. This value must be in the format of an [origin-form request
-	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
+	// The health check URL path. Applicable when `type` is `http` or `https`.
+	//
+	// Must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolHealthMonitor.Type property.
-// The protocol type of this load balancer pool health monitor.
+// The protocol type to use for health checks.
 //
 // The enumerated values for this property are expected to expand in the future. When processing this property, check
 // for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which
@@ -48277,30 +48588,33 @@ func UnmarshalLoadBalancerPoolHealthMonitor(m map[string]json.RawMessage, result
 
 // LoadBalancerPoolHealthMonitorPatch : LoadBalancerPoolHealthMonitorPatch struct
 type LoadBalancerPoolHealthMonitorPatch struct {
-	// The health check interval in seconds. Interval must be greater than timeout value.
+	// The seconds to wait between health checks.  Must be greater than `timeout`.
 	Delay *int64 `json:"delay" validate:"required"`
 
 	// The health check max retries.
 	MaxRetries *int64 `json:"max_retries" validate:"required"`
 
-	// The health check port number. If specified, this overrides the ports specified in the server member resources.
-	// Specify `null` to remove an existing port value.
+	// The health check port.
+	//
+	// If set, this overrides the pool member port values.
+	//
+	// Specify `null` to remove an existing health check port.
 	Port *int64 `json:"port,omitempty"`
 
-	// The health check timeout in seconds.
+	// The seconds to wait for a response to a health check.  Must be less than `delay`.
 	Timeout *int64 `json:"timeout" validate:"required"`
 
-	// The protocol type of this load balancer pool health monitor.
+	// The protocol type to use for health checks.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or
-	// `https`. This value must be in the format of an [origin-form request
-	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
+	// The health check URL path. Applicable when `type` is `http` or `https`.
+	//
+	// Must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolHealthMonitorPatch.Type property.
-// The protocol type of this load balancer pool health monitor.
+// The protocol type to use for health checks.
 const (
 	LoadBalancerPoolHealthMonitorPatchTypeHTTPConst  = "http"
 	LoadBalancerPoolHealthMonitorPatchTypeHTTPSConst = "https"
@@ -48352,29 +48666,31 @@ func UnmarshalLoadBalancerPoolHealthMonitorPatch(m map[string]json.RawMessage, r
 
 // LoadBalancerPoolHealthMonitorPrototype : LoadBalancerPoolHealthMonitorPrototype struct
 type LoadBalancerPoolHealthMonitorPrototype struct {
-	// The health check interval in seconds. Interval must be greater than timeout value.
+	// The seconds to wait between health checks.  Must be greater than `timeout`.
 	Delay *int64 `json:"delay" validate:"required"`
 
 	// The health check max retries.
 	MaxRetries *int64 `json:"max_retries" validate:"required"`
 
-	// The health check port number. If specified, this overrides the ports specified in the server member resources.
+	// The health check port.
+	//
+	// If specified, this overrides the pool member port values.
 	Port *int64 `json:"port,omitempty"`
 
-	// The health check timeout in seconds.
+	// The seconds to wait for a response to a health check.  Must be less than `delay`.
 	Timeout *int64 `json:"timeout" validate:"required"`
 
-	// The protocol type of this load balancer pool health monitor.
+	// The protocol type to use for health checks.
 	Type *string `json:"type" validate:"required"`
 
-	// The health check URL path. Applicable only if the health monitor `type` is `http` or
-	// `https`. This value must be in the format of an [origin-form request
-	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
+	// The health check URL path. Applicable when `type` is `http` or `https`.
+	//
+	// Must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
 	URLPath *string `json:"url_path,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolHealthMonitorPrototype.Type property.
-// The protocol type of this load balancer pool health monitor.
+// The protocol type to use for health checks.
 const (
 	LoadBalancerPoolHealthMonitorPrototypeTypeHTTPConst  = "http"
 	LoadBalancerPoolHealthMonitorPrototypeTypeHTTPSConst = "https"
@@ -48507,7 +48823,11 @@ type LoadBalancerPoolMember struct {
 	// `health_monitor` property is specified.
 	Port *int64 `json:"port" validate:"required"`
 
-	// The provisioning status of this member.
+	// The provisioning status of this member
+	//
+	// The enumerated values for this property are expected to expand in the future. When processing this property, check
+	// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool member on which the
+	// unexpected property value was encountered.
 	ProvisioningStatus *string `json:"provisioning_status" validate:"required"`
 
 	// The pool member target. Load balancers in the `network` family support virtual server
@@ -48530,14 +48850,17 @@ const (
 )
 
 // Constants associated with the LoadBalancerPoolMember.ProvisioningStatus property.
-// The provisioning status of this member.
+// The provisioning status of this member
+//
+// The enumerated values for this property are expected to expand in the future. When processing this property, check
+// for and log unknown values. Optionally halt processing and surface the error, or bypass the pool member on which the
+// unexpected property value was encountered.
 const (
-	LoadBalancerPoolMemberProvisioningStatusActiveConst             = "active"
-	LoadBalancerPoolMemberProvisioningStatusCreatePendingConst      = "create_pending"
-	LoadBalancerPoolMemberProvisioningStatusDeletePendingConst      = "delete_pending"
-	LoadBalancerPoolMemberProvisioningStatusFailedConst             = "failed"
-	LoadBalancerPoolMemberProvisioningStatusMaintenancePendingConst = "maintenance_pending"
-	LoadBalancerPoolMemberProvisioningStatusUpdatePendingConst      = "update_pending"
+	LoadBalancerPoolMemberProvisioningStatusActiveConst        = "active"
+	LoadBalancerPoolMemberProvisioningStatusCreatePendingConst = "create_pending"
+	LoadBalancerPoolMemberProvisioningStatusDeletePendingConst = "delete_pending"
+	LoadBalancerPoolMemberProvisioningStatusFailedConst        = "failed"
+	LoadBalancerPoolMemberProvisioningStatusUpdatePendingConst = "update_pending"
 )
 
 // UnmarshalLoadBalancerPoolMember unmarshals an instance of LoadBalancerPoolMember from the specified map of raw messages.
@@ -49782,7 +50105,7 @@ type NetworkACL struct {
 	// The subnets to which this network ACL is attached.
 	Subnets []SubnetReference `json:"subnets" validate:"required"`
 
-	// The VPC this network ACL is a part of.
+	// The VPC this network ACL resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -50004,7 +50327,7 @@ type NetworkACLPrototype struct {
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) is used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The VPC this network ACL is to be a part of.
+	// The VPC this network ACL will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The prototype objects for rules to create along with this network ACL. If unspecified, no rules will be created,
@@ -51926,10 +52249,10 @@ type PublicGateway struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The status of the volume.
+	// The status of this public gateway.
 	Status *string `json:"status" validate:"required"`
 
-	// The VPC this public gateway serves.
+	// The VPC this public gateway resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 
 	// The zone this public gateway resides in.
@@ -51943,7 +52266,7 @@ const (
 )
 
 // Constants associated with the PublicGateway.Status property.
-// The status of the volume.
+// The status of this public gateway.
 const (
 	PublicGatewayStatusAvailableConst = "available"
 	PublicGatewayStatusDeletingConst  = "deleting"
@@ -52855,7 +53178,7 @@ type ReservedIP struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
-	// The target of this reserved IP.
+	// The target this reserved IP is bound to.
 	//
 	// If absent, this reserved IP is provider-owned or unbound.
 	Target ReservedIPTargetIntf `json:"target,omitempty"`
@@ -53328,7 +53651,7 @@ func UnmarshalReservedIPReferenceDeleted(m map[string]json.RawMessage, result in
 	return
 }
 
-// ReservedIPTarget : The target of this reserved IP.
+// ReservedIPTarget : The target this reserved IP is bound to.
 //
 // If absent, this reserved IP is provider-owned or unbound.
 // Models which "extend" this model:
@@ -53404,8 +53727,12 @@ func UnmarshalReservedIPTarget(m map[string]json.RawMessage, result interface{})
 	return
 }
 
-// ReservedIPTargetPrototype : The target this reserved IP is to be bound to. The target must be an endpoint gateway not already bound to a reserved
-// IP in the subnet's zone.
+// ReservedIPTargetPrototype : The target to bind this reserved IP to.  The target must be in the same VPC.
+//
+// At present, only endpoint gateway targets are supported.  The endpoint gateway must not be already bound to a
+// reserved IP in the subnet's zone.
+//
+// If unspecified, the reserved IP will be created unbound.
 // Models which "extend" this model:
 // - ReservedIPTargetPrototypeEndpointGatewayIdentity
 type ReservedIPTargetPrototype struct {
@@ -54586,7 +54913,7 @@ type SecurityGroup struct {
 	// The targets for this security group.
 	Targets []SecurityGroupTargetReferenceIntf `json:"targets" validate:"required"`
 
-	// The VPC this security group is a part of.
+	// The VPC this security group resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 }
 
@@ -56213,7 +56540,7 @@ type Subnet struct {
 	// 2<sup>(32 - 24)</sup> = 2<sup>8</sup> = 256 addresses.
 	TotalIpv4AddressCount *int64 `json:"total_ipv4_address_count" validate:"required"`
 
-	// The VPC this subnet is a part of.
+	// The VPC this subnet resides in.
 	VPC *VPCReference `json:"vpc" validate:"required"`
 
 	// The zone this subnet resides in.
@@ -56529,7 +56856,7 @@ type SubnetPrototype struct {
 	// `route_transit_gateway_ingress`, and `route_vpc_zone_ingress` must be `false`.
 	RoutingTable RoutingTableIdentityIntf `json:"routing_table,omitempty"`
 
-	// The VPC the subnet is to be a part of.
+	// The VPC the subnet will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The total number of IPv4 addresses required. Must be a power of 2. The VPC must have a default address prefix in the
@@ -58110,6 +58437,10 @@ type UpdateLoadBalancerOptions struct {
 	// The load balancer patch.
 	LoadBalancerPatch map[string]interface{} `json:"LoadBalancer_patch" validate:"required"`
 
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
+	IfMatch *string `json:"If-Match,omitempty"`
+
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
@@ -58131,6 +58462,12 @@ func (_options *UpdateLoadBalancerOptions) SetID(id string) *UpdateLoadBalancerO
 // SetLoadBalancerPatch : Allow user to set LoadBalancerPatch
 func (_options *UpdateLoadBalancerOptions) SetLoadBalancerPatch(loadBalancerPatch map[string]interface{}) *UpdateLoadBalancerOptions {
 	_options.LoadBalancerPatch = loadBalancerPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateLoadBalancerOptions) SetIfMatch(ifMatch string) *UpdateLoadBalancerOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
 	return _options
 }
 
@@ -59551,6 +59888,9 @@ type VPNGateway struct {
 
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
+	// The VPC this VPN gateway resides in.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
 	// Route mode VPN gateway.
 	Mode *string `json:"mode,omitempty"`
 }
@@ -59628,6 +59968,10 @@ func UnmarshalVPNGateway(m map[string]json.RawMessage, result interface{}) (err 
 		return
 	}
 	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
 	if err != nil {
 		return
 	}
@@ -70035,8 +70379,8 @@ type InstancePrototypeInstanceByImage struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -70197,8 +70541,8 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -70352,8 +70696,8 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -70612,8 +70956,8 @@ type InstanceTemplatePrototypeInstanceByImage struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -70719,6 +71063,161 @@ func UnmarshalInstanceTemplatePrototypeInstanceByImage(m map[string]json.RawMess
 	return
 }
 
+// InstanceTemplatePrototypeInstanceBySourceSnapshot : InstanceTemplatePrototypeInstanceBySourceSnapshot struct
+// This model "extends" InstanceTemplatePrototype
+type InstanceTemplatePrototypeInstanceBySourceSnapshot struct {
+	// The availability policy to use for this virtual server instance.
+	AvailabilityPolicy *InstanceAvailabilityPrototype `json:"availability_policy,omitempty"`
+
+	// The default trusted profile configuration to use for this virtual server instance  This property's value is used
+	// when provisioning the virtual server instance, but not subsequently managed. Accordingly, it is reflected as an
+	// [instance initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
+	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
+
+	// The public SSH keys for the administrative user of the virtual server instance. Keys will be made available to the
+	// virtual server instance as cloud-init vendor data. For cloud-init enabled images, these keys will also be added as
+	// SSH authorized keys for the administrative user.
+	//
+	// For Windows images, at least one key must be specified, and one will be chosen to encrypt [the administrator
+	// password](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization). Keys are optional for other images, but if
+	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
+	// access.
+	//
+	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
+	// Accordingly, it is reflected as an [instance
+	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	MetadataService *InstanceMetadataServicePrototype `json:"metadata_service,omitempty"`
+
+	// The unique user-defined name for this virtual server instance (and default system hostname). If unspecified, the
+	// name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The additional network interfaces to create for the virtual server instance.
+	NetworkInterfaces []NetworkInterfacePrototype `json:"network_interfaces,omitempty"`
+
+	// The placement restrictions to use for the virtual server instance.
+	PlacementTarget InstancePlacementTargetPrototypeIntf `json:"placement_target,omitempty"`
+
+	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) to use for this virtual server instance.  If
+	// unspecified, `bx2-2x8` will be used, but this default value is expected to change in the future.
+	Profile InstanceProfileIdentityIntf `json:"profile,omitempty"`
+
+	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
+	// this value will result in a corresponding decrease to
+	// `total_network_bandwidth`.
+	TotalVolumeBandwidth *int64 `json:"total_volume_bandwidth,omitempty"`
+
+	// [User data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the virtual server
+	// instance.
+	UserData *string `json:"user_data,omitempty"`
+
+	// The additional volume attachments to create for the virtual server instance.
+	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
+	VPC VPCIdentityIntf `json:"vpc,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceBySourceSnapshotContext `json:"boot_volume_attachment" validate:"required"`
+
+	// Primary network interface.
+	PrimaryNetworkInterface *NetworkInterfacePrototype `json:"primary_network_interface" validate:"required"`
+
+	// The zone this virtual server instance will reside in.
+	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
+}
+
+// NewInstanceTemplatePrototypeInstanceBySourceSnapshot : Instantiate InstanceTemplatePrototypeInstanceBySourceSnapshot (Generic Model Constructor)
+func (*VpcV1) NewInstanceTemplatePrototypeInstanceBySourceSnapshot(bootVolumeAttachment *VolumeAttachmentPrototypeInstanceBySourceSnapshotContext, primaryNetworkInterface *NetworkInterfacePrototype, zone ZoneIdentityIntf) (_model *InstanceTemplatePrototypeInstanceBySourceSnapshot, err error) {
+	_model = &InstanceTemplatePrototypeInstanceBySourceSnapshot{
+		BootVolumeAttachment:    bootVolumeAttachment,
+		PrimaryNetworkInterface: primaryNetworkInterface,
+		Zone:                    zone,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+func (*InstanceTemplatePrototypeInstanceBySourceSnapshot) isaInstanceTemplatePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceTemplatePrototypeInstanceBySourceSnapshot unmarshals an instance of InstanceTemplatePrototypeInstanceBySourceSnapshot from the specified map of raw messages.
+func UnmarshalInstanceTemplatePrototypeInstanceBySourceSnapshot(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceTemplatePrototypeInstanceBySourceSnapshot)
+	err = core.UnmarshalModel(m, "availability_policy", &obj.AvailabilityPolicy, UnmarshalInstanceAvailabilityPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "default_trusted_profile", &obj.DefaultTrustedProfile, UnmarshalInstanceDefaultTrustedProfilePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "metadata_service", &obj.MetadataService, UnmarshalInstanceMetadataServicePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "network_interfaces", &obj.NetworkInterfaces, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "placement_target", &obj.PlacementTarget, UnmarshalInstancePlacementTargetPrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalInstanceProfileIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCIdentity)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceBySourceSnapshotContext)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneIdentity)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceTemplatePrototypeInstanceBySourceTemplate : InstanceTemplatePrototypeInstanceBySourceTemplate struct
 // This model "extends" InstanceTemplatePrototype
 type InstanceTemplatePrototypeInstanceBySourceTemplate struct {
@@ -70774,8 +71273,8 @@ type InstanceTemplatePrototypeInstanceBySourceTemplate struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -70953,8 +71452,8 @@ type InstanceTemplateInstanceByImage struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -71132,8 +71631,8 @@ type InstanceTemplateInstanceBySourceSnapshot struct {
 	// The additional volume attachments to create for the virtual server instance.
 	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
 
-	// The VPC the virtual server instance is to be a part of. If specified, it must match the VPC referenced by the
-	// subnets of the instance's network interfaces.
+	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
+	// instance's network interfaces.
 	VPC VPCIdentityIntf `json:"vpc,omitempty"`
 
 	// The boot volume attachment for the virtual server instance.
@@ -72464,7 +72963,7 @@ type NetworkACLPrototypeNetworkACLByRules struct {
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The VPC this network ACL is to be a part of.
+	// The VPC this network ACL will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The prototype objects for rules to create along with this network ACL. If unspecified, no rules will be created,
@@ -72517,7 +73016,7 @@ type NetworkACLPrototypeNetworkACLBySourceNetworkACL struct {
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The VPC this network ACL is to be a part of.
+	// The VPC this network ACL will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// Network ACL to copy rules from.
@@ -76733,7 +77232,7 @@ type SubnetPrototypeSubnetByCIDR struct {
 	// `route_transit_gateway_ingress`, and `route_vpc_zone_ingress` must be `false`.
 	RoutingTable RoutingTableIdentityIntf `json:"routing_table,omitempty"`
 
-	// The VPC the subnet is to be a part of.
+	// The VPC the subnet will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The IPv4 range of the subnet, expressed in CIDR format. The prefix length of the subnet's CIDR must be between `/9`
@@ -76834,7 +77333,7 @@ type SubnetPrototypeSubnetByTotalCount struct {
 	// `route_transit_gateway_ingress`, and `route_vpc_zone_ingress` must be `false`.
 	RoutingTable RoutingTableIdentityIntf `json:"routing_table,omitempty"`
 
-	// The VPC the subnet is to be a part of.
+	// The VPC the subnet will reside in.
 	VPC VPCIdentityIntf `json:"vpc" validate:"required"`
 
 	// The total number of IPv4 addresses required. Must be a power of 2. The VPC must have a default address prefix in the
@@ -78009,6 +78508,9 @@ type VPNGatewayPolicyMode struct {
 
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
+	// The VPC this VPN gateway resides in.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
 	// Policy mode VPN gateway.
 	Mode *string `json:"mode" validate:"required"`
 }
@@ -78082,6 +78584,10 @@ func UnmarshalVPNGatewayPolicyMode(m map[string]json.RawMessage, result interfac
 		return
 	}
 	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
 	if err != nil {
 		return
 	}
@@ -78240,6 +78746,9 @@ type VPNGatewayRouteMode struct {
 
 	Subnet *SubnetReference `json:"subnet" validate:"required"`
 
+	// The VPC this VPN gateway resides in.
+	VPC *VPCReference `json:"vpc" validate:"required"`
+
 	// Route mode VPN gateway.
 	Mode *string `json:"mode" validate:"required"`
 }
@@ -78313,6 +78822,10 @@ func UnmarshalVPNGatewayRouteMode(m map[string]json.RawMessage, result interface
 		return
 	}
 	err = core.UnmarshalModel(m, "subnet", &obj.Subnet, UnmarshalSubnetReference)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "vpc", &obj.VPC, UnmarshalVPCReference)
 	if err != nil {
 		return
 	}
