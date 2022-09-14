@@ -40,6 +40,38 @@ func TestAccIBMKMSKeyPolicy_basic_check(t *testing.T) {
 	})
 }
 
+func TestAccIBMKMSKeyPolicy_basic_check_enable(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	rotationEnable := true
+	rotationBool := false
+	rotation_interval := 3
+	dual_auth_delete := false
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKmsKeyPolicyStandardConfigCheckEnable(instanceName, keyName, rotationEnable, rotation_interval, dual_auth_delete),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.enabled", "true"),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+				),
+			},
+			{
+				Config: testAccCheckIBMKmsKeyPolicyStandardConfigCheckEnable(instanceName, keyName, rotationBool, rotation_interval, dual_auth_delete),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.rotation.0.enabled", "false"),
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "policies.0.dual_auth_delete.0.enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMKMSKeyPolicy_rotation_check(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
@@ -117,6 +149,34 @@ func TestAccIBMKMSKeyPolicy_dualAuth_check_with_Alias(t *testing.T) {
 // 		},
 // 	})
 // }
+
+func testAccCheckIBMKmsKeyPolicyStandardConfigCheckEnable(instanceName, KeyName string, rotationEnable bool, rotation_interval int, dual_auth_delete bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "kp_instance" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	  }
+
+	  resource "ibm_kms_key" "test" {
+		instance_id = ibm_resource_instance.kp_instance.guid
+		key_name       = "%s"
+		standard_key   = false
+	  }
+	  resource "ibm_kms_key_policies" "Policy" {
+		instance_id = ibm_resource_instance.kp_instance.guid
+		key_id = ibm_kms_key.test.key_id
+		rotation {
+			enabled = %t
+			interval_month = %d
+		  }
+		  dual_auth_delete {
+			enabled = %t
+		  }
+	  }
+`, instanceName, KeyName, rotationEnable, rotation_interval, dual_auth_delete)
+}
 
 func testAccCheckIBMKmsKeyPolicyStandardConfigCheck(instanceName, KeyName string, rotation_interval int, dual_auth_delete bool) string {
 	return fmt.Sprintf(`

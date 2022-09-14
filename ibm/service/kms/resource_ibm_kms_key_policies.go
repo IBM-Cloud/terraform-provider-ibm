@@ -96,6 +96,12 @@ func ResourceIBMKmskeyPolicies() *schema.Resource {
 							Computed:    true,
 							Description: "Updates when the policy is replaced or modified. The date format follows RFC 3339.",
 						},
+						"enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If set to true, Key Protect enables a rotation policy on a single key.",
+							Default:     true,
+						},
 						"interval_month": {
 							Type:         schema.TypeInt,
 							Required:     true,
@@ -279,7 +285,7 @@ func resourceIBMKmsKeyPolicyDelete(context context.Context, d *schema.ResourceDa
 }
 
 func resourceHandlePolicies(context context.Context, d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, key_id string) error {
-	var setRotation, setDualAuthDelete, dualAuthEnable bool
+	var setRotation, setDualAuthDelete, dualAuthEnable, rotationEnable bool
 	var rotationInterval int
 
 	policy := getPolicyFromSchema(d)
@@ -287,12 +293,13 @@ func resourceHandlePolicies(context context.Context, d *schema.ResourceData, kpA
 	if policy.Rotation != nil {
 		setRotation = true
 		rotationInterval = policy.Rotation.Interval
+		rotationEnable = *policy.Rotation.Enabled
 	}
 	if policy.DualAuth != nil {
 		setDualAuthDelete = true
 		dualAuthEnable = *policy.DualAuth.Enabled
 	}
-	_, err := kpAPI.SetPolicies(context, key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable)
+	_, err := kpAPI.SetPolicies(context, key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable, rotationEnable)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating policies: %s", err)
 	}
@@ -308,12 +315,10 @@ func getPolicyFromSchema(d *schema.ResourceData) kp.Policy {
 			policy.Rotation = &kp.Rotation{
 				Interval: rotationPolicyMap["interval_month"].(int),
 			}
-			// Adding check as kms_key_policies resource does not support enabled parameter
-			// Todo: remove this comment once enabled is supported
-			// if _, ok := rotationPolicyMap["enabled"]; ok {
-			// 	enabled := rotationPolicyMap["enabled"].(bool)
-			// 	policy.Rotation.Enabled = &enabled
-			// }
+			if _, ok := rotationPolicyMap["enabled"]; ok {
+				enabled := rotationPolicyMap["enabled"].(bool)
+				policy.Rotation.Enabled = &enabled
+			}
 		}
 	}
 	if dualAuthPolicyInfo, ok := d.GetOk("dual_auth_delete"); ok {
