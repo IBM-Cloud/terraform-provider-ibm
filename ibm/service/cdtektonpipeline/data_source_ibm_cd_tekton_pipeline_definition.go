@@ -15,15 +15,15 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipelineDefinition() *schema.Resource {
+func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelineDefinitionRead,
+		ReadContext: dataSourceIBMCdTektonPipelineDefinitionRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"definition_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -33,42 +33,42 @@ func DataSourceIBMTektonPipelineDefinition() *schema.Resource {
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Scm source for tekton pipeline defintion.",
+				Description: "SCM source for Tekton pipeline definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "General href URL.",
+							Description: "URL of the definition repository.",
 						},
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A branch of the repo, branch field doesn't coexist with tag field.",
+							Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
 						},
 						"tag": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A tag of the repo.",
+							Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
 						},
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The path to the definitions yaml files.",
+							Description: "The path to the definition's yaml files.",
+						},
+						"service_instance_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the SCM repository service instance.",
 						},
 					},
 				},
-			},
-			"service_instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UUID.",
 			},
 		},
 	}
 }
 
-func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelineDefinitionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,7 +89,7 @@ func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schem
 
 	scmSource := []map[string]interface{}{}
 	if definition.ScmSource != nil {
-		modelMap, err := DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
+		modelMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(definition.ScmSource)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -99,14 +99,10 @@ func DataSourceIBMTektonPipelineDefinitionRead(context context.Context, d *schem
 		return diag.FromErr(fmt.Errorf("Error setting scm_source %s", err))
 	}
 
-	if err = d.Set("service_instance_id", definition.ServiceInstanceID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting service_instance_id: %s", err))
-	}
-
 	return nil
 }
 
-func DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
+func dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.URL != nil {
 		modelMap["url"] = *model.URL
@@ -119,6 +115,9 @@ func DataSourceIBMTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdtekt
 	}
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
+	}
+	if model.ServiceInstanceID != nil {
+		modelMap["service_instance_id"] = *model.ServiceInstanceID
 	}
 	return modelMap, nil
 }

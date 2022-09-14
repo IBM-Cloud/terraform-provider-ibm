@@ -43,6 +43,7 @@ You can access the following attribute references after your data source is crea
 		- `name` - (String) The name of the boot volume.
 		- `profile` - (String) The profile for the boot volume configuration.
 		- `size` - (String) The boot volume size to configure in giga bytes.
+		- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags).
 	- `crn` - (String) The CRN of the instance template.
 	- `default_trusted_profile_auto_link` - (Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default is true. 
 	- `default_trusted_profile_target` - (String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
@@ -88,5 +89,6 @@ You can access the following attribute references after your data source is crea
 		  - `encryption_key` - (String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 		  - `iops` - (String) The maximum input/output operations per second (IOPS) for the volume.
 		  - `profile` - (String) The global unique name for the volume profile to use for the volume.
+		  - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 	- `vpc` - (String) The VPC ID that the instance templates needs to be created.
 	- `zone` - (String) The name of the zone.

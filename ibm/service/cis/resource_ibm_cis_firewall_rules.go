@@ -97,7 +97,7 @@ func ResourceIBMCISFirewallrulesCreate(context context.Context, d *schema.Resour
 	crn := d.Get(cisID).(string)
 	zoneID, _, _ := flex.ConvertTftoCisTwoVar(d.Get(cisDomainID).(string))
 
-	var newFirewallRules firewallrulesv1.FirewallRuleInputWithFilterID
+	var newFirewallRules firewallrulesv1.FirewallRuleInput
 
 	if a, ok := d.GetOk(cisFirewallrulesAction); ok {
 		action := a.(string)
@@ -108,14 +108,18 @@ func ResourceIBMCISFirewallrulesCreate(context context.Context, d *schema.Resour
 		newFirewallRules.Description = &description
 	}
 	if id, ok := d.GetOk(cisFilterID); ok {
-		filterid := id.(string)
-		filterModel, _ := cisClient.NewFirewallRuleInputWithFilterIdFilter(filterid)
-		newFirewallRules.Filter = filterModel
+		filterID := id.(string)
+		filtersInterface := &firewallrulesv1.FirewallRuleInputFilter{ID: &filterID}
+		newFirewallRules.Filter = filtersInterface
+	}
+	if priority, ok := d.GetOk(cisFirewallrulesPriority); ok {
+		rulePriority := int64(priority.(int))
+		newFirewallRules.Priority = &rulePriority
 	}
 
 	opt := cisClient.NewCreateFirewallRulesOptions(xAuthtoken, crn, zoneID)
 
-	opt.SetFirewallRuleInputWithFilterID([]firewallrulesv1.FirewallRuleInputWithFilterID{newFirewallRules})
+	opt.SetFirewallRuleInput([]firewallrulesv1.FirewallRuleInput{newFirewallRules})
 
 	result, _, err := cisClient.CreateFirewallRulesWithContext(context, opt)
 	if err != nil || result == nil {
@@ -181,7 +185,8 @@ func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.Resour
 	if d.HasChange(cisFilterID) ||
 		d.HasChange(cisFirewallrulesAction) ||
 		d.HasChange(cisFirewallrulesPaused) ||
-		d.HasChange(cisFilterDescription) {
+		d.HasChange(cisFilterDescription) ||
+		d.HasChange(cisFirewallrulesPriority) {
 
 		var updatefirewallrules firewallrulesv1.FirewallRulesUpdateInputItem
 		updatefirewallrules.ID = &firewallruleID
@@ -198,7 +203,10 @@ func ResourceIBMCISFirewallrulesUpdate(context context.Context, d *schema.Resour
 			description := des.(string)
 			updatefirewallrules.Description = &description
 		}
-
+		if priority, ok := d.GetOk(cisFirewallrulesPriority); ok {
+			rulePriority := int64(priority.(int))
+			updatefirewallrules.Priority = &rulePriority
+		}
 		if id, ok := d.GetOk(cisFilterID); ok {
 			filterid := id.(string)
 			filterUpdate, _ := cisClient.NewFirewallRulesUpdateInputItemFilter(filterid)

@@ -10,7 +10,7 @@ description: |-
 # ibm_is_instance_template
 Create, update, or delete an instance template on VPC. For more information, about instance template, see [managing an instance template](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-instance-template).
 
-**Note:** 
+~>**Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
 
 **provider.tf**
@@ -94,7 +94,7 @@ resource "ibm_is_instance_template" "example" {
     name                             = "example-volume-att-01"
     volume_prototype {
       iops     = 3000
-      profile  = "general-purpose"
+      profile  = "custom"
       capacity = 200
     }
   }
@@ -181,16 +181,17 @@ Review the argument references that you can specify for your resource.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
 	- `name` - (Optional, String) The name of the boot volume.
+  - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `dedicated_host` - (Optional, Force new resource,String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host where the instance is placed.
 
-  **Note:**
-    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+  ~>**Note:** 
+    only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
 - `dedicated_host_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the dedicated host group where the instance is placed.
 
-  **Note:**
-    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+  ~>**Note:** 
+    only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
@@ -200,8 +201,8 @@ Review the argument references that you can specify for your resource.
 - `name` - (Optional, String) The name of the instance template.
 - `placement_group` - (Optional, Force new resource, String) The placement restrictions to use for the virtual server instance. Unique Identifier of the placement group where the instance is placed.
 
-  **Note:**
-    - only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
+  ~>**Note:** 
+    only one of [**dedicated_host**, **dedicated_host_group**, **placement_group**] can be used
 - `profile` - (Required, String) The number of instances created in the instance group.
 - `primary_network_interfaces` (Required, List) A nested block describes the primary network interface for the template.
 
@@ -220,23 +221,23 @@ Review the argument references that you can specify for your resource.
   - `security_groups` - (Optional, List) List of security groups of the subnet.
   - `subnet` - (Required, Forces new resource, String) The VPC subnet to assign to the interface.
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
-- `volume_attachments` - (Optional, List) A nested block describes the storage volume configuration for the template.
+- `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 
 
   Nested scheme for `volume_attachments`:
-	- `name` - (Required, String) The name of the boot volume.
-	- `volume` - (Required, String) The storage volume ID created in VPC.
-  - `delete_volume_on_instance_delete`- (Required, Bool) You can configure to delete the storage volume to delete based on instance deletion.
-  - `volume_prototype` - (Optional, Force new resource, List)
+	- `delete_volume_on_instance_delete`- (Required, Bool) You can configure to delete the storage volume to delete based on instance deletion.
+  - `name` - (Required, String) The name of the boot volume.
+	- `volume` - (Optional, Forces new resource, String) The storage volume ID created in VPC.
+  - `volume_prototype` - (Optional, Forces new resource, List)
 
-    Nested scheme for `volume_prototype`:
-    - `capacity` - (Optional, Integer) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
-    - `encryption_key` - (Optional, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
-    - `iops` - (Optional, Integer) The maximum input and output operations per second (IOPS) for the volume.
-    - `profile` - (Optional, String) The global unique name for the volume profile to use for the volume.
-    
-    ~>**Note:** 
-    
-    `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
+      Nested scheme for `volume_prototype`:
+      - `capacity` - (Required, Forces new resource, Integer) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
+      - `encryption_key` - (Optional, Forces new resource, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
+      - `iops` - (Optional, Forces new resource, Integer) The maximum input and output operations per second (IOPS) for the volume.
+      - `profile` - (Required, Forces new resource, String) The global unique name for the volume profile to use for the volume. Allowed values areFor more information, about volume profiles, see [volume profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles)
+      - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+      
+      ~>**Note:** 
+      `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.
 - `user_data` -  (Optional, String) The user data provided for the instance.
 - `zone` - (Required, String) The name of the zone.

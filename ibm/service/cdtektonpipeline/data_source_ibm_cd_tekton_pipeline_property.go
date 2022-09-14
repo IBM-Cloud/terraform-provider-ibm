@@ -15,20 +15,20 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtektonpipelinev2"
 )
 
-func DataSourceIBMTektonPipelineProperty() *schema.Resource {
+func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMTektonPipelinePropertyRead,
+		ReadContext: dataSourceIBMCdTektonPipelinePropertyRead,
 
 		Schema: map[string]*schema.Schema{
 			"pipeline_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The tekton pipeline ID.",
+				Description: "The Tekton pipeline ID.",
 			},
 			"property_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The property's name.",
+				Description: "The property name.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -38,20 +38,15 @@ func DataSourceIBMTektonPipelineProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "String format property value.",
+				Description: "Property value.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Options for SINGLE_SELECT property type.",
+				Description: "Options for `single_select` property type. Only needed when using `single_select` property type.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-			},
-			"default": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Default option for SINGLE_SELECT property type.",
 			},
 			"type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -61,13 +56,13 @@ func DataSourceIBMTektonPipelineProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "property path for INTEGRATION type properties.",
+				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
 			},
 		},
 	}
 }
 
-func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdTektonPipelineClient, err := meta.(conns.ClientSession).CdTektonPipelineV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -92,10 +87,6 @@ func DataSourceIBMTektonPipelinePropertyRead(context context.Context, d *schema.
 
 	if err = d.Set("value", property.Value); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting value: %s", err))
-	}
-
-	if err = d.Set("default", property.Default); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting default: %s", err))
 	}
 
 	if err = d.Set("type", property.Type); err != nil {

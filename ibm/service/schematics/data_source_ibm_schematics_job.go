@@ -26,6 +26,11 @@ func DataSourceIBMSchematicsJob() *schema.Resource {
 				Required:    true,
 				Description: "Job Id. Use `GET /v2/jobs` API to look up the Job Ids in your IBM Cloud account.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Region of the workspace.",
+			},
 			"command_object": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -2817,7 +2822,11 @@ func dataSourceIBMSchematicsJobRead(context context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	if r, ok := d.GetOk("region"); ok {
+		region := r.(string)
+		schematicsURL, _ := SchematicsEndpointURL(region, meta)
+		schematicsClient.Service.Options.URL = schematicsURL
+	}
 	getJobOptions := &schematicsv1.GetJobOptions{}
 
 	getJobOptions.SetJobID(d.Get("job_id").(string))
