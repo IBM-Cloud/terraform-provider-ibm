@@ -286,7 +286,7 @@ resource ibm_hpcs hpcs {
     }
   }
 }
-resource "ibm_iam_authorization_policy" "policy" {
+resource "ibm_iam_authorization_policy" "policy2" {
   source_service_name = "cloud-object-storage"
   target_service_name = "hs-crypto"
   roles               = ["Reader"]
@@ -299,7 +299,7 @@ resource "ibm_kms_key" "key" {
 }
 
 resource "ibm_cos_bucket" "hpcs-enabled" {
-  depends_on           = [ibm_iam_authorization_policy.policy]
+  depends_on           = [ibm_iam_authorization_policy.policy2]
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc

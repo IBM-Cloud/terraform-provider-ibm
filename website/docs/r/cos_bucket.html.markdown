@@ -292,7 +292,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
 
 # Key Protect enabled COS bucket
 
-Create or delete an COS bucket with a key protect standard or root key.For more details about key protect see https://cloud.ibm.com/docs/key-protect?topic=key-protect-about  .We  need to create and manage root key / standard key using  **ibm_kms_key** resource. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key
+Create or delete an COS bucket with a key protect root key.For more details about key protect see https://cloud.ibm.com/docs/key-protect?topic=key-protect-about  .We  need to create and manage root key using  **ibm_kms_key** resource. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/kms_key
 
 ## Example usage
 

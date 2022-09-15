@@ -63,13 +63,13 @@ To configure a replication policy on a bucket, you must enable object versioning
 
 # Key Protect Enabled COS bucket
 
-Retrieves a COS bucket enabled with Key protect root key or standard key for data encryption.
+Retrieves a COS bucket enabled with Key protect root key for data encryption.
 https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/kms_key
 
 
 
 # Hyper Protect Crypto Services (HPCS) Enabled COS bucket
-Retrieves a COS bucket enabled with data encryption with root key or standard key created and managed by Hyper Protect Crypto Services
+Retrieves a COS bucket enabled with data encryption with root key and managed by Hyper Protect Crypto Services
 ```
 data "ibm_kms_key" "test" {
   instance_id = "guid-of-hs-crypto-instance"
