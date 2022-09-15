@@ -293,7 +293,7 @@ resource "ibm_iam_authorization_policy" "policy2" {
 }
 resource "ibm_kms_key" "key" {
   instance_id  = ibm_hpcs.hpcs.guid
-  key_name     = var.key_name
+  key_name     = var.hpcs_key_name
   standard_key = false
   force_delete = true
 }

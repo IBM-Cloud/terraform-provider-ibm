@@ -142,7 +142,7 @@ variable "hpcs_crypto_unit_admins" {
   }))
 }
 # Key name that has to be created on the HPCS Instance
-variable "key_name" {
+variable "hpcs_key_name" {
   type        = string
 }
 variable "hpcs_uko_rootkeycrn" {
