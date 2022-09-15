@@ -304,7 +304,7 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
   storage_class         = var.storage
-  key_protect          = ibm_kms_key.test.id
+  key_protect          = ibm_kms_key.key.id
 }
 
 resource "ibm_cos_bucket_object" "plaintext" {
