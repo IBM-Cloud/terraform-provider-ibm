@@ -37,12 +37,11 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_jenkins.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_token` - (String) Type the API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
 	* `api_user_name` - (String) Type the user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
@@ -61,6 +60,7 @@ Nested scheme for **referent**:
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

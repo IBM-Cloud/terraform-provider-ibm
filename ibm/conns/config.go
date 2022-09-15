@@ -653,7 +653,11 @@ func (session clientSession) ContainerRegistryV1() (*containerregistryv1.Contain
 
 // SchematicsAPI provides schematics Service APIs ...
 func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
-	return sess.schematicsClient, sess.schematicsClientErr
+	if sess.schematicsClientErr != nil {
+		return sess.schematicsClient, sess.schematicsClientErr
+	}
+	return sess.schematicsClient.Clone(), nil
+	// return sess.schematicsClient, sess.schematicsClientErr
 }
 
 // FunctionClient ...

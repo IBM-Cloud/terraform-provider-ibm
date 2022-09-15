@@ -86,18 +86,23 @@ const (
 	isInstanceStatusFailed               = "failed"
 	isInstanceAvailablePolicyHostFailure = "availability_policy_host_failure"
 
-	isInstanceBootAttachmentName = "name"
-	isInstanceBootVolumeId       = "volume_id"
-	isInstanceBootSize           = "size"
-	isInstanceBootIOPS           = "iops"
-	isInstanceBootEncryption     = "encryption"
-	isInstanceBootProfile        = "profile"
-	isInstanceAction             = "action"
-	isInstanceVolumeAttachments  = "volume_attachments"
-	isInstanceVolumeAttaching    = "attaching"
-	isInstanceVolumeAttached     = "attached"
-	isInstanceVolumeDetaching    = "detaching"
-	isInstanceResourceGroup      = "resource_group"
+	isInstanceBootAttachmentName       = "name"
+	isInstanceBootVolumeId             = "volume_id"
+	isInstanceBootSize                 = "size"
+	isInstanceBootIOPS                 = "iops"
+	isInstanceBootEncryption           = "encryption"
+	isInstanceBootProfile              = "profile"
+	isInstanceAction                   = "action"
+	isInstanceVolumeAttachments        = "volume_attachments"
+	isInstanceVolumeAttaching          = "attaching"
+	isInstanceVolumeAttached           = "attached"
+	isInstanceVolumeDetaching          = "detaching"
+	isInstanceResourceGroup            = "resource_group"
+	isInstanceLifecycleReasons         = "lifecycle_reasons"
+	isInstanceLifecycleState           = "lifecycle_state"
+	isInstanceLifecycleReasonsCode     = "code"
+	isInstanceLifecycleReasonsMessage  = "message"
+	isInstanceLifecycleReasonsMoreInfo = "more_info"
 
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
@@ -718,6 +723,37 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Link to documentation about this status reason",
+						},
+					},
+				},
+			},
+			isInstanceLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the virtual server instance.",
+			},
+			isInstanceLifecycleReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceLifecycleReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
 						},
 					},
 				},
@@ -2392,6 +2428,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 			}
 		}
 		d.Set(isInstanceStatusReasons, statusReasonsList)
+	}
+
+	//set the lifecycle status, reasons
+	if instance.LifecycleState != nil {
+		d.Set(isInstanceLifecycleState, *instance.LifecycleState)
+	}
+	if instance.LifecycleReasons != nil {
+		d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons))
 	}
 
 	d.Set(isInstanceVPC, *instance.VPC.ID)

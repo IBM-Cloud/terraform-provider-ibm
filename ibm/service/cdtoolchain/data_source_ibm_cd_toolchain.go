@@ -18,7 +18,7 @@ import (
 
 func DataSourceIBMCdToolchain() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMCdToolchainRead,
+		ReadContext: dataSourceIBMCdToolchainRead,
 
 		Schema: map[string]*schema.Schema{
 			"toolchain_id": &schema.Schema{
@@ -88,7 +88,7 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 	}
 }
 
-func DataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -98,7 +98,7 @@ func DataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 
 	getToolchainByIDOptions.SetToolchainID(d.Get("toolchain_id").(string))
 
-	getToolchainByIDResponse, response, err := cdToolchainClient.GetToolchainByIDWithContext(context, getToolchainByIDOptions)
+	toolchain, response, err := cdToolchainClient.GetToolchainByIDWithContext(context, getToolchainByIDOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetToolchainByIDWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("GetToolchainByIDWithContext failed %s\n%s", err, response))
@@ -106,43 +106,43 @@ func DataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 
 	d.SetId(fmt.Sprintf("%s", *getToolchainByIDOptions.ToolchainID))
 
-	if err = d.Set("name", getToolchainByIDResponse.Name); err != nil {
+	if err = d.Set("name", toolchain.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
 
-	if err = d.Set("description", getToolchainByIDResponse.Description); err != nil {
+	if err = d.Set("description", toolchain.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 
-	if err = d.Set("account_id", getToolchainByIDResponse.AccountID); err != nil {
+	if err = d.Set("account_id", toolchain.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
 
-	if err = d.Set("location", getToolchainByIDResponse.Location); err != nil {
+	if err = d.Set("location", toolchain.Location); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
 
-	if err = d.Set("resource_group_id", getToolchainByIDResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", toolchain.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
 
-	if err = d.Set("crn", getToolchainByIDResponse.CRN); err != nil {
+	if err = d.Set("crn", toolchain.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
 
-	if err = d.Set("href", getToolchainByIDResponse.Href); err != nil {
+	if err = d.Set("href", toolchain.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
 
-	if err = d.Set("created_at", flex.DateTimeToString(getToolchainByIDResponse.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(toolchain.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
 
-	if err = d.Set("updated_at", flex.DateTimeToString(getToolchainByIDResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(toolchain.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
 
-	if err = d.Set("created_by", getToolchainByIDResponse.CreatedBy); err != nil {
+	if err = d.Set("created_by", toolchain.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
 

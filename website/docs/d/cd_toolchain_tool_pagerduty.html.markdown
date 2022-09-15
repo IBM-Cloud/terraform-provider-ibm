@@ -37,12 +37,11 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_pagerduty.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_key` - (String) Type your API access key. You can find or create this key on the Configuration/API Access section of the PagerDuty website. [PagerDuty Support article on how to get API Key](https://support.pagerduty.com/hc/en-us/articles/202829310-Generating-an-API-Key).
 	* `key_type` - (String) Select whether to integrate at the account level with an API key or at the service level with an integration key.
@@ -65,6 +64,7 @@ Nested scheme for **referent**:
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

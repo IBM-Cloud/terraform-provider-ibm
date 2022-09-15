@@ -139,9 +139,10 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Description:  "Only needed for timer triggers. Cron expression for timer trigger.",
 			},
 			"timezone": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Only needed for timer triggers. Timezone for timer trigger.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger", "timezone"),
+				Description:  "Only needed for timer triggers. Timezone for timer trigger.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -246,7 +247,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -255,6 +256,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 					},
 				},
+			},
+			"webhook_url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Webhook URL that can be used to trigger pipeline runs.",
 			},
 			"trigger_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -309,6 +315,15 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			Optional:                   true,
 			Regexp:                     `^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$`,
 			MinValueLength:             5,
+			MaxValueLength:             253,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "timezone",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[-0-9a-zA-Z_., \/]{1,234}$`,
+			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
 	)
@@ -502,6 +517,9 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 	if err = d.Set("properties", properties); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting properties: %s", err))
+	}
+	if err = d.Set("webhook_url", trigger.WebhookURL); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting webhook_url: %s", err))
 	}
 	if err = d.Set("trigger_id", trigger.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting trigger_id: %s", err))

@@ -128,7 +128,7 @@ Nested scheme for **credentials**:
 	* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
 * `description` - (Optional, String) Action description.
 * `inventory` - (Optional, String) Target inventory record ID, used by the action or ansible playbook.
-* `location` - (Optional, String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+* `location` - (Optional, String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
   * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 * `name` - (Required, String) The unique name of your action. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. **Example** you can use the name to stop action.
 * `resource_group` - (Optional, String) Resource-group name for an action.  By default, action is created in default resource group.

@@ -57,7 +57,9 @@ var CertCRN string
 var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
+var ISZoneName2 string
 var ISCIDR string
+var ISCIDR2 string
 var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
@@ -433,10 +435,22 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_ZONE for testing ibm_is_zone datasource else it is set to default value 'us-south-1'")
 	}
 
+	ISZoneName2 = os.Getenv("SL_ZONE_2")
+	if ISZoneName2 == "" {
+		ISZoneName2 = "us-south-2"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
 	ISCIDR = os.Getenv("SL_CIDR")
 	if ISCIDR == "" {
 		ISCIDR = "10.240.0.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_CIDR for testing ibm_is_subnet else it is set to default value '10.240.0.0/24'")
+	}
+
+	ISCIDR2 = os.Getenv("SL_CIDR_2")
+	if ISCIDR2 == "" {
+		ISCIDR2 = "10.240.64.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
 	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")

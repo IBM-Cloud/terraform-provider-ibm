@@ -27,10 +27,10 @@ resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_p
 Review the argument reference that you can specify for your resource.
 
 * `enum` - (Optional, List) Options for `single_select` property type. Only needed for `single_select` property type.
-  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
 * `name` - (Optional, Forces new resource, String) Property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
-* `path` - (Optional, String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.
+* `path` - (Optional, String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.

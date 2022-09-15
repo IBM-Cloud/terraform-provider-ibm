@@ -86,6 +86,13 @@ In addition to all argument reference list, you can access the following attribu
         - `model` - Model of the gpu.
 	- `id` - (String) The ID that was assigned to the Virtual Servers for VPC instance.
 	- `image` - (String) The ID of the virtual server image that is used in the instance.
+	- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
+
+		Nested scheme for `lifecycle_reasons`:
+		- `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
+		- `message` - (String) An explanation of the reason for this lifecycle state.
+		- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+	- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 	- `memory`- (Integer) The amount of memory that was allocated to the instance.
 	- `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 	- `network_interfaces`- (List) A list of more network interfaces that the instance uses.
@@ -96,7 +103,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
 			Nested scheme for `primary_ip`:
-			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `address` - (String) The IP address of the reserved IP. Same as `primary_ipv4_address`
 			- `href`- (String) The URL for this reserved IP
 			- `name`- (String) The user-defined or system-provided name for this reserved IP
 			- `reserved_ip`- (String) The unique identifier for this reserved IP
@@ -124,7 +131,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
 			Nested scheme for `primary_ip`:
-			- `address` - (String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+			- `address` - (String) The IP address of the reserved IP. Same as `primary_ipv4_address`
 			- `href`- (String) The URL for this reserved IP
 			- `name`- (String) The user-defined or system-provided name for this reserved IP
 			- `reserved_ip`- (String) The unique identifier for this reserved IP

@@ -154,7 +154,9 @@ func ResourceIBMISLB() *schema.Resource {
 			isLBSubnets: {
 				Type:        schema.TypeSet,
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
+				MinItems:    1,
+				MaxItems:    15,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Load Balancer subnets list",
@@ -244,6 +246,11 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
+			},
+
+			"version": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -547,6 +554,9 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 	if lb.ResourceGroup != nil {
 		d.Set(flex.ResourceGroupName, lb.ResourceGroup.Name)
 	}
+	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
+		return fmt.Errorf("[ERROR] Error setting version: %s", err)
+	}
 	return nil
 }
 
@@ -605,6 +615,40 @@ func lbUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasChan
 				"Error on update of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 		}
 	}
+
+	if d.HasChange(isLBSubnets) {
+		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
+			ID: &id,
+		}
+		updateLoadBalancerOptions.SetIfMatch(d.Get("version").(string))
+		loadBalancerPatchModel := &vpcv1.LoadBalancerPatch{}
+		subnets := d.Get(isLBSubnets).(*schema.Set)
+		if subnets.Len() != 0 {
+			subnetobjs := make([]vpcv1.SubnetIdentityIntf, subnets.Len())
+			for i, subnet := range subnets.List() {
+				subnetstr := subnet.(string)
+				subnetobjs[i] = &vpcv1.SubnetIdentity{
+					ID: &subnetstr,
+				}
+			}
+			loadBalancerPatchModel.Subnets = subnetobjs
+		}
+		loadBalancerPatch, err := loadBalancerPatchModel.AsPatch()
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerPatch: %s", err)
+		}
+		updateLoadBalancerOptions.LoadBalancerPatch = loadBalancerPatch
+
+		_, response, err := sess.UpdateLoadBalancer(updateLoadBalancerOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error Updating subents in vpc Load Balancer : %s\n%s", err, response)
+		}
+		_, err = isWaitForLBAvailable(sess, d.Id(), d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
+	}
+
 	if hasChanged {
 		updateLoadBalancerOptions := &vpcv1.UpdateLoadBalancerOptions{
 			ID: &id,

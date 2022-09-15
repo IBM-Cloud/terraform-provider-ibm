@@ -458,7 +458,7 @@ Nested scheme for **job_inputs**:
 		* `group_by` - (Optional, String) Display name of the group this variable belongs to.
 		* `source` - (Optional, String) Source of this meta-data.
 	* `link` - (Optional, String) Reference link to the variable value By default the expression will point to self.value.
-* `location` - (Optional, String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+* `location` - (Optional, String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
   * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 * `log_summary` - (Optional, List) Job log summary record.
 Nested scheme for **log_summary**:
