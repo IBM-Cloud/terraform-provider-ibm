@@ -89,7 +89,7 @@ In addition to all argument references listed, you can access the following attr
 	- `href` - (String) The URL for this subnet.
 	- `id` - (String) The unique identifier for this subnet.
 	- `name` - (String) The user-defined name for this subnet.
-- `vpc` - (String) 	The VPC this VPN server resides in.
+- `vpc` - (String) The VPC this VPN server resides in.
   Nested scheme for `vpc`:
   - `crn` - (String) The CRN for this VPC.
   - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
