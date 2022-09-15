@@ -70,7 +70,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `name` - (String) The user-defined name for this VPN gateway.
 
-- `resource_group` - (List) The resource group for this VPN gateway.
+- `resource_group` - (List) The resource group object, for this VPN gateway.
   Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.
 	- `id` - (String) The unique identifier for this resource group.

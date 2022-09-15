@@ -49,7 +49,7 @@ In addition to all argument references listed, you can access the following attr
     - `href` - (String) The URL for this floating IP.
     - `id` - (String) The unique identifier for this floating IP.
     - `name` - (String) The unique user-defined name for this floating IP.
-    - `resource_group` - (List) The resource group for this floating IP.
+    - `resource_group` - (List) The resource group object, for this floating IP.
 	    
 		Nested scheme for **resource_group**:
       	- `href` - (String) The URL for this resource group.

@@ -103,8 +103,8 @@ In addition to all argument reference list, you can access the following attribu
 
 - `created_at` - (Timestamp) The date and time that the reserved IP was created.",
 - `href` - (String) The URL for this reserved IP.
-- `id` - (String) The combination of the subnet ID and reserved IP separated by **/**.
-- `lifecycle_state` - (String) TThe lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
+- `id` - (String) The combination of the subnet ID and reserved IP ID, separated by **/**.
+- `lifecycle_state` - (String) The lifecycle state of the reserved IP. [ deleting, failed, pending, stable, suspended, updating, waiting ]
 - `owner` - (String) The owner of a reserved IP, defining whether it is managed by the user or the provider.
 - `reserved_ip` - (String) The reserved IP.
 - `resource_type` - (String) The resource type.

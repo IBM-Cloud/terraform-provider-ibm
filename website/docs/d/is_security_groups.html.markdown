@@ -68,7 +68,7 @@ In addition to all argument references listed, you can access the following attr
 	- `href` - (String) The security group's canonical URL.
 	- `id` - (String) The unique identifier for this security group.
 	- `name` - (String) The user-defined name for this security group. Names must be unique within the VPC the security group resides in.
-	- `resource_group` - (List) The resource group for this security group.
+	- `resource_group` - (List) The resource group object, for this security group.
 		Nested scheme for `resource_group`:
 		- `href` - (String) The URL for this resource group.
 		- `id` - (String) The unique identifier for this resource group.
