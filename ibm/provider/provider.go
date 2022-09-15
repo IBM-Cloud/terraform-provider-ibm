@@ -369,6 +369,8 @@ func Provider() *schema.Provider {
 			"ibm_is_bare_metal_server_initialization":                 vpc.DataSourceIBMIsBareMetalServerInitialization(),
 			"ibm_is_bare_metal_server_network_interface_floating_ip":  vpc.DataSourceIBMIsBareMetalServerNetworkInterfaceFloatingIP(),
 			"ibm_is_bare_metal_server_network_interface_floating_ips": vpc.DataSourceIBMIsBareMetalServerNetworkInterfaceFloatingIPs(),
+			"ibm_is_bare_metal_server_network_interface_reserved_ip":  vpc.DataSourceIBMISBareMetalServerNICReservedIP(),
+			"ibm_is_bare_metal_server_network_interface_reserved_ips": vpc.DataSourceIBMISBareMetalServerNICReservedIPs(),
 			"ibm_is_bare_metal_server_network_interface":              vpc.DataSourceIBMIsBareMetalServerNetworkInterface(),
 			"ibm_is_bare_metal_server_network_interfaces":             vpc.DataSourceIBMIsBareMetalServerNetworkInterfaces(),
 			"ibm_is_bare_metal_server_profile":                        vpc.DataSourceIBMIsBareMetalServerProfile(),
