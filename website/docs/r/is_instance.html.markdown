@@ -341,6 +341,13 @@ Review the argument references that you can specify for your resource.
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot`, not required when creating instance using `instance_template`
 - `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
+
+  Nested scheme for `lifecycle_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
+    - `message` - (String) An explanation of the reason for this lifecycle state.
+    - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.

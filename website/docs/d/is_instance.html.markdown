@@ -120,6 +120,13 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The ID of the SSH key.
   - `name` - (String) The name of the SSH key that you entered when you uploaded the key to IBM Cloud.
 - `memory`- (Integer) The amount of memory that was allocated to the instance.
+- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
+
+  Nested scheme for `lifecycle_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
+    - `message` - (String) An explanation of the reason for this lifecycle state.
+    - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance.
 - `network_interfaces`- (List) A list of more network interfaces that the instance uses.
 
