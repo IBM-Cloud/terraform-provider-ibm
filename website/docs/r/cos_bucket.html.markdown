@@ -327,7 +327,7 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 # HPCS enabled COS bucket
 
-Create or delete an COS bucket with a Hyper Protect Crypto Services (HPCS) standard or root key.For more details about HPCS see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started .Firstly we need to create a HPCS instance.After that is done you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm only for HPCS instance. We are using existing cos instance to create bucket , so no need to create any cos instance via a terraform. For more details about creation of HPCS instance using terraform see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs
+Create or delete a COS bucket with a Hyper Protect Crypto Services (HPCS) root key.For more details about HPCS see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started .To enable HPCS on a COS bucket, an HPCS instance is required and needs to be initialized by loading the master key to create and manage HPCS keys. For more information on initializing the HPCS instance, see https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm-recovery-crypto-unit. To create an HPCS instance using terraform, see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/hpcs.
 
 
 ## Example usage

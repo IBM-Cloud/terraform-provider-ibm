@@ -114,7 +114,7 @@ variable "dest_rep_bkt_crn" {
   default = ""
 }
 
-variable "location" {
+variable "hpcs_location" {
   default     = "us-south"
   type        = string
 }
@@ -122,27 +122,29 @@ variable "hpcs_plan" {
   default     = "standard"
   type        = string
 }
-variable "units" {
+variable "hpcs_crypto_units" {
   type        = number
   default     = 2
 }
-variable "signature_threshold" {
+variable "hpcs_signature_threshold" {
   type        = number
   default     = 1
 }
-variable "revocation_threshold" {
+variable "hpcs_revocation_threshold" {
   type        = number
   default     = 1
 }
-variable "admins" {
+variable "hpcs_crypto_unit_admins" {
   type = list(object({
     name  = string
     key   = string
     token = string
   }))
 }
-
 # Key name that has to be created on the HPCS Instance
 variable "key_name" {
   type        = string
+}
+variable "hpcs_uko_rootkeycrn" {
+  default = ""
 }

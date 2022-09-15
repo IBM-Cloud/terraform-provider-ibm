@@ -69,7 +69,7 @@ https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/k
 
 
 # Hyper Protect Crypto Services (HPCS) Enabled COS bucket
-Retrieves a COS bucket enabled with data encryption with root key and managed by Hyper Protect Crypto Services
+Retrieves a COS bucket enabled with data encryption using root key that is  created and managed by Hyper Protect Crypto Services.
 ```
 data "ibm_kms_key" "test" {
   instance_id = "guid-of-hs-crypto-instance"

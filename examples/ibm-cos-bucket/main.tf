@@ -269,7 +269,7 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
   }
 }
 
-//HPCS 
+//HPCS - standard plan
 resource ibm_hpcs hpcs {
   location             = var.location
   name                 = "hpcs-instance"
@@ -307,6 +307,15 @@ resource "ibm_cos_bucket" "hpcs-enabled" {
   key_protect          = ibm_kms_key.key.id
 }
 
+//HPCS - UKO plan
+resource "ibm_cos_bucket" "hpcs-uko-enabled" {
+  depends_on           = [ibm_iam_authorization_policy.policy2]
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.storage
+  key_protect           = var.hpcs_uko_rootkeycrn
+}
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
