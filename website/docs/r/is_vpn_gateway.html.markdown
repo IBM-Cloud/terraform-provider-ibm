@@ -80,6 +80,18 @@ In addition to all argument reference list, you can access the following attribu
 - `private_ip_address` -  (String) The Private IP address assigned to this VPN gateway member.
 - `private_ip_address2` -  (String) The Second Private IP address assigned to this VPN gateway.
 - `status` -  (String) The status of the VPN gateway. Supported values are **available**, **deleting**, **failed**, or **pending**.
+- `vpc` - (String) 	The VPC this VPN server resides in.
+  Nested scheme for `vpc`:
+  - `crn` - (String) The CRN for this VPC.
+  - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+	  Nested scheme for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) - The URL for this VPC
+  - `id` - (String) - The unique identifier for this VPC.
+  - `name` - (String) - The unique user-defined name for this VPC.
+- `resource_type` - (String) - The resource type.
+
+
 
 ## Import
 The `ibm_is_vpn_gateway` resource can be imported by using the VPN gateway ID. 
