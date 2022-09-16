@@ -5,13 +5,16 @@ package kubernetes
 
 import (
 	"bytes"
-	//"context"
+	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
@@ -20,10 +23,11 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 
 	v1 "k8s.io/api/core/v1"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/remotecommand"
 )
@@ -48,8 +52,8 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 		Exists:   resourceIBMContainerVpcWorkerExists,
 		Importer: &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(90 * time.Minute),
-			Delete: schema.DefaultTimeout(90 * time.Minute),
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -65,20 +69,6 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 				Description: "Worker name/id that needs to be replaced",
-			},
-
-			"index": {
-				Type:        schema.TypeInt,
-				ForceNew:    true,
-				Required:    true,
-				Description: "Index of the workers to sync the sequence",
-			},
-
-			"update": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Replace & Update worker to latest major & minor version",
 			},
 
 			"resource_group_id": {
@@ -102,6 +92,31 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Check portworx status after worker replace",
+			},
+
+			"ptx_timeout": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "15m",
+				Description: "Timeout for checking ptx pods/status",
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(string)
+					var err error
+					_, err = time.ParseDuration(value)
+					if err != nil {
+						errors = append(errors, fmt.Errorf("[ERROR] Error parsing ptx_timeout: %s", err))
+					}
+					return
+				},
+			},
+
+			"ip": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "IP of the replaced worker",
 			},
 
 			flex.ResourceControllerURL: {
@@ -142,7 +157,7 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	//Current Resource status
 	currentStatus := false
 
-	index := d.Get("index").(int)
+	workerID := d.Get("replace_worker").(string)
 
 	defer func() {
 		commonVarMutex.Lock()
@@ -154,7 +169,7 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}()
 
 	//Continue only if the previous resource status is success
-	err := waitForPreviousResource(index)
+	err := waitForPreviousResource(workerID)
 	if err != nil {
 		return err
 	}
@@ -171,8 +186,6 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}
 
 	clusterNameorID := d.Get("name").(string)
-	workerID := d.Get("replace_worker").(string)
-	//update := d.Get("update").(bool)
 	cluster_config := d.Get("kube_config_path").(string)
 	check_ptx_status := d.Get("check_ptx_status").(bool)
 
@@ -239,7 +252,7 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if check_ptx_status {
-		err = checkPortworxStatus(cluster_config)
+		err = checkPortworxStatus(d, cluster_config)
 		if err != nil {
 			return err
 		}
@@ -275,15 +288,21 @@ func resourceIBMContainerVpcWorkerRead(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting container vpc worker node: %s", err)
 	}
-
+	for _, _network := range worker.NetworkInterfaces {
+		if _network.Primary {
+			d.Set("ip", _network.IpAddress)
+			break
+		}
+	}
 	d.Set(flex.ResourceStatus, worker.Health.State)
+
 	cls, err := wkClient.Clusters().GetCluster(cluster, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error retrieving container vpc cluster: %s", err)
 	}
-
 	d.Set("name", cls.Name)
 	d.Set("resource_group_id", cls.ResourceGroupID)
+
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -340,8 +359,8 @@ func resourceIBMContainerVpcWorkerExists(d *schema.ResourceData, meta interface{
 	return worker.ID == workerID, nil
 }
 
-func waitForPreviousResource(index int) error {
-	time.Sleep(time.Second * time.Duration(5+index))
+func waitForPreviousResource(worker_id string) error {
+	time.Sleep(time.Second * 5)
 	for {
 		commonVarMutex.Lock()
 		if !replaceInProgress {
@@ -349,6 +368,7 @@ func waitForPreviousResource(index int) error {
 			if initRun == 1 || workerReplaceStatus {
 				initRun = 0
 				replaceInProgress = true
+				log.Printf("Worker routine %s is taking mutex", worker_id)
 				resourceIBMContainerVpcWorkerCreateMutex.Lock()
 				return nil
 			} else {
@@ -360,67 +380,173 @@ func waitForPreviousResource(index int) error {
 	}
 }
 
-func checkPortworxStatus(cluster_config string) error {
-	//Load the cluster config
+func checkPortworxStatus(d *schema.ResourceData, cluster_config string) error {
+	//1. Get worker ip
+	worker_ip := d.Get("ip").(string)
+	//1. Load the cluster config
 	config, err := clientcmd.BuildConfigFromFlags("", cluster_config)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Failed to set context: %s", err)
 	}
-
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Failed to create clientset: %s", err)
 	}
-	/*
-		podList, err := clientset.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{LabelSelector: "k8s-app=calico-node"})
-		if err != nil {
-			return fmt.Errorf("[ERROR] Failed to list pods: %s", err)
+
+	//2. Retrieve portworx pod of current worker
+	pod_name, err := WaitForPortworxPod(d, clientset, worker_ip)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Failed to retrieve portworx pods: %s", err)
+	}
+
+	//3. Fetch portworx status json
+	ptx_content, err := WaitForPortworxStatus(d, clientset, config, pod_name.(string))
+	if err != nil {
+		return fmt.Errorf("[ERROR] Failed to fetch portworx status: %s", err)
+	}
+
+	//Execution should reach here only if the content is json & able to decode it without errors
+	//4. Check portworx status on current worker
+	node_data := (ptx_content.(map[string]interface{})["cluster"]).(map[string]interface{})["Nodes"].([]interface{})
+	for _, n := range node_data {
+		n_data := n.(map[string]interface{})
+		if n_data["MgmtIp"] == worker_ip {
+			ptx_status := n_data["NodeData"].(map[string]interface{})["STORAGE-INFO"].(map[string]interface{})["Status"].(string)
+			if ptx_status == "Up" {
+				//portworx is Up on this node
+				log.Printf("Portworx Status is Up")
+				return nil
+			} else {
+				return fmt.Errorf("[ERROR] Portworx Status is not Up on this node: %s", ptx_status)
+			}
 		}
-		return fmt.Errorf("[ERROR] Failed to list pod: %s", podList)
-	*/
-
-	//Byte buffers for the exec command output
-	var stdout, stderr bytes.Buffer
-
-	request := clientset.CoreV1().RESTClient().Post().
-		Resource("pods").
-		Name("calico-node-r4qkg").
-		Namespace("kube-system").
-		SubResource("exec")
-
-	// portworx command to fetch the status as json file
-	ptxCmd := []string{
-		"/bin/sh",
-		"-c",
-		"ls",
 	}
-	request.VersionedParams(&v1.PodExecOptions{
-		Command: ptxCmd,
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     false,
-	}, scheme.ParameterCodec)
+	return fmt.Errorf("[ERROR] No pods found with label name=portworx in kube-system namespace")
+}
 
-	exec, err := remotecommand.NewSPDYExecutor(config, "POST", request.URL())
+func WaitForPortworxPod(d *schema.ResourceData, clientset *kubernetes.Clientset, worker_ip string) (interface{}, error) {
+	log.Printf("Waiting for the portworx pod to be Available & Ready")
+
+	ptx_timeout, err := time.ParseDuration(d.Get("ptx_timeout").(string))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to Execute Remote Command: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error parsing ptx_timeout: %s", err)
 	}
-	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  os.Stdin,
-		Stdout: &stdout,
-		Stderr: &stderr,
-		Tty:    false,
-	})
+
+	stateConf := &resource.StateChangeConf{
+		Pending:      []string{"ptx_not_ready"},
+		Target:       []string{"ptx_ready"},
+		Refresh:      ptxPodRefreshFunc(clientset, worker_ip),
+		Timeout:      time.Duration(ptx_timeout),
+		Delay:        30 * time.Second,
+		PollInterval: 30 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func ptxPodRefreshFunc(clientset *kubernetes.Clientset, worker_ip string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		//1. List pods from kube-system namespace
+		podList, err := clientset.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{LabelSelector: "name=portworx"})
+		if err != nil {
+			log.Printf("Failed to list pods: %s", err)
+			return nil, "ptx_not_ready", nil
+		}
+
+		//2. Get pod from the current worker
+		for _, pod := range podList.Items {
+			if pod.Status.HostIP == worker_ip {
+				for _, container := range pod.Status.ContainerStatuses {
+					if container.Name == "portworx" && container.Ready {
+						log.Printf("Portworx pod %s is ready", pod.Name)
+						return pod.Name, "ptx_ready", nil
+					}
+				}
+				log.Printf("Portworx pod %s not ready yet", pod.Name)
+				return pod.Name, "ptx_not_ready", nil
+			}
+		}
+		return nil, "ptx_not_ready", nil
+	}
+}
+
+func WaitForPortworxStatus(d *schema.ResourceData, clientset *kubernetes.Clientset, config *rest.Config, pod_name string) (interface{}, error) {
+	log.Printf("Waiting to fetch portworx status json")
+
+	ptx_timeout, err := time.ParseDuration(d.Get("ptx_timeout").(string))
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to Read Remote Stream: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error parsing ptx_timeout: %s", err)
 	}
 
-	//If any error occurs in the exec command, log error & retry
-	if len(stderr.String()) != 0 {
-		return fmt.Errorf("[ERROR] Execute Remote Command Error: %s", stderr.String())
+	stateConf := &resource.StateChangeConf{
+		Pending:      []string{"pxctl_fail"},
+		Target:       []string{"pxctl_success"},
+		Refresh:      ptxStatusRefreshFunc(clientset, config, pod_name),
+		Timeout:      time.Duration(ptx_timeout),
+		Delay:        30 * time.Second,
+		PollInterval: 30 * time.Second,
 	}
 
-	return nil
+	return stateConf.WaitForState()
+}
+
+func ptxStatusRefreshFunc(clientset *kubernetes.Clientset, config *rest.Config, pod_name string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		//Byte buffers for the exec command output
+		var stdout, stderr bytes.Buffer
+
+		request := clientset.CoreV1().RESTClient().Post().
+			Resource("pods").
+			Name(pod_name).
+			Namespace("kube-system").
+			SubResource("exec")
+
+		//portworx command to fetch the status as json file
+		ptx_cmd := []string{
+			"/opt/pwx/bin/pxctl",
+			"status",
+			"-j",
+		}
+		request.VersionedParams(&v1.PodExecOptions{
+			Command: ptx_cmd,
+			Stdin:   true,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, scheme.ParameterCodec)
+
+		exec, err := remotecommand.NewSPDYExecutor(config, "POST", request.URL())
+		if err != nil {
+			log.Printf("[ERROR] Failed to Execute Remote Command: %s", err)
+			return nil, "pxctl_fail", nil
+		}
+		err = exec.Stream(remotecommand.StreamOptions{
+			Stdin:  os.Stdin,
+			Stdout: &stdout,
+			Stderr: &stderr,
+			Tty:    false,
+		})
+		if err != nil {
+			log.Printf("[ERROR] Failed to Read Remote Stream: %s", err)
+			return nil, "pxctl_fail", nil
+		}
+
+		//If any error occurs in the exec command, log error & retry
+		if len(stderr.String()) != 0 {
+			log.Printf("[ERROR] Execute Remote Command Error: %s", stderr.String())
+			return nil, "pxctl_fail", nil
+		}
+
+		//Parse json data to check the portworx status
+		var parse_content map[string]interface{}
+		err = json.Unmarshal(stdout.Bytes(), &parse_content)
+		if err != nil {
+			log.Printf("[ERROR] Failed to decode ptx status json: %s", err)
+			return nil, "pxctl_fail", nil
+		}
+
+		log.Printf("Successfully fetched portworx status json")
+		return parse_content, "pxctl_success", nil
+	}
 }

@@ -53,6 +53,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.25.0
+	k8s.io/apimachinery v0.25.0 // indirect
 	k8s.io/client-go v0.25.0
 )
 
