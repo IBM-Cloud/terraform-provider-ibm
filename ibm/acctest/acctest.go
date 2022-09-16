@@ -90,6 +90,7 @@ var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
 var HpcsToken2 string
+var HpcsRootKeyCrn string
 var RealmName string
 var IksSa string
 var IksClusterID string
@@ -833,6 +834,10 @@ func init() {
 	HpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
 	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
+	}
+	HpcsRootKeyCrn = os.Getenv("IBM_HPCS_ROOTKEY_CRN")
+	if HpcsRootKeyCrn == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ROOTKEY_CRN with a VALID CRN for a root key created in the HPCS instance")
 	}
 
 	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")
