@@ -83,7 +83,7 @@ You can access the following attribute references after your data source is crea
 	- `name` - (String) The name of the subnet.
 	- `network_acl` - (String) The access control list (ACL) that is attached to the subnet.
     - `public_gateway`- (Bool) If set to **true**, a public gateway is attached to the subnet. If set to **false**, no public gateway for this subnet exists.
-	- `resource_group` - (String) The resource group that the subnet belongs to.
+	- `resource_group` - (String) The resource group id, that the subnet belongs to.
     - `total_ipv4_address_count`- (Integer) The total number of IPv4 addresses in the subnet.
     - `status` - (String) The status of the subnet.
   - `routing_table` -  (List) The routing table for this subnet. 

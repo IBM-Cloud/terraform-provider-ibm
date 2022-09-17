@@ -63,7 +63,7 @@ In addition to all argument reference list, you can access the following attribu
       - `id` - (String) The unique identifier for this backup policy plan.
       - `name` - (String) The unique user-defined name for this backup policy plan.
       - `resource_type` - (String) The type of resource referenced.
-    - `resource_group` - (List) The resource group for this backup policy. 
+    - `resource_group` - (List) The resource group object, for this backup policy. 
     
       Nested `resource_group` blocks have the following structure:
         - `href` - (String) The URL for this resource group.

@@ -103,7 +103,7 @@ In addition to all argument reference list, you can access the following attribu
 	  - `source_port_min` - (String) The inclusive minimum bound of UDP source port range.
 	- `subnets` - (String) The subnets to which this network ACL is attached.
 	- `vpc` - (String) The VPC to which this network ACL is a part of.
-- `resource_group` - (String) The resource group of this network ACL.
+- `resource_group` - (String) The resource group (Id), of this network ACL.
 - `rules` - (List) The ordered rules of this network ACL. If rules does not exist, all traffic will be denied. Nested rules blocks has the following structure.
 
   Nested scheme for `rules`:

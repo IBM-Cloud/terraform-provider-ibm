@@ -12,7 +12,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/continuous-delivery-go-sdk v0.1.1
+	github.com/IBM/continuous-delivery-go-sdk v0.1.2
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.10.2
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.0
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.23.0
+	github.com/IBM/vpc-go-sdk v0.24.0
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
@@ -59,4 +59,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/vpc-go-sdk v0.23.0 => ./common/github.com/IBM/vpc-go-sdk
+replace github.com/IBM/vpc-go-sdk v0.24.0 => ./common/github.com/IBM/vpc-go-sdk

@@ -38,7 +38,7 @@ In addition to all argument references listed, you can access the following attr
 		* `identity_provider` - (Optional, List) The type of identity provider to be used by VPN client.
 			
 			Nested scheme for **identity_provider**:
-			* `provider_type` - (Optional, String) The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access managementThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+			* `provider_type` - (Optional, String) The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
 			  * Constraints: Allowable values are: iam
 		* `client_ca` - (Optional, List) The certificate instance used for the VPN client certificate authority (CA).
 			
