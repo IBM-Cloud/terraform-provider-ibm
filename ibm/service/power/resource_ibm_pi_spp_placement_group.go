@@ -88,7 +88,7 @@ func resourceIBMPISPPPlacementGroupCreate(ctx context.Context, d *schema.Resourc
 
 	response, err := client.Create(body)
 	if err != nil || response == nil {
-		return diag.FromErr(fmt.Errorf("error creating the spp placement group: %s", err))
+		return diag.Errorf("error creating the spp placement group: %v", err)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *response.ID))
@@ -111,7 +111,7 @@ func resourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 
 	response, err := client.Get(parts[1])
 	if err != nil || response == nil {
-		return diag.FromErr(fmt.Errorf("error reading the spp placement group: %s", err))
+		return diag.Errorf("error reading the spp placement group: %v", err)
 	}
 
 	d.Set(Arg_SPPPlacementGroupName, response.Name)
@@ -137,7 +137,7 @@ func resourceIBMPISPPPlacementGroupDelete(ctx context.Context, d *schema.Resourc
 	err = client.Delete(parts[1])
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting the spp placement group: %s", err))
+		return diag.Errorf("error deleting the spp placement group: %v", err)
 	}
 	d.SetId("")
 	return nil

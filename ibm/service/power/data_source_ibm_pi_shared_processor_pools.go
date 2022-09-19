@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -87,7 +86,7 @@ func dataSourceIBMPISharedProcessorPoolsRead(ctx context.Context, d *schema.Reso
 	client := st.NewIBMPISharedProcessorPoolClient(ctx, sess, cloudInstanceID)
 	pools, err := client.GetAll()
 	if err != nil || pools == nil {
-		return diag.FromErr(fmt.Errorf("error fetching shared processor pools: %s", err))
+		return diag.Errorf("error fetching shared processor pools: %v", err)
 	}
 
 	result := make([]map[string]interface{}, 0, len(pools.SharedProcessorPools))

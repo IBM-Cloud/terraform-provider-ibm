@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -72,7 +71,7 @@ func dataSourceIBMPISPPPlacementGroupsRead(ctx context.Context, d *schema.Resour
 	client := st.NewIBMPISPPPlacementGroupClient(ctx, sess, cloudInstanceID)
 	groups, err := client.GetAll()
 	if err != nil || groups == nil {
-		return diag.FromErr(fmt.Errorf("error fetching spp placement groups: %s", err))
+		return diag.Errorf("error fetching spp placement groups: %v", err)
 	}
 
 	result := make([]map[string]interface{}, 0, len(groups.SppPlacementGroups))

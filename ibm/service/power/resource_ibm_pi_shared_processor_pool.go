@@ -197,7 +197,7 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 
 	spp, err := client.Create(body)
 	if err != nil || spp == nil {
-		return diag.FromErr(fmt.Errorf("error creating the shared processor pool: %s", err))
+		return diag.Errorf("error creating the shared processor pool: %v", err)
 	}
 
 	var sharedProcessorPoolReadyStatus string
@@ -270,7 +270,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 
 	response, err := client.Get(parts[1])
 	if err != nil || response == nil {
-		return diag.FromErr(fmt.Errorf("error reading the shared processor pool: %s", err))
+		return diag.Errorf("error reading the shared processor pool: %v", err)
 	}
 
 	if response.SharedProcessorPool.Name != nil {
@@ -350,7 +350,7 @@ func resourceIBMPISharedProcessorPoolUpdate(ctx context.Context, d *schema.Resou
 
 	_, err = client.Update(sppID, body)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error updating the shared processor pool: %s", err))
+		return diag.Errorf("error updating the shared processor pool: %v", err)
 	}
 
 	if d.HasChange(Attr_SharedProcessorPoolPlacementGroups) {
@@ -433,7 +433,7 @@ func resourceIBMPISharedProcessorPoolDelete(ctx context.Context, d *schema.Resou
 	err = client.Delete(parts[1])
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting the shared processor pool: %s", err))
+		return diag.Errorf("error deleting the shared processor pool: %v", err)
 	}
 	d.SetId("")
 	return nil

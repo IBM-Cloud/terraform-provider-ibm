@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -147,7 +146,7 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 
 	response, err := client.Get(poolID)
 	if err != nil || response == nil {
-		return diag.FromErr(fmt.Errorf("error fetching the shared processor pool: %s", err))
+		return diag.Errorf("error fetching the shared processor pool: %v", err)
 	}
 
 	d.SetId(*response.SharedProcessorPool.ID)

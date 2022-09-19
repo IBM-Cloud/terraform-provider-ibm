@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -64,7 +63,7 @@ func dataSourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.Resourc
 
 	response, err := client.Get(placementGroupID)
 	if err != nil || response == nil {
-		return diag.FromErr(fmt.Errorf("error fetching the spp placement group: %s", err))
+		return diag.Errorf("error fetching the spp placement group: %v", err)
 	}
 
 	d.SetId(*response.ID)
