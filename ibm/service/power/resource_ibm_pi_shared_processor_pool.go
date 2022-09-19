@@ -120,49 +120,41 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						Attr_SharedProcessorPoolInstanceCpus: {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
 							Description: "The amount of cpus for the server instance",
 						},
 						Attr_SharedProcessorPoolInstanceUncapped: {
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Identifies if uncapped or not",
 						},
 						Attr_SharedProcessorPoolInstanceAvailabilityZone: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Availability zone for the server instances",
 						},
 						Attr_SharedProcessorPoolInstanceId: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The server instance ID",
 						},
 						Attr_SharedProcessorPoolInstanceMemory: {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Computed:    true,
 							Description: "The amount of memory for the server instance",
 						},
 						Attr_SharedProcessorPoolInstanceName: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The server instance name",
 						},
 						Attr_SharedProcessorPoolInstanceStatus: {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Status of the server",
 						},
 						Attr_SharedProcessorPoolInstanceVcpus: {
 							Type:        schema.TypeFloat,
-							Optional:    true,
 							Computed:    true,
 							Description: "The amout of vcpus for the server instance",
 						},
@@ -201,34 +193,26 @@ func resourceIBMPISharedProcessorPoolCreate(ctx context.Context, d *schema.Resou
 	}
 
 	var sharedProcessorPoolReadyStatus string
-	if r, ok := d.GetOk(Attr_SharedProcessorPoolInstanceStatus); ok {
-		sharedProcessorPoolReadyStatus = r.(string)
-	}
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *spp.ID))
-
-	if sharedProcessorPoolReadyStatus != "active" {
-		_, err = isWaitForPISharedProcessorPoolAvailable(ctx, client, *spp.ID, sharedProcessorPoolReadyStatus)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = isWaitForPISharedProcessorPoolAvailable(ctx, d, client, *spp.ID, sharedProcessorPoolReadyStatus)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	log.Printf("Printing the shared processor pool %+v", &spp)
 
 	return resourceIBMPISharedProcessorPoolRead(ctx, d, meta)
 
 }
 
-func isWaitForPISharedProcessorPoolAvailable(ctx context.Context, client *st.IBMPISharedProcessorPoolClient, id string, sharedProcessorPoolReadyStatus string) (interface{}, error) {
+func isWaitForPISharedProcessorPoolAvailable(ctx context.Context, d *schema.ResourceData, client *st.IBMPISharedProcessorPoolClient, id string, sharedProcessorPoolReadyStatus string) (interface{}, error) {
 	log.Printf("Waiting for PISharedProcessorPool (%s) to be active ", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"configuring"},
-		Target:     []string{"active", "error", ""},
+		Target:     []string{"active", "failed", ""},
 		Refresh:    isPISharedProcessorPoolRefreshFunc(client, id, sharedProcessorPoolReadyStatus),
 		Delay:      20 * time.Second,
 		MinTimeout: activeTimeOut,
-		Timeout:    120 * time.Minute,
+		Timeout:    d.Timeout(schema.TimeoutCreate),
 	}
 
 	return stateConf.WaitForStateContext(ctx)
@@ -272,6 +256,9 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 	if err != nil || response == nil {
 		return diag.Errorf("error reading the shared processor pool: %v", err)
 	}
+
+	d.Set(Arg_CloudInstanceID, cloudInstanceID)
+	d.Set(Arg_SharedProcessorPoolHostGroup, response.SharedProcessorPool.HostGroup)
 
 	if response.SharedProcessorPool.Name != nil {
 		d.Set(Arg_SharedProcessorPoolName, response.SharedProcessorPool.Name)

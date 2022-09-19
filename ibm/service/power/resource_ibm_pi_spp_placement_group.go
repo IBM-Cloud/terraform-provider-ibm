@@ -114,6 +114,7 @@ func resourceIBMPISPPPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		return diag.Errorf("error reading the spp placement group: %v", err)
 	}
 
+	d.Set(Arg_CloudInstanceID, cloudInstanceID)
 	d.Set(Arg_SPPPlacementGroupName, response.Name)
 	d.Set(Attr_SPPPlacementGroupID, response.ID)
 	d.Set(Arg_SPPPlacementGroupPolicy, response.Policy)

@@ -196,6 +196,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			Arg_PIInstanceSharedProcessorPool: {
 				Type:          schema.TypeString,
 				Optional:      true,
+				ForceNew:      true,
 				ConflictsWith: []string{PISAPInstanceProfileID},
 				Description:   "Shared Processor Pool the instance is deployed on",
 			},
