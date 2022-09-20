@@ -1340,6 +1340,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_vpc_alb_create":              kubernetes.ResourceIBMContainerVpcAlbCreateNewValidator(),
 				"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
 				"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachmentValidator(),
+				"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindServiceValidator(),
+				"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCertValidator(),
+				"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeatureValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1399,6 +1402,12 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
 				"ibm_container_vpc_cluster_worker_pool": kubernetes.DataSourceIBMContainerVpcClusterWorkerPoolValidator(),
 				"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPoolValidator(),
+				"ibm_container_bind_service":            kubernetes.DataSourceIBMContainerBindServiceValidator(),
+				"ibm_container_cluster_config":          kubernetes.DataSourceIBMContainerClusterConfigValidator(),
+				"ibm_container_cluster":                 kubernetes.DataSourceIBMContainerClusterValidator(),
+				"ibm_container_vpc_cluster_worker":      kubernetes.DataSourceIBMContainerVPCClusterWorkerValidator(),
+				"ibm_container_vpc_cluster":             kubernetes.DataSourceIBMContainerVPCClusterValidator(),
+				"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCertValidator(),
 			},
 		}
 	})
