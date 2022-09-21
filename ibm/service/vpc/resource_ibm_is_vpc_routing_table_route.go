@@ -156,10 +156,11 @@ func ResourceIBMISVPCRoutingTableRoute() *schema.Resource {
 				Description: "Routing table route Lifecycle State",
 			},
 			"priority": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
-				Description: "The route's priority. Smaller values have higher priority.",
+				Type:         schema.TypeInt,
+				Computed:     true,
+				Optional:     true,
+				Description:  "The route's priority. Smaller values have higher priority.",
+				ValidateFunc: validate.InvokeValidator("ibm_is_vpc_routing_table_route", "priority"),
 			},
 			rtOrigin: {
 				Type:        schema.TypeString,
@@ -193,6 +194,13 @@ func ResourceIBMISVPCRoutingTableRouteValidator() *validate.ResourceValidator {
 			Required:                   false,
 			AllowedValues:              actionAllowedValues})
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "priority",
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			MinValue:                   "0",
+			MaxValue:                   "255"})
 	ibmVPCRoutingTableRouteValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc_routing_table_route", Schema: validateSchema}
 	return &ibmVPCRoutingTableRouteValidator
 }
