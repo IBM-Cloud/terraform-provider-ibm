@@ -211,7 +211,7 @@ func resourceIBMKmsKeyWithPolicyOverridesCreate(context context.Context, d *sche
 	} else {
 		expiration = nil
 	}
-	key, err := kpAPI.CreateImportedKeyWithPolicyOverride(context, name, expiration, payload, encryptedNonce, iv, standardKey, nil, policy)
+	key, err := kpAPI.CreateImportedKeyWithPolicyOverrides(context, name, expiration, payload, encryptedNonce, iv, standardKey, nil, policy)
 	if err != nil {
 		return diag.Errorf("[ERROR] Error while creating key: %s", err)
 	}

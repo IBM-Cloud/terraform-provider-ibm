@@ -301,7 +301,7 @@ func resourceIBMKmsKeyExists(d *schema.ResourceData, meta interface{}) (bool, er
 
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	_, err = kpAPI.GetKey(context.Background(), keyid)
