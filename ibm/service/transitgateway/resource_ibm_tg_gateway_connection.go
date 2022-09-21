@@ -73,7 +73,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tg_connection", tgNetworkType),
-				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel)",
+				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,power_virtual_server)",
 			},
 			tgName: {
 				Type:         schema.TypeString,
@@ -87,7 +87,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The ID of the network being connected via this connection. This field is required for some types, such as 'vpc' or 'directlink'. The value of this is the CRN of the VPC or direct link gateway to be connected. This field is required to be unspecified for network type 'classic'.",
+				Description: "The ID of the network being connected via this connection. This field is required for some types, such as 'vpc', 'directlink', or 'power_virtual_server'. The value of this is the CRN of the VPC, direct link gateway, or power virtual server instance to be connected. This field is required to be unspecified for network type 'classic'.",
 			},
 			tgNetworkAccountID: {
 				Type:        schema.TypeString,
@@ -176,7 +176,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 func ResourceIBMTransitGatewayConnectionValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	networkType := "classic, directlink, vpc, gre_tunnel"
+	networkType := "classic, directlink, vpc, gre_tunnel, power_virtual_server"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 tgNetworkType,
