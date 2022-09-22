@@ -146,6 +146,9 @@ var Image_operating_system string
 var Tg_cross_network_account_id string
 var Tg_cross_network_id string
 
+// Transit Gateway Power Virtual Server
+var Tg_power_vs_network_id string
+
 //Enterprise Management
 var Account_to_be_imported string
 
@@ -817,6 +820,10 @@ func init() {
 	Tg_cross_network_id = os.Getenv("IBM_TG_CROSS_NETWORK_ID")
 	if Tg_cross_network_id == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_TG_CROSS_NETWORK_ID for testing ibm_tg_connection resource else  tests will fail if this is not set correctly")
+	}
+	Tg_power_vs_network_id = os.Getenv("IBM_TG_POWER_VS_NETWORK_ID")
+	if Tg_power_vs_network_id == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_TG_POWER_VS_NETWORK_ID for testing ibm_tg_connection resource else tests will fail if this is not set correctly")
 	}
 	Account_to_be_imported = os.Getenv("ACCOUNT_TO_BE_IMPORTED")
 	if Account_to_be_imported == "" {
