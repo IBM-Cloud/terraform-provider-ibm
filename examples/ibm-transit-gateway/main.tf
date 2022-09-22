@@ -59,6 +59,15 @@ resource "ibm_tg_connection" "test_tg_dl_connection"{
                 network_id = var.network_id
 }
 
+# Create a transit gateway power virtual server connection
+resource "ibm_tg_connection" "test_tg_powervs_connection"{
+        gateway = "${ibm_tg_gateway.new_tg_gw.id}"
+        network_type = var.network_type
+        name= var.vc_name
+        # power virtual server crn
+        network_id = var.network_id
+}
+
 # Create a transit gateway route report
 resource ibm_tg_route_report" "test_tg_route_report" {
 	gateway = ibm_tg_gateway.new_tg_gw.id
