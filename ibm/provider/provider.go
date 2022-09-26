@@ -986,6 +986,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
 			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
+			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
 
 			// //Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),

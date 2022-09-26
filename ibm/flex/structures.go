@@ -42,6 +42,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/api/schematics"
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
+	pi "github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -3207,4 +3208,65 @@ func FlattenSatelliteClusterZones(list []string) []map[string]interface{} {
 		zones[i] = l
 	}
 	return zones
+}
+
+func ExpandVolumeGroupAction(data []interface{}) (*pi.VolumeGroupAction, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+	}
+
+	vgAction := pi.VolumeGroupAction{}
+	action := data[0].(map[string]interface{})
+
+	if v, ok := action["start"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Start = expandVolumeGroupStartAction(action["start"].([]interface{}))
+		return &vgAction, nil
+	}
+
+	if v, ok := action["stop"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Stop = expandVolumeGroupStopAction(action["stop"].([]interface{}))
+		return &vgAction, nil
+	}
+
+	if v, ok := action["reset"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Reset = expandVolumeGroupResetAction(action["reset"].([]interface{}))
+		return &vgAction, nil
+	}
+	return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+}
+
+func expandVolumeGroupStartAction(start []interface{}) *pi.VolumeGroupActionStart {
+	if len(start) == 0 {
+		return nil
+	}
+
+	s := start[0].(map[string]interface{})
+
+	return &pi.VolumeGroupActionStart{
+		Source: sl.String(s["source"].(string)),
+	}
+}
+
+func expandVolumeGroupStopAction(stop []interface{}) *pi.VolumeGroupActionStop {
+	if len(stop) == 0 {
+		return nil
+	}
+
+	s := stop[0].(map[string]interface{})
+
+	return &pi.VolumeGroupActionStop{
+		Access: sl.Bool(s["access"].(bool)),
+	}
+}
+
+func expandVolumeGroupResetAction(reset []interface{}) *pi.VolumeGroupActionReset {
+	if len(reset) == 0 {
+		return nil
+	}
+
+	s := reset[0].(map[string]interface{})
+
+	return &pi.VolumeGroupActionReset{
+		Status: sl.String(s["status"].(string)),
+	}
 }
