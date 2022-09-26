@@ -73,7 +73,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "ID of the resource group.",
 			},
@@ -406,7 +406,7 @@ func waitForPreviousResource(worker_id string) error {
 }
 
 func checkPortworxStatus(d *schema.ResourceData, cluster_config string) error {
-	//1. Get worker ip
+	//Get worker ip
 	worker_ip := d.Get("ip").(string)
 	//1. Load the cluster config
 	config, err := clientcmd.BuildConfigFromFlags("", cluster_config)

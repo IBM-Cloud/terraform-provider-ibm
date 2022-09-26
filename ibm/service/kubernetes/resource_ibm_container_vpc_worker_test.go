@@ -5,7 +5,6 @@ package kubernetes_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -21,7 +20,6 @@ import (
 
 func TestAccIBMContainerVpcClusterWorkerBasic(t *testing.T) {
 
-	var worker_id string
 	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -120,17 +118,18 @@ func testAccCheckIBMVpcContainerExists() resource.TestCheckFunc {
 				return err
 			}
 			if len(parts) < 2 {
-				return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be in kube-clusterID-* format", d.Id())
+				return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be in kube-clusterID-* format", rs.Primary.ID)
 			}
 			cluster := parts[1]
 
 			target := v2.ClusterTargetHeader{}
 
-			worker, err := wkClient.Workers().Get(cluster, rs.Primary.ID, targetEnv)
+			_, err = wpClient.Workers().Get(cluster, rs.Primary.ID, target)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error getting container vpc worker node: %s", err)
 			}
 			return nil
 		}
+		return fmt.Errorf("[ERROR] Error getting container vpc worker resource")
 	}
 }
