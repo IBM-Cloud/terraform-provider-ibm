@@ -73,8 +73,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 
 			"resource_group_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "ID of the resource group.",
 			},
@@ -82,8 +81,8 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 			"kube_config_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
+				Default:     nil,
 				Description: "Path of downloaded cluster config",
 			},
 
@@ -91,6 +90,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    true,
+				Default:     true,
 				Description: "Check portworx status after worker replace",
 			},
 
@@ -158,9 +158,36 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	currentStatus := false
 
 	workerID := d.Get("replace_worker").(string)
+	cluster_config := d.Get("kube_config_path").(string)
+	check_ptx_status := d.Get("check_ptx_status").(bool)
+
+	if check_ptx_status {
+		//Validate & Check kubeconfig
+		if cluster_config == "" || cluster_config == "nil" {
+			return fmt.Errorf("[ERROR] kube_config_path argument must be specified if check_ptx_status is true")
+		} else {
+			//1. Load the cluster config
+			config, err := clientcmd.BuildConfigFromFlags("", cluster_config)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Invalid kubeconfig, failed to set context: %s", err)
+			}
+			//2. create the clientset
+			clientset, err := kubernetes.NewForConfig(config)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Invalid kubeconfig,, failed to create clientset: %s", err)
+			}
+			//3. List pods from kube-system namespace
+			_, err = clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				return fmt.Errorf("[ERROR] Invalid kubeconfig, failed to list resource: %s", err)
+			}
+		}
+		log.Printf("Kubeconfig is valid")
+	}
 
 	defer func() {
 		commonVarMutex.Lock()
+		workerReplaceStatus = false
 		if currentStatus {
 			workerReplaceStatus = true
 		}
@@ -186,8 +213,6 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}
 
 	clusterNameorID := d.Get("name").(string)
-	cluster_config := d.Get("kube_config_path").(string)
-	check_ptx_status := d.Get("check_ptx_status").(bool)
 
 	worker, err := wkClient.Workers().Get(clusterNameorID, workerID, targetEnv)
 	if err != nil {
