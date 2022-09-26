@@ -12,7 +12,7 @@ $ terraform plan
 $ terraform apply
 ```
 
-Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index] to untaint the failed worker after fixing it manually to proceed with next set of workers
+Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index]` to untaint the failed worker after fixing it manually to proceed with next set of workers
 Run `terraform destroy` when you need to provide new set of worker list
 
 ## Example usage
