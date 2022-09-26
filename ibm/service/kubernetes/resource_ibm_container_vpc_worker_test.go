@@ -87,15 +87,16 @@ func testAccCheckIBMVpcContainerWorkerBasic(name string) string {
 	}
 
     data ibm_container_cluster_config "cluster_config: {
-        cluster_name_id = "%[1]s"
+        cluster_name_id   = "%[1]s"
         resource_group_id = data.ibm_resource_group.resource_group.id
     }
 
     resource "ibm_container_vpc_worker" "test_worker" {
-        name            = "%[1]s"
-        replace_worker  = element(ibm_container_vpc_cluster.cluster.workers, 0)
-        resource_group_id = data.ibm_resource_group.resource_group.id
-        kube_config_path = data.ibm_container_cluster_config.cluster_config.config_file_path
+        name                = "%[1]s"
+        replace_worker      = element(ibm_container_vpc_cluster.cluster.workers, 0)
+        resource_group_id   = data.ibm_resource_group.resource_group.id
+        kube_config_path    = data.ibm_container_cluster_config.cluster_config.config_file_path
+        check_ptx_status    = false
     }  
 		`, name)
 }
