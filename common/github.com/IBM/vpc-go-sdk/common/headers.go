@@ -40,10 +40,10 @@ func GetSdkHeaders(serviceName string, serviceVersion string, operationId string
 	return sdkHeaders
 }
 
-var userAgent string = fmt.Sprintf("%s-%s %s", SDK_NAME, Version, GetSystemInfo())
+var UserAgent string = fmt.Sprintf("%s-%s %s", SDK_NAME, Version, GetSystemInfo())
 
 func GetUserAgentInfo() string {
-	return userAgent
+	return UserAgent
 }
 
 var systemInfo = fmt.Sprintf("(arch=%s; os=%s; go.version=%s)", runtime.GOARCH, runtime.GOOS, runtime.Version())

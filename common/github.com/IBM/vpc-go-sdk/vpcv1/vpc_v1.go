@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.48.1-52130155-20220425-145431
+ * IBM OpenAPI SDK Code Generator Version: 3.55.1-b24c7487-20220831-201343
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -37,11 +37,11 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2022-03-29
+// API Version: 2022-09-13
 type VpcV1 struct {
 	Service *core.BaseService
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-03-29`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and today's date (UTC).
 	Version *string
 
@@ -62,7 +62,7 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-03-29`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and today's date (UTC).
 	Version *string
 }
@@ -121,7 +121,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2022-03-29")
+		options.Version = core.StringPtr("2022-09-13")
 	}
 
 	service = &VpcV1{
@@ -2495,9 +2495,8 @@ func (vpc *VpcV1) GetSubnetNetworkACLWithContext(ctx context.Context, getSubnetN
 	return
 }
 
-// ReplaceSubnetNetworkACL : Attach a network ACL to a subnet
-// This request attaches the network ACL, specified in the request body, to the subnet specified by the subnet
-// identifier in the URL. This replaces the existing network ACL on the subnet.
+// ReplaceSubnetNetworkACL : Replace the network ACL for a subnet
+// This request replaces the existing network ACL for a subnet with the network ACL specified in the request body.
 func (vpc *VpcV1) ReplaceSubnetNetworkACL(replaceSubnetNetworkACLOptions *ReplaceSubnetNetworkACLOptions) (result *NetworkACL, response *core.DetailedResponse, err error) {
 	return vpc.ReplaceSubnetNetworkACLWithContext(context.Background(), replaceSubnetNetworkACLOptions)
 }
@@ -2812,9 +2811,8 @@ func (vpc *VpcV1) GetSubnetRoutingTableWithContext(ctx context.Context, getSubne
 	return
 }
 
-// ReplaceSubnetRoutingTable : Attach a routing table to a subnet
-// This request attaches the routing table, specified in the request body, to the subnet specified by the subnet
-// identifier in the URL. This replaces the existing routing table on the subnet.
+// ReplaceSubnetRoutingTable : Replace the routing table for a subnet
+// This request replaces the existing routing table for a subnet with the routing table specified in the request body.
 //
 // For this request to succeed, the routing table `route_direct_link_ingress`,
 // `route_transit_gateway_ingress`, and `route_vpc_zone_ingress` properties must be `false`.
@@ -15844,6 +15842,9 @@ func (vpc *VpcV1) ListVPNGatewaysWithContext(ctx context.Context, listVPNGateway
 	if listVPNGatewaysOptions.ResourceGroupID != nil {
 		builder.AddQuery("resource_group.id", fmt.Sprint(*listVPNGatewaysOptions.ResourceGroupID))
 	}
+	if listVPNGatewaysOptions.Sort != nil {
+		builder.AddQuery("sort", fmt.Sprint(*listVPNGatewaysOptions.Sort))
+	}
 	if listVPNGatewaysOptions.Mode != nil {
 		builder.AddQuery("mode", fmt.Sprint(*listVPNGatewaysOptions.Mode))
 	}
@@ -25174,7 +25175,8 @@ func (options *CreateDedicatedHostOptions) SetHeaders(param map[string]string) *
 
 // CreateEndpointGatewayOptions : The CreateEndpointGateway options.
 type CreateEndpointGatewayOptions struct {
-	// The target for this endpoint gateway.
+	// The target to use for this endpoint gateway. Must not already be the target of another
+	// endpoint gateway in the VPC.
 	Target EndpointGatewayTargetPrototypeIntf `json:"target" validate:"required"`
 
 	// The VPC this endpoint gateway will reside in.
@@ -25350,13 +25352,19 @@ func (options *CreateFlowLogCollectorOptions) SetHeaders(param map[string]string
 
 // CreateIkePolicyOptions : The CreateIkePolicy options.
 type CreateIkePolicyOptions struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
-	// The Diffie-Hellman group.
+	// The Diffie-Hellman group
+	//
+	// Groups `2` and `5` have been deprecated.
 	DhGroup *int64 `json:"dh_group" validate:"required"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
 	// The IKE protocol version.
@@ -25377,18 +25385,24 @@ type CreateIkePolicyOptions struct {
 }
 
 // Constants associated with the CreateIkePolicyOptions.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated.
 const (
 	CreateIkePolicyOptionsAuthenticationAlgorithmMd5Const    = "md5"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha1Const   = "sha1"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha256Const = "sha256"
+	CreateIkePolicyOptionsAuthenticationAlgorithmSha384Const = "sha384"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha512Const = "sha512"
 )
 
 // Constants associated with the CreateIkePolicyOptions.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated.
 const (
 	CreateIkePolicyOptionsEncryptionAlgorithmAes128Const    = "aes128"
+	CreateIkePolicyOptionsEncryptionAlgorithmAes192Const    = "aes192"
 	CreateIkePolicyOptionsEncryptionAlgorithmAes256Const    = "aes256"
 	CreateIkePolicyOptionsEncryptionAlgorithmTripleDesConst = "triple_des"
 )
@@ -26026,13 +26040,26 @@ func (options *CreateInstanceVolumeAttachmentOptions) SetHeaders(param map[strin
 
 // CreateIpsecPolicyOptions : The CreateIpsecPolicy options.
 type CreateIpsecPolicyOptions struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated
+	//
+	// Must be `disabled` if and only if the `encryption_algorithm` is
+	// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated
+	//
+	// The `authentication_algorithm` must be `disabled` if and only if
+	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+	// `aes256gcm16`.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
-	// Perfect Forward Secrecy.
+	// Perfect Forward Secrecy
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
 	Pfs *string `json:"pfs" validate:"required"`
 
 	// The key lifetime in seconds.
@@ -26050,29 +26077,58 @@ type CreateIpsecPolicyOptions struct {
 }
 
 // Constants associated with the CreateIpsecPolicyOptions.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated
+//
+// Must be `disabled` if and only if the `encryption_algorithm` is
+// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 const (
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmMd5Const    = "md5"
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha1Const   = "sha1"
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha256Const = "sha256"
-	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha512Const = "sha512"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmDisabledConst = "disabled"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmMd5Const      = "md5"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha1Const     = "sha1"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha256Const   = "sha256"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha384Const   = "sha384"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha512Const   = "sha512"
 )
 
 // Constants associated with the CreateIpsecPolicyOptions.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated
+//
+// The `authentication_algorithm` must be `disabled` if and only if
+// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+// `aes256gcm16`.
 const (
-	CreateIpsecPolicyOptionsEncryptionAlgorithmAes128Const    = "aes128"
-	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256Const    = "aes256"
-	CreateIpsecPolicyOptionsEncryptionAlgorithmTripleDesConst = "triple_des"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes128Const      = "aes128"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes128gcm16Const = "aes128gcm16"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes192Const      = "aes192"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256Const      = "aes256"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
 // Constants associated with the CreateIpsecPolicyOptions.Pfs property.
-// Perfect Forward Secrecy.
+// Perfect Forward Secrecy
+//
+// Groups `group_2` and `group_5` have been deprecated.
 const (
 	CreateIpsecPolicyOptionsPfsDisabledConst = "disabled"
 	CreateIpsecPolicyOptionsPfsGroup14Const  = "group_14"
+	CreateIpsecPolicyOptionsPfsGroup15Const  = "group_15"
+	CreateIpsecPolicyOptionsPfsGroup16Const  = "group_16"
+	CreateIpsecPolicyOptionsPfsGroup17Const  = "group_17"
+	CreateIpsecPolicyOptionsPfsGroup18Const  = "group_18"
 	CreateIpsecPolicyOptionsPfsGroup19Const  = "group_19"
 	CreateIpsecPolicyOptionsPfsGroup2Const   = "group_2"
+	CreateIpsecPolicyOptionsPfsGroup20Const  = "group_20"
+	CreateIpsecPolicyOptionsPfsGroup21Const  = "group_21"
+	CreateIpsecPolicyOptionsPfsGroup22Const  = "group_22"
+	CreateIpsecPolicyOptionsPfsGroup23Const  = "group_23"
+	CreateIpsecPolicyOptionsPfsGroup24Const  = "group_24"
+	CreateIpsecPolicyOptionsPfsGroup31Const  = "group_31"
 	CreateIpsecPolicyOptionsPfsGroup5Const   = "group_5"
 )
 
@@ -32512,7 +32568,7 @@ func UnmarshalEndpointGatewayTarget(m map[string]json.RawMessage, result interfa
 	return
 }
 
-// EndpointGatewayTargetPrototype : The target for this endpoint gateway.
+// EndpointGatewayTargetPrototype : The target to use for this endpoint gateway. Must not already be the target of another endpoint gateway in the VPC.
 // Models which "extend" this model:
 // - EndpointGatewayTargetPrototypeProviderCloudServiceIdentity
 // - EndpointGatewayTargetPrototypeProviderInfrastructureServiceIdentity
@@ -35985,7 +36041,9 @@ func (options *GetVPNServerRouteOptions) SetHeaders(param map[string]string) *Ge
 
 // IkePolicy : IkePolicy struct
 type IkePolicy struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
 	// The VPN gateway connections that use this IKE policy.
@@ -35994,10 +36052,14 @@ type IkePolicy struct {
 	// The date and time that this IKE policy was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// The Diffie-Hellman group.
+	// The Diffie-Hellman group
+	//
+	// Groups `2` and `5` have been deprecated.
 	DhGroup *int64 `json:"dh_group" validate:"required"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
 	// The IKE policy's canonical URL.
@@ -36026,18 +36088,24 @@ type IkePolicy struct {
 }
 
 // Constants associated with the IkePolicy.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated.
 const (
 	IkePolicyAuthenticationAlgorithmMd5Const    = "md5"
 	IkePolicyAuthenticationAlgorithmSha1Const   = "sha1"
 	IkePolicyAuthenticationAlgorithmSha256Const = "sha256"
+	IkePolicyAuthenticationAlgorithmSha384Const = "sha384"
 	IkePolicyAuthenticationAlgorithmSha512Const = "sha512"
 )
 
 // Constants associated with the IkePolicy.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated.
 const (
 	IkePolicyEncryptionAlgorithmAes128Const    = "aes128"
+	IkePolicyEncryptionAlgorithmAes192Const    = "aes192"
 	IkePolicyEncryptionAlgorithmAes256Const    = "aes256"
 	IkePolicyEncryptionAlgorithmTripleDesConst = "triple_des"
 )
@@ -36173,13 +36241,19 @@ func (resp *IkePolicyCollection) GetNextStart() (*string, error) {
 
 // IkePolicyPatch : IkePolicyPatch struct
 type IkePolicyPatch struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
-	// The Diffie-Hellman group.
+	// The Diffie-Hellman group
+	//
+	// Groups `2` and `5` have been deprecated.
 	DhGroup *int64 `json:"dh_group,omitempty"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated.
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
 	// The IKE protocol version.
@@ -36193,18 +36267,24 @@ type IkePolicyPatch struct {
 }
 
 // Constants associated with the IkePolicyPatch.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated.
 const (
 	IkePolicyPatchAuthenticationAlgorithmMd5Const    = "md5"
 	IkePolicyPatchAuthenticationAlgorithmSha1Const   = "sha1"
 	IkePolicyPatchAuthenticationAlgorithmSha256Const = "sha256"
+	IkePolicyPatchAuthenticationAlgorithmSha384Const = "sha384"
 	IkePolicyPatchAuthenticationAlgorithmSha512Const = "sha512"
 )
 
 // Constants associated with the IkePolicyPatch.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated.
 const (
 	IkePolicyPatchEncryptionAlgorithmAes128Const    = "aes128"
+	IkePolicyPatchEncryptionAlgorithmAes192Const    = "aes192"
 	IkePolicyPatchEncryptionAlgorithmAes256Const    = "aes256"
 	IkePolicyPatchEncryptionAlgorithmTripleDesConst = "triple_des"
 )
@@ -36334,7 +36414,12 @@ func UnmarshalIP(m map[string]json.RawMessage, result interface{}) (err error) {
 
 // IPsecPolicy : IPsecPolicy struct
 type IPsecPolicy struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated
+	//
+	// Must be `disabled` if and only if the `encryption_algorithm` is
+	// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
 
 	// The VPN gateway connections that use this IPsec policy.
@@ -36346,7 +36431,13 @@ type IPsecPolicy struct {
 	// The encapsulation mode used. Only `tunnel` is supported.
 	EncapsulationMode *string `json:"encapsulation_mode" validate:"required"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated
+	//
+	// The `authentication_algorithm` must be `disabled` if and only if
+	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+	// `aes256gcm16`.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
 
 	// The IPsec policy's canonical URL.
@@ -36361,7 +36452,9 @@ type IPsecPolicy struct {
 	// The user-defined name for this IPsec policy.
 	Name *string `json:"name" validate:"required"`
 
-	// Perfect Forward Secrecy.
+	// Perfect Forward Secrecy
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
 	Pfs *string `json:"pfs" validate:"required"`
 
 	// The resource group for this IPsec policy.
@@ -36375,12 +36468,19 @@ type IPsecPolicy struct {
 }
 
 // Constants associated with the IPsecPolicy.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated
+//
+// Must be `disabled` if and only if the `encryption_algorithm` is
+// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 const (
-	IPsecPolicyAuthenticationAlgorithmMd5Const    = "md5"
-	IPsecPolicyAuthenticationAlgorithmSha1Const   = "sha1"
-	IPsecPolicyAuthenticationAlgorithmSha256Const = "sha256"
-	IPsecPolicyAuthenticationAlgorithmSha512Const = "sha512"
+	IPsecPolicyAuthenticationAlgorithmDisabledConst = "disabled"
+	IPsecPolicyAuthenticationAlgorithmMd5Const      = "md5"
+	IPsecPolicyAuthenticationAlgorithmSha1Const     = "sha1"
+	IPsecPolicyAuthenticationAlgorithmSha256Const   = "sha256"
+	IPsecPolicyAuthenticationAlgorithmSha384Const   = "sha384"
+	IPsecPolicyAuthenticationAlgorithmSha512Const   = "sha512"
 )
 
 // Constants associated with the IPsecPolicy.EncapsulationMode property.
@@ -36390,20 +36490,42 @@ const (
 )
 
 // Constants associated with the IPsecPolicy.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated
+//
+// The `authentication_algorithm` must be `disabled` if and only if
+// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+// `aes256gcm16`.
 const (
-	IPsecPolicyEncryptionAlgorithmAes128Const    = "aes128"
-	IPsecPolicyEncryptionAlgorithmAes256Const    = "aes256"
-	IPsecPolicyEncryptionAlgorithmTripleDesConst = "triple_des"
+	IPsecPolicyEncryptionAlgorithmAes128Const      = "aes128"
+	IPsecPolicyEncryptionAlgorithmAes128gcm16Const = "aes128gcm16"
+	IPsecPolicyEncryptionAlgorithmAes192Const      = "aes192"
+	IPsecPolicyEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
+	IPsecPolicyEncryptionAlgorithmAes256Const      = "aes256"
+	IPsecPolicyEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
+	IPsecPolicyEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
 // Constants associated with the IPsecPolicy.Pfs property.
-// Perfect Forward Secrecy.
+// Perfect Forward Secrecy
+//
+// Groups `group_2` and `group_5` have been deprecated.
 const (
 	IPsecPolicyPfsDisabledConst = "disabled"
 	IPsecPolicyPfsGroup14Const  = "group_14"
+	IPsecPolicyPfsGroup15Const  = "group_15"
+	IPsecPolicyPfsGroup16Const  = "group_16"
+	IPsecPolicyPfsGroup17Const  = "group_17"
+	IPsecPolicyPfsGroup18Const  = "group_18"
 	IPsecPolicyPfsGroup19Const  = "group_19"
 	IPsecPolicyPfsGroup2Const   = "group_2"
+	IPsecPolicyPfsGroup20Const  = "group_20"
+	IPsecPolicyPfsGroup21Const  = "group_21"
+	IPsecPolicyPfsGroup22Const  = "group_22"
+	IPsecPolicyPfsGroup23Const  = "group_23"
+	IPsecPolicyPfsGroup24Const  = "group_24"
+	IPsecPolicyPfsGroup31Const  = "group_31"
 	IPsecPolicyPfsGroup5Const   = "group_5"
 )
 
@@ -36572,10 +36694,21 @@ func UnmarshalIPsecPolicyCollectionNext(m map[string]json.RawMessage, result int
 
 // IPsecPolicyPatch : IPsecPolicyPatch struct
 type IPsecPolicyPatch struct {
-	// The authentication algorithm.
+	// The authentication algorithm
+	//
+	// The `md5` and `sha1` algorithms have been deprecated
+	//
+	// Must be `disabled` if and only if the `encryption_algorithm` is
+	// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
-	// The encryption algorithm.
+	// The encryption algorithm
+	//
+	// The `triple_des` algorithm has been deprecated
+	//
+	// The `authentication_algorithm` must be `disabled` if and only if
+	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+	// `aes256gcm16`.
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
 	// The key lifetime in seconds.
@@ -36584,34 +36717,65 @@ type IPsecPolicyPatch struct {
 	// The user-defined name for this IPsec policy.
 	Name *string `json:"name,omitempty"`
 
-	// Perfect Forward Secrecy.
+	// Perfect Forward Secrecy
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
 	Pfs *string `json:"pfs,omitempty"`
 }
 
 // Constants associated with the IPsecPolicyPatch.AuthenticationAlgorithm property.
-// The authentication algorithm.
+// The authentication algorithm
+//
+// The `md5` and `sha1` algorithms have been deprecated
+//
+// Must be `disabled` if and only if the `encryption_algorithm` is
+// `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`.
 const (
-	IPsecPolicyPatchAuthenticationAlgorithmMd5Const    = "md5"
-	IPsecPolicyPatchAuthenticationAlgorithmSha1Const   = "sha1"
-	IPsecPolicyPatchAuthenticationAlgorithmSha256Const = "sha256"
-	IPsecPolicyPatchAuthenticationAlgorithmSha512Const = "sha512"
+	IPsecPolicyPatchAuthenticationAlgorithmDisabledConst = "disabled"
+	IPsecPolicyPatchAuthenticationAlgorithmMd5Const      = "md5"
+	IPsecPolicyPatchAuthenticationAlgorithmSha1Const     = "sha1"
+	IPsecPolicyPatchAuthenticationAlgorithmSha256Const   = "sha256"
+	IPsecPolicyPatchAuthenticationAlgorithmSha384Const   = "sha384"
+	IPsecPolicyPatchAuthenticationAlgorithmSha512Const   = "sha512"
 )
 
 // Constants associated with the IPsecPolicyPatch.EncryptionAlgorithm property.
-// The encryption algorithm.
+// The encryption algorithm
+//
+// The `triple_des` algorithm has been deprecated
+//
+// The `authentication_algorithm` must be `disabled` if and only if
+// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or
+// `aes256gcm16`.
 const (
-	IPsecPolicyPatchEncryptionAlgorithmAes128Const    = "aes128"
-	IPsecPolicyPatchEncryptionAlgorithmAes256Const    = "aes256"
-	IPsecPolicyPatchEncryptionAlgorithmTripleDesConst = "triple_des"
+	IPsecPolicyPatchEncryptionAlgorithmAes128Const      = "aes128"
+	IPsecPolicyPatchEncryptionAlgorithmAes128gcm16Const = "aes128gcm16"
+	IPsecPolicyPatchEncryptionAlgorithmAes192Const      = "aes192"
+	IPsecPolicyPatchEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
+	IPsecPolicyPatchEncryptionAlgorithmAes256Const      = "aes256"
+	IPsecPolicyPatchEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
+	IPsecPolicyPatchEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
 // Constants associated with the IPsecPolicyPatch.Pfs property.
-// Perfect Forward Secrecy.
+// Perfect Forward Secrecy
+//
+// Groups `group_2` and `group_5` have been deprecated.
 const (
 	IPsecPolicyPatchPfsDisabledConst = "disabled"
 	IPsecPolicyPatchPfsGroup14Const  = "group_14"
+	IPsecPolicyPatchPfsGroup15Const  = "group_15"
+	IPsecPolicyPatchPfsGroup16Const  = "group_16"
+	IPsecPolicyPatchPfsGroup17Const  = "group_17"
+	IPsecPolicyPatchPfsGroup18Const  = "group_18"
 	IPsecPolicyPatchPfsGroup19Const  = "group_19"
 	IPsecPolicyPatchPfsGroup2Const   = "group_2"
+	IPsecPolicyPatchPfsGroup20Const  = "group_20"
+	IPsecPolicyPatchPfsGroup21Const  = "group_21"
+	IPsecPolicyPatchPfsGroup22Const  = "group_22"
+	IPsecPolicyPatchPfsGroup23Const  = "group_23"
+	IPsecPolicyPatchPfsGroup24Const  = "group_24"
+	IPsecPolicyPatchPfsGroup31Const  = "group_31"
 	IPsecPolicyPatchPfsGroup5Const   = "group_5"
 )
 
@@ -46133,12 +46297,26 @@ type ListVPNGatewaysOptions struct {
 	// Filters the collection to resources in the resource group with the specified identifier.
 	ResourceGroupID *string `json:"resource_group.id,omitempty"`
 
+	// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+	// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+	// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+	Sort *string `json:"sort,omitempty"`
+
 	// Filters the collection to VPN gateways with the specified mode.
 	Mode *string `json:"mode,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
 }
+
+// Constants associated with the ListVPNGatewaysOptions.Sort property.
+// Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name
+// to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property
+// in descending order, and the value `name` sorts it by the `name` property in ascending order.
+const (
+	ListVPNGatewaysOptionsSortCreatedAtConst = "created_at"
+	ListVPNGatewaysOptionsSortNameConst      = "name"
+)
 
 // Constants associated with the ListVPNGatewaysOptions.Mode property.
 // Filters the collection to VPN gateways with the specified mode.
@@ -46167,6 +46345,12 @@ func (_options *ListVPNGatewaysOptions) SetLimit(limit int64) *ListVPNGatewaysOp
 // SetResourceGroupID : Allow user to set ResourceGroupID
 func (_options *ListVPNGatewaysOptions) SetResourceGroupID(resourceGroupID string) *ListVPNGatewaysOptions {
 	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
+}
+
+// SetSort : Allow user to set Sort
+func (_options *ListVPNGatewaysOptions) SetSort(sort string) *ListVPNGatewaysOptions {
+	_options.Sort = core.StringPtr(sort)
 	return _options
 }
 
@@ -82902,4 +83086,3919 @@ func UnmarshalInstanceGroupManagerActionPrototypeScheduledActionPrototypeByRunAt
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+//
+// VpcsPager can be used to simplify the use of the "ListVpcs" method.
+//
+type VpcsPager struct {
+	hasNext     bool
+	options     *ListVpcsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVpcsPager returns a new VpcsPager instance.
+func (vpc *VpcV1) NewVpcsPager(options *ListVpcsOptions) (pager *VpcsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVpcsOptions = *options
+	pager = &VpcsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VpcsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VpcsPager) GetNextWithContext(ctx context.Context) (page []VPC, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVpcsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Vpcs
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VpcsPager) GetAllWithContext(ctx context.Context) (allItems []VPC, err error) {
+	for pager.HasNext() {
+		var nextPage []VPC
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VpcsPager) GetNext() (page []VPC, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VpcsPager) GetAll() (allItems []VPC, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPCAddressPrefixesPager can be used to simplify the use of the "ListVPCAddressPrefixes" method.
+//
+type VPCAddressPrefixesPager struct {
+	hasNext     bool
+	options     *ListVPCAddressPrefixesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPCAddressPrefixesPager returns a new VPCAddressPrefixesPager instance.
+func (vpc *VpcV1) NewVPCAddressPrefixesPager(options *ListVPCAddressPrefixesOptions) (pager *VPCAddressPrefixesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPCAddressPrefixesOptions = *options
+	pager = &VPCAddressPrefixesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPCAddressPrefixesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPCAddressPrefixesPager) GetNextWithContext(ctx context.Context) (page []AddressPrefix, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPCAddressPrefixesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.AddressPrefixes
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPCAddressPrefixesPager) GetAllWithContext(ctx context.Context) (allItems []AddressPrefix, err error) {
+	for pager.HasNext() {
+		var nextPage []AddressPrefix
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPCAddressPrefixesPager) GetNext() (page []AddressPrefix, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPCAddressPrefixesPager) GetAll() (allItems []AddressPrefix, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPCRoutesPager can be used to simplify the use of the "ListVPCRoutes" method.
+//
+type VPCRoutesPager struct {
+	hasNext     bool
+	options     *ListVPCRoutesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPCRoutesPager returns a new VPCRoutesPager instance.
+func (vpc *VpcV1) NewVPCRoutesPager(options *ListVPCRoutesOptions) (pager *VPCRoutesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPCRoutesOptions = *options
+	pager = &VPCRoutesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPCRoutesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPCRoutesPager) GetNextWithContext(ctx context.Context) (page []Route, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPCRoutesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Routes
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPCRoutesPager) GetAllWithContext(ctx context.Context) (allItems []Route, err error) {
+	for pager.HasNext() {
+		var nextPage []Route
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutesPager) GetNext() (page []Route, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutesPager) GetAll() (allItems []Route, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPCRoutingTablesPager can be used to simplify the use of the "ListVPCRoutingTables" method.
+//
+type VPCRoutingTablesPager struct {
+	hasNext     bool
+	options     *ListVPCRoutingTablesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPCRoutingTablesPager returns a new VPCRoutingTablesPager instance.
+func (vpc *VpcV1) NewVPCRoutingTablesPager(options *ListVPCRoutingTablesOptions) (pager *VPCRoutingTablesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPCRoutingTablesOptions = *options
+	pager = &VPCRoutingTablesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPCRoutingTablesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPCRoutingTablesPager) GetNextWithContext(ctx context.Context) (page []RoutingTable, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPCRoutingTablesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.RoutingTables
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPCRoutingTablesPager) GetAllWithContext(ctx context.Context) (allItems []RoutingTable, err error) {
+	for pager.HasNext() {
+		var nextPage []RoutingTable
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutingTablesPager) GetNext() (page []RoutingTable, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutingTablesPager) GetAll() (allItems []RoutingTable, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPCRoutingTableRoutesPager can be used to simplify the use of the "ListVPCRoutingTableRoutes" method.
+//
+type VPCRoutingTableRoutesPager struct {
+	hasNext     bool
+	options     *ListVPCRoutingTableRoutesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPCRoutingTableRoutesPager returns a new VPCRoutingTableRoutesPager instance.
+func (vpc *VpcV1) NewVPCRoutingTableRoutesPager(options *ListVPCRoutingTableRoutesOptions) (pager *VPCRoutingTableRoutesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPCRoutingTableRoutesOptions = *options
+	pager = &VPCRoutingTableRoutesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPCRoutingTableRoutesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPCRoutingTableRoutesPager) GetNextWithContext(ctx context.Context) (page []Route, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPCRoutingTableRoutesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Routes
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPCRoutingTableRoutesPager) GetAllWithContext(ctx context.Context) (allItems []Route, err error) {
+	for pager.HasNext() {
+		var nextPage []Route
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutingTableRoutesPager) GetNext() (page []Route, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPCRoutingTableRoutesPager) GetAll() (allItems []Route, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// SubnetsPager can be used to simplify the use of the "ListSubnets" method.
+//
+type SubnetsPager struct {
+	hasNext     bool
+	options     *ListSubnetsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSubnetsPager returns a new SubnetsPager instance.
+func (vpc *VpcV1) NewSubnetsPager(options *ListSubnetsOptions) (pager *SubnetsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSubnetsOptions = *options
+	pager = &SubnetsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SubnetsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SubnetsPager) GetNextWithContext(ctx context.Context) (page []Subnet, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSubnetsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Subnets
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SubnetsPager) GetAllWithContext(ctx context.Context) (allItems []Subnet, err error) {
+	for pager.HasNext() {
+		var nextPage []Subnet
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SubnetsPager) GetNext() (page []Subnet, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SubnetsPager) GetAll() (allItems []Subnet, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// SubnetReservedIpsPager can be used to simplify the use of the "ListSubnetReservedIps" method.
+//
+type SubnetReservedIpsPager struct {
+	hasNext     bool
+	options     *ListSubnetReservedIpsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSubnetReservedIpsPager returns a new SubnetReservedIpsPager instance.
+func (vpc *VpcV1) NewSubnetReservedIpsPager(options *ListSubnetReservedIpsOptions) (pager *SubnetReservedIpsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSubnetReservedIpsOptions = *options
+	pager = &SubnetReservedIpsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SubnetReservedIpsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SubnetReservedIpsPager) GetNextWithContext(ctx context.Context) (page []ReservedIP, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSubnetReservedIpsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.ReservedIps
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SubnetReservedIpsPager) GetAllWithContext(ctx context.Context) (allItems []ReservedIP, err error) {
+	for pager.HasNext() {
+		var nextPage []ReservedIP
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SubnetReservedIpsPager) GetNext() (page []ReservedIP, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SubnetReservedIpsPager) GetAll() (allItems []ReservedIP, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// ImagesPager can be used to simplify the use of the "ListImages" method.
+//
+type ImagesPager struct {
+	hasNext     bool
+	options     *ListImagesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewImagesPager returns a new ImagesPager instance.
+func (vpc *VpcV1) NewImagesPager(options *ListImagesOptions) (pager *ImagesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListImagesOptions = *options
+	pager = &ImagesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ImagesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ImagesPager) GetNextWithContext(ctx context.Context) (page []Image, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListImagesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Images
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ImagesPager) GetAllWithContext(ctx context.Context) (allItems []Image, err error) {
+	for pager.HasNext() {
+		var nextPage []Image
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ImagesPager) GetNext() (page []Image, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ImagesPager) GetAll() (allItems []Image, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// OperatingSystemsPager can be used to simplify the use of the "ListOperatingSystems" method.
+//
+type OperatingSystemsPager struct {
+	hasNext     bool
+	options     *ListOperatingSystemsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewOperatingSystemsPager returns a new OperatingSystemsPager instance.
+func (vpc *VpcV1) NewOperatingSystemsPager(options *ListOperatingSystemsOptions) (pager *OperatingSystemsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListOperatingSystemsOptions = *options
+	pager = &OperatingSystemsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *OperatingSystemsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *OperatingSystemsPager) GetNextWithContext(ctx context.Context) (page []OperatingSystem, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListOperatingSystemsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.OperatingSystems
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *OperatingSystemsPager) GetAllWithContext(ctx context.Context) (allItems []OperatingSystem, err error) {
+	for pager.HasNext() {
+		var nextPage []OperatingSystem
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *OperatingSystemsPager) GetNext() (page []OperatingSystem, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *OperatingSystemsPager) GetAll() (allItems []OperatingSystem, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// KeysPager can be used to simplify the use of the "ListKeys" method.
+//
+type KeysPager struct {
+	hasNext     bool
+	options     *ListKeysOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewKeysPager returns a new KeysPager instance.
+func (vpc *VpcV1) NewKeysPager(options *ListKeysOptions) (pager *KeysPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListKeysOptions = *options
+	pager = &KeysPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *KeysPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *KeysPager) GetNextWithContext(ctx context.Context) (page []Key, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListKeysWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Keys
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *KeysPager) GetAllWithContext(ctx context.Context) (allItems []Key, err error) {
+	for pager.HasNext() {
+		var nextPage []Key
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *KeysPager) GetNext() (page []Key, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *KeysPager) GetAll() (allItems []Key, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstancesPager can be used to simplify the use of the "ListInstances" method.
+//
+type InstancesPager struct {
+	hasNext     bool
+	options     *ListInstancesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstancesPager returns a new InstancesPager instance.
+func (vpc *VpcV1) NewInstancesPager(options *ListInstancesOptions) (pager *InstancesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstancesOptions = *options
+	pager = &InstancesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstancesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstancesPager) GetNextWithContext(ctx context.Context) (page []Instance, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstancesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Instances
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstancesPager) GetAllWithContext(ctx context.Context) (allItems []Instance, err error) {
+	for pager.HasNext() {
+		var nextPage []Instance
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstancesPager) GetNext() (page []Instance, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstancesPager) GetAll() (allItems []Instance, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceNetworkInterfaceIpsPager can be used to simplify the use of the "ListInstanceNetworkInterfaceIps" method.
+//
+type InstanceNetworkInterfaceIpsPager struct {
+	hasNext     bool
+	options     *ListInstanceNetworkInterfaceIpsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceNetworkInterfaceIpsPager returns a new InstanceNetworkInterfaceIpsPager instance.
+func (vpc *VpcV1) NewInstanceNetworkInterfaceIpsPager(options *ListInstanceNetworkInterfaceIpsOptions) (pager *InstanceNetworkInterfaceIpsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceNetworkInterfaceIpsOptions = *options
+	pager = &InstanceNetworkInterfaceIpsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceNetworkInterfaceIpsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceNetworkInterfaceIpsPager) GetNextWithContext(ctx context.Context) (page []ReservedIP, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceNetworkInterfaceIpsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Ips
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceNetworkInterfaceIpsPager) GetAllWithContext(ctx context.Context) (allItems []ReservedIP, err error) {
+	for pager.HasNext() {
+		var nextPage []ReservedIP
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceNetworkInterfaceIpsPager) GetNext() (page []ReservedIP, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceNetworkInterfaceIpsPager) GetAll() (allItems []ReservedIP, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceGroupsPager can be used to simplify the use of the "ListInstanceGroups" method.
+//
+type InstanceGroupsPager struct {
+	hasNext     bool
+	options     *ListInstanceGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceGroupsPager returns a new InstanceGroupsPager instance.
+func (vpc *VpcV1) NewInstanceGroupsPager(options *ListInstanceGroupsOptions) (pager *InstanceGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceGroupsOptions = *options
+	pager = &InstanceGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceGroupsPager) GetNextWithContext(ctx context.Context) (page []InstanceGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.InstanceGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceGroupsPager) GetAllWithContext(ctx context.Context) (allItems []InstanceGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupsPager) GetNext() (page []InstanceGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupsPager) GetAll() (allItems []InstanceGroup, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceGroupManagersPager can be used to simplify the use of the "ListInstanceGroupManagers" method.
+//
+type InstanceGroupManagersPager struct {
+	hasNext     bool
+	options     *ListInstanceGroupManagersOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceGroupManagersPager returns a new InstanceGroupManagersPager instance.
+func (vpc *VpcV1) NewInstanceGroupManagersPager(options *ListInstanceGroupManagersOptions) (pager *InstanceGroupManagersPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceGroupManagersOptions = *options
+	pager = &InstanceGroupManagersPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceGroupManagersPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceGroupManagersPager) GetNextWithContext(ctx context.Context) (page []InstanceGroupManagerIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceGroupManagersWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Managers
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceGroupManagersPager) GetAllWithContext(ctx context.Context) (allItems []InstanceGroupManagerIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceGroupManagerIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagersPager) GetNext() (page []InstanceGroupManagerIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagersPager) GetAll() (allItems []InstanceGroupManagerIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceGroupManagerActionsPager can be used to simplify the use of the "ListInstanceGroupManagerActions" method.
+//
+type InstanceGroupManagerActionsPager struct {
+	hasNext     bool
+	options     *ListInstanceGroupManagerActionsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceGroupManagerActionsPager returns a new InstanceGroupManagerActionsPager instance.
+func (vpc *VpcV1) NewInstanceGroupManagerActionsPager(options *ListInstanceGroupManagerActionsOptions) (pager *InstanceGroupManagerActionsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceGroupManagerActionsOptions = *options
+	pager = &InstanceGroupManagerActionsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceGroupManagerActionsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceGroupManagerActionsPager) GetNextWithContext(ctx context.Context) (page []InstanceGroupManagerActionIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceGroupManagerActionsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Actions
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceGroupManagerActionsPager) GetAllWithContext(ctx context.Context) (allItems []InstanceGroupManagerActionIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceGroupManagerActionIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagerActionsPager) GetNext() (page []InstanceGroupManagerActionIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagerActionsPager) GetAll() (allItems []InstanceGroupManagerActionIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceGroupManagerPoliciesPager can be used to simplify the use of the "ListInstanceGroupManagerPolicies" method.
+//
+type InstanceGroupManagerPoliciesPager struct {
+	hasNext     bool
+	options     *ListInstanceGroupManagerPoliciesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceGroupManagerPoliciesPager returns a new InstanceGroupManagerPoliciesPager instance.
+func (vpc *VpcV1) NewInstanceGroupManagerPoliciesPager(options *ListInstanceGroupManagerPoliciesOptions) (pager *InstanceGroupManagerPoliciesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceGroupManagerPoliciesOptions = *options
+	pager = &InstanceGroupManagerPoliciesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceGroupManagerPoliciesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceGroupManagerPoliciesPager) GetNextWithContext(ctx context.Context) (page []InstanceGroupManagerPolicyIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceGroupManagerPoliciesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Policies
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceGroupManagerPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []InstanceGroupManagerPolicyIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceGroupManagerPolicyIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagerPoliciesPager) GetNext() (page []InstanceGroupManagerPolicyIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupManagerPoliciesPager) GetAll() (allItems []InstanceGroupManagerPolicyIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// InstanceGroupMembershipsPager can be used to simplify the use of the "ListInstanceGroupMemberships" method.
+//
+type InstanceGroupMembershipsPager struct {
+	hasNext     bool
+	options     *ListInstanceGroupMembershipsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceGroupMembershipsPager returns a new InstanceGroupMembershipsPager instance.
+func (vpc *VpcV1) NewInstanceGroupMembershipsPager(options *ListInstanceGroupMembershipsOptions) (pager *InstanceGroupMembershipsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListInstanceGroupMembershipsOptions = *options
+	pager = &InstanceGroupMembershipsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceGroupMembershipsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceGroupMembershipsPager) GetNextWithContext(ctx context.Context) (page []InstanceGroupMembership, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceGroupMembershipsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Memberships
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceGroupMembershipsPager) GetAllWithContext(ctx context.Context) (allItems []InstanceGroupMembership, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceGroupMembership
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupMembershipsPager) GetNext() (page []InstanceGroupMembership, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceGroupMembershipsPager) GetAll() (allItems []InstanceGroupMembership, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// DedicatedHostGroupsPager can be used to simplify the use of the "ListDedicatedHostGroups" method.
+//
+type DedicatedHostGroupsPager struct {
+	hasNext     bool
+	options     *ListDedicatedHostGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewDedicatedHostGroupsPager returns a new DedicatedHostGroupsPager instance.
+func (vpc *VpcV1) NewDedicatedHostGroupsPager(options *ListDedicatedHostGroupsOptions) (pager *DedicatedHostGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListDedicatedHostGroupsOptions = *options
+	pager = &DedicatedHostGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *DedicatedHostGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *DedicatedHostGroupsPager) GetNextWithContext(ctx context.Context) (page []DedicatedHostGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListDedicatedHostGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Groups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *DedicatedHostGroupsPager) GetAllWithContext(ctx context.Context) (allItems []DedicatedHostGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []DedicatedHostGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostGroupsPager) GetNext() (page []DedicatedHostGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostGroupsPager) GetAll() (allItems []DedicatedHostGroup, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// DedicatedHostProfilesPager can be used to simplify the use of the "ListDedicatedHostProfiles" method.
+//
+type DedicatedHostProfilesPager struct {
+	hasNext     bool
+	options     *ListDedicatedHostProfilesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewDedicatedHostProfilesPager returns a new DedicatedHostProfilesPager instance.
+func (vpc *VpcV1) NewDedicatedHostProfilesPager(options *ListDedicatedHostProfilesOptions) (pager *DedicatedHostProfilesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListDedicatedHostProfilesOptions = *options
+	pager = &DedicatedHostProfilesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *DedicatedHostProfilesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *DedicatedHostProfilesPager) GetNextWithContext(ctx context.Context) (page []DedicatedHostProfile, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListDedicatedHostProfilesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Profiles
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *DedicatedHostProfilesPager) GetAllWithContext(ctx context.Context) (allItems []DedicatedHostProfile, err error) {
+	for pager.HasNext() {
+		var nextPage []DedicatedHostProfile
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostProfilesPager) GetNext() (page []DedicatedHostProfile, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostProfilesPager) GetAll() (allItems []DedicatedHostProfile, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// DedicatedHostsPager can be used to simplify the use of the "ListDedicatedHosts" method.
+//
+type DedicatedHostsPager struct {
+	hasNext     bool
+	options     *ListDedicatedHostsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewDedicatedHostsPager returns a new DedicatedHostsPager instance.
+func (vpc *VpcV1) NewDedicatedHostsPager(options *ListDedicatedHostsOptions) (pager *DedicatedHostsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListDedicatedHostsOptions = *options
+	pager = &DedicatedHostsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *DedicatedHostsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *DedicatedHostsPager) GetNextWithContext(ctx context.Context) (page []DedicatedHost, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListDedicatedHostsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.DedicatedHosts
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *DedicatedHostsPager) GetAllWithContext(ctx context.Context) (allItems []DedicatedHost, err error) {
+	for pager.HasNext() {
+		var nextPage []DedicatedHost
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostsPager) GetNext() (page []DedicatedHost, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *DedicatedHostsPager) GetAll() (allItems []DedicatedHost, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// BackupPoliciesPager can be used to simplify the use of the "ListBackupPolicies" method.
+//
+type BackupPoliciesPager struct {
+	hasNext     bool
+	options     *ListBackupPoliciesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBackupPoliciesPager returns a new BackupPoliciesPager instance.
+func (vpc *VpcV1) NewBackupPoliciesPager(options *ListBackupPoliciesOptions) (pager *BackupPoliciesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListBackupPoliciesOptions = *options
+	pager = &BackupPoliciesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BackupPoliciesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page []BackupPolicy, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListBackupPoliciesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.BackupPolicies
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BackupPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []BackupPolicy, err error) {
+	for pager.HasNext() {
+		var nextPage []BackupPolicy
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BackupPoliciesPager) GetNext() (page []BackupPolicy, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BackupPoliciesPager) GetAll() (allItems []BackupPolicy, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// PlacementGroupsPager can be used to simplify the use of the "ListPlacementGroups" method.
+//
+type PlacementGroupsPager struct {
+	hasNext     bool
+	options     *ListPlacementGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewPlacementGroupsPager returns a new PlacementGroupsPager instance.
+func (vpc *VpcV1) NewPlacementGroupsPager(options *ListPlacementGroupsOptions) (pager *PlacementGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListPlacementGroupsOptions = *options
+	pager = &PlacementGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *PlacementGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *PlacementGroupsPager) GetNextWithContext(ctx context.Context) (page []PlacementGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListPlacementGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.PlacementGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *PlacementGroupsPager) GetAllWithContext(ctx context.Context) (allItems []PlacementGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []PlacementGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *PlacementGroupsPager) GetNext() (page []PlacementGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *PlacementGroupsPager) GetAll() (allItems []PlacementGroup, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// BareMetalServerProfilesPager can be used to simplify the use of the "ListBareMetalServerProfiles" method.
+//
+type BareMetalServerProfilesPager struct {
+	hasNext     bool
+	options     *ListBareMetalServerProfilesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBareMetalServerProfilesPager returns a new BareMetalServerProfilesPager instance.
+func (vpc *VpcV1) NewBareMetalServerProfilesPager(options *ListBareMetalServerProfilesOptions) (pager *BareMetalServerProfilesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListBareMetalServerProfilesOptions = *options
+	pager = &BareMetalServerProfilesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BareMetalServerProfilesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BareMetalServerProfilesPager) GetNextWithContext(ctx context.Context) (page []BareMetalServerProfile, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListBareMetalServerProfilesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Profiles
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BareMetalServerProfilesPager) GetAllWithContext(ctx context.Context) (allItems []BareMetalServerProfile, err error) {
+	for pager.HasNext() {
+		var nextPage []BareMetalServerProfile
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerProfilesPager) GetNext() (page []BareMetalServerProfile, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerProfilesPager) GetAll() (allItems []BareMetalServerProfile, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// BareMetalServersPager can be used to simplify the use of the "ListBareMetalServers" method.
+//
+type BareMetalServersPager struct {
+	hasNext     bool
+	options     *ListBareMetalServersOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBareMetalServersPager returns a new BareMetalServersPager instance.
+func (vpc *VpcV1) NewBareMetalServersPager(options *ListBareMetalServersOptions) (pager *BareMetalServersPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListBareMetalServersOptions = *options
+	pager = &BareMetalServersPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BareMetalServersPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BareMetalServersPager) GetNextWithContext(ctx context.Context) (page []BareMetalServer, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListBareMetalServersWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.BareMetalServers
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BareMetalServersPager) GetAllWithContext(ctx context.Context) (allItems []BareMetalServer, err error) {
+	for pager.HasNext() {
+		var nextPage []BareMetalServer
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServersPager) GetNext() (page []BareMetalServer, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServersPager) GetAll() (allItems []BareMetalServer, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// BareMetalServerNetworkInterfacesPager can be used to simplify the use of the "ListBareMetalServerNetworkInterfaces" method.
+//
+type BareMetalServerNetworkInterfacesPager struct {
+	hasNext     bool
+	options     *ListBareMetalServerNetworkInterfacesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBareMetalServerNetworkInterfacesPager returns a new BareMetalServerNetworkInterfacesPager instance.
+func (vpc *VpcV1) NewBareMetalServerNetworkInterfacesPager(options *ListBareMetalServerNetworkInterfacesOptions) (pager *BareMetalServerNetworkInterfacesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListBareMetalServerNetworkInterfacesOptions = *options
+	pager = &BareMetalServerNetworkInterfacesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BareMetalServerNetworkInterfacesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BareMetalServerNetworkInterfacesPager) GetNextWithContext(ctx context.Context) (page []BareMetalServerNetworkInterfaceIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListBareMetalServerNetworkInterfacesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.NetworkInterfaces
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BareMetalServerNetworkInterfacesPager) GetAllWithContext(ctx context.Context) (allItems []BareMetalServerNetworkInterfaceIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []BareMetalServerNetworkInterfaceIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerNetworkInterfacesPager) GetNext() (page []BareMetalServerNetworkInterfaceIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerNetworkInterfacesPager) GetAll() (allItems []BareMetalServerNetworkInterfaceIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VolumeProfilesPager can be used to simplify the use of the "ListVolumeProfiles" method.
+//
+type VolumeProfilesPager struct {
+	hasNext     bool
+	options     *ListVolumeProfilesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVolumeProfilesPager returns a new VolumeProfilesPager instance.
+func (vpc *VpcV1) NewVolumeProfilesPager(options *ListVolumeProfilesOptions) (pager *VolumeProfilesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVolumeProfilesOptions = *options
+	pager = &VolumeProfilesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VolumeProfilesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VolumeProfilesPager) GetNextWithContext(ctx context.Context) (page []VolumeProfile, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVolumeProfilesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Profiles
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VolumeProfilesPager) GetAllWithContext(ctx context.Context) (allItems []VolumeProfile, err error) {
+	for pager.HasNext() {
+		var nextPage []VolumeProfile
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VolumeProfilesPager) GetNext() (page []VolumeProfile, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VolumeProfilesPager) GetAll() (allItems []VolumeProfile, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VolumesPager can be used to simplify the use of the "ListVolumes" method.
+//
+type VolumesPager struct {
+	hasNext     bool
+	options     *ListVolumesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVolumesPager returns a new VolumesPager instance.
+func (vpc *VpcV1) NewVolumesPager(options *ListVolumesOptions) (pager *VolumesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVolumesOptions = *options
+	pager = &VolumesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VolumesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VolumesPager) GetNextWithContext(ctx context.Context) (page []Volume, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVolumesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Volumes
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VolumesPager) GetAllWithContext(ctx context.Context) (allItems []Volume, err error) {
+	for pager.HasNext() {
+		var nextPage []Volume
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VolumesPager) GetNext() (page []Volume, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VolumesPager) GetAll() (allItems []Volume, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// SnapshotsPager can be used to simplify the use of the "ListSnapshots" method.
+//
+type SnapshotsPager struct {
+	hasNext     bool
+	options     *ListSnapshotsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSnapshotsPager returns a new SnapshotsPager instance.
+func (vpc *VpcV1) NewSnapshotsPager(options *ListSnapshotsOptions) (pager *SnapshotsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSnapshotsOptions = *options
+	pager = &SnapshotsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SnapshotsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SnapshotsPager) GetNextWithContext(ctx context.Context) (page []Snapshot, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSnapshotsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Snapshots
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SnapshotsPager) GetAllWithContext(ctx context.Context) (allItems []Snapshot, err error) {
+	for pager.HasNext() {
+		var nextPage []Snapshot
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotsPager) GetNext() (page []Snapshot, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SnapshotsPager) GetAll() (allItems []Snapshot, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// PublicGatewaysPager can be used to simplify the use of the "ListPublicGateways" method.
+//
+type PublicGatewaysPager struct {
+	hasNext     bool
+	options     *ListPublicGatewaysOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewPublicGatewaysPager returns a new PublicGatewaysPager instance.
+func (vpc *VpcV1) NewPublicGatewaysPager(options *ListPublicGatewaysOptions) (pager *PublicGatewaysPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListPublicGatewaysOptions = *options
+	pager = &PublicGatewaysPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *PublicGatewaysPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *PublicGatewaysPager) GetNextWithContext(ctx context.Context) (page []PublicGateway, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListPublicGatewaysWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.PublicGateways
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *PublicGatewaysPager) GetAllWithContext(ctx context.Context) (allItems []PublicGateway, err error) {
+	for pager.HasNext() {
+		var nextPage []PublicGateway
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *PublicGatewaysPager) GetNext() (page []PublicGateway, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *PublicGatewaysPager) GetAll() (allItems []PublicGateway, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// FloatingIpsPager can be used to simplify the use of the "ListFloatingIps" method.
+//
+type FloatingIpsPager struct {
+	hasNext     bool
+	options     *ListFloatingIpsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewFloatingIpsPager returns a new FloatingIpsPager instance.
+func (vpc *VpcV1) NewFloatingIpsPager(options *ListFloatingIpsOptions) (pager *FloatingIpsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListFloatingIpsOptions = *options
+	pager = &FloatingIpsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *FloatingIpsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *FloatingIpsPager) GetNextWithContext(ctx context.Context) (page []FloatingIP, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListFloatingIpsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.FloatingIps
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *FloatingIpsPager) GetAllWithContext(ctx context.Context) (allItems []FloatingIP, err error) {
+	for pager.HasNext() {
+		var nextPage []FloatingIP
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *FloatingIpsPager) GetNext() (page []FloatingIP, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *FloatingIpsPager) GetAll() (allItems []FloatingIP, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// NetworkAclsPager can be used to simplify the use of the "ListNetworkAcls" method.
+//
+type NetworkAclsPager struct {
+	hasNext     bool
+	options     *ListNetworkAclsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewNetworkAclsPager returns a new NetworkAclsPager instance.
+func (vpc *VpcV1) NewNetworkAclsPager(options *ListNetworkAclsOptions) (pager *NetworkAclsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListNetworkAclsOptions = *options
+	pager = &NetworkAclsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *NetworkAclsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *NetworkAclsPager) GetNextWithContext(ctx context.Context) (page []NetworkACL, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListNetworkAclsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.NetworkAcls
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *NetworkAclsPager) GetAllWithContext(ctx context.Context) (allItems []NetworkACL, err error) {
+	for pager.HasNext() {
+		var nextPage []NetworkACL
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *NetworkAclsPager) GetNext() (page []NetworkACL, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *NetworkAclsPager) GetAll() (allItems []NetworkACL, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// NetworkACLRulesPager can be used to simplify the use of the "ListNetworkACLRules" method.
+//
+type NetworkACLRulesPager struct {
+	hasNext     bool
+	options     *ListNetworkACLRulesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewNetworkACLRulesPager returns a new NetworkACLRulesPager instance.
+func (vpc *VpcV1) NewNetworkACLRulesPager(options *ListNetworkACLRulesOptions) (pager *NetworkACLRulesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListNetworkACLRulesOptions = *options
+	pager = &NetworkACLRulesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *NetworkACLRulesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *NetworkACLRulesPager) GetNextWithContext(ctx context.Context) (page []NetworkACLRuleItemIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListNetworkACLRulesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Rules
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *NetworkACLRulesPager) GetAllWithContext(ctx context.Context) (allItems []NetworkACLRuleItemIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []NetworkACLRuleItemIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *NetworkACLRulesPager) GetNext() (page []NetworkACLRuleItemIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *NetworkACLRulesPager) GetAll() (allItems []NetworkACLRuleItemIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// SecurityGroupsPager can be used to simplify the use of the "ListSecurityGroups" method.
+//
+type SecurityGroupsPager struct {
+	hasNext     bool
+	options     *ListSecurityGroupsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSecurityGroupsPager returns a new SecurityGroupsPager instance.
+func (vpc *VpcV1) NewSecurityGroupsPager(options *ListSecurityGroupsOptions) (pager *SecurityGroupsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSecurityGroupsOptions = *options
+	pager = &SecurityGroupsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SecurityGroupsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SecurityGroupsPager) GetNextWithContext(ctx context.Context) (page []SecurityGroup, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSecurityGroupsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.SecurityGroups
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SecurityGroupsPager) GetAllWithContext(ctx context.Context) (allItems []SecurityGroup, err error) {
+	for pager.HasNext() {
+		var nextPage []SecurityGroup
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SecurityGroupsPager) GetNext() (page []SecurityGroup, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SecurityGroupsPager) GetAll() (allItems []SecurityGroup, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// SecurityGroupTargetsPager can be used to simplify the use of the "ListSecurityGroupTargets" method.
+//
+type SecurityGroupTargetsPager struct {
+	hasNext     bool
+	options     *ListSecurityGroupTargetsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewSecurityGroupTargetsPager returns a new SecurityGroupTargetsPager instance.
+func (vpc *VpcV1) NewSecurityGroupTargetsPager(options *ListSecurityGroupTargetsOptions) (pager *SecurityGroupTargetsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListSecurityGroupTargetsOptions = *options
+	pager = &SecurityGroupTargetsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *SecurityGroupTargetsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *SecurityGroupTargetsPager) GetNextWithContext(ctx context.Context) (page []SecurityGroupTargetReferenceIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListSecurityGroupTargetsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Targets
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *SecurityGroupTargetsPager) GetAllWithContext(ctx context.Context) (allItems []SecurityGroupTargetReferenceIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []SecurityGroupTargetReferenceIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *SecurityGroupTargetsPager) GetNext() (page []SecurityGroupTargetReferenceIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *SecurityGroupTargetsPager) GetAll() (allItems []SecurityGroupTargetReferenceIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// IkePoliciesPager can be used to simplify the use of the "ListIkePolicies" method.
+//
+type IkePoliciesPager struct {
+	hasNext     bool
+	options     *ListIkePoliciesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewIkePoliciesPager returns a new IkePoliciesPager instance.
+func (vpc *VpcV1) NewIkePoliciesPager(options *ListIkePoliciesOptions) (pager *IkePoliciesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListIkePoliciesOptions = *options
+	pager = &IkePoliciesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *IkePoliciesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *IkePoliciesPager) GetNextWithContext(ctx context.Context) (page []IkePolicy, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListIkePoliciesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.IkePolicies
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *IkePoliciesPager) GetAllWithContext(ctx context.Context) (allItems []IkePolicy, err error) {
+	for pager.HasNext() {
+		var nextPage []IkePolicy
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *IkePoliciesPager) GetNext() (page []IkePolicy, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *IkePoliciesPager) GetAll() (allItems []IkePolicy, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// IpsecPoliciesPager can be used to simplify the use of the "ListIpsecPolicies" method.
+//
+type IpsecPoliciesPager struct {
+	hasNext     bool
+	options     *ListIpsecPoliciesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewIpsecPoliciesPager returns a new IpsecPoliciesPager instance.
+func (vpc *VpcV1) NewIpsecPoliciesPager(options *ListIpsecPoliciesOptions) (pager *IpsecPoliciesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListIpsecPoliciesOptions = *options
+	pager = &IpsecPoliciesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *IpsecPoliciesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *IpsecPoliciesPager) GetNextWithContext(ctx context.Context) (page []IPsecPolicy, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListIpsecPoliciesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.IpsecPolicies
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *IpsecPoliciesPager) GetAllWithContext(ctx context.Context) (allItems []IPsecPolicy, err error) {
+	for pager.HasNext() {
+		var nextPage []IPsecPolicy
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *IpsecPoliciesPager) GetNext() (page []IPsecPolicy, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *IpsecPoliciesPager) GetAll() (allItems []IPsecPolicy, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPNGatewaysPager can be used to simplify the use of the "ListVPNGateways" method.
+//
+type VPNGatewaysPager struct {
+	hasNext     bool
+	options     *ListVPNGatewaysOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPNGatewaysPager returns a new VPNGatewaysPager instance.
+func (vpc *VpcV1) NewVPNGatewaysPager(options *ListVPNGatewaysOptions) (pager *VPNGatewaysPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPNGatewaysOptions = *options
+	pager = &VPNGatewaysPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPNGatewaysPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPNGatewaysPager) GetNextWithContext(ctx context.Context) (page []VPNGatewayIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPNGatewaysWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.VPNGateways
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPNGatewaysPager) GetAllWithContext(ctx context.Context) (allItems []VPNGatewayIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []VPNGatewayIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPNGatewaysPager) GetNext() (page []VPNGatewayIntf, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPNGatewaysPager) GetAll() (allItems []VPNGatewayIntf, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPNServersPager can be used to simplify the use of the "ListVPNServers" method.
+//
+type VPNServersPager struct {
+	hasNext     bool
+	options     *ListVPNServersOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPNServersPager returns a new VPNServersPager instance.
+func (vpc *VpcV1) NewVPNServersPager(options *ListVPNServersOptions) (pager *VPNServersPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPNServersOptions = *options
+	pager = &VPNServersPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPNServersPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPNServersPager) GetNextWithContext(ctx context.Context) (page []VPNServer, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPNServersWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.VPNServers
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPNServersPager) GetAllWithContext(ctx context.Context) (allItems []VPNServer, err error) {
+	for pager.HasNext() {
+		var nextPage []VPNServer
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServersPager) GetNext() (page []VPNServer, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServersPager) GetAll() (allItems []VPNServer, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPNServerClientsPager can be used to simplify the use of the "ListVPNServerClients" method.
+//
+type VPNServerClientsPager struct {
+	hasNext     bool
+	options     *ListVPNServerClientsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPNServerClientsPager returns a new VPNServerClientsPager instance.
+func (vpc *VpcV1) NewVPNServerClientsPager(options *ListVPNServerClientsOptions) (pager *VPNServerClientsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPNServerClientsOptions = *options
+	pager = &VPNServerClientsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPNServerClientsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPNServerClientsPager) GetNextWithContext(ctx context.Context) (page []VPNServerClient, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPNServerClientsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Clients
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPNServerClientsPager) GetAllWithContext(ctx context.Context) (allItems []VPNServerClient, err error) {
+	for pager.HasNext() {
+		var nextPage []VPNServerClient
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServerClientsPager) GetNext() (page []VPNServerClient, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServerClientsPager) GetAll() (allItems []VPNServerClient, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// VPNServerRoutesPager can be used to simplify the use of the "ListVPNServerRoutes" method.
+//
+type VPNServerRoutesPager struct {
+	hasNext     bool
+	options     *ListVPNServerRoutesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVPNServerRoutesPager returns a new VPNServerRoutesPager instance.
+func (vpc *VpcV1) NewVPNServerRoutesPager(options *ListVPNServerRoutesOptions) (pager *VPNServerRoutesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListVPNServerRoutesOptions = *options
+	pager = &VPNServerRoutesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VPNServerRoutesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VPNServerRoutesPager) GetNextWithContext(ctx context.Context) (page []VPNServerRoute, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVPNServerRoutesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Routes
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VPNServerRoutesPager) GetAllWithContext(ctx context.Context) (allItems []VPNServerRoute, err error) {
+	for pager.HasNext() {
+		var nextPage []VPNServerRoute
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServerRoutesPager) GetNext() (page []VPNServerRoute, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VPNServerRoutesPager) GetAll() (allItems []VPNServerRoute, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// LoadBalancerProfilesPager can be used to simplify the use of the "ListLoadBalancerProfiles" method.
+//
+type LoadBalancerProfilesPager struct {
+	hasNext     bool
+	options     *ListLoadBalancerProfilesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewLoadBalancerProfilesPager returns a new LoadBalancerProfilesPager instance.
+func (vpc *VpcV1) NewLoadBalancerProfilesPager(options *ListLoadBalancerProfilesOptions) (pager *LoadBalancerProfilesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListLoadBalancerProfilesOptions = *options
+	pager = &LoadBalancerProfilesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *LoadBalancerProfilesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *LoadBalancerProfilesPager) GetNextWithContext(ctx context.Context) (page []LoadBalancerProfile, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListLoadBalancerProfilesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Profiles
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *LoadBalancerProfilesPager) GetAllWithContext(ctx context.Context) (allItems []LoadBalancerProfile, err error) {
+	for pager.HasNext() {
+		var nextPage []LoadBalancerProfile
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *LoadBalancerProfilesPager) GetNext() (page []LoadBalancerProfile, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *LoadBalancerProfilesPager) GetAll() (allItems []LoadBalancerProfile, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// LoadBalancersPager can be used to simplify the use of the "ListLoadBalancers" method.
+//
+type LoadBalancersPager struct {
+	hasNext     bool
+	options     *ListLoadBalancersOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewLoadBalancersPager returns a new LoadBalancersPager instance.
+func (vpc *VpcV1) NewLoadBalancersPager(options *ListLoadBalancersOptions) (pager *LoadBalancersPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListLoadBalancersOptions = *options
+	pager = &LoadBalancersPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *LoadBalancersPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *LoadBalancersPager) GetNextWithContext(ctx context.Context) (page []LoadBalancer, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListLoadBalancersWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.LoadBalancers
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *LoadBalancersPager) GetAllWithContext(ctx context.Context) (allItems []LoadBalancer, err error) {
+	for pager.HasNext() {
+		var nextPage []LoadBalancer
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *LoadBalancersPager) GetNext() (page []LoadBalancer, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *LoadBalancersPager) GetAll() (allItems []LoadBalancer, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// EndpointGatewaysPager can be used to simplify the use of the "ListEndpointGateways" method.
+//
+type EndpointGatewaysPager struct {
+	hasNext     bool
+	options     *ListEndpointGatewaysOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewEndpointGatewaysPager returns a new EndpointGatewaysPager instance.
+func (vpc *VpcV1) NewEndpointGatewaysPager(options *ListEndpointGatewaysOptions) (pager *EndpointGatewaysPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListEndpointGatewaysOptions = *options
+	pager = &EndpointGatewaysPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *EndpointGatewaysPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *EndpointGatewaysPager) GetNextWithContext(ctx context.Context) (page []EndpointGateway, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListEndpointGatewaysWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.EndpointGateways
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *EndpointGatewaysPager) GetAllWithContext(ctx context.Context) (allItems []EndpointGateway, err error) {
+	for pager.HasNext() {
+		var nextPage []EndpointGateway
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *EndpointGatewaysPager) GetNext() (page []EndpointGateway, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *EndpointGatewaysPager) GetAll() (allItems []EndpointGateway, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// EndpointGatewayIpsPager can be used to simplify the use of the "ListEndpointGatewayIps" method.
+//
+type EndpointGatewayIpsPager struct {
+	hasNext     bool
+	options     *ListEndpointGatewayIpsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewEndpointGatewayIpsPager returns a new EndpointGatewayIpsPager instance.
+func (vpc *VpcV1) NewEndpointGatewayIpsPager(options *ListEndpointGatewayIpsOptions) (pager *EndpointGatewayIpsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListEndpointGatewayIpsOptions = *options
+	pager = &EndpointGatewayIpsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *EndpointGatewayIpsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *EndpointGatewayIpsPager) GetNextWithContext(ctx context.Context) (page []ReservedIP, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListEndpointGatewayIpsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Ips
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *EndpointGatewayIpsPager) GetAllWithContext(ctx context.Context) (allItems []ReservedIP, err error) {
+	for pager.HasNext() {
+		var nextPage []ReservedIP
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *EndpointGatewayIpsPager) GetNext() (page []ReservedIP, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *EndpointGatewayIpsPager) GetAll() (allItems []ReservedIP, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+//
+// FlowLogCollectorsPager can be used to simplify the use of the "ListFlowLogCollectors" method.
+//
+type FlowLogCollectorsPager struct {
+	hasNext     bool
+	options     *ListFlowLogCollectorsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewFlowLogCollectorsPager returns a new FlowLogCollectorsPager instance.
+func (vpc *VpcV1) NewFlowLogCollectorsPager(options *ListFlowLogCollectorsOptions) (pager *FlowLogCollectorsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListFlowLogCollectorsOptions = *options
+	pager = &FlowLogCollectorsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *FlowLogCollectorsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *FlowLogCollectorsPager) GetNextWithContext(ctx context.Context) (page []FlowLogCollector, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListFlowLogCollectorsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.FlowLogCollectors
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *FlowLogCollectorsPager) GetAllWithContext(ctx context.Context) (allItems []FlowLogCollector, err error) {
+	for pager.HasNext() {
+		var nextPage []FlowLogCollector
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *FlowLogCollectorsPager) GetNext() (page []FlowLogCollector, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *FlowLogCollectorsPager) GetAll() (allItems []FlowLogCollector, err error) {
+	return pager.GetAllWithContext(context.Background())
 }
