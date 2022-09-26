@@ -558,6 +558,10 @@ func Provider() *schema.Provider {
 			"ibm_pi_pvm_snapshots":          power.DataSourceIBMPISnapshot(),
 			"ibm_pi_sap_profile":            power.DataSourceIBMPISAPProfile(),
 			"ibm_pi_sap_profiles":           power.DataSourceIBMPISAPProfiles(),
+			"ibm_pi_shared_processor_pool":  power.DataSourceIBMPISharedProcessorPool(),
+			"ibm_pi_shared_processor_pools": power.DataSourceIBMPISharedProcessorPools(),
+			"ibm_pi_spp_placement_group":    power.DataSourceIBMPISPPPlacementGroup(),
+			"ibm_pi_spp_placement_groups":   power.DataSourceIBMPISPPPlacementGroups(),
 			"ibm_pi_storage_pool_capacity":  power.DataSourceIBMPIStoragePoolCapacity(),
 			"ibm_pi_storage_pools_capacity": power.DataSourceIBMPIStoragePoolsCapacity(),
 			"ibm_pi_storage_type_capacity":  power.DataSourceIBMPIStorageTypeCapacity(),
@@ -995,6 +999,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_vpn_connection":                  power.ResourceIBMPIVPNConnection(),
 			"ibm_pi_console_language":                power.ResourceIBMPIInstanceConsoleLanguage(),
 			"ibm_pi_placement_group":                 power.ResourceIBMPIPlacementGroup(),
+			"ibm_pi_spp_placement_group":             power.ResourceIBMPISPPPlacementGroup(),
+			"ibm_pi_shared_processor_pool":           power.ResourceIBMPISharedProcessorPool(),
 
 			// //Private DNS related resources
 			"ibm_dns_zone":              dnsservices.ResourceIBMPrivateDNSZone(),
@@ -1321,6 +1327,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_tekton_pipeline_trigger_property": cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerPropertyValidator(),
 				"ibm_cd_tekton_pipeline_property":         cdtektonpipeline.ResourceIBMCdTektonPipelinePropertyValidator(),
 				"ibm_cd_tekton_pipeline_trigger":          cdtektonpipeline.ResourceIBMCdTektonPipelineTriggerValidator(),
+
+				"ibm_container_addons":                      kubernetes.ResourceIBMContainerAddOnsValidator(),
+				"ibm_container_alb_create":                  kubernetes.ResourceIBMContainerAlbCreateValidator(),
+				"ibm_container_nlb_dns":                     kubernetes.ResourceIBMContainerNlbDnsValidator(),
+				"ibm_container_vpc_alb_create":              kubernetes.ResourceIBMContainerVpcAlbCreateNewValidator(),
+				"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
+				"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachmentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1367,6 +1380,19 @@ func Validator() validate.ValidatorDict {
 				"ibm_cis_logpush_jobs":            cis.DataSourceIBMCISLogPushJobsValidator(),
 
 				"ibm_cos_bucket": cos.DataSourceIBMCosBucketValidator(),
+
+				"ibm_database_backups":                database.DataSourceIBMDatabaseBackupsValidator(),
+				"ibm_database_connection":             database.DataSourceIBMDatabaseConnectionValidator(),
+				"ibm_database_point_in_time_recovery": database.DataSourceIBMDatabasePointInTimeRecoveryValidator(),
+				"ibm_database_remotes":                database.DataSourceIBMDatabaseRemotesValidator(),
+				"ibm_database_tasks":                  database.DataSourceIBMDatabaseTasksValidator(),
+				"ibm_database":                        database.DataSourceIBMDatabaseInstanceValidator(),
+
+				"ibm_container_addons":                  kubernetes.DataSourceIBMContainerAddOnsValidator(),
+				"ibm_container_nlb_dns":                 kubernetes.DataSourceIBMContainerNLBDNSValidator(),
+				"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
+				"ibm_container_vpc_cluster_worker_pool": kubernetes.DataSourceIBMContainerVpcClusterWorkerPoolValidator(),
+				"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPoolValidator(),
 			},
 		}
 	})
