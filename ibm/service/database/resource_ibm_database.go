@@ -126,12 +126,18 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "The id of the resource group in which the Database instance is present",
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_database",
+					"resource_group_id"),
 			},
 
 			"location": {
 				Description: "The location or the region in which Database instance exists",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_database",
+					"location"),
 			},
 
 			"service": {
@@ -868,6 +874,21 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "region",
+			Required:                   true})
 
 	ibmICDResourceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
 	return &ibmICDResourceValidator

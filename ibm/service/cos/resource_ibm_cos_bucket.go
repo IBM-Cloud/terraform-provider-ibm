@@ -457,7 +457,7 @@ func ResourceIBMCOSBucketValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			Regexp:                     `^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`,
-			CloudDataType:              "ResourceInstance",
+			CloudDataType:              "resource_instance",
 			CloudDataRange:             []string{"service:cloud-object-storage"}})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{

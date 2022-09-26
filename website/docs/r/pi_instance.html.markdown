@@ -91,6 +91,7 @@ Review the argument references that you can specify for your resource.
 - `pi_sap_profile_id` - (Optional, String) SAP Profile ID for the amount of cores and memory.
   - Required only when creating SAP instances.
 - `pi_sap_deployment_type` - (Optional, String) Custom SAP deployment type information (For Internal Use Only).
+- `pi_shared_processor_pool` - (Optional, String) The shared processor pool for instance deployment. Conflicts with `pi_sap_profile_id`.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` and `pi_storage_type` will be ignored.
 - `pi_storage_pool_affinity` - (Optional, Bool) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment. Only valid when you deploy one of the IBM supplied stock images. Storage type for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage type the image was created in
@@ -112,11 +113,8 @@ In addition to all argument reference list, you can access the following attribu
 - `min_memory` - (Float) The minimum memory that was allocated to the instance.
 - `max_memory`- (Float) The maximum amount of memory that can be allocated to the instance without shut down or reboot the `LPAR`.
 - `min_virtual_cores` - (Integer) The minimum number of virtual cores.
-- `status` - (String) The status of the instance.
 - `pin_policy`  - (String) The pinning policy of the instance.
-- `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
 - `pi_network` - (List of Map) - A list of networks that are assigned to the instance.
-
   Nested scheme for `pi_network`:
   - `ip_address` - (String) The IP address of the network.
   - `mac_address` - (String) The MAC address of the network.
@@ -124,7 +122,9 @@ In addition to all argument reference list, you can access the following attribu
   - `network_name` - (String) The name of the network.
   - `type` - (String) The type of network.
   - `external_ip` - (String) The external IP address of the network.
-
+- `progress` - (Float) - Specifies the overall progress of the instance deployment process in percentage.
+- `shared_processor_pool_id` - (String)  The ID of the shared processor pool for the instance.
+- `status` - (String) The status of the instance.
 ## Import
 
 The `ibm_pi_instance` can be imported using `power_instance_id` and `instance_id`.

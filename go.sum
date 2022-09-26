@@ -7,8 +7,8 @@ github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47/go.mod h1:tfN
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220728135852-60ff775f7a8d h1:cHu5Iev9ggo1fktwmHbmPqDOkt3VYmdUGn1U7/Zb238=
 github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220728135852-60ff775f7a8d/go.mod h1:xUQL9SGAjoZFd4GNjrjjtEpjpkgU7RFXRyHesbKTjiY=
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.5.3/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
-github.com/IBM-Cloud/power-go-client v1.2.0 h1:0A3sSOC0d/P4IUAj4YGthA0g4liMaJpWvyBx50Z6/Ck=
-github.com/IBM-Cloud/power-go-client v1.2.0/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
+github.com/IBM-Cloud/power-go-client v1.2.1 h1:21z0hxZLgM9npv6u2IvKCHxhfbwxQM/q8ULV+pua5Sk=
+github.com/IBM-Cloud/power-go-client v1.2.1/go.mod h1:Qfx0fNi+9hms+xu9Z6Euhu9088ByW6C/TCMLECTRWNE=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf h1:koUAyF9b6X78lLLruGYPSOmrfY2YcGYKOj/Ug9nbKNw=
 github.com/IBM-Cloud/softlayer-go v1.0.5-tf/go.mod h1:6HepcfAXROz0Rf63krk5hPZyHT6qyx2MNvYyHof7ik4=
 github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca h1:crniVcf+YcmgF03NmmfonXwSQ73oJF+IohFYBwknMxs=
@@ -38,7 +38,6 @@ github.com/IBM/go-sdk-core/v5 v5.5.1/go.mod h1:Sn+z+qTDREQvCr+UFa22TqqfXNxx3o723
 github.com/IBM/go-sdk-core/v5 v5.6.3/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/go-sdk-core/v5 v5.6.5/go.mod h1:tt/B9rxLkRtglE7pvqLuYikgCXaZFL3btdruJaoUeek=
 github.com/IBM/go-sdk-core/v5 v5.7.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
-github.com/IBM/go-sdk-core/v5 v5.7.2/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.8.0/go.mod h1:+YbdhrjCHC84ls4MeBp+Hj4NZCni+tDAc0XQUqRO9Jc=
 github.com/IBM/go-sdk-core/v5 v5.9.1/go.mod h1:axE2JrRq79gIJTjKPBwV6gWHswvVptBjbcvvCPIxARM=
 github.com/IBM/go-sdk-core/v5 v5.9.2/go.mod h1:YlOwV9LeuclmT/qi/LAK2AsobbAP42veV0j68/rlZsE=
@@ -71,10 +70,6 @@ github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcab
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
-github.com/IBM/vpc-go-sdk v0.22.0 h1:jo2WMfiFXhAyJkdJeCVHwvT6kgTg2tg8sDeP9zrMFVg=
-github.com/IBM/vpc-go-sdk v0.22.0/go.mod h1:YPyIfI+/qhPqlYp+I7dyx2U1GLcXgp/jzVvsZfUH4y8=
-github.com/IBM/vpc-go-sdk v0.23.0 h1:C26g02pPtTEWyLHNKK0mlFdpHeb9+noku9Q6qJLmdkc=
-github.com/IBM/vpc-go-sdk v0.23.0/go.mod h1:YPyIfI+/qhPqlYp+I7dyx2U1GLcXgp/jzVvsZfUH4y8=
 github.com/IBM/vpc-go-sdk v0.24.0 h1:YelLUm9eo6NchQmPmUrg6I1p2tamR1FxcvZp6aHtJzE=
 github.com/IBM/vpc-go-sdk v0.24.0/go.mod h1:YPyIfI+/qhPqlYp+I7dyx2U1GLcXgp/jzVvsZfUH4y8=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
@@ -760,8 +755,9 @@ golang.org/x/net v0.0.0-20210614182718-04defd469f4e/go.mod h1:9nx3DQGgdP8bBQD5qx
 golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
-golang.org/x/net v0.0.0-20220225172249-27dd8689420f h1:oA4XRj0qtSt8Yo1Zms0CUlsT3KG69V2UGQWPBxujDmc=
 golang.org/x/net v0.0.0-20220225172249-27dd8689420f/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
+golang.org/x/net v0.0.0-20220722155237-a158d28d115b h1:PxfKdU9lEEDYjdIzOtC4qFWgkU2rGHdKlKowJSMN9h0=
+golang.org/x/net v0.0.0-20220722155237-a158d28d115b/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
@@ -813,8 +809,10 @@ golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220114195835-da31bd327af9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2 h1:fqTvyMIIj+HRzMmnzr9NtpHP6uVpvB5fkHcgPDC4nu8=
+golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220907062415-87db552b00fd h1:AZeIEzg+8RCELJYq8w+ODLVxFgLMMigSwO/ffKPEd9U=
+golang.org/x/sys v0.0.0-20220907062415-87db552b00fd/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 h1:JGgROgKl9N8DuW20oFS5gxc+lE67/N3FcwmBPMe7ArY=
