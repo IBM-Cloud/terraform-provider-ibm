@@ -25,7 +25,6 @@ resource ibm_dl_gateway test_dl_gateway {
   global = true 
   metered = false
   name = "Gateway1"
-  resource_group = "bf823d4f45b64ceaa4671bee0479346e"
   speed_mbps = 1000 
   type =  "dedicated" 
   cross_connect_router = data.ibm_dl_routers.test_dl_routers.cross_connect_routers[0].router_name
