@@ -4,30 +4,28 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_group"
 description: |-
-  Manages IBM Volume Group in the Power Virtual Server cloud.
+  Manages a volume group in the Power Virtual Server cloud.
 ---
 
-# ibm_pi_volume
-Create, update, or delete a volume group. For more information, about managing volume groups, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
+# ibm_pi_volume_group
+Retrieves information about a volume group. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
+
 ## Example usage
-The following example creates a volume group.
+The following example retrieves information about the `volume_group_1` volume group that is present in Power Systems Virtual Server.
 
 ```terraform
-resource "ibm_pi_volume_group" "testacc_volume_group"{
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_volume_group_name = "test-volume-group"
-  pi_volume_ids        = ["<Volume ID>"]
+data "ibm_pi_volume_group" "ds_volume_group" {
+  pi_volume_group_name       = "volume_group_1"
+  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
-
-**Note**
+**Notes**
 * Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.
 * If a Power cloud instance is provisioned at `lon04`, The provider level attributes should be as follows:
   * `region` - `lon`
   * `zone` - `lon04`
-
-  Example usage:
   
+  Example usage:
   ```terraform
     provider "ibm" {
       region    =   "lon"
@@ -35,36 +33,25 @@ resource "ibm_pi_volume_group" "testacc_volume_group"{
     }
   ```
   
-## Timeouts
-
-ibm_pi_volume_group provides the following [timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
-
-- **create** - (Default 30 minutes) Used for creating volume group.
-- **update** - (Default 30 minutes) Used for updating volume group.
-- **delete** - (Default 10 minutes) Used for deleting volume group.
-
-## Argument reference 
-Review the argument references that you can specify for your resource. 
+## Argument reference
+Review the argument references that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_consistency_group_name` - (Optional, String) The name of consistency-group at storage controller level.
 - `pi_volume_group_name` - (Required, String) The name of the volume group.
-- `pi_volume_ids` - (Required, Bool) List of volume IDs to add in volume group.
 
 ## Attribute reference
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `id` - (String) The unique identifier of the volume. The ID is composed of `<power_instance_id>/<volume_group_id>`.
+- `consistency_group_name` - (String) The name of consistency-group at storage controller level.
+- `id` - (String) The unique identifier of the volume group.
 - `replication_status` - (String) The replication status of volume group.
-- `volume_group_id` - (String) The unique identifier of the volume group.
-- `volume_group_status` - (String) The status of the volume group.
+- `status` - (String) The status of the volume group.
+- `status_description` - List of objects - The status details of the volume group.
 
-## Import
+  Nested scheme for `status_description`:
+  - `errors` - List of objects - The error status details of a volume group.
 
-The `ibm_pi_volume_group` resource can be imported by using `power_instance_id` and `volume_group_id`.
-
-**Example**
-
-```
-$ terraform import ibm_pi_volume_group.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
-```
+    Nested scheme for `errors`:
+    - `key` - (String) Indicates the volume group error key.
+    - `message` - (String) Failure message providing more details about the error key.
+    - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.

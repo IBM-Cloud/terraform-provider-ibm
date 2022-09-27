@@ -569,6 +569,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_system_pools":           power.DataSourceIBMPISystemPools(),
 			"ibm_pi_tenant":                 power.DataSourceIBMPITenant(),
 			"ibm_pi_volume":                 power.DataSourceIBMPIVolume(),
+			"ibm_pi_volume_group":           power.DataSourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_groups":          power.DataSourceIBMPIVolumeGroups(),
 
 			// // Added for private dns zones
 
