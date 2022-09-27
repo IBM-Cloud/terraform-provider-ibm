@@ -328,13 +328,13 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
+	d.SetId(*vpnGateway.ID)
+	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
+
 	_, err = isWaitForVpnGatewayAvailable(sess, *vpnGateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-
-	d.SetId(*vpnGateway.ID)
-	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
