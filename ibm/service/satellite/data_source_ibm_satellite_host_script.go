@@ -166,52 +166,47 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	if !coreos_enabled {
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
-				i = i + 5
+				i = i + 1
 				if script, ok := d.GetOk("custom_script"); ok {
 					lines[i] = script.(string)
 				} else {
 					if strings.ToLower(hostProvider) == "aws" {
-						lines[i] = "yum update -y\nyum-config-manager --enable '*'\nyum repolist all\nyum install container-selinux -y"
+						lines[i] = `
+yum-config-manager --enable '*'
+yum install container-selinux -y
+`
 					} else if strings.ToLower(hostProvider) == "ibm" {
 						lines[i] = `
+subscription-manager refresh
 if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
-	subscription-manager refresh
 	subscription-manager repos --enable rhel-server-rhscl-7-rpms
 	subscription-manager repos --enable rhel-7-server-optional-rpms
 	subscription-manager repos --enable rhel-7-server-rh-common-rpms
 	subscription-manager repos --enable rhel-7-server-supplementary-rpms
 	subscription-manager repos --enable rhel-7-server-extras-rpms
-fi`
+elif [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
+	subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
+	subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
+fi
+yum install container-selinux -y`
 					} else if strings.ToLower(hostProvider) == "azure" {
-
-						lines[i] = fmt.Sprintf(`
+						lines[i] = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
-	yum install subscription-manager -y
-	sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-	sudo update-alternatives --set python3 /usr/bin/python3.8
+	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+	update-alternatives --set python3 /usr/bin/python3.8
 fi
-yum update --disablerepo=* --enablerepo="*microsoft*" -y
-yum-config-manager --enable '*'
-yum repolist all
 yum install container-selinux -y
-					`)
+`
 					} else if strings.ToLower(hostProvider) == "google" {
-						lines[i] = fmt.Sprintf(`
+						lines[i] = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
-	yum install subscription-manager -y
-	sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-	sudo update-alternatives --set python3 /usr/bin/python3.8
+	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+	update-alternatives --set python3 /usr/bin/python3.8
 fi
-yum update --disablerepo=* --enablerepo="*" -y
-yum repolist all
 yum install container-selinux -y
-yum install subscription-manager -y
-	`)
-					} else {
-						lines[i] = "subscription-manager refresh\nyum update -y\n"
+`
 					}
 				}
-
 			}
 		}
 	}
