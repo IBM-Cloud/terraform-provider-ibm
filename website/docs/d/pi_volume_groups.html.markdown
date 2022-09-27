@@ -4,7 +4,7 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_volume_groups"
 description: |-
-  Manages a volume group in the Power Virtual Server cloud.
+  Manages a volume groups in the Power Virtual Server cloud.
 ---
 
 # ibm_pi_volume_groups

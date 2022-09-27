@@ -983,6 +983,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
 			"ibm_pi_volume":                          power.ResourceIBMPIVolume(),
 			"ibm_pi_volume_group":                    power.ResourceIBMPIVolumeGroup(),
+			"ibm_pi_volume_group_action":             power.ResourceIBMPIVolumeGroupAction(),
 			"ibm_pi_network":                         power.ResourceIBMPINetwork(),
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
 			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),

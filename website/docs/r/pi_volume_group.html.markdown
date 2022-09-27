@@ -54,7 +54,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the volume. The ID is composed of `<power_instance_id>/<volume_group_id>`.
+- `id` - (String) The unique identifier of the volume group. The ID is composed of `<power_instance_id>/<volume_group_id>`.
 - `replication_status` - (String) The replication status of volume group.
 - `volume_group_id` - (String) The unique identifier of the volume group.
 - `volume_group_status` - (String) The status of the volume group.

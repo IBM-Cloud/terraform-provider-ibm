@@ -125,7 +125,7 @@ func testAccCheckIBMPIVolumeGroupConfig(name string) string {
 	resource "ibm_pi_volume_group" "power_volume_group"{
 		pi_volume_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = ["07a7fd28-d4c0-4f51-a42f-69cb786fa69c","2d840432-acb4-4bea-9259-b576d75117a8"]
+		pi_volume_ids              = ["7bac2370-b485-44c7-8ce4-fca16b836378","182d84a0-5144-436c-9d03-e6fae43d85c1"]
 	  }
 	`, name, acc.Pi_cloud_instance_id)
 }
