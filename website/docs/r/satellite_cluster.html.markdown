@@ -49,7 +49,7 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The unique name for the new IBM Cloud Satellite cluster.
 - `location` - (Required, String) The name or ID of the Satellite location.
 - `kube_version` - (Optional, String) The Red Hart OpenShift Container Platform version.
-- `operating_system` - (Optional, String) Operating system of the default worker pool. Options are RHEL7, RHEL8, or RHCOS.
+- `operating_system` - (Optional, String) Operating system of the default worker pool. Options are RHEL_7_64, RHEL_8_64, or RHCOS.
 - `zones` - (Optional, Array of Strings)  The name of the zones to create the default worker pool.
 - `worker_count` - (Optional, String) The number of worker nodes to create per zone in the default worker pool.
 - `enable_config_admin` - (Optional, Bool) User provided value to indicate opt-in agreement to SatCon admin agent.
