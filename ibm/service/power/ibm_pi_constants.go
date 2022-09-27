@@ -80,6 +80,11 @@ const (
 	PIAntiAffinityInstances = "pi_anti_affinity_instances"
 	PIAntiAffinityVolumes   = "pi_anti_affinity_volumes"
 
+	// IBM PI Volume Group
+	PIVolumeGroupName                 = "pi_volume_group_name"
+	PIVolumeGroupsVolumeIds           = "pi_volume_ids"
+	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
+
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
 	PIVPNConnectionStatus                     = "connection_status"
