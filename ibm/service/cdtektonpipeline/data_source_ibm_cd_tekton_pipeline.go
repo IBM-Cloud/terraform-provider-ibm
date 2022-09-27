@@ -218,7 +218,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration JSON will be selected.",
+										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -376,6 +376,11 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 									},
 								},
 							},
+						},
+						"webhook_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Webhook URL that can be used to trigger pipeline runs.",
 						},
 					},
 				},
@@ -706,6 +711,9 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 				return modelMap, err
 			}
 			modelMap["secret"] = []map[string]interface{}{secretMap}
+		}
+		if model.WebhookURL != nil {
+			modelMap["webhook_url"] = *model.WebhookURL
 		}
 		return modelMap, nil
 	} else {
@@ -1087,6 +1095,9 @@ func dataSourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipe
 			return modelMap, err
 		}
 		modelMap["secret"] = []map[string]interface{}{secretMap}
+	}
+	if model.WebhookURL != nil {
+		modelMap["webhook_url"] = *model.WebhookURL
 	}
 	return modelMap, nil
 }

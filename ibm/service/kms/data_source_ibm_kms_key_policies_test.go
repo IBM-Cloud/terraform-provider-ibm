@@ -23,8 +23,8 @@ func TestAccIBMKmsDataSourceKeyPolicy_basicNew(t *testing.T) {
 				Config: testAccCheckIBMKmsDataSourceKeyPolicyConfigNew(instanceName, keyName, interval_month, enabled),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "keys.0.rotation.0.interval_month", "3"),
-					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "keys.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "policies.0.rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "policies.0.dual_auth_delete.0.enabled", "false"),
 				),
 			},
 		},
@@ -48,7 +48,7 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfigNew(instanceName, keyName string
 	}
 	resource "ibm_kms_key_policies" "test2" {
 		instance_id = "${ibm_kms_key.test.instance_id}"
-		key_id = "ibm_kms_key.test.key_id"
+		key_id = "${ibm_kms_key.test.key_id}"
 			rotation {
 				interval_month = %d
 			}
@@ -57,8 +57,8 @@ func testAccCheckIBMKmsDataSourceKeyPolicyConfigNew(instanceName, keyName string
 			}
 	}
 	data "ibm_kms_key_policies" "test" {
-		instance_id = "${ibm_kms_key.test.instance_id}"
-		key_id = "${ibm_kms_key.test.key_id}"
+		instance_id = "${ibm_kms_key_policies.test2.instance_id}"
+		key_id = "${ibm_kms_key_policies.test2.key_id}"
 	}
 `, instanceName, keyName, interval_month, enabled)
 }

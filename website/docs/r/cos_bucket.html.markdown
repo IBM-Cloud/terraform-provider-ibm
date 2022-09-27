@@ -292,6 +292,13 @@ resource "ibm_cos_bucket" "cos_bucket" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `abort_incomplete_multipart_upload_days` (Optional,List) Nested block with the following structure.
+  
+  Nested scheme for `abort_incomplete_multipart_upload_days`:
+  - `days_after_initiation` - (Optional, Integer) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0 and less than 3650.
+  - `enable` - (Required, Bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
+  - `prefix` - (Optional, String)  A rule with a prefix will only apply to the objects that match. You can use multiple rules for different actions for different prefixes within the same bucket.
+  - `rule_id` - (Optional, String) Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket.
 - `allowed_ip` - (Optional, Array of string)  A list of IPv4 or IPv6 addresses in CIDR notation that you want to allow access to your IBM Cloud Object Storage bucket.
 - `activity_tracking`- (List of objects) Object to enable auditing with IBM Cloud Activity Tracker - Optional - Configure your IBM Cloud Activity Tracker service instance and the type of events that you want to send to your service to audit activity against your bucket. For a list of supported actions, see [Bucket actions](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-at-events#at-actions-mngt-2).
 

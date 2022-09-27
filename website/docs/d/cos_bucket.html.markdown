@@ -91,7 +91,7 @@ In addition to all argument reference list, you can access the following attribu
 - `abort_incomplete_multipart_upload_days` (List) Nested block with the following structure.
   
   Nested scheme for `abort_incomplete_multipart_upload_days`:
-  - `days_after_initiation` - (String) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0.
+  - `days_after_initiation` - (Integer) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0.
   - `enable` - (Bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
   - `prefix` - (String)  A rule with a prefix will only apply to the objects that match. You can use multiple rules for different actions for different prefixes within the same bucket.
   - `rule_id` - (String) Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket.

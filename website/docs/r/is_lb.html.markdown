@@ -28,7 +28,7 @@ An example to create an application load balancer.
 ```terraform
 resource "ibm_is_lb" "example" {
   name    = "example-load-balancer"
-  subnets = [ibm_is_subnet.example.id]
+  subnets = [ibm_is_subnet.example.id, ibm_is_subnet.example1.id]
 }
 
 ```
@@ -62,7 +62,11 @@ Review the argument references that you can specify for your resource.
 
   ~> **NOTE:** Currently, `route_mode` enabled is supported only by private network load balancers.
 - `security_groups`  (Optional, List) A list of security groups to use for this load balancer. This option is supported only for application load balancers.
-- `subnets` - (Required, Forces new resource, List) List of the subnets IDs to connect to the load balancer.
+- `subnets` - (Required, List) List of the subnets IDs to connect to the load balancer.
+
+  ~> **NOTE:** 
+  The subnets must be in the same `VPC`. The load balancer's `availability` will depend on the availability of the `zones` the specified subnets reside in. The load balancer must be in the `application` family for `updating subnets`. Load balancers in the `network` family allow only `one subnet` to be specified.
+
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your load balancer. Tags can help you find the load balancer more easily later.
 - `type` - (Optional, Forces new resource, String) The type of the load balancer. Default value is `public`. Supported values are `public` and `private`.
 
