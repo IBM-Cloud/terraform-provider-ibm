@@ -61,6 +61,40 @@ Retrieves information of replication configuration on an existing bucket. .  For
 
 To configure a replication policy on a bucket, you must enable object versioning on both source and destination buckets by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
 
+# Key Protect Enabled COS bucket
+
+Retrieves a COS bucket enabled with Key protect root key for data encryption.
+https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/kms_key
+
+
+
+# Hyper Protect Crypto Services (HPCS) Enabled COS bucket
+Retrieves a COS bucket enabled with data encryption using root key that is  created and managed by Hyper Protect Crypto Services.
+```
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  key_name = "name-of-key"
+}
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  alias = "alias_name"
+}
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  limit = 100
+  key_name = "name-of-key"
+}
+resource "ibm_cos_bucket" "smart-us-south" {
+  bucket_name          = "atest-bucket"
+  resource_instance_id = "cos-instance-id"
+  region_location      = "us-south"
+  storage_class        = "smart"
+  key_protect          = data.ibm_kms_key.test.key.0.crn
+}
+
+```
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 

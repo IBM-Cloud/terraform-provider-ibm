@@ -68,7 +68,7 @@ In addition to all argument references listed, you can access the following attr
 - `key_lifetime` - (Integer) The key lifetime in seconds.
 - `name` - (String) The user-defined name for this IPsec policy.
 - `pfs` - (String) Perfect Forward Secrecy.
-- `resource_group` - (List) The resource group for this IPsec policy.
+- `resource_group` - (List) The resource group object, for this IPsec policy.
   Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.
 	- `id` - (String) The unique identifier for this resource group.

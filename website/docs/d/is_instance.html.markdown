@@ -172,7 +172,7 @@ In addition to all argument reference list, you can access the following attribu
   - `subnet` - (String) The ID of the subnet that is used in the primary network interface.
   - `security_groups` (List)A list of security groups that were created for the interface.
 - `resource_controller_url` - (String) The URL of the IBM Cloud dashboard that you can use to see details for your instance.  
-- `resource_group` - (String) The name of the resource group where the instance was created.
+- `resource_group` - (String) The resource group id, where the instance was created.
 - `status` - (String) The status of the instance.
 - `status_reasons` - (List) Array of reasons for the current status. 
   

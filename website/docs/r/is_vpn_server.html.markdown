@@ -51,7 +51,7 @@ Review the argument references that you can specify for your resource.
    -> **NOTE:** 
       `identity_provider` and `client_ca_crn` are mutually exclusive, which means either one must be provided. When `method` has `certificate` as value `client_ca_crn` must be provided and when `method` has `username` as value `identity_provider` must be provided.
 
-	- `identity_provider` - (Required, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access managementThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+	- `identity_provider` - (Required, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
 		  - Constraints: Allowable values are: iam
 	- `client_ca_crn` - (Required, String)  The CRN of the certificate instance or CRN of the secret from secrets manager to use for the VPN client certificate authority (CA). As the usage of certificate CRN from Certificate Manager is getting deprecated, It is recommended to use Secret manger for same.
 	- `crl` - (Optional, String) The certificate revocation list contents, encoded in PEM format.
@@ -70,7 +70,7 @@ Review the argument references that you can specify for your resource.
   - Constraints: The maximum value is `65535`. The minimum value is `1`.
 - `protocol` - (Optional, String) The transport protocol to use for this VPN server.
   - Constraints: The default value is `udp`. Allowable values are: udp, tcp
-- `resource_group` - (Optional, Forces new resource, String) The resource group where the VPN gateway to be created.
+- `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
 - `security_groups` - (Optional, List) The security groups to use for this VPN server. If unspecified, the VPC's default security group is used.
 
   Nested scheme for **security_groups**:

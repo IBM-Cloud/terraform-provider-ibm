@@ -46,7 +46,7 @@ In addition to all argument references listed, you can access the following attr
 	- `identity_provider` - (List) The type of identity provider to be used by VPN client.
 		
 		Nested scheme for **identity_provider**:
-		- `provider_type` - (String) The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access managementThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+		- `provider_type` - (String) The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
 		- Constraints: Allowable values are: iam
 	- `client_ca` - (List) The certificate instance used for the VPN client certificate authority (CA).
 	Nested scheme for **client_ca**:
@@ -115,7 +115,7 @@ In addition to all argument references listed, you can access the following attr
 - `protocol` - (String) The transport protocol used by this VPN server.
   - Constraints: Allowable values are: udp, tcp
 
-- `resource_group` - (List) The resource group for this VPN server.
+- `resource_group` - (List) The resource group object, for this VPN server.
 
 	Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.

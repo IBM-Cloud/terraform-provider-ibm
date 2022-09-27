@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220728135852-60ff775f7a8d
-	github.com/IBM-Cloud/power-go-client v1.2.0
+	github.com/IBM-Cloud/power-go-client v1.2.1
 	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca
 	github.com/IBM/appconfiguration-go-admin-sdk v0.3.0
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
@@ -28,7 +28,7 @@ require (
 	github.com/IBM/scc-go-sdk/v4 v4.0.0
 	github.com/IBM/schematics-go-sdk v0.2.1
 	github.com/IBM/secrets-manager-go-sdk v0.1.19
-	github.com/IBM/vpc-go-sdk v0.24.0
+	github.com/IBM/vpc-go-sdk v0.25.0
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/Shopify/sarama v1.29.1
@@ -51,6 +51,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220907062415-87db552b00fd // indirect
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	gotest.tools v2.2.0+incompatible
 )
@@ -58,4 +60,3 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
-

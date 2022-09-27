@@ -56,6 +56,15 @@ In addition to all argument reference list, you can access the following attribu
   - `resource_type` - (String) The resource type, supported value is `vpn_gateway`.
   - `status` - (String) The status of the VPN gateway, supported values are **available**, **deleting**, **failed**, **pending**.
   - `subnet` - (String) The VPN gateway subnet information.
+  - `vpc` - (String) 	The VPC this VPN server resides in.
+    `Nested scheme for `vpc`:
+    - `crn` - (String) The CRN for this VPC.
+    - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+      Nested scheme for **deleted**:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) - The URL for this VPC
+    - `id` - (String) - The unique identifier for this VPC.
+    - `name` - (String) - The unique user-defined name for this VPC.
   - `resource_group` - (String) The resource group ID.
   - `mode` - (String) The VPN gateway mode, supported values are `policy` and `route`.
 

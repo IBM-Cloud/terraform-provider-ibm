@@ -61,7 +61,7 @@ In addition to all argument references listed, you can access the following attr
 - `href` - (String) The URL for this network ACL.
 - `id` - The unique identifier of the NetworkACL.
 - `name` - (String) The user-defined name for this network ACL.
-- `resource_group` - (List) The resource group for this network ACL.
+- `resource_group` - (List) The resource group object, for this network ACL.
 
   Nested scheme for `resource_group`:
 	- `href` - (String) The URL for this resource group.

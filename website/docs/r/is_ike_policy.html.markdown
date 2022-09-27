@@ -40,9 +40,21 @@ resource "ibm_is_ike_policy" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IPSec` peers. Available options are `md5`, `sha1`, or `sha256`.
-- `dh_group`  - (Required, Integer) Enter the Diffie-Hellman group that you want to use for the encryption key. Available enumeration type are `2`, `5`, `14`, or `19`.
-- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `triple_des`, `aes128`, or `aes256`.
+- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IKE` peers. Available options are `md5`, `sha1`,  `sha256`, `sha512`, `sha384`.
+  
+  ~> **Note**
+  The `md5` and `sha1` algorithms have been deprecated and support will be removed from November 2022
+
+- `dh_group`  - (Required, Integer) Enter the Diffie-Hellman group that you want to use for the encryption key. Available enumeration type are `2`, `5`, `14`, `19`, `15`, `16` ,`17` ,`18` ,`20` ,`21` ,`22` ,`23` ,`24` ,`31`
+
+  ~> **Note**
+  The Diffie-Hellman Groups 2 and 5 have been deprecated and support will be removed from November 2022
+
+- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `triple_des`, `aes128`, `aes192`, `aes256`.
+
+  ~> **Note**
+  The `triple_des` algorithm has been deprecated and support will be removed from November 2022
+
 - `ike_version`  - (Optional, Integer) Enter the IKE protocol version that you want to use. Available options are `1`, or `2`.
 - `key_lifetime`  - (Optional, Integer)The key lifetime in seconds. `Maximum: 86400`, `Minimum: 1800`. Default is `28800`. 
 - `name` - (Required, String) Enter a name for your IKE policy.
