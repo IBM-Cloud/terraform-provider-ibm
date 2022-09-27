@@ -118,7 +118,6 @@ func ResourceIBMSatelliteCluster() *schema.Resource {
 			},
 			"operating_system": {
 				Type:        schema.TypeString,
-				Computed:    true,
 				Optional:    true,
 				Description: "Operating system of the default worker pool. Options are RHEL_7_64, RHEL_8_64, or RHCOS.",
 			},
