@@ -322,8 +322,11 @@ func populateKPClient(d *schema.ResourceData, meta interface{}, instanceID strin
 	if err != nil {
 		return nil, nil, err
 	}
+	var endpointType string
 
-	endpointType := d.Get("endpoint_type").(string)
+	if v, ok := d.GetOk("endpoint_type"); ok {
+		endpointType = v.(string)
+	}
 
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {

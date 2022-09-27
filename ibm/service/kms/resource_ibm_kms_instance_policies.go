@@ -7,14 +7,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	kp "github.com/IBM/keyprotect-go-client"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -110,7 +107,7 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 						},
 						"interval_month": {
 							Type:         schema.TypeInt,
-							Required:     true,
+							Optional:     true,
 							Description:  "Specifies the rotation time interval in months for the instance.",
 							ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
 						},
@@ -224,32 +221,11 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 }
 
 func resourceIBMKmsInstancePolicyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
+	instanceID := getInstanceIDFromCRN(d.Get("instance_id").(string))
+	kpAPI, instanceCRN, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	instanceID := d.Get("instance_id").(string)
-	CrnInstanceID := strings.Split(instanceID, ":")
-	if len(CrnInstanceID) > 3 {
-		instanceID = CrnInstanceID[len(CrnInstanceID)-3]
-	}
-
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	resourceInstanceGet := rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	}
-
-	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
-	if err != nil || instanceData == nil {
-		return diag.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-	}
-	instanceCRN := instanceData.CRN
-
-	kpAPI.Config.InstanceID = instanceID
 
 	if _, ok := d.GetOk("instance_id"); ok {
 		policyCreate(context, d, kpAPI)
@@ -259,28 +235,11 @@ func resourceIBMKmsInstancePolicyCreate(context context.Context, d *schema.Resou
 }
 
 func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
+	_, instanceID, _ := getInstanceAndKeyDataFromCRN(d.Id())
+	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	crn := d.Id()
-	crnData := strings.Split(crn, ":")
-	instanceID := crnData[len(crnData)-3]
-
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	resourceInstanceGet := rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	}
-
-	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
-	if err != nil || instanceData == nil {
-		return diag.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-	}
-
-	kpAPI.Config.InstanceID = instanceID
 	instancePolicies, err := kpAPI.GetInstancePolicies(context)
 	if err != nil {
 		return diag.Errorf("[ERROR] Get Policies failed with error : %s", err)
@@ -297,29 +256,12 @@ func resourceIBMKmsInstancePoliciesRead(context context.Context, d *schema.Resou
 func resourceIBMKmsInstancePolicyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	if d.HasChange("rotation") || d.HasChange("dual_auth_delete") || d.HasChange("metric") || d.HasChange("key_create_import_access") {
-		kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
+
+		instanceID := getInstanceIDFromCRN(d.Get("instance_id").(string))
+		kpAPI, _, err := populateKPClient(d, meta, instanceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		instanceID := d.Get("instance_id").(string)
-		CrnInstanceID := strings.Split(instanceID, ":")
-		if len(CrnInstanceID) > 3 {
-			instanceID = CrnInstanceID[len(CrnInstanceID)-3]
-		}
-
-		rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		resourceInstanceGet := rc.GetResourceInstanceOptions{
-			ID: &instanceID,
-		}
-		instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
-		if err != nil || instanceData == nil {
-			return diag.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-		}
-		kpAPI.Config.InstanceID = instanceID
 
 		err = policyCreate(context, d, kpAPI)
 		if err != nil {
@@ -351,10 +293,21 @@ func policyCreate(context context.Context, d *schema.ResourceData, kpAPI *kp.Cli
 		rotationInstancePolicyList := rotationInstancePolicy.([]interface{})
 		if len(rotationInstancePolicyList) != 0 {
 			iM := rotationInstancePolicyList[0].(map[string]interface{})["interval_month"].(int)
-			mulPolicy.Rotation = &kp.RotationPolicyData{
-				Enabled:       rotationInstancePolicyList[0].(map[string]interface{})["enabled"].(bool),
-				IntervalMonth: &iM,
+			enabled := rotationInstancePolicyList[0].(map[string]interface{})["enabled"].(bool)
+			log.Println("testing interval Month ======>", iM)
+			//For case when enabled = false && no input to interval month.
+			if iM == 0 {
+				mulPolicy.Rotation = &kp.RotationPolicyData{
+					Enabled:       enabled,
+					IntervalMonth: nil,
+				}
+			} else {
+				mulPolicy.Rotation = &kp.RotationPolicyData{
+					Enabled:       enabled,
+					IntervalMonth: &iM,
+				}
 			}
+
 		}
 	}
 	if metricsInstancePolicy, ok := d.GetOk("metrics"); ok {

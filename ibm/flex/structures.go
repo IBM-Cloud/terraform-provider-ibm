@@ -2691,7 +2691,11 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 		}
 		if policy.PolicyType == "rotation" {
 			policyInstance["enabled"] = policy.PolicyData.Enabled
-			policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
+			if !*policy.PolicyData.Enabled {
+				policyInstance["interval_month"] = nil
+			} else {
+				policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
+			}
 			rotationMap = append(rotationMap, policyInstance)
 		}
 		if policy.PolicyType == "metrics" {

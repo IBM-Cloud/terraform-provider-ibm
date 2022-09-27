@@ -6,9 +6,7 @@ package kms
 import (
 	"context"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -196,26 +194,11 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 }
 
 func resourceIBMKmsInstancePolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := meta.(conns.ClientSession).KeyManagementAPI()
+	instanceID := getInstanceIDFromCRN(d.Get("instance_id").(string))
+	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	instanceID := d.Get("instance_id").(string)
-
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	resourceInstanceGet := rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	}
-
-	instanceData, resp, err := rsConClient.GetResourceInstance(&resourceInstanceGet)
-	if err != nil || instanceData == nil {
-		return diag.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
-	}
-
-	kpAPI.Config.InstanceID = instanceID
 	instancePolicies, err := kpAPI.GetInstancePolicies(context)
 	if err != nil {
 		return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
