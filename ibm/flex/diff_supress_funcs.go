@@ -62,3 +62,41 @@ func SuppressHashedRawSecret(k, old, new string, d *schema.ResourceData) bool {
 	secureHmac := hex.EncodeToString(mac.Sum(nil))
 	return cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
 }
+
+func SuppressPipelinePropertyRawSecret(k, old, new string, d *schema.ResourceData) bool {
+	// ResourceIBMCdTektonPipelineProperty
+	if d.Get("type").(string) == "secure" {
+		segs := []string{d.Get("pipeline_id").(string), d.Get("name").(string)}
+		secret := strings.Join(segs, ".")
+		mac := hmac.New(sha3.New512, []byte(secret))
+		mac.Write([]byte(new))
+		secureHmac := hex.EncodeToString(mac.Sum(nil))
+		return cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
+	} else {
+		return old == new
+	}
+}
+
+func SuppressTriggerPropertyRawSecret(k, old, new string, d *schema.ResourceData) bool {
+	// ResourceIBMCdTektonPipelineTriggerProperty
+	if d.Get("type").(string) == "secure" {
+		segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string), d.Get("name").(string)}
+		secret := strings.Join(segs, ".")
+		mac := hmac.New(sha3.New512, []byte(secret))
+		mac.Write([]byte(new))
+		secureHmac := hex.EncodeToString(mac.Sum(nil))
+		return cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
+	} else {
+		return old == new
+	}
+}
+
+func SuppressGenericWebhookRawSecret(k, old, new string, d *schema.ResourceData) bool {
+	// ResourceIBMCdTektonPipelineTrigger
+	segs := []string{d.Get("pipeline_id").(string), d.Get("trigger_id").(string)}
+	secret := strings.Join(segs, ".")
+	mac := hmac.New(sha3.New512, []byte(secret))
+	mac.Write([]byte(new))
+	secureHmac := hex.EncodeToString(mac.Sum(nil))
+	return cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
+}

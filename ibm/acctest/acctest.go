@@ -57,7 +57,9 @@ var CertCRN string
 var UpdatedCertCRN string
 var RegionName string
 var ISZoneName string
+var ISZoneName2 string
 var ISCIDR string
+var ISCIDR2 string
 var ISAddressPrefixCIDR string
 var InstanceName string
 var InstanceProfileName string
@@ -88,6 +90,7 @@ var HpcsAdmin1 string
 var HpcsToken1 string
 var HpcsAdmin2 string
 var HpcsToken2 string
+var HpcsRootKeyCrn string
 var RealmName string
 var IksSa string
 var IksClusterID string
@@ -119,8 +122,10 @@ var Pi_dhcp_id string
 var PiCloudConnectionName string
 var PiSAPProfileID string
 var Pi_placement_group_name string
+var Pi_spp_placement_group_id string
 var PiStoragePool string
 var PiStorageType string
+var Pi_shared_processor_pool_id string
 
 var Pi_capture_storage_image_path string
 var Pi_capture_cloud_storage_access_key string
@@ -433,10 +438,22 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_ZONE for testing ibm_is_zone datasource else it is set to default value 'us-south-1'")
 	}
 
+	ISZoneName2 = os.Getenv("SL_ZONE_2")
+	if ISZoneName2 == "" {
+		ISZoneName2 = "us-south-2"
+		fmt.Println("[INFO] Set the environment variable SL_ZONE_2 for testing ibm_is_zone datasource else it is set to default value 'us-south-2'")
+	}
+
 	ISCIDR = os.Getenv("SL_CIDR")
 	if ISCIDR == "" {
 		ISCIDR = "10.240.0.0/24"
 		fmt.Println("[INFO] Set the environment variable SL_CIDR for testing ibm_is_subnet else it is set to default value '10.240.0.0/24'")
+	}
+
+	ISCIDR2 = os.Getenv("SL_CIDR_2")
+	if ISCIDR2 == "" {
+		ISCIDR2 = "10.240.64.0/24"
+		fmt.Println("[INFO] Set the environment variable SL_CIDR_2 for testing ibm_is_subnet else it is set to default value '10.240.64.0/24'")
 	}
 
 	ISAddressPrefixCIDR = os.Getenv("SL_ADDRESS_PREFIX_CIDR")
@@ -660,6 +677,11 @@ func init() {
 		Pi_placement_group_name = "tf-pi-placement-group"
 		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
+	Pi_spp_placement_group_id = os.Getenv("PI_SPP_PLACEMENT_GROUP_ID")
+	if Pi_spp_placement_group_id == "" {
+		Pi_spp_placement_group_id = "tf-pi-spp-placement-group"
+		fmt.Println("[WARN] Set the environment variable PI_SPP_PLACEMENT_GROUP_ID for testing ibm_pi_spp_placement_group resource else it is set to default value 'tf-pi-spp-placement-group'")
+	}
 	PiStoragePool = os.Getenv("PI_STORAGE_POOL")
 	if PiStoragePool == "" {
 		PiStoragePool = "terraform-test-power"
@@ -687,6 +709,12 @@ func init() {
 	if Pi_capture_cloud_storage_secret_key == "" {
 		Pi_capture_cloud_storage_secret_key = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_CAPTURE_CLOUD_STORAGE_SECRET_KEY for testing Pi_capture_cloud_storage_secret_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_shared_processor_pool_id = os.Getenv("PI_SHARED_PROCESSOR_POOL_ID")
+	if Pi_shared_processor_pool_id == "" {
+		Pi_shared_processor_pool_id = "tf-pi-shared-processor-pool"
+		fmt.Println("[WARN] Set the environment variable PI_SHARED_PROCESSOR_POOL_ID for testing ibm_pi_shared_processor_pool resource else it is set to default value 'tf-pi-shared-processor-pool'")
 	}
 
 	WorkspaceID = os.Getenv("SCHEMATICS_WORKSPACE_ID")
@@ -819,6 +847,10 @@ func init() {
 	HpcsToken2 = os.Getenv("IBM_HPCS_TOKEN2")
 	if HpcsToken2 == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_HPCS_TOKEN2 with a VALID token for HPCS Admin Key2")
+	}
+	HpcsRootKeyCrn = os.Getenv("IBM_HPCS_ROOTKEY_CRN")
+	if HpcsRootKeyCrn == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_HPCS_ROOTKEY_CRN with a VALID CRN for a root key created in the HPCS instance")
 	}
 
 	Scc_gov_account_id = os.Getenv("SCC_GOVERNANCE_ACCOUNT_ID")

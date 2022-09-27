@@ -76,7 +76,7 @@ import (
 	"github.com/IBM/push-notifications-go-sdk/pushservicev1"
 	"github.com/IBM/scc-go-sdk/v3/adminserviceapiv1"
 	"github.com/IBM/scc-go-sdk/v3/configurationgovernancev1"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv2"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
@@ -114,7 +114,7 @@ import (
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
-	"github.com/IBM/scc-go-sdk/v3/posturemanagementv1"
+	"github.com/IBM/scc-go-sdk/v4/posturemanagementv1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -653,7 +653,11 @@ func (session clientSession) ContainerRegistryV1() (*containerregistryv1.Contain
 
 // SchematicsAPI provides schematics Service APIs ...
 func (sess clientSession) SchematicsV1() (*schematicsv1.SchematicsV1, error) {
-	return sess.schematicsClient, sess.schematicsClientErr
+	if sess.schematicsClientErr != nil {
+		return sess.schematicsClient, sess.schematicsClientErr
+	}
+	return sess.schematicsClient.Clone(), nil
+	// return sess.schematicsClient, sess.schematicsClientErr
 }
 
 // FunctionClient ...
@@ -1664,15 +1668,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// SCHEMATICS Service
-	schematicsEndpoint := "https://schematics.cloud.ibm.com"
+	// schematicsEndpoint := "https://schematics.cloud.ibm.com"
+	schematicsEndpoint := ContructEndpoint(fmt.Sprintf("%s.schematics", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		if c.Region == "us-south" || c.Region == "us-east" {
-			schematicsEndpoint = ContructEndpoint("private-us.schematics", cloudEndpoint)
-		} else if c.Region == "eu-gb" || c.Region == "eu-de" {
-			schematicsEndpoint = ContructEndpoint("private-eu.schematics", cloudEndpoint)
-		} else {
-			schematicsEndpoint = "https://schematics.cloud.ibm.com"
-		}
+		schematicsEndpoint = ContructEndpoint(fmt.Sprintf("private-%s.schematics", c.Region), cloudEndpoint)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		schematicsEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_SCHEMATICS_API_ENDPOINT", c.Region, schematicsEndpoint)

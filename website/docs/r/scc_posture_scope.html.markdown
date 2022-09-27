@@ -8,7 +8,7 @@ subcategory: "Security and Compliance Center"
 
 # ibm_scc_posture_scope
 
-Provides a resource for scopes. This allows scopes to be created, updated and deleted.
+Provides a resource for scopes. This allows scopes to be created, updated and deleted. Before creation of the scope, we need to create credential and collector.
 
 ## Example Usage
 

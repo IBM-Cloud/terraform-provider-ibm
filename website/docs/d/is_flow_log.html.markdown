@@ -50,7 +50,7 @@ In addition to all argument references listed, you can access the following attr
 - `href` - (String) The URL for this flow log collector.
 - `lifecycle_state` - (String) The lifecycle state of the flow log collector.
 - `name` - (String) The unique user-defined name for this flow log collector.
-- `resource_group` - (List) The resource group for this flow log collector.
+- `resource_group` - (List) The resource group object, for this flow log collector.
 
 	Nested scheme for `resource_group`:
     - `href` - (Required, String) The URL for this resource group.

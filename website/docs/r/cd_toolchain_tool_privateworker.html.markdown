@@ -18,8 +18,8 @@ Provides a resource for cd_toolchain_tool_privateworker. This allows cd_toolchai
 resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
   parameters {
 		name = "name"
-		worker_queue_credentials = "workerQueueCredentials"
-		worker_queue_identifier = "workerQueueIdentifier"
+		worker_queue_credentials = "worker_queue_credentials"
+		worker_queue_identifier = "worker_queue_identifier"
   }
   toolchain_id = "toolchain_id"
 }
@@ -31,12 +31,12 @@ Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `name` - (Required, String) Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.
 	* `worker_queue_credentials` - (Required, String) Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.
 	* `worker_queue_identifier` - (Optional, String)
-* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind tool to.
+* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
@@ -45,8 +45,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_privateworker.
 * `crn` - (String) Tool CRN.
-* `tool_id` - (String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
@@ -56,6 +54,8 @@ Nested scheme for **referent**:
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+* `tool_id` - (String) Tool ID.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `updated_at` - (String) Latest tool update timestamp.
 
 ## Provider Configuration
@@ -116,7 +116,7 @@ The `id` property can be formed from `toolchain_id`, and `tool_id` in the follow
 ```
 <toolchain_id>/<tool_id>
 ```
-* `toolchain_id`: A string. ID of the toolchain to bind tool to.
+* `toolchain_id`: A string. ID of the toolchain to bind the tool to.
 * `tool_id`: A string. ID of the tool bound to the toolchain.
 
 # Syntax

@@ -55,7 +55,7 @@ resource "ibm_is_instance" "example" {
 
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
-    primary_ipv4_address = "10.240.0.6"
+    primary_ipv4_address = "10.240.0.6"  // will be deprecated. Use primary_ip.[0].address
     allow_ip_spoofing = true
   }
 
@@ -76,13 +76,23 @@ resource "ibm_is_instance" "example" {
     delete = "15m"
   }
 }
+// primary_ipv4_address deprecation 
+output "primary_ipv4_address" {
+  # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
+  value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead 
+}
 
+```
+### Sample for creating an instance with reserved ip as primary_ip reference.
 
-// Example to provision instance using subnet reserved ip
+The following example shows how you can create a virtual server instance using reserved ip as the primary ip reference of the network interface
 
+// Example to provision instance using reserved ip
+
+```terraform
 resource "ibm_is_subnet_reserved_ip" "example" {
-  subnet = ibm_is_subnet.example.id
-  name = "example-reserved-ip1"
+  subnet    = ibm_is_subnet.example.id
+  name      = "example-reserved-ip1"
   address		= "${replace(ibm_is_subnet.example.ipv4_cidr_block, "0/24", "13")}"
 }
 
@@ -276,6 +286,7 @@ resource "ibm_is_instance" "example" {
   boot_volume {
     name     = "boot-restore"
     snapshot = ibm_is_snapshot.example.id
+    tags     = ["tags-0"]
   }
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
@@ -322,6 +333,7 @@ Review the argument references that you can specify for your resource.
     
     ~> **Note:**
     `snapshot` conflicts with `image` id and `instance_template`
+  - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 
@@ -339,6 +351,13 @@ Review the argument references that you can specify for your resource.
   ~> **Note:**
   `image` conflicts with `boot_volume.0.snapshot`, not required when creating instance using `instance_template`
 - `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
+- `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
+
+  Nested scheme for `lifecycle_reasons`:
+    - `code` - (String) A snake case string succinctly identifying the reason for this lifecycle state.
+    - `message` - (String) An explanation of the reason for this lifecycle state.
+    - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+- `lifecycle_state`- (String) The lifecycle state of the virtual server instance. [ **deleting**, **failed**, **pending**, **stable**, **suspended**, **updating**, **waiting** ]
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
@@ -351,12 +370,13 @@ Review the argument references that you can specify for your resource.
 
   - `name` - (Optional, String) The name of the network interface.
   - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
       Nested scheme for `primary_ip`:
       - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-      - `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+      - `address` - (Optional, String) The IP address of the reserved IP. This is same as `network_interfaces.[].primary_ipv4_address`
       - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
-      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
-  - `primary_ipv4_address` - (Optional, Deprecated, Forces new resource, String) The IPV4 address of the interface. `primary_ipv4_address` is depreated, use `primary_ip` instead.
+      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP.
+  - `primary_ipv4_address` - (Optional, Deprecated, Forces new resource, String) The IPV4 address of the interface. `primary_ipv4_address` will be deprecated, use `primary_ip.[0].address` instead.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`- (Optional, List of strings)A comma separated list of security groups to add to the primary network interface.
 - `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
@@ -371,12 +391,13 @@ Review the argument references that you can specify for your resource.
   - `name` - (Optional, String) The name of the network interface.
   - `port_speed` - (Deprecated, Integer) Speed of the network interface.
   - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
-    Nested scheme for `primary_ip`:
-    - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-    - `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be 0.0.0.0. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-    - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
-    - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
-  - `primary_ipv4_address` - (Optional, Deprecated, Forces new resource, String) The IPV4 address of the interface.`primary_ipv4_address` is depreated, use `primary_ip` instead.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+      - `address` - (Optional, String) The IP address of the reserved IP. This is same as `primary_network_interface.[0].primary_ipv4_address` which will be deprecated.
+      - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
+      - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+  - `primary_ipv4_address` - (Optional, Deprecated, Forces new resource, String) The IPV4 address of the interface.`primary_ipv4_address` will be deprecated, use `primary_ip.[0].address` instead.
   - `subnet` - (Required, String) The ID of the subnet.
   - `security_groups`-List of strings-Optional-A comma separated list of security groups to add to the primary network interface.
 - `profile` - (Required, String) The name of the profile that you want to use for your instance. Not required when using `instance_template`. To list supported profiles, run `ibmcloud is instance-profiles` or `ibm_is_instance_profiles` datasource.
@@ -448,7 +469,14 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the network interface.
   - `subnet` - (String) The ID of the subnet.
   - `security_groups`- (List of Strings) A list of security groups that are used in the network interface.
-  - `primary_ipv4_address` - (String) The primary IPv4 address.
+  - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+      - `address` - (String) The IP address of the reserved IP. This is same as `network_interfaces.[].primary_ipv4_address` which will be deprecated.
+      - `name`- (String) The user-defined or system-provided name for this reserved IP
+      - `reserved_ip`- (String) The unique identifier for this reserved IP
+  - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:
@@ -457,7 +485,21 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the primary network interface.
   - `subnet` - (String) The ID of the subnet that the primary network interface is attached to.
   - `security_groups`-List of strings-A list of security groups that are used in the primary network interface.
-  - `primary_ipv4_address` - (String) The primary IPv4 address.
+  - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+
+      Nested scheme for `primary_ip`:
+      - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+      - `address` - (String) The IP address of the reserved IP. This is same as `primary_network_interface.[0].primary_ipv4_address` which will be deprecated.
+      - `name`- (String) The user-defined or system-provided name for this reserved IP
+      - `reserved_ip`- (String) The unique identifier for this reserved IP.
+  - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
+      ```terraform
+      // primary_ipv4_address deprecation 
+      output "primary_ipv4_address" {
+        # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
+        value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead 
+      }
+      ```
 - `status` - (String) The status of the instance.
 - `status_reasons` - (List) Array of reasons for the current status.
 

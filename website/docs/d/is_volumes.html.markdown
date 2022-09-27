@@ -56,8 +56,8 @@ In addition to all argument references listed, you can access the following attr
 		  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		- `name` - (String) The globally unique name for this volume profile.
 		  - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
-	- `resource_group` - (List) The resource group for this volume.
-	Nested scheme for **resource_group**:
+	- `resource_group` - (List) The resource group object, for this volume.
+		Nested scheme for **resource_group**:
 		- `href` - (String) The URL for this resource group.
 		  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		- `id` - (String) The unique identifier for this resource group.

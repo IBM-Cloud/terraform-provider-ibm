@@ -61,6 +61,16 @@ func TestAccIBMISVPNGateway_route(t *testing.T) {
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
 				),
 			},
+			{
+				Config: testAccCheckIBMISVPNGatewayRouteConfig(vpcname, subnetname, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.id"),
+				),
+			},
 		},
 	})
 }

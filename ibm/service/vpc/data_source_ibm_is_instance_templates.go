@@ -193,6 +193,13 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 													Computed:    true,
 													Description: "The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.",
 												},
+												isInstanceTemplateVolAttTags: {
+													Type:        schema.TypeSet,
+													Computed:    true,
+													Elem:        &schema.Schema{Type: schema.TypeString},
+													Set:         flex.ResourceIBMVPCHash,
+													Description: "The user tags associated with this volume.",
+												},
 											},
 										},
 									},
@@ -358,6 +365,13 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 									isInstanceTemplateBootProfile: {
 										Type:     schema.TypeString,
 										Computed: true,
+									},
+									isInstanceTemplateBootVolumeTags: {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Set:         flex.ResourceIBMVPCHash,
+										Description: "The user tags associated with this volume.",
 									},
 								},
 							},
@@ -598,6 +612,9 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					encryptionKey := volumeInst.EncryptionKey.(*vpcv1.EncryptionKeyIdentity)
 					newVolume[isInstanceTemplateVolAttVolEncryptionKey] = *encryptionKey.CRN
 				}
+				if volumeInst.UserTags != nil {
+					newVolume[isInstanceTemplateVolAttTags] = instance.BootVolumeAttachment.Volume.UserTags
+				}
 				newVolumeArr = append(newVolumeArr, newVolume)
 				volumeAttach[isInstanceTemplateVolAttVolPrototype] = newVolumeArr
 
@@ -620,6 +637,9 @@ func dataSourceIBMISInstanceTemplatesRead(d *schema.ResourceData, meta interface
 					volProfIntf := instance.BootVolumeAttachment.Volume.Profile
 					volProfInst := volProfIntf.(*vpcv1.VolumeProfileIdentity)
 					bootVol[isInstanceTemplateBootProfile] = volProfInst.Name
+				}
+				if instance.BootVolumeAttachment.Volume.UserTags != nil {
+					bootVol[isInstanceTemplateBootVolumeTags] = instance.BootVolumeAttachment.Volume.UserTags
 				}
 			}
 			bootVolList = append(bootVolList, bootVol)

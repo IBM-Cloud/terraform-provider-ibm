@@ -22,7 +22,7 @@ resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securityc
 		trigger_scan = "disabled"
 		location = "location"
 		evidence_namespace = "evidence_namespace"
-		api_key = "api-key"
+		api_key = "api_key"
 		scope = "scope"
 		profile = "profile"
   }
@@ -36,7 +36,7 @@ Review the argument reference that you can specify for your resource.
 
 * `name` - (Optional, String) Name of tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `api_key` - (Optional, String) The IBM Cloud API key is used to access the Security and Compliance API. You can obtain your API key with 'ibmcloud iam api-key-create' or via the console at https://cloud.ibm.com/iam#/apikeys by clicking **Create API key** (Each API key only can be viewed once).
 	  * Constraints: The value must match regular expression `/\\S/`.
@@ -49,7 +49,7 @@ Nested scheme for **parameters**:
 	* `trigger_info` - (Optional, Map) trigger_info.
 	* `trigger_scan` - (Optional, String) Enabling trigger validation scans provides details for a pipeline task to trigger a scan.
 	  * Constraints: Allowable values are: `disabled`, `enabled`.
-* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind tool to.
+* `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
 ## Attribute Reference
@@ -58,8 +58,6 @@ In addition to all argument references listed, you can access the following attr
 
 * `id` - The unique identifier of the cd_toolchain_tool_securitycompliance.
 * `crn` - (String) Tool CRN.
-* `tool_id` - (String) Tool ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
@@ -69,6 +67,8 @@ Nested scheme for **referent**:
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+* `tool_id` - (String) Tool ID.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 * `updated_at` - (String) Latest tool update timestamp.
 
 ## Provider Configuration
@@ -129,7 +129,7 @@ The `id` property can be formed from `toolchain_id`, and `tool_id` in the follow
 ```
 <toolchain_id>/<tool_id>
 ```
-* `toolchain_id`: A string. ID of the toolchain to bind tool to.
+* `toolchain_id`: A string. ID of the toolchain to bind the tool to.
 * `tool_id`: A string. ID of the tool bound to the toolchain.
 
 # Syntax

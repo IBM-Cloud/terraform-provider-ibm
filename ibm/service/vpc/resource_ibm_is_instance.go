@@ -25,6 +25,7 @@ const (
 	IsInstanceCRN                     = "crn"
 	isInstanceKeys                    = "keys"
 	isInstanceTags                    = "tags"
+	isInstanceBootVolumeTags          = "tags"
 	isInstanceNetworkInterfaces       = "network_interfaces"
 	isInstancePrimaryNetworkInterface = "primary_network_interface"
 	isInstanceNicName                 = "name"
@@ -85,18 +86,23 @@ const (
 	isInstanceStatusFailed               = "failed"
 	isInstanceAvailablePolicyHostFailure = "availability_policy_host_failure"
 
-	isInstanceBootAttachmentName = "name"
-	isInstanceBootVolumeId       = "volume_id"
-	isInstanceBootSize           = "size"
-	isInstanceBootIOPS           = "iops"
-	isInstanceBootEncryption     = "encryption"
-	isInstanceBootProfile        = "profile"
-	isInstanceAction             = "action"
-	isInstanceVolumeAttachments  = "volume_attachments"
-	isInstanceVolumeAttaching    = "attaching"
-	isInstanceVolumeAttached     = "attached"
-	isInstanceVolumeDetaching    = "detaching"
-	isInstanceResourceGroup      = "resource_group"
+	isInstanceBootAttachmentName       = "name"
+	isInstanceBootVolumeId             = "volume_id"
+	isInstanceBootSize                 = "size"
+	isInstanceBootIOPS                 = "iops"
+	isInstanceBootEncryption           = "encryption"
+	isInstanceBootProfile              = "profile"
+	isInstanceAction                   = "action"
+	isInstanceVolumeAttachments        = "volume_attachments"
+	isInstanceVolumeAttaching          = "attaching"
+	isInstanceVolumeAttached           = "attached"
+	isInstanceVolumeDetaching          = "detaching"
+	isInstanceResourceGroup            = "resource_group"
+	isInstanceLifecycleReasons         = "lifecycle_reasons"
+	isInstanceLifecycleState           = "lifecycle_state"
+	isInstanceLifecycleReasonsCode     = "code"
+	isInstanceLifecycleReasonsMessage  = "message"
+	isInstanceLifecycleReasonsMoreInfo = "more_info"
 
 	isPlacementTargetDedicatedHost      = "dedicated_host"
 	isPlacementTargetDedicatedHostGroup = "dedicated_host_group"
@@ -603,6 +609,14 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						isInstanceBootVolumeTags: {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_instance", "tags")},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "UserTags for the volume instance",
+						},
 					},
 				},
 			},
@@ -709,6 +723,37 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Link to documentation about this status reason",
+						},
+					},
+				},
+			},
+			isInstanceLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the virtual server instance.",
+			},
+			isInstanceLifecycleReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceLifecycleReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
 						},
 					},
 				},
@@ -1012,6 +1057,18 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
+		}
+		var userTags *schema.Set
+		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volTemplate.UserTags = userTagsArray
+			}
 		}
 		deletebool := true
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -1367,6 +1424,18 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
+		var userTags *schema.Set
+		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volTemplate.UserTags = userTagsArray
+			}
+		}
 		deletebool := true
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -1704,6 +1773,18 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 		volprof := "general-purpose"
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
+		}
+		var userTags *schema.Set
+		if v, ok := bootvol[isInstanceBootVolumeTags]; ok {
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volTemplate.UserTags = userTagsArray
+			}
 		}
 		snapshotId, ok := bootvol[isInstanceVolumeSnapshot]
 		snapshotIdStr := snapshotId.(string)
@@ -2349,6 +2430,14 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		d.Set(isInstanceStatusReasons, statusReasonsList)
 	}
 
+	//set the lifecycle status, reasons
+	if instance.LifecycleState != nil {
+		d.Set(isInstanceLifecycleState, *instance.LifecycleState)
+	}
+	if instance.LifecycleReasons != nil {
+		d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons))
+	}
+
 	d.Set(isInstanceVPC, *instance.VPC.ID)
 	d.Set(isInstanceZone, *instance.Zone.Name)
 
@@ -2390,6 +2479,9 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 				}
 				if vol.SourceSnapshot != nil {
 					bootVol[isInstanceVolumeSnapshot] = vol.SourceSnapshot.ID
+				}
+				if vol.UserTags != nil {
+					bootVol[isInstanceBootVolumeTags] = vol.UserTags
 				}
 			}
 		}
@@ -2481,6 +2573,49 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
+	bootVolTags := "boot_volume.0.tags"
+	if d.HasChange(bootVolTags) && !d.IsNewResource() {
+		var userTags *schema.Set
+		if v, ok := d.GetOk("boot_volume.0.tags"); ok {
+			volId := d.Get("boot_volume.0.volume_id").(string)
+			updateVolumeOptions := &vpcv1.UpdateVolumeOptions{
+				ID: &volId,
+			}
+			userTags = v.(*schema.Set)
+			if userTags != nil && userTags.Len() != 0 {
+				userTagsArray := make([]string, userTags.Len())
+				for i, userTag := range userTags.List() {
+					userTagStr := userTag.(string)
+					userTagsArray[i] = userTagStr
+				}
+				volumePatchModel := &vpcv1.VolumePatch{}
+				volumePatchModel.UserTags = userTagsArray
+				volumePatch, err := volumePatchModel.AsPatch()
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error encountered while apply as patch for boot volume of instance %s", err)
+				}
+				optionsget := &vpcv1.GetVolumeOptions{
+					ID: &volId,
+				}
+				_, response, err := instanceC.GetVolume(optionsget)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error getting Boot Volume (%s): %s\n%s", id, err, response)
+				}
+				eTag := response.Headers.Get("ETag")
+				updateVolumeOptions.IfMatch = &eTag
+				updateVolumeOptions.VolumePatch = volumePatch
+				vol, res, err := instanceC.UpdateVolume(updateVolumeOptions)
+				if vol == nil || err != nil {
+					return (fmt.Errorf("[ERROR] Error encountered while applying tags for boot volume of instance %s/n%s", err, res))
+				}
+				_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	if d.HasChange(isPlacementTargetDedicatedHost) || d.HasChange(isPlacementTargetDedicatedHostGroup) && !d.IsNewResource() {
 		dedicatedHost := d.Get(isPlacementTargetDedicatedHost).(string)
 		dedicatedHostGroup := d.Get(isPlacementTargetDedicatedHostGroup).(string)
