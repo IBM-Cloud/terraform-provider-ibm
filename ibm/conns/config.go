@@ -3164,7 +3164,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
 	}
 
-	common.UserAgent = "terraform-provider-ujjwal"
+	// setting UserAgent for vpc-go-sdk common
+	common.UserAgent = fmt.Sprintf("terraform-provider-ibm/%s", version.Version)
 	return session, nil
 }
 
