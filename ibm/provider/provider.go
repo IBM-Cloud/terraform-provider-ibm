@@ -579,6 +579,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_volume_group_remote_copy_relatiosnhsips": power.DataSourceIBMPIVolumeGroupRemoteCopyRelationships(),
 			"ibm_pi_volume_flash_copy_mappings":              power.DataSourceIBMPIVolumeFlashCopyMappings(),
 			"ibm_pi_volume_remote_copy_relatiosnhsip":        power.DataSourceIBMPIVolumeRemoteCopyRelationship(),
+			"ibm_pi_volume_onboardings":                      power.DataSourceIBMPIVolumeOnboardings(),
+			"ibm_pi_volume_onboarding":                       power.DataSourceIBMPIVolumeOnboarding(),
 
 			// // Added for private dns zones
 

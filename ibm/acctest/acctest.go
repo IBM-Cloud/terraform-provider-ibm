@@ -118,6 +118,7 @@ var Pi_volume_name string
 var Pi_replication_volume_name string
 var Pi_volume_group_name string
 var Pi_volume_group_id string
+var Pi_volume_onboarding_id string
 var Pi_network_name string
 var Pi_cloud_instance_id string
 var Pi_instance_name string
@@ -661,6 +662,12 @@ func init() {
 	if Pi_volume_group_id == "" {
 		Pi_volume_group_id = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_GROUP_ID for testing ibm_pi_volume_group resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_volume_onboarding_id = os.Getenv("PI_VOLUME_ONBOARDING_ID")
+	if Pi_volume_onboarding_id == "" {
+		Pi_volume_onboarding_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_ONBOARDING_ID for testing ibm_pi_volume_group resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_cloud_instance_id = os.Getenv("PI_CLOUDINSTANCE_ID")

@@ -86,6 +86,7 @@ const (
 	PIVolumeGroupConsistencyGroupName = "pi_consistency_group_name"
 	PIVolumeGroupID                   = "pi_volume_group_id"
 	PIVolumeGroupAction               = "pi_volume_group_action"
+	PIVolumeOnboardingID              = "pi_volume_onboarding_id"
 
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
