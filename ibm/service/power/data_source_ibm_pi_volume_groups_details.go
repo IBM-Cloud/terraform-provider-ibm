@@ -20,9 +20,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
-func DataSourceIBMPIVolumeGroups() *schema.Resource {
+func DataSourceIBMPIVolumeGroupsDetails() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPIVolumeGroupsRead,
+		ReadContext: dataSourceIBMPIVolumeGroupsDetailsRead,
 		Schema: map[string]*schema.Schema{
 			helpers.PICloudInstanceId: {
 				Type:         schema.TypeString,
@@ -85,13 +85,18 @@ func DataSourceIBMPIVolumeGroups() *schema.Resource {
 								},
 							},
 						},
+						"volume_ids": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 					},
 				}},
 		},
 	}
 }
 
-func dataSourceIBMPIVolumeGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIVolumeGroupsDetailsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -99,19 +104,19 @@ func dataSourceIBMPIVolumeGroupsRead(ctx context.Context, d *schema.ResourceData
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	vgClient := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
-	vgData, err := vgClient.GetAll()
+	vgData, err := vgClient.GetAllDetails()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("volume_groups", flattenVolumeGroups(vgData.VolumeGroups))
+	d.Set("volume_groups", flattenVolumeGroupsDetails(vgData.VolumeGroups))
 
 	return nil
 }
 
-func flattenVolumeGroups(list []*models.VolumeGroup) []map[string]interface{} {
+func flattenVolumeGroupsDetails(list []*models.VolumeGroupDetails) []map[string]interface{} {
 	log.Printf("Calling the flattenVolumeGroups call with list %d", len(list))
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
@@ -122,6 +127,7 @@ func flattenVolumeGroups(list []*models.VolumeGroup) []map[string]interface{} {
 			"status":                 i.Status,
 			"status_description":     flattenVolumeGroupStatusDescription(i.StatusDescription.Errors),
 			"volume_group_name":      i.Name,
+			"volume_ids":             i.VolumeIDs,
 		}
 
 		result = append(result, l)
