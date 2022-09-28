@@ -476,7 +476,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"group_id": {
 							Required:     true,
 							Type:         schema.TypeString,
-							ValidateFunc: validate.InvokeValidator("ibm_database", "group.group_id"),
+							ValidateFunc: validate.InvokeValidator("ibm_database", "group_id"),
 						},
 						"members": {
 							Optional: true,
@@ -913,7 +913,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "group.group_id",
+			Identifier:                 "group_id",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			AllowedValues:              "member, analytics, bi_connector, search",
