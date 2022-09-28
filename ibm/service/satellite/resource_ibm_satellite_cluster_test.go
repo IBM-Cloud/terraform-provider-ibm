@@ -233,7 +233,7 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 		name                   = "%s"  
 		location               = ibm_satellite_host.assign_host.0.location
 		enable_config_admin    = true
-		kube_version           = "4.6_openshift"
+		kube_version           = "4.9_openshift"
 		operating_system       = "%s"
 		wait_for_worker_update = true
 		dynamic "zones" {
