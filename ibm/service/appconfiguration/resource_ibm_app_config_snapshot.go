@@ -50,6 +50,7 @@ func ResourceIBMIbmAppConfigSnapshot() *schema.Resource {
 			},
 			"git_token": {
 				Type:        schema.TypeString,
+				Sensitive:   true,
 				Required:    true,
 				Description: "Git token, this needs to be provided with enough permission to write and update the file.",
 			},

@@ -23,22 +23,22 @@ func DataSourceIBMAppConfigSnapshot() *schema.Resource {
 			},
 			"git_config_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Git config name. Allowed special characters are dot ( . ), hyphen( - ), underscore ( _ ) only",
 			},
 			"git_url": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Git url which will be used to connect to the github account.",
 			},
 			"git_branch": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Branch name to which you need to write or update the configuration.",
 			},
 			"git_file_path": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Git file path, this is a path where your configuration file will be written.",
 			},
 			"created_time": {
