@@ -3,6 +3,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 go 1.18
 
 require (
+	github.com/Bowery/prompt v0.0.0-20190916142128-fa8279994f75 // indirect
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20220523145737-34645883de47
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20220922071204-21813161c36f
 	github.com/IBM-Cloud/power-go-client v1.1.12
@@ -42,8 +43,10 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.16.0
 	github.com/jinzhu/copier v0.3.2
+	github.com/kardianos/govendor v1.0.9 // indirect
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	gotest.tools v2.2.0+incompatible

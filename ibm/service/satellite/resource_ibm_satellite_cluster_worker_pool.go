@@ -116,7 +116,7 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				Description: "Operating system of the worker pool. Options are RHEL_7_64, RHEL_8_64, or RHCOS.",
+				Description: "Operating system of the worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.",
 			},
 			"worker_count": {
 				Type:        schema.TypeInt,
