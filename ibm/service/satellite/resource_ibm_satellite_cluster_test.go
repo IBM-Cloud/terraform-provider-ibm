@@ -158,7 +158,7 @@ func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from,
 	}
 
 	data "ibm_is_image" "rhel7" {
-		name = "ibm-redhat-7-9-minimal-amd64-3"
+		name = "ibm-redhat-7-9-minimal-amd64-7"
 	}
 
 	resource "ibm_satellite_location" "location" {
