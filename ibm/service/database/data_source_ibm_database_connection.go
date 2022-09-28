@@ -1627,7 +1627,7 @@ func DataSourceIBMDatabaseConnectionValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			CloudDataType:              "public, private, public-and-private"})
+			AllowedValues:              "public, private, public-and-private"})
 
 	iBMDatabaseConnectionsValidator := validate.ResourceValidator{ResourceName: "ibm_database_connection", Schema: validateSchema}
 	return &iBMDatabaseConnectionsValidator
