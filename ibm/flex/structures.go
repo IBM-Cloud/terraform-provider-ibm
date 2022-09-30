@@ -3283,3 +3283,57 @@ func expandVolumeGroupResetAction(reset []interface{}) *pi.VolumeGroupActionRese
 		Status: sl.String(s["status"].(string)),
 	}
 }
+
+func ExpandCreateVolumeOnboarding(data []interface{}) ([]*pi.AuxiliaryVolumesForOnboarding, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("[ERROR] no pi_onboarding_volumes received")
+	}
+
+	auxVolForOnboarding := make([]*pi.AuxiliaryVolumesForOnboarding, 0)
+
+	for _, d := range data {
+		resource := d.(map[string]interface{})
+
+		var crn string
+		auxVolumes := make([]interface{}, 0)
+
+		if v, ok := resource["pi_source_crn"]; ok && v != "" {
+			crn = resource["pi_source_crn"].(string)
+		}
+
+		if v, ok := resource["pi_auxiliary_volumes"]; ok && len(v.([]interface{})) != 0 {
+			auxVolumes = resource["pi_auxiliary_volumes"].([]interface{})
+		}
+
+		auxVolForOnboarding = append(auxVolForOnboarding, &pi.AuxiliaryVolumesForOnboarding{
+			SourceCRN:        &crn,
+			AuxiliaryVolumes: expandAuxiliaryVolumeForOnboarding(auxVolumes),
+		})
+
+	}
+
+	return auxVolForOnboarding, nil
+}
+
+func expandAuxiliaryVolumeForOnboarding(data []interface{}) []*pi.AuxiliaryVolumeForOnboarding {
+	auxVolumeForOnboarding := make([]*pi.AuxiliaryVolumeForOnboarding, 0)
+	var auxVolumeName, displayName string
+	for _, d := range data {
+		resource := d.(map[string]interface{})
+
+		if v, ok := resource["pi_auxiliary_volume_name"]; ok && v != "" {
+			auxVolumeName = resource["pi_auxiliary_volume_name"].(string)
+		}
+
+		if v, ok := resource["pi_display_name"]; ok && v != "" {
+			displayName = resource["pi_display_name"].(string)
+		}
+
+		auxVolumeForOnboarding = append(auxVolumeForOnboarding, &pi.AuxiliaryVolumeForOnboarding{
+			AuxVolumeName: &auxVolumeName,
+			Name:          displayName,
+		})
+	}
+
+	return auxVolumeForOnboarding
+}

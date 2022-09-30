@@ -1,0 +1,219 @@
+// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package power
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/models"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+const (
+	piOnboardingVolumes   = "pi_onboarding_volumes"
+	piAuxiliaryVolumes    = "pi_auxiliary_volumes"
+	piAuxiliaryVolumeName = "pi_auxiliary_volume_name"
+	piSourceCRN           = "pi_source_crn"
+	piDisplayName         = "pi_display_name"
+	piDescription         = "pi_description"
+)
+
+func ResourceIBMPIVolumeOnboarding() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceIBMPIVolumeOnboardingCreate,
+		ReadContext:   resourceIBMPIVolumeOnboardingRead,
+		DeleteContext: resourceIBMPIVolumeOnboardingDelete,
+		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(15 * time.Minute),
+			Delete: schema.DefaultTimeout(15 * time.Minute),
+		},
+
+		Schema: map[string]*schema.Schema{
+
+			helpers.PICloudInstanceId: {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Cloud Instance ID - This is the service_instance_id.",
+			},
+
+			piOnboardingVolumes: {
+				Type:     schema.TypeList,
+				Required: true,
+				ForceNew: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						piSourceCRN: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "CRN of source ServiceBroker instance from where auxiliary volumes need to be onboarded",
+						},
+						piAuxiliaryVolumes: {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									piAuxiliaryVolumeName: {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Auxiliary volume name at storage host level",
+									},
+									piDisplayName: {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Display name of auxVolumeName once onboarded,auxVolumeName will be set to display name if not provided.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			piDescription: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Description of the volume onboarding operation",
+			},
+
+			// Computed Attribute
+			"creation_timestamp": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of consistency group at storage controller level",
+			},
+			"onboarding_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates the type of cycling mode used",
+			},
+			"input_volumes": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Number of volumes in volume group",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"progress": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Indicates whether master/aux volume is playing the primary role",
+			},
+			"results": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of remote-copy relationship names in a volume group",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"onboarded_volumes": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Number of volumes in volume group",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"volume_onboarding_failures": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of remote-copy relationship names in a volume group",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"failure_message": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Indicates whether master/aux volume is playing the primary role",
+									},
+									"volumes": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Number of volumes in volume group",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+								}},
+						},
+					},
+				},
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates the relationship state",
+			},
+		},
+	}
+}
+
+func resourceIBMPIVolumeOnboardingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := meta.(conns.ClientSession).IBMPISession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
+	client := st.NewIBMPIVolumeOnboardingClient(ctx, sess, cloudInstanceID)
+
+	vol, err := flex.ExpandCreateVolumeOnboarding(d.Get(piOnboardingVolumes).([]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	body := &models.VolumeOnboardingCreate{
+		Volumes: vol,
+	}
+
+	if v, ok := d.GetOk(piDescription); ok {
+		body.Description = v.(string)
+	}
+
+	resOnboarding, err := client.CreateVolumeOnboarding(body)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, resOnboarding.ID))
+
+	return resourceIBMPIVolumeOnboardingRead(ctx, d, meta)
+}
+
+func resourceIBMPIVolumeOnboardingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	sess, err := meta.(conns.ClientSession).IBMPISession()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	cloudInstanceID, onboardingID, err := splitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	client := st.NewIBMPIVolumeOnboardingClient(ctx, sess, cloudInstanceID)
+
+	onboardingData, err := client.Get(onboardingID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.Set("onboarding_id", *onboardingData.ID)
+	d.Set("creation_timestamp", onboardingData.CreationTimestamp.String())
+	d.Set(piDescription, onboardingData.Description)
+	d.Set("input_volumes", onboardingData.InputVolumes)
+	d.Set("progress", onboardingData.Progress)
+	d.Set("status", onboardingData.Status)
+	d.Set("results", flattenVolumeOnboardingResults(onboardingData.Results))
+	return nil
+}
+
+func resourceIBMPIVolumeOnboardingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// There is no delete or unset concept for instance action
+	d.SetId("")
+	return nil
+}

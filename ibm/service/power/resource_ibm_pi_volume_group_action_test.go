@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -23,9 +22,8 @@ import (
 func TestAccIBMPIVolumeGroupActionbasic(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-volume-group-action-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIVolumeGroupActionDestroy,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMPIVolumeGroupStopActionConfig(name),
@@ -39,31 +37,6 @@ func TestAccIBMPIVolumeGroupActionbasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPIVolumeGroupActionDestroy(s *terraform.State) error {
-	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
-	if err != nil {
-		return err
-	}
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_pi_volume_group_action" {
-			continue
-		}
-
-		ids, err := flex.IdParts(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-		cloudInstanceID, vgID := ids[0], ids[1]
-		client := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
-		vgAction, err := client.Get(vgID)
-		if err == nil {
-			log.Println("volume group action*****", vgAction.Status)
-			return fmt.Errorf("PI Volume Group Action still exists: %s", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
 func testAccCheckIBMPIVolumeGroupActionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
