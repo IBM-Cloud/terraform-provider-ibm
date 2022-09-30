@@ -1349,7 +1349,7 @@ func WaitForVpcClusterWokersVersionUpdate(d *schema.ResourceData, meta interface
 	}
 
 	log.Printf("Waiting for worker (%s) version to be updated.", workerID)
-	clusterID := d.Get("name").(string)
+	clusterID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{workerNormal},
@@ -1384,7 +1384,7 @@ func waitForWorkerNodetoDelete(d *schema.ResourceData, meta interface{}, targetE
 		return nil, err
 	}
 
-	clusterID := d.Get("name").(string)
+	clusterID := d.Id()
 	deleteStateConf := &resource.StateChangeConf{
 		Pending: []string{workerDeletePending},
 		Target:  []string{workerDeleteState},
@@ -1412,7 +1412,7 @@ func waitForNewWorker(d *schema.ResourceData, meta interface{}, targetEnv v2.Clu
 		return nil, err
 	}
 
-	clusterID := d.Get("name").(string)
+	clusterID := d.Id()
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"created"},
@@ -1440,7 +1440,7 @@ func getNewWorkerID(d *schema.ResourceData, meta interface{}, targetEnv v2.Clust
 		return "", -1, err
 	}
 
-	clusterID := d.Get("name").(string)
+	clusterID := d.Id()
 
 	workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
 	if err != nil {
