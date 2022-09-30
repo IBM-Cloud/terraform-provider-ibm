@@ -12,8 +12,8 @@ $ terraform plan
 $ terraform apply
 ```
 
-Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index]` to untaint the failed worker after fixing it manually to proceed with next set of workers
-Run `terraform destroy` when you need to provide new set of worker list
+* Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index]` to untaint the failed worker after fixing it manually to proceed with next set of workers
+* Run `terraform destroy` when you need to provide new set of worker list
 
 ## Example usage
 
@@ -74,7 +74,6 @@ data ibm_container_cluster_config cluster_config {
 | check_ptx_status | Whether to check ptx status on replaced workers | `bool` | no |
 | kube_config_path | The Cluster config with absolute path | `string` | no |
 | ptx_timeout | Timeout used while checking the portworx status | `string` | no
-{: caption="inputs"}
 
 ## Note
 
