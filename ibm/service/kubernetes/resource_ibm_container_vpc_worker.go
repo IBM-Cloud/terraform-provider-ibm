@@ -478,11 +478,12 @@ func ptxStatusRefreshFunc(clientset *kubernetes.Clientset, config *rest.Config, 
 			"-j",
 		}
 		request.VersionedParams(&v1.PodExecOptions{
-			Command: ptx_cmd,
-			Stdin:   true,
-			Stdout:  true,
-			Stderr:  true,
-			TTY:     false,
+			Command:   ptx_cmd,
+			Container: "portworx",
+			Stdin:     true,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       false,
 		}, scheme.ParameterCodec)
 
 		exec, err := remotecommand.NewSPDYExecutor(config, "POST", request.URL())
