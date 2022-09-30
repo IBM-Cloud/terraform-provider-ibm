@@ -22,7 +22,7 @@ Perform worker replace:
 ```terraform
 resource "ibm_container_vpc_worker" "worker" {
   count                         = length(var.worker_list)
-  name                          = var.cluster_name
+  cluster_name                  = var.cluster_name
   replace_worker                = element(var.worker_list, count.index)
   resource_group_id             = data.ibm_resource_group.group.id
   kube_config_path              = data.ibm_container_cluster_config.cluster_config.config_file_path
@@ -68,7 +68,7 @@ data ibm_container_cluster_config cluster_config {
 
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
-| name | Name of the cluster. | `string` | yes |
+| cluster_name | Name of the cluster. | `string` | yes |
 | replace_worker | ID of the worker to be replaced. | `string` | yes |
 | resource_group_id | ID of the resousrce group | `string` | no |
 | check_ptx_status | Whether to check ptx status on replaced workers | `bool` | no |
@@ -78,4 +78,8 @@ data ibm_container_cluster_config cluster_config {
 
 ## Note
 
-This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `Create` of terraform, Replace operation is being handled where both the deletion & creation happens whereas on the `Delete` of terraform, only the state is cleared but not the actual resource.
+* This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `Create` of terraform, Replace operation is being handled where both the deletion & creation happens whereas on the `Delete` of terraform, only the state is cleared but not the actual resource.
+* If the worker list is being provided as inputs, the list should be user generated and should not be passed from the `ibm_container_cluster` data source.
+* If `terraform apply` fails during worker replace or while checking the portworx status, perform any one of the following actions before proceeding further.
+  * Resolve the issue manually and perform `terraform untaint` to proceed with the subsequent workers in the list.
+  * If worker replace is still needed, update the input list by replacing the existing worker id with the new worker id.

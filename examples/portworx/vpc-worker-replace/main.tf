@@ -17,7 +17,7 @@ data ibm_container_cluster_config cluster_config {
 
 resource "ibm_container_vpc_worker" "worker" {
   count                         = length(var.worker_list)
-  name                          = var.cluster_name
+  cluster_name                  = var.cluster_name
   replace_worker                = element(var.worker_list, count.index)
   resource_group_id             = data.ibm_resource_group.group.id
   kube_config_path              = data.ibm_container_cluster_config.cluster_config.config_file_path

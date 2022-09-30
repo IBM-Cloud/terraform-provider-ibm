@@ -17,7 +17,7 @@ In the following example, you can replace worker in a vpc cluster:
 
 ```terraform
 resource "ibm_container_vpc_worker" "test_worker" {
-    name                = "my_vpc_cluster"
+    cluster_name        = "my_vpc_cluster"
     replace_worker      = "kube-clusterid-mycluster-default-00001"
     resource_group_id   = "6015365a-9d93-4bb4-8248-79ae0db2dc21"
     kube_config_path    = "my_vpc_cluster.yaml"
@@ -36,7 +36,7 @@ The `ibm_container_vpc_worker` provides the following [Timeouts](https://www.ter
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `name` - (Required, Forces new resource, String) The name or ID of the cluster.
+- `clusrer_name` - (Required, Forces new resource, String) The name or ID of the cluster.
 - `replace_worker` - (Required, Forces new resource, String) The ID of the worker that needs to be replaced.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group. To retrieve the ID, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `check_ptx_status` - (Optional, Forces new resource, String) Boolean value to check the status of Portworx on the replaced worker instance. By default, this variable is set as `true`.
@@ -50,4 +50,9 @@ In addition to all argument reference list, you can access the following attribu
 - `ip` - (String) The IP of the worker.
 
 ## Note
-This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `Create` of terraform, Replace operation is being handled where both the deletion & creation happens whereas on the `Delete` of terraform, only the state is cleared but not the actual resource.
+- This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `Create` of terraform, Replace operation is being handled where both the deletion & creation happens whereas on the `Delete` of terraform, only the state is cleared but not the actual resource.
+- If the worker list is being provided as inputs, the list should be user generated and should not be passed from the `ibm_container_cluster` data source.
+- If `terraform apply` fails during worker replace or while checking the portworx status, perform any one of the following actions before proceeding further.
+  - Resolve the issue manually and perform `terraform untaint` to proceed with the subsequent workers in the list.
+  - If worker replace is still needed, update the input list by replacing the existing worker id with the new worker id.
+

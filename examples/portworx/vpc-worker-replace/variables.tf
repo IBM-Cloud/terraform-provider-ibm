@@ -16,6 +16,17 @@ variable "cluster_name" {
   type        = string
 }
 
+
+#####################################################
+# If the worker list is being provided as inputs, 
+# the list should be user generated and 
+# should not be passed from the `ibm_container_cluster` data source.
+#
+# The order of the list should not be changed until
+# all the workers in the list are replaced. 
+#
+# This is required to avoid diffs of order changes.
+#####################################################
 variable "worker_list" {
     description = "List of workers to process"
     type        = list(string)
