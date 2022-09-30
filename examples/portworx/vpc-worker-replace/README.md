@@ -8,8 +8,8 @@ To run this example you need to execute:
 
 ```sh
 $ terraform init
-$ terraform plan
-$ terraform apply
+$ terraform plan -var-file input.tfvars
+$ terraform apply -var-file input.tfvars
 ```
 
 * Run `terraform untaint ibm_container_vpc_worker.<resource_name>[index]` to untaint the failed worker after fixing it manually to proceed with next set of workers
@@ -77,8 +77,8 @@ data ibm_container_cluster_config cluster_config {
 
 ## Note
 
-* This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `Create` of terraform, Replace operation is being handled where both the deletion & creation happens whereas on the `Delete` of terraform, only the state is cleared but not the actual resource.
-* If the worker list is being provided as inputs, the list should be user generated and should not be passed from the `ibm_container_cluster` data source.
-* If `terraform apply` fails during worker replace or while checking the portworx status, perform any one of the following actions before proceeding further.
+* This resource is different from all other resource of IBM Cloud. Worker replace has 2 operations, i.e. Delete old worker & Create a new worker. On `terraform apply`, Replace operation is being handled where both the deletion & creation happens whereas on the `terraform destroy`, only the state is cleared but not the actual resource.
+* When the worker list is being provided as inputs, the list must be user generated and should not be passed from the `ibm_container_cluster` data source.
+* If `terraform apply` fails during worker replace or while checking the portworx status, perform any one of the following actions before retrying.
   * Resolve the issue manually and perform `terraform untaint` to proceed with the subsequent workers in the list.
   * If worker replace is still needed, update the input list by replacing the existing worker id with the new worker id.

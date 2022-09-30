@@ -51,12 +51,10 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/softlayer/softlayer-go v1.0.3
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220907062415-87db552b00fd // indirect
-	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.25.0
-	k8s.io/apimachinery v0.25.0 // indirect
+	k8s.io/apimachinery v0.25.0
 	k8s.io/client-go v0.25.0
 )
 

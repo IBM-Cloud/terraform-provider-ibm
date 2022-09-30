@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -57,7 +58,7 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"cluster_name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -79,27 +80,31 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 			},
 
 			"kube_config_path": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     nil,
-				Description: "Path of downloaded cluster config",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				RequiredWith:     []string{"check_ptx_status"},
+				Description:      "Path of downloaded cluster config",
 			},
 
 			"check_ptx_status": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     true,
-				Description: "Check portworx status after worker replace",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				RequiredWith:     []string{"kube_config_path"},
+				Default:          false,
+				Description:      "Check portworx status after worker replace",
 			},
 
 			"ptx_timeout": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "15m",
-				Description: "Timeout for checking ptx pods/status",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Default:          "15m",
+				Description:      "Timeout for checking ptx pods/status",
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 					value := v.(string)
 					var err error
@@ -113,31 +118,8 @@ func ResourceIBMContainerVpcWorker() *schema.Resource {
 
 			"ip": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "IP of the replaced worker",
-			},
-
-			flex.ResourceControllerURL: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "Resource Controller URL",
-			},
-
-			flex.ResourceStatus: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The status of the resource",
-			},
-
-			flex.ResourceGroupName: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The resource group name in which resource is provisioned",
 			},
 		},
 	}
@@ -158,16 +140,18 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	currentStatus := false
 
 	workerID := d.Get("replace_worker").(string)
-	cluster_config := d.Get("kube_config_path").(string)
+	cluster_config, cc_ok := d.GetOk("kube_config_path")
 	check_ptx_status := d.Get("check_ptx_status").(bool)
+	clusterNameorID := d.Get("cluster_name").(string)
 
 	if check_ptx_status {
 		//Validate & Check kubeconfig
-		if cluster_config == "" || cluster_config == "nil" {
+
+		if !cc_ok {
 			return fmt.Errorf("[ERROR] kube_config_path argument must be specified if check_ptx_status is true")
 		} else {
 			//1. Load the cluster config
-			config, err := clientcmd.BuildConfigFromFlags("", cluster_config)
+			config, err := clientcmd.BuildConfigFromFlags("", cluster_config.(string))
 			if err != nil {
 				return fmt.Errorf("[ERROR] Invalid kubeconfig, failed to set context: %s", err)
 			}
@@ -184,7 +168,6 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 		}
 		log.Printf("Kubeconfig is valid")
 	}
-
 	defer func() {
 		commonVarMutex.Lock()
 		workerReplaceStatus = false
@@ -212,8 +195,6 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	clusterNameorID := d.Get("name").(string)
-
 	worker, err := wkClient.Workers().Get(clusterNameorID, workerID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting container vpc worker node: %s", err)
@@ -238,46 +219,55 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 	}
 	workersCount := len(workers)
 
-	_, err = wkClient.Workers().ReplaceWokerNode(cls.ID, worker.ID, targetEnv)
-	// As API returns http response 204 NO CONTENT, error raised will be exempted.
-	if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
-		return fmt.Errorf("[ERROR] Error replacing the worker node from the cluster: %s", err)
+	// check if change is present in MAJOR.MINOR version or in PATCH version
+	if check_ptx_status || (worker.KubeVersion.Actual != worker.KubeVersion.Target) {
+		_, err = wkClient.Workers().ReplaceWokerNode(cls.ID, worker.ID, targetEnv)
+		// As API returns http response 204 NO CONTENT, error raised will be exempted.
+		if err != nil && !strings.Contains(err.Error(), "EmptyResponseBody") {
+			return fmt.Errorf("[ERROR] Error replacing the worker node from the cluster: %s", err)
+		}
+
+		//1. wait for worker node to delete
+		_, deleteError := waitForVpcWorkerNodetoDelete(d, meta, targetEnv, worker.ID)
+		if deleteError != nil {
+			return fmt.Errorf("[ERROR] Worker node - %s is failed to replace", worker.ID)
+		}
+
+		//2. wait for new workerNode
+		_, newWorkerError := waitForNewVpcWorker(d, meta, targetEnv, workersCount)
+		if newWorkerError != nil {
+			return fmt.Errorf("[ERROR] Failed to spawn new worker node")
+		}
+
+		//3. Get new worker node ID and update the map
+		newWorkerID, _, newNodeError := getNewVpcWorkerID(d, meta, targetEnv, workersInfo)
+		if newNodeError != nil {
+			return fmt.Errorf("[ERROR] Unable to find the new worker node info")
+		}
+
+		d.SetId(newWorkerID)
+
+		//4. wait for the worker's version update and normal state
+		_worker, err := WaitForVpcClusterVpcWokersVersionUpdate(d, meta, targetEnv, cls.MasterKubeVersion, newWorkerID)
+		if err != nil {
+			return fmt.Errorf(
+				"[ERROR] Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), err)
+		}
+		worker = _worker.(v2.Worker)
+
+	} else {
+		d.SetId(worker.ID)
 	}
 
-	//1. wait for worker node to delete
-	_, deleteError := waitForWorkerNodetoDelete(d, meta, targetEnv, worker.ID)
-	if deleteError != nil {
-		return fmt.Errorf("[ERROR] Worker node - %s is failed to replace", worker.ID)
-	}
-
-	//2. wait for new workerNode
-	_, newWorkerError := waitForNewWorker(d, meta, targetEnv, workersCount)
-	if newWorkerError != nil {
-		return fmt.Errorf("[ERROR] Failed to spawn new worker node")
-	}
-
-	//3. Get new worker node ID and update the map
-	newWorkerID, _, newNodeError := getNewWorkerID(d, meta, targetEnv, workersInfo)
-	if newNodeError != nil {
-		return fmt.Errorf("[ERROR] Unable to find the new worker node info")
-	}
-
-	d.SetId(newWorkerID)
-
-	//4. wait for the worker's version update and normal state
-	_, Err := WaitForVpcClusterWokersVersionUpdate(d, meta, targetEnv, cls.MasterKubeVersion, newWorkerID)
-	if Err != nil {
-		return fmt.Errorf(
-			"[ERROR] Error waiting for cluster (%s) worker nodes kube version to be updated: %s", d.Id(), Err)
-	}
-
-	err = resourceIBMContainerVpcWorkerRead(d, meta)
-	if err != nil {
-		return err
+	for _, _network := range worker.NetworkInterfaces {
+		if _network.Primary {
+			d.Set("ip", _network.IpAddress)
+			break
+		}
 	}
 
 	if check_ptx_status {
-		err = checkPortworxStatus(d, cluster_config)
+		err = checkPortworxStatus(d, cluster_config.(string))
 		if err != nil {
 			return err
 		}
@@ -285,64 +275,18 @@ func resourceIBMContainerVpcWorkerCreate(d *schema.ResourceData, meta interface{
 
 	//Worker reloaded successfully
 	currentStatus = true
-	return nil
+	return resourceIBMContainerVpcWorkerRead(d, meta)
 }
 
 func resourceIBMContainerVpcWorkerRead(d *schema.ResourceData, meta interface{}) error {
-	wkClient, err := meta.(conns.ClientSession).VpcContainerAPI()
-	if err != nil {
-		return err
-	}
-
-	workerID := d.Id()
-	parts, err := flex.SepIdParts(workerID, "-")
-	if err != nil {
-		return err
-	}
-	if len(parts) < 2 {
-		return fmt.Errorf("[ERROR] Incorrect ID %s: Id should be in kube-clusterID-* format", d.Id())
-	}
-	cluster := parts[1]
-
-	targetEnv, err := getVpcClusterTargetHeader(d, meta)
-	if err != nil {
-		return err
-	}
-
-	worker, err := wkClient.Workers().Get(cluster, workerID, targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting container vpc worker node: %s", err)
-	}
-	for _, _network := range worker.NetworkInterfaces {
-		if _network.Primary {
-			d.Set("ip", _network.IpAddress)
-			break
-		}
-	}
-	d.Set(flex.ResourceStatus, worker.Health.State)
-
-	cls, err := wkClient.Clusters().GetCluster(cluster, targetEnv)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving container vpc cluster: %s", err)
-	}
-	d.Set("name", cls.Name)
-	d.Set("resource_group_id", cls.ResourceGroupID)
-
-	controller, err := flex.GetBaseController(meta)
-	if err != nil {
-		return err
-	}
-	d.Set(flex.ResourceControllerURL, controller+"/kubernetes/clusters")
-	d.Set(flex.ResourceGroupName, cls.ResourceGroupName)
+	//Not importing this resource.
 	return nil
 }
 
 func resourceIBMContainerVpcWorkerDelete(d *schema.ResourceData, meta interface{}) error {
-	_, err := getVpcClusterTargetHeader(d, meta)
-	if err != nil {
-		return err
-	}
-
+	// Delete operation clears only the entries from the statefiles as
+	// the replace operation involves both deletion & creation of the
+	// resource
 	d.SetId("")
 	return nil
 }
@@ -573,5 +517,120 @@ func ptxStatusRefreshFunc(clientset *kubernetes.Clientset, config *rest.Config, 
 
 		log.Printf("Successfully fetched portworx status json")
 		return parse_content, "pxctl_success", nil
+	}
+}
+
+func waitForVpcWorkerNodetoDelete(d *schema.ResourceData, meta interface{}, targetEnv v2.ClusterTargetHeader, workerID string) (interface{}, error) {
+
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	clusterID := d.Get("cluster_name").(string)
+	deleteStateConf := &resource.StateChangeConf{
+		Pending: []string{workerDeletePending},
+		Target:  []string{workerDeleteState},
+		Refresh: func() (interface{}, string, error) {
+			worker, err := csClient.Workers().Get(clusterID, workerID, targetEnv)
+			if err != nil {
+				return worker, workerDeletePending, nil
+			}
+			if worker.LifeCycle.ActualState == "deleted" {
+				return worker, workerDeleteState, nil
+			}
+			return worker, workerDeletePending, nil
+		},
+		Timeout:      d.Timeout(schema.TimeoutDelete),
+		Delay:        10 * time.Second,
+		MinTimeout:   5 * time.Second,
+		PollInterval: 5 * time.Second,
+	}
+	return deleteStateConf.WaitForState()
+}
+
+func waitForNewVpcWorker(d *schema.ResourceData, meta interface{}, targetEnv v2.ClusterTargetHeader, workersCount int) (interface{}, error) {
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	clusterID := d.Get("cluster_name").(string)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"creating"},
+		Target:  []string{"created"},
+		Refresh: func() (interface{}, string, error) {
+			workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
+			if err != nil {
+				return workers, "", fmt.Errorf("[ERROR] Error in retriving the list of worker nodes")
+			}
+			if len(workers) == workersCount {
+				return workers, "created", nil
+			}
+			return workers, "creating", nil
+		},
+		Timeout:      d.Timeout(schema.TimeoutDelete),
+		Delay:        10 * time.Second,
+		MinTimeout:   5 * time.Second,
+		PollInterval: 5 * time.Second,
+	}
+	return stateConf.WaitForState()
+}
+
+func getNewVpcWorkerID(d *schema.ResourceData, meta interface{}, targetEnv v2.ClusterTargetHeader, workersInfo map[string]int) (string, int, error) {
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return "", -1, err
+	}
+
+	clusterID := d.Get("cluster_name").(string)
+
+	workers, err := csClient.Workers().ListWorkers(clusterID, false, targetEnv)
+	if err != nil {
+		return "", -1, fmt.Errorf("[ERROR] Error in retriving the list of worker nodes")
+	}
+
+	for index, worker := range workers {
+		if _, ok := workersInfo[worker.ID]; !ok {
+			log.Println("found new replaced node: ", worker.ID)
+			return worker.ID, index, nil
+		}
+	}
+	return "", -1, fmt.Errorf("[ERROR] no new node found")
+}
+
+// WaitForVpcClusterVpcWokersVersionUpdate Waits for Cluster version Update
+func WaitForVpcClusterVpcWokersVersionUpdate(d *schema.ResourceData, meta interface{}, target v2.ClusterTargetHeader, masterVersion, workerID string) (interface{}, error) {
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Waiting for worker (%s) version to be updated.", workerID)
+	clusterID := d.Get("cluster_name").(string)
+	stateConf := &resource.StateChangeConf{
+		Pending:                   []string{"retry", versionUpdating},
+		Target:                    []string{workerNormal},
+		Refresh:                   vpcClusterVpcWorkersVersionRefreshFunc(csClient.Workers(), workerID, clusterID, d, target, masterVersion),
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func vpcClusterVpcWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, d *schema.ResourceData, target v2.ClusterTargetHeader, masterVersion string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		worker, err := client.Get(clusterID, workerID, target)
+		if err != nil {
+			return nil, "retry", fmt.Errorf("[ERROR] Error retrieving worker of container vpc cluster: %s", err)
+		}
+		// Check active updates
+		if worker.Health.State == "normal" {
+			return worker, workerNormal, nil
+		}
+		return worker, versionUpdating, nil
 	}
 }
