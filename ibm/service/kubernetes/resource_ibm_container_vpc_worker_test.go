@@ -92,7 +92,7 @@ func testAccCheckIBMVpcContainerWorkerBasic(name string) string {
     }
 
     resource "ibm_container_vpc_worker" "test_worker" {
-        name                = "%[1]s"
+        cluster_name        = "%[1]s"
         replace_worker      = element(ibm_container_vpc_cluster.cluster.workers, 0)
         resource_group_id   = data.ibm_resource_group.resource_group.id
         kube_config_path    = data.ibm_container_cluster_config.cluster_config.config_file_path
