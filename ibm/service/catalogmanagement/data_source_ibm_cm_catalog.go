@@ -560,9 +560,9 @@ func dataSourceIBMCmCatalogFiltersToMap(model *catalogmanagementv1.Filters) (map
 	}
 	if model.CategoryFilters != nil {
 		categoryFiltersMap := make(map[string]interface{}, len(model.CategoryFilters))
-		for k, v := range model.CategoryFilters {
-			// TODO: add code to handle a map of model instances!
-		}
+		// for k, v := range model.CategoryFilters {
+		// 	// TODO: add code to handle a map of model instances!
+		// }
 		modelMap["category_filters"] = flex.Flatten(categoryFiltersMap)
 	}
 	if model.IDFilters != nil {

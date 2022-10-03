@@ -333,9 +333,9 @@ func resourceIBMCmOfferingInstanceRead(context context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("GetOfferingInstanceWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("x_auth_refresh_token", getOfferingInstanceOptions.XAuthRefreshToken); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting x_auth_refresh_token: %s", err))
-	}
+	// if err = d.Set("x_auth_refresh_token", getOfferingInstanceOptions.XAuthRefreshToken); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting x_auth_refresh_token: %s", err))
+	// }
 	if err = d.Set("rev", offeringInstance.Rev); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
 	}

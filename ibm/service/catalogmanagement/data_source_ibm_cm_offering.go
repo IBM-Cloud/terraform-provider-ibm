@@ -2600,8 +2600,9 @@ func dataSourceIBMCmOfferingKindToMap(model *catalogmanagementv1.Kind) (map[stri
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// k, v unused
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.Tags != nil {
@@ -2735,8 +2736,9 @@ func dataSourceIBMCmOfferingVersionToMap(model *catalogmanagementv1.Version) (ma
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// k, v unused
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.Validation != nil {
@@ -2926,12 +2928,12 @@ func dataSourceIBMCmOfferingRenderTypeToMap(model *catalogmanagementv1.RenderTyp
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = *model.GroupingIndex
 	}
-	if model.ConfigConstraints != nil {
-		configConstraintsMap := make(map[string]interface{}, len(model.ConfigConstraints))
-		for k, v := range model.ConfigConstraints {
-		}
-		modelMap["config_constraints"] = flex.Flatten(configConstraintsMap)
-	}
+	// if model.ConfigConstraints != nil {
+	// 	configConstraintsMap := make(map[string]interface{}, len(model.ConfigConstraints))
+	// 	for k, v := range model.ConfigConstraints {
+	// 	}
+	// 	modelMap["config_constraints"] = flex.Flatten(configConstraintsMap)
+	// }
 	if model.Associations != nil {
 		associationsMap, err := dataSourceIBMCmOfferingRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {
@@ -3032,8 +3034,8 @@ func dataSourceIBMCmOfferingValidationToMap(model *catalogmanagementv1.Validatio
 	}
 	if model.Target != nil {
 		targetMap := make(map[string]interface{}, len(model.Target))
-		for k, v := range model.Target {
-		}
+		// for k, v := range model.Target {
+		// }
 		modelMap["target"] = flex.Flatten(targetMap)
 	}
 	if model.Message != nil {
@@ -3322,8 +3324,8 @@ func dataSourceIBMCmOfferingProjectToMap(model *catalogmanagementv1.Project) (ma
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.PastBreakdown != nil {
@@ -3386,8 +3388,8 @@ func dataSourceIBMCmOfferingCostResourceToMap(model *catalogmanagementv1.CostRes
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.HourlyCost != nil {
@@ -3509,8 +3511,8 @@ func dataSourceIBMCmOfferingPlanToMap(model *catalogmanagementv1.Plan) (map[stri
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.Tags != nil {
@@ -3566,8 +3568,8 @@ func dataSourceIBMCmOfferingDeploymentToMap(model *catalogmanagementv1.Deploymen
 	}
 	if model.Metadata != nil {
 		metadataMap := make(map[string]interface{}, len(model.Metadata))
-		for k, v := range model.Metadata {
-		}
+		// for k, v := range model.Metadata {
+		// }
 		modelMap["metadata"] = flex.Flatten(metadataMap)
 	}
 	if model.Tags != nil {

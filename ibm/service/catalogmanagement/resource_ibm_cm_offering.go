@@ -21,7 +21,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCmOfferingCreate,
 		ReadContext:   resourceIBMCmOfferingRead,
-		UpdateContext: resourceIBMCmOfferingUpdate,
+		// UpdateContext: resourceIBMCmOfferingUpdate,
 		DeleteContext: resourceIBMCmOfferingDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -2655,247 +2655,247 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
-	if err != nil {
-		return diag.FromErr(err)
-	}
+// func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+// 	if err != nil {
+// 		return diag.FromErr(err)
+// 	}
 
-	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
+// 	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
 
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+// 	parts, err := flex.SepIdParts(d.Id(), "/")
+// 	if err != nil {
+// 		return diag.FromErr(err)
+// 	}
 
-	updateOfferingOptions.SetCatalogIdentifier(parts[0])
-	updateOfferingOptions.SetOfferingID(parts[1])
+// 	updateOfferingOptions.SetCatalogIdentifier(parts[0])
+// 	updateOfferingOptions.SetOfferingID(parts[1])
 
-	hasChange := false
+// 	hasChange := false
 
-	if d.HasChange("catalog_identifier") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "catalog_identifier"))
-	}
-	if d.HasChange("url") {
-		updateOfferingOptions.SetURL(d.Get("url").(string))
-		hasChange = true
-	}
-	if d.HasChange("crn") {
-		updateOfferingOptions.SetCRN(d.Get("crn").(string))
-		hasChange = true
-	}
-	if d.HasChange("label") {
-		updateOfferingOptions.SetLabel(d.Get("label").(string))
-		hasChange = true
-	}
-	if d.HasChange("label_i18n") {
-		// TODO: handle LabelI18n of type TypeMap -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("name") {
-		updateOfferingOptions.SetName(d.Get("name").(string))
-		hasChange = true
-	}
-	if d.HasChange("offering_icon_url") {
-		updateOfferingOptions.SetOfferingIconURL(d.Get("offering_icon_url").(string))
-		hasChange = true
-	}
-	if d.HasChange("offering_docs_url") {
-		updateOfferingOptions.SetOfferingDocsURL(d.Get("offering_docs_url").(string))
-		hasChange = true
-	}
-	if d.HasChange("offering_support_url") {
-		updateOfferingOptions.SetOfferingSupportURL(d.Get("offering_support_url").(string))
-		hasChange = true
-	}
-	if d.HasChange("tags") {
-		// TODO: handle Tags of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("keywords") {
-		// TODO: handle Keywords of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("rating") {
-		rating, err := resourceIBMCmOfferingMapToRating(d.Get("rating.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetRating(rating)
-		hasChange = true
-	}
-	if d.HasChange("created") {
-		fmtDateTimeCreated, err := core.ParseDateTime(d.Get("created").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetCreated(&fmtDateTimeCreated)
-		hasChange = true
-	}
-	if d.HasChange("updated") {
-		fmtDateTimeUpdated, err := core.ParseDateTime(d.Get("updated").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetUpdated(&fmtDateTimeUpdated)
-		hasChange = true
-	}
-	if d.HasChange("short_description") {
-		updateOfferingOptions.SetShortDescription(d.Get("short_description").(string))
-		hasChange = true
-	}
-	if d.HasChange("short_description_i18n") {
-		// TODO: handle ShortDescriptionI18n of type TypeMap -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("long_description") {
-		updateOfferingOptions.SetLongDescription(d.Get("long_description").(string))
-		hasChange = true
-	}
-	if d.HasChange("long_description_i18n") {
-		// TODO: handle LongDescriptionI18n of type TypeMap -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("features") {
-		// TODO: handle Features of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("kinds") {
-		// TODO: handle Kinds of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("pc_managed") {
-		updateOfferingOptions.SetPcManaged(d.Get("pc_managed").(bool))
-		hasChange = true
-	}
-	if d.HasChange("publish_approved") {
-		updateOfferingOptions.SetPublishApproved(d.Get("publish_approved").(bool))
-		hasChange = true
-	}
-	if d.HasChange("share_with_all") {
-		updateOfferingOptions.SetShareWithAll(d.Get("share_with_all").(bool))
-		hasChange = true
-	}
-	if d.HasChange("share_with_ibm") {
-		updateOfferingOptions.SetShareWithIBM(d.Get("share_with_ibm").(bool))
-		hasChange = true
-	}
-	if d.HasChange("share_enabled") {
-		updateOfferingOptions.SetShareEnabled(d.Get("share_enabled").(bool))
-		hasChange = true
-	}
-	if d.HasChange("permit_request_ibm_public_publish") {
-		updateOfferingOptions.SetPermitRequestIBMPublicPublish(d.Get("permit_request_ibm_public_publish").(bool))
-		hasChange = true
-	}
-	if d.HasChange("ibm_publish_approved") {
-		updateOfferingOptions.SetIBMPublishApproved(d.Get("ibm_publish_approved").(bool))
-		hasChange = true
-	}
-	if d.HasChange("public_publish_approved") {
-		updateOfferingOptions.SetPublicPublishApproved(d.Get("public_publish_approved").(bool))
-		hasChange = true
-	}
-	if d.HasChange("public_original_crn") {
-		updateOfferingOptions.SetPublicOriginalCRN(d.Get("public_original_crn").(string))
-		hasChange = true
-	}
-	if d.HasChange("publish_public_crn") {
-		updateOfferingOptions.SetPublishPublicCRN(d.Get("publish_public_crn").(string))
-		hasChange = true
-	}
-	if d.HasChange("portal_approval_record") {
-		updateOfferingOptions.SetPortalApprovalRecord(d.Get("portal_approval_record").(string))
-		hasChange = true
-	}
-	if d.HasChange("portal_ui_url") {
-		updateOfferingOptions.SetPortalUIURL(d.Get("portal_ui_url").(string))
-		hasChange = true
-	}
-	if d.HasChange("catalog_id") {
-		updateOfferingOptions.SetCatalogID(d.Get("catalog_id").(string))
-		hasChange = true
-	}
-	if d.HasChange("catalog_name") {
-		updateOfferingOptions.SetCatalogName(d.Get("catalog_name").(string))
-		hasChange = true
-	}
-	if d.HasChange("metadata") {
-		// TODO: handle Metadata of type TypeMap -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("disclaimer") {
-		updateOfferingOptions.SetDisclaimer(d.Get("disclaimer").(string))
-		hasChange = true
-	}
-	if d.HasChange("hidden") {
-		updateOfferingOptions.SetHidden(d.Get("hidden").(bool))
-		hasChange = true
-	}
-	if d.HasChange("provider") {
-		updateOfferingOptions.SetProvider(d.Get("provider").(string))
-		hasChange = true
-	}
-	if d.HasChange("provider_info") {
-		providerInfo, err := resourceIBMCmOfferingMapToProviderInfo(d.Get("provider_info.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetProviderInfo(providerInfo)
-		hasChange = true
-	}
-	if d.HasChange("repo_info") {
-		repoInfo, err := resourceIBMCmOfferingMapToRepoInfo(d.Get("repo_info.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetRepoInfo(repoInfo)
-		hasChange = true
-	}
-	if d.HasChange("image_pull_keys") {
-		// TODO: handle ImagePullKeys of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("support") {
-		support, err := resourceIBMCmOfferingMapToSupport(d.Get("support.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetSupport(support)
-		hasChange = true
-	}
-	if d.HasChange("media") {
-		// TODO: handle Media of type TypeList -- not primitive, not model
-		hasChange = true
-	}
-	if d.HasChange("deprecate_pending") {
-		deprecatePending, err := resourceIBMCmOfferingMapToDeprecatePending(d.Get("deprecate_pending.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		updateOfferingOptions.SetDeprecatePending(deprecatePending)
-		hasChange = true
-	}
-	if d.HasChange("product_kind") {
-		updateOfferingOptions.SetProductKind(d.Get("product_kind").(string))
-		hasChange = true
-	}
-	if d.HasChange("badges") {
-		// TODO: handle Badges of type TypeList -- not primitive, not model
-		hasChange = true
-	}
+// 	if d.HasChange("catalog_identifier") {
+// 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+// 			" The resource must be re-created to update this property.", "catalog_identifier"))
+// 	}
+// 	if d.HasChange("url") {
+// 		updateOfferingOptions.SetURL(d.Get("url").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("crn") {
+// 		updateOfferingOptions.SetCRN(d.Get("crn").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("label") {
+// 		updateOfferingOptions.SetLabel(d.Get("label").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("label_i18n") {
+// 		// TODO: handle LabelI18n of type TypeMap -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("name") {
+// 		updateOfferingOptions.SetName(d.Get("name").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("offering_icon_url") {
+// 		updateOfferingOptions.SetOfferingIconURL(d.Get("offering_icon_url").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("offering_docs_url") {
+// 		updateOfferingOptions.SetOfferingDocsURL(d.Get("offering_docs_url").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("offering_support_url") {
+// 		updateOfferingOptions.SetOfferingSupportURL(d.Get("offering_support_url").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("tags") {
+// 		// TODO: handle Tags of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("keywords") {
+// 		// TODO: handle Keywords of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("rating") {
+// 		rating, err := resourceIBMCmOfferingMapToRating(d.Get("rating.0").(map[string]interface{}))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetRating(rating)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("created") {
+// 		fmtDateTimeCreated, err := core.ParseDateTime(d.Get("created").(string))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetCreated(&fmtDateTimeCreated)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("updated") {
+// 		fmtDateTimeUpdated, err := core.ParseDateTime(d.Get("updated").(string))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetUpdated(&fmtDateTimeUpdated)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("short_description") {
+// 		updateOfferingOptions.SetShortDescription(d.Get("short_description").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("short_description_i18n") {
+// 		// TODO: handle ShortDescriptionI18n of type TypeMap -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("long_description") {
+// 		updateOfferingOptions.SetLongDescription(d.Get("long_description").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("long_description_i18n") {
+// 		// TODO: handle LongDescriptionI18n of type TypeMap -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("features") {
+// 		// TODO: handle Features of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("kinds") {
+// 		// TODO: handle Kinds of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("pc_managed") {
+// 		updateOfferingOptions.SetPcManaged(d.Get("pc_managed").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("publish_approved") {
+// 		updateOfferingOptions.SetPublishApproved(d.Get("publish_approved").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("share_with_all") {
+// 		updateOfferingOptions.SetShareWithAll(d.Get("share_with_all").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("share_with_ibm") {
+// 		updateOfferingOptions.SetShareWithIBM(d.Get("share_with_ibm").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("share_enabled") {
+// 		updateOfferingOptions.SetShareEnabled(d.Get("share_enabled").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("permit_request_ibm_public_publish") {
+// 		updateOfferingOptions.SetPermitRequestIBMPublicPublish(d.Get("permit_request_ibm_public_publish").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("ibm_publish_approved") {
+// 		updateOfferingOptions.SetIBMPublishApproved(d.Get("ibm_publish_approved").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("public_publish_approved") {
+// 		updateOfferingOptions.SetPublicPublishApproved(d.Get("public_publish_approved").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("public_original_crn") {
+// 		updateOfferingOptions.SetPublicOriginalCRN(d.Get("public_original_crn").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("publish_public_crn") {
+// 		updateOfferingOptions.SetPublishPublicCRN(d.Get("publish_public_crn").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("portal_approval_record") {
+// 		updateOfferingOptions.SetPortalApprovalRecord(d.Get("portal_approval_record").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("portal_ui_url") {
+// 		updateOfferingOptions.SetPortalUIURL(d.Get("portal_ui_url").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("catalog_id") {
+// 		updateOfferingOptions.SetCatalogID(d.Get("catalog_id").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("catalog_name") {
+// 		updateOfferingOptions.SetCatalogName(d.Get("catalog_name").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("metadata") {
+// 		// TODO: handle Metadata of type TypeMap -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("disclaimer") {
+// 		updateOfferingOptions.SetDisclaimer(d.Get("disclaimer").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("hidden") {
+// 		updateOfferingOptions.SetHidden(d.Get("hidden").(bool))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("provider") {
+// 		updateOfferingOptions.SetProvider(d.Get("provider").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("provider_info") {
+// 		providerInfo, err := resourceIBMCmOfferingMapToProviderInfo(d.Get("provider_info.0").(map[string]interface{}))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetProviderInfo(providerInfo)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("repo_info") {
+// 		repoInfo, err := resourceIBMCmOfferingMapToRepoInfo(d.Get("repo_info.0").(map[string]interface{}))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetRepoInfo(repoInfo)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("image_pull_keys") {
+// 		// TODO: handle ImagePullKeys of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("support") {
+// 		support, err := resourceIBMCmOfferingMapToSupport(d.Get("support.0").(map[string]interface{}))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetSupport(support)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("media") {
+// 		// TODO: handle Media of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("deprecate_pending") {
+// 		deprecatePending, err := resourceIBMCmOfferingMapToDeprecatePending(d.Get("deprecate_pending.0").(map[string]interface{}))
+// 		if err != nil {
+// 			return diag.FromErr(err)
+// 		}
+// 		updateOfferingOptions.SetDeprecatePending(deprecatePending)
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("product_kind") {
+// 		updateOfferingOptions.SetProductKind(d.Get("product_kind").(string))
+// 		hasChange = true
+// 	}
+// 	if d.HasChange("badges") {
+// 		// TODO: handle Badges of type TypeList -- not primitive, not model
+// 		hasChange = true
+// 	}
 
-	if hasChange {
-		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
-		if err != nil {
-			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
-		}
-	}
+// 	if hasChange {
+// 		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+// 		if err != nil {
+// 			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+// 			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+// 		}
+// 	}
 
-	return resourceIBMCmOfferingRead(context, d, meta)
-}
+// 	return resourceIBMCmOfferingRead(context, d, meta)
+// }
 
 func resourceIBMCmOfferingDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
@@ -3267,13 +3267,14 @@ func resourceIBMCmOfferingMapToConfiguration(modelMap map[string]interface{}) (*
 	if modelMap["required"] != nil {
 		model.Required = core.BoolPtr(modelMap["required"].(bool))
 	}
-	if modelMap["options"] != nil {
-		options := []TypeMap{}
-		for _, optionsItem := range modelMap["options"].([]interface{}) {
-			options = append(options, optionsItem.(TypeMap))
-		}
-		model.Options = options
-	}
+	// TODO: TypeMap undefined
+	// if modelMap["options"] != nil {
+	// 	options := []TypeMap{}
+	// 	for _, optionsItem := range modelMap["options"].([]interface{}) {
+	// 		options = append(options, optionsItem.(TypeMap))
+	// 	}
+	// 	model.Options = options
+	// }
 	if modelMap["hidden"] != nil {
 		model.Hidden = core.BoolPtr(modelMap["hidden"].(bool))
 	}
@@ -4522,7 +4523,7 @@ func resourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Configur
 	if model.Options != nil {
 		options := []map[string]interface{}{}
 		for _, optionsItem := range model.Options {
-			options = append(options, optionsItem)
+			options = append(options, optionsItem.(map[string]interface{}))
 		}
 		modelMap["options"] = options
 	}
