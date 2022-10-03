@@ -40,7 +40,7 @@ func DataSourceIBMPIVolumeOnboardings() *schema.Resource {
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Indicates the minimum period in seconds between multiple cycles",
+							Description: "Description of the volume onboarding operations",
 						},
 						"id": {
 							Type:        schema.TypeString,
@@ -50,13 +50,13 @@ func DataSourceIBMPIVolumeOnboardings() *schema.Resource {
 						"input_volumes": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Number of volumes in volume group",
+							Description: "List of volumes requested to be onboarded",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Indicates the relationship state",
+							Description: "Indicates the status of volume onboarding operation",
 						},
 					},
 				},

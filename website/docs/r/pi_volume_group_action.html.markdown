@@ -50,8 +50,8 @@ ibm_pi_volume_group_action provides the following [timeouts](https://www.terrafo
 ## Argument reference 
 Review the argument references that you can specify for your resource. 
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_volume_group_action` - (Required, List) Performs an action (`start` / `stop` / `reset`) on a volume group(one at a time).
+- `pi_cloud_instance_id` - (Required, Forces new resource, String) The GUID of the service instance associated with an account.
+- `pi_volume_group_action` - (Required, Forces new resource, List) Performs an action (`start` / `stop` / `reset`) on a volume group(one at a time).
   - Constraints: The maximum length is `1` items. The minimum length is `1` items.
   Nested scheme for **pi_volume_group_action**:
     - `reset` - (Optional, List) Performs reset action on the volume group to update its status value.
@@ -66,7 +66,7 @@ Review the argument references that you can specify for your resource.
       - Constraints: The maximum length is `1` items.
       Nested scheme for **reset**:
         - `access` - (Required, Boolean) Indicates the access mode of aux volumes.
-- `pi_volume_group_id` - (Required, String) The ID of volume group on which action is to performed.
+- `pi_volume_group_id` - (Required, Forces new resource, String) The ID of volume group on which action is to performed.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

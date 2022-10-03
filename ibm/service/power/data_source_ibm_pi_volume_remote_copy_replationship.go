@@ -59,7 +59,7 @@ func DataSourceIBMPIVolumeRemoteCopyRelationship() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the type of cycling mode used.",
 			},
-			"cycle_period_secondss": {
+			"cycle_period_seconds": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Indicates the minimum period in seconds between multiple cycles",
@@ -132,7 +132,7 @@ func dataSourceIBMPIVolumeRemoteCopyRelationshipsReads(ctx context.Context, d *s
 	d.Set("consistency_group_name", volData.ConsistencyGroupName)
 	d.Set("copy_type", volData.CopyType)
 	d.Set("cycling_mode", volData.CyclingMode)
-	d.Set("cycle_period_secondss", volData.CyclePeriodSeconds)
+	d.Set("cycle_period_seconds", volData.CyclePeriodSeconds)
 	d.Set("freeze_time", volData.FreezeTime.String())
 	d.Set("master_changed_volume_name", volData.MasterChangedVolumeName)
 	d.Set("master_volume_name", volData.MasterVolumeName)
