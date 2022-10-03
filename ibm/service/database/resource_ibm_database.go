@@ -467,6 +467,32 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"logical_replication_slot": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Description:  "Logical Replication Slot name",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validate.ValidateCIDR,
+						},
+						"database_name": {
+							Description:  "Logical Replication Slot name",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateCIDR,
+						},
+						"plugin_type": {
+							Description:  "Logical Replication Slot name",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.ValidateCIDR,
+						},
+					},
+				},
+			},
 			"group": {
 				Type:          schema.TypeSet,
 				Optional:      true,
@@ -1590,6 +1616,42 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			if err != nil {
 				return diag.FromErr(fmt.Errorf(
 					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
+			}
+		}
+	}
+
+	if logicalReplicationSlots, ok := d.GetOk("logical_replication_slot"); ok {
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		}
+
+		for _, logicalReplicationSlot := range logicalReplicationSlots.(*schema.Set).List() {
+			slot := logicalReplicationSlot.(map[string]interface{})
+			createLogicalReplicationSlotModel := &clouddatabasesv5.LogicalReplicationSlotLogicalReplicationSlot{
+				Name:         core.StringPtr(slot["name"].(string)),
+				DatabaseName: core.StringPtr(slot["database_name"].(string)),
+				PluginType:   core.StringPtr(slot["plugin_type"].(string)),
+			}
+
+			instanceId := d.Id()
+			createLogicalReplicationSlotOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+				ID:                     &instanceId,
+				LogicalReplicationSlot: createLogicalReplicationSlotModel,
+			}
+
+			createLogicalReplicationResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationSlotOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("CreateLogicalReplication (%s) failed %s\n%s", slot["name"], err, response))
+			}
+
+			taskID := *createLogicalReplicationResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), slot["name"], err))
 			}
 		}
 	}
