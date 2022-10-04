@@ -24,7 +24,6 @@ resource "ibm_cd_toolchain_tool_pipeline" "ci_pipeline" {
   toolchain_id = ibm_cd_toolchain.toolchain_instance.id
   parameters {
     name = "ci-pipeline"
-    type = "tekton"
   }
 }
 
@@ -52,7 +51,6 @@ resource "ibm_cd_toolchain_tool_pipeline" "pr_pipeline" {
   toolchain_id = ibm_cd_toolchain.toolchain_instance.id
   parameters {
     name = "pr-pipeline"
-    type = "tekton"
   }
 }
 

@@ -10,8 +10,8 @@ resource "ibm_cd_toolchain_tool_keyprotect" "keyprotect" {
   toolchain_id = var.toolchain_id
   parameters {
     name           = var.key_protect_integration_name
-    region         = var.key_protect_instance_region
-    resource_group = var.resource_group
+    location         = var.key_protect_instance_region
+    resource_group_name = var.resource_group
     instance_name  = var.key_protect_instance_name
   }
 }

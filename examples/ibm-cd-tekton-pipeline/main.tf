@@ -34,7 +34,6 @@ resource "ibm_cd_toolchain_tool_pipeline" "cd_pipeline" {
   toolchain_id = ibm_cd_toolchain.toolchain_instance.id
   parameters {
     name = "tf-pipeline"
-    type = "tekton"
   }
 }
 resource "ibm_cd_tekton_pipeline" "cd_pipeline_instance" {
