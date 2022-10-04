@@ -76,13 +76,13 @@ func testAccCheckIBMPIVolumeOnboardingConfig(name string) string {
 		pi_cloud_instance_id        = "%[1]s"
 		pi_description              = "test-onboarding"
 		pi_onboarding_volumes {
-			pi_source_crn           = "crn:v1:staging:public:power-iaas:dal10:a/efe5e8b9d3f04b948790fe5499bd18bc:a1a23e24-220d-4a20-a678-c8c5e84056bd::"
+			pi_source_crn           = ""
 			pi_auxiliary_volumes    {
-				pi_auxiliary_volume_name = "aux_volume-test-dhirender-vg-action-2-692b8297-479d1210664"
+				pi_auxiliary_volume_name = ""
 				pi_display_name = "demo11"
 			}
 			pi_auxiliary_volumes {
-				pi_auxiliary_volume_name = "aux_volume-test-dhirender-vg-action-1-e05fd650-c65b1210664"
+				pi_auxiliary_volume_name = ""
 				pi_display_name = "demo12"
 			}
 		}
