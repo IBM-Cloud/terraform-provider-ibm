@@ -8,16 +8,14 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_custom
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_custom. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_custom" "cd_toolchain_tool_custom" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_custom.cd_toolchain_tool_custom.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -43,15 +41,15 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `additional_properties` - (String) (Advanced) Type any information that is needed to integrate with other tools in your toolchain.
-	* `dashboard_url` - (String) Type the URL that you want to navigate to when you click the tool integration card.
-	* `description` - (String) Type a description for the tool instance.
-	* `documentation_url` - (String) Type the URL for your tool's documentation.
-	* `image_url` - (String) Type the URL of the icon to show on your tool integration's card.
-	* `lifecycle_phase` - (String) Select the lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
+	* `additional_properties` - (String) Any information that is needed to integrate with other tools in the toolchain.
+	* `dashboard_url` - (String) The URL of the dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the integration tile.
+	* `description` - (String) A description outlining the function of this tool.
+	* `documentation_url` - (String) The URL for this tool's documentation.
+	* `image_url` - (String) The URL of the icon shown on the tool integration card in the graphical UI.
+	* `lifecycle_phase` - (String) The lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
 	  * Constraints: Allowable values are: `THINK`, `CODE`, `DELIVER`, `RUN`, `MANAGE`, `LEARN`, `CULTURE`.
-	* `name` - (String) Type a name for this specific tool integration; for example: My Build and Deploy Pipeline.
-	* `type` - (String) Type the name of the tool that you are integrating; for example: Delivery Pipeline.
+	* `name` - (String) The name for this tool integration.
+	* `type` - (String) The type of tool that this custom tool is integrating with.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

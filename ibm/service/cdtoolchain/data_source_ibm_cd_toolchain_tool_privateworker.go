@@ -89,17 +89,18 @@ func DataSourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.",
+							Description: "The name used for this tool integration.",
 						},
 						"worker_queue_credentials": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.",
+							Description: "The service ID API key that is used by the private worker to authenticate access to the work queue.",
 						},
 						"worker_queue_identifier": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The service ID which identifies this private workers run request queue.",
 						},
 					},
 				},

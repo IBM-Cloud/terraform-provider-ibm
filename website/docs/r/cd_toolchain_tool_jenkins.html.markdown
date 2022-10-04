@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_jenkins
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_jenkins. This allows cd_toolchain_tool_jenkins to be created, updated and deleted.
 
 ## Example Usage
@@ -17,13 +15,12 @@ Provides a resource for cd_toolchain_tool_jenkins. This allows cd_toolchain_tool
 ```hcl
 resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
-		webhook_url = "webhook_url"
-		api_user_name = "api_user_name"
-		api_token = "api_token"
+		name = "jenkins-tool-01"
+		dashboard_url = "https://jenkins.mycompany.example.com"
+		api_user_name = "<api_user_name>"
+		api_token = "<api_token>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -35,11 +32,11 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `api_token` - (Optional, String) Type the API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
-	* `api_user_name` - (Optional, String) Type the user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
-	* `dashboard_url` - (Required, String) Type the URL of the Jenkins server that you want to open when you click the Jenkins card in your toolchain.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-jenkins. This name displays on your toolchain.
-	* `webhook_url` - (Optional, String) Use this webhook in your Jenkins jobs to send notifications to other tools in your toolchain. For details, see the Configuring Jenkins instructions.
+	* `api_token` - (Optional, String) The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
+	* `api_user_name` - (Optional, String) The user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
+	* `dashboard_url` - (Required, String) The URL of the Jenkins server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Jenkins integration tile.
+	* `name` - (Required, String) The name for this tool integration.
+	* `webhook_url` - (Optional, String) The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

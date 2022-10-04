@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_nexus
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_nexus. This allows cd_toolchain_tool_nexus to be created, updated and deleted.
 
 ## Example Usage
@@ -17,16 +15,13 @@ Provides a resource for cd_toolchain_tool_nexus. This allows cd_toolchain_tool_n
 ```hcl
 resource "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
+		name = "my-nexus"
 		type = "npm"
-		user_id = "user_id"
-		token = "token"
-		release_url = "release_url"
-		mirror_url = "mirror_url"
-		snapshot_url = "snapshot_url"
+		user_id = "<user_id>"
+		token = "<token>"
+		server_url = "https://my.nexus.server.com/"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -38,15 +33,15 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `dashboard_url` - (Optional, String) Type the URL that you want to navigate to when you click the Nexus integration tile.
-	* `mirror_url` - (Optional, String) Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.
-	* `release_url` - (Optional, String) Type the URL for your Nexus release repository.
-	* `snapshot_url` - (Optional, String) Type the URL for your Nexus snapshot repository.
-	* `token` - (Optional, String) Type the password or authentication token for your Nexus repository.
-	* `type` - (Required, String) Choose the type of repository for your Nexus integration.
+	* `mirror_url` - (Optional, String) The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.
+	* `name` - (Required, String) The name for this tool integration.
+	* `release_url` - (Optional, String) The URL of the Nexus release repository.
+	* `server_url` - (Optional, String) The URL of the Nexus server.
+	* `snapshot_url` - (Optional, String) The URL of the Nexus snapshot repository.
+	* `token` - (Optional, String) The password or token for authenticating to the Nexus repository.
+	* `type` - (Required, String) The type of repository for the Nexus integration.
 	  * Constraints: Allowable values are: `npm`, `maven`.
-	* `user_id` - (Optional, String) Type the User ID or email for your Nexus repository.
+	* `user_id` - (Optional, String) The user id or email for authenticating to the Nexus repository.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

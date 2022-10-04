@@ -44,14 +44,14 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 						"username": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type the user name for your Sauce Labs account.",
+							Description: "The user name for the Sauce Labs account.",
 						},
-						"key": &schema.Schema{
+						"access_key": &schema.Schema{
 							Type:             schema.TypeString,
 							Required:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.",
+							Description:      "The access key for the Sauce Labs account.",
 						},
 					},
 				},
@@ -157,7 +157,10 @@ func resourceIBMCdToolchainToolSaucelabsCreate(context context.Context, d *schem
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("saucelabs")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSaucelabs(), nil)
+	remapFields := map[string]string{
+		"access_key": "key",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -203,7 +206,10 @@ func resourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schema.
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSaucelabs(), nil)
+	remapFields := map[string]string{
+		"access_key": "key",
+	}
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -266,7 +272,10 @@ func resourceIBMCdToolchainToolSaucelabsUpdate(context context.Context, d *schem
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSaucelabs(), nil)
+		remapFields := map[string]string{
+			"access_key": "key",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSaucelabs(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}

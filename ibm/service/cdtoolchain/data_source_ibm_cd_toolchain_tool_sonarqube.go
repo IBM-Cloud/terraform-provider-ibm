@@ -89,27 +89,28 @@ func DataSourceIBMCdToolchainToolSonarqube() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.",
-						},
-						"dashboard_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.",
+							Description: "The name for this tool integration.",
 						},
 						"user_login": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "If you are using an authentication token, leave this field empty.",
+							Description: "The user id for authenticating to the SonarQube server.",
 						},
 						"user_password": &schema.Schema{
-							Type:      schema.TypeString,
-							Computed:  true,
-							Sensitive: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The password or token for authenticating to the SonarQube server.",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
+							Description: "When set to true, instructs IBM Cloud Continuous Delivery to not validate the configuration of this integration. Set this to true if the SonarQube server is not addressable on the public internet.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of the SonarQube server.",
 						},
 					},
 				},
@@ -184,7 +185,10 @@ func dataSourceIBMCdToolchainToolSonarqubeRead(context context.Context, d *schem
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSonarqube(), nil)
+		remapFields := map[string]string{
+			"server_url": "dashboard_url",
+		}
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSonarqube(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

@@ -44,44 +44,44 @@ func ResourceIBMCdToolchainToolNexus() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.",
-						},
-						"dashboard_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Type the URL that you want to navigate to when you click the Nexus integration tile.",
+							Description: "The name for this tool integration.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Choose the type of repository for your Nexus integration.",
+							Description: "The type of repository for the Nexus integration.",
 						},
 						"user_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the User ID or email for your Nexus repository.",
+							Description: "The user id or email for authenticating to the Nexus repository.",
 						},
 						"token": &schema.Schema{
 							Type:             schema.TypeString,
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "Type the password or authentication token for your Nexus repository.",
+							Description:      "The password or token for authenticating to the Nexus repository.",
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Nexus release repository.",
+							Description: "The URL of the Nexus release repository.",
 						},
 						"mirror_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+							Description: "The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.",
 						},
 						"snapshot_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Nexus snapshot repository.",
+							Description: "The URL of the Nexus snapshot repository.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The URL of the Nexus server.",
 						},
 					},
 				},
@@ -187,7 +187,10 @@ func resourceIBMCdToolchainToolNexusCreate(context context.Context, d *schema.Re
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("nexus")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolNexus(), nil)
+	remapFields := map[string]string{
+		"server_url": "dashboard_url",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolNexus(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -233,7 +236,10 @@ func resourceIBMCdToolchainToolNexusRead(context context.Context, d *schema.Reso
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolNexus(), nil)
+	remapFields := map[string]string{
+		"server_url": "dashboard_url",
+	}
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolNexus(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -296,7 +302,10 @@ func resourceIBMCdToolchainToolNexusUpdate(context context.Context, d *schema.Re
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolNexus(), nil)
+		remapFields := map[string]string{
+			"server_url": "dashboard_url",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolNexus(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}

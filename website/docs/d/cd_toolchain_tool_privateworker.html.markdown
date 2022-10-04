@@ -8,16 +8,14 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_privateworker
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_privateworker. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_privateworker.cd_toolchain_tool_privateworker.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -43,9 +41,9 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `name` - (String) Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.
-	* `worker_queue_credentials` - (String) Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.
-	* `worker_queue_identifier` - (String)
+	* `name` - (String) The name used for this tool integration.
+	* `worker_queue_credentials` - (String) The service ID API key that is used by the private worker to authenticate access to the work queue.
+	* `worker_queue_identifier` - (String) The service ID which identifies this private workers run request queue.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

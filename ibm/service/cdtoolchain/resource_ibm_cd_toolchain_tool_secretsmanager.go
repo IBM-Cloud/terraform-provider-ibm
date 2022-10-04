@@ -44,22 +44,22 @@ func ResourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Resource group.",
+							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name of your Secrets Manager instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Secrets Manager-01.",
+							Description: "The name of the Secrets Manager service instance.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The IBM Cloud location where the Secrets Manager service instance resides.",
+						},
+						"resource_group_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the resource group where the Secrets Manager service instance resides.",
 						},
 					},
 				},
@@ -166,8 +166,9 @@ func resourceIBMCdToolchainToolSecretsmanagerCreate(context context.Context, d *
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("secretsmanager")
 	remapFields := map[string]string{
-		"resource_group": "resource-group",
-		"instance_name":  "instance-name",
+		"location":            "region",
+		"resource_group_name": "resource-group",
+		"instance_name":       "instance-name",
 	}
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
@@ -216,8 +217,9 @@ func resourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *sc
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
-		"resource_group": "resource-group",
-		"instance_name":  "instance-name",
+		"location":            "region",
+		"resource_group_name": "resource-group",
+		"instance_name":       "instance-name",
 	}
 	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
@@ -283,8 +285,9 @@ func resourceIBMCdToolchainToolSecretsmanagerUpdate(context context.Context, d *
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_name":       "instance-name",
 		}
 		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolSecretsmanager(), remapFields)
 		patchVals.Parameters = parameters

@@ -87,17 +87,9 @@ func DataSourceIBMCdToolchainToolPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"ui_pipeline": &schema.Schema{
-							Type:        schema.TypeBool,
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.",
+							Description: "The name used for this tool integration.",
 						},
 					},
 				},

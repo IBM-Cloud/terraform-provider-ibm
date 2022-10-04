@@ -8,15 +8,13 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_devopsinsights
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_devopsinsights. This allows cd_toolchain_tool_devopsinsights to be created, updated and deleted.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 

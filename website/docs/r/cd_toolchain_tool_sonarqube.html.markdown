@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_sonarqube
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_sonarqube. This allows cd_toolchain_tool_sonarqube to be created, updated and deleted.
 
 ## Example Usage
@@ -17,13 +15,13 @@ Provides a resource for cd_toolchain_tool_sonarqube. This allows cd_toolchain_to
 ```hcl
 resource "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
-		user_login = "user_login"
-		user_password = "user_password"
+		name = "my-sonarqube"
+		user_login = "<user_login>"
+		user_password = "<user_password>"
 		blind_connection = true
+		server_url = "https://my.sonarqube.server.com/"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -35,12 +33,12 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `blind_connection` - (Optional, Boolean) Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
+	* `blind_connection` - (Optional, Boolean) When set to true, instructs IBM Cloud Continuous Delivery to not validate the configuration of this integration. Set this to true if the SonarQube server is not addressable on the public internet.
 	  * Constraints: The default value is `false`.
-	* `dashboard_url` - (Required, String) Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.
-	* `user_login` - (Optional, String) If you are using an authentication token, leave this field empty.
-	* `user_password` - (Optional, String)
+	* `name` - (Required, String) The name for this tool integration.
+	* `server_url` - (Required, String) The URL of the SonarQube server.
+	* `user_login` - (Optional, String) The user id for authenticating to the SonarQube server.
+	* `user_password` - (Optional, String) The password or token for authenticating to the SonarQube server.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

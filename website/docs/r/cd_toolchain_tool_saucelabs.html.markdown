@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_saucelabs
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_saucelabs. This allows cd_toolchain_tool_saucelabs to be created, updated and deleted.
 
 ## Example Usage
@@ -17,10 +15,10 @@ Provides a resource for cd_toolchain_tool_saucelabs. This allows cd_toolchain_to
 ```hcl
 resource "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
   parameters {
-		username = "username"
-		key = "key"
+		username = "<username>"
+		access_key = "<access_key>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -32,8 +30,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `key` - (Required, String) Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.
-	* `username` - (Required, String) Type the user name for your Sauce Labs account.
+	* `access_key` - (Required, String) The access key for the Sauce Labs account.
+	* `username` - (Required, String) The user name for the Sauce Labs account.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

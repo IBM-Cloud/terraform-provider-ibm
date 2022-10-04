@@ -8,16 +8,14 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_artifactory
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_artifactory. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_artifactory" "cd_toolchain_tool_artifactory" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_artifactory.cd_toolchain_tool_artifactory.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -43,17 +41,17 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `dashboard_url` - (String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
-	* `mirror_url` - (String) Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
-	* `name` - (String) Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.
-	* `release_url` - (String) Type the URL for your Artifactory release repository.
-	* `repository_name` - (String) Type the name of your artifactory repository where your docker images are located.
-	* `repository_url` - (String) Type the URL of your artifactory repository where your docker images are located.
-	* `snapshot_url` - (String) Type the URL for your Artifactory snapshot repository.
-	* `token` - (String) Type the API key for your Artifactory repository.
-	* `type` - (String) Choose the type of repository for your Artifactory integration.
+	* `api_key` - (String) The Artifactory API key for your Artifactory repository.
+	* `dashboard_url` - (String) The URL of the Artifactory server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Artifactory integration tile.
+	* `mirror_url` - (String) The URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
+	* `name` - (String) The name for this tool integration.
+	* `release_url` - (String) The URL for your Artifactory release repository.
+	* `repository_name` - (String) The name of your artifactory repository where your docker images are located.
+	* `repository_url` - (String) The URL of your artifactory repository where your docker images are located.
+	* `snapshot_url` - (String) The URL for your Artifactory snapshot repository.
+	* `type` - (String) The type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
-	* `user_id` - (String) Type the User ID or email for your Artifactory repository.
+	* `user_id` - (String) The User ID or email for your Artifactory repository.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

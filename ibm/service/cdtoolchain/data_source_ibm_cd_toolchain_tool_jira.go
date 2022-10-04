@@ -16,9 +16,9 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 )
 
-func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
+func DataSourceIBMCdToolchainToolJira() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMCdToolchainToolSecretsmanagerRead,
+		ReadContext: dataSourceIBMCdToolchainToolJiraRead,
 
 		Schema: map[string]*schema.Schema{
 			"toolchain_id": &schema.Schema{
@@ -86,25 +86,31 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"project_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
+							Description: "The project key of your JIRA project.",
 						},
-						"instance_name": &schema.Schema{
+						"api_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the Secrets Manager service instance.",
+							Description: "The base API URL for your JIRA instance.",
 						},
-						"location": &schema.Schema{
+						"username": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The IBM Cloud location where the Secrets Manager service instance resides.",
+							Description: "The user name for your JIRA account. Optional for public projects.",
 						},
-						"resource_group_name": &schema.Schema{
+						"enable_traceability": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+						},
+						"api_token": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the resource group where the Secrets Manager service instance resides.",
+							Sensitive:   true,
+							Description: "The api token for your JIRA account. Optional for public projects.",
 						},
 					},
 				},
@@ -118,7 +124,7 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 	}
 }
 
-func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMCdToolchainToolJiraRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,7 +141,7 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 		return diag.FromErr(fmt.Errorf("GetToolByIDWithContext failed %s\n%s", err, response))
 	}
 
-	if *toolchainTool.ToolTypeID != "secretsmanager" {
+	if *toolchainTool.ToolTypeID != "jira" {
 		return diag.FromErr(fmt.Errorf("Retrieved tool is not the correct type: %s", *toolchainTool.ToolTypeID))
 	}
 
@@ -159,7 +165,7 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 
 	referent := []map[string]interface{}{}
 	if toolchainTool.Referent != nil {
-		modelMap, err := dataSourceIBMCdToolchainToolSecretsmanagerToolModelReferentToMap(toolchainTool.Referent)
+		modelMap, err := dataSourceIBMCdToolchainToolJiraToolModelReferentToMap(toolchainTool.Referent)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -180,11 +186,9 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
-			"location":            "region",
-			"resource_group_name": "resource-group",
-			"instance_name":       "instance-name",
+			"api_token": "password",
 		}
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSecretsmanager(), remapFields)
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolJira(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {
@@ -198,7 +202,7 @@ func dataSourceIBMCdToolchainToolSecretsmanagerRead(context context.Context, d *
 	return nil
 }
 
-func dataSourceIBMCdToolchainToolSecretsmanagerToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
+func dataSourceIBMCdToolchainToolJiraToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = *model.UIHref

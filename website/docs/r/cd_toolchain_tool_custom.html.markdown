@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_custom
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_custom. This allows cd_toolchain_tool_custom to be created, updated and deleted.
 
 ## Example Usage
@@ -17,16 +15,12 @@ Provides a resource for cd_toolchain_tool_custom. This allows cd_toolchain_tool_
 ```hcl
 resource "ibm_cd_toolchain_tool_custom" "cd_toolchain_tool_custom" {
   parameters {
-		type = "type"
-		lifecycle_phase = "THINK"
-		image_url = "image_url"
-		documentation_url = "documentation_url"
-		name = "name"
-		dashboard_url = "dashboard_url"
-		description = "description"
-		additional_properties = "additional_properties"
+		type = "Delivery Pipeline"
+		lifecycle_phase = "DELIVER"
+		name = "My Build and Deploy Pipeline"
+		dashboard_url = "https://cloud.ibm.com/devops/pipelines/tekton/ae47390c-9495-4b0b-a489-78464685acdd"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -38,15 +32,15 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `additional_properties` - (Optional, String) (Advanced) Type any information that is needed to integrate with other tools in your toolchain.
-	* `dashboard_url` - (Required, String) Type the URL that you want to navigate to when you click the tool integration card.
-	* `description` - (Optional, String) Type a description for the tool instance.
-	* `documentation_url` - (Optional, String) Type the URL for your tool's documentation.
-	* `image_url` - (Optional, String) Type the URL of the icon to show on your tool integration's card.
-	* `lifecycle_phase` - (Required, String) Select the lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
+	* `additional_properties` - (Optional, String) Any information that is needed to integrate with other tools in the toolchain.
+	* `dashboard_url` - (Required, String) The URL of the dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the integration tile.
+	* `description` - (Optional, String) A description outlining the function of this tool.
+	* `documentation_url` - (Optional, String) The URL for this tool's documentation.
+	* `image_url` - (Optional, String) The URL of the icon shown on the tool integration card in the graphical UI.
+	* `lifecycle_phase` - (Required, String) The lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.
 	  * Constraints: Allowable values are: `THINK`, `CODE`, `DELIVER`, `RUN`, `MANAGE`, `LEARN`, `CULTURE`.
-	* `name` - (Required, String) Type a name for this specific tool integration; for example: My Build and Deploy Pipeline.
-	* `type` - (Required, String) Type the name of the tool that you are integrating; for example: Delivery Pipeline.
+	* `name` - (Required, String) The name for this tool integration.
+	* `type` - (Required, String) The type of tool that this custom tool is integrating with.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_cd_toolchain_tool_pagerduty"
+page_title: "IBM : ibm_cd_toolchain_tool_jira"
 description: |-
-  Get information about cd_toolchain_tool_pagerduty
+  Get information about cd_toolchain_tool_jira
 subcategory: "CD Toolchain"
 ---
 
-# ibm_cd_toolchain_tool_pagerduty
+# ibm_cd_toolchain_tool_jira
 
-Provides a read-only data source for cd_toolchain_tool_pagerduty. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for cd_toolchain_tool_jira. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
-data "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty" {
+data "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
 	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
 	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the cd_toolchain_tool_pagerduty.
+* `id` - The unique identifier of the cd_toolchain_tool_jira.
 * `crn` - (String) Tool CRN.
 
 * `href` - (String) URI representing the tool.
@@ -41,9 +41,12 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `service_id` - (String) The service ID of the PagerDuty service.
-	* `service_key` - (String) The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page.
-	* `service_url` - (String) The URL of the PagerDuty service to post alerts to.
+	* `api_token` - (String) The api token for your JIRA account. Optional for public projects.
+	* `api_url` - (String) The base API URL for your JIRA instance.
+	* `enable_traceability` - (Boolean) Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	  * Constraints: The default value is `false`.
+	* `project_key` - (String) The project key of your JIRA project.
+	* `username` - (String) The user name for your JIRA account. Optional for public projects.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

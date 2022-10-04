@@ -8,15 +8,13 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain" "cd_toolchain" {
-	toolchain_id = "toolchain_id"
+	toolchain_id = "b7c3f7f6-0613-4a2c-a4b0-3189ac95bdc9"
 }
 ```
 

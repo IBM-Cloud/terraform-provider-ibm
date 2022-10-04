@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_artifactory
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_artifactory. This allows cd_toolchain_tool_artifactory to be created, updated and deleted.
 
 ## Example Usage
@@ -17,18 +15,15 @@ Provides a resource for cd_toolchain_tool_artifactory. This allows cd_toolchain_
 ```hcl
 resource "ibm_cd_toolchain_tool_artifactory" "cd_toolchain_tool_artifactory" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
-		type = "npm"
-		user_id = "user_id"
-		token = "token"
-		release_url = "release_url"
-		mirror_url = "mirror_url"
-		snapshot_url = "snapshot_url"
-		repository_name = "repository_name"
-		repository_url = "repository_url"
+		name = "artifactory-tool-01"
+		dashboard_url = "https://mycompany.example.jfrog.io"
+		type = "docker"
+		user_id = "<user_id>"
+		repository_name = "default-docker-local"
+		repository_url = "https://mycompany.example.jfrog.io/artifactory/default-docker-local"
+		api_key = "<api_key>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -40,17 +35,17 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `dashboard_url` - (Optional, String) Type the URL that you want to navigate to when you click the Artifactory integration tile.
-	* `mirror_url` - (Optional, String) Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.
-	* `release_url` - (Optional, String) Type the URL for your Artifactory release repository.
-	* `repository_name` - (Optional, String) Type the name of your artifactory repository where your docker images are located.
-	* `repository_url` - (Optional, String) Type the URL of your artifactory repository where your docker images are located.
-	* `snapshot_url` - (Optional, String) Type the URL for your Artifactory snapshot repository.
-	* `token` - (Optional, String) Type the API key for your Artifactory repository.
-	* `type` - (Required, String) Choose the type of repository for your Artifactory integration.
+	* `api_key` - (Optional, String) The Artifactory API key for your Artifactory repository.
+	* `dashboard_url` - (Optional, String) The URL of the Artifactory server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Artifactory integration tile.
+	* `mirror_url` - (Optional, String) The URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
+	* `name` - (Required, String) The name for this tool integration.
+	* `release_url` - (Optional, String) The URL for your Artifactory release repository.
+	* `repository_name` - (Optional, String) The name of your artifactory repository where your docker images are located.
+	* `repository_url` - (Optional, String) The URL of your artifactory repository where your docker images are located.
+	* `snapshot_url` - (Optional, String) The URL for your Artifactory snapshot repository.
+	* `type` - (Required, String) The type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
-	* `user_id` - (Optional, String) Type the User ID or email for your Artifactory repository.
+	* `user_id` - (Optional, String) The User ID or email for your Artifactory repository.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

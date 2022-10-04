@@ -17,12 +17,12 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/cdtoolchainv2"
 )
 
-func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
+func ResourceIBMCdToolchainToolJira() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIBMCdToolchainToolKeyprotectCreate,
-		ReadContext:   resourceIBMCdToolchainToolKeyprotectRead,
-		UpdateContext: resourceIBMCdToolchainToolKeyprotectUpdate,
-		DeleteContext: resourceIBMCdToolchainToolKeyprotectDelete,
+		CreateContext: resourceIBMCdToolchainToolJiraCreate,
+		ReadContext:   resourceIBMCdToolchainToolJiraRead,
+		UpdateContext: resourceIBMCdToolchainToolJiraUpdate,
+		DeleteContext: resourceIBMCdToolchainToolJiraDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -30,7 +30,7 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_keyprotect", "toolchain_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_jira", "toolchain_id"),
 				Description:  "ID of the toolchain to bind the tool to.",
 			},
 			"parameters": &schema.Schema{
@@ -41,25 +41,33 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"project_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
+							Description: "The project key of your JIRA project.",
 						},
-						"instance_name": &schema.Schema{
+						"api_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name of the Key Protect service instance.",
+							Description: "The base API URL for your JIRA instance.",
 						},
-						"location": &schema.Schema{
+						"username": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The IBM Cloud location where the Key Protect service instance resides.",
+							Optional:    true,
+							Description: "The user name for your JIRA account. Optional for public projects.",
 						},
-						"resource_group_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the resource group where the Key Protect service instance resides.",
+						"enable_traceability": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+						},
+						"api_token": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The api token for your JIRA account. Optional for public projects.",
 						},
 					},
 				},
@@ -67,7 +75,7 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_keyprotect", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_jira", "name"),
 				Description:  "Name of tool.",
 			},
 			"resource_group_id": &schema.Schema{
@@ -128,7 +136,7 @@ func ResourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 	}
 }
 
-func ResourceIBMCdToolchainToolKeyprotectValidator() *validate.ResourceValidator {
+func ResourceIBMCdToolchainToolJiraValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -151,11 +159,11 @@ func ResourceIBMCdToolchainToolKeyprotectValidator() *validate.ResourceValidator
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_toolchain_tool_keyprotect", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_cd_toolchain_tool_jira", Schema: validateSchema}
 	return &resourceValidator
 }
 
-func resourceIBMCdToolchainToolKeyprotectCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolJiraCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -164,13 +172,12 @@ func resourceIBMCdToolchainToolKeyprotectCreate(context context.Context, d *sche
 	createToolOptions := &cdtoolchainv2.CreateToolOptions{}
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
-	createToolOptions.SetToolTypeID("keyprotect")
+	createToolOptions.SetToolTypeID("jira")
 	remapFields := map[string]string{
-		"location":            "region",
-		"resource_group_name": "resource-group",
-		"instance_name":       "instance-name",
+		"api_token": "password",
 	}
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolJira(), remapFields)
+	parametersModel["type"] = "existing"
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -184,10 +191,10 @@ func resourceIBMCdToolchainToolKeyprotectCreate(context context.Context, d *sche
 
 	d.SetId(fmt.Sprintf("%s/%s", *createToolOptions.ToolchainID, *toolchainToolPost.ID))
 
-	return resourceIBMCdToolchainToolKeyprotectRead(context, d, meta)
+	return resourceIBMCdToolchainToolJiraRead(context, d, meta)
 }
 
-func resourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolJiraRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -217,11 +224,9 @@ func resourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
 	remapFields := map[string]string{
-		"location":            "region",
-		"resource_group_name": "resource-group",
-		"instance_name":       "instance-name",
+		"api_token": "password",
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolJira(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -240,7 +245,7 @@ func resourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema
 	if err = d.Set("href", toolchainTool.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	referentMap, err := resourceIBMCdToolchainToolKeyprotectToolModelReferentToMap(toolchainTool.Referent)
+	referentMap, err := resourceIBMCdToolchainToolJiraToolModelReferentToMap(toolchainTool.Referent)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -260,7 +265,7 @@ func resourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *schema
 	return nil
 }
 
-func resourceIBMCdToolchainToolKeyprotectUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolJiraUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -285,11 +290,9 @@ func resourceIBMCdToolchainToolKeyprotectUpdate(context context.Context, d *sche
 	}
 	if d.HasChange("parameters") {
 		remapFields := map[string]string{
-			"location":            "region",
-			"resource_group_name": "resource-group",
-			"instance_name":       "instance-name",
+			"api_token": "password",
 		}
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolKeyprotect(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolJira(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}
@@ -308,10 +311,10 @@ func resourceIBMCdToolchainToolKeyprotectUpdate(context context.Context, d *sche
 		}
 	}
 
-	return resourceIBMCdToolchainToolKeyprotectRead(context, d, meta)
+	return resourceIBMCdToolchainToolJiraRead(context, d, meta)
 }
 
-func resourceIBMCdToolchainToolKeyprotectDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainToolJiraDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -338,7 +341,7 @@ func resourceIBMCdToolchainToolKeyprotectDelete(context context.Context, d *sche
 	return nil
 }
 
-func resourceIBMCdToolchainToolKeyprotectToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
+func resourceIBMCdToolchainToolJiraToolModelReferentToMap(model *cdtoolchainv2.ToolModelReferent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.UIHref != nil {
 		modelMap["ui_href"] = model.UIHref

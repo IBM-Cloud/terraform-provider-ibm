@@ -42,18 +42,9 @@ func ResourceIBMCdToolchainToolPipeline() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"ui_pipeline": &schema.Schema{
-							Type:        schema.TypeBool,
+							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     false,
-							Description: "When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.",
+							Description: "The name used for this tool integration.",
 						},
 					},
 				},
@@ -160,6 +151,7 @@ func resourceIBMCdToolchainToolPipelineCreate(context context.Context, d *schema
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("pipeline")
 	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolPipeline(), nil)
+	parametersModel["type"] = "tekton"
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))

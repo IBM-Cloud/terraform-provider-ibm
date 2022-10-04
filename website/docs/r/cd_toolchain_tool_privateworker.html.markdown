@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_privateworker
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_privateworker. This allows cd_toolchain_tool_privateworker to be created, updated and deleted.
 
 ## Example Usage
@@ -17,11 +15,10 @@ Provides a resource for cd_toolchain_tool_privateworker. This allows cd_toolchai
 ```hcl
 resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
   parameters {
-		name = "name"
-		worker_queue_credentials = "worker_queue_credentials"
-		worker_queue_identifier = "worker_queue_identifier"
+		name = "private-worker-tool-01"
+		worker_queue_credentials = "<worker_queue_credentials>"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -33,9 +30,9 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `name` - (Required, String) Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.
-	* `worker_queue_credentials` - (Required, String) Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.
-	* `worker_queue_identifier` - (Optional, String)
+	* `name` - (Required, String) The name used for this tool integration.
+	* `worker_queue_credentials` - (Required, String) The service ID API key that is used by the private worker to authenticate access to the work queue.
+	* `worker_queue_identifier` - (Optional, String) The service ID which identifies this private workers run request queue.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

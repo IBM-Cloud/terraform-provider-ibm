@@ -8,16 +8,14 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_pipeline
 
-~> **Beta:** This data source is in Beta, and is subject to change.
-
 Provides a read-only data source for cd_toolchain_tool_pipeline. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_pipeline.cd_toolchain_tool_pipeline.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -43,11 +41,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `name` - (String)
-	* `type` - (String)
-	  * Constraints: Allowable values are: `classic`, `tekton`.
-	* `ui_pipeline` - (Boolean) When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.
-	  * Constraints: The default value is `false`.
+	* `name` - (String) The name used for this tool integration.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

@@ -89,13 +89,13 @@ func DataSourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 						"username": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the user name for your Sauce Labs account.",
+							Description: "The user name for the Sauce Labs account.",
 						},
-						"key": &schema.Schema{
+						"access_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Type your Sauce Labs access key. You can find your access key near the lower-left corner of your Sauce Labs account page.",
+							Description: "The access key for the Sauce Labs account.",
 						},
 					},
 				},
@@ -170,7 +170,10 @@ func dataSourceIBMCdToolchainToolSaucelabsRead(context context.Context, d *schem
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSaucelabs(), nil)
+		remapFields := map[string]string{
+			"access_key": "key",
+		}
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolSaucelabs(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

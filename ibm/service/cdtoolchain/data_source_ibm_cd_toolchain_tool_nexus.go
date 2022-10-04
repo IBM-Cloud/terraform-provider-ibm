@@ -89,43 +89,43 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.",
-						},
-						"dashboard_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the URL that you want to navigate to when you click the Nexus integration tile.",
+							Description: "The name for this tool integration.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Choose the type of repository for your Nexus integration.",
+							Description: "The type of repository for the Nexus integration.",
 						},
 						"user_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the User ID or email for your Nexus repository.",
+							Description: "The user id or email for authenticating to the Nexus repository.",
 						},
 						"token": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Type the password or authentication token for your Nexus repository.",
+							Description: "The password or token for authenticating to the Nexus repository.",
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus release repository.",
+							Description: "The URL of the Nexus release repository.",
 						},
 						"mirror_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+							Description: "The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.",
 						},
 						"snapshot_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus snapshot repository.",
+							Description: "The URL of the Nexus snapshot repository.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of the Nexus server.",
 						},
 					},
 				},
@@ -200,7 +200,10 @@ func dataSourceIBMCdToolchainToolNexusRead(context context.Context, d *schema.Re
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolNexus(), nil)
+		remapFields := map[string]string{
+			"server_url": "dashboard_url",
+		}
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolNexus(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

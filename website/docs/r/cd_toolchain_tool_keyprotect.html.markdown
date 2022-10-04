@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_keyprotect
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_keyprotect. This allows cd_toolchain_tool_keyprotect to be created, updated and deleted.
 
 ## Example Usage
@@ -17,12 +15,12 @@ Provides a resource for cd_toolchain_tool_keyprotect. This allows cd_toolchain_t
 ```hcl
 resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect" {
   parameters {
-		name = "name"
-		region = "region"
-		resource_group = "resource_group"
-		instance_name = "instance_name"
+		name = "kp_tool_01"
+		instance_name = "Key Protect-XX"
+		location = "us-south"
+		resource_group_name = "Default"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -34,11 +32,11 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `instance_name` - (Required, String) The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.
+	* `instance_name` - (Required, String) The name of the Key Protect service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `name` - (Required, String) Enter a name for this tool integration. This name is displayed on your toolchain.
-	* `region` - (Required, String) Region.
-	* `resource_group` - (Required, String) Resource group.
+	* `location` - (Required, String) The IBM Cloud location where the Key Protect service instance resides.
+	* `name` - (Required, String) The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.
+	* `resource_group_name` - (Required, String) The name of the resource group where the Key Protect service instance resides.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

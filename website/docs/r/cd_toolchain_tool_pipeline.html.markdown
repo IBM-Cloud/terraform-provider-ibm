@@ -8,8 +8,6 @@ subcategory: "CD Toolchain"
 
 # ibm_cd_toolchain_tool_pipeline
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_pipeline. This allows cd_toolchain_tool_pipeline to be created, updated and deleted.
 
 ## Example Usage
@@ -17,11 +15,9 @@ Provides a resource for cd_toolchain_tool_pipeline. This allows cd_toolchain_too
 ```hcl
 resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
   parameters {
-		name = "name"
-		type = "classic"
-		ui_pipeline = true
+		name = "pipeline-tool-01"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -33,11 +29,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `name` - (Optional, String)
-	* `type` - (Optional, String)
-	  * Constraints: Allowable values are: `classic`, `tekton`.
-	* `ui_pipeline` - (Optional, Boolean) When this check box is selected, the applications that this pipeline deploys are shown in the View app menu on the toolchain page. This setting is best for UI apps that can be accessed from a browser.
-	  * Constraints: The default value is `false`.
+	* `name` - (Optional, String) The name used for this tool integration.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

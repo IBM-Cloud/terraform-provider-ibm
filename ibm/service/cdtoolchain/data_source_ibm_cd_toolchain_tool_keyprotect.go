@@ -89,22 +89,22 @@ func DataSourceIBMCdToolchainToolKeyprotect() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Enter a name for this tool integration. This name is displayed on your toolchain.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Region.",
-						},
-						"resource_group": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Resource group.",
+							Description: "The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.",
 						},
 						"instance_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of your Key Protect instance. You should choose an entry from the list provided based on the selected region and resource group. e.g: Key Protect-01.",
+							Description: "The name of the Key Protect service instance.",
+						},
+						"location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IBM Cloud location where the Key Protect service instance resides.",
+						},
+						"resource_group_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the resource group where the Key Protect service instance resides.",
 						},
 					},
 				},
@@ -180,8 +180,9 @@ func dataSourceIBMCdToolchainToolKeyprotectRead(context context.Context, d *sche
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
 		remapFields := map[string]string{
-			"resource_group": "resource-group",
-			"instance_name":  "instance-name",
+			"location":            "region",
+			"resource_group_name": "resource-group",
+			"instance_name":       "instance-name",
 		}
 		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolKeyprotect(), remapFields)
 		parameters = append(parameters, modelMap)
