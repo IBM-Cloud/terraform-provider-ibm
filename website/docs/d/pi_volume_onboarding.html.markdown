@@ -2,7 +2,7 @@
 
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: pi_volume_onboardings"
+page_title: "IBM: pi_volume_onboarding"
 description: |-
   Manages a volume onboarding in the Power Virtual Server cloud.
 ---
@@ -15,7 +15,7 @@ The following example retrieves information about about volume onboarding in Pow
 
 ```terraform
 data "ibm_pi_volume_onboarding" "ds_volume_onboarding" {
-  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_cloud_instance_id    = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
   pi_volume_onboarding_id = "1212a6c9-23f8-40bc-9899-aca322ee7343"
 }
 ```
@@ -42,13 +42,13 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `creation_timestamp` - (String) Indicates the create-time of volume onboarding operation.
-- `description` - (String) Description of the volume onboarding operation.
-- `id` - (String) Indicates the volume onboarding operation id.
+- `creation_timestamp` - (String) The create-time of volume onboarding operation.
+- `description` - (String) The description of the volume onboarding operation.
+- `id` - (String) The volume onboarding operation id.
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.
-- `status` - (String) Indicates the status of volume onboarding operation.
-- `progress` - (String) Indicates the progress of volume onboarding operation.
-- `results` - List of objects - results
+- `status` - (String) The status of volume onboarding operation.
+- `progress` - (String) The progress of volume onboarding operation.
+- `results` - List of objects - The result of volume onboarding.
 
   Nested scheme for `results`:
     - `onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.

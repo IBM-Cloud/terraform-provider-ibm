@@ -11,12 +11,12 @@ description: |-
 Retrieves information about a volume group with details. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
-The following example retrieves information about the `volume_group_1` volume group that is present in Power Systems Virtual Server.
+The following example retrieves information about the `volume-group-1` volume group with details that is present in Power Systems Virtual Server.
 
 ```terraform
 data "ibm_pi_volume_group_details" "ds_volume_group_details" {
-  pi_volume_group_name       = "volume_group_1"
-  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_volume_group_name       = "volume-group-1"
+  pi_cloud_instance_id       = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 **Notes**
@@ -52,7 +52,7 @@ In addition to all argument reference list, you can access the following attribu
   - `errors` - List of objects - The error status details of a volume group.
 
     Nested scheme for `errors`:
-    - `key` - (String) Indicates the volume group error key.
-    - `message` - (String) Failure message providing more details about the error key.
+    - `key` - (String) The volume group error key.
+    - `message` - (String) The failure message providing more details about the error key.
     - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.
 - `volume_ids` - (List of strings) List of volume IDs, member of volume group.

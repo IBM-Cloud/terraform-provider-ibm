@@ -34,18 +34,18 @@ func DataSourceIBMPIVolumeOnboardings() *schema.Resource {
 			"onboardings": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of remote-copy relationship names in a volume group",
+				Description: "The list of volume onboardings",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Description of the volume onboarding operations",
+							Description: "Description of the volume onboarding operation",
 						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Indicates the type of cycling mode used",
+							Description: "Indicates the volume onboarding operation id",
 						},
 						"input_volumes": {
 							Type:        schema.TypeList,

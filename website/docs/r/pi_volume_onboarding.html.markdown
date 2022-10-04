@@ -59,24 +59,24 @@ Review the argument references that you can specify for your resource.
   - Constraints: The minimum length is `1` items.
 
   Nested scheme for **pi_onboarding_volumes**:
-  - `pi_source_crn` - (Required, String) CRN of source ServiceBroker instance from where auxiliary volumes need to be onboarded.
+  - `pi_source_crn` - (Required, String) The crn of source ServiceBroker instance from where auxiliary volumes need to be onboarded.
   - `pi_auxiliary_volumes` - (Required, List of objects) List auxiliary volumes .
     - Constraints: The minimum length is `1` items.
 
     Nested scheme for **pi_auxiliary_volumes**:
     - `pi_auxiliary_volume_name` - (Required, String) The auxiliary volume name.
-    - `pi_display_name` - (Optional, String) The display name.
+    - `pi_display_name` - (Optional, String) The display name of auxiliary volume which is to be onboarded.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `creation_timestamp` - (String) Indicates the create-time of volume onboarding operation.
+- `creation_timestamp` - (String) The create-time of volume onboarding operation.
 - `id` - (String) The unique identifier of the volume attach. The ID is composed of `<power_instance_id>/<onboarding_id>`.
-- `onboarding_id` (String) Onboarding ID.
+- `onboarding_id` (String) The onboarding ID.
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.
-- `status` - (String) Indicates the status of volume onboarding operation.
-- `progress` - (String) Indicates the progress of volume onboarding operation.
-- `results` - List of objects - results
+- `status` - (String) The status of volume onboarding operation.
+- `progress` - (String) The progress of volume onboarding operation.
+- `results` - List of objects - The result of volume onboarding.
 
   Nested scheme for `results`:
     - `onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.

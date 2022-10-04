@@ -16,7 +16,7 @@ The following example retrieves information about the `volume_group_1` volume gr
 ```terraform
 data "ibm_pi_volume_group" "ds_volume_group" {
   pi_volume_group_name       = "volume_group_1"
-  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_cloud_instance_id       = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 **Notes**
@@ -52,6 +52,6 @@ In addition to all argument reference list, you can access the following attribu
   - `errors` - List of objects - The error status details of a volume group.
 
     Nested scheme for `errors`:
-    - `key` - (String) Indicates the volume group error key.
-    - `message` - (String) Failure message providing more details about the error key.
+    - `key` - (String) The volume group error key.
+    - `message` - (String) The failure message providing more details about the error key.
     - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.

@@ -8,14 +8,14 @@ description: |-
 ---
 
 # ibm_pi_volume_group_storage_details
-Retrieves information about a volume group with details. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
+Retrieves information about the storage details of a volume group. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
 The following example retrieves information about the storage details of a volume group that is present in Power Systems Virtual Server.
 
 ```terraform
 data "ibm_pi_volume_group_storage_details" "ds_volume_group_storage_details" {
-  pi_volume_group_id   = "cf2ea8d3-cfc8-40e0-80c9-b096581be6767"
+  pi_volume_group_id   = "cf2ea8d3-cfc8-40e0-80c9-b096581be676"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```

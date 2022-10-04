@@ -11,7 +11,7 @@ description: |-
 Retrieves information about disaster recovery locations. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
-The following example retrieves information about the disaster recovery locations Power Systems Virtual Server.
+The following example retrieves information about the disaster recovery locations present in Power Systems Virtual Server.
 
 ```terraform
 data "ibm_pi_disaster_recovery_locations" "ds_disaster_recovery_locations" {}
@@ -33,12 +33,12 @@ data "ibm_pi_disaster_recovery_locations" "ds_disaster_recovery_locations" {}
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `disaster_recovery_locations` - List of Disaster Recovery Locations
+- `disaster_recovery_locations` - List of Disaster Recovery Locations.
 
   Nested scheme for `disaster_recovery_locations`:
-  - `location` - (String) The name of consistency-group at storage controller level.
+  - `location` - (String) The region zone of a site.
   - `replication_sites` - List of Replication Sites.
   
     Nested scheme for `replication_sites`:
-    - `is_active` - (Boolean) Indicates the location is active or not, `true` if location is active , otherwise it is `false`.
+    - `is_active` - (Boolean) Indicates the location is active or not, `true` if location is active, otherwise it is `false`.
     - `location` - (String) The region zone of the location.

@@ -16,7 +16,7 @@ The following example retrieves information about about remote copy replationshi
 ```terraform
 data "ibm_pi_volume_group_remote_copy_relatiosnhsips" "ds_volume_group_remote_copy_relatiosnhsips" {
   pi_volume_group_name    = "volume-group-1"
-  pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_cloud_instance_id    = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
 **Notes**
@@ -47,16 +47,16 @@ In addition to all argument reference list, you can access the following attribu
 
   Nested scheme for `remote_copy_relationships`:
       - `aux_changed_volume_name` - (String) The name of the volume that is acting as the auxiliary change volume for the relationship.
-      - `aux_volume_name` - (String) Auxiliary volume name at storage host level.
-      - `consistency_group_name` - (String) Consistency Group Name if volume is a part of volume group.
-      - `copy_type` (String) Indicates the copy type.
-      - `cycling_mode` - (String) Indicates the type of cycling mode used.
-      - `freeze_time` - (String) Freeze time of remote copy relationship.
+      - `aux_volume_name` - (String) The auxiliary volume name at storage host level.
+      - `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
+      - `copy_type` (String) The copy type.
+      - `cycling_mode` - (String) The type of cycling mode used.
+      - `freeze_time` - (String) The freeze time of remote copy relationship.
       - `master_changed_volume_name` (String) The name of the volume that is acting as the master change volume for the relationship.
-      - `master_volume_name` - (String) Master volume name at storage host level.
-      - `name` - (String) Remote copy relationship name.
+      - `master_volume_name` - (String) The master volume name at storage host level.
+      - `name` - (String) The remote copy relationship name.
       - `primary_role` (String) Indicates whether master/aux volume is playing the primary role.
-      - `progress` - (Integer) Indicates the relationship progress.
+      - `progress` - (Integer) The relationship progress.
       - `remote_copy_id` - (String) The remote copy relationship ID.
-      - `state` - (String) Indicates the relationship state.
+      - `state` - (String) The relationship state.
       - `sync` - (String) Indicates whether the relationship is synchronized.

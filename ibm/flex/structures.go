@@ -3284,6 +3284,7 @@ func expandVolumeGroupResetAction(reset []interface{}) *pi.VolumeGroupActionRese
 	}
 }
 
+// ExpandCreateVolumeOnboarding expands create volume onboarding resource
 func ExpandCreateVolumeOnboarding(data []interface{}) ([]*pi.AuxiliaryVolumesForOnboarding, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("[ERROR] no pi_onboarding_volumes received")

@@ -39,56 +39,54 @@ func DataSourceIBMPIVolumeOnboarding() *schema.Resource {
 			"creation_timestamp": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The name of consistency group at storage controller level",
+				Description: "Indicates the create-time of volume onboarding operation",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Indicates the minimum period in seconds between multiple cycles",
+				Description: "Description of the volume onboarding operation",
 			},
 			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Indicates the type of cycling mode used",
+				Description: "Indicates the volume onboarding operation id",
 			},
 			"input_volumes": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Number of volumes in volume group",
+				Description: "List of volumes requested to be onboarded",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"progress": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Indicates whether master/aux volume is playing the primary role",
+				Description: "Indicates the progress of volume onboarding operation",
 			},
 			"results": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of remote-copy relationship names in a volume group",
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"onboarded_volumes": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Number of volumes in volume group",
+							Description: "List of volumes which are onboarded successfully",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"volume_onboarding_failures": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of remote-copy relationship names in a volume group",
+							Type:     schema.TypeList,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"failure_message": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Indicates whether master/aux volume is playing the primary role",
+										Description: "The failure reason for the volumes which have failed to be onboarded",
 									},
 									"volumes": {
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Number of volumes in volume group",
+										Description: "List of volumes which have failed to be onboarded",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 								}},
@@ -99,7 +97,7 @@ func DataSourceIBMPIVolumeOnboarding() *schema.Resource {
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Indicates the relationship state",
+				Description: "Indicates the status of volume onboarding operation",
 			},
 		},
 	}

@@ -8,14 +8,14 @@ description: |-
 ---
 
 # ibm_pi_volume_flash_copy_mappings
-Retrieves information about volume flash copy mappings. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
+Retrieves information about flash copy mappings of a volume. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
 The following example retrieves information about flash copy mappings of a volume in Power Systems Virtual Server.
 
 ```terraform
 data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
-  pi_volume_name   = "volume-1"
+  pi_volume_name       = "volume-1"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
@@ -45,10 +45,10 @@ In addition to all argument reference list, you can access the following attribu
 - `flash_copy_mappings` - List of objects - The flash copy mappings details of a volume.
 
   Nested scheme for `flash_copy_mappings`:
-      - `copy_rate` - (Integer) Indicates the rate of flash copy operation of a volume.
-      - `flash_copy_name` - (String) Indicates flash copy name of the volume.
-      - `progress` - (Integer) Indicates the progress of flash copy operation.
-      - `source_volume_name` (String) Indicates name of the source volume.
-      - `start_time` - (String) Indicates the start time of flash copy operation.
-      - `status` - (String) Copy status of a volume.
-      - `target_volume_name` (String) Indicates name of the target volume.
+      - `copy_rate` - (Integer) The rate of flash copy operation of a volume.
+      - `flash_copy_name` - (String) The flash copy name of the volume.
+      - `progress` - (Integer) The progress of flash copy operation.
+      - `source_volume_name` (String) The name of the source volume.
+      - `start_time` - (String) The start time of flash copy operation.
+      - `status` - (String) The copy status of a volume.
+      - `target_volume_name` (String) The name of the target volume.
