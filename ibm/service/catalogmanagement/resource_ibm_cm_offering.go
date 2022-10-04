@@ -1730,12 +1730,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 				Optional:    true,
 				Description: "Determine if this offering should be displayed in the Consumption UI.",
 			},
-			"provider": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This argument is deprecated",
-				Description: "Deprecated - Provider of this offering.",
-			},
+			// "provider": &schema.Schema{
+			// 	Type:        schema.TypeString,
+			// 	Optional:    true,
+			// 	Deprecated:  "This argument is deprecated",
+			// 	Description: "Deprecated - Provider of this offering.",
+			// },
 			"provider_info": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -2315,9 +2315,9 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 	if _, ok := d.GetOk("hidden"); ok {
 		createOfferingOptions.SetHidden(d.Get("hidden").(bool))
 	}
-	if _, ok := d.GetOk("provider"); ok {
-		createOfferingOptions.SetProvider(d.Get("provider").(string))
-	}
+	// if _, ok := d.GetOk("provider"); ok {
+	// 	createOfferingOptions.SetProvider(d.Get("provider").(string))
+	// }
 	if _, ok := d.GetOk("provider_info"); ok {
 		providerInfoModel, err := resourceIBMCmOfferingMapToProviderInfo(d.Get("provider_info.0").(map[string]interface{}))
 		if err != nil {
@@ -2564,9 +2564,9 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("hidden", offering.Hidden); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting hidden: %s", err))
 	}
-	if err = d.Set("provider", offering.Provider); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provider: %s", err))
-	}
+	// if err = d.Set("provider", offering.Provider); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting provider: %s", err))
+	// }
 	if offering.ProviderInfo != nil {
 		providerInfoMap, err := resourceIBMCmOfferingProviderInfoToMap(offering.ProviderInfo)
 		if err != nil {

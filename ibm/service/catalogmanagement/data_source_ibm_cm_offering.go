@@ -1802,12 +1802,12 @@ func DataSourceIBMCmOffering() *schema.Resource {
 				Computed:    true,
 				Description: "Determine if this offering should be displayed in the Consumption UI.",
 			},
-			"provider": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This argument is deprecated",
-				Description: "Deprecated - Provider of this offering.",
-			},
+			// "provider": &schema.Schema{
+			// 	Type:        schema.TypeString,
+			// 	Computed:    true,
+			// 	Deprecated:  "This argument is deprecated",
+			// 	Description: "Deprecated - Provider of this offering.",
+			// },
 			"provider_info": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -2441,9 +2441,9 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting hidden: %s", err))
 	}
 
-	if err = d.Set("provider", offering.Provider); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting provider: %s", err))
-	}
+	// if err = d.Set("provider", offering.Provider); err != nil {
+	// 	return diag.FromErr(fmt.Errorf("Error setting provider: %s", err))
+	// }
 
 	providerInfo := []map[string]interface{}{}
 	if offering.ProviderInfo != nil {

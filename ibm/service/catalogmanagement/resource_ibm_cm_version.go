@@ -4,6 +4,7 @@
 package catalogmanagement
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -116,6 +117,12 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Computed:    true,
 				Description: "File used to on-board this version.",
 			},
+			"metadata": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Metadata used to import the VSI image",
+			},
 		},
 	}
 }
@@ -129,12 +136,11 @@ func resourceIBMCmVersionCreate(d *schema.ResourceData, meta interface{}) error 
 	importOfferingVersionOptions := catalogManagementClient.NewImportOfferingVersionOptions(d.Get("catalog_identifier").(string), d.Get("offering_id").(string))
 
 	if _, ok := d.GetOk("tags"); ok {
-		importOfferingVersionOptions.SetTags(d.Get("tags").([]string))
+		importOfferingVersionOptions.SetTags(SIToSS((d.Get("tags").([]interface{}))))
 	}
 	if _, ok := d.GetOk("target_kinds"); ok {
 		list := flex.ExpandStringList(d.Get("target_kinds").([]interface{}))
 		importOfferingVersionOptions.SetTargetKinds(list)
-
 	}
 	if _, ok := d.GetOk("content"); ok {
 		importOfferingVersionOptions.SetContent([]byte(d.Get("content").(string)))
@@ -144,6 +150,14 @@ func resourceIBMCmVersionCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	if _, ok := d.GetOk("target_version"); ok {
 		importOfferingVersionOptions.SetTargetVersion(d.Get("target_version").(string))
+	}
+	if _, ok := d.GetOk("metadata"); ok {
+		metadataMap := d.Get("metadata")
+		jsonString, _ := json.Marshal(metadataMap)
+
+		importOfferingMetadata := catalogmanagementv1.ImportOfferingBodyMetadata{}
+		json.Unmarshal(jsonString, &importOfferingMetadata)
+		importOfferingVersionOptions.SetMetadata(&importOfferingMetadata)
 	}
 
 	offering, response, err := catalogManagementClient.ImportOfferingVersion(importOfferingVersionOptions)
