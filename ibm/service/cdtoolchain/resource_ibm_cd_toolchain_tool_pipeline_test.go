@@ -86,8 +86,6 @@ func testAccCheckIBMCdToolchainToolPipelineConfigBasic(tcName string, rgID strin
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "name"
-				type = "tekton"
-				ui_pipeline = true
 			}
 		}
 	`, tcName, rgID)
@@ -105,8 +103,6 @@ func testAccCheckIBMCdToolchainToolPipelineConfig(tcName string, rgID string, na
 				toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 				parameters {
 					name = "name"
-					type = "tekton"
-					ui_pipeline = true
 				}
 				name = "%s"
 		}

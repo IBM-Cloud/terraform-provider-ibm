@@ -146,17 +146,17 @@ var Image_operating_system string
 var Tg_cross_network_account_id string
 var Tg_cross_network_id string
 
-//Enterprise Management
+// Enterprise Management
 var Account_to_be_imported string
 
 // Secuity and Complinace Center, Governance
 var Scc_gov_account_id string
 var Scc_resource_group_id string
 
-//Security and Compliance Center, SI
+// Security and Compliance Center, SI
 var Scc_si_account string
 
-//Security and Compliance Center, Posture Management
+// Security and Compliance Center, Posture Management
 var Scc_posture_scope_id string
 var Scc_posture_scan_id string
 var Scc_posture_profile_id string
@@ -172,18 +172,20 @@ var Scc_posture_collector_id_scope_update []string
 var Scc_posture_collector_id string
 var Scc_posture_credential_id string
 
-//ROKS Cluster
+// ROKS Cluster
 var ClusterName string
 
 // Satellite instance
 var Satellite_location_id string
 var Satellite_Resource_instance_id string
 
-//Dedicated host
+// Dedicated host
 var HostPoolID string
 
 // Continuous Delivery
 var CdResourceGroupID string
+var CdResourceGroupName string
+var CdAppConfigID string
 
 // VPN Server
 var ISCertificateCrn string
@@ -995,6 +997,16 @@ func init() {
 	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
 	if CdResourceGroupID == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdResourceGroupName = os.Getenv("IBM_CD_RESOURCE_GROUP_NAME")
+	if CdResourceGroupName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdAppConfigID = os.Getenv("IBM_CD_APPCONFIG_ID")
+	if CdAppConfigID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_APPCONFIG_ID for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
