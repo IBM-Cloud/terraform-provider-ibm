@@ -3318,8 +3318,9 @@ func ExpandCreateVolumeOnboarding(data []interface{}) ([]*pi.AuxiliaryVolumesFor
 
 func expandAuxiliaryVolumeForOnboarding(data []interface{}) []*pi.AuxiliaryVolumeForOnboarding {
 	auxVolumeForOnboarding := make([]*pi.AuxiliaryVolumeForOnboarding, 0)
-	var auxVolumeName, displayName string
+
 	for _, d := range data {
+		var auxVolumeName, displayName string
 		resource := d.(map[string]interface{})
 
 		if v, ok := resource["pi_auxiliary_volume_name"]; ok && v != "" {
