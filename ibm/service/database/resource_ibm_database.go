@@ -338,7 +338,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Description:  "User name",
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringLenBetween(5, 32),
+							ValidateFunc: validation.StringLenBetween(4, 32),
 						},
 						"password": {
 							Description:  "User password",
@@ -473,22 +473,19 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Description:  "Logical Replication Slot name",
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validate.ValidateCIDR,
+							Description: "Logical Replication Slot name",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"database_name": {
-							Description:  "Logical Replication Slot name",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
+							Description: "Logical Replication Slot name",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"plugin_type": {
-							Description:  "Logical Replication Slot name",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validate.ValidateCIDR,
+							Description: "Logical Replication Slot name",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 					},
 				},
@@ -1651,7 +1648,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), slot["name"], err))
+					"[ERROR] Error waiting for update of database (%s) logical replication (%s) create task to complete: %s", d.Id(), slot["name"], err))
 			}
 		}
 	}
@@ -2231,6 +2228,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		for _, change := range userChanges {
+			log.Printf("[DEBUG] userChanges %v", change)
 			// Update Database User password only
 			if change.Old != nil && change.New != nil {
 				// No change
@@ -2324,6 +2322,87 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
 						"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err))
+				}
+			}
+		}
+	}
+
+	if d.HasChange("logical_replication_slot") {
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		}
+
+		oldSlots, newSlots := d.GetChange("logical_replication_slot")
+		log.Printf("[DEBUG] HEY oldSlots %v newSlots %v", oldSlots, newSlots)
+		slotChanges := make(map[string]*userChange)
+		slotKey := func(raw map[string]interface{}) string {
+			return fmt.Sprintf("%s-%s", raw["name"].(string), raw["database_name"].(string))
+		}
+
+		for _, raw := range oldSlots.(*schema.Set).List() {
+			user := raw.(map[string]interface{})
+			k := slotKey(user)
+			slotChanges[k] = &userChange{Old: user}
+		}
+
+		for _, raw := range newSlots.(*schema.Set).List() {
+			user := raw.(map[string]interface{})
+			k := slotKey(user)
+			if _, ok := slotChanges[k]; !ok {
+				slotChanges[k] = &userChange{}
+			}
+			slotChanges[k].New = user
+		}
+
+		for _, change := range slotChanges {
+			log.Printf("[DEBUG] HEY change %v", change)
+			// Create New Logical Rep Slot
+			if change.New != nil {
+				slotEntry := &clouddatabasesv5.LogicalReplicationSlotLogicalReplicationSlot{
+					Name:         core.StringPtr(change.New["name"].(string)),
+					DatabaseName: core.StringPtr(change.New["database_name"].(string)),
+					PluginType:   core.StringPtr(change.New["plugin_type"].(string)),
+				}
+
+				createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+					ID:                     &instanceID,
+					LogicalReplicationSlot: slotEntry,
+				}
+
+				createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *slotEntry.Name, err, response))
+				}
+
+				taskID := *createLogicalRepSlotResponse.Task.ID
+				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *slotEntry.Name, err))
+				}
+			}
+
+			// Delete Old Logical Rep Slot
+			if change.Old != nil {
+				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
+					ID:   &instanceID,
+					Name: core.StringPtr(change.Old["name"].(string)),
+				}
+
+				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteDatabaseUserOptions)
+
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] DeleteDatabaseUser (%s) failed %s\n%s", *deleteDatabaseUserOptions.Name, err, response))
+				}
+
+				taskID := *deleteDatabaseUserResponse.Task.ID
+				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) delete task to complete: %s", icdId, *deleteDatabaseUserOptions.Name, err))
 				}
 			}
 		}
