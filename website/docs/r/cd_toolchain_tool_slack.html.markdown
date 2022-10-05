@@ -36,14 +36,14 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `channel_name` - (Required, String) The slack channel that notifications will be posted to.
+	* `channel_name` - (Required, String) The Slack channel that notifications will be posted to.
 	* `pipeline_fail` - (Optional, Boolean) Generate `pipeline failed` notifications.
 	  * Constraints: The default value is `true`.
 	* `pipeline_start` - (Optional, Boolean) Generate `pipeline start` notifications.
 	  * Constraints: The default value is `true`.
 	* `pipeline_success` - (Optional, Boolean) Generate `pipeline succeeded` notifications.
 	  * Constraints: The default value is `true`.
-	* `team_name` - (Optional, String) The slack team name, which is the word or phrase before _.slack.com_ in the team URL.
+	* `team_name` - (Optional, String) The Slack team name, which is the word or phrase before _.slack.com_ in the team URL.
 	* `toolchain_bind` - (Optional, Boolean) Generate `tool added to toolchain` notifications.
 	  * Constraints: The default value is `true`.
 	* `toolchain_unbind` - (Optional, Boolean) Generate `tool removed from toolchain` notifications.

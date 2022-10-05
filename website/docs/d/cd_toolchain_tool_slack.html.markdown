@@ -41,14 +41,14 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `channel_name` - (String) The slack channel that notifications will be posted to.
+	* `channel_name` - (String) The Slack channel that notifications will be posted to.
 	* `pipeline_fail` - (Boolean) Generate `pipeline failed` notifications.
 	  * Constraints: The default value is `true`.
 	* `pipeline_start` - (Boolean) Generate `pipeline start` notifications.
 	  * Constraints: The default value is `true`.
 	* `pipeline_success` - (Boolean) Generate `pipeline succeeded` notifications.
 	  * Constraints: The default value is `true`.
-	* `team_name` - (String) The slack team name, which is the word or phrase before _.slack.com_ in the team URL.
+	* `team_name` - (String) The Slack team name, which is the word or phrase before _.slack.com_ in the team URL.
 	* `toolchain_bind` - (Boolean) Generate `tool added to toolchain` notifications.
 	  * Constraints: The default value is `true`.
 	* `toolchain_unbind` - (Boolean) Generate `tool removed from toolchain` notifications.
