@@ -5,7 +5,6 @@ package directlink_test
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -88,7 +87,6 @@ func testAccCheckIBMDLRouteReportDestroy(s *terraform.State) error {
 }
 
 func testAccCheckIBMDLGatewayRouteReportExists(n string, vc string) resource.TestCheckFunc {
-	log.Printf("Inside testAccCheckIBMDLGatewayRouteReportExists :  %s", vc)
 	return func(s *terraform.State) error {
 		client, err := directlinkClient(acc.TestAccProvider.Meta())
 		if err != nil {
