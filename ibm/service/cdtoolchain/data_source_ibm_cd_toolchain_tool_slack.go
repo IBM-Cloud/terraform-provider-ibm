@@ -89,7 +89,7 @@ func DataSourceIBMCdToolchainToolSlack() *schema.Resource {
 						"channel_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The slack channel that notifications will be posted to.",
+							Description: "The Slack channel that notifications will be posted to.",
 						},
 						"pipeline_start": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -125,7 +125,7 @@ func DataSourceIBMCdToolchainToolSlack() *schema.Resource {
 						"team_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The slack team name, which is the word or phrase before _.slack.com_ in the team URL.",
+							Description: "The Slack team name, which is the word or phrase before _.slack.com_ in the team URL.",
 						},
 					},
 				},
