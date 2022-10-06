@@ -71,7 +71,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `creation_timestamp` - (String) The create-time of volume onboarding operation.
-- `id` - (String) The unique identifier of the volume attach. The ID is composed of `<power_instance_id>/<onboarding_id>`.
+- `id` - (String) The unique identifier of the volume attach. The ID is composed of `<pi_cloud_instance_id>/<onboarding_id>`.
 - `onboarding_id` (String) The onboarding ID.
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.
 - `status` - (String) The status of volume onboarding operation.
@@ -88,7 +88,7 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_pi_volume_onboarding` resource can be imported by using `power_instance_id` and `onboarding_id`.
+The `ibm_pi_volume_onboarding` resource can be imported by using `pi_cloud_instance_id` and `onboarding_id`.
 
 **Example**
 

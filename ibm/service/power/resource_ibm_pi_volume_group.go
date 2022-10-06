@@ -1,17 +1,18 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_volume_groups"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -131,13 +132,10 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set(PIVolumeGroupName, vg.Name)
 	d.Set("volume_group_id", vg.ID)
 	d.Set("volume_group_status", vg.Status)
 	d.Set(PIVolumeGroupConsistencyGroupName, vg.ConsistencyGroupName)
-	d.Set(PIVolumeGroupsVolumeIds, vg.VolumeIDs)
 	d.Set("replication_status", vg.ReplicationStatus)
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 
 	return nil
 }
@@ -258,7 +256,10 @@ func isIBMPIVolumeGroupDeleteRefreshFunc(client *st.IBMPIVolumeGroupClient, id s
 	return func() (interface{}, string, error) {
 		vg, err := client.Get(id)
 		if err != nil {
-			if strings.Contains(err.Error(), "volume-group does not exist") {
+			uErr := errors.Unwrap(err)
+			switch uErr.(type) {
+			case *p_cloud_volume_groups.PcloudVolumegroupsGetNotFound:
+				log.Printf("[DEBUG] volume-group does not exist while deleteing %v", err)
 				return vg, "deleted", nil
 			}
 			return nil, "", err

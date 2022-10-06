@@ -646,10 +646,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
 	}
 
-	Pi_replication_volume_name = os.Getenv("PI_REPLICTION_VOLUME_NAME")
+	Pi_replication_volume_name = os.Getenv("PI_REPLICATION_VOLUME_NAME")
 	if Pi_replication_volume_name == "" {
 		Pi_replication_volume_name = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_REPLICTION_VOLUME_NAME for testing ibm_pi_volume resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_REPLICATION_VOLUME_NAME for testing ibm_pi_volume resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_volume_group_name = os.Getenv("PI_VOLUME_GROUP_NAME")

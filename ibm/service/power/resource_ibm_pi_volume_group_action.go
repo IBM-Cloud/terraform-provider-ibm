@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
@@ -163,11 +163,10 @@ func resourceIBMPIVolumeGroupActionRead(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set(PIVolumeGroupID, vg.ID)
+
 	d.Set("volume_group_name", vg.Name)
 	d.Set("volume_group_status", vg.Status)
 	d.Set("replication_status", vg.ReplicationStatus)
-	d.Set(helpers.PICloudInstanceId, cloudInstanceID)
 
 	return nil
 }
