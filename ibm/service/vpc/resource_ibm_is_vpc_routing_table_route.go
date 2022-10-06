@@ -200,7 +200,7 @@ func ResourceIBMISVPCRoutingTableRouteValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
 			MinValue:                   "0",
-			MaxValue:                   "255"})
+			MaxValue:                   "4"})
 	ibmVPCRoutingTableRouteValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc_routing_table_route", Schema: validateSchema}
 	return &ibmVPCRoutingTableRouteValidator
 }
