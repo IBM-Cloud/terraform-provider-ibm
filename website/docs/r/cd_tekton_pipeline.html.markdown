@@ -31,7 +31,7 @@ Review the argument reference that you can specify for your resource.
 * `worker` - (Optional, List) Worker object containing worker ID only. If omitted the IBM Managed shared workers are used by default.
 Nested scheme for **worker**:
 	* `id` - (Required, String) ID of the worker.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(public)|(preview)|([-0-9a-fA-F]{36})$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,253}$/`.
 
 ## Attribute Reference
 
@@ -49,25 +49,25 @@ Nested scheme for **definitions**:
 	* `scm_source` - (List) SCM source for Tekton pipeline definition.
 	Nested scheme for **scm_source**:
 		* `branch` - (String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `path` - (String) The path to the definition's yaml files.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `service_instance_id` - (String) ID of the SCM repository service instance.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `tag` - (String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
 		* `url` - (Forces new resource, String) URL of the definition repository.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `enabled` - (Boolean) Flag whether this pipeline is enabled.
 * `name` - (String) String.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 * `properties` - (List) Tekton pipeline's environment properties.
-  * Constraints: The maximum length is `128` items. The minimum length is `0` items.
+  * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed when using `single_select` property type.
-	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 	* `name` - (Forces new resource, String) Property name.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 	* `type` - (String) Property type.
@@ -93,7 +93,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 	* `disabled` - (Boolean) Flag whether the trigger is disabled. If omitted the trigger is enabled by default.
 	* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `events` - (List) Only needed for Git triggers. Events object defines the events to which this Git trigger listens.
 	Nested scheme for **events**:
 		* `pull_request` - (Boolean) If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.
@@ -105,16 +105,16 @@ Nested scheme for **triggers**:
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.
 	* `name` - (String) Trigger name.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 	* `properties` - (List) Trigger properties.
 	  * Constraints: The maximum length is `128` items. The minimum length is `0` items.
 	Nested scheme for **properties**:
 		* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
-		  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
+		  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `256` items. The minimum length is `0` items.
 		* `href` - (String) API URL for interacting with the trigger property.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `name` - (Forces new resource, String) Property name.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,234}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `path` - (String) A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/./`.
 		* `type` - (String) Property type.
@@ -125,11 +125,11 @@ Nested scheme for **triggers**:
 	Nested scheme for **scm_source**:
 		* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
 		* `branch` - (String) Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `pattern` - (String) Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,253}$/`.
 		* `service_instance_id` - (String) ID of the repository service instance.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
@@ -139,7 +139,7 @@ Nested scheme for **triggers**:
 		* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
 		  * Constraints: Allowable values are: `md4`, `md5`, `sha1`, `sha256`, `sha384`, `sha512`, `sha512_224`, `sha512_256`, `ripemd160`.
 		* `key_name` - (String) Secret name, not needed if type is `internal_validation`.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `source` - (String) Secret location, not needed if secret type is `internal_validation`.
 		  * Constraints: Allowable values are: `header`, `payload`, `query`.
 		* `type` - (String) Secret type.
@@ -147,9 +147,9 @@ Nested scheme for **triggers**:
 		* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 	* `tags` - (List) Trigger tags array.
-	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`. The maximum length is `128` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
 	* `timezone` - (String) Only needed for timer triggers. Timezone for timer trigger.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_., \/]{1,234}$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_., \/]{1,253}$/`.
 	* `type` - (String) Trigger type.
 	  * Constraints: Allowable values are: .
 	* `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
@@ -157,11 +157,11 @@ Nested scheme for **triggers**:
 	* `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
 	Nested scheme for **worker**:
 		* `id` - (Forces new resource, String) ID of the worker.
-		  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^(public)|(preview)|([-0-9a-fA-F]{36})$/`.
+		  * Constraints: The maximum length is `36` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z]{1,36}$/`.
 		* `name` - (String) Name of the worker. Computed based on the worker ID.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_. \\(\\)\\[\\]]{1,253}$/`.
 		* `type` - (String) Type of the worker. Computed based on the worker ID.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,235}$/`.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 * `updated_at` - (String) Standard RFC 3339 Date Time String.
 
 ## Provider Configuration

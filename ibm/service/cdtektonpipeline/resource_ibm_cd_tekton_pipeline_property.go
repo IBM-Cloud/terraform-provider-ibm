@@ -86,7 +86,7 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,234}$`,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
