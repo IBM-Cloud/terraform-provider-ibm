@@ -38,7 +38,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart", "flex",
+	"standard", "vault", "cold", "smart", "flex", "onerate_active",
 }
 
 var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
@@ -115,8 +115,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				// ValidateFunc:  validate.ValidateAllowedStringValues(singleSiteLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "cross_region_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
-				Description:   "single site location info",
+				//RequiredWith:  []string{"storage_class"},
+				Description: "single site location info",
 			},
 			"region_location": {
 				Type:     schema.TypeString,
@@ -124,8 +124,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				//ValidateFunc:  validate.ValidateAllowedStringValues(regionLocation),
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
-				Description:   "Region Location info.",
+				//RequiredWith:  []string{"storage_class"},
+				Description: "Region Location info.",
 			},
 			"cross_region_location": {
 				Type:     schema.TypeString,
@@ -134,8 +134,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "cross_region_location"),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
-				Description:   "Cros region location info",
+				//RequiredWith:  []string{"storage_class"},
+				Description: "Cros region location info",
 			},
 			"storage_class": {
 				Type:          schema.TypeString,
@@ -481,7 +481,7 @@ func ResourceIBMCOSBucketValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "standard,vault,cold,smart,flex",
+			AllowedValues:              "standard,vault,cold,smart,flex,onerate_active",
 		})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1291,9 +1291,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		apiType = "sl"
 	}
 
-	if bLocation == "" {
-		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location` or `satellite_location_id`")
-	}
+	// if bLocation == "" {
+	// 	return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location` or `satellite_location_id`")
+	// }
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 
 	var endpointType = d.Get("endpoint_type").(string)
@@ -1321,7 +1321,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var create *s3.CreateBucketInput
-	if satlc_id != "" {
+	if satlc_id != "" || storageClass == "" {
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
 		}

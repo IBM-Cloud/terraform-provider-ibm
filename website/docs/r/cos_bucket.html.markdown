@@ -374,6 +374,31 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 ```
 
+
+
+# COS One-rate plan
+
+## Example usage
+
+```terraform
+resource "ibm_resource_instance" "cos_instance_onerate" {
+  name              = "cos-instance-onerate"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "cos-one-rate-plan"
+  location          = "global"
+}
+resource "ibm_cos_bucket" "cos_bucket_onerate" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-south"
+  storage_class         = "onerate_active"
+  }
+
+
+```
+
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 

@@ -42,7 +42,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart",
+	"standard", "vault", "cold", "smart", "onerate_active",
 }
 
 var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
@@ -912,6 +912,57 @@ func TestAccIBMCosBucket_Satellite_Object_Versioning(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_OneRate_With_Storageclass(t *testing.T) {
+
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "onerate_active"
+	bucketRegionType := "region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Onerate_With_Storageclass(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
+
+// func TestAccIBMCosBucket_OneRate_Without_Storage_class(t *testing.T) {
+
+// 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+// 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+// 	bucketRegion := "us-south"
+// 	//bucketClass := "onerate_active"
+// 	bucketRegionType := "region_location"
+
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:     func() { acc.TestAccPreCheck(t) },
+// 		Providers:    acc.TestAccProviders,
+// 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName, bucketName, bucketRegionType, bucketRegion),
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+// 					//resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 func testAccCheckIBMCosBucketDestroy(s *terraform.State) error {
 
 	var s3Conf *aws.Config
@@ -1171,6 +1222,57 @@ func testAccCheckIBMCosBucket_basic(serviceName string, bucketName string, regio
 		  
 	`, serviceName, bucketName, storageClass, region)
 }
+
+func testAccCheckIBMCosBucket_Onerate_With_Storageclass(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
+	  
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
+	  
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		storage_class        = "%s"
+		region_location = "%s"
+	}
+	  
+		  
+	`, serviceName, bucketName, storageClass, region)
+}
+
+// func testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName string, bucketName string, regiontype string, region string) string {
+
+// 	return fmt.Sprintf(`
+// 	data "ibm_resource_group" "group" {
+// 		is_default=true
+// 	}
+
+// 	resource "ibm_resource_instance" "instance" {
+// 		name              = "%s"
+// 		service           = "cloud-object-storage"
+// 		plan              = "cos-one-rate-plan"
+// 		location          = "global"
+// 		resource_group_id = data.ibm_resource_group.group.id
+// 	}
+
+// 	resource "ibm_cos_bucket" "bucket" {
+// 		bucket_name          = "%s"
+// 		resource_instance_id = ibm_resource_instance.instance.id
+// 		region_location = "%s"
+// 	}
+
+// 	`, serviceName, bucketName, region)
+// }
+
 func testAccCheckIBMCosBucket_allowedip(serviceName string, bucketName string, regiontype string, region string, storageClass string, allowedIp1 string, allowedIp2 string) string {
 
 	return fmt.Sprintf(`
