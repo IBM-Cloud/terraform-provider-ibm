@@ -102,21 +102,35 @@ func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 }
 
 func testAccCheckIBMPIVolumeGroupConfig(name string) string {
-	return fmt.Sprintf(`
+	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
 	resource "ibm_pi_volume_group" "power_volume_group"{
 		pi_volume_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = ["5f5c4c58-1657-433d-9556-85dc8fd97583","8tec4c58-1657-433d-9556-85dc8fd97583"]
+		pi_volume_ids              = [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
 	  }
 	`, name, acc.Pi_cloud_instance_id)
 }
 
 func testAccCheckIBMPIVolumeGroupUpdateConfig(name string) string {
-	return fmt.Sprintf(`
+	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
 	resource "ibm_pi_volume_group" "power_volume_group"{
 		pi_volume_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
-		pi_volume_ids              = ["q2mc4c58-1657-433d-9556-85dc8fd97583"]
+		pi_volume_ids              = [ibm_pi_volume.power_volume[2].volume_id]
 	  }
 	`, name, acc.Pi_cloud_instance_id)
+}
+
+func volumeConfig(name, cloud_instance_id string) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume" {
+	count = 3
+	pi_volume_size       = 2
+	pi_volume_name       = "%[1]s-${count.index}"
+	pi_volume_shareable  = true
+	pi_volume_pool       = "Tier1-Flash-1"
+	pi_cloud_instance_id = "%[2]s"
+	pi_replication_enabled = true
+	 }
+	`, name, cloud_instance_id)
 }
