@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -139,9 +137,14 @@ func dataSourceIBMPIVolumeRemoteCopyRelationshipsReads(ctx context.Context, d *s
 	d.Set("name", volData.Name)
 	d.Set("primary_role", volData.PrimaryRole)
 	d.Set("progress", volData.Progress)
-	d.Set("remote_copy_id", volData.RemoteCopyID)
 	d.Set("state", volData.State)
 	d.Set("sync", volData.Sync)
+	if volData.RemoteCopyID != nil {
+		d.Set("remote_copy_id", volData.RemoteCopyID)
+	}
+	if volData.Name != nil {
+		d.Set("name", volData.Name)
+	}
 
 	return nil
 }

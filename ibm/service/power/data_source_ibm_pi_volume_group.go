@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -47,33 +45,29 @@ func DataSourceIBMPIVolumeGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status_description": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"errors": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"message": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"vol_ids": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-									},
-								},
-							},
-						},
-					},
+			"status_description_errors": vgStatusDescriptionErrors(),
+		},
+	}
+}
+
+func vgStatusDescriptionErrors() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeSet,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"message": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"vol_ids": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
 			},
 		},
@@ -98,13 +92,13 @@ func dataSourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("consistency_group_name", vgData.ConsistencyGroupName)
 	d.Set("replication_status", vgData.ReplicationStatus)
 	if vgData.StatusDescription != nil {
-		d.Set("status_description", flattenVolumeGroupStatusDescription(vgData.StatusDescription.Errors))
+		d.Set("status_description_errors", flattenVolumeGroupStatusDescription(vgData.StatusDescription.Errors))
 	}
 
 	return nil
 }
 
-func flattenVolumeGroupStatusDescription(list []*models.StatusDescriptionError) (networks []map[string]interface{}) {
+func flattenVolumeGroupStatusDescription(list []*models.StatusDescriptionError) (errors []map[string]interface{}) {
 	if list != nil {
 		errors := make([]map[string]interface{}, len(list))
 		for i, data := range list {
@@ -116,11 +110,7 @@ func flattenVolumeGroupStatusDescription(list []*models.StatusDescriptionError) 
 
 			errors[i] = l
 		}
-		result := make([]map[string]interface{}, 0)
-		result = append(result, map[string]interface{}{
-			"errors": errors,
-		})
-		return result
+		return errors
 	}
 	return
 }

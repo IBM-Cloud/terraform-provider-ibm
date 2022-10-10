@@ -46,12 +46,9 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the volume group.
 - `replication_status` - (String) The replication status of volume group.
 - `status` - (String) The status of the volume group.
-- `status_description` - List of objects - The status details of the volume group.
+- `status_description_errors` - List of objects - The status details of the volume group.
 
-  Nested scheme for `status_description`:
-  - `errors` - List of objects - The error status details of a volume group.
-
-    Nested scheme for `errors`:
-    - `key` - (String) The volume group error key.
-    - `message` - (String) The failure message providing more details about the error key.
-    - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.
+  Nested scheme for `status_description_errors`:
+  - `key` - (String) The volume group error key.
+  - `message` - (String) The failure message providing more details about the error key.
+  - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.

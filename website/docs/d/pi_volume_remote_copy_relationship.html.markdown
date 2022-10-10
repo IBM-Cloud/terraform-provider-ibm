@@ -2,19 +2,19 @@
 
 subcategory: "Power Systems"
 layout: "ibm"
-page_title: "IBM: pi_volume_remote_copy_replationship"
+page_title: "IBM: pi_volume_remote_copy_relationship"
 description: |-
-  Manages a remote copy replationship of a volume in the Power Virtual Server cloud.
+  Manages a remote copy relationship of a volume in the Power Virtual Server cloud.
 ---
 
-# ibm_pi_volume_group_remote_copy_replationships
-Retrieves information about remote copy replationship of a volume. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
+# ibm_pi_volume_remote_copy_relationship
+Retrieves information about remote copy relationship of a volume. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
-The following example retrieves information about about remote copy replationship of a volume in Power Systems Virtual Server.
+The following example retrieves information about about remote copy relationship of a volume in Power Systems Virtual Server.
 
 ```terraform
-data "ibm_pi_volume_remote_copy_relatiosnhsip" "ds_volume_remote_copy_relatiosnhsip" {
+data "ibm_pi_volume_remote_copy_relationship" "ds_volume_remote_copy_relationships" {
   pi_volume_name       = "volume-1"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }

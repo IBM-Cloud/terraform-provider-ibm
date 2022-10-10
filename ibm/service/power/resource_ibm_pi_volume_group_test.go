@@ -125,11 +125,11 @@ func volumeConfig(name, cloud_instance_id string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_volume" "power_volume" {
 	count = 3
-	pi_volume_size       = 2
-	pi_volume_name       = "%[1]s-${count.index}"
-	pi_volume_shareable  = true
-	pi_volume_pool       = "Tier1-Flash-1"
-	pi_cloud_instance_id = "%[2]s"
+	pi_volume_size         = 2
+	pi_volume_name         = "%[1]s-${count.index}"
+	pi_volume_shareable    = true
+	pi_volume_pool         = "Tier1-Flash-1"
+	pi_cloud_instance_id   = "%[2]s"
 	pi_replication_enabled = true
 	 }
 	`, name, cloud_instance_id)

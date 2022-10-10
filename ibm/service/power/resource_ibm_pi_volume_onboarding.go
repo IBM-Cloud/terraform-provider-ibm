@@ -12,7 +12,6 @@ import (
 	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -110,37 +109,29 @@ func ResourceIBMPIVolumeOnboarding() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the progress of volume onboarding operation",
 			},
-			"results": {
+			"results_onboarded_volumess": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of volumes which are onboarded successfully",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"results_volume_onboarding_failures": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"onboarded_volumes": {
+						"failure_message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The failure reason for the volumes which have failed to be onboarded",
+						},
+						"volumes": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "List of volumes which are onboarded successfully",
+							Description: "List of volumes which have failed to be onboarded",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
-						"volume_onboarding_failures": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"failure_message": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The failure reason for the volumes which have failed to be onboarded",
-									},
-									"volumes": {
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "List of volumes which have failed to be onboarded",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-								}},
-						},
-					},
-				},
+					}},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -159,7 +150,7 @@ func resourceIBMPIVolumeOnboardingCreate(ctx context.Context, d *schema.Resource
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	client := st.NewIBMPIVolumeOnboardingClient(ctx, sess, cloudInstanceID)
 
-	vol, err := flex.ExpandCreateVolumeOnboarding(d.Get(piOnboardingVolumes).([]interface{}))
+	vol, err := expandCreateVolumeOnboarding(d.Get(piOnboardingVolumes).([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +197,8 @@ func resourceIBMPIVolumeOnboardingRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("input_volumes", onboardingData.InputVolumes)
 	d.Set("progress", onboardingData.Progress)
 	d.Set("status", onboardingData.Status)
-	d.Set("results", flattenVolumeOnboardingResults(onboardingData.Results))
+	d.Set("results_onboarded_volumess", onboardingData.Results.OnboardedVolumes)
+	d.Set("results_volume_onboarding_failures", flattenVolumeOnboardingFailures(onboardingData.Results.VolumeOnboardingFailures))
 	return nil
 }
 
@@ -214,4 +206,60 @@ func resourceIBMPIVolumeOnboardingDelete(ctx context.Context, d *schema.Resource
 	// There is no delete or unset concept for instance action
 	d.SetId("")
 	return nil
+}
+
+// expandCreateVolumeOnboarding expands create volume onboarding resource
+func expandCreateVolumeOnboarding(data []interface{}) ([]*models.AuxiliaryVolumesForOnboarding, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("[ERROR] no pi_onboarding_volumes received")
+	}
+
+	auxVolForOnboarding := make([]*models.AuxiliaryVolumesForOnboarding, 0)
+
+	for _, d := range data {
+		resource := d.(map[string]interface{})
+
+		var crn string
+		auxVolumes := make([]interface{}, 0)
+
+		if v, ok := resource["pi_source_crn"]; ok && v != "" {
+			crn = resource["pi_source_crn"].(string)
+		}
+
+		if v, ok := resource["pi_auxiliary_volumes"]; ok && len(v.([]interface{})) != 0 {
+			auxVolumes = resource["pi_auxiliary_volumes"].([]interface{})
+		}
+
+		auxVolForOnboarding = append(auxVolForOnboarding, &models.AuxiliaryVolumesForOnboarding{
+			SourceCRN:        &crn,
+			AuxiliaryVolumes: expandAuxiliaryVolumeForOnboarding(auxVolumes),
+		})
+
+	}
+
+	return auxVolForOnboarding, nil
+}
+
+func expandAuxiliaryVolumeForOnboarding(data []interface{}) []*models.AuxiliaryVolumeForOnboarding {
+	auxVolumeForOnboarding := make([]*models.AuxiliaryVolumeForOnboarding, 0)
+
+	for _, d := range data {
+		var auxVolumeName, displayName string
+		resource := d.(map[string]interface{})
+
+		if v, ok := resource["pi_auxiliary_volume_name"]; ok && v != "" {
+			auxVolumeName = resource["pi_auxiliary_volume_name"].(string)
+		}
+
+		if v, ok := resource["pi_display_name"]; ok && v != "" {
+			displayName = resource["pi_display_name"].(string)
+		}
+
+		auxVolumeForOnboarding = append(auxVolumeForOnboarding, &models.AuxiliaryVolumeForOnboarding{
+			AuxVolumeName: &auxVolumeName,
+			Name:          displayName,
+		})
+	}
+
+	return auxVolumeForOnboarding
 }

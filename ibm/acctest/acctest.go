@@ -661,7 +661,7 @@ func init() {
 	Pi_volume_group_id = os.Getenv("PI_VOLUME_GROUP_ID")
 	if Pi_volume_group_id == "" {
 		Pi_volume_group_id = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_VOLUME_GROUP_ID for testing ibm_pi_volume_group resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_GROUP_ID for testing ibm_pi_volume_group_storage_details data source else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_volume_onboarding_id = os.Getenv("PI_VOLUME_ONBOARDING_ID")

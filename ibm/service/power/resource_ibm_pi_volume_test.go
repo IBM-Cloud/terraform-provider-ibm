@@ -208,11 +208,11 @@ func testAccCheckIBMPIVolumeGRSUpdateConfig(name string) string {
 func testAccCheckIBMPIVolumeGRSBasicConfig(name, piCloudInstanceId, piStoragePool string, replicationEnabled bool) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_volume" "power_volume"{
-		pi_volume_size       = 20
-		pi_volume_name       = "%[1]s"
-		pi_volume_pool       = "%[3]s"
-		pi_volume_shareable  = true
-		pi_cloud_instance_id = "%[2]s"
+		pi_volume_size         = 20
+		pi_volume_name         = "%[1]s"
+		pi_volume_pool         = "%[3]s"
+		pi_volume_shareable    = true
+		pi_cloud_instance_id   = "%[2]s"
 		pi_replication_enabled = %[4]v
 	  }
 	`, name, piCloudInstanceId, piStoragePool, replicationEnabled)

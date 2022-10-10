@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -46,35 +44,7 @@ func DataSourceIBMPIVolumeGroupDetails() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status_description": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"errors": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"message": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"vol_ids": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"status_description_errors": vgStatusDescriptionErrors(),
 			"volume_ids": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -103,7 +73,7 @@ func dataSourceIBMPIVolumeGroupDetailsRead(ctx context.Context, d *schema.Resour
 	d.Set("replication_status", vgData.ReplicationStatus)
 	d.Set("volume_ids", vgData.VolumeIDs)
 	if vgData.StatusDescription != nil {
-		d.Set("status_description", flattenVolumeGroupStatusDescription(vgData.StatusDescription.Errors))
+		d.Set("status_description_errors", flattenVolumeGroupStatusDescription(vgData.StatusDescription.Errors))
 	}
 
 	return nil

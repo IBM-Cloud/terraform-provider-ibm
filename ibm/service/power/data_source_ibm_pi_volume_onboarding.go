@@ -4,10 +4,7 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -62,37 +59,29 @@ func DataSourceIBMPIVolumeOnboarding() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the progress of volume onboarding operation",
 			},
-			"results": {
+			"results_onboarded_volumes": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of volumes which are onboarded successfully",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"results_volume_onboarding_failures": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"onboarded_volumes": {
+						"failure_message": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The failure reason for the volumes which have failed to be onboarded",
+						},
+						"volumes": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "List of volumes which are onboarded successfully",
+							Description: "List of volumes which have failed to be onboarded",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
-						"volume_onboarding_failures": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"failure_message": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The failure reason for the volumes which have failed to be onboarded",
-									},
-									"volumes": {
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "List of volumes which have failed to be onboarded",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-								}},
-						},
-					},
-				},
+					}},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -122,23 +111,13 @@ func dataSourceIBMPIVolumeOnboardingReads(ctx context.Context, d *schema.Resourc
 	d.Set("input_volumes", volOnboarding.InputVolumes)
 	d.Set("progress", volOnboarding.Progress)
 	d.Set("status", volOnboarding.Status)
-	d.Set("results", flattenVolumeOnboardingResults(volOnboarding.Results))
+	d.Set("results_onboarded_volumes", volOnboarding.Results.OnboardedVolumes)
+	d.Set("results_volume_onboarding_failures", flattenVolumeOnboardingFailures(volOnboarding.Results.VolumeOnboardingFailures))
 
 	return nil
 }
 
-func flattenVolumeOnboardingResults(res *models.VolumeOnboardingResults) []map[string]interface{} {
-	log.Printf("Calling the flattenVolumeOnboardingResults")
-	result := make([]map[string]interface{}, 0)
-	result = append(result, map[string]interface{}{
-		"onboarded_volumes":          res.OnboardedVolumes,
-		"volume_onboarding_failures": flattenVolumeOnboardingFailures(res.VolumeOnboardingFailures),
-	})
-
-	return result
-}
-
-func flattenVolumeOnboardingFailures(list []*models.VolumeOnboardingFailure) (networks []map[string]interface{}) {
+func flattenVolumeOnboardingFailures(list []*models.VolumeOnboardingFailure) (result []map[string]interface{}) {
 	if list != nil {
 		result := make([]map[string]interface{}, len(list))
 		for i, data := range list {

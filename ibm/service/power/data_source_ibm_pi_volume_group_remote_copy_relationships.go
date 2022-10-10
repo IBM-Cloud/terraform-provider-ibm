@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 	"log"
 
@@ -151,12 +149,16 @@ func flattenVolumeGroupRemoteCopyRelationships(list []*models.RemoteCopyRelation
 			"freeze_time":                i.FreezeTime.String(),
 			"master_changed_volume_name": i.MasterChangedVolumeName,
 			"master_volume_name":         i.MasterVolumeName,
-			"name":                       i.Name,
 			"primary_role":               i.PrimaryRole,
 			"progress":                   i.Progress,
-			"remote_copy_id":             i.RemoteCopyID,
 			"state":                      i.State,
 			"sync":                       i.Sync,
+		}
+		if i.Name != nil {
+			l["name"] = i.Name
+		}
+		if i.RemoteCopyID != nil {
+			l["remote_copy_id"] = i.RemoteCopyID
 		}
 
 		result = append(result, l)

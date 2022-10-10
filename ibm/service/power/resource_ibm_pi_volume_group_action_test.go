@@ -73,8 +73,8 @@ func testAccCheckIBMPIVolumeGroupActionExists(n string) resource.TestCheckFunc {
 func testAccCheckIBMPIVolumeGroupStopActionConfig(name string) string {
 	return testAccCheckIBMPIVolumeGroupConfig(name) + fmt.Sprintf(`
 	  resource "ibm_pi_volume_group_action" "power_volume_group_action" {
-		pi_cloud_instance_id = "%[1]s"
-		pi_volume_group_id = ibm_pi_volume_group.power_volume_group.volume_group_id
+		pi_cloud_instance_id   = "%[1]s"
+		pi_volume_group_id     = ibm_pi_volume_group.power_volume_group.volume_group_id
 		pi_volume_group_action {
 			stop {
 				access = true

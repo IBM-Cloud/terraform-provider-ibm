@@ -7,7 +7,7 @@ description: |-
   Manages a volume onboarding in the Power Virtual Server cloud.
 ---
 
-# ibm_pi_volume_onboardings
+# ibm_pi_volume_onboarding
 Retrieves information about volume onboarding. For more information, about managing a volume group, see [moving data to the cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-moving-data-to-the-cloud).
 
 ## Example usage
@@ -48,12 +48,9 @@ In addition to all argument reference list, you can access the following attribu
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.
 - `status` - (String) The status of volume onboarding operation.
 - `progress` - (String) The progress of volume onboarding operation.
-- `results` - List of objects - The result of volume onboarding.
+- `results_onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.
+- `results_volume_onboarding_failures` - List of objects - The volume onboarding failure details.
 
-  Nested scheme for `results`:
-    - `onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.
-    - `volume_onboarding_failures` - List of objects - The volume onboarding failure details.
-
-      Nested scheme for `results`:
-      - `failure_message` - (String) The failure reason for the volumes which have failed to be onboarded.
-      - `volumes` - (List of strings) List of volumes which have failed to be onboarded.
+  Nested scheme for `results_volume_onboarding_failures`:
+  - `failure_message` - (String) The failure reason for the volumes which have failed to be onboarded.
+  - `volumes` - (List of strings) List of volumes which have failed to be onboarded.

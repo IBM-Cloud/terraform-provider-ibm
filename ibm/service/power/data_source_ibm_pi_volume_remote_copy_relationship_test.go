@@ -20,7 +20,7 @@ func TestAccIBMPIVolumeRemoteCopyRelationshipDataSource_basics(t *testing.T) {
 			{
 				Config: testAccCheckIBMPIVolumeRemoteCopyRelationshipsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_remote_copy_relatiosnhsip.testacc_volume_remote_copy_relationship", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pi_volume_remote_copy_relationship.testacc_volume_remote_copy_relationship", "id"),
 				),
 			},
 		},
@@ -29,9 +29,9 @@ func TestAccIBMPIVolumeRemoteCopyRelationshipDataSource_basics(t *testing.T) {
 
 func testAccCheckIBMPIVolumeRemoteCopyRelationshipsDataSourceConfig() string {
 	return fmt.Sprintf(`
-data "ibm_pi_volume_remote_copy_relatiosnhsip" "testacc_volume_remote_copy_relationship" {
+data "ibm_pi_volume_remote_copy_relationship" "testacc_volume_remote_copy_relationship" {
     pi_cloud_instance_id = "%s"
-	pi_volume_name = "%s"
+	pi_volume_name       = "%s"
 }`, acc.Pi_cloud_instance_id, acc.Pi_volume_name)
 
 }

@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 	"log"
 
@@ -56,35 +54,7 @@ func DataSourceIBMPIVolumeGroupsDetails() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status_description": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"errors": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"message": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"vol_ids": {
-													Type:     schema.TypeList,
-													Computed: true,
-													Elem:     &schema.Schema{Type: schema.TypeString},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
+						"status_description_errors": vgStatusDescriptionErrors(),
 						"volume_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -121,13 +91,13 @@ func flattenVolumeGroupsDetails(list []*models.VolumeGroupDetails) []map[string]
 	result := make([]map[string]interface{}, 0, len(list))
 	for _, i := range list {
 		l := map[string]interface{}{
-			"id":                     *i.ID,
-			"replication_status":     i.ReplicationStatus,
-			"consistency_group_name": i.ConsistencyGroupName,
-			"status":                 i.Status,
-			"status_description":     flattenVolumeGroupStatusDescription(i.StatusDescription.Errors),
-			"volume_group_name":      i.Name,
-			"volume_ids":             i.VolumeIDs,
+			"id":                        *i.ID,
+			"replication_status":        i.ReplicationStatus,
+			"consistency_group_name":    i.ConsistencyGroupName,
+			"status":                    i.Status,
+			"status_description_errors": flattenVolumeGroupStatusDescription(i.StatusDescription.Errors),
+			"volume_group_name":         i.Name,
+			"volume_ids":                i.VolumeIDs,
 		}
 
 		result = append(result, l)

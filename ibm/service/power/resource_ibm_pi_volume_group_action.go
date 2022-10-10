@@ -10,11 +10,12 @@ import (
 
 	st "github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
+	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/softlayer/softlayer-go/sl"
 )
 
 func ResourceIBMPIVolumeGroupAction() *schema.Resource {
@@ -122,7 +123,7 @@ func resourceIBMPIVolumeGroupActionCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	vgID := d.Get(PIVolumeGroupID).(string)
-	vgAction, err := flex.ExpandVolumeGroupAction(d.Get(PIVolumeGroupAction).([]interface{}))
+	vgAction, err := expandVolumeGroupAction(d.Get(PIVolumeGroupAction).([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,4 +176,66 @@ func resourceIBMPIVolumeGroupActionDelete(ctx context.Context, d *schema.Resourc
 	// There is no delete or unset concept for instance action
 	d.SetId("")
 	return nil
+}
+
+// expandVolumeGroupAction retrieve volume group action resource
+func expandVolumeGroupAction(data []interface{}) (*models.VolumeGroupAction, error) {
+	if len(data) == 0 {
+		return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+	}
+
+	vgAction := models.VolumeGroupAction{}
+	action := data[0].(map[string]interface{})
+
+	if v, ok := action["start"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Start = expandVolumeGroupStartAction(action["start"].([]interface{}))
+		return &vgAction, nil
+	}
+
+	if v, ok := action["stop"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Stop = expandVolumeGroupStopAction(action["stop"].([]interface{}))
+		return &vgAction, nil
+	}
+
+	if v, ok := action["reset"]; ok && len(v.([]interface{})) != 0 {
+		vgAction.Reset = expandVolumeGroupResetAction(action["reset"].([]interface{}))
+		return &vgAction, nil
+	}
+	return nil, fmt.Errorf("[ERROR] no pi_volume_group_action received")
+}
+
+func expandVolumeGroupStartAction(start []interface{}) *models.VolumeGroupActionStart {
+	if len(start) == 0 {
+		return nil
+	}
+
+	s := start[0].(map[string]interface{})
+
+	return &models.VolumeGroupActionStart{
+		Source: sl.String(s["source"].(string)),
+	}
+}
+
+func expandVolumeGroupStopAction(stop []interface{}) *models.VolumeGroupActionStop {
+	if len(stop) == 0 {
+		return nil
+	}
+
+	s := stop[0].(map[string]interface{})
+
+	return &models.VolumeGroupActionStop{
+		Access: sl.Bool(s["access"].(bool)),
+	}
+}
+
+func expandVolumeGroupResetAction(reset []interface{}) *models.VolumeGroupActionReset {
+	if len(reset) == 0 {
+		return nil
+	}
+
+	s := reset[0].(map[string]interface{})
+
+	return &models.VolumeGroupActionReset{
+		Status: sl.String(s["status"].(string)),
+	}
 }

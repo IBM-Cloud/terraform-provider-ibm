@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 	"log"
 
@@ -110,12 +108,14 @@ func flattenVolumeFlashCopyMappings(list []*models.FlashCopyMapping) []map[strin
 	for _, i := range list {
 		l := map[string]interface{}{
 			"copy_rate":          i.CopyRate,
-			"flash_copy_name":    i.FlashCopyName,
 			"progress":           i.Progress,
 			"source_volume_name": i.SourceVolumeName,
 			"start_time":         i.StartTime.String(),
 			"status":             i.Status,
 			"target_volume_name": i.TargetVolumeName,
+		}
+		if i.FlashCopyName != nil {
+			l["flash_copy_name"] = i.FlashCopyName
 		}
 
 		result = append(result, l)

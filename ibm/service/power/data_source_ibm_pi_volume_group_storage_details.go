@@ -4,8 +4,6 @@
 package power
 
 import (
-	//"fmt"
-
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
