@@ -45,9 +45,9 @@ var storageClass = []string{
 	"standard", "vault", "cold", "smart", "onerate_active",
 }
 
-var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,14}$")
-var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z]{4,14}$")
-var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{4,14}$")
+var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z_a-z]{4,14}$")
+var regionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{2,5}[0-9]?-[a-z_a-z]{4,14}$")
+var crossRegionLocationRegex = regexp.MustCompile("^[a-z]{2}-[a-z_a-z]{4,14}$")
 
 func TestAccIBMCosBucket_Basic(t *testing.T) {
 
