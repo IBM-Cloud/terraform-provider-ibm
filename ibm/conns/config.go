@@ -1769,12 +1769,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// APP CONFIGURATION Service
-	if c.Visibility == "private" {
-		session.appConfigurationClientErr = fmt.Errorf("[ERROR] App Configuration Service API doesnot support private endpoints")
+	appconfigurl := ContructEndpoint(fmt.Sprintf("%s", c.Region), fmt.Sprintf("%s.apprapp.", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		appconfigurl = ContructEndpoint(fmt.Sprintf("%s.private", c.Region), fmt.Sprintf("%s.apprapp", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		appconfigurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, appconfigurl)
 	}
 	appConfigurationClientOptions := &appconfigurationv1.AppConfigurationV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_ENDPOINT"}, appconfigurl),
 		Authenticator: authenticator,
 	}
+
 	appConfigClient, err := appconfigurationv1.NewAppConfigurationV1(appConfigurationClientOptions)
 	if appConfigClient != nil {
 		// Enable retries for API calls
