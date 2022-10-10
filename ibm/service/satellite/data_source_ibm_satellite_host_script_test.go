@@ -44,7 +44,7 @@ data "ibm_satellite_attach_host_script" "script" {
 }`, locationName)
 }
 
-//test coreos-enabled locations
+// test coreos-enabled locations
 func TestAccIBMSatelliteAttachHostScriptDataSourceBasicCoreos(t *testing.T) {
 	locationName := fmt.Sprintf("tf-satellitelocation-coreos-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{

@@ -875,7 +875,7 @@ func waitForClusterToDelete(cluster string, d *schema.ResourceData, meta interfa
 	return stateConf.WaitForState()
 }
 
-//  WaitForSatelliteWorkerVersionUpdate Waits for worker creation
+// WaitForSatelliteWorkerVersionUpdate Waits for worker creation
 func WaitForSatelliteWorkerVersionUpdate(d *schema.ResourceData, meta interface{}, masterVersion string, target v1.ClusterTargetHeader) (interface{}, error) {
 	satClient, err := meta.(conns.ClientSession).SatelliteClientSession()
 	if err != nil {

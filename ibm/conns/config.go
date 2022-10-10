@@ -120,14 +120,14 @@ import (
 // RetryAPIDelay - retry api delay
 const RetryAPIDelay = 5 * time.Second
 
-//BluemixRegion ...
+// BluemixRegion ...
 var BluemixRegion string
 
 var (
 	errEmptyBluemixCredentials = errors.New("ibmcloud_api_key or bluemix_api_key or iam_token and iam_refresh_token must be provided. Please see the documentation on how to configure it")
 )
 
-//UserConfig ...
+// UserConfig ...
 type UserConfig struct {
 	UserID      string
 	UserEmail   string
@@ -137,7 +137,7 @@ type UserConfig struct {
 	generation  int    `default:"2"`
 }
 
-//Config stores user provider input
+// Config stores user provider input
 type Config struct {
 	//BluemixAPIKey is the Bluemix api key
 	BluemixAPIKey string
@@ -192,7 +192,7 @@ type Config struct {
 	EndpointsFile string
 }
 
-//Session stores the information required for communication with the SoftLayer and Bluemix API
+// Session stores the information required for communication with the SoftLayer and Bluemix API
 type Session struct {
 	// SoftLayerSesssion is the the SoftLayer session used to connect to the SoftLayer API
 	SoftLayerSession *slsession.Session
@@ -755,7 +755,7 @@ func (sess clientSession) CertificateManagerAPI() (certificatemanager.Certificat
 	return sess.certManagementAPI, sess.certManagementErr
 }
 
-//apigatewayAPI provides API Gateway APIs
+// apigatewayAPI provides API Gateway APIs
 func (sess clientSession) APIGateway() (*apigateway.ApiGatewayControllerApiV1, error) {
 	return sess.apigatewayAPI, sess.apigatewayErr
 }
@@ -1121,7 +1121,7 @@ func (session clientSession) ESschemaRegistrySession() (*schemaregistryv1.Schema
 	return session.esSchemaRegistryClient, session.esSchemaRegistryErr
 }
 
-//Security and Compliance center Admin API
+// Security and Compliance center Admin API
 func (session clientSession) AdminServiceApiV1() (*adminserviceapiv1.AdminServiceApiV1, error) {
 	return session.adminServiceApiClient, session.adminServiceApiClientErr
 }
@@ -1138,7 +1138,7 @@ func (session clientSession) PostureManagementV1() (*posturemanagementv1.Posture
 	return session.postureManagementClient.Clone(), nil
 }
 
-//Security and Compliance center Posture Management v2
+// Security and Compliance center Posture Management v2
 func (session clientSession) PostureManagementV2() (*posturemanagementv2.PostureManagementV2, error) {
 	if session.postureManagementClientErrv2 != nil {
 		return session.postureManagementClientv2, session.postureManagementClientErrv2
