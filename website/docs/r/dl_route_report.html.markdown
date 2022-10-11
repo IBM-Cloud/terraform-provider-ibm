@@ -107,5 +107,5 @@ The `id` property can be formed from `gateway` and `route_report_id` in the foll
 * `route_report_id`: A String. The unique identifier of the route report.
 
 ```
-$ terraform import ibm_dl_route_report.dl_route_report <gateway>/<resolver_id>
+$ terraform import ibm_dl_route_report.dl_route_report <gateway>/<route_report_id>
 ```

@@ -51,7 +51,7 @@ func testAccCheckIBMDLRouteReportsDataSourceConfig(gatewayname string) string {
 	 }
 
 	 data "ibm_dl_route_reports" "test_dl_reports" {
-		gateway = ibm_dl_gateway.test_dl_gateway.id
+		gateway = ibm_dl_route_report.dl_route_report.gateway
 	 }
 
 	  `, gatewayname)
