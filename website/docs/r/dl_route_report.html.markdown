@@ -3,12 +3,12 @@ subcategory: "Direct Link Gateway"
 layout: "ibm"
 page_title: "IBM : dl_route_report"
 description: |-
-  Manages IBM Direct Link Gateway.
+  Create and Delete Route Report for a DirectLink Gateway.
 ---
 
 # ibm_dl_route_report
 
-Create a Direct Link Route Report by using the Direct Link Route Report resource. For more information, see [about Direct Link Route Report](https://cloud.ibm.com/docs/dl?topic=dl-generate-route-reports&interface=ui).
+Provides a resource for ibm_dl_route_report. This allows to create and delete a route report for a directlink gateway. For more information, see [about Direct Link Route Report](https://cloud.ibm.com/docs/dl?topic=dl-generate-route-reports&interface=ui).
 
 
 ## Example usage to create Direct Link Route Report on dedicated gateway
@@ -96,17 +96,16 @@ In addition to all argument references list, you can access the following attrib
     - `virtual_connection_type` - (String) Virtual Connection type
 
 ## Import
-The `ibm_dl_gateway` resource can be imported by using gateway ID. 
 
-**Syntax**
-
-```
-$ terraform import ibm_dl_gateway.example <gateway_ID>
-```
-
-**Example**
+You can import the `ibm_dl_route_report` resource by using `id`.
+The `id` property can be formed from `gateway` and `route_report_id` in the following format:
 
 ```
-$ terraform import ibm_dl_gateway.example 5ffda12064634723b079acdb018ef308
+<gateway>/<route_report_id>
 ```
+* `gateway`: A String. The unique identifier of a directlink gateway.
+* `route_report_id`: A String. The unique identifier of the route report.
 
+```
+$ terraform import ibm_dl_route_report.dl_route_report <gateway>/<resolver_id>
+```

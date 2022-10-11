@@ -4,6 +4,7 @@
 package directlink
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
@@ -167,13 +168,16 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	getGatewayRouteReportOptionsModel := &directlinkv1.GetGatewayRouteReportOptions{GatewayID: &gatewayId, ID: &routeReportId}
 	report, response, err := directLink.GetGatewayRouteReport(getGatewayRouteReportOptionsModel)
 	if err != nil {
-		log.Println("[WARN] Error fetching DL Route Reports", response, err)
-		return err
+		if response != nil && response.StatusCode == 404 {
+			return err
+		}
+		return fmt.Errorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
 	}
 
-	if report != nil && report.ID != nil {
+	if report == nil {
+		return fmt.Errorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
+	} else if report.ID != nil {
 		d.SetId(*report.ID)
-		d.Set(dlRouteReport, *report.ID)
 	}
 
 	if report.Status != nil {
@@ -192,9 +196,7 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 
 	}
 	log.Println("[Info] Length DL Gateway Reports: ", len(gatewayRoutes))
-	if len(gatewayRoutes) > 0 {
-		d.Set(dlGatewayRoutes, gatewayRoutes)
-	}
+	d.Set(dlGatewayRoutes, gatewayRoutes)
 
 	// Build onPrem Routes
 	onPremRoutes := make([]map[string]interface{}, 0)
@@ -208,9 +210,7 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	log.Println("[Info] Length DL Route Reports onprem routes:", len(onPremRoutes))
-	if len(onPremRoutes) > 0 {
-		d.Set(dlOnPremRoutes, onPremRoutes)
-	}
+	d.Set(dlOnPremRoutes, onPremRoutes)
 
 	// Build Overlapping Routes
 	overlappingRoutesCollection := make([]map[string]interface{}, 0)
@@ -235,9 +235,7 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	log.Println("[INFO] Length DL overlapping routes", len(overlappingRoutesCollection))
-	if len(overlappingRoutesCollection) > 0 {
-		d.Set(dlOverlappingRoutes, overlappingRoutesCollection)
-	}
+	d.Set(dlOverlappingRoutes, overlappingRoutesCollection)
 
 	// Build connection routes
 	virtualConnectionRoutes := make([]map[string]interface{}, 0)
@@ -261,9 +259,7 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	log.Println("[Info] Length DL Route Reports connection routes:", len(virtualConnectionRoutes))
-	if len(virtualConnectionRoutes) > 0 {
-		d.Set(dlVirtualConnectionRoutes, virtualConnectionRoutes)
-	}
+	d.Set(dlVirtualConnectionRoutes, virtualConnectionRoutes)
 
 	// Add the created and updated dates
 	if report.CreatedAt != nil {

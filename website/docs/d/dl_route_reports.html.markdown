@@ -8,7 +8,7 @@ description: |-
 
 # ibm_dl_router_reports
 
-Import the details of an existing infrastructure Direct Link Route Reports as a read-only data source. For more information, about Direct Link route reports, see [Direct Link Route Report](https://cloud.ibm.com/docs/dl?topic=dl-generate-route-reports&interface=ui).
+Import the details of an existing infrastructure Direct Link Route Reports as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. For more information, about Direct Link route reports, see [Direct Link Route Report](https://cloud.ibm.com/docs/dl?topic=dl-generate-route-reports&interface=ui).
 
 
 ## Example usage

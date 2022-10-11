@@ -46,7 +46,6 @@ func ResourceIBMDLGatewayRouteReport() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "List of gateway routes",
 				Computed:    true,
-				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						dlPrefix: {
@@ -61,7 +60,6 @@ func ResourceIBMDLGatewayRouteReport() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "List of onprem routes",
 				Computed:    true,
-				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						dlPrefix: {
@@ -81,7 +79,6 @@ func ResourceIBMDLGatewayRouteReport() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "List of overlapping routes",
 				Computed:    true,
-				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						dlRoutes: {
@@ -114,7 +111,6 @@ func ResourceIBMDLGatewayRouteReport() *schema.Resource {
 			dlVirtualConnectionRoutes: {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
 				Description: "Virtual Connection Routes",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -179,11 +175,18 @@ func resourceIBMdlGatewayRouteReportCreate(d *schema.ResourceData, meta interfac
 	createGatewayRouteReportOptionsModel := &directlinkv1.CreateGatewayRouteReportOptions{GatewayID: &gatewayId}
 	routeReport, response, err := directLink.CreateGatewayRouteReport(createGatewayRouteReportOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Create Direct Link Gateway Route Report (%s) err %s\n%s", gatewayId, err, response)
+		if response != nil && response.StatusCode == 404 {
+			return err
+		}
+		return fmt.Errorf("[ERROR] Create Direct Link Gateway Route Report (%s) err: %s with response code: %d", gatewayId, err, response.StatusCode)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", gatewayId, *routeReport.ID))
-	d.Set(dlRouteReportId, *routeReport.ID)
+	if routeReport == nil {
+		return fmt.Errorf("error creating route report for gateway: %s with response code: %d", gatewayId, response.StatusCode)
+	} else if routeReport.ID != nil {
+		d.SetId(fmt.Sprintf("%s/%s", gatewayId, *routeReport.ID))
+		d.Set(dlRouteReportId, *routeReport.ID)
+	}
 
 	isWaitForDirectLinkGatewayRouteReportCompleted(directLink, d.Id(), d.Timeout(schema.TimeoutCreate))
 
@@ -248,9 +251,16 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 
 	getGatewayRouteReportOptionsModel := &directlinkv1.GetGatewayRouteReportOptions{GatewayID: &gatewayId, ID: &routeReportId}
 	report, response, err := directLink.GetGatewayRouteReport(getGatewayRouteReportOptionsModel)
+
 	if err != nil {
-		log.Println("[WARN] Error fetching DL Route Reports", response, err)
-		return err
+		if response != nil && response.StatusCode == 404 {
+			return err
+		}
+		return fmt.Errorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
+	}
+
+	if report == nil {
+		return fmt.Errorf("error fetching route report for gateway: %s and route report: %s with response code: %d", gatewayId, routeReportId, response.StatusCode)
 	}
 
 	if report.Status != nil {
@@ -269,9 +279,7 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	log.Println("[Info] Length DL Gateway Reports: ", len(gatewayRoutes))
-	if len(gatewayRoutes) > 0 {
-		d.Set(dlGatewayRoutes, gatewayRoutes)
-	}
+	d.Set(dlGatewayRoutes, gatewayRoutes)
 
 	// Build onPrem Routes
 	onPremRoutes := make([]map[string]interface{}, 0)
@@ -285,9 +293,7 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	log.Println("[Info] Length DL Route Reports onprem routes:", len(onPremRoutes))
-	if len(onPremRoutes) > 0 {
-		d.Set(dlOnPremRoutes, onPremRoutes)
-	}
+	d.Set(dlOnPremRoutes, onPremRoutes)
 
 	// Build Overlapping Routes
 	overlappingRoutesCollection := make([]map[string]interface{}, 0)
@@ -312,9 +318,7 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	log.Println("[INFO] Length DL overlapping routes", len(overlappingRoutesCollection))
-	if len(overlappingRoutesCollection) > 0 {
-		d.Set(dlOverlappingRoutes, overlappingRoutesCollection)
-	}
+	d.Set(dlOverlappingRoutes, overlappingRoutesCollection)
 
 	// Build connection routes
 	virtualConnectionRoutes := make([]map[string]interface{}, 0)
@@ -338,9 +342,7 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	log.Println("[Info] Length DL Route Reports connection routes:", len(virtualConnectionRoutes))
-	if len(virtualConnectionRoutes) > 0 {
-		d.Set(dlVirtualConnectionRoutes, virtualConnectionRoutes)
-	}
+	d.Set(dlVirtualConnectionRoutes, virtualConnectionRoutes)
 
 	// Add the created and updated dates
 	if report.CreatedAt != nil {
