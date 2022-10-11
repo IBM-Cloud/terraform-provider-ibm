@@ -78,8 +78,6 @@ func DataSourceIBMDLGateway() *schema.Resource {
 			dlAsPrepends: {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Optional:    true,
-				ForceNew:    false,
 				Description: "List of AS Prepend configuration information",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
