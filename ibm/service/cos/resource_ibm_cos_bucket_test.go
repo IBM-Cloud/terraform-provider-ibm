@@ -670,7 +670,6 @@ func TestAccIBMCosBucket_import(t *testing.T) {
 	})
 }
 
-//
 // Satellite location
 func TestAccIBMCosBucket_Satellite(t *testing.T) {
 
@@ -1027,7 +1026,7 @@ func testAccCheckIBMCosBucket_Satellite_Exists(resource string, bucket string, r
 	}
 }
 
-/// IBMCLOUD
+// / IBMCLOUD
 func testAccCheckIBMCosBucketExists(resource string, bucket string, regiontype string, region string, bucketname string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
