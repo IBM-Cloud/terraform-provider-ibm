@@ -2,7 +2,7 @@ dist: bionic
 sudo: false
 language: go
 go:
-  - 1.16.x
+  - 1.18.x
 
 addons:
   apt:

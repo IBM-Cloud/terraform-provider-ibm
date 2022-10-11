@@ -78,7 +78,7 @@ const (
 	isLBType                                  = "type"
 )
 
-//HashInt ...
+// HashInt ...
 func HashInt(v interface{}) int { return v.(int) }
 
 func ExpandStringList(input []interface{}) []string {
@@ -2338,6 +2338,17 @@ func InstanceProfileValidate(diff *schema.ResourceDiff) error {
 			diff.ForceNew("profile")
 		}
 	}
+	return nil
+}
+
+func ResourceIPSecPolicyValidate(diff *schema.ResourceDiff) error {
+
+	newEncAlgo := diff.Get("encryption_algorithm").(string)
+	newAuthAlgo := diff.Get("authentication_algorithm").(string)
+	if (newEncAlgo == "aes128gcm16" || newEncAlgo == "aes192gcm16" || newEncAlgo == "aes256gcm16") && newAuthAlgo != "disabled" {
+		return fmt.Errorf("authentication_algorithm must be set to 'disabled' when the encryption_algorithm is either one of 'aes128gcm16', 'aes192gcm16', 'aes256gcm16'")
+	}
+
 	return nil
 }
 
