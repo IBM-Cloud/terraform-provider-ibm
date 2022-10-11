@@ -1571,25 +1571,26 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// ATRACKER Service
 	var atrackerClientURL string
-	atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
-	if err != nil {
-		session.atrackerClientErr = err
-	}
+	var atrackerURLErr error
+
+	atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		atrackerClientURL, err = atrackerv1.GetServiceURLForRegion("private." + c.Region)
+		atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
-			atrackerClientURL, err = atrackerv1.GetServiceURLForRegion(c.Region)
-			if err != nil {
-				session.atrackerClientErr = err
-			}
+			atrackerClientURL, atrackerURLErr = atrackerv1.GetServiceURLForRegion(c.Region)
 		}
 	}
+
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		atrackerClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_ATRACKER_API_ENDPOINT", c.Region, atrackerClientURL)
 	}
 	atrackerClientOptions := &atrackerv1.AtrackerV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientURL),
+	}
+	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url
+	if atrackerURLErr != nil && len(atrackerClientOptions.URL) == 0 {
+		session.atrackerClientErr = atrackerURLErr
 	}
 	// Construct the service client.
 	session.atrackerClient, err = atrackerv1.NewAtrackerV1(atrackerClientOptions)
@@ -1606,15 +1607,17 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	// Version 2 Atracker
 	var atrackerClientV2URL string
+	var atrackerURLV2Err error
+
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion("private." + c.Region)
+		atrackerClientV2URL, atrackerURLV2Err = atrackerv2.GetServiceURLForRegion("private." + c.Region)
 		if err != nil && c.Visibility == "public-and-private" {
-			atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+			atrackerClientV2URL, atrackerURLV2Err = atrackerv2.GetServiceURLForRegion(c.Region)
 		}
 	} else {
-		atrackerClientV2URL, err = atrackerv2.GetServiceURLForRegion(c.Region)
+		atrackerClientV2URL, atrackerURLV2Err = atrackerv2.GetServiceURLForRegion(c.Region)
 	}
-	if err != nil {
+	if atrackerURLV2Err != nil {
 		atrackerClientV2URL = atrackerv2.DefaultServiceURL
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -1623,6 +1626,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	atrackerClientV2Options := &atrackerv2.AtrackerV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_ATRACKER_API_ENDPOINT"}, atrackerClientV2URL),
+	}
+	// If we provide IBMCLOUD_ATRACKER_API_ENDPOINT, then ignore any missing region url, or should use the default.
+	// This should technically never happen as we default this for v2
+	if atrackerURLV2Err != nil && len(atrackerClientOptions.URL) == 0 {
+		session.atrackerClientErr = atrackerURLErr
 	}
 	session.atrackerClientV2, err = atrackerv2.NewAtrackerV2(atrackerClientV2Options)
 	if err == nil {
@@ -1769,12 +1777,18 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// APP CONFIGURATION Service
-	if c.Visibility == "private" {
-		session.appConfigurationClientErr = fmt.Errorf("[ERROR] App Configuration Service API doesnot support private endpoints")
+	appconfigurl := ContructEndpoint(fmt.Sprintf("%s", c.Region), fmt.Sprintf("%s.apprapp.", cloudEndpoint))
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		appconfigurl = ContructEndpoint(fmt.Sprintf("%s.private", c.Region), fmt.Sprintf("%s.apprapp", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		appconfigurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_APP_CONFIG_ENDPOINT", c.Region, appconfigurl)
 	}
 	appConfigurationClientOptions := &appconfigurationv1.AppConfigurationV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_ENDPOINT"}, appconfigurl),
 		Authenticator: authenticator,
 	}
+
 	appConfigClient, err := appconfigurationv1.NewAppConfigurationV1(appConfigurationClientOptions)
 	if appConfigClient != nil {
 		// Enable retries for API calls

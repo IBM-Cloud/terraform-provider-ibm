@@ -1,3 +1,76 @@
+# 1.47.0-beta0 (Oct 10, 2022)
+Features
+* Support for Kubernetes Service
+    - **Resource**
+        - ibm_container_vpc_worker
+* Support for APP Configuration
+    - **DataSources**
+        - ibm_app_config_snapshot
+        - ibm_app_config_snapshots
+    - **Resources**
+        - ibm_app_config_snapshot
+Enhancements
+* Update schema validation to latest schema methods ([4068](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4068))
+* Support Private end-point for APP Configuration ([4048](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4048))
+
+# 1.46.0 (Oct 03, 2022)
+Features
+* Support for Power Instance
+    - **DataSources**
+        - ibm_pi_instance_action
+        - ibm_pi_shared_processor_pool
+        - ibm_pi_shared_processor_pools
+        - ibm_pi_spp_placement_group
+        - ibm_pi_spp_placement_groups
+     - **Resources**
+        - ibm_pi_shared_processor_pool
+        - ibm_pi_spp_placement_group
+* Support Security and Compilance 
+    - **DataSources**
+        - ibm_scc_posture_profile_import
+        - ibm_scc_posture_scan_initiate_validation
+    - **Resources**
+        - ibm_scc_posture_scan_initiate_validation
+* Support App Configuration
+    - **DataSources**
+        - ibm_app_config_collection
+        - ibm_app_config_collections
+        - ibm_app_config_property
+        - ibm_app_config_properties
+    - **Resources**
+        - ibm_app_config_collection
+        - ibm_app_config_collection
+* Support Virtual Private Cloud
+    - **DataSources**
+        - ibm_is_instance_groups
+        - ibm_is_bare_metal_server_network_interface_reserved_ip
+        - ibm_is_bare_metal_server_network_interface_reserved_ips
+        
+Enhancements
+* Update CD Toolchain resources and datasources with latest SDK ([3933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3933)) 
+* Support uset tags in volumes of instance, instance template and volume attachement ([3993](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3993)) 
+* Add replication enabled attribute in pi volume resource ([4007](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4007)) 
+* Update Subnets on LoadBalancer ([4026](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4026)) 
+* Support for lifecycle status and reasons in VPC instance ([4017](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4017)) 
+* Support VPC reference in VPN gateway ([4039](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4039)) 
+* Examples and docs updated for HPCS COS support ([4034](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4034)) 
+* Deprecate connection strings for IBM-cloud-databases ([4050](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4050)) 
+* Revert volume replication attribute in pi volume resource ([4059](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4059))
+* added support for new ciphers ([4018](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4018))
+
+BUG FIXES
+* terraform ibm_is_instance_template volume_attachments removal from configuration not changing resource ([3972](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3972)) 
+* docs in is_instance_template do not cover volume_attachments completely ([3967](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3967)) 
+* Note section is not in proper format ([3970](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3970)) 
+* Wrong tagging for TOC ([4019](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4019)) 
+* ibm_kms_key unhelpful deprecation box ([3923](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3923)) 
+* "data iam_authorization_policy" is "data iam_authorization_policies" ([4015](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4015)) 
+* ibm_scc_rule vs ibm_scc_configuration_rule ([3908](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3908)) 
+* ibm_cos_bucket.abort_incomplete_multipart_upload_days is undocumented ([3799](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3799)) 
+* Updated Description for Deployment type EPIC ([4037](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4037)) 
+* Doc corrections for resource group to intimate id and subnet floating ip changes ([4025](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4025)) 
+* fix(ibm_is_vpn_gateway): reordered the setting of id in ibm_is_vpn_gateway resource to taint the resource properly ([4055](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4055))
+* fix(docs): added details about user data and update link for ibmcloud docs ([4066](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4066))
 # 1.46.0-beta0 (Sep 19, 2022)
 Features
 * Support for Power Instance
