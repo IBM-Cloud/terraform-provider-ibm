@@ -2741,9 +2741,10 @@ func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)
 	for _, v := range hostLabels {
 		parts := strings.Split(v.(string), ":")
-		if parts != nil {
-			labels[parts[0]] = parts[1]
+		if len(parts) != 2 {
+			log.Fatal("Entered label " + v.(string) + "is in incorrect format.")
 		}
+		labels[parts[0]] = parts[1]
 	}
 
 	return labels
