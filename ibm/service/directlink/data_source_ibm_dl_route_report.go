@@ -168,9 +168,7 @@ func dataSourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) er
 	getGatewayRouteReportOptionsModel := &directlinkv1.GetGatewayRouteReportOptions{GatewayID: &gatewayId, ID: &routeReportId}
 	report, response, err := directLink.GetGatewayRouteReport(getGatewayRouteReportOptionsModel)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return err
-		}
+		log.Println("[DEBUG] Error fetching DL Route Reports for gateway:", gatewayId, "with response code:", response.StatusCode, " and err: ", err)
 		return fmt.Errorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
 	}
 

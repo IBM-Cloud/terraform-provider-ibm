@@ -33,10 +33,6 @@ func ResourceIBMDLGatewayRouteReport() *schema.Resource {
 				ForceNew:    true,
 				Description: "The Direct Link gateway identifier",
 			},
-			ID: {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			dlRouteReportId: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -175,10 +171,8 @@ func resourceIBMdlGatewayRouteReportCreate(d *schema.ResourceData, meta interfac
 	createGatewayRouteReportOptionsModel := &directlinkv1.CreateGatewayRouteReportOptions{GatewayID: &gatewayId}
 	routeReport, response, err := directLink.CreateGatewayRouteReport(createGatewayRouteReportOptionsModel)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			return err
-		}
-		return fmt.Errorf("[ERROR] Create Direct Link Gateway Route Report (%s) err: %s with response code: %d", gatewayId, err, response.StatusCode)
+		log.Println("[DEBUG] Create Route Report for DirectLink gateway", gatewayId, "err: ", err, " with response code:", response.StatusCode)
+		return fmt.Errorf("[ERROR] Create Route Report for DirectLink gateway(%s) err: %s with response code: %d", gatewayId, err, response.StatusCode)
 	}
 
 	if routeReport == nil {
@@ -254,9 +248,11 @@ func resourceIBMDLRouteReportRead(d *schema.ResourceData, meta interface{}) erro
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
-			return err
+			log.Println("[ERROR] Unable to fetch route report for directlink gateway with err:", err)
+			d.SetId("")
+			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching DL Route Reports: %s with response code  %d", err, response.StatusCode)
+		return fmt.Errorf("[ERROR] Error fetching DL Route Reports for gateway(%s) err: %s with response code  %d", gatewayId, err, response.StatusCode)
 	}
 
 	if report == nil {
