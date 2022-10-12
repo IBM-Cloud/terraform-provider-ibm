@@ -3,12 +3,10 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_hostedgit"
 description: |-
   Manages cd_toolchain_tool_hostedgit.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_hostedgit
-
-~> **Beta:** This resource is in Beta, and is subject to change.
 
 Provides a resource for cd_toolchain_tool_hostedgit. This allows cd_toolchain_tool_hostedgit to be created, updated and deleted.
 

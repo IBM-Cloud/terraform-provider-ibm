@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain"
 description: |-
   Manages cd_toolchain.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain

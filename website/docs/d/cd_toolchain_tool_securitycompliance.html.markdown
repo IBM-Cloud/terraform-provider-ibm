@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_securitycompliance"
 description: |-
   Get information about cd_toolchain_tool_securitycompliance
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_securitycompliance

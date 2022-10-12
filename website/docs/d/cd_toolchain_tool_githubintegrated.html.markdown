@@ -3,12 +3,10 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_githubintegrated"
 description: |-
   Get information about cd_toolchain_tool_githubintegrated
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_githubintegrated
-
-~> **Beta:** This data source is in Beta, and is subject to change.
 
 Provides a read-only data source for cd_toolchain_tool_githubintegrated. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
@@ -16,8 +14,8 @@ Provides a read-only data source for cd_toolchain_tool_githubintegrated. You can
 
 ```hcl
 data "ibm_cd_toolchain_tool_githubintegrated" "cd_toolchain_tool_githubintegrated" {
-	tool_id = "tool_id"
-	toolchain_id = ibm_cd_toolchain_tool_githubintegrated.cd_toolchain_tool_githubintegrated.toolchain_id
+	tool_id = "9603dcd4-3c86-44f8-8d0a-9427369878cf"
+	toolchain_id = data.ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 

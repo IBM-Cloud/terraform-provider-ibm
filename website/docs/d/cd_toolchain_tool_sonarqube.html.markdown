@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_sonarqube"
 description: |-
   Get information about cd_toolchain_tool_sonarqube
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_sonarqube

@@ -3,12 +3,10 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_gitlab"
 description: |-
   Manages cd_toolchain_tool_gitlab.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_gitlab
-
-~> **Beta:** This resource is in Beta, and is subject to change.
 
 Provides a resource for cd_toolchain_tool_gitlab. This allows cd_toolchain_tool_gitlab to be created, updated and deleted.
 

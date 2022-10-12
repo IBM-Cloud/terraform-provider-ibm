@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_tekton_pipeline_trigger"
 description: |-
   Get information about cd_tekton_pipeline_trigger
-subcategory: "CD Tekton Pipeline"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_tekton_pipeline_trigger
