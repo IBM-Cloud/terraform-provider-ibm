@@ -61,6 +61,7 @@ Review the argument references that you can specify for your resource.
 
 - `name` - (Required, Forces new resource, String) The name of the worker pool.
 - `cluster` - (Required, Forces new resource, String) The name or id of the cluster.
+- `operating_system` - (Optional, String) Operating system of the worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.
 - `worker_count` - (Optional, Integer) The number of worker nodes per zone in the worker pool.
 - `flavor` - (Optional, String) The flavor defines the amount of virtual CPU, memory, and disk space that is set up in each worker node.
 - `isolation` - (Optional, String) Isolation for the worker node.

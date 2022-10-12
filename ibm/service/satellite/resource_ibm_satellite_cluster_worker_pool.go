@@ -112,6 +112,12 @@ func ResourceIBMSatelliteClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Operating system of the worker pool. Options are REDHAT_7_64, REDHAT_8_64, or RHCOS.",
+			},
 			"worker_count": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -205,6 +211,11 @@ func resourceIBMSatelliteClusterWorkerPoolCreate(d *schema.ResourceData, meta in
 		createWorkerPoolOptions.Headers = pathParamsMap
 	}
 
+	if v, ok := d.GetOk("operating_system"); ok {
+		operating_system := v.(string)
+		createWorkerPoolOptions.OperatingSystem = &operating_system
+	}
+
 	if v, ok := d.GetOk("worker_count"); ok {
 		workerCount := int64(v.(int))
 		createWorkerPoolOptions.WorkerCount = &workerCount
@@ -296,6 +307,7 @@ func resourceIBMSatelliteClusterWorkerPoolRead(d *schema.ResourceData, meta inte
 	d.Set("cluster", clusterID)
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("isolation", workerPool.Isolation)
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("worker_pool_labels", flex.IgnoreSystemLabels(workerPool.Labels))
 	d.Set("host_labels", flex.FlattenWorkerPoolHostLabels(workerPool.HostLabels))
