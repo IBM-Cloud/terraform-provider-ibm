@@ -16,7 +16,7 @@ variable "clone_repo" {
 }
 
 // Resource arguments for cd_tekton_pipeline_property
-variable "cd_tekton_pipeline_property_pipeline_id" {
+variable "repo_name" {
   description = "The Tekton pipeline ID."
   type        = string
   description = "Name of the new repo that will be created in the toolchain"
