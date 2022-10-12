@@ -12,7 +12,7 @@ require (
 	github.com/IBM/cloud-databases-go-sdk v0.2.0
 	github.com/IBM/cloudant-go-sdk v0.0.43
 	github.com/IBM/container-registry-go-sdk v0.0.15
-	github.com/IBM/continuous-delivery-go-sdk v0.1.3
+	github.com/IBM/continuous-delivery-go-sdk v0.1.4
 	github.com/IBM/event-notifications-go-admin-sdk v0.1.2
 	github.com/IBM/eventstreams-go-sdk v1.2.0
 	github.com/IBM/go-sdk-core/v5 v5.10.2
@@ -72,7 +72,7 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
-	github.com/go-openapi/errors v0.20.2 // indirect
+	github.com/go-openapi/errors v0.20.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/loads v0.21.1 // indirect
@@ -145,8 +145,8 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
-	go.mongodb.org/mongo-driver v1.10.0 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	go.mongodb.org/mongo-driver v1.10.1 // indirect
+	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
