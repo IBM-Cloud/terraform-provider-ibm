@@ -938,29 +938,29 @@ func TestAccIBMCosBucket_OneRate_With_Storageclass(t *testing.T) {
 	})
 }
 
-// func TestAccIBMCosBucket_OneRate_Without_Storage_class(t *testing.T) {
+func TestAccIBMCosBucket_OneRate_Without_Storage_class(t *testing.T) {
 
-// 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
-// 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
-// 	bucketRegion := "us-south"
-// 	bucketRegionType := "region_location"
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketRegionType := "region_location"
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:     func() { acc.TestAccPreCheck(t) },
-// 		Providers:    acc.TestAccProviders,
-// 		CheckDestroy: testAccCheckIBMCosBucketDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName, bucketName, bucketRegionType, bucketRegion),
-// 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
-// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
-// 					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName, bucketName, bucketRegionType, bucketRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMCosBucket_OneRate_With_Invalid_Storageclass(t *testing.T) {
 
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
@@ -1308,29 +1308,29 @@ func testAccCheckIBMCosBucket_Onerate_With_Storageclass(serviceName string, buck
 	`, serviceName, bucketName, storageClass, region)
 }
 
-// func testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName string, bucketName string, regiontype string, region string) string {
+func testAccCheckIBMCosBucket_Onerate_Without_Storage_class(serviceName string, bucketName string, regiontype string, region string) string {
 
-// 	return fmt.Sprintf(`
-// 	data "ibm_resource_group" "group" {
-// 		is_default=true
-// 	}
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default=true
+	}
 
-// 	resource "ibm_resource_instance" "instance" {
-// 		name              = "%s"
-// 		service           = "cloud-object-storage"
-// 		plan              = "cos-one-rate-plan"
-// 		location          = "global"
-// 		resource_group_id = data.ibm_resource_group.group.id
-// 	}
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "cos-one-rate-plan"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.group.id
+	}
 
-// 	resource "ibm_cos_bucket" "bucket" {
-// 		bucket_name          = "%s"
-// 		resource_instance_id = ibm_resource_instance.instance.id
-// 		region_location = "%s"
-// 	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name          = "%s"
+		resource_instance_id = ibm_resource_instance.instance.id
+		region_location = "%s"
+	}
 
-// 	`, serviceName, bucketName, region)
-// }
+	`, serviceName, bucketName, region)
+}
 
 func testAccCheckIBMCosBucket_Onerate_With_Invalid_Storageclass(serviceName string, bucketName string, regiontype string, region string, storageClass string) string {
 

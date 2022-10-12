@@ -134,6 +134,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
+				Computed:      true,
 				Description:   "Storage class info",
 				ConflictsWith: []string{"satellite_location_id"},
 				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "storage_class"),
