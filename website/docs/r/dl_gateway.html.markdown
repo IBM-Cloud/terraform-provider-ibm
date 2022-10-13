@@ -58,6 +58,13 @@ resource "ibm_dl_gateway" "test_dl_connect" {
 ## Argument reference
 Review the argument reference that you can specify for your resource. 
 
+- `as_prepend` - (Optional, List) List of AS Prepend configuration information
+
+  Nested scheme for `as_prepend`:
+  - `length` - (Integer) Number of times the ASN to appended to the AS Path.
+  - `policy` - (String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
+  - `prefix` - (String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
+  
 - `authentication_key` - (Optional, String) BGP MD5 authentication key.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.
 - `bfd_multiplier` - (String) The number of hello packets not received by a neighbor that causes the originating interface to be declared down.
