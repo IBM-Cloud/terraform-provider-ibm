@@ -61,8 +61,8 @@ Review the argument reference that you can specify for your resource.
 - `as_prepends` - (Optional, List) List of AS Prepend configuration information
 
   Nested scheme for `as_prepend`:
-  - `length` - (Integer) Number of times the ASN to appended to the AS Path.
-  - `policy` - (String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
+  - `length` - (Integer, Required) Number of times the ASN to appended to the AS Path.
+  - `policy` - (String, Required) Route type this AS Prepend applies to. Possible values are `import` and `export`.
   - `prefix` - (String, Optional) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
   
 - `authentication_key` - (Optional, String) BGP MD5 authentication key.
