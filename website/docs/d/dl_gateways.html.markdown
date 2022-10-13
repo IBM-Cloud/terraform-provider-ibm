@@ -29,7 +29,7 @@ You can access the following attribute references after your data source is crea
 - `gateways` - (String) List of all the Direct Link Gateways in the IBM Cloud infrastructure.
 
   Nested scheme for `gateways`:
-  - `as_prepends` - (Optional, List) List of AS Prepend configuration information
+  - `as_prepends` - (List) List of AS Prepend configuration information
 
     Nested scheme for `as_prepend`:
     - `created_at`- (String) The date and time AS Prepend was created.

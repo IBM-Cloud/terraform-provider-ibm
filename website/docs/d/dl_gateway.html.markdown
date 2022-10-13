@@ -29,7 +29,7 @@ Review the argument reference that you can specify for your resource.
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created.
 
-- `as_prepends` - (Optional, List) List of AS Prepend configuration information
+- `as_prepends` - (List) List of AS Prepend configuration information
 
   Nested scheme for `as_prepend`:
   - `created_at`- (String) The date and time AS Prepend was created.
