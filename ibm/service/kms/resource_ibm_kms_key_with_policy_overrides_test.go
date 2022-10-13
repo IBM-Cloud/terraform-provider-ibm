@@ -117,8 +117,8 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_Policies(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
 	enabled_rotation := true
-	rotation_interval := rand.Intn(12) + 1
-	invalid_interval := rotation_interval + 12
+	valid_interval := rand.Intn(12) + 1
+	invalid_interval := valid_interval + 12
 	enabled_dual_auth := false
 
 	resource.Test(t, resource.TestCase{
@@ -127,10 +127,10 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_Policies(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Valid Interval
-				Config: testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, false, enabled_rotation, rotation_interval, enabled_dual_auth),
+				Config: testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, false, enabled_rotation, valid_interval, enabled_dual_auth),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "rotation.0.interval_month", fmt.Sprint(rotation_interval)),
+					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "rotation.0.interval_month", fmt.Sprint(valid_interval)),
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "rotation.0.enabled", strconv.FormatBool(enabled_rotation)),
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "dual_auth_delete.0.enabled", strconv.FormatBool(enabled_dual_auth)),
 				),
@@ -138,11 +138,11 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_Policies(t *testing.T) {
 			{
 				// Invalid Interval
 				Config:      testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, false, enabled_rotation, invalid_interval, enabled_dual_auth),
-				ExpectError: regexp.MustCompile("must contain a valid int value should be in range(1, 12)"),
+				ExpectError: regexp.MustCompile("must contain a valid int value should be in range"),
 			},
 			{
 				// Invalid(Rotation) Policy on Standard Key
-				Config:      testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, true, enabled_rotation, invalid_interval, enabled_dual_auth),
+				Config:      testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, true, enabled_rotation, valid_interval, enabled_dual_auth),
 				ExpectError: regexp.MustCompile("Error while creating key"),
 			},
 		},
@@ -168,7 +168,7 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, true, enabled_rotation, rotation_interval, enabled_dual_auth),
+				Config: testAccCheckIBMKmsKeyWithPolicyOverridesAllPolicies(instanceName, keyName, false, enabled_rotation, rotation_interval, enabled_dual_auth),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
