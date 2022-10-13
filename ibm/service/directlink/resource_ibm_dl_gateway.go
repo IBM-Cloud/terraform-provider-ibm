@@ -66,7 +66,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 							Optional:    true,
 							ForceNew:    false,
 							Computed:    true,
-							Description: "The date and time AS Prepend was created",
+							Description: "The unique identifier for this AS Prepend",
 						},
 						dlLength: {
 							Type:         schema.TypeInt,
