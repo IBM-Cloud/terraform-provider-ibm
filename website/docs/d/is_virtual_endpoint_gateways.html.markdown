@@ -27,6 +27,13 @@ data "ibm_is_virtual_endpoint_gateways" "example" {
 }
 ```
 
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (String) The ID of the Resource group this endpoint gateway belongs to
+- `name` - (String) The name of the endpoint gateway
+
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 

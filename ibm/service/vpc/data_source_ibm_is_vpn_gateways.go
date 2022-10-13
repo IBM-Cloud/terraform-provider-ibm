@@ -24,7 +24,16 @@ func DataSourceIBMISVPNGateways() *schema.Resource {
 		Read: dataSourceIBMVPNGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
-
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this vpn gateway belongs to",
+			},
+			"mode": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The mode of this vpn gateway.",
+			},
 			isvpnGateways: {
 				Type:        schema.TypeList,
 				Description: "Collection of VPN Gateways",
@@ -177,7 +186,14 @@ func dataSourceIBMVPNGatewaysRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	listvpnGWOptions := sess.NewListVPNGatewaysOptions()
-
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listvpnGWOptions.ResourceGroupID = &resGroup
+	}
+	if modeIntf, ok := d.GetOk("mode"); ok {
+		mode := modeIntf.(string)
+		listvpnGWOptions.Mode = &mode
+	}
 	start := ""
 	allrecs := []vpcv1.VPNGatewayIntf{}
 	for {

@@ -28,6 +28,18 @@ data "ibm_is_bare_metal_servers" "example" {
 }
 ```
 
+## Argument reference
+Review the argument references that you can specify for your data source.
+
+- `resource_group` - (Optional, String) The ID of the Resource group this dedicated host group belongs to.
+- `vpc` (Optional, String) The vpc ID this bare metal server is in
+- `vpc_name` (Optional, String) The name of the vpc this bare metal server is in
+- `vpc_crn` (Optional, String) The CRN of the vpc this bare metal server is in
+- `name` - (Optional, String) The name of the dedicated host group
+- `network_interfaces_subnet` - (Optional, String) The ID of the subnet of the bare metal server network interfaces
+- `network_interfaces_subnet_crn` - (Optional, String) The CRN of the subnet of the bare metal server network interfaces
+- `network_interfaces_subnet_name` - (Optional, String) The name of the subnet of the bare metal server network interfaces
+
 ## Attribute Reference
 
 Review the attribute references that you can access after you retrieve your data source. 

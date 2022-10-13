@@ -28,6 +28,12 @@ data "ibm_is_vpn_gateways" "example" {
 }
 
 ```
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (Optional, String) The ID of the Resource group this vpn gateway belongs to
+- `mode` - (Optional, String) The mode of this VPN Gateway. Available options are `policy` and `route`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 

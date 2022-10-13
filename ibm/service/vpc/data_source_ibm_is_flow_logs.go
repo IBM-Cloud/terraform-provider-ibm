@@ -22,7 +22,41 @@ func DataSourceIBMISFlowLogs() *schema.Resource {
 		Read: dataSourceIBMISFlowLogsRead,
 
 		Schema: map[string]*schema.Schema{
-
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this flow log belongs to",
+			},
+			"vpc": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc ID this flow log is in",
+			},
+			"vpc_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc name this flow log is in",
+			},
+			"vpc_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc CRN this flow log is in",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the flow log ",
+			},
+			"target": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The target id of the flow log ",
+			},
+			"target_resource_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The target resource type of the flow log ",
+			},
 			isFlowLogs: {
 				Type:        schema.TypeList,
 				Description: "Collection of flow log collectors",
@@ -114,8 +148,37 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 
 	start := ""
 	allrecs := []vpcv1.FlowLogCollector{}
+	listOptions := &vpcv1.ListFlowLogCollectorsOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listOptions.ResourceGroupID = &resGroup
+	}
+	if nameintf, ok := d.GetOk("name"); ok {
+		name := nameintf.(string)
+		listOptions.Name = &name
+	}
+	if vpcIntf, ok := d.GetOk("vpc"); ok {
+		vpcid := vpcIntf.(string)
+		listOptions.VPCID = &vpcid
+	}
+	if vpcNameIntf, ok := d.GetOk("vpc_name"); ok {
+		vpcName := vpcNameIntf.(string)
+		listOptions.VPCName = &vpcName
+	}
+	if vpcCrnIntf, ok := d.GetOk("vpc_crn"); ok {
+		vpcCrn := vpcCrnIntf.(string)
+		listOptions.VPCCRN = &vpcCrn
+	}
+	if targetIntf, ok := d.GetOk("target"); ok {
+		target := targetIntf.(string)
+		listOptions.TargetID = &target
+	}
+	if targetTypeIntf, ok := d.GetOk("target_resource_type"); ok {
+		targetType := targetTypeIntf.(string)
+		listOptions.TargetResourceType = &targetType
+	}
 	for {
-		listOptions := &vpcv1.ListFlowLogCollectorsOptions{}
+
 		if start != "" {
 			listOptions.Start = &start
 		}

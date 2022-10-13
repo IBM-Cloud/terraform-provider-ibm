@@ -28,6 +28,12 @@ data "ibm_is_public_gateways" "example"{
 
 ```
 
+## Argument reference
+
+Review the argument references that you can specify for your data source. 
+
+- `resource_group` - (String) The ID of the Resource group this public gateway belongs to.
+
 ## Attribute reference
 Review the attribute references that you can access after you retrieve your data source.
 

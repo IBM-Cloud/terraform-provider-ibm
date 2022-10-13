@@ -28,6 +28,16 @@ func DataSourceIBMISVPCs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMISVPCListRead,
 		Schema: map[string]*schema.Schema{
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this vpc belongs to",
+			},
+			"classic_access": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Filters the collection to VPCs with the specified classic_access value",
+			},
 			isVPCs: {
 				Type:        schema.TypeList,
 				Description: "Collection of VPCs",
@@ -314,9 +324,17 @@ func dataSourceIBMISVPCListRead(context context.Context, d *schema.ResourceData,
 	}
 	start := ""
 	allrecs := []vpcv1.VPC{}
+	listOptions := &vpcv1.ListVpcsOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listOptions.ResourceGroupID = &resGroup
+	}
+	if classicAccessIntf, ok := d.GetOk("classic_access"); ok {
+		classicAccess := classicAccessIntf.(bool)
+		listOptions.ClassicAccess = &classicAccess
+	}
 	for {
 
-		listOptions := &vpcv1.ListVpcsOptions{}
 		if start != "" {
 			listOptions.Start = &start
 		}
