@@ -27,7 +27,46 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 		ReadContext: dataSourceIBMISBareMetalServersRead,
 
 		Schema: map[string]*schema.Schema{
-
+			"resource_group": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this bare metal server belongs to",
+			},
+			"vpc": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc ID this bare metal server is in",
+			},
+			"vpc_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc name this bare metal server is in",
+			},
+			"vpc_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc CRN this bare metal server is in",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the bare metal server",
+			},
+			"network_interfaces_subnet": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the subnet of the bare metal server network interfaces",
+			},
+			"network_interfaces_subnet_crn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The crn of the subnet of the bare metal server network interfaces",
+			},
+			"network_interfaces_subnet_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the subnet of the bare metal server network interfaces",
+			},
 			isBareMetalServers: {
 				Type:        schema.TypeList,
 				Description: "List of Bare Metal Servers",
@@ -393,8 +432,42 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 	}
 	start := ""
 	allrecs := []vpcv1.BareMetalServer{}
+
+	listBareMetalServersOptions := &vpcv1.ListBareMetalServersOptions{}
+	if resgroupintf, ok := d.GetOk("resource_group"); ok {
+		resGroup := resgroupintf.(string)
+		listBareMetalServersOptions.ResourceGroupID = &resGroup
+	}
+	if nameintf, ok := d.GetOk("name"); ok {
+		name := nameintf.(string)
+		listBareMetalServersOptions.Name = &name
+	}
+	if vpcIntf, ok := d.GetOk("vpc"); ok {
+		vpcid := vpcIntf.(string)
+		listBareMetalServersOptions.VPCID = &vpcid
+	}
+	if vpcNameIntf, ok := d.GetOk("vpc_name"); ok {
+		vpcName := vpcNameIntf.(string)
+		listBareMetalServersOptions.VPCName = &vpcName
+	}
+	if vpcCrnIntf, ok := d.GetOk("vpc_crn"); ok {
+		vpcCrn := vpcCrnIntf.(string)
+		listBareMetalServersOptions.VPCCRN = &vpcCrn
+	}
+	if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
+		subnetId := subnetIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
+	}
+	if subnetNameIntf, ok := d.GetOk("network_interfaces_subnet_name"); ok {
+		subnetName := subnetNameIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
+	}
+	if subnetCrnIntf, ok := d.GetOk("network_interfaces_subnet_crn"); ok {
+		subnetCrn := subnetCrnIntf.(string)
+		listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
+	}
 	for {
-		listBareMetalServersOptions := &vpcv1.ListBareMetalServersOptions{}
+
 		if start != "" {
 			listBareMetalServersOptions.Start = &start
 		}

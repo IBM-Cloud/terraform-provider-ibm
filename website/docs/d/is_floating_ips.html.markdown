@@ -34,6 +34,7 @@ data "ibm_is_floating_ips" "example" {
 Review the argument reference that you can specify for your data source.
 
 - `name` - (Optional, String) The unique user-defined name for this floating IP.
+- `resource_group` - (String) The ID of the Resource group this floating ips belongs to.
 
 ## Attribute reference
 

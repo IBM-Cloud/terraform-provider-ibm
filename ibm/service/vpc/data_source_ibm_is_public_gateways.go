@@ -22,6 +22,11 @@ func DataSourceIBMISPublicGateways() *schema.Resource {
 		Read: dataSourceIBMISPublicGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
+			isPublicGatewayResourceGroup: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The unique identifier of the resource group this public gateway belongs to",
+			},
 			isPublicGateways: {
 				Type:        schema.TypeList,
 				Description: "List of public gateways",

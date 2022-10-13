@@ -32,7 +32,8 @@ data "ibm_is_dedicated_hosts" "example" {
 Review the argument references that you can specify for your data source.
 
 - `host_group` - (Optional, String) The unique identifier of the dedicated host group.
-
+- `resource_group` (Optional, String) The ID of the Resource group this dedicated host belongs to.
+- `name` (Optional, String) The name of the dedicated host
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
