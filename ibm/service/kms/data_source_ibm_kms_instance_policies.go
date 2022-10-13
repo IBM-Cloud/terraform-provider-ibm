@@ -163,7 +163,7 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"enabled": {
 							Type:        schema.TypeBool,
-							Required:    true,
+							Computed:    true,
 							Description: "If set to true, Key Protect enables a metrics policy on the instance.",
 						},
 						"created_by": {

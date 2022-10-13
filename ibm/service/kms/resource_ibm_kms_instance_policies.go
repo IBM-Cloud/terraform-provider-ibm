@@ -294,7 +294,6 @@ func policyCreate(context context.Context, d *schema.ResourceData, kpAPI *kp.Cli
 		if len(rotationInstancePolicyList) != 0 {
 			iM := rotationInstancePolicyList[0].(map[string]interface{})["interval_month"].(int)
 			enabled := rotationInstancePolicyList[0].(map[string]interface{})["enabled"].(bool)
-			log.Println("testing interval Month ======>", iM)
 			//For case when enabled = false && no input to interval month.
 			if iM == 0 {
 				mulPolicy.Rotation = &kp.RotationPolicyData{

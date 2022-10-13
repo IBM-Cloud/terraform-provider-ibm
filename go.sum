@@ -85,8 +85,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1 h1:T5UwRKKd+B
 github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20211109141421-a4b61b05f7d1/go.mod h1:M2JyuyeWHPtgGNeezr6YqVRuaav2MpY8Ha4QrEYvMoI=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.4 h1:B3FEq830k/B7HjQqvQubxmz8PxOUvKYD2ZypDq3FD7k=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.4/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
-github.com/IBM/keyprotect-go-client v0.7.0 h1:JstSHD14Lp6ihwQseyPuGcs1AjOBjAmcisP0dTBA6A0=
-github.com/IBM/keyprotect-go-client v0.7.0/go.mod h1:SVr2ylV/fhSQPDiUjWirN9fsyWFCNNbt8GIT8hPJVjE=
+github.com/IBM/keyprotect-go-client v0.9.0 h1:UwbyEHcaGlmLNK7PW0qo9VlxneN+0/2zoGBubHzbtro=
+github.com/IBM/keyprotect-go-client v0.9.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.33.0 h1:+e4Q/io0y/I+LHKSa95gUM+CJfya6gHOelSWi+hkvBA=
 github.com/IBM/networking-go-sdk v0.33.0/go.mod h1:7b/E21A6BmfycDuNmHjA+EhFm9iM8Wm4ULF9g93J+KE=
 github.com/IBM/platform-services-go-sdk v0.28.5 h1:wVwapdVU3+J/JtS0P6WYi21gqsm1pX/MH4UX69c3+5E=
@@ -480,7 +480,6 @@ github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+l
 github.com/hashicorp/go-multierror v1.1.1/go.mod h1:iw975J/qwKPdAO1clOe2L8331t/9/fmwbPZ6JB6eMoM=
 github.com/hashicorp/go-plugin v1.4.3 h1:DXmvivbWD5qdiBts9TpBC7BYL1Aia5sxbRgQB+v6UZM=
 github.com/hashicorp/go-plugin v1.4.3/go.mod h1:5fGEH17QVwTTcR0zV7yhDPLLmFX9YSZ38b18Udy6vYQ=
-github.com/hashicorp/go-retryablehttp v0.6.2/go.mod h1:gEx6HMUGxYYhJScX7W1Il64m6cc2C1mDaW3NQ9sY1FY=
 github.com/hashicorp/go-retryablehttp v0.6.6/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/hashicorp/go-retryablehttp v0.7.0/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/hashicorp/go-retryablehttp v0.7.1 h1:sUiuQAnLlbvmExtFQs72iFW/HXeUn8Z1aJLQ4LJJbTQ=
@@ -1155,8 +1154,8 @@ gopkg.in/go-playground/assert.v1 v1.2.1/go.mod h1:9RXL0bg/zibRAgZUYszZSwO/z8Y/a8
 gopkg.in/go-playground/validator.v9 v9.30.0/go.mod h1:+c9/zcJMFNgbLvly1L1V+PpxWdVbfP1avr/N00E2vyQ=
 gopkg.in/go-playground/validator.v9 v9.31.0 h1:bmXmP2RSNtFES+bn4uYuHT7iJFJv7Vj+an+ZQdDaD1M=
 gopkg.in/go-playground/validator.v9 v9.31.0/go.mod h1:+c9/zcJMFNgbLvly1L1V+PpxWdVbfP1avr/N00E2vyQ=
-gopkg.in/h2non/gock.v1 v1.0.15 h1:SzLqcIlb/fDfg7UvukMpNcWsu7sI5tWwL+KCATZqks0=
-gopkg.in/h2non/gock.v1 v1.0.15/go.mod h1:sX4zAkdYX1TRGJ2JY156cFspQn4yRWn6p9EMdODlynE=
+gopkg.in/h2non/gock.v1 v1.1.2 h1:jBbHXgGBK/AoPVfJh5x4r/WxIrElvbLel8TCZkkZJoY=
+gopkg.in/h2non/gock.v1 v1.1.2/go.mod h1:n7UGz/ckNChHiK05rDoiC4MYSunEC/lyaUm2WWaDva0=
 gopkg.in/inf.v0 v0.9.1 h1:73M5CoZyi3ZLMOyDlQh031Cx6N9NDJ2Vvfl76EDAgDc=
 gopkg.in/inf.v0 v0.9.1/go.mod h1:cWUDdTG/fYaXco+Dcufb5Vnc6Gp2YChqWtbxRZE0mXw=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 h1:uRGJdciOHaEIrze2W8Q3AKkepLTh2hOroT7a+7czfdQ=

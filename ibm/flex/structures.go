@@ -78,7 +78,7 @@ const (
 	isLBType                                  = "type"
 )
 
-//HashInt ...
+// HashInt ...
 func HashInt(v interface{}) int { return v.(int) }
 
 func ExpandStringList(input []interface{}) []string {
@@ -3237,9 +3237,12 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels))
+	mapped := make([]string, len(hostLabels)-1)
 	idx := 0
 	for k, v := range hostLabels {
+		if strings.HasPrefix(k, "os") {
+			continue
+		}
 		mapped[idx] = fmt.Sprintf("%s:%v", k, v)
 		idx++
 	}

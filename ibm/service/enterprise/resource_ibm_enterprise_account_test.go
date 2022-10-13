@@ -54,8 +54,11 @@ func TestAccIbmEnterpriseAccountBasic(t *testing.T) {
 	})
 }
 
-/* To run this test case ensure the IC_API_KEY belongs to an enterprise.
-ACCOUNT_TO_BE_IMPORTED should invite enterprise and grant relevant iam policies before running this test case" */
+/*
+	To run this test case ensure the IC_API_KEY belongs to an enterprise.
+
+ACCOUNT_TO_BE_IMPORTED should invite enterprise and grant relevant iam policies before running this test case"
+*/
 func TestAccIbmEnterpriseImportAccountBasic(t *testing.T) {
 	var conf enterprisemanagementv1.Account
 	resource.Test(t, resource.TestCase{
