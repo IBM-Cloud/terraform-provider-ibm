@@ -55,7 +55,6 @@ func ResourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 						},
 						"worker_queue_identifier": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The service ID which identifies this private workers run request queue.",
 						},

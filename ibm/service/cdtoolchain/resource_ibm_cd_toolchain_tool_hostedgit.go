@@ -43,51 +43,42 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"git_id": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "e.g. https://gitlab.example.com/api/v4.",
 						},
 						"owner_id": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"repo_name": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"repo_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Type the URL of the repository that you are linking to.",
 						},
 						"source_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Type the URL of the repository that you are forking or cloning.",
 						},
 						"token_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Integration token URL.",
 						},
 						"type": &schema.Schema{
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Description: "Select this check box to make this repository private.",
 						},
@@ -105,7 +96,6 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
 						},

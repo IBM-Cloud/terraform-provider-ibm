@@ -32,7 +32,7 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **parameters**:
 	* `name` - (Required, String) The name used for this tool integration.
 	* `worker_queue_credentials` - (Required, String) The service ID API key that is used by the private worker to authenticate access to the work queue.
-	* `worker_queue_identifier` - (Optional, String) The service ID which identifies this private workers run request queue.
+	* `worker_queue_identifier` - (Computed, String) The service ID which identifies this private workers run request queue.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

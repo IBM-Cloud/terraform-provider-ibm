@@ -36,7 +36,7 @@ Nested scheme for **parameters**:
 	* `api_user_name` - (Optional, String) The user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
 	* `dashboard_url` - (Required, String) The URL of the Jenkins server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Jenkins integration tile.
 	* `name` - (Required, String) The name for this tool integration.
-	* `webhook_url` - (Optional, String) The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.
+	* `webhook_url` - (Computed, String) The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 

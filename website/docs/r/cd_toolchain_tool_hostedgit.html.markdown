@@ -36,7 +36,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
 		enable_traceability = true
 		integration_owner = "integration_owner"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -58,21 +58,21 @@ Nested scheme for **initialization**:
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `api_root_url` - (Optional, String) e.g. https://gitlab.example.com/api/v4.
+	* `api_root_url` - (Computed, String) e.g. https://gitlab.example.com/api/v4.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (Optional, String)
+	* `git_id` - (Computed, String)
 	* `has_issues` - (Optional, Boolean) Select this check box to enable Issues for lightweight issue tracking.
 	  * Constraints: The default value is `true`.
-	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
-	* `owner_id` - (Optional, String)
-	* `private_repo` - (Optional, Boolean) Select this check box to make this repository private.
+	* `integration_owner` - (Computed, String) Select the user which git operations will be performed as.
+	* `owner_id` - (Computed, String)
+	* `private_repo` - (Computed, Boolean) Select this check box to make this repository private.
 	  * Constraints: The default value is `true`.
-	* `repo_name` - (Optional, String)
-	* `repo_url` - (Optional, String) Type the URL of the repository that you are linking to.
-	* `source_repo_url` - (Optional, String) Type the URL of the repository that you are forking or cloning.
-	* `token_url` - (Optional, String) Integration token URL.
-	* `type` - (Optional, String)
+	* `repo_name` - (Computed, String)
+	* `repo_url` - (Computed, String) Type the URL of the repository that you are linking to.
+	* `source_repo_url` - (Computed, String) Type the URL of the repository that you are forking or cloning.
+	* `token_url` - (Computed, String) Integration token URL.
+	* `type` - (Computed, String)
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.

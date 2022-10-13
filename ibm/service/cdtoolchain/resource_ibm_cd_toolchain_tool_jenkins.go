@@ -53,7 +53,6 @@ func ResourceIBMCdToolchainToolJenkins() *schema.Resource {
 						},
 						"webhook_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.",
 						},

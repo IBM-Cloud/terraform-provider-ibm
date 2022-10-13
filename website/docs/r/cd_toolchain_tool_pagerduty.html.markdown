@@ -30,7 +30,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
-	* `service_id` - (Optional, String) The service ID of the PagerDuty service.
+	* `service_id` - (Computed, String) The service ID of the PagerDuty service.
 	* `service_key` - (Required, String) The PagerDuty service integration key. You can find or create this key in the Integrations section of the PagerDuty service page.
 	* `service_url` - (Required, String) The URL of the PagerDuty service to post alerts to.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
