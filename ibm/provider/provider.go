@@ -1343,6 +1343,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindServiceValidator(),
 				"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCertValidator(),
 				"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeatureValidator(),
+
+				"ibm_iam_access_group_dynamic_rule": iamaccessgroup.ResourceIBMIAMDynamicRuleValidator(),
+				"ibm_iam_access_group_members":      iamaccessgroup.ResourceIBMIAMAccessGroupMembersValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1408,6 +1411,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_vpc_cluster_worker":      kubernetes.DataSourceIBMContainerVPCClusterWorkerValidator(),
 				"ibm_container_vpc_cluster":             kubernetes.DataSourceIBMContainerVPCClusterValidator(),
 				"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCertValidator(),
+				"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 			},
 		}
 	})

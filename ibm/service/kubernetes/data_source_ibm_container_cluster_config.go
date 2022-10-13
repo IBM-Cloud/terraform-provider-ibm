@@ -134,7 +134,7 @@ func DataSourceIBMContainerClusterConfigValidator() *validate.ResourceValidator 
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerClusterConfigValidator := validate.ResourceValidator{ResourceName: "ibm_container_cluster_config", Schema: validateSchema}
 	return &iBMContainerClusterConfigValidator

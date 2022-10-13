@@ -102,7 +102,7 @@ func DataSourceIBMContainerVPCClusterWorkerValidator() *validate.ResourceValidat
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerVPCClusterWorkerValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_cluster_worker", Schema: validateSchema}
 	return &iBMContainerVPCClusterWorkerValidator
