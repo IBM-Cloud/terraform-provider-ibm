@@ -60,7 +60,7 @@ func DataSourceIBMContainerBindServiceValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerBindServiceValidator := validate.ResourceValidator{ResourceName: "ibm_container_bind_service", Schema: validateSchema}
 	return &iBMContainerBindServiceValidator

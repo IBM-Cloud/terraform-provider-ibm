@@ -91,7 +91,7 @@ func DataSourceIBMContainerALBCertValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerALBCertValidator := validate.ResourceValidator{ResourceName: "ibm_container_alb_cert", Schema: validateSchema}
 	return &iBMContainerALBCertValidator
