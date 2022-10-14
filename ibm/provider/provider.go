@@ -1350,6 +1350,11 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_trusted_profile_claim_rule": iamidentity.ResourceIBMIAMTrustedProfileClaimRuleValidator(),
 				"ibm_iam_trusted_profile_link":       iamidentity.ResourceIBMIAMTrustedProfileLinkValidator(),
 				"ibm_iam_service_api_key":            iamidentity.ResourceIBMIAMServiceAPIKeyValidator(),
+
+				"ibm_iam_trusted_profile_policy": iampolicy.ResourceIBMIAMTrustedProfilePolicyValidator(),
+				"ibm_iam_access_group_policy":    iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
+				"ibm_iam_service_policy":         iampolicy.ResourceIBMIAMServicePolicyValidator(),
+				"ibm_iam_authorization_policy":   iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1424,6 +1429,10 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_trusted_profile":             iamidentity.DataSourceIBMIamTrustedProfileValidator(),
 				"ibm_iam_trusted_profile_claim_rules": iamidentity.DataSourceIBMIamTrustedProfileClaimRulesValidator(),
 				"ibm_iam_trusted_profiles":            iamidentity.DataSourceIBMIamTrustedProfilesValidator(),
+
+				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
+				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),
+				"ibm_iam_trusted_profile_policy": iampolicy.DataSourceIBMIAMTrustedProfilePolicyValidator(),
 			},
 		}
 	})

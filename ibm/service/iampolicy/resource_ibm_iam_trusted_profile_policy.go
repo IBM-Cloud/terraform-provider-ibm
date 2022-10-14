@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
@@ -43,6 +44,8 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 				ExactlyOneOf: []string{"profile_id", "iam_id"},
 				Description:  "UUID of Trusted Profile",
 				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_iam_trusted_profile_policy",
+					"profile_id"),
 			},
 			"iam_id": {
 				Type:         schema.TypeString,
@@ -198,6 +201,21 @@ func ResourceIBMIAMTrustedProfilePolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMIAMTrustedProfilePolicyValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "profile_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "iam",
+			CloudDataRange:             []string{"service:trusted_profile", "resolved_to:id"},
+			Required:                   true})
+
+	iBMIAMTrustedProfilePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_trusted_profile_policy", Schema: validateSchema}
+	return &iBMIAMTrustedProfilePolicyValidator
 }
 
 func resourceIBMIAMTrustedProfilePolicyCreate(d *schema.ResourceData, meta interface{}) error {
