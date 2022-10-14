@@ -38,7 +38,7 @@ resource "ibm_cd_toolchain_tool_pipeline" "cd_pipeline" {
 }
 resource "ibm_cd_tekton_pipeline" "cd_pipeline_instance" {
   pipeline_id = ibm_cd_toolchain_tool_pipeline.cd_pipeline.tool_id
-  enable_slack_notifications = false
+  enable_notifications = false
   enable_partial_cloning = false
   worker {
     id = "public"

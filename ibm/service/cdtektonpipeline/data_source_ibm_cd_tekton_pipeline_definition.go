@@ -59,7 +59,7 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the SCM repository service instance.",
+							Description: "ID of the SCM repository service instance in the parent toolchain.",
 						},
 					},
 				},

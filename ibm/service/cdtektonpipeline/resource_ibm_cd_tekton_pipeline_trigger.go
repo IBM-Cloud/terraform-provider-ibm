@@ -91,10 +91,11 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Optional:    true,
 				Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
 			},
-			"disabled": &schema.Schema{
+			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Flag whether the trigger is disabled. If omitted the trigger is enabled by default.",
+				Default:     true,
+				Description: "Flag whether the trigger is enabled. If omitted the trigger is enabled by default.",
 			},
 			"secret": &schema.Schema{
 				Type:        schema.TypeList,
@@ -148,7 +149,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "SCM source repository for a Git trigger. Only needed for Git triggers.",
+				Description: "SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
@@ -160,12 +161,12 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.",
+							Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
 						},
 						"pattern": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
+							Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -180,7 +181,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the repository service instance.",
+							Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.",
 						},
 					},
 				},
@@ -247,7 +248,7 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
+							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -295,7 +296,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,235}[a-zA-Z0-9]$`,
+			Regexp:                     `^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -304,7 +305,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,235}$`,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -322,7 +323,7 @@ func ResourceIBMCdTektonPipelineTriggerValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_., \/]{1,234}$`,
+			Regexp:                     `^[-0-9a-zA-Z_., \/]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -367,8 +368,8 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	if _, ok := d.GetOk("max_concurrent_runs"); ok {
 		createTektonPipelineTriggerOptions.SetMaxConcurrentRuns(int64(d.Get("max_concurrent_runs").(int)))
 	}
-	if _, ok := d.GetOk("disabled"); ok {
-		createTektonPipelineTriggerOptions.SetDisabled(d.Get("disabled").(bool))
+	if _, ok := d.GetOkExists("enabled"); ok {
+		createTektonPipelineTriggerOptions.SetEnabled(d.Get("enabled").(bool))
 	}
 	if _, ok := d.GetOk("secret"); ok {
 		secretModel, err := resourceIBMCdTektonPipelineTriggerMapToGenericSecret(d.Get("secret.0").(map[string]interface{}))
@@ -466,8 +467,8 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	if err = d.Set("max_concurrent_runs", flex.IntValue(trigger.MaxConcurrentRuns)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
 	}
-	if err = d.Set("disabled", trigger.Disabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting disabled: %s", err))
+	if err = d.Set("enabled", trigger.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
 	}
 	if trigger.Secret != nil {
 		secretMap, err := resourceIBMCdTektonPipelineTriggerGenericSecretToMap(trigger.Secret)
@@ -552,15 +553,18 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 			" The resource must be re-created to update this property.", "pipeline_id"))
 	}
 	if d.HasChange("type") {
-		patchVals.Type = core.StringPtr(d.Get("type").(string))
+		newType := d.Get("type").(string)
+		patchVals.Type = &newType
 		hasChange = true
 	}
 	if d.HasChange("name") {
-		patchVals.Name = core.StringPtr(d.Get("name").(string))
+		newName := d.Get("name").(string)
+		patchVals.Name = &newName
 		hasChange = true
 	}
 	if d.HasChange("event_listener") {
-		patchVals.EventListener = core.StringPtr(d.Get("event_listener").(string))
+		newEventListener := d.Get("event_listener").(string)
+		patchVals.EventListener = &newEventListener
 		hasChange = true
 	}
 	if d.HasChange("tags") {
@@ -580,11 +584,13 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("max_concurrent_runs") {
-		patchVals.MaxConcurrentRuns = core.Int64Ptr(int64(d.Get("max_concurrent_runs").(int)))
+		newMaxConcurrentRuns := int64(d.Get("max_concurrent_runs").(int))
+		patchVals.MaxConcurrentRuns = &newMaxConcurrentRuns
 		hasChange = true
 	}
-	if d.HasChange("disabled") {
-		patchVals.Disabled = core.BoolPtr(d.Get("disabled").(bool))
+	if d.HasChange("enabled") {
+		newEnabled := d.Get("enabled").(bool)
+		patchVals.Enabled = &newEnabled
 		hasChange = true
 	}
 	if d.HasChange("secret") {
@@ -596,11 +602,13 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		hasChange = true
 	}
 	if d.HasChange("cron") {
-		patchVals.Cron = core.StringPtr(d.Get("cron").(string))
+		newCron := d.Get("cron").(string)
+		patchVals.Cron = &newCron
 		hasChange = true
 	}
 	if d.HasChange("timezone") {
-		patchVals.Timezone = core.StringPtr(d.Get("timezone").(string))
+		newTimezone := d.Get("timezone").(string)
+		patchVals.Timezone = &newTimezone
 		hasChange = true
 	}
 	if d.HasChange("scm_source") {

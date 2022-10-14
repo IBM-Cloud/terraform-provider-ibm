@@ -26,11 +26,11 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"enable_slack_notifications": &schema.Schema{
+			"enable_notifications": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Flag whether to enable slack notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the enclosing toolchain.",
+				Description: "Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain.",
 			},
 			"enable_partial_cloning": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -69,15 +69,24 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Computed:    true,
 				Description: "Pipeline status.",
 			},
-			"resource_group_id": &schema.Schema{
-				Type:        schema.TypeString,
+			"resource_group": &schema.Schema{
+				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "ID.",
+				Description: "The ID of the resource group in which the pipeline was created.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "ID.",
+						},
+					},
+				},
 			},
 			"toolchain": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Toolchain object.",
+				Description: "Toolchain object containing references to the parent toolchain.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
@@ -131,7 +140,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"service_instance_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "ID of the SCM repository service instance.",
+										Description: "ID of the SCM repository service instance in the parent toolchain.",
 									},
 								},
 							},
@@ -176,7 +185,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
+							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
 						},
 					},
 				},
@@ -254,7 +263,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
+										Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -301,16 +310,17 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Optional:    true,
 							Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
 						},
-						"disabled": &schema.Schema{
+						"enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Flag whether the trigger is disabled. If omitted the trigger is enabled by default.",
+							Default:     true,
+							Description: "Flag whether the trigger is enabled. If omitted the trigger is enabled by default.",
 						},
 						"scm_source": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "SCM source repository for a Git trigger. Only needed for Git triggers.",
+							Description: "SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"url": &schema.Schema{
@@ -322,12 +332,12 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"branch": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.",
+										Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
 									},
 									"pattern": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
+										Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
 									},
 									"blind_connection": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -342,7 +352,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"service_instance_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "ID of the repository service instance.",
+										Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.",
 									},
 								},
 							},
@@ -453,14 +463,14 @@ func resourceIBMCdTektonPipelineCreate(context context.Context, d *schema.Resour
 
 	createTektonPipelineOptions := &cdtektonpipelinev2.CreateTektonPipelineOptions{}
 
-	if _, ok := d.GetOk("enable_slack_notifications"); ok {
-		createTektonPipelineOptions.SetEnableSlackNotifications(d.Get("enable_slack_notifications").(bool))
+	if _, ok := d.GetOkExists("enable_notifications"); ok {
+		createTektonPipelineOptions.SetEnableNotifications(d.Get("enable_notifications").(bool))
 	}
-	if _, ok := d.GetOk("enable_partial_cloning"); ok {
+	if _, ok := d.GetOkExists("enable_partial_cloning"); ok {
 		createTektonPipelineOptions.SetEnablePartialCloning(d.Get("enable_partial_cloning").(bool))
 	}
 	if _, ok := d.GetOk("worker"); ok {
-		workerModel, err := resourceIBMCdTektonPipelineMapToWorkerWithID(d.Get("worker.0").(map[string]interface{}))
+		workerModel, err := resourceIBMCdTektonPipelineMapToWorkerIdentity(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -501,14 +511,14 @@ func resourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("GetTektonPipelineWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("enable_slack_notifications", tektonPipeline.EnableSlackNotifications); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting enable_slack_notifications: %s", err))
+	if err = d.Set("enable_notifications", tektonPipeline.EnableNotifications); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enable_notifications: %s", err))
 	}
 	if err = d.Set("enable_partial_cloning", tektonPipeline.EnablePartialCloning); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting enable_partial_cloning: %s", err))
 	}
 	if tektonPipeline.Worker != nil {
-		workerMap, err := resourceIBMCdTektonPipelineWorkerWithIDToMap(tektonPipeline.Worker)
+		workerMap, err := resourceIBMCdTektonPipelineWorkerIdentityToMap(tektonPipeline.Worker)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -525,10 +535,14 @@ func resourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resource
 	if err = d.Set("status", tektonPipeline.Status); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting status: %s", err))
 	}
-	if err = d.Set("resource_group_id", tektonPipeline.ResourceGroupID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
+	resourceGroupMap, err := resourceIBMCdTektonPipelineTektonPipelineResourceGroupToMap(tektonPipeline.ResourceGroup)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	toolchainMap, err := resourceIBMCdTektonPipelineToolchainToMap(tektonPipeline.Toolchain)
+	if err = d.Set("resource_group", []map[string]interface{}{resourceGroupMap}); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting resource_group: %s", err))
+	}
+	toolchainMap, err := resourceIBMCdTektonPipelineToolchainReferenceToMap(tektonPipeline.Toolchain)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -600,16 +614,18 @@ func resourceIBMCdTektonPipelineUpdate(context context.Context, d *schema.Resour
 	hasChange := false
 
 	patchVals := &cdtektonpipelinev2.TektonPipelinePatch{}
-	if d.HasChange("enable_slack_notifications") {
-		patchVals.EnableSlackNotifications = core.BoolPtr(d.Get("enable_slack_notifications").(bool))
+	if d.HasChange("enable_notifications") {
+		newEnableNotifications := d.Get("enable_notifications").(bool)
+		patchVals.EnableNotifications = &newEnableNotifications
 		hasChange = true
 	}
 	if d.HasChange("enable_partial_cloning") {
-		patchVals.EnablePartialCloning = core.BoolPtr(d.Get("enable_partial_cloning").(bool))
+		newEnablePartialCloning := d.Get("enable_partial_cloning").(bool)
+		patchVals.EnablePartialCloning = &newEnablePartialCloning
 		hasChange = true
 	}
 	if d.HasChange("worker") {
-		worker, err := resourceIBMCdTektonPipelineMapToWorkerWithID(d.Get("worker.0").(map[string]interface{}))
+		worker, err := resourceIBMCdTektonPipelineMapToWorkerIdentity(d.Get("worker.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -650,20 +666,28 @@ func resourceIBMCdTektonPipelineDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceIBMCdTektonPipelineMapToWorkerWithID(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerWithID, error) {
-	model := &cdtektonpipelinev2.WorkerWithID{}
+func resourceIBMCdTektonPipelineMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
+	model := &cdtektonpipelinev2.WorkerIdentity{}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineWorkerWithIDToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
-	// TODO we alter cdtektonpipelinev2.WorkerWithID to cdtektonpipelinev2.Worker in func params. Determine why and if we can fix it
+func resourceIBMCdTektonPipelineWorkerIdentityToMap(model *cdtektonpipelinev2.Worker) (map[string]interface{}, error) {
+	// TODO we alter cdtektonpipelinev2.WorkerIdentity to cdtektonpipelinev2.Worker in func params. Determine why and if we can fix it
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineToolchainToMap(model *cdtektonpipelinev2.Toolchain) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTektonPipelineResourceGroupToMap(model *cdtektonpipelinev2.TektonPipelineResourceGroup) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
+	}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineToolchainReferenceToMap(model *cdtektonpipelinev2.ToolchainReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["crn"] = model.CRN
@@ -766,8 +790,8 @@ func resourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 		if model.MaxConcurrentRuns != nil {
 			modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 		}
-		if model.Disabled != nil {
-			modelMap["disabled"] = model.Disabled
+		if model.Enabled != nil {
+			modelMap["enabled"] = model.Enabled
 		}
 		if model.ScmSource != nil {
 			scmSourceMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
@@ -926,7 +950,7 @@ func resourceIBMCdTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelin
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
-	modelMap["disabled"] = model.Disabled
+	modelMap["enabled"] = model.Enabled
 	return modelMap, nil
 }
 
@@ -984,7 +1008,7 @@ func resourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
-	modelMap["disabled"] = model.Disabled
+	modelMap["enabled"] = model.Enabled
 	if model.ScmSource != nil {
 		scmSourceMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
 		if err != nil {
@@ -1056,7 +1080,7 @@ func resourceIBMCdTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeline
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
-	modelMap["disabled"] = model.Disabled
+	modelMap["enabled"] = model.Enabled
 	if model.Cron != nil {
 		modelMap["cron"] = model.Cron
 	}
@@ -1120,7 +1144,7 @@ func resourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 	if model.MaxConcurrentRuns != nil {
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
-	modelMap["disabled"] = model.Disabled
+	modelMap["enabled"] = model.Enabled
 	if model.Secret != nil {
 		secretMap, err := resourceIBMCdTektonPipelineGenericSecretToMap(model.Secret)
 		if err != nil {

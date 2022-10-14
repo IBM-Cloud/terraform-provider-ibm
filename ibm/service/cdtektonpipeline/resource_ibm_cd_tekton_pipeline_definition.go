@@ -65,7 +65,7 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the SCM repository service instance.",
+							Description: "ID of the SCM repository service instance in the parent toolchain.",
 						},
 					},
 				},
@@ -185,7 +185,6 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
-	replaceTektonPipelineDefinitionOptions.SetID(parts[1])
 
 	hasChange := false
 

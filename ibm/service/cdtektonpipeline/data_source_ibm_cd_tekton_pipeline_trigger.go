@@ -83,7 +83,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
+							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
@@ -130,15 +130,15 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Computed:    true,
 				Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
 			},
-			"disabled": &schema.Schema{
+			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag whether the trigger is disabled. If omitted the trigger is enabled by default.",
+				Description: "Flag whether the trigger is enabled. If omitted the trigger is enabled by default.",
 			},
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "SCM source repository for a Git trigger. Only needed for Git triggers.",
+				Description: "SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
@@ -149,12 +149,12 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"branch": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of a branch from the repo. One of branch or tag must be specified, but only one or the other.",
+							Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
 						},
 						"pattern": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Git branch or tag pattern to listen to. Please refer to https://github.com/micromatch/micromatch for pattern syntax.",
+							Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -169,7 +169,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						"service_instance_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the repository service instance.",
+							Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.",
 						},
 					},
 				},
@@ -323,8 +323,8 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting max_concurrent_runs: %s", err))
 	}
 
-	if err = d.Set("disabled", trigger.Disabled); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting disabled: %s", err))
+	if err = d.Set("enabled", trigger.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
 	}
 
 	scmSource := []map[string]interface{}{}

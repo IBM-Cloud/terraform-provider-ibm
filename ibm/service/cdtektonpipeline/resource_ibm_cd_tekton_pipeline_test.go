@@ -36,9 +36,9 @@ func TestAccIBMCdTektonPipelineBasic(t *testing.T) {
 
 func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 	var conf cdtektonpipelinev2.TektonPipeline
-	enableSlackNotifications := "true"
+	enableNotifications := "true"
 	enablePartialCloning := "true"
-	enableSlackNotificationsUpdate := "false"
+	enableNotificationsUpdate := "false"
 	enablePartialCloningUpdate := "false"
 
 	resource.Test(t, resource.TestCase{
@@ -47,17 +47,17 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications, enablePartialCloning),
+				Config: testAccCheckIBMCdTektonPipelineConfig(enableNotifications, enablePartialCloning),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineExists("ibm_cd_tekton_pipeline.cd_tekton_pipeline", conf),
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_slack_notifications", enableSlackNotifications),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotifications),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloning),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineConfig(enableSlackNotificationsUpdate, enablePartialCloningUpdate),
+				Config: testAccCheckIBMCdTektonPipelineConfig(enableNotificationsUpdate, enablePartialCloningUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_slack_notifications", enableSlackNotificationsUpdate),
+					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_notifications", enableNotificationsUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline.cd_tekton_pipeline", "enable_partial_cloning", enablePartialCloningUpdate),
 				),
 			},
@@ -86,6 +86,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
+				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -100,7 +101,7 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enablePartialCloning string) string {
+func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePartialCloning string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
@@ -116,11 +117,12 @@ func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enab
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
+				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			enable_slack_notifications = %s
+			enable_notifications = %s
 			enable_partial_cloning = %s
 			worker {
 				id = "public"

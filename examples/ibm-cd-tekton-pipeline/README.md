@@ -28,7 +28,7 @@ cd_tekton_pipeline resource:
 
 ```terraform
 resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
-  enable_slack_notifications = false
+  enable_notifications = false
   enable_partial_cloning = false
   worker = var.cd_tekton_pipeline_worker
 }
@@ -153,7 +153,7 @@ data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_
 
 | Name | Version |
 |------|---------|
-| ibm | >=1.45.0 |
+| ibm | >=1.46.0 |
 
 ## Inputs
 

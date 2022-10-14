@@ -56,7 +56,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
+				Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
 			},
 		},
 	}
