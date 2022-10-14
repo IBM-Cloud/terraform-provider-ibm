@@ -1281,6 +1281,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		bLocation = bucketLocation.(string)
 		apiType = "sl"
 	}
+	if bLocation == "" {
+		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location` or `satellite_location_id`")
+	}
 
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 
