@@ -374,6 +374,32 @@ resource "ibm_cos_bucket" "smart-us-south" {
 
 ```
 
+
+
+# COS One-rate plan
+One-rate is one of the plans for cloud object storage instance .The One Rate plan is best suited for active workloads with large amounts of outbound bandwidth relative to storage capacity.For more information, see https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-onerate&mhsrc=ibmsearch_a&mhq=One+rate
+
+## Example usage
+
+```terraform
+resource "ibm_resource_instance" "cos_instance_onerate" {
+  name              = "cos-instance-onerate"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "cos-one-rate-plan"
+  location          = "global"
+}
+resource "ibm_cos_bucket" "cos_bucket_onerate" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = "us-south"
+  storage_class         = "onerate_active"
+  }
+
+
+```
+
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -473,7 +499,7 @@ Review the argument references that you can specify for your resource.
      - Permanent retention can only be enabled at a IBM Cloud Object Storage bucket level with retention policy enabled and users are able to select the permanent retention period option during object uploads. Once enabled, this process can't be reversed and objects uploaded that use a permanent retention period cannot be deleted. It's the responsibility of the users to validate at their end if there's a legitimate need to permanently store objects by using Object Storage buckets with a retention policy.
      - force deleting the bucket will not work if any object is still under retention. As objects cannot be deleted or overwritten until the retention period has expired and all the legal holds have been removed.
 - `single_site_location` - (Optional, String) The location for a single site bucket. Supported values are: `ams03`, `che01`, `hkg02`, `mel01`, `mex01`, `mil01`, `mon01`, `osl01`, `par01`, `sjc04`, `sao01`, `seo01`, `sng01`, and `tor01`. If you set this parameter, do not set `region_location` or `cross_region_location` at the same time.
-- `storage_class` - (Optional, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold` and `smart`. For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes). We can not use storage_class with Satellite location id.
+- `storage_class` - (Optional, String) The storage class that you want to use for the bucket. Supported values are `standard`, `vault`, `cold` and `smart` for `standard` and `lite` COS plans, `onerate_active` for `cos-one-rate-plan` COS plan.For more information, about storage classes, see [Use storage classes](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-classes).`storage_class` should not be used with Satellite location id.
 - `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
 
 ## Attribute reference
