@@ -28,9 +28,9 @@ resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `instance_name` - (Required, String) The name of the Key Protect service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
@@ -49,9 +49,9 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool can be found.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

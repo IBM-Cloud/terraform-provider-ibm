@@ -15,26 +15,14 @@ Provides a resource for cd_toolchain_tool_hostedgit. This allows cd_toolchain_to
 ```hcl
 resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
   initialization {
-		owner_id = "owner_id"
-		repo_name = "repo_name"
-		repo_url = "repo_url"
-		source_repo_url = "source_repo_url"
 		type = "new"
 		private_repo = true
   }
   parameters {
-		git_id = "git_id"
-		api_root_url = "api_root_url"
-		owner_id = "owner_id"
-		repo_name = "repo_name"
-		repo_url = "repo_url"
-		source_repo_url = "source_repo_url"
-		token_url = "token_url"
 		type = "new"
 		private_repo = true
 		has_issues = true
 		enable_traceability = true
-		integration_owner = "integration_owner"
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -54,9 +42,9 @@ Nested scheme for **initialization**:
 	* `source_repo_url` - (Optional, Forces new resource, String) Type the URL of the repository that you are forking or cloning.
 	* `type` - (Required, Forces new resource, String)
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) e.g. https://gitlab.example.com/api/v4.
 	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
@@ -86,9 +74,9 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool can be found.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

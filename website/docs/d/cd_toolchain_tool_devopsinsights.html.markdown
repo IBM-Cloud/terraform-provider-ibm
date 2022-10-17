@@ -41,10 +41,10 @@ In addition to all argument references listed, you can access the following attr
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool can be found.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

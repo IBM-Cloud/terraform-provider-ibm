@@ -39,7 +39,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (String) e.g. https://api.github.example.com.
 	* `auto_init` - (Boolean) Select this checkbox to initialize this repository with a README.
@@ -62,10 +62,10 @@ Nested scheme for **parameters**:
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where tool can be found.
+* `resource_group_id` - (String) Resource group where the tool can be found.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

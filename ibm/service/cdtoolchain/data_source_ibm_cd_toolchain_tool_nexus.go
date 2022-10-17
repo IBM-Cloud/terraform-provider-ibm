@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool can be found.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,7 +83,7 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
