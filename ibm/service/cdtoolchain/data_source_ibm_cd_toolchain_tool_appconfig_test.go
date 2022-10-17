@@ -15,7 +15,6 @@ import (
 
 func TestAccIBMCdToolchainToolAppconfigDataSourceBasic(t *testing.T) {
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	rgID := acc.CdResourceGroupID
 	rgName := acc.CdResourceGroupName
 	acID := acc.CdAppConfigID
 
@@ -24,11 +23,10 @@ func TestAccIBMCdToolchainToolAppconfigDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(tcName, rgID, rgName, acID),
+				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(tcName, rgName, acID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "crn"),
@@ -46,21 +44,19 @@ func TestAccIBMCdToolchainToolAppconfigDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCdToolchainToolAppconfigDataSourceAllArgs(t *testing.T) {
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	rgID := acc.CdResourceGroupID
 	rgName := acc.CdResourceGroupName
 	acID := acc.CdAppConfigID
-	getToolByIDResponseName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	toolName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(tcName, rgID, rgName, acID, getToolByIDResponseName),
+				Config: testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(tcName, rgName, acID, toolName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "toolchain_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "tool_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "resource_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig", "crn"),
@@ -77,22 +73,26 @@ func TestAccIBMCdToolchainToolAppconfigDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(tcName string, rgID string, rgName string, acID string) string {
+func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(tcName string, rgName string, acID string) string {
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 
 		resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "api_config_tool"
+				name = "appconfig_tool_01"
 				location = "us-south"
 				resource_group_name = "%s"
 				instance_id = "%s"
-				environment_id = "test_env_id"
-				collection_id = "test_collection_id"
+				environment_id = "environment_01"
+				collection_id = "collection_01"
 			}
 		}
 
@@ -100,25 +100,29 @@ func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfigBasic(tcName string,
 			toolchain_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.toolchain_id
 			tool_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.tool_id
 		}
-	`, tcName, rgID, rgName, acID)
+	`, rgName, tcName, rgName, acID)
 }
 
-func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(tcName string, rgID string, rgName string, acID string, getToolByIDResponseName string) string {
+func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(tcName string, rgName string, acID string, toolName string) string {
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 
 		resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				name = "api_config_tool"
+				name = "appconfig_tool_01"
 				location = "us-south"
 				resource_group_name = "%s"
 				instance_id = "%s"
-				environment_id = "test_env_id"
-				collection_id = "test_collection_id"
+				environment_id = "environment_01"
+				collection_id = "collection_01"
 			}
 			name = "%s"
 		}
@@ -127,5 +131,5 @@ func testAccCheckIBMCdToolchainToolAppconfigDataSourceConfig(tcName string, rgID
 			toolchain_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.toolchain_id
 			tool_id = ibm_cd_toolchain_tool_appconfig.cd_toolchain_tool_appconfig.tool_id
 		}
-	`, tcName, rgID, rgName, acID, getToolByIDResponseName)
+	`, rgName, tcName, rgName, acID, toolName)
 }
