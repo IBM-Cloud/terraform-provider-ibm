@@ -69,7 +69,7 @@ In addition to all argument reference list, you can access the following attribu
 - `aux_volume_name` - (String) The auxiliary volume name.
 - `consistency_group_name` - (String) The consistency group name if volume is a part of volume group.
 - `delete_on_termination` - (Bool) Indicates if the volume should be deleted when the server terminates.
-- `group_id` - (String) The volume group id in which the volume belongs.
+- `group_id` - (String) The volume group id to which volume belongs.
 - `id` - (String) The unique identifier of the volume. The ID is composed of `<power_instance_id>/<volume_id>`.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) The mirroring state for replication enabled volume.
