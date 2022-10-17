@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -26,6 +27,8 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
 				Description:  "UUID of ServiceID",
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_iam_service_policy",
+					"iam_service_id"),
 			},
 			"iam_id": {
 				Type:         schema.TypeString,
@@ -143,6 +146,20 @@ func DataSourceIBMIAMServicePolicy() *schema.Resource {
 			},
 		},
 	}
+}
+func DataSourceIBMIAMServicePolicyValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "iam_service_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "iam",
+			CloudDataRange:             []string{"service:service_id", "resolved_to:id"},
+			Optional:                   true})
+
+	iBMIAMServicePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_service_policy", Schema: validateSchema}
+	return &iBMIAMServicePolicyValidator
 }
 
 func dataSourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) error {

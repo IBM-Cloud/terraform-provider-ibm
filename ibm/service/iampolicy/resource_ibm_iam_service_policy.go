@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
@@ -43,6 +44,8 @@ func ResourceIBMIAMServicePolicy() *schema.Resource {
 				ExactlyOneOf: []string{"iam_service_id", "iam_id"},
 				Description:  "UUID of ServiceID",
 				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_iam_service_policy",
+					"iam_service_id"),
 			},
 			"iam_id": {
 				Type:         schema.TypeString,
@@ -198,6 +201,21 @@ func ResourceIBMIAMServicePolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceIBMIAMServicePolicyValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "iam_service_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "iam",
+			CloudDataRange:             []string{"service:service_id", "resolved_to:id"},
+			Optional:                   true})
+
+	iBMIAMServicePolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_service_policy", Schema: validateSchema}
+	return &iBMIAMServicePolicyValidator
 }
 
 func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{}) error {
