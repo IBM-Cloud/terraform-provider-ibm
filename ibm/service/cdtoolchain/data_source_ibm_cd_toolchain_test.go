@@ -15,14 +15,14 @@ import (
 
 func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 	toolchainName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	toolchainResourceGroupID := acc.CdResourceGroupID
+	toolchainResourceGroupName := acc.CdResourceGroupName
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainDataSourceConfigBasic(toolchainName, toolchainResourceGroupID),
+				Config: testAccCheckIBMCdToolchainDataSourceConfigBasic(toolchainName, toolchainResourceGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "toolchain_id"),
@@ -44,7 +44,7 @@ func TestAccIBMCdToolchainDataSourceBasic(t *testing.T) {
 
 func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 	toolchainName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	toolchainResourceGroupID := acc.CdResourceGroupID
+	toolchainResourceGroupName := acc.CdResourceGroupName
 	toolchainDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -52,7 +52,7 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdToolchainDataSourceConfig(toolchainName, toolchainResourceGroupID, toolchainDescription),
+				Config: testAccCheckIBMCdToolchainDataSourceConfig(toolchainName, toolchainResourceGroupName, toolchainDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_toolchain.cd_toolchain", "toolchain_id"),
@@ -73,29 +73,37 @@ func TestAccIBMCdToolchainDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCdToolchainDataSourceConfigBasic(toolchainName string, toolchainResourceGroupID string) string {
+func testAccCheckIBMCdToolchainDataSourceConfigBasic(toolchainName string, toolchainResourceGroupName string) string {
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 
 		data "ibm_cd_toolchain" "cd_toolchain" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 		}
-	`, toolchainName, toolchainResourceGroupID)
+	`, toolchainResourceGroupName, toolchainName)
 }
 
-func testAccCheckIBMCdToolchainDataSourceConfig(toolchainName string, toolchainResourceGroupID string, toolchainDescription string) string {
+func testAccCheckIBMCdToolchainDataSourceConfig(toolchainName string, toolchainResourceGroupName string, toolchainDescription string) string {
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 			description = "%s"
 		}
 
 		data "ibm_cd_toolchain" "cd_toolchain" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 		}
-	`, toolchainName, toolchainResourceGroupID, toolchainDescription)
+	`, toolchainResourceGroupName, toolchainName, toolchainDescription)
 }
