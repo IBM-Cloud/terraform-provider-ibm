@@ -184,7 +184,7 @@ var HostPoolID string
 
 // Continuous Delivery
 var CdResourceGroupName string
-var CdAppConfigID string
+var CdAppConfigInstanceName string
 
 // VPN Server
 var ISCertificateCrn string
@@ -998,9 +998,9 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
-	CdAppConfigID = os.Getenv("IBM_CD_APPCONFIG_ID")
-	if CdAppConfigID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CD_APPCONFIG_ID for testing CD resources, CD tests will fail if this is not set")
+	CdAppConfigInstanceName = os.Getenv("IBM_CD_APPCONFIG_INSTANCE_NAME")
+	if CdAppConfigInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_APPCONFIG_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
