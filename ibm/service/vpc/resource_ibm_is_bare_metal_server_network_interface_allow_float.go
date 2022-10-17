@@ -294,19 +294,36 @@ func createVlanTypeNetworkInterfaceAllowFloat(context context.Context, d *schema
 	if err != nil || nic == nil {
 		return fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
 	}
-	err = bareMetalServerNICAllowFloatGet(d, meta, sess, nic, bareMetalServerId)
-	if err != nil {
-		return err
+
+	switch reflect.TypeOf(nic).String() {
+	case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
+		{
+			nicIntf := nic.(*vpcv1.BareMetalServerNetworkInterfaceByPci)
+			d.SetId(MakeTerraformNICID(bareMetalServerId, *nicIntf.ID))
+		}
+
+	case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
+		{
+			nicIntf := nic.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
+			d.SetId(MakeTerraformNICID(bareMetalServerId, *nicIntf.ID))
+		}
 	}
 	_, nicId, err := ParseNICTerraformID(d.Id())
 	if err != nil {
 		return err
 	}
+
 	log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
 	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
 		return err
 	}
+
+	err = bareMetalServerNICAllowFloatGet(d, meta, sess, nic, bareMetalServerId)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -392,7 +409,6 @@ func bareMetalServerNICAllowFloatGet(d *schema.ResourceData, meta interface{}, s
 	case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
 		{
 			nic := nicIntf.(*vpcv1.BareMetalServerNetworkInterfaceByPci)
-			d.SetId(MakeTerraformNICID(bareMetalServerId, *nic.ID))
 			d.Set(isBareMetalServerNicAllowIPSpoofing, *nic.AllowIPSpoofing)
 			d.Set(isBareMetalServerNicEnableInfraNAT, *nic.EnableInfrastructureNat)
 			d.Set(isBareMetalServerNicStatus, *nic.Status)

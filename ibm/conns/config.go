@@ -79,6 +79,7 @@ import (
 	"github.com/IBM/scc-go-sdk/v4/posturemanagementv2"
 	schematicsv1 "github.com/IBM/schematics-go-sdk/schematicsv1"
 	"github.com/IBM/secrets-manager-go-sdk/secretsmanagerv1"
+	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
@@ -3176,6 +3177,9 @@ func (c *Config) ClientSession() (interface{}, error) {
 		goLogger := log.New(logDestination, "", log.LstdFlags)
 		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
 	}
+
+	// setting UserAgent for vpc-go-sdk common
+	common.UserAgent = fmt.Sprintf("terraform-provider-ibm/%s", version.Version)
 	return session, nil
 }
 

@@ -53,6 +53,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "enable_infrastructure_nat", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "name", "eth21"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "primary_ip.0.address", func(v string) error {
+						if v == "0.0.0.0" {
+							return fmt.Errorf("Attribute 'address' %s is not updated", v)
+						}
+						return nil
+					}),
 				),
 			},
 		},
@@ -87,6 +93,12 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "allow_interface_to_float", "true"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "enable_infrastructure_nat", "false"),
+					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "primary_ip.0.address", func(v string) error {
+						if v == "0.0.0.0" {
+							return fmt.Errorf("Attribute 'address' %s is not updated", v)
+						}
+						return nil
+					}),
 				),
 			},
 		},
