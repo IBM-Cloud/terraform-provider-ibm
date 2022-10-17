@@ -75,6 +75,45 @@ func DataSourceIBMDLGateway() *schema.Resource {
 				},
 			},
 
+			dlAsPrepends: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of AS Prepend configuration information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						dlCreatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time AS Prepend was created",
+						},
+						ID: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time AS Prepend was created",
+						},
+						dlLength: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Number of times the ASN to appended to the AS Path",
+						},
+						dlPolicy: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Route type this AS Prepend applies to",
+						},
+						dlPrefix: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.",
+						},
+						dlUpdatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time AS Prepend was updated",
+						},
+					},
+				},
+			},
 			dlAuthenticationKey: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -446,6 +485,25 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 					d.Set(dlBfdStatusUpdatedAt, instance.BfdConfig.BfdStatusUpdatedAt.String())
 				}
 			}
+
+			asPrependList := make([]map[string]interface{}, 0)
+			if len(instance.AsPrepends) > 0 {
+				for _, asPrepend := range instance.AsPrepends {
+					asPrependItem := map[string]interface{}{}
+					asPrependItem[dlResourceId] = asPrepend.ID
+					asPrependItem[dlLength] = asPrepend.Length
+					asPrependItem[dlPrefix] = asPrepend.Prefix
+					asPrependItem[dlPolicy] = asPrepend.Policy
+					asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
+					asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()
+
+					asPrependList = append(asPrependList, asPrependItem)
+				}
+
+			}
+
+			d.Set(dlAsPrepends, asPrependList)
+
 			dtype := *instance.Type
 			if dtype == "dedicated" {
 				if instance.MacsecConfig != nil {

@@ -21,57 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	dlActive                       = "active"
-	dlAuthenticationKey            = "authentication_key"
-	dlBfdInterval                  = "bfd_interval"
-	dlBfdMultiplier                = "bfd_multiplier"
-	dlBfdStatus                    = "bfd_status"
-	dlBfdStatusUpdatedAt           = "bfd_status_updated_at"
-	dlBgpAsn                       = "bgp_asn"
-	dlBgpBaseCidr                  = "bgp_base_cidr"
-	dlBgpCerCidr                   = "bgp_cer_cidr"
-	dlBgpIbmAsn                    = "bgp_ibm_asn"
-	dlBgpIbmCidr                   = "bgp_ibm_cidr"
-	dlBgpStatus                    = "bgp_status"
-	dlCarrierName                  = "carrier_name"
-	dlChangeRequest                = "change_request"
-	dlCipherSuite                  = "cipher_suite"
-	dlCompletionNoticeRejectReason = "completion_notice_reject_reason"
-	dlConfidentialityOffset        = "confidentiality_offset"
-	dlGatewayProvisioning          = "configuring"
-	dlConnectionMode               = "connection_mode"
-	dlCreatedAt                    = "created_at"
-	dlGatewayProvisioningRejected  = "create_rejected"
-	dlCrossConnectRouter           = "cross_connect_router"
-	dlCrn                          = "crn"
-	dlCryptographicAlgorithm       = "cryptographic_algorithm"
-	dlCustomerName                 = "customer_name"
-	dlFallbackCak                  = "fallback_cak"
-	dlGlobal                       = "global"
-	dlKeyServerPriority            = "key_server_priority"
-	dlLoaRejectReason              = "loa_reject_reason"
-	dlLocationDisplayName          = "location_display_name"
-	dlLocationName                 = "location_name"
-	dlLinkStatus                   = "link_status"
-	dlMacSecConfig                 = "macsec_config"
-	dlMetered                      = "metered"
-	dlName                         = "name"
-	dlOperationalStatus            = "operational_status"
-	dlPort                         = "port"
-	dlPrimaryCak                   = "primary_cak"
-	dlProviderAPIManaged           = "provider_api_managed"
-	dlGatewayProvisioningDone      = "provisioned"
-	dlResourceGroup                = "resource_group"
-	dlSakExpiryTime                = "sak_expiry_time"
-	dlSpeedMbps                    = "speed_mbps"
-	dlMacSecConfigStatus           = "status"
-	dlTags                         = "tags"
-	dlType                         = "type"
-	dlVlan                         = "vlan"
-	dlWindowSize                   = "window_size"
-)
-
 func ResourceIBMDLGateway() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourceIBMdlGatewayCreate,
@@ -99,6 +48,53 @@ func ResourceIBMDLGateway() *schema.Resource {
 				Optional:    true,
 				ForceNew:    false,
 				Description: "BGP MD5 authentication key",
+			},
+			dlAsPrepends: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "List of AS Prepend configuration information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						dlCreatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time AS Prepend was created",
+						},
+						dlResourceId: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    false,
+							Computed:    true,
+							Description: "The unique identifier for this AS Prepend",
+						},
+						dlLength: {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlLength),
+							Description:  "Number of times the ASN to appended to the AS Path",
+						},
+						dlPolicy: {
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: validate.InvokeValidator("ibm_dl_gateway", dlPolicy),
+							Description:  "Route type this AS Prepend applies to",
+						},
+						dlPrefix: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    false,
+							Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes",
+						},
+						dlUpdatedAt: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time AS Prepend was updated",
+						},
+					},
+				},
 			},
 			dlBfdInterval: {
 				Type:         schema.TypeInt,
@@ -421,6 +417,7 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	dlTypeAllowedValues := "dedicated, connect"
 	dlConnectionModeAllowedValues := "direct, transit"
+	dlPolicyAllowedValues := "export, import"
 
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -470,6 +467,22 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 			Required:                   true,
 			MinValue:                   "1",
 			MaxValue:                   "255"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 dlPolicy,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              dlPolicyAllowedValues})
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 dlLength,
+			ValidateFunctionIdentifier: validate.IntBetween,
+			Type:                       validate.TypeInt,
+			Required:                   true,
+			MinValue:                   "3",
+			MaxValue:                   "10"})
 
 	ibmISDLGatewayResourceValidator := validate.ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator
@@ -509,6 +522,20 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 		// Set the default value for multiplier if interval is set
 		multiplier := int64(3)
 		bfdConfig.Multiplier = &multiplier
+	}
+
+	asPrependsCreateItems := make([]directlinkv1.AsPrependTemplate, 0)
+	if asPrependsInput, ok := d.GetOk(dlAsPrepends); ok {
+		asPrependsItems := asPrependsInput.([]interface{})
+
+		for _, asPrependItem := range asPrependsItems {
+			i := asPrependItem.(map[string]interface{})
+			asPrependsCreateItems = append(asPrependsCreateItems, directlinkv1.AsPrependTemplate{
+				Length: NewInt64Pointer(int64(i[dlLength].(int))),
+				Policy: NewStrPointer(i[dlPolicy].(string)),
+				Prefix: NewStrPointer(i[dlPrefix].(string)),
+			})
+		}
 	}
 
 	if dtype == "dedicated" {
@@ -606,6 +633,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			gatewayDedicatedTemplateModel.BfdConfig = &bfdConfig
 		}
 
+		if len(asPrependsCreateItems) > 0 {
+			gatewayDedicatedTemplateModel.AsPrepends = asPrependsCreateItems
+		}
+
 		createGatewayOptionsModel.GatewayTemplate = gatewayDedicatedTemplateModel
 
 	} else if dtype == "connect" {
@@ -649,6 +680,10 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 			if !reflect.DeepEqual(bfdConfig, directlinkv1.GatewayBfdConfigTemplate{}) {
 				gatewayConnectTemplateModel.BfdConfig = &bfdConfig
+			}
+
+			if len(asPrependsCreateItems) > 0 {
+				gatewayConnectTemplateModel.AsPrepends = asPrependsCreateItems
 			}
 
 			createGatewayOptionsModel.GatewayTemplate = gatewayConnectTemplateModel
@@ -790,6 +825,24 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	if instance.ConnectionMode != nil {
 		d.Set(dlConnectionMode, *instance.ConnectionMode)
 	}
+
+	asPrependList := make([]map[string]interface{}, 0)
+	if len(instance.AsPrepends) > 0 {
+		for _, asPrepend := range instance.AsPrepends {
+			asPrependItem := map[string]interface{}{}
+			asPrependItem[dlResourceId] = asPrepend.ID
+			asPrependItem[dlLength] = asPrepend.Length
+			asPrependItem[dlPrefix] = asPrepend.Prefix
+			asPrependItem[dlPolicy] = asPrepend.Policy
+			asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
+			asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()
+
+			asPrependList = append(asPrependList, asPrependItem)
+		}
+
+	}
+	d.Set(dlAsPrepends, asPrependList)
+
 	if dtype == "dedicated" {
 		if instance.MacsecConfig != nil {
 			macsecList := make([]map[string]interface{}, 0)

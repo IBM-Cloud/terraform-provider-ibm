@@ -596,6 +596,8 @@ func Provider() *schema.Provider {
 			"ibm_dl_routers":           directlink.DataSourceIBMDLRouters(),
 			"ibm_dl_provider_ports":    directlink.DataSourceIBMDirectLinkProviderPorts(),
 			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_route_reports":     directlink.DataSourceIBMDLRouteReports(),
+			"ibm_dl_route_report":      directlink.DataSourceIBMDLRouteReport(),
 
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
@@ -1025,6 +1027,7 @@ func Provider() *schema.Provider {
 			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
+			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),

@@ -368,3 +368,119 @@ func testAccCheckIBMISVPNGatewayConnectionRouteUpdate(vpc1, subnet1, vpnname1, n
 	`, vpc1, subnet1, acc.ISZoneName, acc.ISCIDR, vpnname1, name1, vpc2, subnet2, acc.ISZoneName, acc.ISCIDR, vpnname2, name2)
 
 }
+
+func TestAccIBMISVPNGatewayConnection_ike_ipsec_null_patch(t *testing.T) {
+	var VPNGatewayConnection string
+	vpcname := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(10, 100))
+	vpnname := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfvpngc-createname-%d", acctest.RandIntRange(10, 100))
+	noNullPass := ""
+	nullPass := "null"
+	ikepolicyname := fmt.Sprintf("tfvpngc-ike-%d", acctest.RandIntRange(10, 100))
+	ipsecpolicyname := fmt.Sprintf("tfvpngc-ipsec-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionNullPatchConfig(vpcname, subnetname, vpnname, ikepolicyname, ipsecpolicyname, name, noNullPass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "gateway_connection"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", vpcname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet1", "name", subnetname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_VPNGateway1", "name", vpnname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ike_policy.testacc_ike", "name", ikepolicyname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ipsec_policy.testacc_ipsec", "name", ipsecpolicyname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "ike_policy"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "ipsec_policy"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionNullPatchConfig(vpcname, subnetname, vpnname, ikepolicyname, ipsecpolicyname, name, nullPass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpc.testacc_vpc1", "name", vpcname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_subnet.testacc_subnet1", "name", subnetname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_VPNGateway1", "name", vpnname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ike_policy.testacc_ike", "name", ikepolicyname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_ipsec_policy.testacc_ipsec", "name", ipsecpolicyname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "ike_policy", ""),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection1", "ipsec_policy", ""),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVPNGatewayConnectionNullPatchConfig(vpc, subnet, vpnname, ikepolicyname, ipsecpolicyname, name, noNullPass string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc1" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc1.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway1" {
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet1.id}"
+		timeouts {
+			create = "18m"
+			delete = "18m"
+		}
+	}
+	resource "ibm_is_ike_policy" "testacc_ike" {
+		name                     = "%s"
+		authentication_algorithm = "md5"
+		encryption_algorithm     = "triple_des"
+		dh_group                 = 2
+		ike_version              = 1
+	}
+	resource "ibm_is_ipsec_policy" "testacc_ipsec" {
+		name                     = "%s"
+		authentication_algorithm = "md5"
+		encryption_algorithm     = "triple_des"
+		pfs                      = "disabled"
+	}
+	resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection1" {
+		name 				= "%s"
+		vpn_gateway 		= "${ibm_is_vpn_gateway.testacc_VPNGateway1.id}"
+		preshared_key 		= "VPNDemoPassword"
+		peer_address 		= ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
+		ike_policy 			= "%s" == "null" ? "" : ibm_is_ike_policy.testacc_ike.id
+		ipsec_policy  		= "%s" == "null" ? "" : ibm_is_ipsec_policy.testacc_ipsec.id
+	}
+
+	`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpnname, ikepolicyname, ipsecpolicyname, name, noNullPass, noNullPass)
+
+}

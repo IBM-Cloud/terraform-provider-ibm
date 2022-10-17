@@ -6,9 +6,14 @@ variable "resource_group_name" {
   default = "Default"
 }
 
-variable "storage" {
+variable "standard_storage_class" {
   default = "standard"
 }
+
+variable "onerate_storage_class" {
+  default = "onerate_active"
+}
+
 
 variable "region" {
   default = "us"
