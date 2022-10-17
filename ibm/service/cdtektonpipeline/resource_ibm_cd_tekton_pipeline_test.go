@@ -71,12 +71,16 @@ func TestAccIBMCdTektonPipelineAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMCdTektonPipelineConfigBasic() string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -93,16 +97,20 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }
 
 func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enablePartialCloning string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
+
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -121,7 +129,7 @@ func testAccCheckIBMCdTektonPipelineConfig(enableSlackNotifications string, enab
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-	`, tcName, rgID, enableSlackNotifications, enablePartialCloning)
+	`, rgName, tcName, enableSlackNotifications, enablePartialCloning)
 }
 
 func testAccCheckIBMCdTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {

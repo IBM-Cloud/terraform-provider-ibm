@@ -183,7 +183,6 @@ var Satellite_Resource_instance_id string
 var HostPoolID string
 
 // Continuous Delivery
-var CdResourceGroupID string
 var CdResourceGroupName string
 var CdAppConfigID string
 
@@ -992,11 +991,6 @@ func init() {
 	IksClusterID = os.Getenv("IBM_CLUSTER_ID")
 	if IksClusterID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
-	}
-
-	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
-	if CdResourceGroupID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	CdResourceGroupName = os.Getenv("IBM_CD_RESOURCE_GROUP_NAME")
