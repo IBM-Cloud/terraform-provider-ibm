@@ -71,14 +71,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The unique identifier of the volume group action. The ID is composed of `<power_instance_id>/<volume_group_id>`.
+- `id` - (String) The unique identifier of the volume group action. The ID is composed of `<pi_cloud_instance_id>/<volume_group_id>`.
 - `replication_status` - (String) The replication status of volume group.
 - `volume_group_name` - (String) The name of the volume group.
 - `volume_group_status` - (String) The status of the volume group.
 
 ## Import
 
-The `ibm_pi_volume_group_action` resource can be imported by using `power_instance_id` and `volume_group_id`.
+The `ibm_pi_volume_group_action` resource can be imported by using `pi_cloud_instance_id` and `volume_group_id`.
 
 **Example**
 
