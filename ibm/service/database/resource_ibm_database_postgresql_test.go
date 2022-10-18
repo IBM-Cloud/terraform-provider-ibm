@@ -82,15 +82,16 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "members_disk_allocation_mb", "14336"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "public-and-private"),
 					resource.TestCheckResourceAttr(name, "whitelist.#", "2"),
-					resource.TestCheckResourceAttr(name, "users.#", "2"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.#", "3"),
-					resource.TestCheckResourceAttr(name, "connectionstrings.2.name", "admin"),
+					resource.TestCheckResourceAttr(name, "users.#", "3"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.#", "4"),
+					resource.TestCheckResourceAttr(name, "connectionstrings.3.name", "admin"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.hosts.#", "1"),
 					resource.TestCheckResourceAttr(name, "connectionstrings.0.scheme", "postgres"),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+					resource.TestCheckResourceAttr(name, "logical_replication_slot.#", "1"),
 				),
 			},
 			// {
@@ -568,6 +569,17 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 			name     = "user124"
 			password = "password12"
 		}
+		users {
+			name     = "repl"
+			password = "repl123456"
+		}
+		configuration                   = <<CONFIGURATION
+		{
+		  "wal_level": "logical",
+		  "max_replication_slots": 21,
+		  "max_wal_senders": 21
+		}
+		CONFIGURATION
 		whitelist {
 			address     = "172.168.1.2/32"
 			description = "desc1"
@@ -575,6 +587,11 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		whitelist {
 			address     = "172.168.1.1/32"
 			description = "desc"
+		}
+		logical_replication_slot {
+			name = "wj123"
+			database_name = "ibmclouddb"
+			plugin_type = "wal2json"
 		}
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)

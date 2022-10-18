@@ -480,6 +480,40 @@ resource "ibm_database" "db" {
 
 ```
 
+### Creating logical replication slot for postgres database
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "db" {
+  name                         = "example-database"
+  service                      = "databases-for-postgresql"
+  plan                         = "standard"
+  location                     = "us-east"
+  
+  users {
+    name     = "repl"
+    password = "repl123456"
+  }
+
+  configuration                = <<CONFIGURATION
+  {
+    "wal_level": "logical",
+    "max_replication_slots": 21,
+    "max_wal_senders": 21
+  }
+  CONFIGURATION
+
+  logical_replication_slot {
+    name = "wj123"
+    database_name = "ibmclouddb"
+    plugin_type = "wal2json"
+  }
+}
+```
+
 **provider.tf**
 Please make sure to target right region in the provider block, If database is created in region other than `us-south`
 
@@ -542,6 +576,19 @@ Review the argument reference that you can specify for your resource.
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services `databases-for-postgresql`, `databases-for-redis` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4#setdatabaseconfiguration-request).
+- `logical_replication_slot` - (Optional, List of Objects) A list of logical replication slots that you want to create on the database. Multiple blocks are allowed. This is only available for `databases-for-postgresql`.
+
+  Nested scheme for `logical_replication_slot`:
+  - `name` - (Required, String) The name of the `logical_replication_slot`.
+  - `database_name` - (Required, String) The name of the database on which you want to create the `logical_replication_slot`.
+  - `plugin_type` - (Required, String) The plugin type that is used to create the `logical_replication_slot`. Only `wal2json` is supported.
+
+  Prereqs to creating a logical replication slot:
+  - Make sure the replication user's (`repl`) password has been changed.
+  - Make sure that your database is configured such that logical replication can be enabled. This means thats the `wal_level` needs to be set to `logical`. Also, `max_replication_slots` and `max_wal_senders` must be greater than 20.
+  - For more information on enabling logical replication slots please see [Configuring Wal2json](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-wal2json)
+
+  Please note, logical replication slots can only be created after database creation.
 - `guid` - (Optional, String) The unique identifier of the database instance.
 - `key_protect_key` - (Optional, Forces new resource, String) The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS)  that you want to use for disk encryption. A key CRN is in the format `crn:v1:<…>:key:`. You can specify the root key during the database creation only. After the database is created, you cannot update the root key. For more information, refer [Disk encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key) documentation.
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.

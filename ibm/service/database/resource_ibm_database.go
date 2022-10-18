@@ -1584,71 +1584,39 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		for _, user := range userList.(*schema.Set).List() {
 			userEl := user.(map[string]interface{})
-			createDatabaseUserRequestUserModel := &clouddatabasesv5.User{
-				Username: core.StringPtr(userEl["name"].(string)),
-				Password: core.StringPtr(userEl["password"].(string)),
-			}
+			if userEl["name"].(string) == "repl" && (strings.Contains(serviceName, "postgresql") || strings.Contains(serviceName, "enterprisedb")) {
+				updateReplUser(userEl["password"].(string), instanceID, userEl["type"].(string), meta, d)
+			} else {
+				createDatabaseUserRequestUserModel := &clouddatabasesv5.User{
+					Username: core.StringPtr(userEl["name"].(string)),
+					Password: core.StringPtr(userEl["password"].(string)),
+				}
 
-			// User Role only for ops_manager user type
-			if userEl["type"].(string) == "ops_manager" && userEl["role"].(string) != "" {
-				createDatabaseUserRequestUserModel.Role = core.StringPtr(userEl["role"].(string))
-			}
+				// User Role only for ops_manager user type
+				if userEl["type"].(string) == "ops_manager" && userEl["role"].(string) != "" {
+					createDatabaseUserRequestUserModel.Role = core.StringPtr(userEl["role"].(string))
+				}
 
-			instanceId := d.Id()
-			createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-				ID:       &instanceId,
-				UserType: core.StringPtr(userEl["type"].(string)),
-				User:     createDatabaseUserRequestUserModel,
-			}
+				instanceId := d.Id()
+				createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+					ID:       &instanceId,
+					UserType: core.StringPtr(userEl["type"].(string)),
+					User:     createDatabaseUserRequestUserModel,
+				}
 
-			createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+				createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
 
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("CreateDatabaseUser (%s) failed %s\n%s", userEl["name"], err, response))
-			}
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("CreateDatabaseUser (%s) failed %s\n%s", userEl["name"], err, response))
+				}
 
-			taskID := *createDatabaseUserResponse.Task.ID
+				taskID := *createDatabaseUserResponse.Task.ID
 
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
-			}
-		}
-	}
-
-	if logicalReplicationSlots, ok := d.GetOk("logical_replication_slot"); ok {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-		}
-
-		for _, logicalReplicationSlot := range logicalReplicationSlots.(*schema.Set).List() {
-			slot := logicalReplicationSlot.(map[string]interface{})
-			createLogicalReplicationSlotModel := &clouddatabasesv5.LogicalReplicationSlotLogicalReplicationSlot{
-				Name:         core.StringPtr(slot["name"].(string)),
-				DatabaseName: core.StringPtr(slot["database_name"].(string)),
-				PluginType:   core.StringPtr(slot["plugin_type"].(string)),
-			}
-
-			instanceId := d.Id()
-			createLogicalReplicationSlotOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
-				ID:                     &instanceId,
-				LogicalReplicationSlot: createLogicalReplicationSlotModel,
-			}
-
-			createLogicalReplicationResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationSlotOptions)
-
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("CreateLogicalReplication (%s) failed %s\n%s", slot["name"], err, response))
-			}
-
-			taskID := *createLogicalReplicationResponse.Task.ID
-
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) logical replication (%s) create task to complete: %s", d.Id(), slot["name"], err))
+				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return diag.FromErr(fmt.Errorf(
+						"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
+				}
 			}
 		}
 	}
@@ -2228,7 +2196,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		for _, change := range userChanges {
-			log.Printf("[DEBUG] userChanges %v", change)
+			service := d.Get("service").(string)
 			// Update Database User password only
 			if change.Old != nil && change.New != nil {
 				// No change
@@ -2267,6 +2235,14 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 				// User not found, need to reCreate user
 				change.Old = nil
+			}
+
+			newName, ok := change.New["name"]
+			isPgOrEdb := strings.Contains(service, "postgresql") || strings.Contains(service, "enterprisedb")
+			if ok && isPgOrEdb && newName.(string) == "repl" {
+				updateReplUser(change.New["password"].(string), instanceID, change.New["type"].(string), meta, d)
+
+				continue
 			}
 
 			// Delete Old User
@@ -2334,7 +2310,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		oldSlots, newSlots := d.GetChange("logical_replication_slot")
-		log.Printf("[DEBUG] HEY oldSlots %v newSlots %v", oldSlots, newSlots)
 		slotChanges := make(map[string]*userChange)
 		slotKey := func(raw map[string]interface{}) string {
 			return fmt.Sprintf("%s-%s", raw["name"].(string), raw["database_name"].(string))
@@ -2356,10 +2331,9 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		for _, change := range slotChanges {
-			log.Printf("[DEBUG] HEY change %v", change)
 			// Create New Logical Rep Slot
 			if change.New != nil {
-				slotEntry := &clouddatabasesv5.LogicalReplicationSlotLogicalReplicationSlot{
+				logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
 					Name:         core.StringPtr(change.New["name"].(string)),
 					DatabaseName: core.StringPtr(change.New["database_name"].(string)),
 					PluginType:   core.StringPtr(change.New["plugin_type"].(string)),
@@ -2367,19 +2341,19 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 				createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
 					ID:                     &instanceID,
-					LogicalReplicationSlot: slotEntry,
+					LogicalReplicationSlot: logicalReplicationSlot,
 				}
 
 				createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *slotEntry.Name, err, response))
+					return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response))
 				}
 
 				taskID := *createLogicalRepSlotResponse.Task.ID
 				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *slotEntry.Name, err))
+						"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
 				}
 			}
 
@@ -3075,6 +3049,38 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 					return err
 				}
 			}
+		}
+	}
+
+	return nil
+}
+
+func updateReplUser(password string, instanceID string, userType string, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
+		Password: core.StringPtr(password),
+	}
+
+	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
+		ID:       &instanceID,
+		UserType: core.StringPtr(userType),
+		Username: core.StringPtr("repl"),
+		User:     passwordSettingUser,
+	}
+
+	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
+
+	if response.StatusCode != 404 {
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+		}
+
+		taskID := *changeUserPasswordResponse.Task.ID
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
 		}
 	}
 
