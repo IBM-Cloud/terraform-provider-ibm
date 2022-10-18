@@ -1,4 +1,4 @@
-# 1.47.0-beta1 (Oct 18, 2022)
+# 1.47.0-beta2 (Oct 18, 2022)
 Features
 * Support for DirectLink
     - **DataSources**
