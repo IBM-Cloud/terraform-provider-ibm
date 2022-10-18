@@ -161,29 +161,29 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	}
 
 	lines := strings.Split(string(resp), "\n")
-	var scriptInsert int
+	var index int
 
 	//if this is a RHEL host, find insert point for custom code
 	if !coreos_enabled {
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
-				scriptInsert = i
+				index = i
 				break
 			}
 		}
 
-		lines = append(lines[:scriptInsert+1], lines[scriptInsert:]...)
+		lines = append(lines[:index+1], lines[index:]...)
 
 		if script, ok := d.GetOk("custom_script"); ok {
-			lines[scriptInsert] = script.(string)
+			lines[index] = script.(string)
 		} else {
 			if strings.ToLower(hostProvider) == "aws" {
-				lines[scriptInsert] = `
+				lines[index] = `
 yum-config-manager --enable '*'
 yum install container-selinux -y
 `
 			} else if strings.ToLower(hostProvider) == "ibm" {
-				lines[scriptInsert] = `
+				lines[index] = `
 subscription-manager refresh
 if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
 subscription-manager repos --enable rhel-server-rhscl-7-rpms
@@ -197,7 +197,7 @@ subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
 fi
 yum install container-selinux -y`
 			} else if strings.ToLower(hostProvider) == "azure" {
-				lines[scriptInsert] = `
+				lines[index] = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 update-alternatives --set python3 /usr/bin/python3.8
@@ -205,7 +205,7 @@ fi
 yum install container-selinux -y
 `
 			} else if strings.ToLower(hostProvider) == "google" {
-				lines[scriptInsert] = `
+				lines[index] = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 update-alternatives --set python3 /usr/bin/python3.8
