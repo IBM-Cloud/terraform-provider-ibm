@@ -147,11 +147,11 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Computed:    true,
 							Description: "Value type (string, boolean, int).",
 						},
-						"default_value": &schema.Schema{
-							Type:        schema.TypeMap,
-							Computed:    true,
-							Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-						},
+						// "default_value": &schema.Schema{
+						// 	Type:        schema.TypeMap,
+						// 	Computed:    true,
+						// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+						// },
 						"display_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -330,7 +330,6 @@ func DataSourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Generic data to be included with content being onboarded. Required for virtual server image for VPC.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -338,6 +337,16 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Version source URL.",
+						},
+						"version_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Version name.",
+						},
+						"validated_terraform_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Version name.",
 						},
 						"vsi_vpc": &schema.Schema{
 							Type:        schema.TypeList,

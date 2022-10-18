@@ -383,11 +383,11 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Optional:    true,
 													Description: "Value type (string, boolean, int).",
 												},
-												"default_value": &schema.Schema{
-													Type:        schema.TypeMap,
-													Optional:    true,
-													Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-												},
+												// "default_value": &schema.Schema{
+												// 	Type:        schema.TypeMap,
+												// 	Optional:    true,
+												// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+												// },
 												"display_name": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
@@ -557,10 +557,226 @@ func ResourceIBMCmOffering() *schema.Resource {
 										},
 									},
 									"metadata": &schema.Schema{
-										Type:        schema.TypeMap,
+										Type:        schema.TypeList,
+										MaxItems:    1,
 										Optional:    true,
-										Description: "Open ended metadata information.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "Generic data to be included with content being onboarded. Required for virtual server image for VPC.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"source_url": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Version source URL.",
+												},
+												"version_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Version name.",
+												},
+												"validated_terraform_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Version name.",
+												},
+												"vsi_vpc": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "VSI VPC version information",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"operating_system": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Operating system included in this image. Required for virtual server image for VPC.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"dedicated_host_only": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.",
+																		},
+																		"vendor": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Vendor of the operating system. Required for virtual server image for VPC.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Globally unique name for this operating system Required for virtual server image for VPC.",
+																		},
+																		"href": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "URL for this operating system. Required for virtual server image for VPC.",
+																		},
+																		"display_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Unique, display-friendly name for the operating system. Required for virtual server image for VPC.",
+																		},
+																		"family": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Software family for this operating system. Required for virtual server image for VPC.",
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Major release version of this operating system. Required for virtual server image for VPC.",
+																		},
+																		"architecture": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Operating system architecture. Required for virtual server image for VPC.",
+																		},
+																	},
+																},
+															},
+															"file": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Details for the stored image file. Required for virtual server image for VPC.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"size": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Description: "Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.",
+																		},
+																	},
+																},
+															},
+															"minimum_provisioned_size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Description: "Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.",
+															},
+															"images": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Image operating system. Required for virtual server image for VPC.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Programmatic ID of virtual server image. Required for virtual server image for VPC.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Programmatic name of virtual server image. Required for virtual server image for VPC.",
+																		},
+																		"region": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Region the virtual server image is available in. Required for virtual server image for VPC.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"operating_system": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Operating system included in this image. Required for virtual server image for VPC.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"dedicated_host_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.",
+															},
+															"vendor": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Vendor of the operating system. Required for virtual server image for VPC.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Globally unique name for this operating system Required for virtual server image for VPC.",
+															},
+															"href": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "URL for this operating system. Required for virtual server image for VPC.",
+															},
+															"display_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Unique, display-friendly name for the operating system. Required for virtual server image for VPC.",
+															},
+															"family": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Software family for this operating system. Required for virtual server image for VPC.",
+															},
+															"version": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Major release version of this operating system. Required for virtual server image for VPC.",
+															},
+															"architecture": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Operating system architecture. Required for virtual server image for VPC.",
+															},
+														},
+													},
+												},
+												"file": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Details for the stored image file. Required for virtual server image for VPC.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Description: "Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.",
+															},
+														},
+													},
+												},
+												"minimum_provisioned_size": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.",
+												},
+												"images": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "Image operating system. Required for virtual server image for VPC.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Programmatic ID of virtual server image. Required for virtual server image for VPC.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Programmatic name of virtual server image. Required for virtual server image for VPC.",
+															},
+															"region": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Region the virtual server image is available in. Required for virtual server image for VPC.",
+															},
+														},
+													},
+												},
+											},
+										},
 									},
 									"validation": &schema.Schema{
 										Type:        schema.TypeList,
@@ -2202,10 +2418,10 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 		createOfferingOptions.SetOfferingSupportURL(d.Get("offering_support_url").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createOfferingOptions.SetTags(d.Get("tags").([]string))
+		createOfferingOptions.SetTags(SIToSS(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("keywords"); ok {
-		createOfferingOptions.SetKeywords(d.Get("keywords").([]string))
+		createOfferingOptions.SetKeywords(SIToSS(d.Get("keywords").([]interface{})))
 	}
 	if _, ok := d.GetOk("rating"); ok {
 		ratingModel, err := resourceIBMCmOfferingMapToRating(d.Get("rating.0").(map[string]interface{}))
@@ -2656,6 +2872,535 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 }
 
 func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
+
+	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getOfferingOptions.SetCatalogIdentifier(parts[0])
+	getOfferingOptions.SetOfferingID(parts[1])
+	offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetOfferingWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetOfferingWithContext failed %s\n%s", err, response))
+	}
+
+	updateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	updateOfferingOptions.SetOfferingID(*offering.ID)
+	ifMatch := fmt.Sprintf("\"%s\"", *offering.Rev)
+	updateOfferingOptions.IfMatch = &ifMatch
+
+	hasChange := false
+
+	if d.HasChange("catalog_identifier") {
+		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "catalog_identifier"))
+	}
+	if d.HasChange("label") {
+		var method string
+		if offering.Label == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/label"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("label"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("label_i18n") {
+		var method string
+		if offering.LabelI18n == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/label_i18n"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("label_i18n"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("name") {
+		var method string
+		if offering.Name == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/name"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("name"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("offering_icon_url") {
+		var method string
+		if offering.OfferingIconURL == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/offering_icon_url"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("offering_icon_url"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("offering_docs_url") {
+		var method string
+		if offering.OfferingDocsURL == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/offering_docs_url"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("offering_docs_url"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("offering_support_url") {
+		var method string
+		if offering.OfferingSupportURL == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/offering_support_url"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("offering_support_url"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("tags") {
+		var method string
+		if offering.Tags == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/tags"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("tags"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("keywords") {
+		var method string
+		if offering.Keywords == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/keywords"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("keywords"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("short_description") {
+		var method string
+		if offering.ShortDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/short_description"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("short_description"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("short_description_i18n") {
+		var method string
+		if offering.ShortDescriptionI18n == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/short_description_i18n"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("short_description_i18n"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("long_description") {
+		var method string
+		if offering.LongDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/long_description"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("long_description_i18n") {
+		var method string
+		if offering.LongDescriptionI18n == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/long_description_i18n"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description_i18n"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("features") {
+		var method string
+		if offering.Features == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/features"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("features"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("kinds") {
+		var method string
+		if offering.Kinds == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/kinds"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("kinds"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("share_with_all") {
+		var method string
+		if offering.ShareWithAll == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/share_with_all"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("share_with_all"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("share_with_ibm") {
+		var method string
+		if offering.ShareWithIBM == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/share_with_ibm"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("share_with_ibm"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("share_enabled") {
+		var method string
+		if offering.ShareEnabled == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/share_enabled"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("share_enabled"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("public_original_crn") {
+		var method string
+		if offering.PublicOriginalCRN == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/public_original_crn"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("public_original_crn"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("publish_public_crn") {
+		var method string
+		if offering.PublishPublicCRN == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/publish_public_crn"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("publish_public_crn"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("portal_approval_record") {
+		var method string
+		if offering.PortalApprovalRecord == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/portal_approval_record"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("portal_approval_record"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("portal_ui_url") {
+		var method string
+		if offering.PortalUIURL == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/portal_ui_url"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("portal_ui_url"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("metadata") {
+		var method string
+		if offering.Metadata == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/metadata"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("metadata"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("disclaimer") {
+		var method string
+		if offering.Disclaimer == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/disclaimer"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("disclaimer"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("hidden") {
+		var method string
+		if offering.Hidden == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/hidden"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("hidden"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("provider") {
+		var method string
+		if offering.Provider == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/provider"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("provider"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("provider_info") {
+		var method string
+		if offering.ProviderInfo == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/provider_info"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("provider_info.0"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("image_pull_keys") {
+		var method string
+		if offering.ImagePullKeys == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/image_pull_keys"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("image_pull_keys"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("support") {
+		var method string
+		if offering.Support == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/support"
+		supportModel, err := resourceIBMCmOfferingMapToSupport(d.Get("support.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: supportModel,
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("media") {
+		var method string
+		if offering.Media == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/media"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("media"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("product_kind") {
+		var method string
+		if offering.ProductKind == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := "/product_kind"
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("product_kind"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+
+	if hasChange {
+		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
 	return resourceIBMCmOfferingRead(context, d, meta)
 }
 
@@ -2875,7 +3620,13 @@ func resourceIBMCmOfferingMapToVersion(modelMap map[string]interface{}) (*catalo
 		model.IamPermissions = iamPermissions
 	}
 	if modelMap["metadata"] != nil {
-		// TODO: handle Metadata, map with entry type ''
+		metadataModel := modelMap["metadata"].([]interface{})[0].(map[string]interface{})
+		model.Metadata = metadataModel
+		// FlavorModel, err := resourceIBMCmOfferingMapToFlavor(modelMap["flavor"].([]interface{})[0].(map[string]interface{}))
+		// if err != nil {
+		// 	return model, err
+		// }
+		// model.Flavor = FlavorModel
 	}
 	if modelMap["validation"] != nil && len(modelMap["validation"].([]interface{})) > 0 {
 		ValidationModel, err := resourceIBMCmOfferingMapToValidation(modelMap["validation"].([]interface{})[0].(map[string]interface{}))
@@ -4131,9 +4882,28 @@ func resourceIBMCmOfferingVersionToMap(model *catalogmanagementv1.Version) (map[
 		}
 		modelMap["iam_permissions"] = iamPermissions
 	}
+	metadata := []map[string]interface{}{}
 	if model.Metadata != nil {
-		// TODO: handle Metadata of type TypeMap -- container, not list
+		var modelMapVSI map[string]interface{}
+		var err error
+		if model.Metadata["vsi_vpc"] != nil {
+			modelMapVSI, err = dataSourceIBMCmVersionMetadataVSIToMap(model.Metadata["vsi_vpc"].(map[string]interface{}))
+			if err != nil {
+				return modelMap, err
+			}
+		}
+		convertedMap := make(map[string]interface{}, len(model.Metadata))
+		for k, v := range model.Metadata {
+			if k == "vsi_vpc" {
+				convertedMap[k] = []map[string]interface{}{modelMapVSI}
+			} else {
+				convertedMap[k] = v
+			}
+		}
+		metadata = append(metadata, convertedMap)
 	}
+	modelMap["metadata"] = metadata
+
 	if model.Validation != nil {
 		validationMap, err := resourceIBMCmOfferingValidationToMap(model.Validation)
 		if err != nil {
@@ -4267,9 +5037,9 @@ func resourceIBMCmOfferingConfigurationToMap(model *catalogmanagementv1.Configur
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	if model.DefaultValue != nil {
-		modelMap["default_value"] = model.DefaultValue
-	}
+	// if model.DefaultValue != nil {
+	// 	modelMap["default_value"] = model.DefaultValue
+	// }
 	if model.DisplayName != nil {
 		modelMap["display_name"] = model.DisplayName
 	}

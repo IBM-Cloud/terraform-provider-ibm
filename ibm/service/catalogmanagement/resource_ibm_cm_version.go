@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,6 +22,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMCmVersionCreate,
 		ReadContext:   resourceIBMCmVersionRead,
+		UpdateContext: resourceIBMCmVersionUpdate,
 		DeleteContext: resourceIBMCmVersionDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -31,16 +33,20 @@ func ResourceIBMCmVersion() *schema.Resource {
 				ForceNew:    true,
 				Description: "Catalog identifier.",
 			},
-			"offering_id": &schema.Schema{
+			"offering_identifier": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Offering identification.",
 			},
+			"offering_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Offering identification.",
+			},
 			"tags": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Tags array.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -59,7 +65,6 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"label": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Display name of version. Required for virtual server image for VPC.",
 			},
 			"install_kind": &schema.Schema{
@@ -90,20 +95,17 @@ func ResourceIBMCmVersion() *schema.Resource {
 			"sha": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "SHA256 fingerprint of the image file. Required for virtual server image for VPC.",
 			},
 			"version": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Computed:    true,
 				Description: "Semantic version of the software being onboarded. Required for virtual server image for VPC.",
 			},
 			"flavor": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Version Flavor Information.  Only supported for Product kind Solution.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -135,7 +137,6 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Generic data to be included with content being onboarded. Required for virtual server image for VPC.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -143,6 +144,16 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Version source URL.",
+						},
+						"version_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Version name.",
+						},
+						"validated_terraform_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Version name.",
 						},
 						"vsi_vpc": &schema.Schema{
 							Type:        schema.TypeList,
@@ -433,7 +444,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"configuration": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "List of user solicited overrides.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -447,11 +458,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 							Optional:    true,
 							Description: "Value type (string, boolean, int).",
 						},
-						"default_value": &schema.Schema{
-							Type:        schema.TypeMap,
-							Optional:    true,
-							Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
-						},
+						// "default_value": &schema.Schema{
+						// 	Type:        schema.TypeMap,
+						// 	Optional:    true,
+						// 	Description: "The default value.  To use a secret when the type is password, specify a JSON encoded value of $ref:#/components/schemas/SecretInstance, prefixed with `cmsm_v1:`.",
+						// },
 						"display_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -577,7 +588,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"iam_permissions": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "List of IAM permissions that are required to consume this version.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -686,7 +697,8 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"install": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
+				MaxItems:    1,
 				Description: "Script information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -726,7 +738,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"pre_install": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "Optional pre-install instructions.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -766,7 +778,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"entitlement": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "Entitlement license info.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -801,7 +813,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"licenses": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "List of licenses the product was built with.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -889,7 +901,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"long_description": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "Long description for version.",
 			},
 			"long_description_i18n": &schema.Schema{
@@ -934,7 +946,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"solution_info": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Optional:    true,
 				Description: "Version Solution Information.  Only supported for Product kind Solution.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1541,7 +1553,7 @@ func ResourceIBMCmVersion() *schema.Resource {
 			},
 			"is_consumable": &schema.Schema{
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Optional:    true,
 				Description: "Is the version able to be shared.",
 			},
 			"version_id": &schema.Schema{
@@ -1562,7 +1574,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	importOfferingVersionOptions := &catalogmanagementv1.ImportOfferingVersionOptions{}
 
 	importOfferingVersionOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
-	importOfferingVersionOptions.SetOfferingID(d.Get("offering_id").(string))
+	importOfferingVersionOptions.SetOfferingID(d.Get("offering_identifier").(string))
 	if _, ok := d.GetOk("tags"); ok {
 		importOfferingVersionOptions.SetTags(SIToSS(d.Get("tags").([]interface{})))
 	}
@@ -1590,9 +1602,6 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("sha"); ok {
 		importOfferingVersionOptions.SetSha(d.Get("sha").(string))
 	}
-	if _, ok := d.GetOk("version"); ok {
-		importOfferingVersionOptions.SetVersion(d.Get("version").(string))
-	}
 	if _, ok := d.GetOk("flavor"); ok {
 		flavorModel, err := resourceIBMCmVersionMapToFlavor(d.Get("flavor.0").(map[string]interface{}))
 		if err != nil {
@@ -1615,6 +1624,7 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	}
 	if _, ok := d.GetOk("target_version"); ok {
 		importOfferingVersionOptions.SetTargetVersion(d.Get("target_version").(string))
+		importOfferingVersionOptions.SetVersion(d.Get("target_version").(string))
 	}
 	if _, ok := d.GetOk("include_config"); ok {
 		importOfferingVersionOptions.SetIncludeConfig(d.Get("include_config").(bool))
@@ -1635,9 +1645,198 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("ImportOfferingVersionWithContext failed %s\n%s", err, response))
 	}
 
-	versionLocator := *offering.Kinds[0].Versions[0].VersionLocator
+	activeVersion := offering.Kinds[0].Versions[0]
+	versionID := *offering.Kinds[0].Versions[0].ID
 
-	d.SetId(versionLocator)
+	d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, versionID))
+
+	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
+
+	updateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	updateOfferingOptions.SetOfferingID(*offering.ID)
+	ifMatch := fmt.Sprintf("\"%s\"", *offering.Rev)
+	updateOfferingOptions.IfMatch = &ifMatch
+
+	hasChange := false
+	method := "replace"
+
+	// find kind and version index
+	var kindIndex int
+	var versionIndex int
+	for i, kind := range offering.Kinds {
+		if kind.ID == activeVersion.KindID {
+			kindIndex = i
+
+			if kind.Versions != nil && len(kind.Versions) > 0 {
+				for j, version := range kind.Versions {
+					if version.ID == activeVersion.ID {
+						versionIndex = j
+					}
+				}
+			}
+		}
+	}
+
+	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
+
+	if _, ok := d.GetOk("flavor"); ok {
+		if activeVersion.Flavor == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/flavor", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("flavor.0"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		if activeVersion.Tags == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/tags", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("tags"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("configuration"); ok {
+		if activeVersion.Configuration == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/configuration", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("configuration"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("iam_permissions"); ok {
+		if activeVersion.IamPermissions == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/iam_permissions", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("iam_permissions"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("install"); ok {
+		if activeVersion.Install == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/install", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("install.0"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("pre_install"); ok {
+		if activeVersion.PreInstall == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/pre_install", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("pre_install"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("licenses"); ok {
+		if activeVersion.Licenses == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/licenses", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("licenses"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("long_description"); ok {
+		if activeVersion.LongDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/long_description", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("solution_info"); ok {
+		if activeVersion.SolutionInfo == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/solution_info", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("solution_info"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if _, ok := d.GetOk("is_consumable"); ok {
+		if activeVersion.IsConsumable == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/is_consumable", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("is_consumable"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+
+	if hasChange {
+		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
 
 	return resourceIBMCmVersionRead(context, d, meta)
 }
@@ -1650,7 +1849,7 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 
 	getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
 
-	getVersionOptions.SetVersionLocID(d.Id())
+	getVersionOptions.SetVersionLocID(strings.Replace(d.Id(), "/", ".", 1))
 
 	offering, response, err := catalogManagementClient.GetVersionWithContext(context, getVersionOptions)
 	if err != nil {
@@ -1689,9 +1888,12 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 	}
 	metadata := []map[string]interface{}{}
 	if version.Metadata != nil {
-		modelMapVSI, err := dataSourceIBMCmVersionMetadataVSIToMap(version.Metadata["vsi_vpc"].(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		var modelMapVSI map[string]interface{}
+		if version.Metadata["vsi_vpc"] != nil {
+			modelMapVSI, err = dataSourceIBMCmVersionMetadataVSIToMap(version.Metadata["vsi_vpc"].(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 		convertedMap := make(map[string]interface{}, len(version.Metadata))
 		for k, v := range version.Metadata {
@@ -1904,6 +2106,216 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 	return nil
 }
 
+func resourceIBMCmVersionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
+	getVersionOptions.SetVersionLocID(strings.Replace(d.Id(), "/", ".", 1))
+
+	partialOffering, response, err := catalogManagementClient.GetVersionWithContext(context, getVersionOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetVersionWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetVersionWithContext failed %s\n%s", err, response))
+	}
+	activeVersion := partialOffering.Kinds[0].Versions[0]
+
+	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
+
+	getOfferingOptions.SetCatalogIdentifier(*partialOffering.CatalogID)
+	getOfferingOptions.SetOfferingID(*partialOffering.ID)
+	offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		log.Printf("[DEBUG] GetOfferingWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetOfferingWithContext failed %s\n%s", err, response))
+	}
+
+	updateOfferingOptions := &catalogmanagementv1.UpdateOfferingOptions{}
+
+	updateOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	updateOfferingOptions.SetOfferingID(*offering.ID)
+	ifMatch := fmt.Sprintf("\"%s\"", *offering.Rev)
+	updateOfferingOptions.IfMatch = &ifMatch
+
+	hasChange := false
+	method := "replace"
+
+	// find kind and version index
+	var kindIndex int
+	var versionIndex int
+	for i, kind := range offering.Kinds {
+		if kind.ID == activeVersion.KindID {
+			kindIndex = i
+
+			if kind.Versions != nil && len(kind.Versions) > 0 {
+				for j, version := range kind.Versions {
+					if version.ID == activeVersion.ID {
+						versionIndex = j
+					}
+				}
+			}
+		}
+	}
+
+	pathToVersion := fmt.Sprintf("/kinds/%d/versions/%d", kindIndex, versionIndex)
+
+	if d.HasChange("flavor") {
+		if activeVersion.Flavor == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/flavor", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("flavor.0"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("tags") {
+		if activeVersion.Tags == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/tags", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("tags"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("configuration") {
+		if activeVersion.Configuration == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/configuration", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("configuration"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("iam_permissions") {
+		if activeVersion.IamPermissions == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/iam_permissions", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("iam_permissions"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("install") {
+		if activeVersion.Install == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/install", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("install.0"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("pre_install") {
+		if activeVersion.PreInstall == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/pre_install", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("pre_install"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("licenses") {
+		if activeVersion.Licenses == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/licenses", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("licenses"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("long_description") {
+		if activeVersion.LongDescription == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/long_description", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("long_description"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+	if d.HasChange("solution_info") {
+		if activeVersion.SolutionInfo == nil {
+			method = "add"
+		} else {
+			method = "replace"
+		}
+		path := fmt.Sprintf("%s/solution_info", pathToVersion)
+		update := catalogmanagementv1.JSONPatchOperation{
+			Op:    &method,
+			Path:  &path,
+			Value: d.Get("solution_info"),
+		}
+		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
+		hasChange = true
+	}
+
+	if hasChange {
+		_, response, err := catalogManagementClient.UpdateOfferingWithContext(context, updateOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] UpdateOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("UpdateOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	return resourceIBMCmVersionRead(context, d, meta)
+}
+
 func resourceIBMCmVersionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
@@ -1912,7 +2324,7 @@ func resourceIBMCmVersionDelete(context context.Context, d *schema.ResourceData,
 
 	deleteVersionOptions := &catalogmanagementv1.DeleteVersionOptions{}
 
-	deleteVersionOptions.SetVersionLocID(d.Id())
+	deleteVersionOptions.SetVersionLocID(strings.Replace(d.Id(), "/", ".", 1))
 
 	response, err := catalogManagementClient.DeleteVersionWithContext(context, deleteVersionOptions)
 	if err != nil {
@@ -2116,9 +2528,9 @@ func resourceIBMCmVersionConfigurationToMap(model *catalogmanagementv1.Configura
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	if model.DefaultValue != nil {
-		modelMap["default_value"] = model.DefaultValue
-	}
+	// if model.DefaultValue != nil {
+	// 	modelMap["default_value"] = model.DefaultValue
+	// }
 	if model.DisplayName != nil {
 		modelMap["display_name"] = model.DisplayName
 	}
