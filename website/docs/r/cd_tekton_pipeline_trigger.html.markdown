@@ -57,7 +57,7 @@ Nested scheme for **events**:
 	* `pull_request` - (Optional, Boolean) If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.
 	* `pull_request_closed` - (Optional, Boolean) If true, the trigger listens for 'close pull request' Git webhook events.
 	* `push` - (Optional, Boolean) If true, the trigger listens for 'push' Git webhook events.
-* `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.
+* `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 * `name` - (Optional, String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
@@ -71,7 +71,7 @@ Nested scheme for **scm_source**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `pattern` - (Optional, String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,253}$/`.
-	* `service_instance_id` - (Optional, String) This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.
+	* `service_instance_id` - (Optional, String) This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `url` - (Required, Forces new resource, String) URL of the repository to which the trigger is listening.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -107,9 +107,9 @@ Nested scheme for **worker**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cd_tekton_pipeline_trigger.
-* `href` - (String) API URL for interacting with the trigger.
+* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `properties` - (List) Trigger properties.
+* `properties` - (List) Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
@@ -118,11 +118,11 @@ Nested scheme for **properties**:
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration.
+	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 	* `type` - (String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
-	* `value` - (String) Property value. Can be empty and should be omitted for `single_select` property type.
+	* `value` - (String) Property value.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `trigger_id` - (String) ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.

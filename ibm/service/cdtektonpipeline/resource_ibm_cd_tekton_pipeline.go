@@ -185,7 +185,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
+							Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
 						},
 					},
 				},
@@ -219,7 +219,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "API URL for interacting with the trigger.",
+							Description: "API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.",
 						},
 						"event_listener": &schema.Schema{
 							Type:        schema.TypeString,
@@ -234,7 +234,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"properties": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Trigger properties.",
+							Description: "Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": &schema.Schema{
@@ -247,7 +247,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Type:             schema.TypeString,
 										Optional:         true,
 										DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
-										Description:      "Property value. Can be empty and should be omitted for `single_select` property type.",
+										Description:      "Property value.",
 									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
@@ -263,7 +263,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration.",
+										Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
 									},
 									"href": &schema.Schema{
 										Type:        schema.TypeString,
@@ -276,7 +276,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"tags": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Trigger tags array.",
+							Description: "Optional trigger tags array.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"worker": &schema.Schema{
@@ -308,13 +308,13 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"max_concurrent_runs": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.",
+							Description: "Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.",
 						},
 						"enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
-							Description: "Flag whether the trigger is enabled. If omitted the trigger is enabled by default.",
+							Description: "Flag whether the trigger is enabled.",
 						},
 						"scm_source": &schema.Schema{
 							Type:        schema.TypeList,
@@ -352,7 +352,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 									"service_instance_id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.",
+										Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 									},
 								},
 							},
@@ -923,9 +923,7 @@ func resourceIBMCdTektonPipelineTriggerManualTriggerToMap(model *cdtektonpipelin
 		modelMap["href"] = model.Href
 	}
 	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
+	modelMap["id"] = model.ID
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
@@ -981,9 +979,7 @@ func resourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 		modelMap["href"] = model.Href
 	}
 	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
+	modelMap["id"] = model.ID
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
@@ -1053,9 +1049,7 @@ func resourceIBMCdTektonPipelineTriggerTimerTriggerToMap(model *cdtektonpipeline
 		modelMap["href"] = model.Href
 	}
 	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
+	modelMap["id"] = model.ID
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {
@@ -1117,9 +1111,7 @@ func resourceIBMCdTektonPipelineTriggerGenericTriggerToMap(model *cdtektonpipeli
 		modelMap["href"] = model.Href
 	}
 	modelMap["event_listener"] = model.EventListener
-	if model.ID != nil {
-		modelMap["id"] = model.ID
-	}
+	modelMap["id"] = model.ID
 	if model.Properties != nil {
 		properties := []map[string]interface{}{}
 		for _, propertiesItem := range model.Properties {

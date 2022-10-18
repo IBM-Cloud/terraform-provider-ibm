@@ -36,7 +36,7 @@ In addition to all argument references listed, you can access the following attr
 * `cron` - (String) Only needed for timer triggers. Cron expression for timer trigger. Maximum frequency is every 5 minutes.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 
-* `enabled` - (Boolean) Flag whether the trigger is enabled. If omitted the trigger is enabled by default.
+* `enabled` - (Boolean) Flag whether the trigger is enabled.
   * Constraints: The default value is `true`.
 
 * `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
@@ -48,15 +48,15 @@ Nested scheme for **events**:
 	* `pull_request_closed` - (Boolean) If true, the trigger listens for 'close pull request' Git webhook events.
 	* `push` - (Boolean) If true, the trigger listens for 'push' Git webhook events.
 
-* `href` - (String) API URL for interacting with the trigger.
+* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 
-* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. Omit this property to disable the concurrency limit.
+* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 
 * `name` - (String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 
-* `properties` - (List) Trigger properties.
+* `properties` - (List) Optional trigger properties used to override or supplement the pipeline properties when triggering a pipeline run.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested scheme for **properties**:
 	* `enum` - (List) Options for `single_select` property type. Only needed for `single_select` property type.
@@ -65,11 +65,11 @@ Nested scheme for **properties**:
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration.
+	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 	* `type` - (String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
-	* `value` - (String) Property value. Can be empty and should be omitted for `single_select` property type.
+	* `value` - (String) Property value.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 
 * `scm_source` - (List) SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
@@ -81,7 +81,7 @@ Nested scheme for **scm_source**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `pattern` - (String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,253}$/`.
-	* `service_instance_id` - (String) This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /api/v1/toolchains/{toolchain_id}/tools.
+	* `service_instance_id` - (String) This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -99,7 +99,7 @@ Nested scheme for **secret**:
 	* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 
-* `tags` - (List) Trigger tags array.
+* `tags` - (List) Optional trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
 
 * `timezone` - (String) Only needed for timer triggers. Timezone for timer trigger.
