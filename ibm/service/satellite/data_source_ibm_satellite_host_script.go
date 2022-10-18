@@ -160,10 +160,11 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		return fmt.Errorf("[ERROR] Error Generating Satellite Registration Script: %s\n%s", err, resp)
 	}
 
-	lines := strings.Split(string(resp), "\n")
+	scriptContent := string(resp)
 
 	//if this is a RHEL host, find insert point for custom code
 	if !coreos_enabled {
+		lines := strings.Split(scriptContent, "\n")
 		var index int
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
@@ -217,11 +218,9 @@ yum install container-selinux -y
 			}
 		}
 
-		lines = append(lines[:index+1], lines[index:]...)
-		lines[index] = insertionText
+		scriptContent = strings.Join(lines[:index+1], "\n") + insertionText + strings.Join(lines[index+1:], "\n")
 	}
 
-	scriptContent := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(scriptPath, []byte(scriptContent), 0644)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Creating Satellite Attach Host Script: %s", err)
