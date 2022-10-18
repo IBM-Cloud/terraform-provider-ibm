@@ -166,7 +166,8 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	if !coreos_enabled {
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
-				i = i + 1
+				lines = append(lines[:i+1], lines[i:]...)
+				// i = i + 1
 				if script, ok := d.GetOk("custom_script"); ok {
 					lines[i] = script.(string)
 				} else {
