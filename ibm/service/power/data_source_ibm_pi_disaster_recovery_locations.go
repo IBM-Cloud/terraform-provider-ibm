@@ -5,14 +5,12 @@ package power
 
 import (
 	"context"
-	"log"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -27,7 +25,7 @@ func DataSourceIBMPIDisasterRecoveryLocations() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"location": {
+						PIDRLocation: {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "RegionZone of a site",
@@ -41,7 +39,7 @@ func DataSourceIBMPIDisasterRecoveryLocations() *schema.Resource {
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
-									"location": {
+									PIDRLocation: {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -67,24 +65,30 @@ func dataSourceIBMPIDisasterRecoveryLocations(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("disaster_recovery_locations", flattenDisasterRecoveryLocations(drLocationSites.DisasterRecoveryLocations))
-
-	return nil
-}
-
-func flattenDisasterRecoveryLocations(list []*models.DisasterRecoveryLocation) []map[string]interface{} {
-	log.Printf("Calling the flattenDisasterRecoveryLocations call with list %d", len(list))
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		l := map[string]interface{}{
-			"location":          i.Location,
-			"replication_sites": flattenDisasterRecoveryLocation(i.ReplicationSites),
+	results := make([]map[string]interface{}, 0, len(drLocationSites.DisasterRecoveryLocations))
+	for _, i := range drLocationSites.DisasterRecoveryLocations {
+		if i != nil {
+			replicationSites := make([]map[string]interface{}, 0, len(i.ReplicationSites))
+			for _, j := range i.ReplicationSites {
+				if j != nil {
+					r := map[string]interface{}{
+						"is_active":  j.IsActive,
+						PIDRLocation: j.Location,
+					}
+					replicationSites = append(replicationSites, r)
+				}
+			}
+			l := map[string]interface{}{
+				"location":          i.Location,
+				"replication_sites": replicationSites,
+			}
+			results = append(results, l)
 		}
-
-		result = append(result, l)
 	}
 
-	return result
+	var clientgenU, _ = uuid.GenerateUUID()
+	d.SetId(clientgenU)
+	d.Set("disaster_recovery_locations", results)
+
+	return nil
 }

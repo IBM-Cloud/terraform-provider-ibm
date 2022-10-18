@@ -41,15 +41,18 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Description: "Cloud Instance ID - This is the service_instance_id.",
 			},
 			PIVolumeGroupName: {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Volume Group Name to create",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "Volume Group Name to create",
+				ConflictsWith: []string{PIVolumeGroupConsistencyGroupName},
 			},
 			PIVolumeGroupConsistencyGroupName: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of consistency-group at storage controller level",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The name of consistency-group at storage controller level",
+				ConflictsWith: []string{PIVolumeGroupName},
 			},
 			PIVolumeGroupsVolumeIds: {
 				Type:        schema.TypeSet,
@@ -75,6 +78,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Volume Group Replication Status",
 			},
+			"status_description_errors": vgStatusDescriptionErrors(),
 		},
 	}
 }
@@ -127,7 +131,7 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	client := st.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
 
-	vg, err := client.GetDetails(vgID)
+	vg, err := client.Get(vgID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,7 +139,9 @@ func resourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("volume_group_id", vg.ID)
 	d.Set("volume_group_status", vg.Status)
 	d.Set(PIVolumeGroupConsistencyGroupName, vg.ConsistencyGroupName)
+	d.Set(PIVolumeGroupName, vg.Name)
 	d.Set("replication_status", vg.ReplicationStatus)
+	d.Set("status_description_errors", flattenVolumeGroupStatusDescription(vg.StatusDescription.Errors))
 
 	return nil
 }

@@ -76,16 +76,12 @@ func testAccCheckIBMPIVolumeOnboardingConfig(name string) string {
 		pi_cloud_instance_id        = "%[1]s"
 		pi_description              = "%[2]s"
 		pi_onboarding_volumes {
-			pi_source_crn           = ""
+			pi_source_crn           = "%[3]s"
 			pi_auxiliary_volumes {
-				pi_auxiliary_volume_name = ""
-				pi_display_name = ""
-			}
-			pi_auxiliary_volumes {
-				pi_auxiliary_volume_name = ""
-				pi_display_name = ""
+				pi_auxiliary_volume_name = "%[4]s"
+				pi_display_name = "%[2]s-1"
 			}
 		}
 	  }
-	`, acc.Pi_cloud_instance_id, name, "Tier1-Flash-1", true)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_volume_onboarding_source_crn, acc.Pi_auxiliary_volume_name)
 }

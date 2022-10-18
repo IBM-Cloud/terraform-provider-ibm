@@ -43,7 +43,7 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `auxiliary` - (Bool) Indicates if the volume is auxiliary or not.
-- `aux_volume_name` - (String) The auxiliary volume name.
+- `auxiliary_volume_name` - (String) The auxiliary volume name.
 - `consistency_group_name` - (String) Consistency group name if volume is a part of volume group.
 - `disk_type` - (String) The disk type that is used for the volume.
 - `bootable` -  (Bool) Indicates if the volume is boot capable.

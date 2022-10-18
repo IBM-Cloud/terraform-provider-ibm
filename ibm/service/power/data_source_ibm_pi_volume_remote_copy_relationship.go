@@ -19,7 +19,7 @@ func DataSourceIBMPIVolumeRemoteCopyRelationship() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIVolumeRemoteCopyRelationshipsReads,
 		Schema: map[string]*schema.Schema{
-			helpers.PIVolumeName: {
+			helpers.PIVolumeId: {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "Volume name",
@@ -32,12 +32,12 @@ func DataSourceIBMPIVolumeRemoteCopyRelationship() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"aux_changed_volume_name": {
+			"auxiliary_changed_volume_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the volume that is acting as the auxiliary change volume for the relationship",
 			},
-			"aux_volume_name": {
+			"auxiliary_volume_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Auxiliary volume name at storage host level",
@@ -119,14 +119,14 @@ func dataSourceIBMPIVolumeRemoteCopyRelationshipsReads(ctx context.Context, d *s
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	volClient := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volData, err := volClient.GetVolumeRemoteCopyRelationships(d.Get(helpers.PIVolumeName).(string))
+	volData, err := volClient.GetVolumeRemoteCopyRelationships(d.Get(helpers.PIVolumeId).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(volData.ID)
-	d.Set("aux_changed_volume_name", volData.AuxChangedVolumeName)
-	d.Set("aux_volume_name", volData.AuxVolumeName)
+	d.Set("auxiliary_changed_volume_name", volData.AuxChangedVolumeName)
+	d.Set("auxiliary_volume_name", volData.AuxVolumeName)
 	d.Set("consistency_group_name", volData.ConsistencyGroupName)
 	d.Set("copy_type", volData.CopyType)
 	d.Set("cycling_mode", volData.CyclingMode)

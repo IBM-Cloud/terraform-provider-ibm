@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"log"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -22,10 +20,10 @@ func DataSourceIBMPIVolumeFlashCopyMappings() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIVolumeFlashCopyMappings,
 		Schema: map[string]*schema.Schema{
-			helpers.PIVolumeName: {
+			helpers.PIVolumeId: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Volume name",
+				Description:  "Volume ID",
 				ValidateFunc: validation.NoZeroValues,
 			},
 			helpers.PICloudInstanceId: {
@@ -90,36 +88,31 @@ func dataSourceIBMPIVolumeFlashCopyMappings(ctx context.Context, d *schema.Resou
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	volClient := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volData, err := volClient.GetVolumeFlashCopyMappings(d.Get(helpers.PIVolumeName).(string))
+	volData, err := volClient.GetVolumeFlashCopyMappings(d.Get(helpers.PIVolumeId).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	results := make([]map[string]interface{}, 0, len(volData))
+	for _, i := range volData {
+		if i != nil {
+			l := map[string]interface{}{
+				"copy_rate":          i.CopyRate,
+				"progress":           i.Progress,
+				"source_volume_name": i.SourceVolumeName,
+				"start_time":         i.StartTime.String(),
+				"status":             i.Status,
+				"target_volume_name": i.TargetVolumeName,
+			}
+			if i.FlashCopyName != nil {
+				l["flash_copy_name"] = i.FlashCopyName
+			}
+			results = append(results, l)
+		}
+	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
-	d.Set("flash_copy_mappings", flattenVolumeFlashCopyMappings(volData))
+	d.Set("flash_copy_mappings", results)
 
 	return nil
-}
-
-func flattenVolumeFlashCopyMappings(list []*models.FlashCopyMapping) []map[string]interface{} {
-	log.Printf("Calling the flattenVolumeFlashCopyMappings call with list %d", len(list))
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		l := map[string]interface{}{
-			"copy_rate":          i.CopyRate,
-			"progress":           i.Progress,
-			"source_volume_name": i.SourceVolumeName,
-			"start_time":         i.StartTime.String(),
-			"status":             i.Status,
-			"target_volume_name": i.TargetVolumeName,
-		}
-		if i.FlashCopyName != nil {
-			l["flash_copy_name"] = i.FlashCopyName
-		}
-
-		result = append(result, l)
-	}
-
-	return result
 }

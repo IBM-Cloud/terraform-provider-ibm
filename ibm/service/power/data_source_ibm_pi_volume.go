@@ -62,7 +62,6 @@ func DataSourceIBMPIVolume() *schema.Resource {
 			},
 			"replication_enabled": {
 				Type:        schema.TypeBool,
-				Optional:    true,
 				Computed:    true,
 				Description: "Indicates if the volume should be replication enabled or not",
 			},
@@ -101,7 +100,7 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether master/aux volume is playing the primary role",
 			},
-			"aux_volume_name": {
+			"auxiliary_volume_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Indicates auxiliary volume name",
@@ -144,7 +143,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("group_id", volumedata.GroupID)
 	d.Set("mirroring_state", volumedata.MirroringState)
 	d.Set("primary_role", volumedata.PrimaryRole)
-	d.Set("aux_volume_name", volumedata.AuxVolumeName)
+	d.Set("auxiliary_volume_name", volumedata.AuxVolumeName)
 	d.Set("master_volume_name", volumedata.MasterVolumeName)
 
 	return nil

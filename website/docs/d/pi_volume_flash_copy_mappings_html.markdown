@@ -15,7 +15,7 @@ The following example retrieves information about flash copy mappings of a volum
 
 ```terraform
 data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
-  pi_volume_name       = "volume-1"
+  pi_volume_id         = "810b5fde-e054-4577-ab5e-3f866a1f6f66"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
@@ -37,12 +37,12 @@ data "pi_volume_flash_copy_mappings" "ds_volume_flash_copy_mappings" {
 Review the argument references that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_volume_name` - (Required, String) The name of the volume for which you want to retrieve detailed information.
+- `pi_volume_id` - (Required, String) The ID of the volume for which you want to retrieve detailed information.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `flash_copy_mappings` - List of objects - The flash copy mappings details of a volume.
+- `flash_copy_mappings` - (List of objects) - The flash copy mappings details of a volume.
 
   Nested scheme for `flash_copy_mappings`:
       - `copy_rate` - (Integer) The rate of flash copy operation of a volume.

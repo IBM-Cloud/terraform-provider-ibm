@@ -66,7 +66,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `auxiliary` - (Bool) Indicates if the volume is auxiliary or not.
-- `aux_volume_name` - (String) The auxiliary volume name.
+- `auxiliary_volume_name` - (String) The auxiliary volume name.
 - `consistency_group_name` - (String) The consistency group name if volume is a part of volume group.
 - `delete_on_termination` - (Bool) Indicates if the volume should be deleted when the server terminates.
 - `group_id` - (String) The volume group id to which volume belongs.
@@ -76,6 +76,12 @@ In addition to all argument reference list, you can access the following attribu
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_status` - (String) The replication status of the volume.
 - `replication_type` - (String) The replication type of the volume `metro` or `global`.
+- `status_description_errors` - (List of objects) - The status details of the volume group.
+
+  Nested scheme for `status_description_errors`:
+  - `key` - (String) The volume group error key.
+  - `message` - (String) The failure message providing more details about the error key.
+  - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.
 - `volume_id` - (String) The unique identifier of the volume.
 - `volume_status` - (String) The status of the volume.
 - `wwn` - (String) The world wide name of the volume.

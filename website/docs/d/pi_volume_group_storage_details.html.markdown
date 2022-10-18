@@ -46,7 +46,7 @@ In addition to all argument reference list, you can access the following attribu
 - `cycle_period_seconds` - (Integer) The minimum period in seconds between multiple cycles.
 - `cycling_mode` - (String) The type of cycling mode used.
 - `id` - (String) The unique identifier of the volume group.
-- `num_of_vols` - (Integer) The number of volumes in volume group.
+- `number_of_volumes` - (Integer) The number of volumes in volume group.
 - `primary_role` - (String) Indicates whether master/aux volume is playing the primary role.
 - `remote_copy_relationship_names` - (List of strings) List of remote-copy relationship names in a volume group.
 - `replication_type` - (String) The type of replication(metro,global).

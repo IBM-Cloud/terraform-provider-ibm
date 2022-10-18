@@ -15,7 +15,7 @@ The following example retrieves information about about remote copy relationship
 
 ```terraform
 data "ibm_pi_volume_group_remote_copy_relationships" "ds_volume_group_remote_copy_relationships" {
-  pi_volume_group_name    = "volume-group-1"
+  pi_volume_group_id      = "810b5fde-e054-4577-ab5e-3f866a1f6f66"
   pi_cloud_instance_id    = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
 }
 ```
@@ -37,17 +37,17 @@ data "ibm_pi_volume_group_remote_copy_relationships" "ds_volume_group_remote_cop
 Review the argument references that you can specify for your data source. 
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_volume_group_name` - (Required, String) The name of the volume group for which you want to retrieve detailed information.
+- `pi_volume_group_id` - (Required, String) The ID of the volume group for which you want to retrieve detailed information.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `id` - (String) The unique identifier of the volume group.
-- `remote_copy_relationships` - List of objects - List of remote copy relationships.
+- `remote_copy_relationships` - (List of objects) - List of remote copy relationships.
 
   Nested scheme for `remote_copy_relationships`:
-      - `aux_changed_volume_name` - (String) The name of the volume that is acting as the auxiliary change volume for the relationship.
-      - `aux_volume_name` - (String) The auxiliary volume name at storage host level.
+      - `auxiliary_changed_volume_name` - (String) The name of the volume that is acting as the auxiliary change volume for the relationship.
+      - `auxiliary_volume_name` - (String) The auxiliary volume name at storage host level.
       - `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
       - `copy_type` (String) The copy type.
       - `cycling_mode` - (String) The type of cycling mode used.

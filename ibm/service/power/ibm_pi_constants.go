@@ -88,6 +88,9 @@ const (
 	PIVolumeGroupAction               = "pi_volume_group_action"
 	PIVolumeOnboardingID              = "pi_volume_onboarding_id"
 
+	// Disaster Recovery Location
+	PIDRLocation = "location"
+
 	// VPN
 	PIVPNConnectionId                         = "connection_id"
 	PIVPNConnectionStatus                     = "connection_status"

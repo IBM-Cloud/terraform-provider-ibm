@@ -40,7 +40,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `onboardings` - List of objects - The list of volume onboardings.
+- `onboardings` - (List of objects) - The list of volume onboardings.
 
   Nested scheme for `onboardings`:
       - `description` - (String) The description of the volume onboarding operation.

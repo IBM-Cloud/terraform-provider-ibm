@@ -105,11 +105,11 @@ func ResourceIBMPIVolumeOnboarding() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"progress": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeFloat,
 				Computed:    true,
 				Description: "Indicates the progress of volume onboarding operation",
 			},
-			"results_onboarded_volumess": {
+			"results_onboarded_volumes": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "List of volumes which are onboarded successfully",
@@ -197,7 +197,7 @@ func resourceIBMPIVolumeOnboardingRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("input_volumes", onboardingData.InputVolumes)
 	d.Set("progress", onboardingData.Progress)
 	d.Set("status", onboardingData.Status)
-	d.Set("results_onboarded_volumess", onboardingData.Results.OnboardedVolumes)
+	d.Set("results_onboarded_volumes", onboardingData.Results.OnboardedVolumes)
 	d.Set("results_volume_onboarding_failures", flattenVolumeOnboardingFailures(onboardingData.Results.VolumeOnboardingFailures))
 	return nil
 }

@@ -31,7 +31,7 @@ func testAccCheckIBMPIVolumeGroupRemoteCopyRelationshipsDataSourceConfig() strin
 	return fmt.Sprintf(`
 data "ibm_pi_volume_group_remote_copy_relationships" "testacc_volume_group_remote_copy_relationships" {
     pi_cloud_instance_id = "%s"
-    pi_volume_group_name = "%s"
-}`, acc.Pi_cloud_instance_id, acc.Pi_volume_group_name)
+    pi_volume_group_id   = "%s"
+}`, acc.Pi_cloud_instance_id, acc.Pi_volume_group_id)
 
 }

@@ -47,7 +47,7 @@ func DataSourceIBMPIVolumeGroupStorageDetails() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the type of cycling mode used",
 			},
-			"num_of_vols": {
+			"number_of_volumes": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Number of volumes in volume group",
@@ -99,7 +99,7 @@ func dataSourceIBMPIVolumeGroupStorageDetailsReads(ctx context.Context, d *schem
 	d.Set("consistency_group_name", vgData.ConsistencyGroupName)
 	d.Set("cycle_period_seconds", vgData.CyclePeriodSeconds)
 	d.Set("cycling_mode", vgData.CyclingMode)
-	d.Set("num_of_vols", vgData.NumOfvols)
+	d.Set("number_of_volumes", vgData.NumOfvols)
 	d.Set("primary_role", vgData.PrimaryRole)
 	d.Set("remote_copy_relationship_names", vgData.RemoteCopyRelationshipNames)
 	d.Set("replication_type", vgData.ReplicationType)

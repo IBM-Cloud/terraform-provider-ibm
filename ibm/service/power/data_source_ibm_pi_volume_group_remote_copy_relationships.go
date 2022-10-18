@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -21,10 +19,10 @@ func DataSourceIBMPIVolumeGroupRemoteCopyRelationships() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIVolumeGroupRemoteCopyRelationshipsReads,
 		Schema: map[string]*schema.Schema{
-			PIVolumeGroupName: {
+			PIVolumeGroupID: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Volume group name",
+				Description:  "Volume group ID",
 				ValidateFunc: validation.NoZeroValues,
 			},
 			helpers.PICloudInstanceId: {
@@ -40,12 +38,12 @@ func DataSourceIBMPIVolumeGroupRemoteCopyRelationships() *schema.Resource {
 				Description: "List of remote copy relationships",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"aux_changed_volume_name": {
+						"auxiliary_changed_volume_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Name of the volume that is acting as the auxiliary change volume for the relationship",
 						},
-						"aux_volume_name": {
+						"auxiliary_volume_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Auxiliary volume name at storage host level",
@@ -125,44 +123,41 @@ func dataSourceIBMPIVolumeGroupRemoteCopyRelationshipsReads(ctx context.Context,
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	vgClient := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
-	vgData, err := vgClient.GetVolumeGroupRemoteCopyRelationships(d.Get(PIVolumeGroupName).(string))
+	vgData, err := vgClient.GetVolumeGroupRemoteCopyRelationships(d.Get(PIVolumeGroupID).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(vgData.ID)
-	d.Set("remote_copy_relationships", flattenVolumeGroupRemoteCopyRelationships(vgData.RemoteCopyRelationships))
+	results := make([]map[string]interface{}, 0, len(vgData.RemoteCopyRelationships))
+	for _, i := range vgData.RemoteCopyRelationships {
+		if i != nil {
+			l := map[string]interface{}{
+				"auxiliary_changed_volume_name": i.AuxChangedVolumeName,
+				"auxiliary_volume_name":         i.AuxVolumeName,
+				"consistency_group_name":        i.ConsistencyGroupName,
+				"copy_type":                     i.CopyType,
+				"cycling_mode":                  i.CyclingMode,
+				"freeze_time":                   i.FreezeTime.String(),
+				"master_changed_volume_name":    i.MasterChangedVolumeName,
+				"master_volume_name":            i.MasterVolumeName,
+				"primary_role":                  i.PrimaryRole,
+				"progress":                      i.Progress,
+				"state":                         i.State,
+				"sync":                          i.Sync,
+			}
+			if i.Name != nil {
+				l["name"] = i.Name
+			}
+			if i.RemoteCopyID != nil {
+				l["remote_copy_id"] = i.RemoteCopyID
+			}
 
-	return nil
-}
-
-func flattenVolumeGroupRemoteCopyRelationships(list []*models.RemoteCopyRelationship) []map[string]interface{} {
-	log.Printf("Calling the flattenVolumeGroupRemoteCopyRelationships call with list %d", len(list))
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		l := map[string]interface{}{
-			"aux_changed_volume_name":    i.AuxChangedVolumeName,
-			"aux_volume_name":            i.AuxVolumeName,
-			"consistency_group_name":     i.ConsistencyGroupName,
-			"copy_type":                  i.CopyType,
-			"cycling_mode":               i.CyclingMode,
-			"freeze_time":                i.FreezeTime.String(),
-			"master_changed_volume_name": i.MasterChangedVolumeName,
-			"master_volume_name":         i.MasterVolumeName,
-			"primary_role":               i.PrimaryRole,
-			"progress":                   i.Progress,
-			"state":                      i.State,
-			"sync":                       i.Sync,
+			results = append(results, l)
 		}
-		if i.Name != nil {
-			l["name"] = i.Name
-		}
-		if i.RemoteCopyID != nil {
-			l["remote_copy_id"] = i.RemoteCopyID
-		}
-
-		result = append(result, l)
 	}
 
-	return result
+	d.SetId(vgData.ID)
+	d.Set("remote_copy_relationships", results)
+
+	return nil
 }

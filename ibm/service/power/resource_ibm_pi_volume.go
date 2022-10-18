@@ -173,7 +173,7 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether master/aux volume is playing the primary role",
 			},
-			"aux_volume_name": {
+			"auxiliary_volume_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Indicates auxiliary volume name",
@@ -313,7 +313,7 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("mirroring_state", vol.MirroringState)
 	d.Set("primary_role", vol.PrimaryRole)
 	d.Set("master_volume_name", vol.MasterVolumeName)
-	d.Set("aux_volume_name", vol.AuxVolumeName)
+	d.Set("auxiliary_volume_name", vol.AuxVolumeName)
 	if vol.DeleteOnTermination != nil {
 		d.Set("delete_on_termination", vol.DeleteOnTermination)
 	}

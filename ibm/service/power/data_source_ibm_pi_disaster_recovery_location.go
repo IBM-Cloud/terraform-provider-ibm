@@ -5,7 +5,6 @@ package power
 
 import (
 	"context"
-	"log"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/helpers"
-	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 )
 
@@ -29,7 +27,7 @@ func DataSourceIBMPIDisasterRecoveryLocation() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"location": {
+			PIDRLocation: {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "RegionZone of a site",
@@ -43,7 +41,7 @@ func DataSourceIBMPIDisasterRecoveryLocation() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"location": {
+						PIDRLocation: {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -67,25 +65,21 @@ func dataSourceIBMPIDisasterRecoveryLocation(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	var clientgenU, _ = uuid.GenerateUUID()
-	d.SetId(clientgenU)
-	d.Set("location", drLocationSite.Location)
-	d.Set("replication_sites", flattenDisasterRecoveryLocation(drLocationSite.ReplicationSites))
-
-	return nil
-}
-
-func flattenDisasterRecoveryLocation(list []*models.Site) []map[string]interface{} {
-	log.Printf("Calling the flattenDisasterRecoveryLocations call with list %d", len(list))
-	result := make([]map[string]interface{}, 0, len(list))
-	for _, i := range list {
-		l := map[string]interface{}{
-			"is_active": i.IsActive,
-			"location":  i.Location,
+	result := make([]map[string]interface{}, 0, len(drLocationSite.ReplicationSites))
+	for _, i := range drLocationSite.ReplicationSites {
+		if i != nil {
+			l := map[string]interface{}{
+				"is_active":  i.IsActive,
+				PIDRLocation: i.Location,
+			}
+			result = append(result, l)
 		}
-
-		result = append(result, l)
 	}
 
-	return result
+	var clientgenU, _ = uuid.GenerateUUID()
+	d.SetId(clientgenU)
+	d.Set(PIDRLocation, drLocationSite.Location)
+	d.Set("replication_sites", result)
+
+	return nil
 }

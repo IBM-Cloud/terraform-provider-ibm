@@ -115,7 +115,10 @@ var Pi_image_bucket_secret_key string
 var Pi_image_bucket_region string
 var Pi_key_name string
 var Pi_volume_name string
+var Pi_volume_id string
 var Pi_replication_volume_name string
+var Pi_volume_onboarding_source_crn string
+var Pi_auxiliary_volume_name string
 var Pi_volume_group_name string
 var Pi_volume_group_id string
 var Pi_volume_onboarding_id string
@@ -646,10 +649,28 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_VOLUME_NAME for testing ibm_pi_network_name resource else it is set to default value 'terraform-test-power'")
 	}
 
+	Pi_volume_id = os.Getenv("PI_VOLUME_ID")
+	if Pi_volume_id == "" {
+		Pi_volume_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_ID for testing ibm_pi_volume_flash_copy_mappings resource else it is set to default value 'terraform-test-power'")
+	}
+
 	Pi_replication_volume_name = os.Getenv("PI_REPLICATION_VOLUME_NAME")
 	if Pi_replication_volume_name == "" {
 		Pi_replication_volume_name = "terraform-test-power"
 		fmt.Println("[INFO] Set the environment variable PI_REPLICATION_VOLUME_NAME for testing ibm_pi_volume resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_volume_onboarding_source_crn = os.Getenv("PI_VOLUME_ONBARDING_SOURCE_CRN")
+	if Pi_volume_onboarding_source_crn == "" {
+		Pi_volume_onboarding_source_crn = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_VOLUME_ONBARDING_SOURCE_CRN for testing ibm_pi_volume_onboarding resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_auxiliary_volume_name = os.Getenv("PI_AUXILIARY_VOLUME_NAME")
+	if Pi_auxiliary_volume_name == "" {
+		Pi_auxiliary_volume_name = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_AUXILIARY_VOLUME_NAME for testing ibm_pi_volume_onboarding resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_volume_group_name = os.Getenv("PI_VOLUME_GROUP_NAME")

@@ -104,7 +104,7 @@ func testAccCheckIBMPIVolumeGroupExists(n string) resource.TestCheckFunc {
 func testAccCheckIBMPIVolumeGroupConfig(name string) string {
 	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
 	resource "ibm_pi_volume_group" "power_volume_group"{
-		pi_volume_group_name       = "%[1]s"
+		pi_consistency_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
 		pi_volume_ids              = [ibm_pi_volume.power_volume[0].volume_id,ibm_pi_volume.power_volume[1].volume_id]
 	  }
@@ -114,7 +114,7 @@ func testAccCheckIBMPIVolumeGroupConfig(name string) string {
 func testAccCheckIBMPIVolumeGroupUpdateConfig(name string) string {
 	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
 	resource "ibm_pi_volume_group" "power_volume_group"{
-		pi_volume_group_name       = "%[1]s"
+		pi_consistency_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
 		pi_volume_ids              = [ibm_pi_volume.power_volume[2].volume_id]
 	  }

@@ -49,7 +49,7 @@ In addition to all argument reference list, you can access the following attribu
 - `status` - (String) The status of volume onboarding operation.
 - `progress` - (String) The progress of volume onboarding operation.
 - `results_onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.
-- `results_volume_onboarding_failures` - List of objects - The volume onboarding failure details.
+- `results_volume_onboarding_failures` - (List of objects) - The volume onboarding failure details.
 
   Nested scheme for `results_volume_onboarding_failures`:
   - `failure_message` - (String) The failure reason for the volumes which have failed to be onboarded.

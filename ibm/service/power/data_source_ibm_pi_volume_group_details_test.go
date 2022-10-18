@@ -30,8 +30,8 @@ func TestAccIBMPIVolumeGroupDetailsDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIVolumeGroupDetailsDataSourceConfig() string {
 	return fmt.Sprintf(`
 data "ibm_pi_volume_group_details" "testacc_volume_group_details" {
-    pi_volume_group_name = "%s"
+    pi_volume_group_id   = "%s"
     pi_cloud_instance_id = "%s"
-}`, acc.Pi_volume_group_name, acc.Pi_cloud_instance_id)
+}`, acc.Pi_volume_group_id, acc.Pi_cloud_instance_id)
 
 }

@@ -20,10 +20,10 @@ func DataSourceIBMPIVolumeGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPIVolumeGroupRead,
 		Schema: map[string]*schema.Schema{
-			PIVolumeGroupName: {
+			PIVolumeGroupID: {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "Name of the volume group",
+				Description:  "ID or Name of the volume group",
 				ValidateFunc: validation.NoZeroValues,
 			},
 			helpers.PICloudInstanceId: {
@@ -33,6 +33,11 @@ func DataSourceIBMPIVolumeGroup() *schema.Resource {
 			},
 
 			// Computed Attributes
+			"volume_group_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume group name",
+			},
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -82,13 +87,14 @@ func dataSourceIBMPIVolumeGroupRead(ctx context.Context, d *schema.ResourceData,
 
 	cloudInstanceID := d.Get(helpers.PICloudInstanceId).(string)
 	vgClient := instance.NewIBMPIVolumeGroupClient(ctx, sess, cloudInstanceID)
-	vgData, err := vgClient.Get(d.Get(PIVolumeGroupName).(string))
+	vgData, err := vgClient.Get(d.Get(PIVolumeGroupID).(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(*vgData.ID)
 	d.Set("status", vgData.Status)
+	d.Set("volume_group_name", vgData.Name)
 	d.Set("consistency_group_name", vgData.ConsistencyGroupName)
 	d.Set("replication_status", vgData.ReplicationStatus)
 	if vgData.StatusDescription != nil {
