@@ -161,10 +161,10 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 	}
 
 	lines := strings.Split(string(resp), "\n")
-	var index int
 
 	//if this is a RHEL host, find insert point for custom code
 	if !coreos_enabled {
+		var index int
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
 				index = i
@@ -172,18 +172,16 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 			}
 		}
 
-		lines = append(lines[:index+1], lines[index:]...)
+		var insertionText string
 
-		if script, ok := d.GetOk("custom_script"); ok {
-			lines[index] = script.(string)
-		} else {
-			if strings.ToLower(hostProvider) == "aws" {
-				lines[index] = `
+		switch {
+		case strings.ToLower(hostProvider) == "aws":
+			insertionText = `
 yum-config-manager --enable '*'
 yum install container-selinux -y
 `
-			} else if strings.ToLower(hostProvider) == "ibm" {
-				lines[index] = `
+		case strings.ToLower(hostProvider) == "ibm":
+			insertionText = `
 subscription-manager refresh
 if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
 subscription-manager repos --enable rhel-server-rhscl-7-rpms
@@ -195,25 +193,32 @@ elif [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
 subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
 fi
-yum install container-selinux -y`
-			} else if strings.ToLower(hostProvider) == "azure" {
-				lines[index] = `
+yum install container-selinux -y
+`
+		case strings.ToLower(hostProvider) == "azure":
+			insertionText = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 update-alternatives --set python3 /usr/bin/python3.8
 fi
 yum install container-selinux -y
 `
-			} else if strings.ToLower(hostProvider) == "google" {
-				lines[index] = `
+		case strings.ToLower(hostProvider) == "google":
+			insertionText = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 update-alternatives --set python3 /usr/bin/python3.8
 fi
 yum install container-selinux -y
 `
+		default:
+			if script, ok := d.GetOk("custom_script"); ok {
+				insertionText = script.(string)
 			}
 		}
+
+		lines = append(lines[:index+1], lines[index:]...)
+		lines[index] = insertionText
 	}
 
 	scriptContent := strings.Join(lines, "\n")
