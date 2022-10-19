@@ -12,10 +12,22 @@ resource "ibm_atracker_target" "atracker_target_instance" {
     bucket = "my-atracker-bucket"
     api_key = "xxxxxxxxxxxxxx"
   }
+  region = var.atracker_target_region
+}
+
+resource "ibm_atracker_target" "atracker_target_logdna_instance" {
+  name = var.atracker_target_name
+  target_type = "logdna"
   logdna_endpoint {
     target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     ingestion_key = "xxxxxxxxxxxxxx"
   }
+  region = var.atracker_target_region
+}
+
+resource "ibm_atracker_target" atracker_target_eventstreams_instance {
+  name = var.atracker_target_name
+  target_type = "event_streams" 
   eventstreams_endpoint {
     target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     brokers = [ "kafka-x:9094" ]
