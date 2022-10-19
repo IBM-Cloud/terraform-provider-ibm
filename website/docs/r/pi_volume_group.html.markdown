@@ -55,6 +55,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The unique identifier of the volume group. The ID is composed of `<pi_cloud_instance_id>/<volume_group_id>`.
+- `consistency_group_name` - (String) The consistency Group Name if volume is a part of volume group.
 - `replication_status` - (String) The replication status of volume group.
 - `volume_group_id` - (String) The unique identifier of the volume group.
 - `volume_group_status` - (String) The status of the volume group.
