@@ -125,27 +125,34 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 								},
 							},
 						},
-						"cos_write_status": {
+						"eventstreams_endpoint": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Deprecated:  "use write_status instead",
-							Description: "The status of the write attempt with the provided cos_endpoint parameters.",
+							Description: "Property values for the Event Streams Endpoint in responses.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"status": {
+									"target_crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The status such as failed or success.",
+										Description: "The CRN of the Event Streams instance.",
 									},
-									"last_failure": {
-										Type:        schema.TypeString,
+									"brokers": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The timestamp of the failure.",
+										Description: "List of broker endpoints.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
 									},
-									"reason_for_last_failure": {
+									"topic": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Detailed description of the cause of the failure.",
+										Description: "The messsage hub topic defined in the Event Streams instance.",
+									},
+									"password": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
 									},
 								},
 							},
@@ -343,6 +350,20 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
 	}
+	if model.LogdnaEndpoint != nil {
+		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
+	}
+	if model.EventstreamsEndpoint != nil {
+		eventstreamsEndpointMap, err := DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model.EventstreamsEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["eventstreams_endpoint"] = []map[string]interface{}{eventstreamsEndpointMap}
+	}
 	if model.WriteStatus != nil {
 		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
 		if err != nil {
@@ -385,6 +406,23 @@ func DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model *atrackerv2.LogdnaEnd
 	modelMap := make(map[string]interface{})
 	if model.TargetCRN != nil {
 		modelMap["target_crn"] = *model.TargetCRN
+	}
+	return modelMap, nil
+}
+
+func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.EventstreamsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TargetCRN != nil {
+		modelMap["target_crn"] = *model.TargetCRN
+	}
+	if model.Brokers != nil {
+		modelMap["brokers"] = model.Brokers
+	}
+	if model.Topic != nil {
+		modelMap["topic"] = *model.Topic
+	}
+	if model.Password != nil {
+		modelMap["password"] = *model.Password
 	}
 	return modelMap, nil
 }

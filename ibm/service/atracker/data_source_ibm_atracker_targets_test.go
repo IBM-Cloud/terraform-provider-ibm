@@ -37,7 +37,7 @@ func TestAccIBMAtrackerTargetsDataSourceBasic(t *testing.T) {
 func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 	targetName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	targetTargetType := "cloud_object_storage"
-	targetRegion := "us-south"
+	targetRegion := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -94,10 +94,20 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
 			}
+			logdna_endpoint {
+				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				ingestion_key = "xxxxxxxxxxxxxx"
+			}
+			eventstreams_endpoint {
+				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				brokers = [ "kafka-x:9094" ]
+				topic = "my-topic"
+				password = "xxxxxxxxxxxxxx"
+			}
+			region = "%s"
 		}
-
 		data "ibm_atracker_targets" "atracker_targets" {
 			name = ibm_atracker_target.atracker_target.name
 		}
-	`, targetName, targetTargetType)
+	`, targetName, targetTargetType, targetRegion)
 }
