@@ -218,7 +218,8 @@ yum install container-selinux -y
 			}
 		}
 
-		scriptContent = strings.Join(lines[:index+1], "\n") + "\n" + insertionText + "\n" + strings.Join(lines[index+1:], "\n")
+		lines[index] = lines[index] + "\n" + insertionText
+		scriptContent = strings.Join(lines, "\n")
 	}
 
 	err = ioutil.WriteFile(scriptPath, []byte(scriptContent), 0644)
