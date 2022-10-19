@@ -10,7 +10,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -57,14 +56,14 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 			"type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "type of service hs-crypto or kms",
+				Description: "Type of service hs-crypto or kms",
 			},
 			"endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private"}),
-				Description:  "public or private",
+				Description:  "Public or Private",
 				ForceNew:     true,
 			},
 			"standard_key": {
@@ -119,7 +118,7 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
-				Description: "Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12",
+				Description: "Data associated with the key rotation policy",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
@@ -131,7 +130,7 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 							Type:         schema.TypeInt,
 							Required:     true,
 							ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
-							Description:  "Specifies the key rotation time interval in months",
+							Description:  "Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12",
 						},
 					},
 				},
@@ -184,34 +183,12 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 }
 
 func resourceIBMKmsKeyWithPolicyOverridesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceID := getInstanceIDFromCRN(d.Get("instance_id").(string))
-	kpAPI, _, err := populateKPClient(d, meta, instanceID)
+	policy := getPolicyFromSchema(d)
+	kpAPI, keyData, err := ExtractAndValidateKeyDataFromSchema(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
-
-	name := d.Get("key_name").(string)
-	standardKey := d.Get("standard_key").(bool)
-	payload := d.Get("payload").(string)
-	encryptedNonce := d.Get("encrypted_nonce").(string)
-	iv := d.Get("iv_value").(string)
-	policy := getPolicyFromSchema(d)
-
-	var expiration *time.Time
-	if es, ok := d.GetOk("expiration_date"); ok {
-		expiration_string := es.(string)
-		// parse string to required time format
-		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
-		if err != nil {
-			return diag.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
-		}
-		expiration = &expiration_time
-	} else {
-		expiration = nil
-	}
-	key, err := kpAPI.CreateImportedKeyWithPolicyOverrides(context, name, expiration, payload, encryptedNonce, iv, standardKey, nil, policy)
+	key, err := kpAPI.CreateImportedKeyWithPolicyOverrides(context, keyData.Name, keyData.Expiration, keyData.Payload, keyData.EncryptedNonce, keyData.IV, keyData.Extractable, nil, policy)
 	if err != nil {
 		return diag.Errorf("[ERROR] Error while creating key: %s", err)
 	}
@@ -221,31 +198,11 @@ func resourceIBMKmsKeyWithPolicyOverridesCreate(context context.Context, d *sche
 }
 
 func resourceIBMKmsKeyWithPolicyOverridesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceCRN, instanceID, keyid := getInstanceAndKeyDataFromCRN(d.Id())
-
-	kpAPI, _, err := populateKPClient(d, meta, instanceID)
+	kpAPI, err := KMSKeyReadHelper(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	key, err := kpAPI.GetKey(context, keyid)
-	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil
-		}
-		return diag.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
-	} else if key.State == 5 { //Refers to Deleted state of the Key
-		d.SetId("")
-		return nil
-	}
-
-	err = setKeyDetails(d, meta, instanceID, instanceCRN, key, kpAPI)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+	_, _, keyid := getInstanceAndKeyDataFromCRN(d.Id())
 	policies, err := kpAPI.GetPolicies(context, keyid)
 	if err != nil {
 		return diag.Errorf("[ERROR] Failed to read policies: %s", err)
@@ -286,21 +243,6 @@ func resourceIBMKmsKeyWithPolicyOverridesUpdate(context context.Context, d *sche
 }
 
 func resourceIBMKmsKeyWithPolicyOverridesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, instanceID, keyid := getInstanceAndKeyDataFromCRN(d.Id())
-	kpAPI, _, err := populateKPClient(d, meta, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	force := d.Get("force_delete").(bool)
-	f := kp.ForceOpt{
-		Force: force,
-	}
-
-	_, err1 := kpAPI.DeleteKey(context, keyid, kp.ReturnRepresentation, f)
-	if err1 != nil {
-		return diag.Errorf("[ERROR] Error while deleting: %s", err1)
-	}
-	d.SetId("")
-	return nil
+	err := resourceIBMKmsKeyDelete(d, meta)
+	return diag.FromErr(err)
 }

@@ -4,11 +4,11 @@ subcategory: "Key Management Service"
 layout: "ibm"
 page_title: "IBM : kms-key-with-policy-overrides"
 description: |-
-  Manages IBM hs-crypto and KMS key with specified key material and key policies. This API overrides the policy configurations set at instance level with policies provided in the payload.
+  Manages IBM hs-crypto and KMS key with specified key material and key policies. This resource overrides the policy configurations at the time of key creation set at instance level with policies provided in the payload.
 ---
 
 # ibm_kms_key_with_policy_overrides
-This resource can be used for management of keys and respective policies in both Key Protect and Hyper Protect Crypto Service (HPCS). It allows standard and root keys to be created and deleted. The region parameter in the `provider.tf` file must be set. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by Terraform and the Terraform action fails.
+This resource can be used for management of keys and respective policies in both Key Protect and Hyper Protect Crypto Service (HPCS). It allows standard and root keys to be created with policies. The region parameter in the `provider.tf` file must be set. If region parameter is not specified, `us-south` is used as default. If the region in the `provider.tf` file is different from the Key Protect instance, the instance cannot be retrieved by Terraform and the Terraform action fails.
 
 After creating an Hyper Protect Crypto Service instance you need to initialize the instance properly with the crypto units, in order to create, or manage Hyper Protect Crypto Service keys. For more information, about how to initialize the Hyper Protect Crypto Service instance, see [Initialize Hyper Protect Crypto](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-initialize-hsm) only for HPCS instance.
 
