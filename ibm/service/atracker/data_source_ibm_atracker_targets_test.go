@@ -37,7 +37,7 @@ func TestAccIBMAtrackerTargetsDataSourceBasic(t *testing.T) {
 func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 	targetName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	targetTargetType := "cloud_object_storage"
-	targetRegion := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	targetRegion := "us-south"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -73,6 +73,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
+				service_to_service_enabled = true
 			}
 		}
 

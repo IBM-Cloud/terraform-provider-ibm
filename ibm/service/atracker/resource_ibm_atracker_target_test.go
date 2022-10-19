@@ -51,45 +51,6 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
-	var conf atrackerv2.Target
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	targetType := "cloud_object_storage"
-	region := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	regionUpdate := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMAtrackerTargetDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfig(name, targetType, region),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMAtrackerTargetExists("ibm_atracker_target.atracker_target", conf),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "name", name),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "target_type", targetType),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "region", region),
-				),
-			},
-			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfig(nameUpdate, targetType, regionUpdate),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "target_type", targetType),
-					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target", "region", regionUpdate),
-				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_atracker_target.atracker_target",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) string {
 	return fmt.Sprintf(`
 
@@ -97,11 +58,11 @@ func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) st
 			name = "%s"
 			target_type = "%s"
 			cos_endpoint {
-				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
-				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				bucket = "my-atracker-bucket"
-				api_key = "xxxxxxxxxxxxxx"
-				service_to_service_enabled = false
+					endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+					target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+					bucket = "my-atracker-bucket"
+					api_key = "xxxxxxxxxxxxxx"
+					service_to_service_enabled = true
 			}
 		}
 	`, name, targetType)
@@ -119,6 +80,16 @@ func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region 
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
+			}
+			logdna_endpoint {
+				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				ingestion_key = "xxxxxxxxxxxxxx"
+			}
+			eventstreams_endpoint {
+				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				brokers = [ "kafka-x:9094" ]
+				topic = "my-topic"
+				password = "xxxxxxxxxxxxxx"
 			}
 			region = "%s"
 		}
