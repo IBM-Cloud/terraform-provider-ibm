@@ -12,7 +12,9 @@ description: |-
 Provides a resource to manage instance policies for Key Protect and Hyper Protect Crypto Service (HPCS) services. This allows instance policies to be created and updated. Instance policies can be created for an existing kms instance resource.
 
 **NOTE**
-: `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated Instance resource is destroyed.
+- `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated Instance resource is destroyed.
+
+- The value `0` for `interval_month` in the tfstate file indicates that the `interval_month` is not set in the input. Terraform sets this value to `0` in the tfstate file because `0` is the default value for the int data type of this field.
 
 
 ## Example usage to create a Instance and associated Instance policies.
@@ -44,27 +46,32 @@ resource "ibm_kms_instance_policies" "instance_policy" {
 
 ```
 
+**NOTE** 
+- To create an instance policy, atleast one of the policy block as mentioned in the argument section is mandatory.
+
+- Policies `allowedIP` and `allowedNetwork` are not supported by instance_policies resource, and can be set using Context Based Restrictions (CBR).
 ## Argument reference
 
 The following arguments are supported:
 
-- `instance_id` - (Required, String) The key-protect instance ID for creating policies.
-- `rotation` - (Optional,list) The Instance rotation time interval in months, with a minimum of 1, and a maximum of 12. Atleast one of `rotation`, `dual_auth_delete`, `metrics`, `key_create_import_access` is required
 
+
+- `instance_id` - (Required, String) The key-protect instance ID for creating policies.
+- `rotation` - (Optional,list) The Instance rotation time interval in months, with a minimum of 1, and a maximum of 12.
   Nested scheme for `rotation`:
 
     - `enabled`- (Required, Bool) If set to **true**, Key Protect enables a rotation policy on the instance.
-    - `interval_month`- (Required, Integer) Specifies the key rotation time interval in months. CONSTRAINTS: 1 ≤ value ≤ 12 **Note** Once the rotation policy is set, it cannot be unset or removed by using Terraform.
-- `dual_auth_delete` - (Optional, List) Data associated with the dual authorization delete policy. Atleast one of `rotation`, `dual_auth_delete`, `metrics`, `key_create_import_access` is required.
+    - `interval_month`- (Required, Integer) Specifies the key rotation time interval in months. CONSTRAINTS: 1 ≤ value ≤ 12.
+- `dual_auth_delete` - (Optional, List) Data associated with the dual authorization delete policy.
 
     Nested scheme for `dual_auth_delete`:
     - `enabled`- (Required, Bool) If set to **true**, Key Protect enables a dual authorization policy on the instance. **Note:** Once the dual authorization policy is set on the instance, it cannot be reverted. A instance with dual authorization policy enabled cannot be destroyed by using Terraform.
-- `metrics` - (Optional,list) Utiised for enabling the metrics policy for the instance . Atleast one of `rotation`, `dual_auth_delete`, `metrics`, `key_create_import_access` is required
+- `metrics` - (Optional,list) Utiised for enabling the metrics policy for the instance . 
 
   Nested scheme for `metrics`:
 
     - `enabled`- (Required, Bool) If set to **true**, Key Protect enables a metrics policy on the instance.
-- `key_create_import_access` - (Optional, list). It Enables key create import access policy for the instance. Atleast one of `rotation`, `dual_auth_delete`, `metrics`, `key_create_import_access` is required.
+- `key_create_import_access` - (Optional, list). It Enables key create import access policy for the instance.
 
     Nested scheme for `key_create_import_access`:
 
@@ -77,31 +84,27 @@ The following arguments are supported:
 
 For Reference to the Policy : https://cloud.ibm.com/docs/key-protect?topic=key-protect-manage-keyCreateImportAccess
 
-
-**NOTE**
-: Policies `allowedIP` and `allowedNetwork` are not supported by instance_policies resource, and can be set using Context Based Restrictions (CBR).
-
 ## Attribute reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - (String) The CRN of the instance.
-- `rotation` - (List) The key rotation time interval in months, with a minimum of 1, and a maximum of 12.
+- `rotation` - (List) The data associated with the rotation policy.
 
     Nested scheme for `rotation`:
     - `enabled` - (Bool) If set to **true**, Key Protect enables a rotation policy on the instance.
+    - `interval_month` - (Int) The rotation time interval in months, with a minimum of 1, and a maximum of 12.
     - `created_by` - (String) The unique ID for the resource that created the policy.
     - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
-    - `interval_month` - (Int) The rotation time interval in months.
     - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
     - `updated_by` - (String) The unique ID for the resource that updated the policy.
 
 - `dual_auth_delete` - (List) The data associated with the dual authorization delete policy.
 
      Nested scheme for `dual_auth_delete`:
+     - `enabled` - (Bool) If set to **true**, Key Protect enables a dual authorization policy on the instance.
      - `created_by` - (String) The unique ID for the resource that created the policy.
      - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
-     - `enabled` - (Bool) If set to **true**, Key Protect enables a dual authorization policy on the instance.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
      - `updated_by` - (String) The unique ID for the resource that updated the policy.
 

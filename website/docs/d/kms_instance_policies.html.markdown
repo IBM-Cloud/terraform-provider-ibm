@@ -11,9 +11,6 @@ description: |-
 
 Import the details of existing Key Protect and Hyper Protect Crypto Service (HPCS) instance policies as a read-only data source. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax. Retreives a list of instance policies from the hs-crypto or key-protect instance for the provided instance id.
 
-**NOTE**
-: `terraform destroy` does not remove the policies of the Instance but only clears the state file. Instance Policies get deleted when the associated Instance resource is destroyed.
-
 
 ## Example usage to create a Instance and associated Instance policies.
 
@@ -29,6 +26,7 @@ data "ibm_kms_instance_policies" "test" {
 The following arguments are supported:
 
 - `instance_id` - (Required, String) The key-protect instance ID for creating policies.
+- `policy_type` - (Optional, String) The type of policy to be retrieved. Allowed inputs ('dualAuthDelete', 'keyCreateImportAccess', 'metrics', 'rotation')
 
 For Reference to the Policy : https://cloud.ibm.com/docs/key-protect?topic=key-protect-manage-keyCreateImportAccess
 
@@ -44,26 +42,26 @@ In addition to all arguments above, the following attributes are exported:
 - `rotation` - (List) The rotation time interval in months, with a minimum of 1, and a maximum of 12.
 
     Nested scheme for `rotation`:
-    - `enabled` - (Bool) If set to **true**, Key Protect enables a rotation policy on the instance.
+    - `enabled` - (Bool) Data associated with enable/disbale value for the rotation policy on the instance.
+    - `interval_month` - (Int) The rotation time interval in months.
     - `created_by` - (String) The unique ID for the resource that created the policy.
     - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
-    - `interval_month` - (Int) The rotation time interval in months.
     - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
     - `updated_by` - (String) The unique ID for the resource that updated the policy.
 
 - `dual_auth_delete` - (List) The data associated with the dual authorization delete policy.
 
      Nested scheme for `dual_auth_delete`:
+     - `enabled` - (Bool) Data associated with enable/disbale value for the rotation policy on the instance.
      - `created_by` - (String) The unique ID for the resource that created the policy.
      - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
-     - `enabled` - (Bool) If set to **true**, Key Protect enables a dual authorization policy on the instance.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
      - `updated_by` - (String) The unique ID for the resource that updated the policy.
 
 - `metrics` - (List) The data associated with the metrics policy.
 
      Nested scheme for `metrics`:
-     - `enabled` - (Bool) If set to **true**, Key Protect enables a metrics policy on the instance.
+     - `enabled` - (Bool) Data associated with enable/disbale value for the rotation policy on the instance.
      - `created_by` - (String) The unique ID for the resource that created the policy.
      - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.
@@ -72,7 +70,7 @@ In addition to all arguments above, the following attributes are exported:
 - `key_create_import_access` - (List) The data associated with the key_create_import_access policy.
 
      Nested scheme for `key_create_import_access policy`:
-     - `enabled` - (Bool) If set to **true**, Key Protect enables a metrics policy on the instance.
+     - `enabled` - (Bool) Data associated with enable/disbale value for the rotation policy on the instance.
      - `created_by` - (String) The unique ID for the resource that created the policy.
      - `creation_date` - (Timestamp) The date the policy was created. The date format follows RFC 3339.
      - `last_update_date` - (Timestamp)  The date when the policy last replaced or modified. The date format follows RFC 3339.

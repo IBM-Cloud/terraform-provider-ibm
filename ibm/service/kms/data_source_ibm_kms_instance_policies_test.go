@@ -63,3 +63,57 @@ func testAccCheckIBMKmsDataSourceInstancePolicyConfigNew(instanceName string, in
 	}
 `, instanceName, interval_month, dadenabled, metricEnable, kciaEnable)
 }
+
+func TestAccIBMKmsDataSourceInstancePolicy_withPolicyType(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	interval_month := 3
+	enablePolicy := true
+	dadenabled := true
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKmsDataSourceInstancePolicyWithPolicyType(instanceName, enablePolicy, interval_month, dadenabled),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_kms_instance_policies.test", "rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("data.ibm_kms_instance_policies.test", "rotation.0.enabled", "true"),
+					resource.TestCheckResourceAttr("data.ibm_kms_instance_policies.test", "policy_type", "rotation"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMKmsDataSourceInstancePolicyWithPolicyType(instanceName string, enablePolicy bool, interval_month int, dadenabled bool) string {
+	return fmt.Sprintf(`
+
+	variable "policy_type" {
+		type = string
+		default = "rotation"
+	}
+
+	resource "ibm_resource_instance" "kp_instance" {
+		name     = "%s"
+		service  = "kms"
+		plan     = "tiered-pricing"
+		location = "us-south"
+	}
+
+	resource "ibm_kms_instance_policies" "test2" {
+		instance_id = "${ibm_resource_instance.kp_instance.guid}"
+			rotation {
+				enabled = %t
+				interval_month = %d
+			}
+			dual_auth_delete {
+				enabled = %t
+			}
+	}
+	data "ibm_kms_instance_policies" "test" {
+		instance_id = "${ibm_kms_instance_policies.test2.instance_id}"
+		policy_type = var.policy_type
+		
+	}
+`, instanceName, enablePolicy, interval_month, dadenabled)
+}

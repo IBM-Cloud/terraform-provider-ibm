@@ -7,6 +7,8 @@ import (
 	"context"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -23,6 +25,12 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 				Description:      "Key protect or hpcs instance GUID or CRN",
 				DiffSuppressFunc: suppressKMSInstanceIDDiff,
 			},
+			"policy_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Type of Policy to be Retrieved",
+				ValidateFunc: validate.ValidateAllowedPolicyType([]string{"dualAuthDelete", "keyCreateImportAccess", "metrics", "rotation"}),
+			},
 			"dual_auth_delete": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -32,7 +40,7 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 						"enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, Key Protect enables a dual authorization policy for the instance.",
+							Description: "Data associated with enable/disable dual authorization policy for the instance.",
 						},
 						"created_by": {
 							Type:        schema.TypeString,
@@ -66,7 +74,7 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 						"enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, Key Protect enables a rotation policy for the instance",
+							Description: "Data associated with enable/disable of rotation policy for the instance",
 						},
 						"created_by": {
 							Type:        schema.TypeString,
@@ -105,7 +113,7 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 						"enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, Key Protect enables a KCIA policy for the instance.",
+							Description: "Data associated with enable/disable KCIA policy for the instance.",
 						},
 						"created_by": {
 							Type:        schema.TypeString,
@@ -164,7 +172,7 @@ func DataSourceIBMKmsInstancePolicies() *schema.Resource {
 						"enabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "If set to true, Key Protect enables a metrics policy on the instance.",
+							Description: "Data associated with enable/disable metrics policy on the instance.",
 						},
 						"created_by": {
 							Type:        schema.TypeString,
@@ -199,16 +207,63 @@ func resourceIBMKmsInstancePolicyRead(context context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	instancePolicies, err := kpAPI.GetInstancePolicies(context)
-	if err != nil {
-		return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+	policyType := d.Get("policy_type").(string)
+	if policyType != "" {
+		switch policyType {
+
+		case "dualAuthDelete":
+			var dualAuthInstancePolicy []kp.InstancePolicy
+			instancePolicies, err := kpAPI.GetDualAuthInstancePolicy(context)
+			if err != nil {
+				return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+			}
+			dualAuthInstancePolicy = append(dualAuthInstancePolicy, *instancePolicies)
+			d.Set("dual_auth_delete", flex.FlattenInstancePolicy("dual_auth_delete", dualAuthInstancePolicy))
+
+		case "keyCreateImportAccess":
+			var createImportAccessPolicy []kp.InstancePolicy
+			instancePolicies, err := kpAPI.GetKeyCreateImportAccessInstancePolicy(context)
+			if err != nil {
+				return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+			}
+			createImportAccessPolicy = append(createImportAccessPolicy, *instancePolicies)
+			d.Set("key_create_import_access", flex.FlattenInstancePolicy("key_create_import_access", createImportAccessPolicy))
+
+		case "metrics":
+			var metricsPolicy []kp.InstancePolicy
+			instancePolicies, err := kpAPI.GetMetricsInstancePolicy(context)
+			if err != nil {
+				return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+			}
+			metricsPolicy = append(metricsPolicy, *instancePolicies)
+			d.Set("metrics", flex.FlattenInstancePolicy("metrics", metricsPolicy))
+
+		case "rotation":
+			var rotationPolicy []kp.InstancePolicy
+			instancePolicies, err := kpAPI.GetRotationInstancePolicy(context)
+			if err != nil {
+				return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+			}
+			rotationPolicy = append(rotationPolicy, *instancePolicies)
+			d.Set("rotation", flex.FlattenInstancePolicy("rotation", rotationPolicy))
+
+		default:
+			return diag.Errorf("Invalid Policy Type")
+		}
+	} else {
+		instancePolicies, err := kpAPI.GetInstancePolicies(context)
+		if err != nil {
+			return diag.Errorf("[ERROR] Error retrieving instance policies: %s", err)
+		}
+		d.Set("key_create_import_access", flex.FlattenInstancePolicy("key_create_import_access", instancePolicies))
+		d.Set("metrics", flex.FlattenInstancePolicy("metrics", instancePolicies))
+		d.Set("rotation", flex.FlattenInstancePolicy("rotation", instancePolicies))
+		d.Set("dual_auth_delete", flex.FlattenInstancePolicy("dual_auth_delete", instancePolicies))
 	}
+
 	d.Set("instance_id", instanceID)
 	d.SetId(instanceID)
-	d.Set("dual_auth_delete", flex.FlattenInstancePolicy("dual_auth_delete", instancePolicies))
-	d.Set("rotation", flex.FlattenInstancePolicy("rotation", instancePolicies))
-	d.Set("metrics", flex.FlattenInstancePolicy("metrics", instancePolicies))
-	d.Set("key_create_import_access", flex.FlattenInstancePolicy("key_create_import_access", instancePolicies))
+
 	return nil
 
 }

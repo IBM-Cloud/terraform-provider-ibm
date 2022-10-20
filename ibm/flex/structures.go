@@ -2678,7 +2678,6 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 	metricsMap := make([]map[string]interface{}, 0, 1)
 	keyCreateImportAccessMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
-		log.Println("Policy Type", policy.PolicyType)
 		policyInstance := map[string]interface{}{
 			"created_by":    policy.CreatedBy,
 			"creation_date": (*policy.CreatedAt).String(),
@@ -2691,9 +2690,7 @@ func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []ma
 		}
 		if policy.PolicyType == "rotation" {
 			policyInstance["enabled"] = policy.PolicyData.Enabled
-			if !*policy.PolicyData.Enabled {
-				policyInstance["interval_month"] = nil
-			} else {
+			if policy.PolicyData.Attributes != nil {
 				policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
 			}
 			rotationMap = append(rotationMap, policyInstance)
@@ -2793,9 +2790,10 @@ func FlattenHostLabels(hostLabels []interface{}) map[string]string {
 	labels := make(map[string]string)
 	for _, v := range hostLabels {
 		parts := strings.Split(v.(string), ":")
-		if parts != nil {
-			labels[parts[0]] = parts[1]
+		if len(parts) != 2 {
+			log.Fatal("Entered label " + v.(string) + "is in incorrect format.")
 		}
+		labels[parts[0]] = parts[1]
 	}
 
 	return labels

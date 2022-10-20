@@ -39,8 +39,8 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 			"dual_auth_delete": {
 				Type:         schema.TypeList,
 				Optional:     true,
-				Computed:     true,
 				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
+				MaxItems:     1,
 				Description:  "Data associated with the dual authorization delete policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -75,8 +75,8 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 			"rotation": {
 				Type:         schema.TypeList,
 				Optional:     true,
-				Computed:     true,
 				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
+				MaxItems:     1,
 				Description:  "Data associated with the rotation policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -117,8 +117,8 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 			"key_create_import_access": {
 				Type:         schema.TypeList,
 				Optional:     true,
-				Computed:     true,
 				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
+				MaxItems:     1,
 				Description:  "Data associated with the key create import access policy for the instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -183,8 +183,8 @@ func ResourceIBMKmsInstancePolicy() *schema.Resource {
 			"metrics": {
 				Type:         schema.TypeList,
 				Optional:     true,
-				Computed:     true,
 				AtLeastOneOf: []string{"rotation", "dual_auth_delete", "metrics", "key_create_import_access"},
+				MaxItems:     1,
 				Description:  "Data associated with the metric policy for instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -226,10 +226,7 @@ func resourceIBMKmsInstancePolicyCreate(context context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if _, ok := d.GetOk("instance_id"); ok {
-		policyCreate(context, d, kpAPI)
-	}
+	policyCreateOrUpdate(context, d, kpAPI)
 	d.SetId(*instanceCRN)
 	return resourceIBMKmsInstancePoliciesRead(context, d, meta)
 }
@@ -263,7 +260,7 @@ func resourceIBMKmsInstancePolicyUpdate(context context.Context, d *schema.Resou
 			return diag.FromErr(err)
 		}
 
-		err = policyCreate(context, d, kpAPI)
+		err = policyCreateOrUpdate(context, d, kpAPI)
 		if err != nil {
 			return diag.Errorf("Could not update the policies: %s", err)
 		}
@@ -279,7 +276,7 @@ func resourceIBMKmsInstancePolicyDelete(context context.Context, d *schema.Resou
 
 }
 
-func policyCreate(context context.Context, d *schema.ResourceData, kpAPI *kp.Client) error {
+func policyCreateOrUpdate(context context.Context, d *schema.ResourceData, kpAPI *kp.Client) error {
 	var mulPolicy kp.MultiplePolicies
 	if dualAuthDeleteInstancePolicy, ok := d.GetOk("dual_auth_delete"); ok {
 		dualAuthDeleteInstancePolicyList := dualAuthDeleteInstancePolicy.([]interface{})

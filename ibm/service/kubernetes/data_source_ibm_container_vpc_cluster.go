@@ -35,6 +35,9 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ExactlyOneOf: []string{"cluster_name_id", "name"},
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_container_vpc_cluster",
+					"name"),
 			},
 			"worker_count": {
 				Description: "Number of workers",
@@ -297,6 +300,20 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 	}
 }
 
+func DataSourceIBMContainerVPCClusterValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "name",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			CloudDataType:              "cluster",
+			CloudDataRange:             []string{"resolved_to:id"}})
+
+	iBMContainerVPCClusterValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_cluster", Schema: validateSchema}
+	return &iBMContainerVPCClusterValidator
+}
 func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface{}) error {
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
