@@ -194,7 +194,7 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	containerVPCWorkerPoolTaintsValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_worker_pool", Schema: validateSchema}
 	return &containerVPCWorkerPoolTaintsValidator

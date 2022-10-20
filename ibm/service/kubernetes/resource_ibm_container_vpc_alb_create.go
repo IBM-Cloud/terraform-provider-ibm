@@ -150,7 +150,7 @@ func ResourceIBMContainerVpcAlbCreateNewValidator() *validate.ResourceValidator 
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerVpcAlbCreateNewValidator := validate.ResourceValidator{ResourceName: "ibm_container_nlb_dns", Schema: validateSchema}
 	return &iBMContainerVpcAlbCreateNewValidator

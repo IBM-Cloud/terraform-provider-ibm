@@ -718,6 +718,31 @@ resource "ibm_is_instance" "instance7" {
   keys = [ibm_is_ssh_key.sshkey.id]
 }
 
+// catalog images 
+
+data "ibm_is_images" "imageslist" {
+  catalog_managed = true
+}
+resource "ibm_is_instance" "instance8" {
+  name    = "instance8"
+  profile = var.profile
+  auto_delete_volume = true
+  primary_network_interface {
+    primary_ip {
+      name = "example-reserved-ip"
+      auto_delete = true
+    } 
+    name        = "test-reserved-ip"
+    subnet      = ibm_is_subnet.subnet2.id
+  }
+  catalog_offering {
+    version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
+  }
+  vpc  = ibm_is_vpc.vpc2.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.sshkey.id]
+}
+
 
 data "ibm_is_instance_network_interface_reserved_ip" "data_reserved_ip" {
   instance = ibm_is_instance.test_instance.id
