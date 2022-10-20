@@ -196,6 +196,10 @@ var CdJiraUsername string
 var CdJiraApiToken string
 var CdSaucelabsAccessKey string
 var CdSaucelabsUsername string
+var CdBitbucketRepoUrl string
+var CdGithubConsolidatedRepoUrl string
+var CdGitlabRepoUrl string
+var CdHostedGitRepoUrl string
 
 // VPN Server
 var ISCertificateCrn string
@@ -1061,6 +1065,26 @@ func init() {
 	CdSaucelabsUsername = os.Getenv("IBM_CD_SAUCELABS_USERNAME")
 	if CdSecretsManagerInstanceName == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_USERNAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdBitbucketRepoUrl = os.Getenv("IBM_CD_BITBUCKET_REPO_URL")
+	if CdBitbucketRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_BITBUCKET_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdGithubConsolidatedRepoUrl = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_REPO_URL")
+	if CdGithubConsolidatedRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_GITHUB_CONSOLIDATED_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdGitlabRepoUrl = os.Getenv("IBM_CD_GITLAB_REPO_URL")
+	if CdGitlabRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_GITLAB_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdHostedGitRepoUrl = os.Getenv("IBM_CD_HOSTED_GIT_URL")
+	if CdHostedGitRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_HOSTED_GIT_URL for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")
