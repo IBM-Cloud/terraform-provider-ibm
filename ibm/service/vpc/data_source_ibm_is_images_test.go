@@ -30,6 +30,25 @@ func TestAccIBMISImagesDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISImagesDataSource_catalog(t *testing.T) {
+	resName := "data.ibm_is_images.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISCatalogImagesDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
+					resource.TestCheckResourceAttr(resName, "images.0.catalog_offering.0.managed", "true"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.architecture"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISImageDataSource_With_FilterVisibilty(t *testing.T) {
 	resName := "data.ibm_is_images.test1"
@@ -71,6 +90,13 @@ func testAccCheckIBMISImagesDataSourceConfig() string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
       data "ibm_is_images" "test1" {
+      }`)
+}
+func testAccCheckIBMISCatalogImagesDataSourceConfig() string {
+	// status filter defaults to empty
+	return fmt.Sprintf(`
+      data "ibm_is_images" "test1" {
+		catalog_managed = true
       }`)
 }
 
