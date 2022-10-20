@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMKmsDataSourceKeyPolicy_basicNew(t *testing.T) {
+func TestAccIBMKMSDataSourceKeyPolicy_basicNew(t *testing.T) {
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	// bucketName := fmt.Sprintf("bucket", acctest.RandIntRange(10, 100))
 	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
@@ -24,9 +24,9 @@ func TestAccIBMKmsDataSourceKeyPolicy_basicNew(t *testing.T) {
 				Config: testAccCheckIBMKmsDataSourceKeyPolicyConfigNew(instanceName, keyName, rotationEnable, interval_month, enabled),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "keys.0.rotation.0.interval_month", "3"),
-					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "keys.0.rotation.0.enabled", "true"),
-					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "keys.0.dual_auth_delete.0.enabled", "false"),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "policies.0.rotation.0.interval_month", "3"),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "policies.0.rotation.0.enabled", "true"),
+					resource.TestCheckResourceAttr("data.ibm_kms_key_policies.test", "policies.0.dual_auth_delete.0.enabled", "false"),
 				),
 			},
 		},
