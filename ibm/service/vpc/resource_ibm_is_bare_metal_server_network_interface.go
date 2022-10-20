@@ -403,7 +403,7 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		}
 
 		log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-		_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+		_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, context, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -552,7 +552,7 @@ func createVlanTypeNetworkInterface(context context.Context, d *schema.ResourceD
 		return err
 	}
 	log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, context, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
 		return err
 	}
@@ -998,8 +998,12 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 	}
 }
 
-func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, bareMetalServerId, nicId string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
+func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, ctx context.Context, bareMetalServerId, nicId string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) Network Interface (%s) to be available.", bareMetalServerId, nicId)
+	// isBMSNicAllowFloatKey := "bare_metal_server_key_" + bareMetalServerId + "_vlan"
+	// conns.IbmMutexKV.Lock(isBMSNicAllowFloatKey)
+	// defer conns.IbmMutexKV.Unlock(isBMSNicAllowFloatKey)
+
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfacePending},
 		Target:     []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfacePCIPending, isBareMetalServerNetworkInterfaceFailed},
@@ -1008,7 +1012,7 @@ func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, bare
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-	return stateConf.WaitForState()
+	return stateConf.WaitForStateContext(ctx)
 }
 
 func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetalServerId, nicId string, d *schema.ResourceData) resource.StateRefreshFunc {
@@ -1017,12 +1021,15 @@ func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetal
 			BareMetalServerID: &bareMetalServerId,
 			ID:                &nicId,
 		}
+
 		bmsNic, response, err := client.GetBareMetalServerNetworkInterface(getBmsNicOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) Network Interface (%s) : %s\n%s", bareMetalServerId, nicId, err, response)
 		}
 		status := ""
 		pcipending := false
+		log.Printf("[INFO] UJJK enteref refresh func make build %s", reflect.TypeOf(bmsNic).String())
+
 		switch reflect.TypeOf(bmsNic).String() {
 		case "*vpcv1.BareMetalServerNetworkInterfaceByPci":
 			{
@@ -1044,8 +1051,13 @@ func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetal
 		case "*vpcv1.BareMetalServerNetworkInterfaceByVlan":
 			{
 				nic := bmsNic.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
+				log.Printf("[INFO] UJJK seeting vlan type status is %s/%s", *nic.Status, *nic.PrimaryIP.Address)
 				status = *nic.Status
 				d.Set(isBareMetalServerNicStatus, *nic.Status)
+				if *nic.PrimaryIP.Address == "0.0.0.0" {
+					log.Printf("[INFO] ujjk status is pending and we are returning oending for %s/%s", bareMetalServerId, nicId)
+					return bmsNic, "pending", nil
+				}
 			}
 		}
 

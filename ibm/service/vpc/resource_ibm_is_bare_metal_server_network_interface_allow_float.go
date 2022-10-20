@@ -300,6 +300,7 @@ func createVlanTypeNetworkInterfaceAllowFloat(context context.Context, d *schema
 	nicOptions.SecurityGroups = sGroupList
 	options.BareMetalServerID = &bareMetalServerId
 	options.BareMetalServerNetworkInterfacePrototype = nicOptions
+
 	nic, response, err := sess.CreateBareMetalServerNetworkInterfaceWithContext(context, options)
 	if err != nil || nic == nil {
 		return fmt.Errorf("[DEBUG] Create bare metal server (%s) network interface err %s\n%s", bareMetalServerId, err, response)
@@ -324,12 +325,12 @@ func createVlanTypeNetworkInterfaceAllowFloat(context context.Context, d *schema
 	}
 
 	log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+	nicss, err := isWaitForBareMetalServerNetworkInterfaceAvailable(sess, context, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
 		return err
 	}
 
-	err = bareMetalServerNICAllowFloatGet(d, meta, sess, nic, bareMetalServerId)
+	err = bareMetalServerNICAllowFloatGet(d, meta, sess, nicss, bareMetalServerId)
 	if err != nil {
 		return err
 	}
