@@ -101,8 +101,8 @@ github.com/IBM/schematics-go-sdk v0.2.1 h1:byATysGD+Z1k/wdtNqQmKALcAPjgSLuSyzcab
 github.com/IBM/schematics-go-sdk v0.2.1/go.mod h1:Tw2OSAPdpC69AxcwoyqcYYaGTTW6YpERF9uNEU+BFRQ=
 github.com/IBM/secrets-manager-go-sdk v0.1.19 h1:0GPs5EoTaWNsjo4QPj64GNxlWfN8VHJy4RDFLqddSe8=
 github.com/IBM/secrets-manager-go-sdk v0.1.19/go.mod h1:eO3dBhzPrHkkt+yPex/jB2xD6qHZxBko+Aw+0tfqHeA=
-github.com/IBM/vpc-go-sdk v0.25.0 h1:Gy5d3uUAtHqetLcWqFmA3nro8C6kZtrv2/ABdTgZUdU=
-github.com/IBM/vpc-go-sdk v0.25.0/go.mod h1:jYjS3EySPkC7DuOg33gMHtm8DcIf75Tc+Gxo3zmMBTQ=
+github.com/IBM/vpc-go-sdk v0.27.0 h1:PBpgjh5bjxrMT5BlaHfyaiJ/71pvycbmVQMuPOQ33ZY=
+github.com/IBM/vpc-go-sdk v0.27.0/go.mod h1:jYjS3EySPkC7DuOg33gMHtm8DcIf75Tc+Gxo3zmMBTQ=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
