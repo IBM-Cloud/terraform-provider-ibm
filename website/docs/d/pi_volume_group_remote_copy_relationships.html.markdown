@@ -59,4 +59,4 @@ In addition to all argument reference list, you can access the following attribu
       - `progress` - (Integer) The relationship progress.
       - `remote_copy_id` - (String) The remote copy relationship ID.
       - `state` - (String) The relationship state.
-      - `sync` - (String) Indicates whether the relationship is synchronized.
+      - `synchronized` - (String) Indicates whether the relationship is synchronized.

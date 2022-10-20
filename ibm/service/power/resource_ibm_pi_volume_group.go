@@ -49,7 +49,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 			PIVolumeGroupConsistencyGroupName: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "The name of consistency-group at storage controller level",
+				Description:   "The name of consistency group at storage controller level",
 				ConflictsWith: []string{PIVolumeGroupName},
 			},
 			PIVolumeGroupsVolumeIds: {
@@ -57,7 +57,7 @@ func ResourceIBMPIVolumeGroup() *schema.Resource {
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "List of volumes to add in volume-group",
+				Description: "List of volumes to add in volume group",
 			},
 
 			// Computed Attributes

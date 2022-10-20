@@ -33,10 +33,10 @@ func DataSourceIBMPIVolumeOnboarding() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"creation_timestamp": {
+			"create_time": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Indicates the create-time of volume onboarding operation",
+				Description: "Indicates the create time of volume onboarding operation",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -106,7 +106,7 @@ func dataSourceIBMPIVolumeOnboardingReads(ctx context.Context, d *schema.Resourc
 	}
 
 	d.SetId(*volOnboarding.ID)
-	d.Set("creation_timestamp", volOnboarding.CreationTimestamp.String())
+	d.Set("create_time", volOnboarding.CreationTimestamp.String())
 	d.Set("description", volOnboarding.Description)
 	d.Set("input_volumes", volOnboarding.InputVolumes)
 	d.Set("progress", volOnboarding.Progress)

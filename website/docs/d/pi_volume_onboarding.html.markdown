@@ -42,7 +42,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `creation_timestamp` - (String) The create-time of volume onboarding operation.
+- `create_time` - (String) The create-time of volume onboarding operation.
 - `description` - (String) The description of the volume onboarding operation.
 - `id` - (String) The volume onboarding operation id.
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.

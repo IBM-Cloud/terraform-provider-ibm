@@ -70,14 +70,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `creation_timestamp` - (String) The create-time of volume onboarding operation.
+- `create_time` - (String) The create-time of volume onboarding operation.
 - `id` - (String) The unique identifier of the volume attach. The ID is composed of `<pi_cloud_instance_id>/<onboarding_id>`.
 - `onboarding_id` (String) The onboarding ID.
 - `input_volumes` - (List of strings) List of volumes requested to be onboarded.
 - `status` - (String) The status of volume onboarding operation.
 - `progress` - (Float) The progress of volume onboarding operation.
 - `results_onboarded_volumes` - (List of strings) List of volumes which are onboarded successfully.
-- `results_volume_onboarding_failures` - List of objects - The volume onboarding failure details.
+- `results_volume_onboarding_failures` - (List of objects) - The volume onboarding failure details.
 
   Nested scheme for `results_volume_onboarding_failures`:
   - `failure_message` - (String) The failure reason for the volumes which have failed to be onboarded.

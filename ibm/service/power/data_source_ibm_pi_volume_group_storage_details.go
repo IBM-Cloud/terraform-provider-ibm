@@ -73,7 +73,7 @@ func DataSourceIBMPIVolumeGroupStorageDetails() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the relationship state",
 			},
-			"sync": {
+			"synchronized": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Indicates whether the relationship is synchronized",
@@ -104,7 +104,7 @@ func dataSourceIBMPIVolumeGroupStorageDetailsReads(ctx context.Context, d *schem
 	d.Set("remote_copy_relationship_names", vgData.RemoteCopyRelationshipNames)
 	d.Set("replication_type", vgData.ReplicationType)
 	d.Set("state", vgData.State)
-	d.Set("sync", vgData.Sync)
+	d.Set("synchronized", vgData.Sync)
 
 	return nil
 }

@@ -69,7 +69,7 @@ func vgStatusDescriptionErrors() *schema.Schema {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"vol_ids": {
+				"volume_ids": {
 					Type:     schema.TypeList,
 					Computed: true,
 					Elem:     &schema.Schema{Type: schema.TypeString},
@@ -109,9 +109,9 @@ func flattenVolumeGroupStatusDescription(list []*models.StatusDescriptionError) 
 		errors := make([]map[string]interface{}, len(list))
 		for i, data := range list {
 			l := map[string]interface{}{
-				"key":     data.Key,
-				"message": data.Message,
-				"vol_ids": data.VolIDs,
+				"key":        data.Key,
+				"message":    data.Message,
+				"volume_ids": data.VolIDs,
 			}
 
 			errors[i] = l

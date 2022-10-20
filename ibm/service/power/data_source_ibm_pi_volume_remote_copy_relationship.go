@@ -102,7 +102,7 @@ func DataSourceIBMPIVolumeRemoteCopyRelationship() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the relationship state",
 			},
-			"sync": {
+			"synchronized": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Indicates whether the relationship is synchronized",
@@ -138,7 +138,7 @@ func dataSourceIBMPIVolumeRemoteCopyRelationshipsReads(ctx context.Context, d *s
 	d.Set("primary_role", volData.PrimaryRole)
 	d.Set("progress", volData.Progress)
 	d.Set("state", volData.State)
-	d.Set("sync", volData.Sync)
+	d.Set("synchronized", volData.Sync)
 	if volData.RemoteCopyID != nil {
 		d.Set("remote_copy_id", volData.RemoteCopyID)
 	}

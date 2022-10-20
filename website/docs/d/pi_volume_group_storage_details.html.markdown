@@ -42,7 +42,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `consistency_group_name` - (String) The name of consistency-group at storage controller level.
+- `consistency_group_name` - (String) The name of consistency group at storage controller level.
 - `cycle_period_seconds` - (Integer) The minimum period in seconds between multiple cycles.
 - `cycling_mode` - (String) The type of cycling mode used.
 - `id` - (String) The unique identifier of the volume group.
@@ -51,4 +51,4 @@ In addition to all argument reference list, you can access the following attribu
 - `remote_copy_relationship_names` - (List of strings) List of remote-copy relationship names in a volume group.
 - `replication_type` - (String) The type of replication(metro,global).
 - `state` - (String) The relationship state.
-- `sync` - (String) Indicates whether the relationship is synchronized.
+- `synchronized` - (String) Indicates whether the relationship is synchronized.

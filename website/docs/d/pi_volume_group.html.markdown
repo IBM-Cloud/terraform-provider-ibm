@@ -42,7 +42,7 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `consistency_group_name` - (String) The name of consistency-group at storage controller level.
+- `consistency_group_name` - (String) The name of consistency group at storage controller level.
 - `id` - (String) The unique identifier of the volume group.
 - `replication_status` - (String) The replication status of volume group.
 - `status` - (String) The status of the volume group.
@@ -51,5 +51,5 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `status_description_errors`:
   - `key` - (String) The volume group error key.
   - `message` - (String) The failure message providing more details about the error key.
-  - `vol_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume-group, with the given error.
+  - `volume_ids` - (List of strings) List of volume IDs, which failed to be added/removed to/from the volume group, with the given error.
 - `volume_group_name` - (String) The name of the volume group.
