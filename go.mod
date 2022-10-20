@@ -172,4 +172,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.com/IBM/vpc-go-sdk v0.24.0 => ./common/github.com/IBM/vpc-go-sdk
+replace github.com/IBM/vpc-go-sdk v0.27.0 => ./common/github.com/IBM/vpc-go-sdk
