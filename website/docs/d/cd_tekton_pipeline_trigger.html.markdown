@@ -72,7 +72,7 @@ Nested scheme for **properties**:
 	* `value` - (String) Property value.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 
-* `scm_source` - (List) SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
+* `scm_source` - (List) Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
 Nested scheme for **scm_source**:
 	* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
 	* `branch` - (String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
@@ -81,8 +81,10 @@ Nested scheme for **scm_source**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `pattern` - (String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,253}$/`.
-	* `service_instance_id` - (String) This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+	* `tool` - (List) Reference to the repository tool in the parent toolchain.
+	Nested scheme for **tool**:
+		* `id` - (String) ID of the repository tool instance in the parent toolchain.
+		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 

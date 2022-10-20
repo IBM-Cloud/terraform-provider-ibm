@@ -113,7 +113,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							MinItems:    1,
 							MaxItems:    1,
 							Required:    true,
-							Description: "SCM source for Tekton pipeline definition.",
+							Description: "Source code management repository containing the Tekton pipeline definition.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"url": &schema.Schema{
@@ -137,10 +137,19 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Required:    true,
 										Description: "The path to the definition's yaml files.",
 									},
-									"service_instance_id": &schema.Schema{
-										Type:        schema.TypeString,
+									"tool": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "ID of the SCM repository service instance in the parent toolchain.",
+										Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "ID of the repository tool instance in the parent toolchain.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -320,7 +329,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+							Description: "Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"url": &schema.Schema{
@@ -349,10 +358,19 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Computed:    true,
 										Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 									},
-									"service_instance_id": &schema.Schema{
-										Type:        schema.TypeString,
+									"tool": &schema.Schema{
+										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+										Description: "Reference to the repository tool in the parent toolchain.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "ID of the repository tool instance in the parent toolchain.",
+												},
+											},
+										},
 									},
 								},
 							},
@@ -717,8 +735,20 @@ func resourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipeline
 		modelMap["tag"] = model.Tag
 	}
 	modelMap["path"] = model.Path
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = model.ServiceInstanceID
+	if model.Tool != nil {
+		toolMap, err := resourceIBMCdTektonPipelineDefinitionScmSourceToolToMap(model.Tool)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["tool"] = []map[string]interface{}{toolMap}
+	}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineDefinitionScmSourceToolToMap(model *cdtektonpipelinev2.DefinitionScmSourceTool) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
 }
@@ -875,8 +905,20 @@ func resourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.
 	if model.HookID != nil {
 		modelMap["hook_id"] = model.HookID
 	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = model.ServiceInstanceID
+	if model.Tool != nil {
+		toolMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToolToMap(model.Tool)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["tool"] = []map[string]interface{}{toolMap}
+	}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineTriggerScmSourceToolToMap(model *cdtektonpipelinev2.TriggerScmSourceTool) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
 }

@@ -138,7 +138,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "SCM source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+				Description: "Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
@@ -166,10 +166,19 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 							Computed:    true,
 							Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
 						},
-						"service_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
+						"tool": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "This is the ID of the repository service instance in the toolchain. This can be found in the data returned from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+							Description: "Reference to the repository tool in the parent toolchain.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the repository tool instance in the parent toolchain.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -432,8 +441,20 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerScmSourceToMap(model *cdtektonpi
 	if model.HookID != nil {
 		modelMap["hook_id"] = *model.HookID
 	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = *model.ServiceInstanceID
+	if model.Tool != nil {
+		toolMap, err := dataSourceIBMCdTektonPipelineTriggerTriggerScmSourceToolToMap(model.Tool)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["tool"] = []map[string]interface{}{toolMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMCdTektonPipelineTriggerTriggerScmSourceToolToMap(model *cdtektonpipelinev2.TriggerScmSourceTool) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
 	return modelMap, nil
 }

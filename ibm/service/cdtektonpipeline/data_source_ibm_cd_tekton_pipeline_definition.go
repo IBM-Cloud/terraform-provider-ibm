@@ -33,7 +33,7 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 			"scm_source": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "SCM source for Tekton pipeline definition.",
+				Description: "Source code management repository containing the Tekton pipeline definition.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
@@ -56,10 +56,19 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 							Computed:    true,
 							Description: "The path to the definition's yaml files.",
 						},
-						"service_instance_id": &schema.Schema{
-							Type:        schema.TypeString,
+						"tool": &schema.Schema{
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "ID of the SCM repository service instance in the parent toolchain.",
+							Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of the repository tool instance in the parent toolchain.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -116,8 +125,20 @@ func dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToMap(model *cdte
 	if model.Path != nil {
 		modelMap["path"] = *model.Path
 	}
-	if model.ServiceInstanceID != nil {
-		modelMap["service_instance_id"] = *model.ServiceInstanceID
+	if model.Tool != nil {
+		toolMap, err := dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToolToMap(model.Tool)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["tool"] = []map[string]interface{}{toolMap}
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMCdTektonPipelineDefinitionDefinitionScmSourceToolToMap(model *cdtektonpipelinev2.DefinitionScmSourceTool) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
 	}
 	return modelMap, nil
 }
