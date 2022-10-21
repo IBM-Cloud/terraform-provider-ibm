@@ -84,7 +84,7 @@ variable "kp_name" {
 variable "kp_region" {
   type        = string
   description = "IBM Cloud Region where the Key Protect Instance is created."
-  default     = "ibm:yp:us-south"
+  default     = "us-south"
 }
 
 variable "commons_hosted_region" {
