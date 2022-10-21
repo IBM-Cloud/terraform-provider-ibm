@@ -25,5 +25,5 @@ variable "registry_region" {
 variable "region" {
 }
 
-variable "ibm_cloud_api" {
+variable "ibmcloud_api" {
 }

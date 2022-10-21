@@ -8,7 +8,7 @@ resource "ibm_cd_tekton_pipeline_property" "pr_env_apikey" {
 resource "ibm_cd_tekton_pipeline_property" "pr_env_ibmcloud-api" {
   name           = "ibmcloud-api"
   type           = "text"
-  value          = "https://cloud.ibm.com"
+  value          = var.ibmcloud_api
   pipeline_id    = var.pipeline_id         
 }
 

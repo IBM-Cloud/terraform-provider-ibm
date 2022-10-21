@@ -1,6 +1,6 @@
 resource "ibm_cd_toolchain_tool_hostedgit" "app_repo" {
   toolchain_id = var.toolchain_id
-  name         = "app-repo"
+  name         = "repo"
   initialization {
     type = "clone"
     source_repo_url = var.app_repo
