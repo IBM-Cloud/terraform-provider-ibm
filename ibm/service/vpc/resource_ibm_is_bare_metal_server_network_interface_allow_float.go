@@ -77,6 +77,11 @@ func ResourceIBMIsBareMetalServerNetworkInterfaceAllowFloat() *schema.Resource {
 							Computed:    true,
 							Description: "The globally unique IP address",
 						},
+						isBareMetalServerNicFloatingIPId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique IP identifier",
+						},
 					},
 				},
 			},
@@ -429,8 +434,8 @@ func bareMetalServerNICAllowFloatGet(d *schema.ResourceData, meta interface{}, s
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
@@ -502,8 +507,8 @@ func bareMetalServerNICAllowFloatGet(d *schema.ResourceData, meta interface{}, s
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
