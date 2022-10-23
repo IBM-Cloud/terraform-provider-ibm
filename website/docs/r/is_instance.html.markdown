@@ -347,6 +347,7 @@ Review the argument references that you can specify for your resource.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
+  - `auto_delete_volume` - (Optional, String) If set to **true**, when deleting the instance the volume will also be deleted
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
   - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.

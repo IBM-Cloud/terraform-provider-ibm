@@ -601,6 +601,12 @@ func ResourceIBMISInstance() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						isInstanceVolAttVolAutoDelete: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Auto delete boot volume along with instance",
+						},
 						isInstanceBootAttachmentName: {
 							Type:         schema.TypeString,
 							Optional:     true,
@@ -1102,7 +1108,8 @@ func instanceCreateByImage(d *schema.ResourceData, meta interface{}, profile, na
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1462,7 +1469,8 @@ func instanceCreateByCatalogOffering(d *schema.ResourceData, meta interface{}, p
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -1828,7 +1836,8 @@ func instanceCreateByTemplate(d *schema.ResourceData, meta interface{}, profile,
 				volTemplate.UserTags = userTagsArray
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
@@ -2185,7 +2194,8 @@ func instanceCreateByVolume(d *schema.ResourceData, meta interface{}, profile, n
 				ID: &snapshotIdStr,
 			}
 		}
-		deletebool := true
+		deleteboolIntf := bootvol[isInstanceVolAttVolAutoDelete]
+		deletebool := deleteboolIntf.(bool)
 		instanceproto.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
 			DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume:                       volTemplate,
@@ -2873,6 +2883,19 @@ func instanceGet(d *schema.ResourceData, meta interface{}, id string) error {
 		if instance.BootVolumeAttachment.Volume != nil {
 			bootVol[isInstanceBootAttachmentName] = *instance.BootVolumeAttachment.Volume.Name
 			bootVol[isInstanceBootVolumeId] = *instance.BootVolumeAttachment.Volume.ID
+
+			instanceId := *instance.ID
+			bootVolID := *instance.BootVolumeAttachment.ID
+			getinsVolAttOptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
+				InstanceID: &instanceId,
+				ID:         &bootVolID,
+			}
+			bootVolumeAtt, response, err := instanceC.GetInstanceVolumeAttachment(getinsVolAttOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error getting Instance boot volume attachment : %s\n%s", err, response)
+			}
+
+			bootVol[isInstanceVolAttVolAutoDelete] = *bootVolumeAtt.DeleteVolumeOnInstanceDelete
 			options := &vpcv1.GetVolumeOptions{
 				ID: instance.BootVolumeAttachment.Volume.ID,
 			}
@@ -3025,7 +3048,41 @@ func instanceUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 	}
+	bootVolAutoDel := "boot_volume.0.auto_delete_volume"
+	if d.HasChange(bootVolAutoDel) && !d.IsNewResource() {
+		listvolattoptions := &vpcv1.ListInstanceVolumeAttachmentsOptions{
+			InstanceID: &id,
+		}
+		vols, _, err := instanceC.ListInstanceVolumeAttachments(listvolattoptions)
+		if err != nil {
+			return err
+		}
 
+		auto_delete := d.Get(bootVolAutoDel).(bool)
+		for _, vol := range vols.VolumeAttachments {
+			if *vol.Type == "boot" {
+				volAttachmentID := *vol.ID
+				updateInstanceVolAttOptions := &vpcv1.UpdateInstanceVolumeAttachmentOptions{
+					InstanceID: &id,
+					ID:         &volAttachmentID,
+				}
+				volAttNamePatchModel := &vpcv1.VolumeAttachmentPatch{
+					DeleteVolumeOnInstanceDelete: &auto_delete,
+				}
+				volAttNamePatchModelAsPatch, err := volAttNamePatchModel.AsPatch()
+				if err != nil || volAttNamePatchModelAsPatch == nil {
+					return fmt.Errorf("[ERROR] Error Instance volume attachment (%s) as patch : %s", id, err)
+				}
+				updateInstanceVolAttOptions.VolumeAttachmentPatch = volAttNamePatchModelAsPatch
+
+				instanceVolAttUpdate, response, err := instanceC.UpdateInstanceVolumeAttachment(updateInstanceVolAttOptions)
+				if err != nil || instanceVolAttUpdate == nil {
+					log.Printf("[DEBUG] Instance volume attachment updation err %s\n%s", err, response)
+					return err
+				}
+			}
+		}
+	}
 	if d.HasChange(isPlacementTargetDedicatedHost) || d.HasChange(isPlacementTargetDedicatedHostGroup) && !d.IsNewResource() {
 		dedicatedHost := d.Get(isPlacementTargetDedicatedHost).(string)
 		dedicatedHostGroup := d.Get(isPlacementTargetDedicatedHostGroup).(string)
@@ -3685,9 +3742,12 @@ func instanceDelete(d *schema.ResourceData, meta interface{}, id string) error {
 			return err
 		}
 		if _, ok := d.GetOk(isInstanceBootVolume); ok {
-			_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return err
+			autoDel := d.Get("boot_volume.0.auto_delete_volume").(bool)
+			if autoDel {
+				_, err = isWaitForVolumeDeleted(instanceC, bootvolid, d.Timeout(schema.TimeoutDelete))
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
