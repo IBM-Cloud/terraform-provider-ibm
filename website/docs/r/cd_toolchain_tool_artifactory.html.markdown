@@ -10,6 +10,8 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_artifactory. This allows cd_toolchain_tool_artifactory to be created, updated and deleted.
 
+More information on this Continuous Delivery tool can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-artifactory).
+
 ## Example Usage
 
 ```hcl
