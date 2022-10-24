@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_sonarqube. This allows cd_toolchain_tool_sonarqube to be created, updated and deleted.
 
-More information on this Continuous Delivery tool can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-sonarqube).
+More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-sonarqube).
 
 ## Example Usage
 

@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source for cd_toolchain_tool_appconfig. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-More information on this Continuous Delivery tool can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration).
+More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration).
 
 ## Example Usage
 
