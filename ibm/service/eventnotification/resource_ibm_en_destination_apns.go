@@ -102,6 +102,11 @@ func ResourceIBMEnAPNSDestination() *schema.Resource {
 										Optional:    true,
 										Description: "The Bundle ID In case of P8 Certificate",
 									},
+									"pre_prod": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "The flag to enable destination as pre-prod or prod",
+									},
 								},
 							},
 						},
@@ -362,6 +367,10 @@ func APNSdestinationConfigMapToDestinationConfig(configParams map[string]interfa
 			params.BundleID = core.StringPtr(configParams["bundle_id"].(string))
 		}
 
+		if configParams["pre_prod"] != nil {
+			params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
+		}
+
 	}
 
 	if certificatetype == "p12" {
@@ -375,6 +384,10 @@ func APNSdestinationConfigMapToDestinationConfig(configParams map[string]interfa
 
 		if configParams["password"] != nil {
 			params.Password = core.StringPtr(configParams["password"].(string))
+		}
+
+		if configParams["pre_prod"] != nil {
+			params.PreProd = core.BoolPtr(configParams["pre_prod"].(bool))
 		}
 
 	}
