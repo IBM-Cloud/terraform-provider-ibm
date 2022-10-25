@@ -105,7 +105,7 @@ resource "ibm_cd_tekton_pipeline_trigger" "ci_pipeline_scm_trigger" {
 }
 
 resource "ibm_cd_tekton_pipeline_trigger" "ci_pipeline_manual_trigger" {
-  pipeline_id     = var.pipeline_id
+  pipeline_id     = ibm_cd_tekton_pipeline.ci_pipeline_instance.pipeline_id
   type            = "manual"
   name            = "manual-run"
   event_listener  = "manual-run"
