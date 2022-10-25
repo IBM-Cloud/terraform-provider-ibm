@@ -27,6 +27,7 @@ resource "ibm_en_destination_ios" "ios_en_destination" {
       key_id = production
       team_id = "2347"
       bundle_id = "testp8"
+      pre_prod = true
     }
   }
 }
@@ -46,6 +47,7 @@ resource "ibm_en_destination_ios" "ios_en_destination" {
       cert_type  = "p12"
       is_sandbox = true
       password   = "apnscertpassword"
+      pre_prod   =    false
     }
   }
 }
@@ -86,6 +88,8 @@ Review the argument reference that you can specify for your resource.
   - `key_id` - (String) The team_id value in case P8 certificate. Required in case of p8.
 
   - `bundle_id` - (String) The team_id value in case P8 certificate. Required in case of p8.
+
+  - `pre_prod` - (Optional, bool) The flag to set your destination as pre prod destination or Prod Destination. The option is only available with Standard plan
 
 ## Attribute reference
 

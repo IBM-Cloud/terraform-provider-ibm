@@ -274,9 +274,9 @@ func resourceIBMEnSMSSubscriptionDelete(context context.Context, d *schema.Resou
 	return nil
 }
 
-func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributesSmsAttributes) {
+func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.SubscriptionCreateAttributes, en.SubscriptionUpdateAttributesSmsUpdateAttributes) {
 	attributesCreate := en.SubscriptionCreateAttributes{}
-	attributesUpdate := en.SubscriptionUpdateAttributesSmsAttributes{}
+	attributesUpdate := en.SubscriptionUpdateAttributesSmsUpdateAttributes{}
 
 	if attributeMap["to"] != nil {
 		to := []string{}
@@ -284,7 +284,17 @@ func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.Subsc
 			to = append(to, toItem.(string))
 		}
 		attributesCreate.To = to
-		attributesUpdate.To = to
+
+		updateTo := new(en.SmSupdateAttributesTo)
+		if attributeMap["to"] != nil {
+			To := []string{}
+			for _, updateToitem := range attributeMap["to"].([]interface{}) {
+				To = append(To, updateToitem.(string))
+			}
+
+			updateTo.Add = To
+		}
+		attributesUpdate.To = updateTo
 	}
 
 	return attributesCreate, attributesUpdate
