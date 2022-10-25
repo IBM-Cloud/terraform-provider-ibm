@@ -72,7 +72,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
-				api_key = "xxxxxxxxxxxxxx"
+				api_key = "%s"
 				service_to_service_enabled = true
 			}
 		}
@@ -80,7 +80,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 		data "ibm_atracker_targets" "atracker_targets" {
 			name = ibm_atracker_target.atracker_target.name
 		}
-	`, targetName, targetTargetType)
+	`, targetName, targetTargetType, acc.COSApiKey)
 }
 
 func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTargetType string, targetRegion string) string {
@@ -88,27 +88,27 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 		resource "ibm_atracker_target" "atracker_target" {
 			name = "%s"
 			target_type = "%s"
+			region = "%s"
 			cos_endpoint {
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
-				api_key = "xxxxxxxxxxxxxx"
+				api_key = "%s"
 				service_to_service_enabled = true
 			}
 			logdna_endpoint {
 				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				ingestion_key = "xxxxxxxxxxxxxx"
+				ingestion_key = "%s"
 			}
 			eventstreams_endpoint {
 				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				brokers = [ "kafka-x:9094" ]
 				topic = "my-topic"
-				password = "xxxxxxxxxxxxxx"
+				password = "%s"
 			}
-			region = "%s"
 		}
 		data "ibm_atracker_targets" "atracker_targets" {
 			name = ibm_atracker_target.atracker_target.name
 		}
-	`, targetName, targetTargetType, targetRegion)
+	`, targetName, targetTargetType, targetRegion, acc.COSApiKey, acc.IngestionKey, acc.IesApiKey)
 }

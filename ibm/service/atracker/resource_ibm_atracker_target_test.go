@@ -81,16 +81,6 @@ func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region 
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
 			}
-			logdna_endpoint {
-				target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				ingestion_key = "xxxxxxxxxxxxxx"
-			}
-			eventstreams_endpoint {
-				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-				brokers = [ "kafka-x:9094" ]
-				topic = "my-topic"
-				password = "xxxxxxxxxxxxxx"
-			}
 			region = "%s"
 		}
 	`, name, targetType, region)

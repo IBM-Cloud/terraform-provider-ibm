@@ -126,9 +126,11 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 							Description: "The messsage hub topic defined in the Event Streams instance.",
 						},
 						"password": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
+							Type:             schema.TypeString,
+							Required:         true,
+							Sensitive:        true,
+							DiffSuppressFunc: flex.ApplyOnce,
+							Description:      "The user password (api key) for the message hub topic in the Event Streams instance.",
 						},
 					},
 				},
@@ -300,6 +302,9 @@ func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 		createTargetOptions.SetEventstreamsEndpoint(eventstreamsEndpointModel)
+	}
+	if _, ok := d.GetOk("region"); ok {
+		createTargetOptions.SetRegion(d.Get("region").(string))
 	}
 
 	target, response, err := atrackerClient.CreateTargetWithContext(context, createTargetOptions)

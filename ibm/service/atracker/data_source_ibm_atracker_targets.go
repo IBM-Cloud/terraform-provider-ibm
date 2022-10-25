@@ -152,7 +152,33 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 									"password": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
+										Sensitive:   true,
 										Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
+									},
+								},
+							},
+						},
+						"cos_write_status": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Deprecated:  "use write_status instead",
+							Description: "The status of the write attempt with the provided cos_endpoint parameters.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The status such as failed or success.",
+									},
+									"last_failure": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The timestamp of the failure.",
+									},
+									"reason_for_last_failure": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Detailed description of the cause of the failure.",
 									},
 								},
 							},
@@ -342,13 +368,6 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 			return modelMap, err
 		}
 		modelMap["cos_endpoint"] = []map[string]interface{}{cosEndpointMap}
-	}
-	if model.LogdnaEndpoint != nil {
-		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["logdna_endpoint"] = []map[string]interface{}{logdnaEndpointMap}
 	}
 	if model.LogdnaEndpoint != nil {
 		logdnaEndpointMap, err := DataSourceIBMAtrackerTargetsLogdnaEndpointToMap(model.LogdnaEndpoint)
