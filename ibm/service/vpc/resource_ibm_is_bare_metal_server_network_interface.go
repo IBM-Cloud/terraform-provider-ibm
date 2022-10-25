@@ -85,6 +85,11 @@ func ResourceIBMIsBareMetalServerNetworkInterface() *schema.Resource {
 							Computed:    true,
 							Description: "The globally unique IP address",
 						},
+						isBareMetalServerNicFloatingIPId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique IP identifier",
+						},
 					},
 				},
 			},
@@ -403,12 +408,12 @@ func resourceIBMISBareMetalServerNetworkInterfaceCreate(context context.Context,
 		}
 
 		log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-		_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+		nicAfterWait, err := isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		err = bareMetalServerNICGet(d, meta, sess, nic, bareMetalServerId)
+		err = bareMetalServerNICGet(d, meta, sess, nicAfterWait, bareMetalServerId)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -543,16 +548,16 @@ func createVlanTypeNetworkInterface(context context.Context, d *schema.ResourceD
 		}
 	}
 
-	err = bareMetalServerNICGet(d, meta, sess, nic, bareMetalServerId)
-	if err != nil {
-		return err
-	}
 	_, nicId, err := ParseNICTerraformID(d.Id())
 	if err != nil {
 		return err
 	}
 	log.Printf("[INFO] Bare Metal Server Network Interface : %s", d.Id())
-	_, err = isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+	nicAfterWait, err := isWaitForBareMetalServerNetworkInterfaceAvailable(sess, bareMetalServerId, nicId, d.Timeout(schema.TimeoutCreate), d)
+	if err != nil {
+		return err
+	}
+	err = bareMetalServerNICGet(d, meta, sess, nicAfterWait, bareMetalServerId)
 	if err != nil {
 		return err
 	}
@@ -602,8 +607,8 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, sess *vpcv1
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
@@ -680,8 +685,8 @@ func bareMetalServerNICGet(d *schema.ResourceData, meta interface{}, sess *vpcv1
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
@@ -1046,6 +1051,9 @@ func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetal
 				nic := bmsNic.(*vpcv1.BareMetalServerNetworkInterfaceByVlan)
 				status = *nic.Status
 				d.Set(isBareMetalServerNicStatus, *nic.Status)
+				if *nic.PrimaryIP.Address == "0.0.0.0" {
+					return bmsNic, "pending", nil
+				}
 			}
 		}
 
