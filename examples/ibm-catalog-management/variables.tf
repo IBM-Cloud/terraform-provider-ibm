@@ -258,11 +258,6 @@ variable "cm_version_tags" {
   type        = list(string)
   default     = [ "tags" ]
 }
-variable "cm_version_content" {
-  description = "Byte array representing the content to be imported. Only supported for OVA images at this time."
-  type        = 
-  default     = 
-}
 variable "cm_version_name" {
   description = "Name of version. Required for virtual server image for VPC."
   type        = string
