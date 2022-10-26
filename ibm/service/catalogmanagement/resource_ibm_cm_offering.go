@@ -32,14 +32,20 @@ func ResourceIBMCmOffering() *schema.Resource {
 				ForceNew:    true,
 				Description: "Catalog identifier.",
 			},
-			"url": &schema.Schema{
+			"offering_identifier": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
+				Description: "Offering identifier.  Provide this when an offering already exists and you wish to use it as a terraform resource.",
+			},
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "The url for this specific offering.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The crn for this specific offering.",
 			},
 			"label": &schema.Schema{
@@ -87,8 +93,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"rating": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Repository info for offerings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -117,12 +122,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"created": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The date and time this catalog was created.",
 			},
 			"updated": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The date and time this catalog was last updated.",
 			},
 			"short_description": &schema.Schema{
@@ -180,7 +185,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"kinds": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Computed:    true,
 				Description: "Array of kind.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -573,6 +578,11 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Optional:    true,
 													Description: "Version name.",
 												},
+												"terraform_version": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Terraform version.",
+												},
 												"validated_terraform_version": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
@@ -831,7 +841,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 													Description: "Type of requirement.",
 												},
 												"value": &schema.Schema{
-													Type:        schema.TypeMap,
+													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "mem, disk, cores, and nodes can be parsed as an int.  targetVersion will be a semver range value.",
 												},
@@ -1882,6 +1892,22 @@ func ResourceIBMCmOffering() *schema.Resource {
 				Optional:    true,
 				Description: "Denotes sharing including access list availability of an Offering is enabled.",
 			},
+			"publish_to_access_list": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "A list of account IDs to add to this offering's access list.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"publish_to_ibm": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether you would like to publish this offering to IBM or not.",
+			},
+			"publish_to_public": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether you would like to publish this offering to the public catalog or not.",
+			},
 			"permit_request_ibm_public_publish": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -1922,12 +1948,12 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"catalog_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The id of the catalog containing this offering.",
 			},
 			"catalog_name": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The name of the catalog.",
 			},
 			"metadata": &schema.Schema{
@@ -1974,8 +2000,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"repo_info": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Repository info for offerings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -2018,8 +2043,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 			},
 			"support": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Offering Support information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -2360,7 +2384,7 @@ func ResourceIBMCmOffering() *schema.Resource {
 										Description: "Type of the current constraint.",
 									},
 									"rule": &schema.Schema{
-										Type:        schema.TypeMap,
+										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Rule for the current constraint.",
 									},
@@ -2388,6 +2412,25 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if _, ok := d.GetOk("offering_identifier"); ok {
+		getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
+		getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
+		getOfferingOptions.SetOfferingID(d.Get("offering_identifier").(string))
+
+		offering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				d.SetId("")
+				return nil
+			}
+			log.Printf("[DEBUG] GetOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("GetOfferingWithContext failed %s\n%s", err, response))
+		}
+
+		d.SetId(fmt.Sprintf("%s/%s", *offering.CatalogID, *offering.ID))
+		return resourceIBMCmOfferingRead(context, d, meta)
 	}
 
 	createOfferingOptions := &catalogmanagementv1.CreateOfferingOptions{}
@@ -2610,6 +2653,42 @@ func resourceIBMCmOfferingCreate(context context.Context, d *schema.ResourceData
 
 	d.SetId(fmt.Sprintf("%s/%s", *createOfferingOptions.CatalogIdentifier, *offering.ID))
 
+	shareOffering := false
+	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
+	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	shareOfferingOptions.SetOfferingID(*offering.ID)
+	shareOfferingOptions.SetEnabled(true)
+
+	if _, ok := d.GetOk("publish_to_access_list"); ok {
+		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
+		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+		if err != nil {
+			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if _, ok := d.GetOk("publish_to_ibm"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
+	}
+
+	if _, ok := d.GetOk("publish_to_public"); ok {
+		shareOffering = true
+		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
+	}
+
+	if shareOffering {
+		_, response, err = catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
+		}
+	}
+
 	return resourceIBMCmOfferingRead(context, d, meta)
 }
 
@@ -2666,11 +2745,11 @@ func resourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("offering_support_url", offering.OfferingSupportURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting offering_support_url: %s", err))
 	}
-	if offering.Tags != nil {
-		if err = d.Set("tags", offering.Tags); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
-		}
-	}
+	// if offering.Tags != nil {
+	// 	if err = d.Set("tags", offering.Tags); err != nil {
+	// 		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
+	// 	}
+	// }
 	if offering.Keywords != nil {
 		if err = d.Set("keywords", offering.Keywords); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting keywords: %s", err))
@@ -3391,6 +3470,43 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 		}
 		updateOfferingOptions.Updates = append(updateOfferingOptions.Updates, update)
 		hasChange = true
+	}
+
+	publishStatusChanged := false
+	shareOfferingOptions := catalogmanagementv1.ShareOfferingOptions{}
+	shareOfferingOptions.SetCatalogIdentifier(*offering.CatalogID)
+	shareOfferingOptions.SetOfferingID(*offering.ID)
+	shareOfferingOptions.SetEnabled(true)
+
+	if d.HasChange("publish_to_access_list") {
+		publishStatusChanged = true
+		addOfferingAccessListOptions := catalogmanagementv1.AddOfferingAccessListOptions{}
+		addOfferingAccessListOptions.SetCatalogIdentifier(*offering.CatalogID)
+		addOfferingAccessListOptions.SetOfferingID(*offering.ID)
+		addOfferingAccessListOptions.SetAccesses(SIToSS(d.Get("publish_to_access_list").([]interface{})))
+		_, response, err = catalogManagementClient.AddOfferingAccessListWithContext(context, &addOfferingAccessListOptions)
+		if err != nil {
+			log.Printf("[DEBUG] AddOfferingAccessListWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("AddOfferingAccessListWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	if d.HasChange("publish_to_ibm") {
+		publishStatusChanged = true
+		shareOfferingOptions.SetIBM(d.Get("publish_to_ibm").(bool))
+	}
+
+	if d.HasChange("publish_to_public") {
+		publishStatusChanged = true
+		shareOfferingOptions.SetPublic(d.Get("publish_to_public").(bool))
+	}
+
+	if publishStatusChanged {
+		_, response, err = catalogManagementClient.ShareOfferingWithContext(context, &shareOfferingOptions)
+		if err != nil {
+			log.Printf("[DEBUG] ShareOfferingWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ShareOfferingWithContext failed %s\n%s", err, response))
+		}
 	}
 
 	if hasChange {
@@ -4696,9 +4812,9 @@ func resourceIBMCmOfferingMapToConstraint(modelMap map[string]interface{}) (*cat
 	if modelMap["type"] != nil && modelMap["type"].(string) != "" {
 		model.Type = core.StringPtr(modelMap["type"].(string))
 	}
-	if modelMap["rule"] != nil {
+	// if modelMap["rule"] != nil {
 
-	}
+	// }
 	return model, nil
 }
 
@@ -5939,8 +6055,8 @@ func resourceIBMCmOfferingConstraintToMap(model *catalogmanagementv1.Constraint)
 	if model.Type != nil {
 		modelMap["type"] = model.Type
 	}
-	if model.Rule != nil {
-		modelMap["rule"] = model.Rule
-	}
+	// if model.Rule != nil {
+	// 	modelMap["rule"] = model.Rule
+	// }
 	return modelMap, nil
 }

@@ -5,6 +5,7 @@ package catalogmanagement_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -13,7 +14,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 )
 
@@ -35,22 +35,11 @@ func TestAccIBMCmVersionBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMCmVersionAllArgs(t *testing.T) {
+func TestAccIBMCmVersionSimpleArgs(t *testing.T) {
 	var conf catalogmanagementv1.Version
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
-	installKind := fmt.Sprintf("tf_install_kind_%d", acctest.RandIntRange(10, 100))
-	formatKind := fmt.Sprintf("tf_format_kind_%d", acctest.RandIntRange(10, 100))
-	productKind := fmt.Sprintf("tf_product_kind_%d", acctest.RandIntRange(10, 100))
-	sha := fmt.Sprintf("tf_sha_%d", acctest.RandIntRange(10, 100))
-	version := fmt.Sprintf("tf_version_%d", acctest.RandIntRange(10, 100))
-	workingDirectory := fmt.Sprintf("tf_working_directory_%d", acctest.RandIntRange(10, 100))
-	zipurl := fmt.Sprintf("tf_zipurl_%d", acctest.RandIntRange(10, 100))
-	targetVersion := fmt.Sprintf("tf_target_version_%d", acctest.RandIntRange(10, 100))
+	zipurl := "https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
+	targetVersion := "2.2.2"
 	includeConfig := "true"
-	isVsi := "true"
-	repotype := fmt.Sprintf("tf_repotype_%d", acctest.RandIntRange(10, 100))
-	xAuthToken := fmt.Sprintf("tf_x_auth_token_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -58,29 +47,41 @@ func TestAccIBMCmVersionAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCmVersionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCmVersionConfig(name, label, installKind, formatKind, productKind, sha, version, workingDirectory, zipurl, targetVersion, includeConfig, isVsi, repotype, xAuthToken),
+				Config: testAccCheckIBMCmVersionSimpleConfig(zipurl, targetVersion, includeConfig),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmVersionExists("ibm_cm_version.cm_version", conf),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "zipurl", zipurl),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "target_version", targetVersion),
+					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "include_config", includeConfig),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCmVersionVSI(t *testing.T) {
+	var conf catalogmanagementv1.Version
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
+	installKind := "instance"
+	sha := "64245e5f3f1e9c4048b18db3abd1450d4b6f9e263ac1b33df6fc1ae96fcbdebb"
+	targetVersion := "3.3.3"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCmVersionDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCmVersionVSIConfig(name, label, installKind, sha, targetVersion),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCmVersionExists("ibm_cm_version.cm_version", conf),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "name", name),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "label", label),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "install_kind", installKind),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "format_kind", formatKind),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "product_kind", productKind),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "sha", sha),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "version", version),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "working_directory", workingDirectory),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "zipurl", zipurl),
 					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "target_version", targetVersion),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "include_config", includeConfig),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "is_vsi", isVsi),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "repotype", repotype),
-					resource.TestCheckResourceAttr("ibm_cm_version.cm_version", "x_auth_token", xAuthToken),
 				),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_cm_version.cm_version",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -89,70 +90,104 @@ func TestAccIBMCmVersionAllArgs(t *testing.T) {
 func testAccCheckIBMCmVersionConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "test_tf_catalog_label_1"
+		}
+
+		resource "ibm_cm_offering" "cm_offering" {
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			label = "test_tf_offering_label_1"
+			name = "test_tf_offering_name_1"
+			offering_icon_url = "test.url.1"
+			tags = ["dev_ops"]
 		}
 
 		resource "ibm_cm_version" "cm_version" {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_id = ibm_cm_offering.cm_offering.offering_id
+			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			zipurl = "https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
+			sha = "448ac9055bd5e9d2b5dc0fbc80bb44f15c387c34d3530e29dd374193f0af4cd0"
+			install {}
 		}
 	`)
 }
 
-func testAccCheckIBMCmVersionConfig(name string, label string, installKind string, formatKind string, productKind string, sha string, version string, workingDirectory string, zipurl string, targetVersion string, includeConfig string, isVsi string, repotype string, xAuthToken string) string {
+func testAccCheckIBMCmVersionSimpleConfig(zipurl string, targetVersion string, includeConfig string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "test_tf_catalog_label_2"
+		}
+
+		resource "ibm_cm_offering" "cm_offering" {
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			label = "test_tf_offering_label_2"
+			name = "test_tf_offering_name_2"
+			offering_icon_url = "test.url.2"
+			tags = ["dev_ops"]
 		}
 
 		resource "ibm_cm_version" "cm_version" {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_id = ibm_cm_offering.cm_offering.offering_id
-			tags = "FIXME"
-			content = "FIXME"
-			name = "%s"
-			label = "%s"
-			install_kind = "%s"
-			target_kinds = "FIXME"
-			format_kind = "%s"
-			product_kind = "%s"
-			sha = "%s"
-			version = "%s"
-			flavor {
-				name = "name"
-				label = "label"
-				label_i18n = { "key": "inner" }
-				index = 1
-			}
-			metadata {
-				operating_system {
-					dedicated_host_only = true
-					vendor = "vendor"
-					name = "name"
-					href = "href"
-					display_name = "display_name"
-					family = "family"
-					version = "version"
-					architecture = "architecture"
-				}
-				file {
-					size = 1
-				}
-				minimum_provisioned_size = 1
-				images {
-					id = "id"
-					name = "name"
-					region = "region"
-				}
-			}
-			working_directory = "%s"
+			offering_identifier = ibm_cm_offering.cm_offering.offering_id
 			zipurl = "%s"
 			target_version = "%s"
 			include_config = %s
-			is_vsi = %s
-			repotype = "%s"
-			x_auth_token = "%s"
+			sha = "448ac9055bd5e9d2b5dc0fbc80bb44f15c387c34d3530e29dd374193f0af4cd0"
+			install {}
 		}
-	`, name, label, installKind, formatKind, productKind, sha, version, workingDirectory, zipurl, targetVersion, includeConfig, isVsi, repotype, xAuthToken)
+	`, zipurl, targetVersion, includeConfig)
+}
+
+func testAccCheckIBMCmVersionVSIConfig(name string, label string, installKind string, sha string, targetVersion string) string {
+	return fmt.Sprintf(`
+
+	resource "ibm_cm_catalog" "cm_catalog" {
+		label = "test_tf_catalog_label_3"
+	}
+
+	resource "ibm_cm_offering" "cm_offering" {
+		catalog_identifier = ibm_cm_catalog.cm_catalog.id
+		label = "test_tf_offering_label_3"
+		name = "test_tf_offering_name_3"
+		offering_icon_url = "test.url.2"
+		tags = ["dev_ops"]
+	}
+
+		resource "ibm_cm_version" "cm_version" {
+			name = "%s"
+			label = "%s"
+			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			tags = ["virtualservers"]
+			target_kinds = [ "vpc-x86" ]
+			install_kind = "%s"
+			sha = "%s"
+			target_version = "%s"
+			install {}
+
+			import_metadata {
+				operating_system {
+					dedicated_host_only = false
+					vendor = "CentOS"
+					name = "centos-7-amd64"
+					href = "https://us-south-stage01.iaasdev.cloud.ibm.com/v1/operating_systems/centos-7-amd64"
+					display_name = "CentOS 7.x - Minimal Install (amd64)"
+					family = "CentOS"
+					version = "7.x - Minimal Install"
+					architecture = "amd64"
+				}
+				minimum_provisioned_size = 100
+				file {
+					size = 1
+				}
+				images {
+					id = "r134-7fafcc04-f09c-4959-bed5-f6b655409c7b"
+					name = "dubee-test-2"
+					region = "us-south"
+				}
+			}
+		}
+	`, name, label, installKind, sha, targetVersion)
 }
 
 func testAccCheckIBMCmVersionExists(n string, obj catalogmanagementv1.Version) resource.TestCheckFunc {
@@ -169,15 +204,7 @@ func testAccCheckIBMCmVersionExists(n string, obj catalogmanagementv1.Version) r
 		}
 
 		getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
-
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		// getVersionOptions.SetCatalogIdentifier(parts[0])
-		// getVersionOptions.SetOfferingID(parts[1])
-		getVersionOptions.SetVersionLocID(parts[2])
+		getVersionOptions.SetVersionLocID(strings.Replace(rs.Primary.ID, "/", ".", 1))
 
 		offering, _, err := catalogManagementClient.GetVersion(getVersionOptions)
 		version := offering.Kinds[0].Versions[0]
@@ -201,15 +228,7 @@ func testAccCheckIBMCmVersionDestroy(s *terraform.State) error {
 		}
 
 		getVersionOptions := &catalogmanagementv1.GetVersionOptions{}
-
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		// getVersionOptions.SetCatalogIdentifier(parts[0])
-		// getVersionOptions.SetOfferingID(parts[1])
-		getVersionOptions.SetVersionLocID(parts[2])
+		getVersionOptions.SetVersionLocID(strings.Replace(rs.Primary.ID, "/", ".", 1))
 
 		// Try to find the key
 		_, response, err := catalogManagementClient.GetVersion(getVersionOptions)

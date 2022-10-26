@@ -155,6 +155,11 @@ func ResourceIBMCmValidation() *schema.Resource {
 				ForceNew:    true,
 				Description: "If the version should be revalidated if it is already validated.",
 			},
+			"mark_version_consumable": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "If the version should be marked as consumable or \"ready to share\".",
+			},
 		},
 	}
 }
@@ -193,6 +198,14 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 	if version.Validation.State == &valid && d.Get("revalidate_if_validated") != true {
 		// version already validated and do not wish to revalidate
 		d.SetId(*validateInstallOptions.VersionLocID)
+		if _, ok := d.GetOk("mark_version_consumable"); ok && d.Get("mark_version_consumable").(bool) {
+			err = markVersionAsConsumable(version, context, meta)
+			if err != nil {
+				d.SetId("")
+				return diag.FromErr(err)
+			}
+		}
+
 		return resourceIBMCmValidationRead(context, d, meta)
 	}
 
@@ -262,6 +275,15 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		if err != nil {
 			log.Printf("[DEBUG] GetValidationStatusWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("GetValidationStatusWithContext failed %s\n%s", err, response))
+		}
+	}
+
+	// mark consumable if specified and validation passed
+	if _, ok := d.GetOk("mark_version_consumable"); ok && d.Get("mark_version_consumable").(bool) && status == "valid" {
+		err = markVersionAsConsumable(version, context, meta)
+		if err != nil {
+			d.SetId("")
+			return diag.FromErr(err)
 		}
 	}
 
@@ -360,6 +382,23 @@ func configureOverrides(overrides map[string]interface{}) (catalogmanagementv1.D
 		overridesModel.VPCRegion = core.StringPtr(overrides["vpc_region"].(string))
 	}
 	return overridesModel, nil
+}
+
+func markVersionAsConsumable(version catalogmanagementv1.Version, context context.Context, meta interface{}) error {
+	catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+	if err != nil {
+		return err
+	}
+
+	consumableVersionOptions := catalogmanagementv1.ConsumableVersionOptions{}
+	consumableVersionOptions.SetVersionLocID(*version.VersionLocator)
+
+	_, err = catalogManagementClient.ConsumableVersionWithContext(context, &consumableVersionOptions)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func envVariablesToDeployRequestBodyEnvVariables(envVariables []map[string]interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {

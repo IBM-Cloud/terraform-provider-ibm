@@ -343,6 +343,11 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Optional:    true,
 							Description: "Version name.",
 						},
+						"terraform_version": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Terraform version.",
+						},
 						"validated_terraform_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -602,7 +607,7 @@ func DataSourceIBMCmVersion() *schema.Resource {
 							Description: "Type of requirement.",
 						},
 						"value": &schema.Schema{
-							Type:        schema.TypeMap,
+							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "mem, disk, cores, and nodes can be parsed as an int.  targetVersion will be a semver range value.",
 						},
@@ -1633,9 +1638,12 @@ func dataSourceIBMCmVersionRead(context context.Context, d *schema.ResourceData,
 
 	metadata := []map[string]interface{}{}
 	if version.Metadata != nil {
-		modelMapVSI, err := dataSourceIBMCmVersionMetadataVSIToMap(version.Metadata["vsi_vpc"].(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		var modelMapVSI map[string]interface{}
+		if version.Metadata["vsi_vpc"] != nil {
+			modelMapVSI, err = dataSourceIBMCmVersionMetadataVSIToMap(version.Metadata["vsi_vpc"].(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 		convertedMap := make(map[string]interface{}, len(version.Metadata))
 		for k, v := range version.Metadata {

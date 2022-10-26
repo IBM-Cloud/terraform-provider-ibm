@@ -97,18 +97,17 @@ func ResourceIBMCmCatalog() *schema.Resource {
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Resource group id the catalog is owned by.",
 			},
 			"owning_account": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Account that owns catalog.",
 			},
 			"catalog_filters": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Filters for account and catalog filters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -170,8 +169,7 @@ func ResourceIBMCmCatalog() *schema.Resource {
 			},
 			"syndication_settings": &schema.Schema{
 				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
+				Computed:    true,
 				Description: "Feature information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -316,7 +314,7 @@ func ResourceIBMCmCatalog() *schema.Resource {
 			},
 			"kind": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "Kind of catalog. Supported kinds are offering and vpe.",
 			},
 			"metadata": &schema.Schema{
@@ -555,6 +553,7 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 	replaceCatalogOptions := &catalogmanagementv1.ReplaceCatalogOptions{}
 
 	replaceCatalogOptions.SetCatalogIdentifier(d.Id())
+	replaceCatalogOptions.SetID(d.Id())
 	if _, ok := d.GetOk("label"); ok {
 		replaceCatalogOptions.SetLabel(d.Get("label").(string))
 	}
@@ -671,9 +670,13 @@ func resourceIBMCmCatalogMapToFilters(modelMap map[string]interface{}) (*catalog
 		// TODO: handle CategoryFilters, map with entry type 'CategoryFilter'
 	}
 	if modelMap["id_filters"] != nil && len(modelMap["id_filters"].([]interface{})) > 0 {
-		IDFiltersModel, err := resourceIBMCmCatalogMapToIDFilter(modelMap["id_filters"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+		var IDFiltersModel *catalogmanagementv1.IDFilter
+		var err error
+		if modelMap["id_filters"].([]interface{})[0] != nil {
+			IDFiltersModel, err = resourceIBMCmCatalogMapToIDFilter(modelMap["id_filters"].([]interface{})[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
 		}
 		model.IDFilters = IDFiltersModel
 	}
@@ -743,9 +746,13 @@ func resourceIBMCmCatalogMapToSyndicationResource(modelMap map[string]interface{
 		model.Clusters = clusters
 	}
 	if modelMap["history"] != nil && len(modelMap["history"].([]interface{})) > 0 {
-		HistoryModel, err := resourceIBMCmCatalogMapToSyndicationHistory(modelMap["history"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+		var HistoryModel *catalogmanagementv1.SyndicationHistory
+		var err error
+		if modelMap["history"].([]interface{})[0] != nil {
+			HistoryModel, err = resourceIBMCmCatalogMapToSyndicationHistory(modelMap["history"].([]interface{})[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
 		}
 		model.History = HistoryModel
 	}

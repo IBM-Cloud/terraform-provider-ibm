@@ -34,22 +34,10 @@ func TestAccIBMCmCatalogBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMCmCatalogAllArgs(t *testing.T) {
+func TestAccIBMCmCatalogSimpleArgs(t *testing.T) {
 	var conf catalogmanagementv1.Catalog
 	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
 	shortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
-	catalogIconURL := fmt.Sprintf("tf_catalog_icon_url_%d", acctest.RandIntRange(10, 100))
-	disabled := "true"
-	resourceGroupID := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
-	owningAccount := fmt.Sprintf("tf_owning_account_%d", acctest.RandIntRange(10, 100))
-	kind := fmt.Sprintf("tf_kind_%d", acctest.RandIntRange(10, 100))
-	labelUpdate := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
-	shortDescriptionUpdate := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
-	catalogIconURLUpdate := fmt.Sprintf("tf_catalog_icon_url_%d", acctest.RandIntRange(10, 100))
-	disabledUpdate := "false"
-	resourceGroupIDUpdate := fmt.Sprintf("tf_resource_group_id_%d", acctest.RandIntRange(10, 100))
-	owningAccountUpdate := fmt.Sprintf("tf_owning_account_%d", acctest.RandIntRange(10, 100))
-	kindUpdate := fmt.Sprintf("tf_kind_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -57,28 +45,18 @@ func TestAccIBMCmCatalogAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCmCatalogDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCmCatalogConfig(label, shortDescription, catalogIconURL, disabled, resourceGroupID, owningAccount, kind),
+				Config: testAccCheckIBMCmCatalogConfig(label, shortDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCmCatalogExists("ibm_cm_catalog.cm_catalog", conf),
 					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "label", label),
 					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "short_description", shortDescription),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "catalog_icon_url", catalogIconURL),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "disabled", disabled),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "resource_group_id", resourceGroupID),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "owning_account", owningAccount),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "kind", kind),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCmCatalogConfig(labelUpdate, shortDescriptionUpdate, catalogIconURLUpdate, disabledUpdate, resourceGroupIDUpdate, owningAccountUpdate, kindUpdate),
+				Config: testAccCheckIBMCmCatalogConfig(label, shortDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "label", labelUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "short_description", shortDescriptionUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "catalog_icon_url", catalogIconURLUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "disabled", disabledUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "resource_group_id", resourceGroupIDUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "owning_account", owningAccountUpdate),
-					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "kind", kindUpdate),
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "label", label),
+					resource.TestCheckResourceAttr("ibm_cm_catalog.cm_catalog", "short_description", shortDescription),
 				),
 			},
 			resource.TestStep{
@@ -94,74 +72,19 @@ func testAccCheckIBMCmCatalogConfigBasic() string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "basic-catalog-label-test"
 		}
 	`)
 }
 
-func testAccCheckIBMCmCatalogConfig(label string, shortDescription string, catalogIconURL string, disabled string, resourceGroupID string, owningAccount string, kind string) string {
+func testAccCheckIBMCmCatalogConfig(label string, shortDescription string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "%s"
-			label_i18n = "FIXME"
 			short_description = "%s"
-			short_description_i18n = "FIXME"
-			catalog_icon_url = "%s"
-			tags = "FIXME"
-			features {
-				title = "title"
-				title_i18n = { "key": "inner" }
-				description = "description"
-				description_i18n = { "key": "inner" }
-			}
-			disabled = %s
-			resource_group_id = "%s"
-			owning_account = "%s"
-			catalog_filters {
-				include_all = true
-				category_filters = { "key": { example: "object" } }
-				id_filters {
-					include {
-						filter_terms = [ "filter_terms" ]
-					}
-					exclude {
-						filter_terms = [ "filter_terms" ]
-					}
-				}
-			}
-			syndication_settings {
-				remove_related_components = true
-				clusters {
-					region = "region"
-					id = "id"
-					name = "name"
-					resource_group_name = "resource_group_name"
-					type = "type"
-					namespaces = [ "namespaces" ]
-					all_namespaces = true
-				}
-				history {
-					namespaces = [ "namespaces" ]
-					clusters {
-						region = "region"
-						id = "id"
-						name = "name"
-						resource_group_name = "resource_group_name"
-						type = "type"
-						namespaces = [ "namespaces" ]
-						all_namespaces = true
-					}
-					last_run = "2021-01-31T09:44:12Z"
-				}
-				authorization {
-					token = "token"
-					last_run = "2021-01-31T09:44:12Z"
-				}
-			}
-			kind = "%s"
-			metadata = "FIXME"
 		}
-	`, label, shortDescription, catalogIconURL, disabled, resourceGroupID, owningAccount, kind)
+	`, label, shortDescription)
 }
 
 func testAccCheckIBMCmCatalogExists(n string, obj catalogmanagementv1.Catalog) resource.TestCheckFunc {
