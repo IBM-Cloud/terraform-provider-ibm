@@ -226,12 +226,14 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	}
 
 	params := v2.WorkerPoolRequest{
-		Cluster:     clusterNameorID,
-		Name:        d.Get("worker_pool_name").(string),
-		VpcID:       d.Get("vpc_id").(string),
-		Flavor:      d.Get("flavor").(string),
-		WorkerCount: d.Get("worker_count").(int),
-		Zones:       zone,
+		Cluster: clusterNameorID,
+		CommonWorkerPoolConfig: v2.CommonWorkerPoolConfig{
+			Name:        d.Get("worker_pool_name").(string),
+			VpcID:       d.Get("vpc_id").(string),
+			Flavor:      d.Get("flavor").(string),
+			WorkerCount: d.Get("worker_count").(int),
+			Zones:       zone,
+		},
 	}
 
 	if v, ok := d.GetOk("kms_instance_id"); ok {

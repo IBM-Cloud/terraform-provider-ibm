@@ -494,10 +494,12 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	workerpool := v2.WorkerPoolConfig{
-		VpcID:       vpcID,
-		Flavor:      flavor,
-		WorkerCount: workerCount,
-		Zones:       zonesList,
+		CommonWorkerPoolConfig: v2.CommonWorkerPoolConfig{
+			VpcID:       vpcID,
+			Flavor:      flavor,
+			WorkerCount: workerCount,
+			Zones:       zonesList,
+		},
 	}
 
 	if hpid, ok := d.GetOk("host_pool_id"); ok {
