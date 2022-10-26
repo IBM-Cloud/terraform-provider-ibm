@@ -314,7 +314,7 @@ func ResourceIBMCmCatalog() *schema.Resource {
 			},
 			"kind": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "Kind of catalog. Supported kinds are offering and vpe.",
 			},
 			"metadata": &schema.Schema{
@@ -381,7 +381,7 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 		createCatalogOptions.SetCatalogIconURL(d.Get("catalog_icon_url").(string))
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		createCatalogOptions.SetTags(d.Get("tags").([]string))
+		createCatalogOptions.SetTags(SIToSS(d.Get("tags").([]interface{})))
 	}
 	if _, ok := d.GetOk("features"); ok {
 		var features []catalogmanagementv1.Feature

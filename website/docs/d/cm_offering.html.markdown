@@ -15,7 +15,7 @@ Provides a read-only data source for cm_offering. You can then reference the fie
 ```hcl
 data "ibm_cm_offering" "cm_offering" {
 	catalog_identifier = ibm_cm_offering.cm_offering.catalog_identifier
-	offering_id = ibm_cm_offering.cm_offering.offering_id
+	offering_identifier = ibm_cm_offering.cm_offering.offering_id
 }
 ```
 
@@ -24,7 +24,7 @@ data "ibm_cm_offering" "cm_offering" {
 Review the argument reference that you can specify for your data source.
 
 * `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
-* `offering_id` - (Required, Forces new resource, String) Offering identification.
+* `offering_identifier` - (Required, Forces new resource, String) Offering identification.
 
 ## Attribute Reference
 
@@ -39,11 +39,9 @@ Nested scheme for **badges**:
 		* `rule` - (Map) Rule for the current constraint.
 		* `type` - (String) Type of the current constraint.
 	* `description` - (String) Description of the current badge.
-	* `description_i18n` - (Map) A map of translated strings, by language code.
 	* `icon` - (String) Icon for the current badge.
 	* `id` - (String) ID of the current badge.
 	* `label` - (String) Display name for the current badge.
-	* `label_i18n` - (Map) A map of translated strings, by language code.
 	* `learn_more_links` - (List) Learn more links for a badge.
 	Nested scheme for **learn_more_links**:
 		* `first_party` - (String) First party link.

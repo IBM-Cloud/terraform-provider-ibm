@@ -14,53 +14,7 @@ Provides a resource for cm_catalog. This allows cm_catalog to be created, update
 
 ```hcl
 resource "ibm_cm_catalog" "cm_catalog" {
-  catalog_filters {
-		include_all = true
-		category_filters = { "key": { example: "object" } }
-		id_filters {
-			include {
-				filter_terms = [ "filter_terms" ]
-			}
-			exclude {
-				filter_terms = [ "filter_terms" ]
-			}
-		}
-  }
-  features {
-		title = "title"
-		title_i18n = { "key": "inner" }
-		description = "description"
-		description_i18n = { "key": "inner" }
-  }
-  syndication_settings {
-		remove_related_components = true
-		clusters {
-			region = "region"
-			id = "id"
-			name = "name"
-			resource_group_name = "resource_group_name"
-			type = "type"
-			namespaces = [ "namespaces" ]
-			all_namespaces = true
-		}
-		history {
-			namespaces = [ "namespaces" ]
-			clusters {
-				region = "region"
-				id = "id"
-				name = "name"
-				resource_group_name = "resource_group_name"
-				type = "type"
-				namespaces = [ "namespaces" ]
-				all_namespaces = true
-			}
-			last_run = "2021-01-31T09:44:12Z"
-		}
-		authorization {
-			token = "token"
-			last_run = "2021-01-31T09:44:12Z"
-		}
-  }
+  
 }
 ```
 
@@ -68,63 +22,12 @@ resource "ibm_cm_catalog" "cm_catalog" {
 
 Review the argument reference that you can specify for your resource.
 
-* `catalog_filters` - (Optional, List) Filters for account and catalog filters.
-Nested scheme for **catalog_filters**:
-	* `category_filters` - (Optional, Map) Filter against offering properties.
-	* `id_filters` - (Optional, List) Filter on offering ID's. There is an include filter and an exclule filter. Both can be set.
-	Nested scheme for **id_filters**:
-		* `exclude` - (Optional, List) Offering filter terms.
-		Nested scheme for **exclude**:
-			* `filter_terms` - (Optional, List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
-		* `include` - (Optional, List) Offering filter terms.
-		Nested scheme for **include**:
-			* `filter_terms` - (Optional, List) List of values to match against. If include is true, then if the offering has one of the values then the offering is included. If include is false, then if the offering has one of the values then the offering is excluded.
-	* `include_all` - (Optional, Boolean) -> true - Include all of the public catalog when filtering. Further settings will specifically exclude some offerings. false - Exclude all of the public catalog when filtering. Further settings will specifically include some offerings.
 * `catalog_icon_url` - (Optional, String) URL for an icon associated with this catalog.
 * `disabled` - (Optional, Boolean) Denotes whether a catalog is disabled.
-* `features` - (Optional, List) List of features associated with this catalog.
-Nested scheme for **features**:
-	* `description` - (Optional, String) Feature description.
-	* `description_i18n` - (Optional, Map) A map of translated strings, by language code.
-	* `title` - (Optional, String) Heading.
-	* `title_i18n` - (Optional, Map) A map of translated strings, by language code.
 * `kind` - (Optional, String) Kind of catalog. Supported kinds are offering and vpe.
 * `label` - (Optional, String) Display Name in the requested language.
-* `label_i18n` - (Optional, Map) A map of translated strings, by language code.
-* `metadata` - (Optional, Map) Catalog specific metadata.
-* `owning_account` - (Optional, String) Account that owns catalog.
 * `resource_group_id` - (Optional, String) Resource group id the catalog is owned by.
 * `short_description` - (Optional, String) Description in the requested language.
-* `short_description_i18n` - (Optional, Map) A map of translated strings, by language code.
-* `syndication_settings` - (Optional, List) Feature information.
-Nested scheme for **syndication_settings**:
-	* `authorization` - (Optional, List) Feature information.
-	Nested scheme for **authorization**:
-		* `last_run` - (Optional, String) Date and time last updated.
-		* `token` - (Optional, String) Array of syndicated namespaces.
-	* `clusters` - (Optional, List) Syndication clusters.
-	Nested scheme for **clusters**:
-		* `all_namespaces` - (Optional, Boolean) Syndicated to all namespaces on cluster.
-		* `id` - (Optional, String) Cluster ID.
-		* `name` - (Optional, String) Cluster name.
-		* `namespaces` - (Optional, List) Syndicated namespaces.
-		* `region` - (Optional, String) Cluster region.
-		* `resource_group_name` - (Optional, String) Resource group ID.
-		* `type` - (Optional, String) Syndication type.
-	* `history` - (Optional, List) Feature information.
-	Nested scheme for **history**:
-		* `clusters` - (Optional, List) Array of syndicated namespaces.
-		Nested scheme for **clusters**:
-			* `all_namespaces` - (Optional, Boolean) Syndicated to all namespaces on cluster.
-			* `id` - (Optional, String) Cluster ID.
-			* `name` - (Optional, String) Cluster name.
-			* `namespaces` - (Optional, List) Syndicated namespaces.
-			* `region` - (Optional, String) Cluster region.
-			* `resource_group_name` - (Optional, String) Resource group ID.
-			* `type` - (Optional, String) Syndication type.
-		* `last_run` - (Optional, String) Date and time last syndicated.
-		* `namespaces` - (Optional, List) Array of syndicated namespaces.
-	* `remove_related_components` - (Optional, Boolean) Remove related components.
 * `tags` - (Optional, List) List of tags associated with this catalog.
 
 ## Attribute Reference
@@ -132,10 +35,18 @@ Nested scheme for **syndication_settings**:
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
 * `id` - The unique identifier of the cm_catalog.
+* `catalog_icon_url` - (String) The url of the catalog icon.
 * `created` - (String) The date-time this catalog was created.
 * `crn` - (String) CRN associated with the catalog.
+* `disabled` - (Boolean) Denotes whether a catalog is disabled.
+* `label` - (String) Label of the catalog
+* `kind` - (String) Kind of catalog.
 * `offerings_url` - (String) URL path to offerings.
+* `owning_account` - (String) The account ID of the owning account.
+* `resource_group_id` - (String) Resource group id the catalog is owned by.
 * `rev` - (String) Cloudant revision.
+* `short_description` - (String) Description in the requested language.
+* `tags` - (List) List of tags associated with this catalog.
 * `updated` - (String) The date-time this catalog was last updated.
 * `url` - (String) The url for this specific catalog.
 

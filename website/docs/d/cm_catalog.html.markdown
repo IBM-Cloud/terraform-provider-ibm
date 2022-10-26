@@ -63,8 +63,6 @@ Nested scheme for **features**:
 
 * `label` - (String) Display Name in the requested language.
 
-* `label_i18n` - (Map) A map of translated strings, by language code.
-
 * `metadata` - (Map) Catalog specific metadata.
 
 * `offerings_url` - (String) URL path to offerings.
@@ -76,8 +74,6 @@ Nested scheme for **features**:
 * `rev` - (String) Cloudant revision.
 
 * `short_description` - (String) Description in the requested language.
-
-* `short_description_i18n` - (Map) A map of translated strings, by language code.
 
 * `syndication_settings` - (List) Feature information.
 Nested scheme for **syndication_settings**:

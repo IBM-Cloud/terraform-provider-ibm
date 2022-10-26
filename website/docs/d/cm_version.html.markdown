@@ -22,7 +22,7 @@ data "ibm_cm_version" "cm_version" {
 
 Review the argument reference that you can specify for your data source.
 
-* `version_loc_id` - (Required, Forces new resource, String) A dotted value of `catalogID`.`versionID`.
+* `version_loc_id` - (Required, Forces new resource, String) The version locator. A dotted value of `catalogID`.`versionID`.
 
 ## Attribute Reference
 
@@ -123,7 +123,33 @@ Nested scheme for **licenses**:
 
 * `long_description_i18n` - (Map) A map of translated strings, by language code.
 
-* `metadata` - (Map) Open ended metadata information.
+* `metadata` - (Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
+Nested scheme for **metadata**:
+	* `source_url` - (String) Source URL for the version.
+	* `terraform_version` - (String) Version's terraform version.
+	* `validated_terraform_version` - (String) Version's validated terraform version.
+	* `version_name` - (String) Name of the version.
+	* `vsi_vpc` - (List) VSI information for this version.
+  	Nested scheme for **vsi_vpc**:
+    	* `file` - (List) Details for the stored image file. Required for virtual server image for VPC.
+    	Nested scheme for **file**:
+    		* `size` - (Integer) Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.
+    	* `images` - (List) Image operating system. Required for virtual server image for VPC.
+    	Nested scheme for **images**:
+    		* `id` - (String) Programmatic ID of virtual server image. Required for virtual server image for VPC.
+    		* `name` - (String) Programmatic name of virtual server image. Required for virtual server image for VPC.
+    		* `region` - (String) Region the virtual server image is available in. Required for virtual server image for VPC.
+    	* `minimum_provisioned_size` - (Integer) Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.
+    	* `operating_system` - (List) Operating system included in this image. Required for virtual server image for VPC.
+    	Nested scheme for **operating_system**:
+    		* `architecture` - (String) Operating system architecture. Required for virtual server image for VPC.
+    		* `dedicated_host_only` - (Boolean) Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.
+    		* `display_name` - (String) Unique, display-friendly name for the operating system. Required for virtual server image for VPC.
+    		* `family` - (String) Software family for this operating system. Required for virtual server image for VPC.
+    		* `href` - (String) URL for this operating system. Required for virtual server image for VPC.
+    		* `name` - (String) Globally unique name for this operating system Required for virtual server image for VPC.
+    		* `vendor` - (String) Vendor of the operating system. Required for virtual server image for VPC.
+    		* `version` - (String) Major release version of this operating system. Required for virtual server image for VPC.
 
 * `offering_id` - (String) Offering ID.
 

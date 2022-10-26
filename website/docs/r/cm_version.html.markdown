@@ -12,16 +12,20 @@ Provides a resource for cm_version. This allows cm_version to be created, update
 
 ## Example Usage
 
+### VSI Image
 ```hcl
 resource "ibm_cm_version" "cm_version" {
   catalog_identifier = ibm_cm_catalog.cm_catalog.id
-  flavor {
-		name = "name"
-		label = "label"
-		label_i18n = { "key": "inner" }
-		index = 1
-  }
-  metadata {
+  offering_identifier = ibm_cm_offering.cm_offering.offering_id
+  name = ibm_cm_offering.cm_offering.name
+  label = ibm_cm_offering.cm_offering.label
+  tags = ["virtualservers"]
+  target_kinds = [ "vpc-x86" ]
+  install_kind = "instance"
+  sha = "sha"
+  target_version = "1.0.0"
+
+  import_metadata {
 		operating_system {
 			dedicated_host_only = true
 			vendor = "vendor"
@@ -42,7 +46,22 @@ resource "ibm_cm_version" "cm_version" {
 			region = "region"
 		}
   }
-  offering_id = ibm_cm_offering.cm_offering.offering_id
+}
+```
+
+### Standard Terraform Version
+```hcl
+resource "ibm_cm_version" "cm_version" {
+  catalog_identifier = ibm_cm_catalog.cm_catalog.id
+  offering_identifier = ibm_cm_offering.cm_offering.offering_id
+  target_version = "1.0.0"
+  zipurl = "tgz_url Ex: https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
+  include_config = true
+  flavor {
+		name = "name"
+		label = "label"
+		index = 1
+  }
 }
 ```
 
@@ -51,7 +70,6 @@ resource "ibm_cm_version" "cm_version" {
 Review the argument reference that you can specify for your resource.
 
 * `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
-* `content` - (Optional, Forces new resource, String) Byte array representing the content to be imported. Only supported for OVA images at this time.
 * `flavor` - (Optional, Forces new resource, List) Version Flavor Information.  Only supported for Product kind Solution.
 Nested scheme for **flavor**:
 	* `index` - (Optional, Integer) Order that this flavor should appear when listed for a single version.
@@ -63,7 +81,7 @@ Nested scheme for **flavor**:
 * `install_kind` - (Optional, Forces new resource, String) Install type. Example: instance. Required for virtual server image for VPC.
 * `is_vsi` - (Optional, Forces new resource, Boolean) Indicates that the current terraform template is used to install a virtual server image.
 * `label` - (Optional, Forces new resource, String) Display name of version. Required for virtual server image for VPC.
-* `metadata` - (Optional, Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
+* `import_metadata` - (Optional, Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
 Nested scheme for **metadata**:
 	* `file` - (Optional, List) Details for the stored image file. Required for virtual server image for VPC.
 	Nested scheme for **file**:
@@ -85,16 +103,13 @@ Nested scheme for **metadata**:
 		* `vendor` - (Optional, String) Vendor of the operating system. Required for virtual server image for VPC.
 		* `version` - (Optional, String) Major release version of this operating system. Required for virtual server image for VPC.
 * `name` - (Optional, Forces new resource, String) Name of version. Required for virtual server image for VPC.
-* `offering_id` - (Required, Forces new resource, String) Offering identification.
+* `offering_identifier` - (Required, Forces new resource, String) Offering identification.
 * `product_kind` - (Optional, Forces new resource, String) Optional product kind for the software being onboarded.  Valid values are software, module, or solution.  Default value is software.
-* `repotype` - (Optional, Forces new resource, String) The type of repository containing this version.  Valid values are 'public_git' or 'enterprise_git'.
 * `sha` - (Optional, Forces new resource, String) SHA256 fingerprint of the image file. Required for virtual server image for VPC.
 * `tags` - (Optional, Forces new resource, List) Tags array.
 * `target_kinds` - (Optional, Forces new resource, List) Deployment target of the content being onboarded. Current valid values are iks, roks, vcenter, power-iaas, terraform, and vpc-x86. Required for virtual server image for VPC.
 * `target_version` - (Optional, Forces new resource, String) The semver value for this new version, if not found in the zip url package content.
-* `version` - (Optional, Forces new resource, String) Semantic version of the software being onboarded. Required for virtual server image for VPC.
 * `working_directory` - (Optional, Forces new resource, String) Optional - The sub-folder within the specified tgz file that contains the software being onboarded.
-* `x_auth_token` - (Optional, Forces new resource, String) Authentication token used to access the specified zip file.
 * `zipurl` - (Optional, Forces new resource, String) URL path to zip location.  If not specified, must provide content in the body of this call.
 
 ## Attribute Reference
@@ -173,6 +188,34 @@ Nested scheme for **licenses**:
 	* `url` - (String) URL for the license text.
 * `long_description` - (String) Long description for version.
 * `long_description_i18n` - (Map) A map of translated strings, by language code.
+* `metadata` - (Forces new resource, List) Generic data to be included with content being onboarded. Required for virtual server image for VPC.
+Nested scheme for **metadata**:
+	* `source_url` - (String) Source URL for the version.
+	* `terraform_version` - (String) Version's terraform version.
+	* `validated_terraform_version` - (String) Version's validated terraform version.
+	* `version_name` - (String) Name of the version.
+	* `vsi_vpc` - (List) VSI information for this version.
+  	Nested scheme for **vsi_vpc**:
+    	* `file` - (List) Details for the stored image file. Required for virtual server image for VPC.
+    	Nested scheme for **file**:
+    		* `size` - (Integer) Size of the stored image file rounded up to the next gigabyte. Required for virtual server image for VPC.
+    	* `images` - (List) Image operating system. Required for virtual server image for VPC.
+    	Nested scheme for **images**:
+    		* `id` - (String) Programmatic ID of virtual server image. Required for virtual server image for VPC.
+    		* `name` - (String) Programmatic name of virtual server image. Required for virtual server image for VPC.
+    		* `region` - (String) Region the virtual server image is available in. Required for virtual server image for VPC.
+    	* `minimum_provisioned_size` - (Integer) Minimum size (in gigabytes) of a volume onto which this image may be provisioned. Required for virtual server image for VPC.
+    	* `operating_system` - (List) Operating system included in this image. Required for virtual server image for VPC.
+    	Nested scheme for **operating_system**:
+    		* `architecture` - (String) Operating system architecture. Required for virtual server image for VPC.
+    		* `dedicated_host_only` - (Boolean) Images with this operating system can only be used on dedicated hosts or dedicated host groups. Required for virtual server image for VPC.
+    		* `display_name` - (String) Unique, display-friendly name for the operating system. Required for virtual server image for VPC.
+    		* `family` - (String) Software family for this operating system. Required for virtual server image for VPC.
+    		* `href` - (String) URL for this operating system. Required for virtual server image for VPC.
+    		* `name` - (String) Globally unique name for this operating system Required for virtual server image for VPC.
+    		* `vendor` - (String) Vendor of the operating system. Required for virtual server image for VPC.
+    		* `version` - (String) Major release version of this operating system. Required for virtual server image for VPC.
+* `offering_id` - (String) Offering ID.
 * `outputs` - (List) List of output values for this version.
 Nested scheme for **outputs**:
 	* `description` - (String) Output description.

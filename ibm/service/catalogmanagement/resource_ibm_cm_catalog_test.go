@@ -73,6 +73,7 @@ func testAccCheckIBMCmCatalogConfigBasic() string {
 
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "basic-catalog-label-test"
+			kind = "offering"
 		}
 	`)
 }
@@ -82,6 +83,7 @@ func testAccCheckIBMCmCatalogConfig(label string, shortDescription string) strin
 
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "%s"
+			kind = "offering"
 			short_description = "%s"
 		}
 	`, label, shortDescription)

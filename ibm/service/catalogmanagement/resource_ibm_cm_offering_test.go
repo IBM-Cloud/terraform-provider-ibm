@@ -81,6 +81,7 @@ func testAccCheckIBMCmOfferingConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "test_tf_catalog_label_1"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
@@ -94,6 +95,7 @@ func testAccCheckIBMCmOfferingConfig(label string, name string, shortDescription
 
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "test_tf_catalog_label_2"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
