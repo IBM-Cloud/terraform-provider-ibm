@@ -103,6 +103,7 @@ Review the argument references that you can specify for your resource.
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
 
 - `allow_interface_to_float` - (Boolean) Indicates if the interface can float to any other server within the same resource_group. The interface will float automatically if the network detects a GARP or RARP on another bare metal server in the resource group. Applies only to vlan type interfaces.
+- `floating_bare_metal_server` - (String) Bare metal server id of the server to which the network interface is floating to. (Same as `bare_metal_server` if its not floating)
 - `floating_ips` - (List) The floating IPs associated with this network interface.
 
   Nested scheme for `floating_ips`:

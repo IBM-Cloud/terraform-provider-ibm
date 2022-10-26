@@ -50,7 +50,6 @@ In addition to all argument reference list, you can access the following attribu
 
     Nested scheme for `capacity`:
     - `cores` - (String) The host available Processor units.
-    - `id` - (String) The host identifier.
     - `memory`- (String) The host available RAM memory in GiB.
 
   - `core_memory_ratio` - (Float) Processor to Memory (GB) Ratio.
@@ -58,21 +57,18 @@ In addition to all argument reference list, you can access the following attribu
 
     Nested scheme for `max_available`:
     - `cores` - (String) The host available Processor units.
-    - `id` - (String) The host identifier.
     - `memory`- (String) The host available RAM memory in GiB.
 
   - `max_cores_available` - (Map) Maximum configurable cores available combined with available memory of that host.
 
     Nested scheme for `max_cores_available`:
     - `cores` - (String) The host available Processor units.
-    - `id` - (String) The host identifier.
     - `memory`- (String) The host available RAM memory in GiB.
 
   - `max_memory_available` - (Map) Maximum configurable memory available combined with available cores of that host.
 
     Nested scheme for `max_memory_available`:
     - `cores` - (String) The host available Processor units.
-    - `id` - (String) The host identifier.
     - `memory`- (String) The host available RAM memory in GiB.
 
   - `shared_core_ratio` - (Map) The min-max-default allocation percentage of shared core per vCPU.

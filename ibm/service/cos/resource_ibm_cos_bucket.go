@@ -38,7 +38,7 @@ var crossRegionLocation = []string{
 }
 
 var storageClass = []string{
-	"standard", "vault", "cold", "smart", "flex",
+	"standard", "vault", "cold", "smart", "flex", "onerate_active",
 }
 
 var singleSiteLocationRegex = regexp.MustCompile("^[a-z]{3}[0-9][0-9]-[a-z]{4,8}$")
@@ -88,7 +88,6 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description:      "resource instance ID",
 				DiffSuppressFunc: resourceinstanceidDiffSuppress,
 				ValidateFunc:     validate.InvokeValidator("ibm_cos_bucket", "resource_instance_id"),
-				// ValidateFunc:     validate.ValidateRegexps(`^crn:.+:.+:.+:.+:.+:a\/[0-9a-f]{32}:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\:\:$`),
 			},
 			"crn": {
 				Type:        schema.TypeString,
@@ -109,47 +108,40 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Description:   "Provide satellite location info.",
 			},
 			"single_site_location": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_cos_bucket", "single_site_location"),
-				// ValidateFunc:  validate.ValidateAllowedStringValues(singleSiteLocation),
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "single_site_location"),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "cross_region_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "single site location info",
 			},
 			"region_location": {
-				Type:     schema.TypeString,
-				Optional: true,
-				//ValidateFunc:  validate.ValidateAllowedStringValues(regionLocation),
+				Type:          schema.TypeString,
+				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"cross_region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "Region Location info.",
 			},
 			"cross_region_location": {
-				Type:     schema.TypeString,
-				Optional: true,
-				// ValidateFunc:  validate.ValidateAllowedStringValues(crossRegionLocation),
+				Type:          schema.TypeString,
+				Optional:      true,
 				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "cross_region_location"),
 				ForceNew:      true,
 				ConflictsWith: []string{"region_location", "single_site_location", "satellite_location_id"},
-				RequiredWith:  []string{"storage_class"},
 				Description:   "Cros region location info",
 			},
 			"storage_class": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
+				Computed:      true,
 				Description:   "Storage class info",
 				ConflictsWith: []string{"satellite_location_id"},
-				// ValidateFunc:  validate.ValidateAllowedStringValues(storageClass),
-				ValidateFunc: validate.InvokeValidator("ibm_cos_bucket", "storage_class"),
+				ValidateFunc:  validate.InvokeValidator("ibm_cos_bucket", "storage_class"),
 			},
 			"endpoint_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				// ValidateFunc:     validate.ValidateAllowedStringValues([]string{"public", "private", "direct"}),
+				Type:             schema.TypeString,
+				Optional:         true,
 				Description:      "public or private",
 				ConflictsWith:    []string{"satellite_location_id"},
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -291,9 +283,8 @@ func ResourceIBMCOSBucket() *schema.Resource {
 							Description:  "Specifies the number of days when the specific rule action takes effect.",
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
-							// ValidateFunc:     validate.ValidateAllowedStringValues([]string{"GLACIER", "ACCELERATED", "Glacier", "Accelerated", "glacier", "accelerated"}),
+							Type:             schema.TypeString,
+							Required:         true,
 							ValidateFunc:     validate.InvokeValidator("ibm_cos_bucket", "type"),
 							DiffSuppressFunc: caseDiffSuppress,
 							Description:      "Specifies the storage class/archive type to which you want the object to transition. It can be Glacier or Accelerated",
@@ -481,7 +472,7 @@ func ResourceIBMCOSBucketValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			AllowedValues:              "standard,vault,cold,smart,flex",
+			AllowedValues:              "standard,vault,cold,smart,flex,onerate_active",
 		})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1290,10 +1281,10 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		bLocation = bucketLocation.(string)
 		apiType = "sl"
 	}
-
 	if bLocation == "" {
 		return fmt.Errorf("Provide either `cross_region_location` or `region_location` or `single_site_location` or `satellite_location_id`")
 	}
+
 	lConstraint := fmt.Sprintf("%s-%s", bLocation, storageClass)
 
 	var endpointType = d.Get("endpoint_type").(string)
@@ -1321,7 +1312,7 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var create *s3.CreateBucketInput
-	if satlc_id != "" {
+	if satlc_id != "" || storageClass == "" {
 		create = &s3.CreateBucketInput{
 			Bucket: aws.String(bucketName),
 		}
@@ -1589,7 +1580,7 @@ func SelectCosApi(apiType string, bLocation string) (string, string, string) {
 	return "", "", ""
 }
 
-///Satellite ENdpoint configuration
+// /Satellite ENdpoint configuration
 func SelectSatlocCosApi(apiType string, serviceID string, bLocation string) string {
 	if apiType == "sl" {
 		return fmt.Sprintf("s3.%s.%s.cloud-object-storage.appdomain.cloud", serviceID, bLocation)
