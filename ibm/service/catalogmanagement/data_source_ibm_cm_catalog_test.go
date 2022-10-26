@@ -53,6 +53,7 @@ func testAccCheckIBMCmCatalogDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "basic-catalog-label-test"
+			kind = "offering"
 		}
 
 		data "ibm_cm_catalog" "cm_catalog" {
@@ -66,6 +67,7 @@ func testAccCheckIBMCmCatalogDataSourceConfig(catalogLabel string, catalogShortD
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "%s"
 			short_description = "%s"
+			kind = "offering"
 		}
 
 		data "ibm_cm_catalog" "cm_catalog" {

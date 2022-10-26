@@ -52,6 +52,7 @@ func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTarge
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "data_source_version_test_catalog_label"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {

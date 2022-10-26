@@ -68,6 +68,7 @@ func testAccCheckIBMCmOfferingDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "test_basic_catalog_label_for_offering_data_source"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
@@ -85,6 +86,7 @@ func testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel string, offeringNam
 	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
 			label = "catalog_%s"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
