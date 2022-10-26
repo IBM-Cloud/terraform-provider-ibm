@@ -146,17 +146,17 @@ var Image_operating_system string
 var Tg_cross_network_account_id string
 var Tg_cross_network_id string
 
-//Enterprise Management
+// Enterprise Management
 var Account_to_be_imported string
 
 // Secuity and Complinace Center, Governance
 var Scc_gov_account_id string
 var Scc_resource_group_id string
 
-//Security and Compliance Center, SI
+// Security and Compliance Center, SI
 var Scc_si_account string
 
-//Security and Compliance Center, Posture Management
+// Security and Compliance Center, Posture Management
 var Scc_posture_scope_id string
 var Scc_posture_scan_id string
 var Scc_posture_profile_id string
@@ -172,14 +172,14 @@ var Scc_posture_collector_id_scope_update []string
 var Scc_posture_collector_id string
 var Scc_posture_credential_id string
 
-//ROKS Cluster
+// ROKS Cluster
 var ClusterName string
 
 // Satellite instance
 var Satellite_location_id string
 var Satellite_Resource_instance_id string
 
-//Dedicated host
+// Dedicated host
 var HostPoolID string
 
 // Continuous Delivery

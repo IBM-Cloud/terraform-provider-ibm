@@ -108,7 +108,7 @@ func DataSourceIBMContainerAddOnsValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerAddOnsValidator := validate.ResourceValidator{ResourceName: "ibm_container_addons", Schema: validateSchema}
 	return &iBMContainerAddOnsValidator

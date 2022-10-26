@@ -512,6 +512,8 @@ func Provider() *schema.Provider {
 			"ibm_app_config_properties":              appconfiguration.DataSourceIBMAppConfigProperties(),
 			"ibm_app_config_segment":                 appconfiguration.DataSourceIBMAppConfigSegment(),
 			"ibm_app_config_segments":                appconfiguration.DataSourceIBMAppConfigSegments(),
+			"ibm_app_config_snapshot":                appconfiguration.DataSourceIBMAppConfigSnapshot(),
+			"ibm_app_config_snapshots":               appconfiguration.DataSourceIBMAppConfigSnapshots(),
 
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
@@ -593,6 +595,8 @@ func Provider() *schema.Provider {
 			"ibm_dl_routers":           directlink.DataSourceIBMDLRouters(),
 			"ibm_dl_provider_ports":    directlink.DataSourceIBMDirectLinkProviderPorts(),
 			"ibm_dl_provider_gateways": directlink.DataSourceIBMDirectLinkProviderGateways(),
+			"ibm_dl_route_reports":     directlink.DataSourceIBMDLRouteReports(),
+			"ibm_dl_route_report":      directlink.DataSourceIBMDLRouteReport(),
 
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                   transitgateway.DataSourceIBMTransitGateway(),
@@ -812,6 +816,7 @@ func Provider() *schema.Provider {
 			"ibm_container_vpc_alb":                     kubernetes.ResourceIBMContainerVpcALB(),
 			"ibm_container_vpc_alb_create":              kubernetes.ResourceIBMContainerVpcAlbCreateNew(),
 			"ibm_container_vpc_worker_pool":             kubernetes.ResourceIBMContainerVpcWorkerPool(),
+			"ibm_container_vpc_worker":                  kubernetes.ResourceIBMContainerVpcWorker(),
 			"ibm_container_vpc_cluster":                 kubernetes.ResourceIBMContainerVpcCluster(),
 			"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCert(),
 			"ibm_container_cluster":                     kubernetes.ResourceIBMContainerCluster(),
@@ -954,6 +959,7 @@ func Provider() *schema.Provider {
 			"ibm_app_config_feature":                             appconfiguration.ResourceIBMIbmAppConfigFeature(),
 			"ibm_app_config_property":                            appconfiguration.ResourceIBMIbmAppConfigProperty(),
 			"ibm_app_config_segment":                             appconfiguration.ResourceIBMIbmAppConfigSegment(),
+			"ibm_app_config_snapshot":                            appconfiguration.ResourceIBMIbmAppConfigSnapshot(),
 			"ibm_kms_key":                                        kms.ResourceIBMKmskey(),
 			"ibm_kms_key_alias":                                  kms.ResourceIBMKmskeyAlias(),
 			"ibm_kms_key_rings":                                  kms.ResourceIBMKmskeyRings(),
@@ -1019,6 +1025,7 @@ func Provider() *schema.Provider {
 			"ibm_dl_gateway":            directlink.ResourceIBMDLGateway(),
 			"ibm_dl_virtual_connection": directlink.ResourceIBMDLGatewayVC(),
 			"ibm_dl_provider_gateway":   directlink.ResourceIBMDLProviderGateway(),
+			"ibm_dl_route_report":       directlink.ResourceIBMDLGatewayRouteReport(),
 			// //Added for Transit Gateway
 			"ibm_tg_gateway":                  transitgateway.ResourceIBMTransitGateway(),
 			"ibm_tg_connection":               transitgateway.ResourceIBMTransitGatewayConnection(),
@@ -1186,6 +1193,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_cluster":           kubernetes.ResourceIBMContainerClusterValidator(),
 				"ibm_container_worker_pool":       kubernetes.ResourceIBMContainerWorkerPoolValidator(),
 				"ibm_container_vpc_worker_pool":   kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
+				"ibm_container_vpc_worker":        kubernetes.ResourceIBMContainerVPCWorkerValidator(),
 				"ibm_container_vpc_cluster":       kubernetes.ResourceIBMContainerVpcClusterValidator(),
 				"ibm_cos_bucket":                  cos.ResourceIBMCOSBucketValidator(),
 				"ibm_cr_namespace":                registry.ResourceIBMCrNamespaceValidator(),
@@ -1333,6 +1341,21 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_vpc_alb_create":              kubernetes.ResourceIBMContainerVpcAlbCreateNewValidator(),
 				"ibm_container_storage_attachment":          kubernetes.ResourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
 				"ibm_container_worker_pool_zone_attachment": kubernetes.ResourceIBMContainerWorkerPoolZoneAttachmentValidator(),
+				"ibm_container_bind_service":                kubernetes.ResourceIBMContainerBindServiceValidator(),
+				"ibm_container_alb_cert":                    kubernetes.ResourceIBMContainerALBCertValidator(),
+				"ibm_container_cluster_feature":             kubernetes.ResourceIBMContainerClusterFeatureValidator(),
+
+				"ibm_iam_access_group_dynamic_rule": iamaccessgroup.ResourceIBMIAMDynamicRuleValidator(),
+				"ibm_iam_access_group_members":      iamaccessgroup.ResourceIBMIAMAccessGroupMembersValidator(),
+
+				"ibm_iam_trusted_profile_claim_rule": iamidentity.ResourceIBMIAMTrustedProfileClaimRuleValidator(),
+				"ibm_iam_trusted_profile_link":       iamidentity.ResourceIBMIAMTrustedProfileLinkValidator(),
+				"ibm_iam_service_api_key":            iamidentity.ResourceIBMIAMServiceAPIKeyValidator(),
+
+				"ibm_iam_trusted_profile_policy": iampolicy.ResourceIBMIAMTrustedProfilePolicyValidator(),
+				"ibm_iam_access_group_policy":    iampolicy.ResourceIBMIAMAccessGroupPolicyValidator(),
+				"ibm_iam_service_policy":         iampolicy.ResourceIBMIAMServicePolicyValidator(),
+				"ibm_iam_authorization_policy":   iampolicy.ResourceIBMIAMAuthorizationPolicyValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":          vpc.DataSourceIBMISSubnetValidator(),
@@ -1392,6 +1415,25 @@ func Validator() validate.ValidatorDict {
 				"ibm_container_storage_attachment":      kubernetes.DataSourceIBMContainerVpcWorkerVolumeAttachmentValidator(),
 				"ibm_container_vpc_cluster_worker_pool": kubernetes.DataSourceIBMContainerVpcClusterWorkerPoolValidator(),
 				"ibm_container_worker_pool":             kubernetes.DataSourceIBMContainerWorkerPoolValidator(),
+				"ibm_container_bind_service":            kubernetes.DataSourceIBMContainerBindServiceValidator(),
+				"ibm_container_cluster_config":          kubernetes.DataSourceIBMContainerClusterConfigValidator(),
+				"ibm_container_cluster":                 kubernetes.DataSourceIBMContainerClusterValidator(),
+				"ibm_container_vpc_cluster_worker":      kubernetes.DataSourceIBMContainerVPCClusterWorkerValidator(),
+				"ibm_container_vpc_cluster":             kubernetes.DataSourceIBMContainerVPCClusterValidator(),
+				"ibm_container_alb_cert":                kubernetes.DataSourceIBMContainerALBCertValidator(),
+				"ibm_iam_access_group":                  iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
+
+				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),
+				"ibm_iam_trusted_profile_claim_rule":  iamidentity.DataSourceIBMIamTrustedProfileClaimRuleValidator(),
+				"ibm_iam_trusted_profile_link":        iamidentity.DataSourceIBMIamTrustedProfileLinkValidator(),
+				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),
+				"ibm_iam_trusted_profile":             iamidentity.DataSourceIBMIamTrustedProfileValidator(),
+				"ibm_iam_trusted_profile_claim_rules": iamidentity.DataSourceIBMIamTrustedProfileClaimRulesValidator(),
+				"ibm_iam_trusted_profiles":            iamidentity.DataSourceIBMIamTrustedProfilesValidator(),
+
+				"ibm_iam_access_group_policy":    iampolicy.DataSourceIBMIAMAccessGroupPolicyValidator(),
+				"ibm_iam_service_policy":         iampolicy.DataSourceIBMIAMServicePolicyValidator(),
+				"ibm_iam_trusted_profile_policy": iampolicy.DataSourceIBMIAMTrustedProfilePolicyValidator(),
 			},
 		}
 	})
