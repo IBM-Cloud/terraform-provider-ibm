@@ -87,7 +87,7 @@ func testAccCheckIBMCdToolchainToolBitbucketgitDataSourceConfigBasic(tcName stri
 		resource "ibm_cd_toolchain_tool_bitbucketgit" "cd_toolchain_tool_bitbucketgit" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				has_issues = true
+				toolchain_issues_enabled = true
 				enable_traceability = true
 			}
 			initialization {
@@ -117,7 +117,7 @@ func testAccCheckIBMCdToolchainToolBitbucketgitDataSourceConfig(tcName string, r
 		resource "ibm_cd_toolchain_tool_bitbucketgit" "cd_toolchain_tool_bitbucketgit" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				has_issues = true
+				toolchain_issues_enabled = true
 				enable_traceability = true
 			}
 			initialization {

@@ -87,65 +87,69 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"git_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "e.g. https://api.github.example.com.",
+							Description: "The API root URL for the GitHub server.",
 						},
 						"owner_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the new GitHub repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the repository that you are linking to.",
+							Description: "The URL of the GitHub repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.",
 						},
 						"source_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the repository that you are forking or cloning.",
+							Description: "The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.",
 						},
 						"token_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Integration token URL.",
+							Description: "The token URL used for authorizing with the GitHub server.",
 						},
 						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.",
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Select this check box to make this repository private.",
-						},
-						"has_issues": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Select this check box to enable GitHub Issues for lightweight issue tracking.",
+							Description: "Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.",
 						},
 						"auto_init": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Select this checkbox to initialize this repository with a README.",
+							Description: "Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.",
 						},
 						"enable_traceability": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+							Description: "Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
+						},
+						"toolchain_issues_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Setting this value to true will enable issues on the GitHub repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the GitHub repository itself.",
 						},
 					},
 				},
@@ -220,7 +224,10 @@ func dataSourceIBMCdToolchainToolGithubconsolidatedRead(context context.Context,
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolGithubconsolidated(), nil)
+		remapFields := map[string]string{
+			"toolchain_issues_enabled": "has_issues",
+		}
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolGithubconsolidated(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

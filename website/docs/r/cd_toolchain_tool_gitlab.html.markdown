@@ -17,14 +17,16 @@ More information on this Continuous Delivery tool integration can be found [here
 ```hcl
 resource "ibm_cd_toolchain_tool_gitlab" "cd_toolchain_tool_gitlab" {
   initialization {
-		type = "new"
+		git_id = "gitlab"
+		owner_id = "<gitlab-user-id>"
+		repo_name = "myrepo"
+		source_repo_url = "https://gitlab.com/source-repo-owner/source-repo"
+		type = "clone"
 		private_repo = true
   }
   parameters {
-		type = "new"
-		private_repo = true
-		has_issues = true
-		enable_traceability = true
+		enable_traceability = false
+		toolchain_issues_enabled = true
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -36,34 +38,34 @@ Review the argument reference that you can specify for your resource.
 
 * `initialization` - (Required, List) 
 Nested scheme for **initialization**:
-	* `git_id` - (Optional, Forces new resource, String)
-	* `owner_id` - (Optional, Forces new resource, String)
-	* `private_repo` - (Optional, Forces new resource, Boolean) Select this check box to make this repository private.
+	* `git_id` - (Optional, Forces new resource, String) Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.
+	* `owner_id` - (Optional, Forces new resource, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `private_repo` - (Optional, Forces new resource, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
-	* `repo_name` - (Optional, Forces new resource, String)
-	* `repo_url` - (Optional, Forces new resource, String) Type the URL of the repository that you are linking to.
-	* `source_repo_url` - (Optional, Forces new resource, String) Type the URL of the repository that you are forking or cloning.
-	* `type` - (Required, Forces new resource, String)
+	* `repo_name` - (Optional, Forces new resource, String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `repo_url` - (Optional, Forces new resource, String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
+	* `source_repo_url` - (Optional, Forces new resource, String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
+	* `type` - (Required, Forces new resource, String) The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_root_url` - (Computed, String) e.g. https://gitlab.example.com/api/v4.
-	* `enable_traceability` - (Optional, Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `api_root_url` - (Computed, String) The API root URL for the GitLab Server.
+	* `enable_traceability` - (Optional, Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (Computed, String)
-	* `has_issues` - (Optional, Boolean) Select this check box to enable GitLab Issues for lightweight issue tracking.
-	  * Constraints: The default value is `true`.
+	* `git_id` - (Computed, String) Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.
 	* `integration_owner` - (Computed, String) Select the user which git operations will be performed as.
-	* `owner_id` - (Computed, String)
-	* `private_repo` - (Computed, Boolean) Select this check box to make this repository private.
+	* `owner_id` - (Computed, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
-	* `repo_name` - (Computed, String)
-	* `repo_url` - (Computed, String) Type the URL of the repository that you are linking to.
-	* `source_repo_url` - (Computed, String) Type the URL of the repository that you are forking or cloning.
-	* `token_url` - (Computed, String) Integration token URL.
-	* `type` - (Computed, String)
+	* `repo_name` - (Computed, String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `repo_url` - (Computed, String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
+	* `source_repo_url` - (Computed, String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
+	* `token_url` - (Computed, String) The token URL used for authorizing with the GitLab server.
+	* `toolchain_issues_enabled` - (Optional, Boolean) Setting this value to true will enable issues on the GitLab repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the GitLab repository itself.
+	  * Constraints: The default value is `true`.
+	* `type` - (Computed, String) The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.

@@ -90,7 +90,7 @@ func testAccCheckIBMCdToolchainToolGitlabConfigBasic(tcName string, rgName strin
 		resource "ibm_cd_toolchain_tool_gitlab" "cd_toolchain_tool_gitlab" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				has_issues = true
+				toolchain_issues_enabled = true
 				enable_traceability = true
 			}
 			initialization {
@@ -115,7 +115,7 @@ func testAccCheckIBMCdToolchainToolGitlabConfig(tcName string, rgName string, re
 		resource "ibm_cd_toolchain_tool_gitlab" "cd_toolchain_tool_gitlab" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
-				has_issues = true
+				toolchain_issues_enabled = true
 				enable_traceability = true
 			}
 			initialization {

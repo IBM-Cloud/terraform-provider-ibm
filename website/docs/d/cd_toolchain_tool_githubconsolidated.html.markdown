@@ -43,23 +43,23 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_root_url` - (String) e.g. https://api.github.example.com.
-	* `auto_init` - (Boolean) Select this checkbox to initialize this repository with a README.
+	* `api_root_url` - (String) The API root URL for the GitHub server.
+	* `auto_init` - (Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
-	* `enable_traceability` - (Boolean) Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `enable_traceability` - (Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
-	* `git_id` - (String)
-	* `has_issues` - (Boolean) Select this check box to enable GitHub Issues for lightweight issue tracking.
-	  * Constraints: The default value is `true`.
+	* `git_id` - (String) Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.
 	* `integration_owner` - (String) Select the user which git operations will be performed as.
-	* `owner_id` - (String)
-	* `private_repo` - (Boolean) Select this check box to make this repository private.
+	* `owner_id` - (String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `private_repo` - (Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `false`.
-	* `repo_name` - (String)
-	* `repo_url` - (String) Type the URL of the repository that you are linking to.
-	* `source_repo_url` - (String) Type the URL of the repository that you are forking or cloning.
-	* `token_url` - (String) Integration token URL.
-	* `type` - (String)
+	* `repo_name` - (String) The name of the new GitHub repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
+	* `repo_url` - (String) The URL of the GitHub repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
+	* `source_repo_url` - (String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
+	* `token_url` - (String) The token URL used for authorizing with the GitHub server.
+	* `toolchain_issues_enabled` - (Boolean) Setting this value to true will enable issues on the GitHub repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the GitHub repository itself.
+	  * Constraints: The default value is `true`.
+	* `type` - (String) The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.
 	  * Constraints: Allowable values are: `new`, `fork`, `clone`, `link`.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.

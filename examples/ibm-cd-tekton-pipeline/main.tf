@@ -24,7 +24,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "tekton_repo" {
     repo_name = var.repo_name
   }  
   parameters {
-    has_issues          = false
+    toolchain_issues_enabled = false
     enable_traceability = false
   }
 }

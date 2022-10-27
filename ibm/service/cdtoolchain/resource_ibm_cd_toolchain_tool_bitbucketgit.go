@@ -42,62 +42,71 @@ func ResourceIBMCdToolchainToolBitbucketgit() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"git_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Set this value to 'bitbucketgit' for bitbucket.org, or to the GUID of a custom Bitbucket server.",
 						},
 						"api_root_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "e.g. https://api.bitbucket.org.",
+							Description: "The API root URL for the Bitbucket Server.",
+						},
+						"default_branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default branch of the git repository.",
 						},
 						"owner_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Bitbucket user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the new Bitbucket repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the repository that you are linking to.",
+							Description: "The URL of the bitbucket repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.",
 						},
 						"source_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the repository that you are forking or cloning.",
+							Description: "The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.",
 						},
 						"token_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Integration token URL.",
+							Description: "The token URL used for authorizing with the Bitbucket server.",
 						},
 						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.",
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Select this check box to make this repository private.",
-						},
-						"has_issues": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Select this check box to enable Bitbucket Issues for lightweight issue tracking.",
+							Description: "Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.",
 						},
 						"enable_traceability": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Select this check box to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+							Description: "Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Select the user which git operations will be performed as.",
+						},
+						"toolchain_issues_enabled": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Setting this value to true will enable issues on the Bitbucket repository and add an issues tool card to the toolchain.  Setting the value to false will remove the tool card from the toolchain, but will not impact whether or not issues are enabled on the Bitbucket repository itself.",
 						},
 					},
 				},
@@ -110,43 +119,47 @@ func ResourceIBMCdToolchainToolBitbucketgit() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"git_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Set this value to 'bitbucketgit' for bitbucket.org, or to the GUID of a custom Bitbucket server.",
 						},
 						"owner_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The Bitbucket user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The name of the new Bitbucket repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.",
 						},
 						"repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "Type the URL of the repository that you are linking to.",
+							Description: "The URL of the bitbucket repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.",
 						},
 						"source_repo_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							ForceNew:    true,
-							Description: "Type the URL of the repository that you are forking or cloning.",
+							Description: "The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.",
 						},
 						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "The operation that should be performed to initialize the new tool integration.  Use 'new' to create a new git repository, 'clone' to clone an existing repository into a new git repository, 'fork' to fork an existing git repository, or 'link' to link to an existing git repository.",
 						},
 						"private_repo": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
 							ForceNew:    true,
-							Description: "Select this check box to make this repository private.",
+							Description: "Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.",
 						},
 					},
 				},
@@ -252,7 +265,10 @@ func resourceIBMCdToolchainToolBitbucketgitCreate(context context.Context, d *sc
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("bitbucketgit")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolBitbucketgit(), nil)
+	remapFields := map[string]string{
+		"toolchain_issues_enabled": "has_issues",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolBitbucketgit(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -298,7 +314,10 @@ func resourceIBMCdToolchainToolBitbucketgitRead(context context.Context, d *sche
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolBitbucketgit(), nil)
+	remapFields := map[string]string{
+		"toolchain_issues_enabled": "has_issues",
+	}
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolBitbucketgit(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -361,7 +380,10 @@ func resourceIBMCdToolchainToolBitbucketgitUpdate(context context.Context, d *sc
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolBitbucketgit(), nil)
+		remapFields := map[string]string{
+			"toolchain_issues_enabled": "has_issues",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolBitbucketgit(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}
