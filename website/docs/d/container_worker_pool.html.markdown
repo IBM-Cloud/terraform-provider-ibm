@@ -42,3 +42,4 @@ Review the attribute references that are exported.
   - `zone` - (String) Zone name.
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption.
+- `kms_account_id` - Account ID for boot volume encryption, if other accuont is providing the kms.

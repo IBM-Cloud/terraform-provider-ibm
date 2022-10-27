@@ -174,6 +174,13 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Root Key ID for boot volume encryption",
 				RequiredWith:     []string{"kms_instance_id"},
 			},
+			"kms_account_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
+				RequiredWith:     []string{"kms_account_id", "crk"},
+			},
 		},
 	}
 }
@@ -234,11 +241,14 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 		Zones:       zone,
 	}
 
-	if v, ok := d.GetOk("kms_instance_id"); ok {
+	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
 		crk := d.Get("crk").(string)
 		wve := v2.WorkerVolumeEncryption{
-			KmsInstanceID:     v.(string),
+			KmsInstanceID:     kmsid.(string),
 			WorkerVolumeCRKID: crk,
+		}
+		if kmsaccid, ok := d.GetOk("kms_account_id"); ok {
+			wve.KMSAccountID = kmsaccid.(string)
 		}
 		params.WorkerVolumeEncryption = &wve
 	}
@@ -500,6 +510,7 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
+		d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
 	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
