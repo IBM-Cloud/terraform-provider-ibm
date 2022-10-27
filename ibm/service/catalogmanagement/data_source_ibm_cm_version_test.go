@@ -69,7 +69,6 @@ func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTarge
 			zipurl = "%s"
 			target_version = "%s"
 			include_config = %s
-			sha = "448ac9055bd5e9d2b5dc0fbc80bb44f15c387c34d3530e29dd374193f0af4cd0"
 			install {}
 		}
 

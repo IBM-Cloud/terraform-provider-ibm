@@ -22,7 +22,7 @@ resource "ibm_cm_version" "cm_version" {
   tags = ["virtualservers"]
   target_kinds = [ "vpc-x86" ]
   install_kind = "instance"
-  sha = "sha"
+  import_sha = "sha"
   target_version = "1.0.0"
 
   import_metadata {
@@ -412,9 +412,9 @@ provider "ibm" {}
 
 Usage:
 ```
-export IC_API_KEY="ibmcloud_api_key"
+export IC_API_KEY="api_key"
 export IAAS_CLASSIC_USERNAME="iaas_classic_username"
-export IAAS_CLASSIC_API_KEY="iaas_classic_api_key"
+export IAAS_CLASSIC_API_KEY="api_key"
 terraform plan
 ```
 

@@ -33,7 +33,7 @@ resource "ibm_cm_version" "cm_version_instance" {
   target_kinds = var.cm_version_target_kinds
   format_kind = var.cm_version_format_kind
   product_kind = var.cm_version_product_kind
-  sha = var.cm_version_sha
+  import_sha = var.cm_version_sha
   flavor {
     name = "name"
     label = "label"

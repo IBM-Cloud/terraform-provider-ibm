@@ -110,10 +110,10 @@ resource "cm_version" "cm_version_instance" {
   target_kinds = var.cm_version_target_kinds
   format_kind = var.cm_version_format_kind
   product_kind = var.cm_version_product_kind
-  sha = var.cm_version_sha
+  import_sha = var.cm_version_sha
   version = var.cm_version_version
   flavor = var.cm_version_flavor
-  metadata = var.cm_version_metadata
+  import_metadata = var.cm_version_metadata
   working_directory = var.cm_version_working_directory
   zipurl = var.cm_version_zipurl
   target_version = var.cm_version_target_version

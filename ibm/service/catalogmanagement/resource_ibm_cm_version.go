@@ -92,9 +92,14 @@ func ResourceIBMCmVersion() *schema.Resource {
 				ForceNew:    true,
 				Description: "Optional product kind for the software being onboarded.  Valid values are software, module, or solution.  Default value is software.",
 			},
-			"sha": &schema.Schema{
+			"import_sha": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Description: "SHA256 fingerprint of the image file. Required for virtual server image for VPC.",
+			},
+			"sha": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "SHA256 fingerprint of the image file. Required for virtual server image for VPC.",
 			},
 			"version": &schema.Schema{
@@ -1584,8 +1589,8 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("product_kind"); ok {
 		importOfferingVersionOptions.SetProductKind(d.Get("product_kind").(string))
 	}
-	if _, ok := d.GetOk("sha"); ok {
-		importOfferingVersionOptions.SetSha(d.Get("sha").(string))
+	if _, ok := d.GetOk("import_sha"); ok {
+		importOfferingVersionOptions.SetSha(d.Get("import_sha").(string))
 	}
 	if _, ok := d.GetOk("flavor"); ok {
 		flavorModel, err := resourceIBMCmVersionMapToFlavor(d.Get("flavor.0").(map[string]interface{}))

@@ -106,7 +106,6 @@ func testAccCheckIBMCmVersionConfigBasic() string {
 			catalog_identifier = ibm_cm_catalog.cm_catalog.id
 			offering_identifier = ibm_cm_offering.cm_offering.offering_id
 			zipurl = "https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
-			sha = "448ac9055bd5e9d2b5dc0fbc80bb44f15c387c34d3530e29dd374193f0af4cd0"
 			install {}
 		}
 	`)
@@ -134,7 +133,6 @@ func testAccCheckIBMCmVersionSimpleConfig(zipurl string, targetVersion string, i
 			zipurl = "%s"
 			target_version = "%s"
 			include_config = %s
-			sha = "448ac9055bd5e9d2b5dc0fbc80bb44f15c387c34d3530e29dd374193f0af4cd0"
 			install {}
 		}
 	`, zipurl, targetVersion, includeConfig)
@@ -164,7 +162,7 @@ func testAccCheckIBMCmVersionVSIConfig(name string, label string, installKind st
 			tags = ["virtualservers"]
 			target_kinds = [ "vpc-x86" ]
 			install_kind = "%s"
-			sha = "%s"
+			import_sha = "%s"
 			target_version = "%s"
 			install {}
 
