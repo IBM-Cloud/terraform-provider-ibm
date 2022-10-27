@@ -31,13 +31,30 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, standard_key),
+				// Test Imported Standard Key
+				Config: testAccCheckIBMKmsResourceImportConfig(instanceName, resourceName, keyName, standard_key, payload),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 				),
 			},
 			{
-				Config: testAccCheckIBMKmsResourceImportStandardConfig(instanceName, resourceName, keyName, payload),
+				// Test Imported Root Key
+				Config: testAccCheckIBMKmsResourceImportConfig(instanceName, resourceName, keyName, !standard_key, payload),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				// Test Root Key
+				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, !standard_key),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
+				),
+			},
+			{
+				// Test Standard Key
+				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, standard_key),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 				),
@@ -148,7 +165,7 @@ func testAccCheckIBMKmsResourceConfig(instanceName, resource, KeyName string, st
 `, instanceName, resource, KeyName, standard_key)
 }
 
-func testAccCheckIBMKmsResourceImportStandardConfig(instanceName, resource, KeyName, payload string) string {
+func testAccCheckIBMKmsResourceImportConfig(instanceName, resource, KeyName string, standard_key bool, payload string) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "kms_instance" {
 		name              = "%s"
@@ -159,12 +176,12 @@ func testAccCheckIBMKmsResourceImportStandardConfig(instanceName, resource, KeyN
 	  resource "%s" "test" {
 		instance_id = "${ibm_resource_instance.kms_instance.guid}"
 		key_name = "%s"
-		standard_key =  true
+		standard_key =  %t
 		payload = "%s"
 		force_delete = true
 	}
 
-`, instanceName, resource, KeyName, payload)
+`, instanceName, resource, KeyName, standard_key, payload)
 }
 
 func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyName, cosInstanceName, bucketName string) string {

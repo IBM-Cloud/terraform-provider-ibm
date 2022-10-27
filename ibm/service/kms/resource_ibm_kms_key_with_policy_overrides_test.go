@@ -28,19 +28,30 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_basic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
+				// Test Root Key
 				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
 				),
 			},
 			{
-				Config: testAccCheckIBMKmsResourceImportStandardConfig(instanceName, resourceName, keyName, payload),
+				// Test Standard Key
+				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
 				),
 			},
 			{
-				Config: testAccCheckIBMKmsResourceConfig(instanceName, resourceName, keyName, true),
+				// Test Imported Root Key
+				Config: testAccCheckIBMKmsResourceImportConfig(instanceName, resourceName, keyName, false, payload),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				// Test Imported Standard Key
+				Config: testAccCheckIBMKmsResourceImportConfig(instanceName, resourceName, keyName, true, payload),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
 				),

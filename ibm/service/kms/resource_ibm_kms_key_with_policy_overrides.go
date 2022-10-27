@@ -183,11 +183,17 @@ func ResourceIBMKmsKeyWithPolicyOverrides() *schema.Resource {
 }
 
 func resourceIBMKmsKeyWithPolicyOverridesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	policy := getPolicyFromSchema(d)
-	kpAPI, keyData, err := ExtractAndValidateKeyDataFromSchema(d, meta)
+	keyData, instanceID, err := ExtractAndValidateKeyDataFromSchema(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	policy := getPolicyFromSchema(d)
+	kpAPI, _, err := populateKPClient(d, meta, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
 	key, err := kpAPI.CreateImportedKeyWithPolicyOverrides(context, keyData.Name, keyData.Expiration, keyData.Payload, keyData.EncryptedNonce, keyData.IV, keyData.Extractable, nil, policy)
 	if err != nil {
 		return diag.Errorf("[ERROR] Error while creating key: %s", err)
@@ -198,7 +204,7 @@ func resourceIBMKmsKeyWithPolicyOverridesCreate(context context.Context, d *sche
 }
 
 func resourceIBMKmsKeyWithPolicyOverridesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	kpAPI, err := KMSKeyReadHelper(d, meta)
+	kpAPI, err := populateSchemaData(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
