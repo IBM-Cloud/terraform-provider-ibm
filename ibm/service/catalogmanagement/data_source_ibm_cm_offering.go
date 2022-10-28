@@ -2426,6 +2426,10 @@ func dataSourceIBMCmOfferingRead(context context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
 	}
 
+	if err = d.Set("offering_id", offering.ID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
+	}
+
 	if err = d.Set("url", offering.URL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting url: %s", err))
 	}
