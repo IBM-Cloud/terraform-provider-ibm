@@ -1204,6 +1204,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
+	_, logicalReplicationSet := diff.GetOkExists("logical_replication_slot")
+
+	if service != "databases-for-postgresql" && logicalReplicationSet {
+		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
+	}
+
 	return nil
 }
 
@@ -1577,47 +1583,13 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	if userList, ok := d.GetOk("users"); ok {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
 		for _, user := range userList.(*schema.Set).List() {
 			userEl := user.(map[string]interface{})
-			if userEl["name"].(string) == "repl" && (strings.Contains(serviceName, "postgresql") || strings.Contains(serviceName, "enterprisedb")) {
-				updateUserPassword(userEl["name"].(string), userEl["password"].(string), instanceID, userEl["type"].(string), meta, d)
-			} else {
-				createDatabaseUserRequestUserModel := &clouddatabasesv5.User{
-					Username: core.StringPtr(userEl["name"].(string)),
-					Password: core.StringPtr(userEl["password"].(string)),
-				}
-
-				// User Role only for ops_manager user type
-				if userEl["type"].(string) == "ops_manager" && userEl["role"].(string) != "" {
-					createDatabaseUserRequestUserModel.Role = core.StringPtr(userEl["role"].(string))
-				}
-
-				instanceId := d.Id()
-				createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-					ID:       &instanceId,
-					UserType: core.StringPtr(userEl["type"].(string)),
-					User:     createDatabaseUserRequestUserModel,
-				}
-
-				createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("CreateDatabaseUser (%s) failed %s\n%s", userEl["name"], err, response))
-				}
-
-				taskID := *createDatabaseUserResponse.Task.ID
-
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
-				}
-			}
+			userUpdateCreate(userEl, instanceID, false, meta, d)
 		}
 	}
 
@@ -2171,7 +2143,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		oldUsers, newUsers := d.GetChange("users")
-		log.Printf("oldUsers %v newUsers %v", oldUsers, newUsers)
 		userChanges := make(map[string]*userChange)
 		userKey := func(raw map[string]interface{}) string {
 			if raw["role"].(string) != "" {
@@ -2226,72 +2197,13 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 			if change.New != nil {
 				// No change
-				log.Printf("[DEBUG] Change.old %v Change.new %v\n ", change.Old, change.New)
 				if change.Old != nil && change.Old["password"].(string) == change.New["password"].(string) && change.Old["name"].(string) == change.New["name"].(string) {
 					continue
 				}
 
-				// Attempt to update user password
-				passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-					Password: core.StringPtr(change.New["password"].(string)),
-				}
+				oldUserExists := change.Old != nil
 
-				changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
-					ID:       &instanceID,
-					UserType: core.StringPtr(change.New["type"].(string)),
-					Username: core.StringPtr(change.New["name"].(string)),
-					User:     passwordSettingUser,
-				}
-
-				changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
-
-				log.Printf("[DEBUG] Change Password Error %s response %v\n ", err, response.StatusCode)
-
-				// user was found but an error occurs while triggering task
-				if response.StatusCode != 404 && err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
-				}
-
-				taskID := *changeUserPasswordResponse.Task.ID
-				updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-				// user exists but task failed to complete
-				if change.Old != nil && err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
-				}
-
-				// Updating the password has failed but an old user does not exist
-				if !updatePass {
-					//Attempt to create user
-					userEntry := &clouddatabasesv5.User{
-						Username: core.StringPtr(change.New["name"].(string)),
-						Password: core.StringPtr(change.New["password"].(string)),
-					}
-
-					// User Role only for ops_manager user type
-					if change.New["type"].(string) == "ops_manager" && change.New["role"].(string) != "" {
-						userEntry.Role = core.StringPtr(change.New["role"].(string))
-					}
-
-					createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
-						ID:       &instanceID,
-						UserType: core.StringPtr(change.New["type"].(string)),
-						User:     userEntry,
-					}
-
-					createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
-					if err != nil {
-						return diag.FromErr(fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response))
-					}
-
-					taskID := *createDatabaseUserResponse.Task.ID
-					_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-					if err != nil {
-						return diag.FromErr(fmt.Errorf(
-							"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err))
-					}
-				}
+				userUpdateCreate(change.New, instanceID, oldUserExists, meta, d)
 			}
 		}
 	}
@@ -3053,32 +2965,66 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 	return nil
 }
 
-func updateUserPassword(username string, password string, instanceID string, userType string, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
+// Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
+func userUpdateCreate(userData map[string]interface{}, instanceID string, oldUserExists bool, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	// Attempt to update user password
 	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
-		Password: core.StringPtr(password),
+		Password: core.StringPtr(userData["password"].(string)),
 	}
 
 	changeUserPasswordOptions := &clouddatabasesv5.ChangeUserPasswordOptions{
 		ID:       &instanceID,
-		UserType: core.StringPtr(userType),
-		Username: core.StringPtr(username),
+		UserType: core.StringPtr(userData["type"].(string)),
+		Username: core.StringPtr(userData["name"].(string)),
 		User:     passwordSettingUser,
 	}
 
 	changeUserPasswordResponse, response, err := cloudDatabasesClient.ChangeUserPassword(changeUserPasswordOptions)
 
-	if response.StatusCode != 404 {
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+	// user was found but an error occurs while triggering task
+	if response.StatusCode != 404 && err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+	}
+
+	taskID := *changeUserPasswordResponse.Task.ID
+	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+	// user exists but task failed to complete
+	if oldUserExists && err != nil {
+		return diag.FromErr(fmt.Errorf(
+			"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
+	}
+
+	// Updating the password has failed but an old user does not exist
+	if !updatePass {
+		//Attempt to create user
+		userEntry := &clouddatabasesv5.User{
+			Username: core.StringPtr(userData["name"].(string)),
+			Password: core.StringPtr(userData["password"].(string)),
 		}
 
-		taskID := *changeUserPasswordResponse.Task.ID
-		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		// User Role only for ops_manager user type
+		if userData["type"].(string) == "ops_manager" && userData["role"].(string) != "" {
+			userEntry.Role = core.StringPtr(userData["role"].(string))
+		}
 
+		createDatabaseUserOptions := &clouddatabasesv5.CreateDatabaseUserOptions{
+			ID:       &instanceID,
+			UserType: core.StringPtr(userData["type"].(string)),
+			User:     userEntry,
+		}
+
+		createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response))
+		}
+
+		taskID := *createDatabaseUserResponse.Task.ID
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
+				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err))
 		}
 	}
 
