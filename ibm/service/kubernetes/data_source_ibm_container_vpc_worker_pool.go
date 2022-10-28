@@ -80,6 +80,10 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"kms_account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
