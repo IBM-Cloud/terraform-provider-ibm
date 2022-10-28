@@ -203,6 +203,49 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 					},
 				},
 			},
+			"vpc": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "VPC for the VPN Gateway",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"crn": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The CRN for this VPC.",
+						},
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this VPC.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this VPC.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique user-defined name for this VPC.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -285,13 +328,13 @@ func vpngwCreate(d *schema.ResourceData, meta interface{}, name, subnetID, mode 
 	}
 	vpnGateway := vpnGatewayIntf.(*vpcv1.VPNGateway)
 
+	d.SetId(*vpnGateway.ID)
+	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
+
 	_, err = isWaitForVpnGatewayAvailable(sess, *vpnGateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return err
 	}
-
-	d.SetId(*vpnGateway.ID)
-	log.Printf("[INFO] VPNGateway : %s", *vpnGateway.ID)
 
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isVPNGatewayTags); ok || v != "" {
@@ -425,6 +468,14 @@ func vpngwGet(d *schema.ResourceData, meta interface{}, id string) error {
 	}
 	if vpnGateway.CreatedAt != nil {
 		d.Set(isVPNGatewayCreatedAt, (vpnGateway.CreatedAt).String())
+	}
+	if vpnGateway.VPC != nil {
+		vpcList := []map[string]interface{}{}
+		vpcList = append(vpcList, dataSourceVPNServerCollectionVPNGatewayVpcReferenceToMap(vpnGateway.VPC))
+		err = d.Set("vpc", vpcList)
+		if err != nil {
+			return fmt.Errorf("Error setting the vpc: %s", err)
+		}
 	}
 	return nil
 }

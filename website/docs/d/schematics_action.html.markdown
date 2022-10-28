@@ -23,6 +23,9 @@ Review the argument references that you can specify for your data source.
 
 - `action_id` - (Required, String) Action Id.  Use GET /actions API to look up the Action Ids in your IBM Cloud account.
 
+* `location` - (Optional,String) Location supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
+  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
+
 
 ## Attribute reference
 In addition to the argument reference list, you can access the following attribute references after your data source is created. 
@@ -145,9 +148,6 @@ Nested scheme for **credentials**:
 * `id` - (String) Action ID.
 
 * `inventory` - (String) Target inventory record ID, used by the action or ansible playbook.
-
-* `location` - (String) List of locations supported by IBM Cloud Schematics service.  While creating your workspace or action, choose the right region, since it cannot be changed.  Note, this does not limit the location of the IBM Cloud resources, provisioned using Schematics.
-  * Constraints: Allowable values are: us-south, us-east, eu-gb, eu-de
 
 * `name` - (String) The unique name of your action. The name can be up to 128 characters long and can include alphanumeric characters, spaces, dashes, and underscores. **Example** you can use the name to stop action.
 

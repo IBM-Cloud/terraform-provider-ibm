@@ -29,7 +29,7 @@ resource "ibm_cos_bucket" "standard-ams03" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   single_site_location  = var.single_site_loc
-  storage_class         = var.storage
+  storage_class         = var.standard_storage_class
   hard_quota            = var.quota
   activity_tracking {
     read_data_events     = true
@@ -48,7 +48,7 @@ resource "ibm_cos_bucket" "lifecycle_rule_cos" {
   bucket_name          = var.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location      = var.regional_loc
-  storage_class        = var.storage
+  storage_class        = var.standard_storage_class
   hard_quota           = var.quota
   archive_rule {
     rule_id = var.archive_ruleid
@@ -74,7 +74,7 @@ resource "ibm_cos_bucket" "cos_bucket" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
   region_location       = var.regional_loc
-  storage_class         = var.storage
+  storage_class         = var.standard_storage_class
   hard_quota            = var.quota
   object_versioning {
     enable  = true
@@ -111,7 +111,7 @@ resource "ibm_cos_bucket" "cos_bucket_source" {
   bucket_name           = "sourcetest"
   resource_instance_id = ibm_resource_instance.cos_instance_source.id
   region_location      = var.regional_loc
-  storage_class         = var.storage
+  storage_class         = var.standard_storage_class
   object_versioning {
     enable  = true
   }
@@ -129,7 +129,7 @@ resource "ibm_cos_bucket" "cos_bucket_destination" {
   bucket_name           = "desttest"
   resource_instance_id = ibm_resource_instance.cos_instance_destination.id
   region_location      = var.regional_loc
-  storage_class         = var.storage
+  storage_class         = var.standard_storage_class
   object_versioning {
     enable  = true
   }
@@ -139,7 +139,7 @@ resource "ibm_cos_bucket" "cos_bucket_destination_1" {
   bucket_name           = "desttest01"
   resource_instance_id = ibm_resource_instance.cos_instance_destination.id
   region_location      = var.regional_loc
-  storage_class         = var.storage
+  storage_class         = var.standard_storage_class
   object_versioning {
     enable  = true
   }
@@ -269,6 +269,53 @@ resource "ibm_cos_bucket_replication_rule" "cos_bucket_repl" {
   }
 }
 
+//HPCS - standard plan
+resource ibm_hpcs hpcs {
+  location             = var.location
+  name                 = "hpcs-instance"
+  plan                 = var.hpcs_plan
+  units                = var.units
+  signature_threshold  = var.signature_threshold
+  revocation_threshold = var.revocation_threshold
+  dynamic admins {
+    for_each = var.admins
+    content {
+      name  = admins.value.name
+      key   = admins.value.key
+      token = admins.value.token
+    }
+  }
+}
+resource "ibm_iam_authorization_policy" "policy2" {
+  source_service_name = "cloud-object-storage"
+  target_service_name = "hs-crypto"
+  roles               = ["Reader"]
+}
+resource "ibm_kms_key" "key" {
+  instance_id  = ibm_hpcs.hpcs.guid
+  key_name     = var.hpcs_key_name
+  standard_key = false
+  force_delete = true
+}
+
+resource "ibm_cos_bucket" "hpcs-enabled" {
+  depends_on           = [ibm_iam_authorization_policy.policy2]
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+  key_protect          = ibm_kms_key.key.id
+}
+
+//HPCS - UKO plan
+resource "ibm_cos_bucket" "hpcs-uko-enabled" {
+  depends_on           = [ibm_iam_authorization_policy.policy2]
+  bucket_name          = var.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+  key_protect           = var.hpcs_uko_rootkeycrn
+}
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
@@ -298,3 +345,20 @@ resource "ibm_cos_bucket" "cos_bucket_sat" {
     prefix  = "logs/"
   }
 }
+
+//One Rate COS plan
+
+resource "ibm_resource_instance" "cos_instance_onerate" {
+  name              = "cos-instance-onerate"
+  resource_group_id = data.ibm_resource_group.cos_group.id
+  service           = "cloud-object-storage"
+  plan              = "cos-one-rate-plan"
+  location          = "global"
+}
+resource "ibm_cos_bucket" "cos_bucket_onerate" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance_onerate.id
+  region_location       = var.regional_loc
+  storage_class         = var.onerate_storage_class
+  }
+  

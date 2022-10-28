@@ -277,10 +277,9 @@ func resourceIBMISSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 			snapshotprototypeoptions.UserTags = userTagsArray
 		}
 	}
-	options.SnapshotPrototype = snapshotprototypeoptions
 
 	log.Printf("[DEBUG] Snapshot create")
-
+	options.SnapshotPrototype = snapshotprototypeoptions
 	snapshot, response, err := sess.CreateSnapshot(options)
 	if err != nil || snapshot == nil {
 		return fmt.Errorf("[ERROR] Error creating Snapshot %s\n%s", err, response)

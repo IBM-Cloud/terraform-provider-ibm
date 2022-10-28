@@ -36,6 +36,7 @@ In addition to all argument references list, you can access the following attrib
 - `id`  - (String) The unique identifier of the worker pool.
 - `cluster`  - (String) The name or ID of the satellite cluster.
 - `flavor`  - (String) The flavor of the satellite worker node.
+- `operating_system` (String) The operating system of the hosts in the worker pool.
 - `provider`  - (String) Provider of this offering.
 - `state`  - (String) The state of the worker pool.
 - `zones`- (List) A nested block describing the zones of this worker_pool. 

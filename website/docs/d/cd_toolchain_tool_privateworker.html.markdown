@@ -37,12 +37,11 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the cd_toolchain_tool_privateworker.
 * `crn` - (String) Tool CRN.
 
-
 * `href` - (String) URI representing the tool.
 
 * `name` - (String) Tool name.
 
-* `parameters` - (List) Parameters to be used to create the tool.
+* `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool.
 Nested scheme for **parameters**:
 	* `name` - (String) Enter a name for this tool integration. For example, my-private-worker. This name is displayed on your toolchain.
 	* `worker_queue_credentials` - (String) Use a secret from the secrets store, or create a service ID API key that is used by the private worker to authenticate access to the work queue.
@@ -59,6 +58,7 @@ Nested scheme for **referent**:
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
+
 
 * `updated_at` - (String) Latest tool update timestamp.
 

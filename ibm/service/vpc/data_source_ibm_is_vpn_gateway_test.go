@@ -43,6 +43,10 @@ func TestAccIBMIsVPNGatewayDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.id"),
 				),
 			},
 			{

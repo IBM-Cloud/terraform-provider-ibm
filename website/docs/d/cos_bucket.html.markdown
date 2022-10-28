@@ -61,6 +61,40 @@ Retrieves information of replication configuration on an existing bucket. .  For
 
 To configure a replication policy on a bucket, you must enable object versioning on both source and destination buckets by using the [Versioning objects](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-versioning).
 
+# Key Protect Enabled COS bucket
+
+Retrieves a COS bucket enabled with Key protect root key for data encryption.
+https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/kms_key
+
+
+
+# Hyper Protect Crypto Services (HPCS) Enabled COS bucket
+Retrieves a COS bucket enabled with data encryption using root key that is  created and managed by Hyper Protect Crypto Services.
+```
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  key_name = "name-of-key"
+}
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  alias = "alias_name"
+}
+OR
+data "ibm_kms_key" "test" {
+  instance_id = "guid-of-hs-crypto-instance"
+  limit = 100
+  key_name = "name-of-key"
+}
+resource "ibm_cos_bucket" "smart-us-south" {
+  bucket_name          = "atest-bucket"
+  resource_instance_id = "cos-instance-id"
+  region_location      = "us-south"
+  storage_class        = "smart"
+  key_protect          = data.ibm_kms_key.test.key.0.crn
+}
+
+```
 ## Argument reference
 Review the argument references that you can specify for your data source. 
 
@@ -69,7 +103,7 @@ Review the argument references that you can specify for your data source.
 - `bucket_type` - (Optional, String) The type of the bucket. Supported values are `single_site_location`, `region_location`, and `cross_region_location`.
 - `endpoint_type` - (Optional, String) The type of the endpoint either `public` or `private` or `direct` to be used for the buckets. Default value is `public`.
 - `resource_instance_id` - (Required, String) The ID of the IBM Cloud Object Storage service instance for which you want to create a bucket.
-- `storage_class`- (Optional, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart`.
+- `storage_class`- (Optional, String)  Storage class of the bucket. Supported values are `standard`, `vault`, `cold`, `smart` for `standard` and `lite` COS plans, `onerate_active` for `cos-one-rate-plan` COS instance.
 - `satellite_location_id` - (Optional, String) satellite location id. Provided by end users.
 
 ## Attribute reference
@@ -91,7 +125,7 @@ In addition to all argument reference list, you can access the following attribu
 - `abort_incomplete_multipart_upload_days` (List) Nested block with the following structure.
   
   Nested scheme for `abort_incomplete_multipart_upload_days`:
-  - `days_after_initiation` - (String) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0.
+  - `days_after_initiation` - (Integer) Specifies the number of days that govern the automatic cancellation of part upload. Clean up incomplete multi-part uploads after a period of time. Must be a value greater than 0.
   - `enable` - (Bool) A rule can either be `enabled` or `disabled`. A rule is active only when enabled.
   - `prefix` - (String)  A rule with a prefix will only apply to the objects that match. You can use multiple rules for different actions for different prefixes within the same bucket.
   - `rule_id` - (String) Unique identifier for the rule. Rules allow you to set a specific time frame after which objects are deleted. Set Rule ID for cos bucket.

@@ -27,6 +27,9 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Deployment ID.",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database_connection",
+					"deployment_id"),
 			},
 			"user_type": &schema.Schema{
 				Type:        schema.TypeString,
@@ -39,10 +42,12 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 				Description: "User ID.",
 			},
 			"endpoint_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.",
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_database_connection",
+					"endpoint_type"),
 			},
 			"postgres": &schema.Schema{
 				Type:     schema.TypeList,
@@ -1603,6 +1608,29 @@ func DataSourceIBMDatabaseConnection() *schema.Resource {
 			},
 		},
 	}
+}
+func DataSourceIBMDatabaseConnectionValidator() *validate.ResourceValidator {
+
+	validateSchema := make([]validate.ValidateSchema, 0)
+
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "deployment_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cloud-database",
+			CloudDataRange:             []string{"resolved_to:id"}})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "endpoint_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              "public, private, public-and-private"})
+
+	iBMDatabaseConnectionsValidator := validate.ResourceValidator{ResourceName: "ibm_database_connection", Schema: validateSchema}
+	return &iBMDatabaseConnectionsValidator
 }
 
 func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

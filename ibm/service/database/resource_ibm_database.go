@@ -126,12 +126,18 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "The id of the resource group in which the Database instance is present",
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_database",
+					"resource_group_id"),
 			},
 
 			"location": {
 				Description: "The location or the region in which Database instance exists",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_database",
+					"location"),
 			},
 
 			"service": {
@@ -139,13 +145,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"databases-for-etcd", "databases-for-postgresql", "databases-for-redis", "databases-for-elasticsearch", "databases-for-mongodb", "messages-for-rabbitmq", "databases-for-mysql", "databases-for-cassandra", "databases-for-enterprisedb"}),
+				ValidateFunc: validate.InvokeValidator("ibm_database", "service"),
 			},
 			"plan": {
 				Description:  "The plan type of the Database instance",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"standard", "enterprise"}),
+				ValidateFunc: validate.InvokeValidator("ibm_database", "plan"),
 				ForceNew:     true,
 			},
 
@@ -273,7 +279,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "public",
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
+				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
 				Description: "The CRN of backup source database",
@@ -439,6 +445,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						},
 					},
 				},
+				Deprecated: "This field is deprecated, please use ibm_database_connection instead",
 			},
 			"whitelist": {
 				Type:     schema.TypeSet,
@@ -492,7 +499,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"group_id": {
 							Required:     true,
 							Type:         schema.TypeString,
-							ValidateFunc: validate.ValidateAllowedStringValues([]string{"member", "analytics", "bi_connector", "search"}),
+							ValidateFunc: validate.InvokeValidator("ibm_database", "group_id"),
 						},
 						"members": {
 							Optional: true,
@@ -891,6 +898,49 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "location",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "region",
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "service",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-cassandra, databases-for-enterprisedb",
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "plan",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			AllowedValues:              "standard, enterprise",
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "service_endpoints",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			AllowedValues:              "public, private, public-and-private",
+			Required:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "group_id",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			AllowedValues:              "member, analytics, bi_connector, search",
+			Required:                   true})
 
 	ibmICDResourceValidator := validate.ResourceValidator{ResourceName: "ibm_database", Schema: validateSchema}
 	return &ibmICDResourceValidator

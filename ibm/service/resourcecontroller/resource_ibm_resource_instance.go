@@ -363,21 +363,22 @@ func ResourceIBMResourceInstanceValidator() *validate.ResourceValidator {
 			Identifier:                 "resource_group_id",
 			ValidateFunctionIdentifier: validate.ValidateCloudData,
 			Type:                       validate.TypeString,
-			CloudDataType:              "ResourceGroup",
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
 			Optional:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "tags",
 			ValidateFunctionIdentifier: validate.ValidateCloudData,
 			Type:                       validate.TypeString,
-			CloudDataType:              "Tags",
+			CloudDataType:              "tags",
 			Optional:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "location",
 			ValidateFunctionIdentifier: validate.ValidateCloudData,
 			Type:                       validate.TypeString,
-			CloudDataType:              "Region",
+			CloudDataType:              "region",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{

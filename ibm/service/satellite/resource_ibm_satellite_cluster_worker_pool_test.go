@@ -21,6 +21,7 @@ func TestAccSatelliteClusterWorkerPool_Basic(t *testing.T) {
 	var instance string
 	clusterName := fmt.Sprintf("tf-satellitecluster-%d", acctest.RandIntRange(10, 100))
 	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
+	operatingSystem := "REDHAT_7_64"
 	workerPoolName := fmt.Sprintf("tf-wp-%d", acctest.RandIntRange(10, 100))
 	resource_prefix := "tf-satellite"
 
@@ -31,11 +32,12 @@ func TestAccSatelliteClusterWorkerPool_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, workerPoolName, resource_prefix),
+				Config: testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteClusterWorkerPoolExists("ibm_satellite_cluster_worker_pool.create_wp", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_cluster.create_cluster", "name", clusterName),
 					resource.TestCheckResourceAttr("ibm_satellite_cluster_worker_pool.create_wp", "name", workerPoolName),
+					resource.TestCheckResourceAttr("ibm_satellite_cluster_worker_pool.create_wp", "operating_system", operatingSystem),
 				),
 			},
 		},
@@ -47,6 +49,7 @@ func TestAccSatelliteClusterWorkerPool_Import(t *testing.T) {
 	clusterName := fmt.Sprintf("tf-satellitecluster-%d", acctest.RandIntRange(10, 100))
 	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	workerPoolName := fmt.Sprintf("tf-wp-%d", acctest.RandIntRange(10, 100))
+	operatingSystem := "REDHAT_7_64"
 	resource_prefix := "tf-satellite"
 
 	resource.Test(t, resource.TestCase{
@@ -56,7 +59,7 @@ func TestAccSatelliteClusterWorkerPool_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 
 			{
-				Config: testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, workerPoolName, resource_prefix),
+				Config: testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckSatelliteClusterWorkerPoolExists("ibm_satellite_cluster_worker_pool.create_wp", instance),
 					resource.TestCheckResourceAttr("ibm_satellite_cluster_worker_pool.create_wp", "name", workerPoolName),
@@ -140,7 +143,7 @@ func testAccCheckSatelliteClusterWorkerPoolDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, workerPoolName, resource_prefix string) string {
+func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, operatingSystem, workerPoolName, resource_prefix string) string {
 	return fmt.Sprintf(`
 
 	provider "ibm" {
@@ -160,7 +163,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, wor
 	}
 
 	data "ibm_is_image" "rhel7" {
-		name = "ibm-redhat-7-9-minimal-amd64-3"
+		name = "ibm-redhat-7-9-minimal-amd64-7"
 	}
 
 	data "ibm_satellite_attach_host_script" "script" {
@@ -229,7 +232,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, wor
 		name                   = "%s"  
 		location               = ibm_satellite_location.location.id
 		enable_config_admin    = true
-		kube_version           = "4.6_openshift"
+		kube_version           = "4.9_openshift"
 		wait_for_worker_update = true
 		dynamic "zones" {
 			for_each = var.location_zones
@@ -248,6 +251,7 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, wor
 		cluster            = ibm_satellite_cluster.create_cluster.id
 		worker_count       = 1   
 		host_labels        = ["env:dev"]
+		operating_system   = "%s"
 		dynamic "zones" {
 			for_each = var.location_zones
 			content {
@@ -260,5 +264,5 @@ func testAccCheckSatelliteClusterWorkerPoolCreate(clusterName, locationName, wor
 		}
 	}
 
-`, locationName, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix, clusterName, workerPoolName)
+`, locationName, resource_prefix, resource_prefix, resource_prefix, resource_prefix, resource_prefix, clusterName, workerPoolName, operatingSystem)
 }

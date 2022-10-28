@@ -19,10 +19,10 @@ import (
 
 func ResourceIBMCdToolchain() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceIBMCdToolchainCreate,
-		ReadContext:   ResourceIBMCdToolchainRead,
-		UpdateContext: ResourceIBMCdToolchainUpdate,
-		DeleteContext: ResourceIBMCdToolchainDelete,
+		CreateContext: resourceIBMCdToolchainCreate,
+		ReadContext:   resourceIBMCdToolchainRead,
+		UpdateContext: resourceIBMCdToolchainUpdate,
+		DeleteContext: resourceIBMCdToolchainDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -98,7 +98,7 @@ func ResourceIBMCdToolchainValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$`,
+			Regexp:                     `^([^\x00-\x7F]|[a-zA-Z0-9-._ ])+$`,
 			MinValueLength:             0,
 			MaxValueLength:             128,
 		},
@@ -126,7 +126,7 @@ func ResourceIBMCdToolchainValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func ResourceIBMCdToolchainCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,18 +140,18 @@ func ResourceIBMCdToolchainCreate(context context.Context, d *schema.ResourceDat
 		createToolchainOptions.SetDescription(d.Get("description").(string))
 	}
 
-	postToolchainResponse, response, err := cdToolchainClient.CreateToolchainWithContext(context, createToolchainOptions)
+	toolchainPost, response, err := cdToolchainClient.CreateToolchainWithContext(context, createToolchainOptions)
 	if err != nil {
 		log.Printf("[DEBUG] CreateToolchainWithContext failed %s\n%s", err, response)
 		return diag.FromErr(fmt.Errorf("CreateToolchainWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(*postToolchainResponse.ID)
+	d.SetId(*toolchainPost.ID)
 
-	return ResourceIBMCdToolchainRead(context, d, meta)
+	return resourceIBMCdToolchainRead(context, d, meta)
 }
 
-func ResourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -161,7 +161,7 @@ func ResourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData,
 
 	getToolchainByIDOptions.SetToolchainID(d.Id())
 
-	getToolchainByIDResponse, response, err := cdToolchainClient.GetToolchainByIDWithContext(context, getToolchainByIDOptions)
+	toolchain, response, err := cdToolchainClient.GetToolchainByIDWithContext(context, getToolchainByIDOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -171,44 +171,44 @@ func ResourceIBMCdToolchainRead(context context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("GetToolchainByIDWithContext failed %s\n%s", err, response))
 	}
 
-	if err = d.Set("name", getToolchainByIDResponse.Name); err != nil {
+	if err = d.Set("name", toolchain.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
-	if err = d.Set("resource_group_id", getToolchainByIDResponse.ResourceGroupID); err != nil {
+	if err = d.Set("resource_group_id", toolchain.ResourceGroupID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting resource_group_id: %s", err))
 	}
-	if err = d.Set("description", getToolchainByIDResponse.Description); err != nil {
+	if err = d.Set("description", toolchain.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
-	if err = d.Set("account_id", getToolchainByIDResponse.AccountID); err != nil {
+	if err = d.Set("account_id", toolchain.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
 	}
-	if err = d.Set("location", getToolchainByIDResponse.Location); err != nil {
+	if err = d.Set("location", toolchain.Location); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
 	}
-	if err = d.Set("crn", getToolchainByIDResponse.CRN); err != nil {
+	if err = d.Set("crn", toolchain.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
 	}
-	if err = d.Set("href", getToolchainByIDResponse.Href); err != nil {
+	if err = d.Set("href", toolchain.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	if err = d.Set("created_at", flex.DateTimeToString(getToolchainByIDResponse.CreatedAt)); err != nil {
+	if err = d.Set("created_at", flex.DateTimeToString(toolchain.CreatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
 	}
-	if err = d.Set("updated_at", flex.DateTimeToString(getToolchainByIDResponse.UpdatedAt)); err != nil {
+	if err = d.Set("updated_at", flex.DateTimeToString(toolchain.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
 	}
-	if err = d.Set("created_by", getToolchainByIDResponse.CreatedBy); err != nil {
+	if err = d.Set("created_by", toolchain.CreatedBy); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting created_by: %s", err))
 	}
-	if err = d.Set("tags", getToolchainByIDResponse.Tags); err != nil {
+	if err = d.Set("tags", toolchain.Tags); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 	}
 
 	return nil
 }
 
-func ResourceIBMCdToolchainUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)
@@ -220,31 +220,35 @@ func ResourceIBMCdToolchainUpdate(context context.Context, d *schema.ResourceDat
 
 	hasChange := false
 
+	patchVals := &cdtoolchainv2.ToolchainPrototypePatch{}
 	if d.HasChange("resource_group_id") {
 		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
 			" The resource must be re-created to update this property.", "resource_group_id"))
 	}
 	if d.HasChange("name") {
-		updateToolchainOptions.SetName(d.Get("name").(string))
+		newName := d.Get("name").(string)
+		patchVals.Name = &newName
 		hasChange = true
 	}
 	if d.HasChange("description") {
-		updateToolchainOptions.SetDescription(d.Get("description").(string))
+		newDescription := d.Get("description").(string)
+		patchVals.Description = &newDescription
 		hasChange = true
 	}
 
 	if hasChange {
-		response, err := cdToolchainClient.UpdateToolchainWithContext(context, updateToolchainOptions)
+		updateToolchainOptions.ToolchainPrototypePatch, _ = patchVals.AsPatch()
+		_, response, err := cdToolchainClient.UpdateToolchainWithContext(context, updateToolchainOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateToolchainWithContext failed %s\n%s", err, response)
 			return diag.FromErr(fmt.Errorf("UpdateToolchainWithContext failed %s\n%s", err, response))
 		}
 	}
 
-	return ResourceIBMCdToolchainRead(context, d, meta)
+	return resourceIBMCdToolchainRead(context, d, meta)
 }
 
-func ResourceIBMCdToolchainDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMCdToolchainDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cdToolchainClient, err := meta.(conns.ClientSession).CdToolchainV2()
 	if err != nil {
 		return diag.FromErr(err)

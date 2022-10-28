@@ -26,11 +26,6 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 				Required:    true,
 				Description: "The ID of the workspace.  To find the workspace ID, use the `GET /v1/workspaces` API.",
 			},
-			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Region of the workspace.",
-			},
 			"applied_shareddata_ids": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -120,6 +115,7 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 			},
 			"location": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The IBM Cloud location where your workspace was provisioned.",
 			},
@@ -560,20 +556,23 @@ func DataSourceIBMSchematicsWorkspace() *schema.Resource {
 	}
 }
 
-func SchematicsEndpointURL(region, meta interface{}) (string, error) {
+func SchematicsEndpointURL(region, meta interface{}) (string, bool, error) {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
-	// overide provider region with resource/datasource region argument
-	// update client with updated region endpoint
-	schematicsEndpoint := fmt.Sprintf("https://%s.%s", fmt.Sprintf("%s.schematics", region), "cloud.ibm.com")
-	visibility := sess.Config.Visibility
-	if visibility == "private" || visibility == "public-and-private" {
-		schematicsEndpoint = fmt.Sprintf("https://%s.%s", fmt.Sprintf("private-%s.schematics", region), "cloud.ibm.com")
+	if region != sess.Config.Region {
+		// overide provider region with resource/datasource region argument
+		// update client with updated region endpoint
+		schematicsEndpoint := fmt.Sprintf("https://%s.%s", fmt.Sprintf("%s.schematics", region), "cloud.ibm.com")
+		visibility := sess.Config.Visibility
+		if visibility == "private" || visibility == "public-and-private" {
+			schematicsEndpoint = fmt.Sprintf("https://%s.%s", fmt.Sprintf("private-%s.schematics", region), "cloud.ibm.com")
+		}
+		schematicsEndpointURL := conns.EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint)
+		return schematicsEndpointURL, true, nil
 	}
-	schematicsEndpointURL := conns.EnvFallBack([]string{"IBMCLOUD_SCHEMATICS_API_ENDPOINT"}, schematicsEndpoint)
-	return schematicsEndpointURL, nil
+	return "", false, nil
 }
 
 func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -581,10 +580,12 @@ func dataSourceIBMSchematicsWorkspaceRead(context context.Context, d *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if r, ok := d.GetOk("region"); ok {
+	if r, ok := d.GetOk("location"); ok {
 		region := r.(string)
-		schematicsURL, _ := SchematicsEndpointURL(region, meta)
-		schematicsClient.Service.Options.URL = schematicsURL
+		schematicsURL, updatedURL, _ := SchematicsEndpointURL(region, meta)
+		if updatedURL {
+			schematicsClient.Service.Options.URL = schematicsURL
+		}
 	}
 
 	getWorkspaceOptions := &schematicsv1.GetWorkspaceOptions{}

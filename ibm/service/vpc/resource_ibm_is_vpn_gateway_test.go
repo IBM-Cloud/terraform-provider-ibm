@@ -6,6 +6,7 @@ package vpc_test
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -59,6 +60,16 @@ func TestAccIBMISVPNGateway_route(t *testing.T) {
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVPNGatewayRouteConfig(vpcname, subnetname, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.crn"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.href"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpn_gateway.testacc_vpnGateway", "vpc.0.id"),
 				),
 			},
 		},
@@ -148,4 +159,84 @@ func testAccCheckIBMISVPNGatewayRouteConfig(vpc, subnet, name string) string {
 	mode = "route"
 	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)
 
+}
+
+func testAccCheckIBMISVPNGatewayTaintConfig(vpc, subnet, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name 	= "%s"
+		subnet 	= "${ibm_is_subnet.testacc_subnet.id}"
+		mode 	= "policy"
+		timeouts{
+			create = "2m"
+		}
+		lifecycle {
+			create_before_destroy = true
+		}
+	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)
+
+}
+func testAccCheckIBMISVPNGatewayTaintConfig2(vpc, subnet, name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = "${ibm_is_vpc.testacc_vpc.id}"
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
+		name 	= "%s"
+		subnet 	= "${ibm_is_subnet.testacc_subnet.id}"
+		mode 	= "policy"
+		timeouts{
+			create = "12m"
+		}
+		lifecycle {
+			create_before_destroy = true
+		}
+	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)
+
+}
+
+func TestAccIBMISVPNGateway_taint(t *testing.T) {
+	var vpnGateway string
+	vpcname := fmt.Sprintf("tfvpnuat-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfvpnuat-subnet-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfvpnuat-taintname-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfvpnuat-createname-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMISVPNGatewayTaintConfig(vpcname, subnetname, name1),
+				ExpectError: regexp.MustCompile(fmt.Sprintf("timeout while waiting for state to become 'done,")),
+			},
+			{
+				Config: testAccCheckIBMISVPNGatewayTaintConfig2(vpcname, subnetname, name2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayExists("ibm_is_vpn_gateway.testacc_vpnGateway", vpnGateway),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name2),
+				),
+			},
+		},
+	})
 }

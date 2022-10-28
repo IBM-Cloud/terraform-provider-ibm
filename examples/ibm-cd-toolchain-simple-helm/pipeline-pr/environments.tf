@@ -1,20 +1,20 @@
 resource "ibm_cd_tekton_pipeline_property" "pr_env_apikey" {
   name           = "apikey"
-  type           = "SECURE"
+  type           = "secure"
   value          = format("{vault::%s.ibmcloud-api-key}", var.kp_integration_name)
   pipeline_id    = var.pipeline_id           
 }
 
 resource "ibm_cd_tekton_pipeline_property" "pr_env_ibmcloud-api" {
   name           = "ibmcloud-api"
-  type           = "TEXT"
+  type           = "text"
   value          = "https://cloud.ibm.com"
   pipeline_id    = var.pipeline_id         
 }
 
 resource "ibm_cd_tekton_pipeline_property" "pr_env_pipeline-debug" {
   name           = "pipeline-debug"
-  type           = "TEXT"
+  type           = "text"
   value          = "0"
   pipeline_id    = var.pipeline_id         
 }

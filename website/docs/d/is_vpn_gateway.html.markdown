@@ -70,7 +70,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `name` - (String) The user-defined name for this VPN gateway.
 
-- `resource_group` - (List) The resource group for this VPN gateway.
+- `resource_group` - (List) The resource group object, for this VPN gateway.
   Nested scheme for **resource_group**:
 	- `href` - (String) The URL for this resource group.
 	- `id` - (String) The unique identifier for this resource group.
@@ -89,4 +89,14 @@ In addition to all argument references listed, you can access the following attr
 	- `href` - (String) The URL for this subnet.
 	- `id` - (String) The unique identifier for this subnet.
 	- `name` - (String) The user-defined name for this subnet.
+- `vpc` - (String) The VPC this VPN server resides in.
+  Nested scheme for `vpc`:
+  - `crn` - (String) The CRN for this VPC.
+  - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+	  Nested scheme for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) - The URL for this VPC
+  - `id` - (String) - The unique identifier for this VPC.
+  - `name` - (String) - The unique user-defined name for this VPC.
+- `resource_type` - (String) - The resource type.
 

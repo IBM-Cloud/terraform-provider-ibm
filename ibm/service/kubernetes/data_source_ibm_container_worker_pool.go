@@ -8,6 +8,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -20,6 +21,9 @@ func DataSourceIBMContainerWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name or ID of the cluster",
+				ValidateFunc: validate.InvokeDataSourceValidator(
+					"ibm_container_worker_pool",
+					"cluster"),
 			},
 
 			"worker_pool_name": {
@@ -105,7 +109,20 @@ func DataSourceIBMContainerWorkerPool() *schema.Resource {
 		},
 	}
 }
+func DataSourceIBMContainerWorkerPoolValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cluster",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cluster",
+			CloudDataRange:             []string{"resolved_to:id"}})
 
+	iBMContainerWorkerPoolValidator := validate.ResourceValidator{ResourceName: "ibm_container_worker_pool", Schema: validateSchema}
+	return &iBMContainerWorkerPoolValidator
+}
 func dataSourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 	csClient, err := meta.(conns.ClientSession).ContainerAPI()
 	if err != nil {

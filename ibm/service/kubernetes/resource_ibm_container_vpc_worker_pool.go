@@ -44,6 +44,9 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Cluster name",
+				ValidateFunc: validate.InvokeValidator(
+					"ibm_container_vpc_worker_pool",
+					"cluster"),
 			},
 
 			"flavor": {
@@ -184,6 +187,14 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              tainteffects})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "cluster",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			CloudDataType:              "cluster",
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	containerVPCWorkerPoolTaintsValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_worker_pool", Schema: validateSchema}
 	return &containerVPCWorkerPoolTaintsValidator

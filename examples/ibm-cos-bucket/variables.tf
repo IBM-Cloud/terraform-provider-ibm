@@ -6,9 +6,14 @@ variable "resource_group_name" {
   default = "Default"
 }
 
-variable "storage" {
+variable "standard_storage_class" {
   default = "standard"
 }
+
+variable "onerate_storage_class" {
+  default = "onerate_active"
+}
+
 
 variable "region" {
   default = "us"
@@ -111,5 +116,40 @@ variable "delmarkerrep_status" {
 }
 
 variable "dest_rep_bkt_crn" {
+  default = ""
+}
+
+variable "hpcs_location" {
+  default     = "us-south"
+  type        = string
+}
+variable "hpcs_plan" {
+  default     = "standard"
+  type        = string
+}
+variable "hpcs_crypto_units" {
+  type        = number
+  default     = 2
+}
+variable "hpcs_signature_threshold" {
+  type        = number
+  default     = 1
+}
+variable "hpcs_revocation_threshold" {
+  type        = number
+  default     = 1
+}
+variable "hpcs_crypto_unit_admins" {
+  type = list(object({
+    name  = string
+    key   = string
+    token = string
+  }))
+}
+# Key name that has to be created on the HPCS Instance
+variable "hpcs_key_name" {
+  type        = string
+}
+variable "hpcs_uko_rootkeycrn" {
   default = ""
 }

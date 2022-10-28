@@ -75,6 +75,32 @@ resource "ibm_is_bare_metal_server_network_interface_floating_ip" "bms_nic_fip" 
 
 ```
 
+## Example usage
+The following example shows how to create a allow float network interface and associate a floating IP address to an allow float network interface on the server. 
+
+```
+resource "ibm_is_floating_ip" "fip2" {
+  name        = "testfip2"
+  zone        = "us-south-3"
+}
+
+resource "ibm_is_bare_metal_server_network_interface_allow_float" "allow_float" {
+  bare_metal_server = ibm_is_bare_metal_server.bms.id
+  subnet            = ibm_is_subnet.subnet.id
+  name              = "eth2"
+  allow_ip_spoofing = false
+  vlan              = 101
+}
+
+resource "ibm_is_bare_metal_server_network_interface_floating_ip" "bms_nic_fip" {
+  bare_metal_server = ibm_is_bare_metal_server_network_interface_allow_float.allow_float.floating_bare_metal_server
+  network_interface = ibm_is_bare_metal_server_network_interface_allow_float.allow_float.network_interface
+  floating_ip       = ibm_is_floating_ip.fip2.id
+}
+
+```
+
+
 ## Timeouts
 The `ibm_is_bare_metal_server_network_interface_floating_ip` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 

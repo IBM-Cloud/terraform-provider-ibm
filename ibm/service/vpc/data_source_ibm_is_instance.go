@@ -136,6 +136,38 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.",
 			},
 
+			isInstanceLifecycleState: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The lifecycle state of the virtual server instance.",
+			},
+			isInstanceLifecycleReasons: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reasons for the current lifecycle_state (if any).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceLifecycleReasonsCode: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "A snake case string succinctly identifying the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMessage: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "An explanation of the reason for this lifecycle state.",
+						},
+
+						isInstanceLifecycleReasonsMoreInfo: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Link to documentation about the reason for this lifecycle state.",
+						},
+					},
+				},
+			},
+
 			isInstanceTags: {
 				Type:        schema.TypeSet,
 				Computed:    true,
@@ -178,6 +210,26 @@ func DataSourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Instance Boot Volume's volume CRN",
+						},
+					},
+				},
+			},
+
+			isInstanceCatalogOffering: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The catalog offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same enterprise, subject to IAM policies.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceCatalogOfferingOfferingCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a catalog offering by a unique CRN property",
+						},
+						isInstanceCatalogOfferingVersionCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a version of a catalog offering by a unique CRN property",
 						},
 					},
 				},
@@ -637,6 +689,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	instance := allrecs[0]
 	d.SetId(*instance.ID)
 	id := *instance.ID
+
+	// catalog
+	if instance.CatalogOffering != nil {
+		versionCrn := *instance.CatalogOffering.Version.CRN
+		catalogList := make([]map[string]interface{}, 0)
+		catalogMap := map[string]interface{}{}
+		catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+		catalogList = append(catalogList, catalogMap)
+		d.Set(isInstanceCatalogOffering, catalogList)
+	}
+
 	d.Set(isInstanceName, *instance.Name)
 	if instance.Profile != nil {
 		d.Set(isInstanceProfile, *instance.Profile.Name)
@@ -881,6 +944,14 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 		}
 		d.Set(isInstanceInitKeys, initKeyList)
 	}
+	//set the lifecycle status, reasons
+	if instance.LifecycleState != nil {
+		d.Set(isInstanceLifecycleState, *instance.LifecycleState)
+	}
+	if instance.LifecycleReasons != nil {
+		d.Set(isInstanceLifecycleReasons, dataSourceInstanceFlattenLifecycleReasons(instance.LifecycleReasons))
+	}
+
 	if initParms.Password != nil && initParms.Password.EncryptedPassword != nil {
 		ciphertext := *initParms.Password.EncryptedPassword
 		password := base64.StdEncoding.EncodeToString(ciphertext)
@@ -1044,4 +1115,19 @@ func dataSourceInstanceDisksToMap(disksItem vpcv1.InstanceDisk) (disksMap map[st
 	}
 
 	return disksMap
+}
+func dataSourceInstanceFlattenLifecycleReasons(lifecycleReasons []vpcv1.LifecycleReason) (lifecycleReasonsList []map[string]interface{}) {
+	lifecycleReasonsList = make([]map[string]interface{}, 0)
+	for _, lr := range lifecycleReasons {
+		currentLR := map[string]interface{}{}
+		if lr.Code != nil && lr.Message != nil {
+			currentLR[isInstanceLifecycleReasonsCode] = *lr.Code
+			currentLR[isInstanceLifecycleReasonsMessage] = *lr.Message
+			if lr.MoreInfo != nil {
+				currentLR[isInstanceLifecycleReasonsMoreInfo] = *lr.MoreInfo
+			}
+			lifecycleReasonsList = append(lifecycleReasonsList, currentLR)
+		}
+	}
+	return lifecycleReasonsList
 }
