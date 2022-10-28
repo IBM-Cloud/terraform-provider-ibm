@@ -138,7 +138,9 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
-		d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
+			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		}
 	}
 	d.SetId(workerPool.ID)
 	return nil

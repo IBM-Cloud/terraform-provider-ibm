@@ -60,7 +60,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						return nil
 					}),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_bare_metal_server.testacc_bms", "floating_bare_metal_server"),
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server"),
 					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server", func(v string) error {
 						if v == "" {
 							return fmt.Errorf("Attribute 'floating_bare_metal_server' %s is not populated", v)
@@ -108,7 +108,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 						return nil
 					}),
 					resource.TestCheckResourceAttrSet(
-						"ibm_is_bare_metal_server.testacc_bms", "floating_bare_metal_server"),
+						"ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server"),
 					resource.TestCheckResourceAttrWith("ibm_is_bare_metal_server_network_interface_allow_float.bms_nic", "floating_bare_metal_server", func(v string) error {
 						if v == "" {
 							return fmt.Errorf("Attribute 'floating_bare_metal_server' %s is not populated", v)

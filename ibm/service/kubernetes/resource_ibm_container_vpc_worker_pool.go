@@ -233,12 +233,14 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	}
 
 	params := v2.WorkerPoolRequest{
-		Cluster:     clusterNameorID,
-		Name:        d.Get("worker_pool_name").(string),
-		VpcID:       d.Get("vpc_id").(string),
-		Flavor:      d.Get("flavor").(string),
-		WorkerCount: d.Get("worker_count").(int),
-		Zones:       zone,
+		Cluster: clusterNameorID,
+		CommonWorkerPoolConfig: v2.CommonWorkerPoolConfig{
+			Name:        d.Get("worker_pool_name").(string),
+			VpcID:       d.Get("vpc_id").(string),
+			Flavor:      d.Get("flavor").(string),
+			WorkerCount: d.Get("worker_count").(int),
+			Zones:       zone,
+		},
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
@@ -510,7 +512,9 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
-		d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
+			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		}
 	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {

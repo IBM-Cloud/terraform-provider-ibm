@@ -18,6 +18,7 @@ import (
 const (
 	isBareMetalServerNicEnableInfraNAT        = "enable_infrastructure_nat"
 	isBareMetalServerNicFloatingIPs           = "floating_ips"
+	isBareMetalServerNicFloatingIPId          = "id"
 	isBareMetalServerNicIpAddress             = "address"
 	isBareMetalServerNicIpCRN                 = "crn"
 	isBareMetalServerNicIpHref                = "href"
@@ -91,8 +92,15 @@ func DataSourceIBMIsBareMetalServerNetworkInterface() *schema.Resource {
 						isBareMetalServerNicIpID: {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Deprecated:  "This field is deprecated - replaced by id",
 							Description: "The unique identifier for this floating IP",
 						},
+						isBareMetalServerNicFloatingIPId: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this floating IP",
+						},
+
 						isBareMetalServerNicIpName: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -243,8 +251,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceRead(context context.Context,
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicIpID:         *ip.ID,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
@@ -316,8 +325,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfaceRead(context context.Context,
 			if nic.FloatingIps != nil {
 				for _, ip := range nic.FloatingIps {
 					currentIP := map[string]interface{}{
-						isBareMetalServerNicIpID:      *ip.ID,
-						isBareMetalServerNicIpAddress: *ip.Address,
+						isBareMetalServerNicIpID:         *ip.ID,
+						isBareMetalServerNicFloatingIPId: *ip.ID,
+						isBareMetalServerNicIpAddress:    *ip.Address,
 					}
 					floatingIPList = append(floatingIPList, currentIP)
 				}
