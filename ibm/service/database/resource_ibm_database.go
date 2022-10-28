@@ -2172,16 +2172,34 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChange("whitelist") {
+	_, whitelistExists := d.GetOk("whitelist")
+	_, allowlistExists := d.GetOk("allowlist")
+
+	if whitelistExists && d.HasChange("whitelist") {
 		oldList, newList := d.GetChange("whitelist")
+		oldAllowList, newAllowList := d.GetChange("allowlist")
+
 		if oldList == nil {
 			oldList = new(schema.Set)
 		}
 		if newList == nil {
 			newList = new(schema.Set)
 		}
+
 		os := oldList.(*schema.Set)
 		ns := newList.(*schema.Set)
+		osw := oldAllowList.(*schema.Set)
+		nsw := newAllowList.(*schema.Set)
+
+		// If the whitelist is empty but allowlist is not, that means
+		// we are migrating from whitelist to allowlist
+		if os.Len() == 0 && osw.Len() > 0 {
+			os = osw
+		}
+		if ns.Len() == 0 && nsw.Len() > 0 {
+			ns = nsw
+		}
+
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
 
@@ -2229,7 +2247,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 
 			}
 		}
-	} else if d.HasChange("allowlist") {
+	} else if allowlistExists && d.HasChange("allowlist") {
 		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 
 		if err != nil {
@@ -2237,14 +2255,28 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		oldList, newList := d.GetChange("allowlist")
+		oldWhiteList, newWhiteList := d.GetChange("whitelist")
+
 		if oldList == nil {
 			oldList = new(schema.Set)
 		}
 		if newList == nil {
 			newList = new(schema.Set)
 		}
+
+		// If the allowlist is empty but whitelist is not, that means
+		// we are migrating from allowlist to whitelist
 		os := oldList.(*schema.Set)
 		ns := newList.(*schema.Set)
+		osw := oldWhiteList.(*schema.Set)
+		nsw := newWhiteList.(*schema.Set)
+
+		if os.Len() == 0 && osw.Len() > 0 {
+			os = osw
+		}
+		if ns.Len() == 0 && nsw.Len() > 0 {
+			ns = nsw
+		}
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
 
