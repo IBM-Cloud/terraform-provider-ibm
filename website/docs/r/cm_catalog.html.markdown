@@ -14,7 +14,11 @@ Provides a resource for cm_catalog. This allows cm_catalog to be created, update
 
 ```hcl
 resource "ibm_cm_catalog" "cm_catalog" {
-  
+  label = "catalog_label"
+  short_description = "catalog description"
+  catalog_icon_url = "icon url"
+  kind = "offering"
+  tags = ["catalog", "tags"]
 }
 ```
 
