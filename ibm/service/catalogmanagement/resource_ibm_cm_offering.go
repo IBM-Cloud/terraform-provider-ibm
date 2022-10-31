@@ -2983,10 +2983,6 @@ func resourceIBMCmOfferingUpdate(context context.Context, d *schema.ResourceData
 
 	hasChange := false
 
-	if d.HasChange("catalog_identifier") {
-		return diag.FromErr(fmt.Errorf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "catalog_identifier"))
-	}
 	if d.HasChange("label") {
 		var method string
 		if offering.Label == nil {

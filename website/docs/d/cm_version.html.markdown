@@ -22,7 +22,7 @@ data "ibm_cm_version" "cm_version" {
 
 Review the argument reference that you can specify for your data source.
 
-* `version_loc_id` - (Required, Forces new resource, String) The version locator. A dotted value of `catalogID`.`versionID`.
+* `version_loc_id` - (Required, String) The version locator. A dotted value of `catalogID`.`versionID`.
 
 ## Attribute Reference
 
