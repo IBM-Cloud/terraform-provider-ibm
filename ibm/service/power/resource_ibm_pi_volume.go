@@ -109,6 +109,12 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Description:      "List of pvmInstances to base volume anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
 				ConflictsWith:    []string{PIAntiAffinityVolumes},
 			},
+			helpers.PIReplicationEnabled: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Indicates if the volume should be replication enabled or not",
+			},
 
 			// Computed Attributes
 			"volume_id": {
@@ -131,6 +137,51 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "WWN Of the volume",
+			},
+			"auxiliary": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "true if volume is auxiliary otherwise false",
+			},
+			"consistency_group_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Consistency Group Name if volume is a part of volume group",
+			},
+			"group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Volume Group ID",
+			},
+			"replication_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Replication type(metro,global)",
+			},
+			"replication_status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Replication status of a volume",
+			},
+			"mirroring_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Mirroring state for replication enabled volume",
+			},
+			"primary_role": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates whether master/aux volume is playing the primary role",
+			},
+			"auxiliary_volume_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates auxiliary volume name",
+			},
+			"master_volume_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Indicates master volume name",
 			},
 		},
 	}
@@ -177,6 +228,10 @@ func resourceIBMPIVolumeCreate(ctx context.Context, d *schema.ResourceData, meta
 	if v, ok := d.GetOk(helpers.PIVolumePool); ok {
 		volumePool := v.(string)
 		body.VolumePool = volumePool
+	}
+	if v, ok := d.GetOk(helpers.PIReplicationEnabled); ok {
+		replicationEnabled := v.(bool)
+		body.ReplicationEnabled = &replicationEnabled
 	}
 	if ap, ok := d.GetOk(PIAffinityPolicy); ok {
 		policy := ap.(string)
@@ -249,6 +304,16 @@ func resourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta i
 	if vol.VolumeID != nil {
 		d.Set("volume_id", vol.VolumeID)
 	}
+	d.Set(helpers.PIReplicationEnabled, vol.ReplicationEnabled)
+	d.Set("auxiliary", vol.Auxiliary)
+	d.Set("consistency_group_name", vol.ConsistencyGroupName)
+	d.Set("group_id", vol.GroupID)
+	d.Set("replication_type", vol.ReplicationType)
+	d.Set("replication_status", vol.ReplicationStatus)
+	d.Set("mirroring_state", vol.MirroringState)
+	d.Set("primary_role", vol.PrimaryRole)
+	d.Set("master_volume_name", vol.MasterVolumeName)
+	d.Set("auxiliary_volume_name", vol.AuxVolumeName)
 	if vol.DeleteOnTermination != nil {
 		d.Set("delete_on_termination", vol.DeleteOnTermination)
 	}
@@ -289,6 +354,22 @@ func resourceIBMPIVolumeUpdate(ctx context.Context, d *schema.ResourceData, meta
 	_, err = isWaitForIBMPIVolumeAvailable(ctx, client, *volrequest.VolumeID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange(helpers.PIReplicationEnabled) {
+		replicationEnabled := d.Get(helpers.PIReplicationEnabled).(bool)
+		volActionBody := models.VolumeAction{
+			ReplicationEnabled: &replicationEnabled,
+		}
+
+		err = client.VolumeAction(volumeID, &volActionBody)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForIBMPIVolumeAvailable(ctx, client, volumeID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceIBMPIVolumeRead(ctx, d, meta)
