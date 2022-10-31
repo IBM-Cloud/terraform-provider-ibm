@@ -22,6 +22,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.4
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.34.0
+	github.ibm.com/ibmcloud/networking-go-sdk v1.1.0
 	github.com/IBM/platform-services-go-sdk v0.28.5
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
@@ -171,3 +172,5 @@ require (
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
+
+replace github.ibm.com/ibmcloud/networking-go-sdk => /Users/malark/work/src/github.ibm.com/NetworkTribe/networking-go-sdk

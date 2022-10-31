@@ -12,13 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 func ResourceIBMDLGateway() *schema.Resource {
@@ -87,6 +86,15 @@ func ResourceIBMDLGateway() *schema.Resource {
 							Optional:    true,
 							ForceNew:    false,
 							Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes",
+						},
+						dlSpecificPrefixes: {
+							Type:        schema.TypeList,
+							Description: "Array of prefixes this AS Prepend applies to",
+							Optional:    true,
+							ForceNew:    false,
+							MinItems:    1,
+							MaxItems:    10,
+							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						dlUpdatedAt: {
 							Type:        schema.TypeString,
@@ -488,13 +496,8 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 	return &ibmISDLGatewayResourceValidator
 }
 
-func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
-	sess, err := meta.(conns.ClientSession).DirectlinkV1API()
-	return sess, err
-}
-
 func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return err
 	}
@@ -530,11 +533,20 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 
 		for _, asPrependItem := range asPrependsItems {
 			i := asPrependItem.(map[string]interface{})
-			asPrependsCreateItems = append(asPrependsCreateItems, directlinkv1.AsPrependTemplate{
-				Length: NewInt64Pointer(int64(i[dlLength].(int))),
-				Policy: NewStrPointer(i[dlPolicy].(string)),
-				Prefix: NewStrPointer(i[dlPrefix].(string)),
-			})
+
+			// Construct an instance of the AsPrependTemplate model
+			asPrependTemplateModel := new(directlinkv1.AsPrependTemplate)
+			asPrependTemplateModel.Length = NewInt64Pointer(int64(i[dlLength].(int)))
+			asPrependTemplateModel.Policy = NewStrPointer(i[dlPolicy].(string))
+			_, ok := i[dlPrefix]
+			if ok {
+				asPrependTemplateModel.Prefix = NewStrPointer(i[dlPrefix].(string))
+			}
+			sp_prefixOk, ok := i[dlSpecificPrefixes]
+			if ok && len(sp_prefixOk.([]interface{})) > 0 {
+				asPrependTemplateModel.SpecifiedPrefixes = flex.ExpandStringList(sp_prefixOk.([]interface{}))
+			}
+			asPrependsCreateItems = append(asPrependsCreateItems, *asPrependTemplateModel)
 		}
 	}
 
@@ -733,7 +745,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	dtype := d.Get(dlType).(string)
 	log.Printf("[INFO] Inside resourceIBMdlGatewayRead: %s", dtype)
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return err
 	}
@@ -833,6 +845,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			asPrependItem[dlResourceId] = asPrepend.ID
 			asPrependItem[dlLength] = asPrepend.Length
 			asPrependItem[dlPrefix] = asPrepend.Prefix
+			asPrependItem[dlSpecificPrefixes] = asPrepend.SpecifiedPrefixes
 			asPrependItem[dlPolicy] = asPrepend.Policy
 			asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 			asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()
@@ -969,7 +982,7 @@ func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resou
 
 func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return err
 	}
@@ -1120,7 +1133,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return err
 	}
@@ -1141,7 +1154,7 @@ func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return false, err
 	}

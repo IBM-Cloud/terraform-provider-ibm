@@ -7,13 +7,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM/networking-go-sdk/directlinkv1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
-	dlGateways   = "gateways"
-	dlGatewaysId = "id"
+	dlGateways         = "gateways"
+	dlGatewaysId       = "id"
+	dlSpecificPrefixes = "specific_prefixes"
 )
 
 func DataSourceIBMDLGateways() *schema.Resource {
@@ -61,6 +63,12 @@ func DataSourceIBMDLGateways() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.",
+									},
+									dlSpecificPrefixes: {
+										Type:        schema.TypeList,
+										Description: "Array of prefixes this AS Prepend applies to",
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
 									dlUpdatedAt: {
 										Type:        schema.TypeString,
@@ -296,8 +304,13 @@ func DataSourceIBMDLGateways() *schema.Resource {
 	}
 }
 
+func mydlClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
+	sess, err := meta.(conns.ClientSession).DirectlinkV1APIScoped()
+	return sess, err
+}
+
 func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := directlinkClient(meta)
+	directLink, err := mydlClient(meta)
 	if err != nil {
 		return err
 	}
@@ -408,6 +421,7 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 				asPrependItem[dlResourceId] = asPrepend.ID
 				asPrependItem[dlLength] = asPrepend.Length
 				asPrependItem[dlPrefix] = asPrepend.Prefix
+				asPrependItem[dlSpecificPrefixes] = asPrepend.SpecifiedPrefixes
 				asPrependItem[dlPolicy] = asPrepend.Policy
 				asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 				asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()

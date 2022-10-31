@@ -587,6 +587,7 @@ func Provider() *schema.Provider {
 			// // Added for Direct Link
 
 			"ibm_dl_gateways":          directlink.DataSourceIBMDLGateways(),
+			"ibm_dl_as_prepends":       directlink.DataSourceIBMDLASPrepends(),
 			"ibm_dl_offering_speeds":   directlink.DataSourceIBMDLOfferingSpeeds(),
 			"ibm_dl_port":              directlink.DataSourceIBMDirectLinkPort(),
 			"ibm_dl_ports":             directlink.DataSourceIBMDirectLinkPorts(),
@@ -1202,6 +1203,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_tg_connection_prefix_filter": transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
 				"ibm_dl_virtual_connection":       directlink.ResourceIBMDLGatewayVCValidator(),
 				"ibm_dl_gateway":                  directlink.ResourceIBMDLGatewayValidator(),
+				"ibm_dl_as_prepends":              directlink.ResourceIBMDLASPrependsValidator(),
 				"ibm_dl_provider_gateway":         directlink.ResourceIBMDLProviderGatewayValidator(),
 				"ibm_database":                    database.ResourceIBMICDValidator(),
 				"ibm_function_package":            functions.ResourceIBMFuncPackageValidator(),
