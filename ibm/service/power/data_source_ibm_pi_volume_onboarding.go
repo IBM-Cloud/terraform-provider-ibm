@@ -43,11 +43,6 @@ func DataSourceIBMPIVolumeOnboarding() *schema.Resource {
 				Computed:    true,
 				Description: "Description of the volume onboarding operation",
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Indicates the volume onboarding operation id",
-			},
 			"input_volumes": {
 				Type:        schema.TypeList,
 				Computed:    true,
