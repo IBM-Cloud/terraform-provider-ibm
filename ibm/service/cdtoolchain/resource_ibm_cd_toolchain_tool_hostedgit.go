@@ -51,6 +51,11 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 							Computed:    true,
 							Description: "The API root URL for the GitLab server.",
 						},
+						"default_branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default branch of the git repository.",
+						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -94,7 +99,7 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
-							Computed:    true,
+							Optional:    true,
 							Description: "Select the user which git operations will be performed as.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
@@ -113,6 +118,12 @@ func ResourceIBMCdToolchainToolHostedgit() *schema.Resource {
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"git_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "Set this value to 'hostedgit' to target Git Repos and Issue Tracking.",
+						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,

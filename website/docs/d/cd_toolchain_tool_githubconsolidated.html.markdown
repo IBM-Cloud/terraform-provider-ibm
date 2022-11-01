@@ -46,6 +46,7 @@ Nested scheme for **parameters**:
 	* `api_root_url` - (String) The API root URL for the GitHub server.
 	* `auto_init` - (Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
+	* `default_branch` - (String) The default branch of the git repository.
 	* `enable_traceability` - (Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (String) Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.

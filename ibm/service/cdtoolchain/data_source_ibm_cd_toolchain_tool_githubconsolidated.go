@@ -96,6 +96,11 @@ func DataSourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Computed:    true,
 							Description: "The API root URL for the GitHub server.",
 						},
+						"default_branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default branch of the git repository.",
+						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,

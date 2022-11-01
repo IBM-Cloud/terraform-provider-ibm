@@ -27,6 +27,7 @@ resource "ibm_cd_toolchain_tool_githubconsolidated" "cd_toolchain_tool_githubcon
   }
   parameters {
 		enable_traceability = false
+		integration_owner = "my-userid"
 		toolchain_issues_enabled = true
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -57,10 +58,11 @@ Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitHub server.
 	* `auto_init` - (Computed, Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
+	* `default_branch` - (Computed, String) The default branch of the git repository.
 	* `enable_traceability` - (Optional, Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.
-	* `integration_owner` - (Computed, String) Select the user which git operations will be performed as.
+	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
 	* `owner_id` - (Computed, String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `false`.

@@ -44,6 +44,7 @@ In addition to all argument references listed, you can access the following attr
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (String) The API root URL for the GitLab Server.
+	* `default_branch` - (String) The default branch of the git repository.
 	* `enable_traceability` - (Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (String) Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.

@@ -51,6 +51,11 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 							Computed:    true,
 							Description: "The API root URL for the GitLab Server.",
 						},
+						"default_branch": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default branch of the git repository.",
+						},
 						"owner_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -94,7 +99,7 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 						},
 						"integration_owner": &schema.Schema{
 							Type:        schema.TypeString,
-							Computed:    true,
+							Optional:    true,
 							Description: "Select the user which git operations will be performed as.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{

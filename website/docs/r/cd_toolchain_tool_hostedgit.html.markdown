@@ -17,6 +17,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ```hcl
 resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
   initialization {
+		git_id = "hostedgit"
 		owner_id = "<gitlab-user-id>"
 		repo_name = "myrepo"
 		source_repo_url = "https://us-south.git.cloud.ibm.com/source-repo-owner/source-repo"
@@ -25,6 +26,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
   }
   parameters {
 		enable_traceability = false
+		integration_owner = "my-userid"
 		toolchain_issues_enabled = true
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -37,6 +39,7 @@ Review the argument reference that you can specify for your resource.
 
 * `initialization` - (Required, List) 
 Nested scheme for **initialization**:
+	* `git_id` - (Optional, Forces new resource, String) Set this value to 'hostedgit' to target Git Repos and Issue Tracking.
 	* `owner_id` - (Optional, Forces new resource, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Optional, Forces new resource, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
@@ -50,10 +53,11 @@ Nested scheme for **initialization**:
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the GitLab server.
+	* `default_branch` - (Computed, String) The default branch of the git repository.
 	* `enable_traceability` - (Optional, Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'hostedgit' to target Git Repos and Issue Tracking.
-	* `integration_owner` - (Computed, String) Select the user which git operations will be performed as.
+	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
 	* `owner_id` - (Computed, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
