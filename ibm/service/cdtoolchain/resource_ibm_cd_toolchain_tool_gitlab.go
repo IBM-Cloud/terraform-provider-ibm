@@ -98,9 +98,10 @@ func ResourceIBMCdToolchainToolGitlab() *schema.Resource {
 							Description: "Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
 						"integration_owner": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Select the user which git operations will be performed as.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressAllowBlank,
+							Description:      "Select the user which git operations will be performed as.",
 						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
