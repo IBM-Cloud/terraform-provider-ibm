@@ -59,7 +59,7 @@ Nested scheme for **parameters**:
 	* `auto_init` - (Computed, Boolean) Setting this value to true will initialize this repository with a README.  This parameter is only used when creating a new repository.
 	  * Constraints: The default value is `false`.
 	* `default_branch` - (Computed, String) The default branch of the git repository.
-	* `enable_traceability` - (Optional, Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'github' for github.com, or to the GUID of a custom GitHub Enterprise server.
 	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.

@@ -100,7 +100,7 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
+							Description: "Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.",
 						},
 						"integration_owner": &schema.Schema{
 							Type:             schema.TypeString,

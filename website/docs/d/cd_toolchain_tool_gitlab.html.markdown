@@ -45,7 +45,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **parameters**:
 	* `api_root_url` - (String) The API root URL for the GitLab Server.
 	* `default_branch` - (String) The default branch of the git repository.
-	* `enable_traceability` - (Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `enable_traceability` - (Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (String) Set this value to 'gitlab' for gitlab.com, or to the GUID of a custom GitLab server.
 	* `integration_owner` - (String) Select the user which git operations will be performed as.

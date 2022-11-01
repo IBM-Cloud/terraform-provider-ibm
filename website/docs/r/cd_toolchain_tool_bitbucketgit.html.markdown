@@ -54,7 +54,7 @@ Nested scheme for **initialization**:
 Nested scheme for **parameters**:
 	* `api_root_url` - (Computed, String) The API root URL for the Bitbucket Server.
 	* `default_branch` - (Computed, String) The default branch of the git repository.
-	* `enable_traceability` - (Optional, Boolean) Select this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
+	* `enable_traceability` - (Optional, Boolean) Set this value to 'true' to track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
 	* `git_id` - (Computed, String) Set this value to 'bitbucketgit' for bitbucket.org, or to the GUID of a custom Bitbucket server.
 	* `integration_owner` - (Optional, String) Select the user which git operations will be performed as.
