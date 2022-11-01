@@ -46,7 +46,7 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 
 Review the argument reference that you can specify for your resource.
 
-* `cron` - (Optional, String) Only needed for timer triggers. Cron expression for timer trigger.
+* `cron` - (Optional, String) Only needed for timer triggers. Cron expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: 0 *_/2 * * * - every 2 hours.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\\*|([0-9]|1[0-9]|2[0-3])|\\*\/([0-9]|1[0-9]|2[0-3])) (\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\\*|([1-9]|1[0-2])|\\*\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\/([0-6]))$/`.
 * `enabled` - (Optional, Boolean) Flag whether the trigger is enabled. If omitted the trigger is enabled by default.
   * Constraints: The default value is `true`.
@@ -70,7 +70,7 @@ Nested scheme for **scm_source**:
 	* `hook_id` - (Optional, String) ID of the webhook from the repo. Computed upon creation of the trigger.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `pattern` - (Optional, String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.{1,253}$/`.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
 	* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
 	Nested scheme for **tool**:
 		* `id` - (Optional, String) ID of the repository tool instance in the parent toolchain.
@@ -91,8 +91,8 @@ Nested scheme for **secret**:
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `tags` - (Optional, List) Trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
-* `timezone` - (Optional, String) Only needed for timer triggers. Timezone for timer trigger.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_., \/]{1,253}$/`.
+* `timezone` - (Optional, String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
 * `type` - (Optional, String) Trigger type.
   * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 * `worker` - (Optional, List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.
@@ -121,10 +121,10 @@ Nested scheme for **properties**:
 	* `name` - (Forces new resource, String) Property name.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 	* `path` - (String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
 	* `type` - (String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
-	* `value` - (String) Property value.
+	* `value` - (String) Property value. Any string value is valid.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `trigger_id` - (String) ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.

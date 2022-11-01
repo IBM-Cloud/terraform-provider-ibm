@@ -52,7 +52,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
 				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description:      "Property value.",
+				Description:      "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -127,7 +127,7 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^[-0-9a-zA-Z_.]*$`,
 			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},

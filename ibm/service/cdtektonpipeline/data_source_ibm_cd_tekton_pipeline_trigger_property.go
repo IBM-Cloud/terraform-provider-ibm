@@ -43,7 +43,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Property value.",
+				Description: "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,

@@ -178,7 +178,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Type:             schema.TypeString,
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressPipelinePropertyRawSecret,
-							Description:      "Property value.",
+							Description:      "Property value. Any string value is valid.",
 						},
 						"enum": &schema.Schema{
 							Type:        schema.TypeList,
@@ -256,7 +256,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 										Type:             schema.TypeString,
 										Optional:         true,
 										DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
-										Description:      "Property value.",
+										Description:      "Property value. Any string value is valid.",
 									},
 									"enum": &schema.Schema{
 										Type:        schema.TypeList,
@@ -403,12 +403,12 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"cron": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Only needed for timer triggers. Cron expression for timer trigger. Maximum frequency is every 5 minutes.",
+							Description: "Only needed for timer triggers. Cron expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: 0 *_/2 * * * - every 2 hours.",
 						},
 						"timezone": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Only needed for timer triggers. Timezone for timer trigger.",
+							Description: "Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.",
 						},
 						"secret": &schema.Schema{
 							Type:        schema.TypeList,
