@@ -1,3 +1,7 @@
+# 1.47.0-beta3 (Oct 26, 2022)
+BUG FIXES
+* Fix attach script loop for satellite host attach ([4117](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4117))
+* fix(bm-nic): added check for 0.0.0.0 reserved ip on nic availability ([4122](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4122))
 # 1.47.0-beta2 (Oct 18, 2022)
 Features
 * Support for DirectLink
