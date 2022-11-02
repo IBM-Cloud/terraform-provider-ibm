@@ -89,7 +89,31 @@ func ResourceIBMISLB() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
-
+			"dns": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "The private IP addresses assigned to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"dns_instance": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The CRN for this DNS instancer",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
+						},
+						"zone": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The unique identifier of the DNS zone.",
+						},
+					},
+				},
+			},
 			isLBStatus: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -346,6 +370,23 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 	options := &vpcv1.CreateLoadBalancerOptions{
 		IsPublic: &isPublic,
 		Name:     &name,
+	}
+
+	if dnsIntf, ok := d.GetOk("dns"); ok {
+		dnsMap := dnsIntf.([]interface{})[0].(map[string]interface{})
+		dnsInstance, _ := dnsMap["dns_instance"].(string)
+		name, _ := dnsMap["name"].(string)
+		zone, _ := dnsMap["zone"].(string)
+		dns := &vpcv1.LoadBalancerDnsPrototype{
+			DnsInstance: &vpcv1.DnsInstanceReference{
+				CRN: &dnsInstance,
+			},
+			Name: &name,
+			Zone: &vpcv1.LoadBalancerDnsPrototypeZone{
+				ID: &zone,
+			},
+		}
+		options.Dns = dns
 	}
 
 	if routeModeBool, ok := d.GetOk(isLBRouteMode); ok {
