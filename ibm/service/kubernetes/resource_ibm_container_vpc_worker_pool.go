@@ -179,7 +179,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
-				RequiredWith:     []string{"kms_account_id", "crk"},
+				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
 		},
 	}
