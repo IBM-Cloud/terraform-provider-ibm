@@ -90,7 +90,7 @@ func TestAccIBMEDBDatabaseInstanceBasic(t *testing.T) {
 			{
 				ResourceName:      name,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateVerifyIgnore: []string{
 					"wait_time_minutes", "plan_validation", "adminpassword"},
 			},
