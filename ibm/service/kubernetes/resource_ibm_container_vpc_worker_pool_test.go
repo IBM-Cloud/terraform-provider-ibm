@@ -297,8 +297,6 @@ func TestAccIBMContainerVpcClusterWorkerPoolKmsAccountEnvvar(t *testing.T) {
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"crk", "kms_account_id"},
 			},
 		},
 	})
