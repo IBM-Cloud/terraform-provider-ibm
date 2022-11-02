@@ -1532,7 +1532,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if wl, ok := d.GetOk("whitelist"); ok {
 		whitelist := flex.ExpandWhitelist(wl.(*schema.Set))
-		log.Printf("Going into whitelist")
 		for _, wlEntry := range whitelist {
 			whitelistReq := icdv4.WhitelistReq{
 				WhitelistEntry: icdv4.WhitelistEntry{
@@ -1552,7 +1551,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	} else if al, ok := d.GetOk("allowlist"); ok {
 		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-		log.Printf("Going into allowlist")
 
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
@@ -1825,7 +1823,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database whitelist: %s", err))
 		}
-		log.Printf("Set whitelist")
 		d.Set("whitelist", flex.FlattenWhitelist(whitelist))
 	} else {
 		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
@@ -1837,8 +1834,6 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 		}
-
-		log.Printf("Set allowlist")
 		d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
 	}
 
@@ -2178,10 +2173,8 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 	}
 
 	_, whitelistExists := d.GetOk("whitelist")
-	// _, allowlistExists := d.GetOk("allowlist")
 
 	if whitelistExists && d.HasChange("whitelist") {
-		log.Printf("Update whitelist")
 		oldList, newList := d.GetChange("whitelist")
 		oldAllowList, newAllowList := d.GetChange("allowlist")
 
@@ -2254,7 +2247,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			}
 		}
 	} else if d.HasChange("allowlist") {
-		log.Printf("Update allowlist")
 		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 
 		if err != nil {
@@ -2286,8 +2278,6 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 		remove := os.Difference(ns).List()
 		add := ns.Difference(os).List()
-
-		log.Printf("allowlist add %v remove %v", add, remove)
 
 		if len(add) > 0 {
 			for _, entry := range add {
