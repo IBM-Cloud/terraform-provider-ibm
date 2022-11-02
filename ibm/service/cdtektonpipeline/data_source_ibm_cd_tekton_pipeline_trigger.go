@@ -186,25 +186,9 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 			"events": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Only needed for Git triggers. Events object defines the events to which this Git trigger listens.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"push": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "If true, the trigger listens for 'push' Git webhook events.",
-						},
-						"pull_request_closed": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "If true, the trigger listens for 'close pull request' Git webhook events.",
-						},
-						"pull_request": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.",
-						},
-					},
+				Description: "Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"cron": &schema.Schema{
@@ -316,6 +300,12 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("Error setting properties %s", err))
 	}
 
+	if trigger.Events != nil {
+		if err = d.Set("events", trigger.Events); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting events: %s", err))
+		}
+	}
+
 	worker := []map[string]interface{}{}
 	if trigger.Worker != nil {
 		modelMap, err := dataSourceIBMCdTektonPipelineTriggerWorkerToMap(trigger.Worker)
@@ -346,18 +336,6 @@ func dataSourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema
 	}
 	if err = d.Set("scm_source", scmSource); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting scm_source %s", err))
-	}
-
-	events := []map[string]interface{}{}
-	if trigger.Events != nil {
-		modelMap, err := dataSourceIBMCdTektonPipelineTriggerEventsToMap(trigger.Events)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		events = append(events, modelMap)
-	}
-	if err = d.Set("events", events); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting events %s", err))
 	}
 
 	if err = d.Set("cron", trigger.Cron); err != nil {
@@ -455,20 +433,6 @@ func dataSourceIBMCdTektonPipelineTriggerTriggerScmSourceToolToMap(model *cdtekt
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMCdTektonPipelineTriggerEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Push != nil {
-		modelMap["push"] = *model.Push
-	}
-	if model.PullRequestClosed != nil {
-		modelMap["pull_request_closed"] = *model.PullRequestClosed
-	}
-	if model.PullRequest != nil {
-		modelMap["pull_request"] = *model.PullRequest
 	}
 	return modelMap, nil
 }

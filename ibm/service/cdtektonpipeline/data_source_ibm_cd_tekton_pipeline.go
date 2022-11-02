@@ -339,25 +339,9 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 						"events": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Only needed for Git triggers. Events object defines the events to which this Git trigger listens.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"push": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "If true, the trigger listens for 'push' Git webhook events.",
-									},
-									"pull_request_closed": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "If true, the trigger listens for 'close pull request' Git webhook events.",
-									},
-									"pull_request": &schema.Schema{
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.",
-									},
-								},
+							Description: "Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"cron": &schema.Schema{
@@ -748,11 +732,7 @@ func dataSourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerI
 			modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
 		}
 		if model.Events != nil {
-			eventsMap, err := dataSourceIBMCdTektonPipelineEventsToMap(model.Events)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["events"] = []map[string]interface{}{eventsMap}
+			modelMap["events"] = model.Events
 		}
 		if model.Cron != nil {
 			modelMap["cron"] = *model.Cron
@@ -844,20 +824,6 @@ func dataSourceIBMCdTektonPipelineTriggerScmSourceToolToMap(model *cdtektonpipel
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
-	}
-	return modelMap, nil
-}
-
-func dataSourceIBMCdTektonPipelineEventsToMap(model *cdtektonpipelinev2.Events) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.Push != nil {
-		modelMap["push"] = *model.Push
-	}
-	if model.PullRequestClosed != nil {
-		modelMap["pull_request_closed"] = *model.PullRequestClosed
-	}
-	if model.PullRequest != nil {
-		modelMap["pull_request"] = *model.PullRequest
 	}
 	return modelMap, nil
 }
@@ -1004,11 +970,7 @@ func dataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipeline
 		modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
 	}
 	if model.Events != nil {
-		eventsMap, err := dataSourceIBMCdTektonPipelineEventsToMap(model.Events)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["events"] = []map[string]interface{}{eventsMap}
+		modelMap["events"] = model.Events
 	}
 	return modelMap, nil
 }

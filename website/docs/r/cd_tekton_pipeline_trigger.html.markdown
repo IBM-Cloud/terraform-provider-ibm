@@ -15,11 +15,7 @@ Provides a resource for cd_tekton_pipeline_trigger. This allows cd_tekton_pipeli
 ```hcl
 resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
   event_listener = "pr-listener"
-  events {
-		push = true
-		pull_request_closed = true
-		pull_request = true
-  }
+  events = ["push", "pull_request" ]
   max_concurrent_runs = 3
   name = "Manual Trigger"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
@@ -52,11 +48,8 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The default value is `true`.
 * `event_listener` - (Optional, String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-* `events` - (Optional, List) Only needed for Git triggers. Events object defines the events to which this Git trigger listens.
-Nested scheme for **events**:
-	* `pull_request` - (Optional, Boolean) If true, the trigger listens for 'open pull request' or 'update pull request' Git webhook events.
-	* `pull_request_closed` - (Optional, Boolean) If true, the trigger listens for 'close pull request' Git webhook events.
-	* `push` - (Optional, Boolean) If true, the trigger listens for 'push' Git webhook events.
+* `events` - (Optional, List) Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.
+  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The list items must match regular expression `/^[-0-9a-zA-Z_,]+$/`. The maximum length is `3` items. The minimum length is `0` items.
 * `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 * `name` - (Optional, String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
