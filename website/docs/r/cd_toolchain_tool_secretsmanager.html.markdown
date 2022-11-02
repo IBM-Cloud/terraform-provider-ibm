@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager" {
+resource "ibm_cd_toolchain_tool_secretsmanager" "cd_toolchain_tool_secretsmanager_instance" {
   parameters {
 		name = "sm_tool_01"
 		instance_name = "Secrets Manager-XX"

@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_artifactory" "cd_toolchain_tool_artifactory" {
+resource "ibm_cd_toolchain_tool_artifactory" "cd_toolchain_tool_artifactory_instance" {
   parameters {
 		name = "artifactory-tool-01"
 		dashboard_url = "https://mycompany.example.jfrog.io"

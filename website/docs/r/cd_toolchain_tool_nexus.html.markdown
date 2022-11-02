@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus" {
+resource "ibm_cd_toolchain_tool_nexus" "cd_toolchain_tool_nexus_instance" {
   parameters {
 		name = "my-nexus"
 		type = "npm"

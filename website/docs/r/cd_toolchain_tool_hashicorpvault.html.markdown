@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_hashicorpvault" "cd_toolchain_tool_hashicorpvault" {
+resource "ibm_cd_toolchain_tool_hashicorpvault" "cd_toolchain_tool_hashicorpvault_instance" {
   parameters {
 		name = "hcv_tool_01"
 		server_url = "https://hcv.mycompany.example.com:8200"

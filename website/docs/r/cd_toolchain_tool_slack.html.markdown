@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_slack" "cd_toolchain_tool_slack" {
+resource "ibm_cd_toolchain_tool_slack" "cd_toolchain_tool_slack_instance" {
   parameters {
 		channel_name = "#my_channel"
 		pipeline_start = true

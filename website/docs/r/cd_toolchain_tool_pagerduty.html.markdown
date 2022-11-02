@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty" {
+resource "ibm_cd_toolchain_tool_pagerduty" "cd_toolchain_tool_pagerduty_instance" {
   parameters {
 		service_url = "https://mycompany.example.pagerduty.com/services/AS34FR4"
 		service_key = "<service_key>"

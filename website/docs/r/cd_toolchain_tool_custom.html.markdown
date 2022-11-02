@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_custom" "cd_toolchain_tool_custom" {
+resource "ibm_cd_toolchain_tool_custom" "cd_toolchain_tool_custom_instance" {
   parameters {
 		type = "Delivery Pipeline"
 		lifecycle_phase = "DELIVER"

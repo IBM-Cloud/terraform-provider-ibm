@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig" {
+resource "ibm_cd_toolchain_tool_appconfig" "cd_toolchain_tool_appconfig_instance" {
   parameters {
 		name = "appconfig_tool_01"
 		location = "us-south"

@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs" {
+resource "ibm_cd_toolchain_tool_saucelabs" "cd_toolchain_tool_saucelabs_instance" {
   parameters {
 		username = "<username>"
 		access_key = "<access_key>"

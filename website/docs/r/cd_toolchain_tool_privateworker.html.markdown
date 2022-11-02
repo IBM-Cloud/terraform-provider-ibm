@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker" {
+resource "ibm_cd_toolchain_tool_privateworker" "cd_toolchain_tool_privateworker_instance" {
   parameters {
 		name = "private-worker-tool-01"
 		worker_queue_credentials = "<worker_queue_credentials>"

@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins" {
+resource "ibm_cd_toolchain_tool_jenkins" "cd_toolchain_tool_jenkins_instance" {
   parameters {
 		name = "jenkins-tool-01"
 		dashboard_url = "https://jenkins.mycompany.example.com"

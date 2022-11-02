@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect" {
+resource "ibm_cd_toolchain_tool_keyprotect" "cd_toolchain_tool_keyprotect_instance" {
   parameters {
 		name = "kp_tool_01"
 		instance_name = "Key Protect-XX"

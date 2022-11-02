@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira" {
+resource "ibm_cd_toolchain_tool_jira" "cd_toolchain_tool_jira_instance" {
   parameters {
 		project_key = "MY_PROJECT"
 		api_url = "https://my_instance.atlassian.net"

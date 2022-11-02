@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights" {
+resource "ibm_cd_toolchain_tool_devopsinsights" "cd_toolchain_tool_devopsinsights_instance" {
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```

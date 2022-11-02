@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance" {
+resource "ibm_cd_toolchain_tool_securitycompliance" "cd_toolchain_tool_securitycompliance_instance" {
   parameters {
 		name = "compliance"
 		evidence_namespace = "cd"

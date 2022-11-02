@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline" {
+resource "ibm_cd_toolchain_tool_pipeline" "cd_toolchain_tool_pipeline_instance" {
   parameters {
 		name = "pipeline-tool-01"
   }

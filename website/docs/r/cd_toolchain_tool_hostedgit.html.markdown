@@ -15,7 +15,7 @@ More information on this Continuous Delivery tool integration can be found [here
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit" {
+resource "ibm_cd_toolchain_tool_hostedgit" "cd_toolchain_tool_hostedgit_instance" {
   initialization {
 		git_id = "hostedgit"
 		owner_id = "<gitlab-user-id>"
