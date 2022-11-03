@@ -213,6 +213,7 @@ Review the argument references that you can specify for your resource.
 
 - `crk` - Root Key ID for boot volume encryption.
 - `kms_instance_id` - Instance ID for boot volume encryption.
+- `kms_account_id` - Account ID for boot volume encryption, if other account is providing the kms.
 
 **Note**
 
