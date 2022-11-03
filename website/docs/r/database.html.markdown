@@ -599,12 +599,19 @@ Review the argument reference that you can specify for your resource.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
-- `whitelist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+- `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+
+  Nested scheme for `allowlist`:
+  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
+  - `description` - (Optional, String) A description for the allowed IP addresses range.
+
+- `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
   Nested scheme for `whitelist`:
   - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
+  ~> **Note:** `whitelist` conflicts with `allowlist`. `whitelist` has been deprecated and replaced by `allowlist`
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
