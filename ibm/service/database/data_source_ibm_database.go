@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"path/filepath"
 
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -248,6 +249,25 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"address": {
 							Description: "Whitelist IP address in CIDR notation",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"description": {
+							Description: "Unique white list description",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+				Deprecated: "The whitelist field is deprecated please use allowlist",
+			},
+			"allowlist": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {
+							Description: "Allowlist IP address in CIDR notation",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -762,6 +782,19 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
 	}
 	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
+
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: &instance.ID,
+	}
+
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
+	}
+
+	d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {
