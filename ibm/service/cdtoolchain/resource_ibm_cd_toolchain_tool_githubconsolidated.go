@@ -108,6 +108,11 @@ func ResourceIBMCdToolchainToolGithubconsolidated() *schema.Resource {
 							DiffSuppressFunc: flex.SuppressAllowBlank,
 							Description:      "Select the user which git operations will be performed as.",
 						},
+						"project_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the project.",
+						},
 						"toolchain_issues_enabled": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
