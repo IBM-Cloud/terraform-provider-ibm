@@ -85,7 +85,8 @@ In addition to all argument references list, you can access the following attrib
   - `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
   - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
   - `rate_units` - (String) Auto scaling rate in units.
-- `whitelist` (List) A list of allowed IP addresses or ranges.
+- `allowlist`  - (List) A list of allowed IP addresses or ranges.
+- `whitelist`  - **Deprecated** - (List) A list of allowed IP addresses or ranges.  - replaced by `allowlist`
 
 
 **Note**

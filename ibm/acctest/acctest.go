@@ -103,6 +103,7 @@ var IcdDbBackupId string
 var IcdDbTaskId string
 var KmsInstanceID string
 var CrkID string
+var KmsAccountID string
 
 // For Power Colo
 
@@ -1050,6 +1051,11 @@ func init() {
 	CrkID = os.Getenv("IBM_CRK_ID")
 	if CrkID == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_CRK_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	KmsAccountID = os.Getenv("IBM_KMS_ACCOUNT_ID")
+	if CrkID == "" {
+		fmt.Println("[INFO] Set the environment variable IBM_KMS_ACCOUNT_ID for ibm_container_vpc_cluster resource or datasource else tests will fail if this is not set correctly")
 	}
 
 	IksClusterID = os.Getenv("IBM_CLUSTER_ID")
