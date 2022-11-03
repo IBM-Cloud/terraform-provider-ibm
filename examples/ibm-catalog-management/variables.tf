@@ -61,10 +61,10 @@ variable "cm_catalog_metadata" {
 }
 
 // Resource arguments for cm_offering
-variable "cm_offering_catalog_identifier" {
+variable "cm_offering_catalog_id" {
   description = "Catalog identifier."
   type        = string
-  default     = "catalog_identifier"
+  default     = "catalog_id"
 }
 variable "cm_offering_url" {
   description = "The url for this specific offering."
@@ -243,10 +243,10 @@ variable "cm_offering_product_kind" {
 }
 
 // Resource arguments for cm_version
-variable "cm_version_catalog_identifier" {
+variable "cm_version_catalog_id" {
   description = "Catalog identifier."
   type        = string
-  default     = "catalog_identifier"
+  default     = "catalog_id"
 }
 variable "cm_version_offering_id" {
   description = "Offering identification."
@@ -467,17 +467,17 @@ variable "cm_offering_instance_sha" {
 }
 
 // Data source arguments for cm_catalog
-variable "cm_catalog_catalog_identifier" {
+variable "cm_catalog_catalog_id" {
   description = "Catalog identifier."
   type        = string
-  default     = "catalog_identifier"
+  default     = "catalog_id"
 }
 
 // Data source arguments for cm_offering
-variable "cm_offering_catalog_identifier" {
+variable "cm_offering_catalog_id" {
   description = "Catalog identifier."
   type        = string
-  default     = "catalog_identifier"
+  default     = "catalog_id"
 }
 variable "cm_offering_offering_id" {
   description = "Offering identification."

@@ -95,7 +95,7 @@ func testAccCheckIBMCmVersionConfigBasic() string {
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
 			label = "test_tf_offering_label_1"
 			name = "test_tf_offering_name_1"
 			offering_icon_url = "test.url.1"
@@ -103,8 +103,8 @@ func testAccCheckIBMCmVersionConfigBasic() string {
 		}
 
 		resource "ibm_cm_version" "cm_version" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
 			zipurl = "https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
 			install {}
 		}
@@ -120,7 +120,7 @@ func testAccCheckIBMCmVersionSimpleConfig(zipurl string, targetVersion string, i
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
 			label = "test_tf_offering_label_2"
 			name = "test_tf_offering_name_2"
 			offering_icon_url = "test.url.2"
@@ -128,8 +128,8 @@ func testAccCheckIBMCmVersionSimpleConfig(zipurl string, targetVersion string, i
 		}
 
 		resource "ibm_cm_version" "cm_version" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
 			zipurl = "%s"
 			target_version = "%s"
 			include_config = %s
@@ -147,7 +147,7 @@ func testAccCheckIBMCmVersionVSIConfig(name string, label string, installKind st
 	}
 
 	resource "ibm_cm_offering" "cm_offering" {
-		catalog_identifier = ibm_cm_catalog.cm_catalog.id
+		catalog_id = ibm_cm_catalog.cm_catalog.id
 		label = "test_tf_offering_label_3"
 		name = "test_tf_offering_name_3"
 		offering_icon_url = "test.url.2"
@@ -157,8 +157,8 @@ func testAccCheckIBMCmVersionVSIConfig(name string, label string, installKind st
 		resource "ibm_cm_version" "cm_version" {
 			name = "%s"
 			label = "%s"
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
 			tags = ["virtualservers"]
 			target_kinds = [ "vpc-x86" ]
 			install_kind = "%s"

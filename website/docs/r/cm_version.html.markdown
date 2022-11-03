@@ -2,21 +2,21 @@
 layout: "ibm"
 page_title: "IBM : ibm_cm_version"
 description: |-
-  Manages cm_version.
-subcategory: "Catalog Management API"
+  Manages ibm_cm_version.
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_version
 
-Provides a resource for cm_version. This allows cm_version to be created, updated and deleted.
+Provides a resource for ibm_cm_version. This allows ibm_cm_version to be created, updated and deleted.
 
 ## Example Usage
 
 ### VSI Image
 ```hcl
 resource "ibm_cm_version" "cm_version" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog.id
-  offering_identifier = ibm_cm_offering.cm_offering.offering_id
+  catalog_id = ibm_cm_catalog.cm_catalog.id
+  offering_id = ibm_cm_offering.cm_offering.id
   name = ibm_cm_offering.cm_offering.name
   label = ibm_cm_offering.cm_offering.label
   tags = ["virtualservers"]
@@ -52,8 +52,8 @@ resource "ibm_cm_version" "cm_version" {
 ### Standard Terraform Version
 ```hcl
 resource "ibm_cm_version" "cm_version" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog.id
-  offering_identifier = ibm_cm_offering.cm_offering.offering_id
+  catalog_id = ibm_cm_catalog.cm_catalog.id
+  offering_id = ibm_cm_offering.cm_offering.id
   target_version = "1.0.0"
   zipurl = "tgz_url Ex: https://github.com/IBM-Cloud/terraform-sample/archive/refs/tags/v1.1.0.tar.gz"
   include_config = true
@@ -69,7 +69,7 @@ resource "ibm_cm_version" "cm_version" {
 
 Review the argument reference that you can specify for your resource.
 
-* `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
+* `catalog_id` - (Required, Forces new resource, String) Catalog identifier.
 * `flavor` - (Optional, Forces new resource, List) Version Flavor Information.  Only supported for Product kind Solution.
 Nested scheme for **flavor**:
 	* `index` - (Optional, Integer) Order that this flavor should appear when listed for a single version.
@@ -103,7 +103,7 @@ Nested scheme for **metadata**:
 		* `vendor` - (Optional, String) Vendor of the operating system. Required for virtual server image for VPC.
 		* `version` - (Optional, String) Major release version of this operating system. Required for virtual server image for VPC.
 * `name` - (Optional, Forces new resource, String) Name of version. Required for virtual server image for VPC.
-* `offering_identifier` - (Required, Forces new resource, String) Offering identification.
+* `offering_id` - (Required, Forces new resource, String) Offering identification.
 * `product_kind` - (Optional, Forces new resource, String) Optional product kind for the software being onboarded.  Valid values are software, module, or solution.  Default value is software.
 * `sha` - (Optional, Forces new resource, String) SHA256 fingerprint of the image file. Required for virtual server image for VPC.
 * `tags` - (Optional, Forces new resource, List) Tags array.
@@ -116,7 +116,7 @@ Nested scheme for **metadata**:
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the cm_version.
+* `id` - The unique identifier of the ibm_cm_version.
 * `catalog_id` - (String) Catalog ID.
 * `configuration` - (List) List of user solicited overrides.
 Nested scheme for **configuration**:
@@ -433,16 +433,16 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 ## Import
 
 You can import the `ibm_cm_version` resource by using `id`.
-The `id` property can be formed from `catalog_identifier`, `offering_id`, and `version_loc_id` in the following format:
+The `id` property can be formed from `catalog_id`, `offering_id`, and `version_loc_id` in the following format:
 
 ```
-<catalog_identifier>/<offering_id>/<version_loc_id>
+<catalog_id>/<offering_id>/<version_loc_id>
 ```
-* `catalog_identifier`: A string. Catalog identifier.
+* `catalog_id`: A string. Catalog identifier.
 * `offering_id`: A string. Offering identification.
 * `version_loc_id`: A string. A dotted value of `catalogID`.`versionID`.
 
 # Syntax
 ```
-$ terraform import ibm_cm_version.cm_version <catalog_identifier>/<offering_id>/<version_loc_id>
+$ terraform import ibm_cm_version.cm_version <catalog_id>/<offering_id>/<version_loc_id>
 ```

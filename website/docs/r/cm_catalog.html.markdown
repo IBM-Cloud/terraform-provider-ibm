@@ -2,13 +2,13 @@
 layout: "ibm"
 page_title: "IBM : ibm_cm_catalog"
 description: |-
-  Manages cm_catalog.
-subcategory: "Catalog Management API"
+  Manages ibm_cm_catalog.
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_catalog
 
-Provides a resource for cm_catalog. This allows cm_catalog to be created, updated and deleted.
+Provides a resource for ibm_cm_catalog. This allows ibm_cm_catalog to be created, updated and deleted.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ Review the argument reference that you can specify for your resource.
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-* `id` - The unique identifier of the cm_catalog.
+* `id` - The unique identifier of the ibm_cm_catalog.
 * `catalog_icon_url` - (String) The url of the catalog icon.
 * `created` - (String) The date-time this catalog was created.
 * `crn` - (String) CRN associated with the catalog.

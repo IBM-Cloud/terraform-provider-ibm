@@ -22,8 +22,8 @@ func TestAccIBMCmOfferingDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMCmOfferingDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_identifier"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_identifier"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_id"),
 				),
 			},
 		},
@@ -44,8 +44,8 @@ func TestAccIBMCmOfferingDataSourceSimpleArgs(t *testing.T) {
 				Config: testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel, offeringName, offeringOfferingIconURL, offeringShortDescription),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_identifier"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_identifier"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "rev"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "url"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "crn"),
@@ -72,12 +72,12 @@ func testAccCheckIBMCmOfferingDataSourceConfigBasic() string {
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
 		}
 
 		data "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_offering.cm_offering.catalog_identifier
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_offering.cm_offering.catalog_id
+			offering_id = ibm_cm_offering.cm_offering.id
 		}
 	`)
 }
@@ -90,7 +90,7 @@ func testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel string, offeringNam
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
 			label = "%s"
 			name = "%s"
 			offering_icon_url = "%s"
@@ -98,8 +98,8 @@ func testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel string, offeringNam
 		}
 
 		data "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_offering.cm_offering.catalog_identifier
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_offering.cm_offering.catalog_id
+			offering_id = ibm_cm_offering.cm_offering.id
 		}
 	`, offeringLabel, offeringLabel, offeringName, offeringOfferingIconURL, offeringShortDescription)
 }

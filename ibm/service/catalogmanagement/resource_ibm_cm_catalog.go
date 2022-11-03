@@ -368,14 +368,8 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("label"); ok {
 		createCatalogOptions.SetLabel(d.Get("label").(string))
 	}
-	if _, ok := d.GetOk("label_i18n"); ok {
-		// TODO: Add code to handle map container: LabelI18n
-	}
 	if _, ok := d.GetOk("short_description"); ok {
 		createCatalogOptions.SetShortDescription(d.Get("short_description").(string))
-	}
-	if _, ok := d.GetOk("short_description_i18n"); ok {
-		// TODO: Add code to handle map container: ShortDescriptionI18n
 	}
 	if _, ok := d.GetOk("catalog_icon_url"); ok {
 		createCatalogOptions.SetCatalogIconURL(d.Get("catalog_icon_url").(string))
@@ -421,9 +415,6 @@ func resourceIBMCmCatalogCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("kind"); ok {
 		createCatalogOptions.SetKind(d.Get("kind").(string))
 	}
-	if _, ok := d.GetOk("metadata"); ok {
-		// TODO: Add code to handle map container: Metadata
-	}
 
 	catalog, response, err := catalogManagementClient.CreateCatalogWithContext(context, createCatalogOptions)
 	if err != nil {
@@ -459,14 +450,8 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("label", catalog.Label); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
-	if catalog.LabelI18n != nil {
-		// TODO: handle LabelI18n of type TypeMap -- not primitive type, not list
-	}
 	if err = d.Set("short_description", catalog.ShortDescription); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting short_description: %s", err))
-	}
-	if catalog.ShortDescriptionI18n != nil {
-		// TODO: handle ShortDescriptionI18n of type TypeMap -- not primitive type, not list
 	}
 	if err = d.Set("catalog_icon_url", catalog.CatalogIconURL); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting catalog_icon_url: %s", err))
@@ -519,9 +504,6 @@ func resourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("kind", catalog.Kind); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting kind: %s", err))
 	}
-	if catalog.Metadata != nil {
-		// TODO: handle Metadata of type TypeMap -- not primitive type, not list
-	}
 	if err = d.Set("rev", catalog.Rev); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rev: %s", err))
 	}
@@ -557,14 +539,8 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("label"); ok {
 		replaceCatalogOptions.SetLabel(d.Get("label").(string))
 	}
-	if _, ok := d.GetOk("label_i18n"); ok {
-		// TODO: Non-primitive types that are not models or lists
-	}
 	if _, ok := d.GetOk("short_description"); ok {
 		replaceCatalogOptions.SetShortDescription(d.Get("short_description").(string))
-	}
-	if _, ok := d.GetOk("short_description_i18n"); ok {
-		// TODO: Non-primitive types that are not models or lists
 	}
 	if _, ok := d.GetOk("catalog_icon_url"); ok {
 		replaceCatalogOptions.SetCatalogIconURL(d.Get("catalog_icon_url").(string))
@@ -610,9 +586,6 @@ func resourceIBMCmCatalogUpdate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("kind"); ok {
 		replaceCatalogOptions.SetKind(d.Get("kind").(string))
 	}
-	if _, ok := d.GetOk("metadata"); ok {
-		// TODO: Non-primitive types that are not models or lists
-	}
 
 	_, response, err := catalogManagementClient.ReplaceCatalogWithContext(context, replaceCatalogOptions)
 	if err != nil {
@@ -649,14 +622,8 @@ func resourceIBMCmCatalogMapToFeature(modelMap map[string]interface{}) (*catalog
 	if modelMap["title"] != nil && modelMap["title"].(string) != "" {
 		model.Title = core.StringPtr(modelMap["title"].(string))
 	}
-	if modelMap["title_i18n"] != nil {
-		// TODO: handle TitleI18n, map with entry type ''
-	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
-	}
-	if modelMap["description_i18n"] != nil {
-		// TODO: handle DescriptionI18n, map with entry type ''
 	}
 	return model, nil
 }
@@ -665,9 +632,6 @@ func resourceIBMCmCatalogMapToFilters(modelMap map[string]interface{}) (*catalog
 	model := &catalogmanagementv1.Filters{}
 	if modelMap["include_all"] != nil {
 		model.IncludeAll = core.BoolPtr(modelMap["include_all"].(bool))
-	}
-	if modelMap["category_filters"] != nil {
-		// TODO: handle CategoryFilters, map with entry type 'CategoryFilter'
 	}
 	if modelMap["id_filters"] != nil && len(modelMap["id_filters"].([]interface{})) > 0 {
 		var IDFiltersModel *catalogmanagementv1.IDFilter
@@ -838,14 +802,8 @@ func resourceIBMCmCatalogFeatureToMap(model *catalogmanagementv1.Feature) (map[s
 	if model.Title != nil {
 		modelMap["title"] = model.Title
 	}
-	if model.TitleI18n != nil {
-		// TODO: handle TitleI18n of type TypeMap -- container, not list
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
-	}
-	if model.DescriptionI18n != nil {
-		// TODO: handle DescriptionI18n of type TypeMap -- container, not list
 	}
 	return modelMap, nil
 }
@@ -854,9 +812,6 @@ func resourceIBMCmCatalogFiltersToMap(model *catalogmanagementv1.Filters) (map[s
 	modelMap := make(map[string]interface{})
 	if model.IncludeAll != nil {
 		modelMap["include_all"] = model.IncludeAll
-	}
-	if model.CategoryFilters != nil {
-		// TODO: handle CategoryFilters of type TypeMap -- container, not list
 	}
 	if model.IDFilters != nil {
 		idFiltersMap, err := resourceIBMCmCatalogIDFilterToMap(model.IDFilters)

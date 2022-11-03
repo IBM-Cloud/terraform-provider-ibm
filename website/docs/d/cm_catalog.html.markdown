@@ -2,13 +2,13 @@
 layout: "ibm"
 page_title: "IBM : ibm_cm_catalog"
 description: |-
-  Get information about cm_catalog
-subcategory: "Catalog Management API"
+  Get information about ibm_cm_catalog
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_catalog
 
-Provides a read-only data source for cm_catalog. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_cm_catalog. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -28,7 +28,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the cm_catalog.
+* `id` - The unique identifier of the ibm_cm_catalog.
 * `catalog_filters` - (List) Filters for account and catalog filters.
 Nested scheme for **catalog_filters**:
 	* `category_filters` - (Map) Filter against offering properties.

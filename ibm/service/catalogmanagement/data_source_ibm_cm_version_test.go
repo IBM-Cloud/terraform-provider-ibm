@@ -56,7 +56,7 @@ func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTarge
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
 			label = "test_tf_offering_label_1"
 			name = "test_tf_offering_name_1"
 			offering_icon_url = "test.url.1"
@@ -64,8 +64,8 @@ func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTarge
 		}
 
 		resource "ibm_cm_version" "cm_version" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
-			offering_identifier = ibm_cm_offering.cm_offering.offering_id
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			offering_id = ibm_cm_offering.cm_offering.id
 			zipurl = "%s"
 			target_version = "%s"
 			include_config = %s

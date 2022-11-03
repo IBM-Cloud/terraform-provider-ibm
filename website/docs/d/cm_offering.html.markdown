@@ -2,20 +2,20 @@
 layout: "ibm"
 page_title: "IBM : ibm_cm_offering"
 description: |-
-  Get information about cm_offering
-subcategory: "Catalog Management API"
+  Get information about ibm_cm_offering
+subcategory: "Catalog Management"
 ---
 
 # ibm_cm_offering
 
-Provides a read-only data source for cm_offering. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for ibm_cm_offering. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_cm_offering" "cm_offering" {
-	catalog_identifier = ibm_cm_offering.cm_offering.catalog_identifier
-	offering_identifier = ibm_cm_offering.cm_offering.offering_id
+	catalog_id = ibm_cm_offering.cm_offering.catalog_id
+	offering_id = ibm_cm_offering.cm_offering.id
 }
 ```
 
@@ -23,14 +23,14 @@ data "ibm_cm_offering" "cm_offering" {
 
 Review the argument reference that you can specify for your data source.
 
-* `catalog_identifier` - (Required, Forces new resource, String) Catalog identifier.
-* `offering_identifier` - (Required, Forces new resource, String) Offering identification.
+* `catalog_id` - (Required, Forces new resource, String) Catalog identifier.
+* `offering_id` - (Required, Forces new resource, String) Offering identification.
 
 ## Attribute Reference
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
-* `id` - The unique identifier of the cm_offering.
+* `id` - The unique identifier of the ibm_cm_offering.
 * `badges` - (List) A list of badges for this offering.
 Nested scheme for **badges**:
 	* `authority` - (String) Authority for the current badge.

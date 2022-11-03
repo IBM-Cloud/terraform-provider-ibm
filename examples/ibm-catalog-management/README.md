@@ -4,9 +4,9 @@ This example illustrates how to use the CatalogManagementV1
 
 These types of resources are supported:
 
-* cm_catalog
-* cm_offering
-* cm_version
+* ibm_cm_catalog
+* ibm_cm_offering
+* ibm_cm_version
 * cm_offering_instance
 
 ## Usage
@@ -24,10 +24,10 @@ Run `terraform destroy` when you don't need these resources.
 
 ## CatalogManagementV1 resources
 
-cm_catalog resource:
+ibm_cm_catalog resource:
 
 ```hcl
-resource "cm_catalog" "cm_catalog_instance" {
+resource "ibm_cm_catalog" "cm_catalog_instance" {
   label = var.cm_catalog_label
   label_i18n = var.cm_catalog_label_i18n
   short_description = var.cm_catalog_short_description
@@ -44,11 +44,11 @@ resource "cm_catalog" "cm_catalog_instance" {
   metadata = var.cm_catalog_metadata
 }
 ```
-cm_offering resource:
+ibm_cm_offering resource:
 
 ```hcl
-resource "cm_offering" "cm_offering_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+resource "ibm_cm_offering" "cm_offering_instance" {
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
   url = var.cm_offering_url
   crn = var.cm_offering_crn
   label = var.cm_offering_label
@@ -96,11 +96,11 @@ resource "cm_offering" "cm_offering_instance" {
   badges = var.cm_offering_badges
 }
 ```
-cm_version resource:
+ibm_cm_version resource:
 
 ```hcl
-resource "cm_version" "cm_version_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+resource "ibm_cm_version" "cm_version_instance" {
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
   offering_id = ibm_cm_offering.cm_offering_instance.offering_id
   tags = var.cm_version_tags
   content = var.cm_version_content
@@ -159,25 +159,25 @@ resource "cm_offering_instance" "cm_offering_instance_instance" {
 
 ## CatalogManagementV1 Data sources
 
-cm_catalog data source:
+ibm_cm_catalog data source:
 
 ```hcl
-data "cm_catalog" "cm_catalog_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+data "ibm_cm_catalog" "cm_catalog_instance" {
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
 }
 ```
-cm_offering data source:
+ibm_cm_offering data source:
 
 ```hcl
-data "cm_offering" "cm_offering_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+data "ibm_cm_offering" "cm_offering_instance" {
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
   offering_id = ibm_cm_offering.cm_offering_instance.offering_id
 }
 ```
-cm_version data source:
+ibm_cm_version data source:
 
 ```hcl
-data "cm_version" "cm_version_instance" {
+data "ibm_cm_version" "cm_version_instance" {
   version_loc_id = var.cm_version_version_loc_id
 }
 ```
@@ -228,7 +228,7 @@ data "cm_offering_instance" "cm_offering_instance_instance" {
 | syndication_settings | Feature information. | `` | false |
 | kind | Kind of catalog. Supported kinds are offering and vpe. | `string` | false |
 | metadata | Catalog specific metadata. | `map()` | false |
-| catalog_identifier | Catalog identifier. | `string` | true |
+| catalog_id | Catalog identifier. | `string` | true |
 | url | The url for this specific offering. | `string` | false |
 | crn | The crn for this specific offering. | `string` | false |
 | label | Display Name in the requested language. | `string` | false |
@@ -274,7 +274,7 @@ data "cm_offering_instance" "cm_offering_instance_instance" {
 | deprecate_pending | Deprecation information for an Offering. | `` | false |
 | product_kind | The product kind.  Valid values are module, solution, or empty string. | `string` | false |
 | badges | A list of badges for this offering. | `list()` | false |
-| catalog_identifier | Catalog identifier. | `string` | true |
+| catalog_id | Catalog identifier. | `string` | true |
 | offering_id | Offering identification. | `string` | true |
 | tags | Tags array. | `list(string)` | false |
 | content | Byte array representing the content to be imported. Only supported for OVA images at this time. | `` | false |
@@ -322,8 +322,8 @@ data "cm_offering_instance" "cm_offering_instance_instance" {
 | last_operation | the last operation performed and status. | `` | false |
 | kind_target | The target kind for the installed software version. | `string` | false |
 | sha | The digest value of the installed software version. | `string` | false |
-| catalog_identifier | Catalog identifier. | `string` | true |
-| catalog_identifier | Catalog identifier. | `string` | true |
+| catalog_id | Catalog identifier. | `string` | true |
+| catalog_id | Catalog identifier. | `string` | true |
 | offering_id | Offering identification. | `string` | true |
 | version_loc_id | A dotted value of `catalogID`.`versionID`. | `string` | true |
 | instance_identifier | Version Instance identifier. | `string` | true |
@@ -332,11 +332,11 @@ data "cm_offering_instance" "cm_offering_instance_instance" {
 
 | Name | Description |
 |------|-------------|
-| cm_catalog | cm_catalog object |
-| cm_offering | cm_offering object |
-| cm_version | cm_version object |
+| ibm_cm_catalog | ibm_cm_catalog object |
+| ibm_cm_offering | ibm_cm_offering object |
+| ibm_cm_version | ibm_cm_version object |
 | cm_offering_instance | cm_offering_instance object |
-| cm_catalog | cm_catalog object |
-| cm_offering | cm_offering object |
-| cm_version | cm_version object |
+| ibm_cm_catalog | ibm_cm_catalog object |
+| ibm_cm_offering | ibm_cm_offering object |
+| ibm_cm_version | ibm_cm_version object |
 | cm_offering_instance | cm_offering_instance object |

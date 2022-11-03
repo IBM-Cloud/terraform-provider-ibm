@@ -27,21 +27,16 @@ func ResourceIBMCmVersion() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"catalog_identifier": &schema.Schema{
+			"catalog_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "Catalog identifier.",
 			},
-			"offering_identifier": &schema.Schema{
+			"offering_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Offering identification.",
-			},
-			"offering_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
 				Description: "Offering identification.",
 			},
 			"tags": &schema.Schema{
@@ -435,11 +430,6 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time this version was last updated.",
-			},
-			"catalog_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Catalog ID.",
 			},
 			"kind_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -1551,6 +1541,11 @@ func ResourceIBMCmVersion() *schema.Resource {
 				Computed:    true,
 				Description: "Unique ID.",
 			},
+			"offering_identifier": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Offering ID, in the format of <account_id>:o:<offering_id>.",
+			},
 		},
 	}
 }
@@ -1563,8 +1558,8 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 
 	importOfferingVersionOptions := &catalogmanagementv1.ImportOfferingVersionOptions{}
 
-	importOfferingVersionOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
-	importOfferingVersionOptions.SetOfferingID(d.Get("offering_identifier").(string))
+	importOfferingVersionOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
+	importOfferingVersionOptions.SetOfferingID(d.Get("offering_id").(string))
 	if _, ok := d.GetOk("tags"); ok {
 		importOfferingVersionOptions.SetTags(SIToSS(d.Get("tags").([]interface{})))
 	}
@@ -1630,8 +1625,8 @@ func resourceIBMCmVersionCreate(context context.Context, d *schema.ResourceData,
 	}
 
 	getOfferingOptions := &catalogmanagementv1.GetOfferingOptions{}
-	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
-	getOfferingOptions.SetOfferingID(d.Get("offering_identifier").(string))
+	getOfferingOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
+	getOfferingOptions.SetOfferingID(d.Get("offering_id").(string))
 	oldOffering, response, err := catalogManagementClient.GetOfferingWithContext(context, getOfferingOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -1863,8 +1858,8 @@ func resourceIBMCmVersionRead(context context.Context, d *schema.ResourceData, m
 
 	version := offering.Kinds[0].Versions[0]
 
-	if err = d.Set("offering_id", version.OfferingID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting offering_id: %s", err))
+	if err = d.Set("offering_identifier", version.OfferingID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting offering_identifier: %s", err))
 	}
 	if version.Tags != nil {
 		if err = d.Set("tags", version.Tags); err != nil {
@@ -2316,9 +2311,6 @@ func resourceIBMCmVersionMapToFlavor(modelMap map[string]interface{}) (*catalogm
 	if modelMap["label"] != nil && modelMap["label"].(string) != "" {
 		model.Label = core.StringPtr(modelMap["label"].(string))
 	}
-	if modelMap["label_i18n"] != nil {
-		// TODO: handle LabelI18n, map with entry type ''
-	}
 	if modelMap["index"] != nil {
 		model.Index = core.Int64Ptr(int64(modelMap["index"].(int)))
 	}
@@ -2416,9 +2408,6 @@ func resourceIBMCmVersionFlavorToMap(model *catalogmanagementv1.Flavor) (map[str
 	}
 	if model.Label != nil {
 		modelMap["label"] = model.Label
-	}
-	if model.LabelI18n != nil {
-		// TODO: handle LabelI18n of type TypeMap -- container, not list
 	}
 	if model.Index != nil {
 		modelMap["index"] = flex.IntValue(model.Index)
@@ -2551,9 +2540,6 @@ func resourceIBMCmVersionRenderTypeToMap(model *catalogmanagementv1.RenderType) 
 	if model.GroupingIndex != nil {
 		modelMap["grouping_index"] = flex.IntValue(model.GroupingIndex)
 	}
-	if model.ConfigConstraints != nil {
-		// TODO: handle ConfigConstraints of type TypeMap -- container, not list
-	}
 	if model.Associations != nil {
 		associationsMap, err := resourceIBMCmVersionRenderTypeAssociationsToMap(model.Associations)
 		if err != nil {
@@ -2652,9 +2638,6 @@ func resourceIBMCmVersionValidationToMap(model *catalogmanagementv1.Validation) 
 	if model.LastOperation != nil {
 		modelMap["last_operation"] = model.LastOperation
 	}
-	if model.Target != nil {
-		// TODO: handle Target of type TypeMap -- container, not list
-	}
 	if model.Message != nil {
 		modelMap["message"] = model.Message
 	}
@@ -2676,9 +2659,6 @@ func resourceIBMCmVersionScriptToMap(model *catalogmanagementv1.Script) (map[str
 	modelMap := make(map[string]interface{})
 	if model.Instructions != nil {
 		modelMap["instructions"] = model.Instructions
-	}
-	if model.InstructionsI18n != nil {
-		// TODO: handle InstructionsI18n of type TypeMap -- container, not list
 	}
 	if model.Script != nil {
 		modelMap["script"] = model.Script
@@ -2826,9 +2806,6 @@ func resourceIBMCmVersionArchitectureDiagramToMap(model *catalogmanagementv1.Arc
 	if model.Description != nil {
 		modelMap["description"] = model.Description
 	}
-	if model.DescriptionI18n != nil {
-		// TODO: handle DescriptionI18n of type TypeMap -- container, not list
-	}
 	return modelMap, nil
 }
 
@@ -2849,9 +2826,6 @@ func resourceIBMCmVersionMediaItemToMap(model *catalogmanagementv1.MediaItem) (m
 	}
 	if model.Caption != nil {
 		modelMap["caption"] = model.Caption
-	}
-	if model.CaptionI18n != nil {
-		// TODO: handle CaptionI18n of type TypeMap -- container, not list
 	}
 	if model.Type != nil {
 		modelMap["type"] = model.Type
@@ -2878,14 +2852,8 @@ func resourceIBMCmVersionFeatureToMap(model *catalogmanagementv1.Feature) (map[s
 	if model.Title != nil {
 		modelMap["title"] = model.Title
 	}
-	if model.TitleI18n != nil {
-		// TODO: handle TitleI18n of type TypeMap -- container, not list
-	}
 	if model.Description != nil {
 		modelMap["description"] = model.Description
-	}
-	if model.DescriptionI18n != nil {
-		// TODO: handle DescriptionI18n of type TypeMap -- container, not list
 	}
 	return modelMap, nil
 }
@@ -2945,9 +2913,6 @@ func resourceIBMCmVersionProjectToMap(model *catalogmanagementv1.Project) (map[s
 	if model.Name != nil {
 		modelMap["name"] = model.Name
 	}
-	if model.Metadata != nil {
-		// TODO: handle Metadata of type TypeMap -- container, not list
-	}
 	if model.PastBreakdown != nil {
 		pastBreakdownMap, err := resourceIBMCmVersionCostBreakdownToMap(model.PastBreakdown)
 		if err != nil {
@@ -3005,9 +2970,6 @@ func resourceIBMCmVersionCostResourceToMap(model *catalogmanagementv1.CostResour
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = model.Name
-	}
-	if model.Metadata != nil {
-		// TODO: handle Metadata of type TypeMap -- container, not list
 	}
 	if model.HourlyCost != nil {
 		modelMap["hourly_cost"] = model.HourlyCost
@@ -3071,12 +3033,6 @@ func resourceIBMCmVersionCostSummaryToMap(model *catalogmanagementv1.CostSummary
 	}
 	if model.TotalNoPriceResources != nil {
 		modelMap["total_no_price_resources"] = flex.IntValue(model.TotalNoPriceResources)
-	}
-	if model.UnsupportedResourceCounts != nil {
-		// TODO: handle UnsupportedResourceCounts of type TypeMap -- container, not list
-	}
-	if model.NoPriceResourceCounts != nil {
-		// TODO: handle NoPriceResourceCounts of type TypeMap -- container, not list
 	}
 	return modelMap, nil
 }

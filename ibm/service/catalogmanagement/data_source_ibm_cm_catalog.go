@@ -21,7 +21,7 @@ func DataSourceIBMCmCatalog() *schema.Resource {
 		ReadContext: dataSourceIBMCmCatalogRead,
 
 		Schema: map[string]*schema.Schema{
-			"catalog_identifier": &schema.Schema{
+			"catalog_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Catalog identifier.",
@@ -389,7 +389,7 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 
 	getCatalogOptions := &catalogmanagementv1.GetCatalogOptions{}
 
-	getCatalogOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
+	getCatalogOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
 
 	catalog, response, err := catalogManagementClient.GetCatalogWithContext(context, getCatalogOptions)
 	if err != nil {
@@ -560,9 +560,6 @@ func dataSourceIBMCmCatalogFiltersToMap(model *catalogmanagementv1.Filters) (map
 	}
 	if model.CategoryFilters != nil {
 		categoryFiltersMap := make(map[string]interface{}, len(model.CategoryFilters))
-		// for k, v := range model.CategoryFilters {
-		// 	// TODO: add code to handle a map of model instances!
-		// }
 		modelMap["category_filters"] = flex.Flatten(categoryFiltersMap)
 	}
 	if model.IDFilters != nil {

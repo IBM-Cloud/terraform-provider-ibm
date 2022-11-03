@@ -15,7 +15,7 @@ resource "ibm_cm_catalog" "cm_catalog_instance" {
 
 // Provision cm_offering resource instance
 resource "ibm_cm_offering" "cm_offering_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
   label = var.cm_offering_label
   name = var.cm_offering_name
   offering_icon_url = var.cm_offering_offering_icon_url
@@ -24,8 +24,8 @@ resource "ibm_cm_offering" "cm_offering_instance" {
 
 // Provision cm_version resource instance
 resource "ibm_cm_version" "cm_version_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
-  offering_identifier = ibm_cm_offering.cm_offering_instance.offering_id
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
+  offering_id = ibm_cm_offering.cm_offering_instance.id
   tags = var.cm_version_tags
   name = var.cm_version_name
   label = var.cm_version_label
@@ -108,13 +108,13 @@ resource "ibm_cm_offering_instance" "cm_offering_instance_instance" {
 
 // Create cm_catalog data source
 data "ibm_cm_catalog" "cm_catalog_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
 }
 
 // Create cm_offering data source
 data "ibm_cm_offering" "cm_offering_instance" {
-  catalog_identifier = ibm_cm_catalog.cm_catalog_instance.id
-  offering_identifier = ibm_cm_offering.cm_offering_instance.offering_id
+  catalog_id = ibm_cm_catalog.cm_catalog_instance.id
+  offering_id = ibm_cm_offering.cm_offering_instance.id
 }
 
 // Data source is not linked to a resource instance
