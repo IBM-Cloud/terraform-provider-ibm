@@ -125,7 +125,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 							Required:    true,
 							Description: "The messsage hub topic defined in the Event Streams instance.",
 						},
-						"password": &schema.Schema{
+						"api_key": &schema.Schema{
 							Type:             schema.TypeString,
 							Required:         true,
 							Sensitive:        true,
@@ -535,7 +535,7 @@ func resourceIBMAtrackerTargetMapToEventstreamsEndpointPrototype(modelMap map[st
 		brokers = append(brokers, brokersItem.(string))
 	}
 	model.Brokers = brokers
-	model.Password = core.StringPtr(modelMap["password"].(string)) // pragma: whitelist secret
+	model.APIKey = core.StringPtr(modelMap["api_key"].(string)) // pragma: whitelist secret
 	return model, nil
 }
 
@@ -564,7 +564,7 @@ func resourceIBMAtrackerTargetEventstreamsEndpointPrototypeToMap(model *atracker
 	modelMap["brokers"] = model.Brokers
 	modelMap["topic"] = model.Topic
 	// TODO: remove after deprecation
-	modelMap["password"] = REDACTED_TEXT // pragma: whitelist secret
+	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
 	return modelMap, nil
 }
 

@@ -440,8 +440,8 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 	if model.Topic != nil {
 		modelMap["topic"] = *model.Topic
 	}
-	if model.Password != nil {
-		modelMap["password"] = *model.Password
+	if model.APIKey != nil {
+		modelMap["api_key"] = *model.APIKey
 	}
 	return modelMap, nil
 }

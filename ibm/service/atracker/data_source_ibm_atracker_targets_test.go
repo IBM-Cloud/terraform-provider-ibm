@@ -104,7 +104,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				brokers = [ "kafka-x:9094" ]
 				topic = "my-topic"
-				password = "%s"
+				api_key = "%s"
 			}
 		}
 		data "ibm_atracker_targets" "atracker_targets" {

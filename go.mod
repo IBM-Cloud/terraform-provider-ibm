@@ -22,7 +22,7 @@ require (
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.4
 	github.com/IBM/keyprotect-go-client v0.7.0
 	github.com/IBM/networking-go-sdk v0.33.0
-	github.com/IBM/platform-services-go-sdk v0.28.5
+	github.com/IBM/platform-services-go-sdk v0.29.2
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/scc-go-sdk/v3 v3.1.6
 	github.com/IBM/scc-go-sdk/v4 v4.0.0
@@ -145,7 +145,7 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
-	go.mongodb.org/mongo-driver v1.10.0 // indirect
+	go.mongodb.org/mongo-driver v1.11.0 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875 // indirect
