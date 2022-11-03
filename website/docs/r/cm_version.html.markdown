@@ -436,13 +436,12 @@ You can import the `ibm_cm_version` resource by using `id`.
 The `id` property can be formed from `catalog_id`, `offering_id`, and `version_loc_id` in the following format:
 
 ```
-<catalog_id>/<offering_id>/<version_loc_id>
+<catalog_id>/<version_id>
 ```
 * `catalog_id`: A string. Catalog identifier.
-* `offering_id`: A string. Offering identification.
-* `version_loc_id`: A string. A dotted value of `catalogID`.`versionID`.
+* `version_id`: A string. Version ID.
 
 # Syntax
 ```
-$ terraform import ibm_cm_version.cm_version <catalog_id>/<offering_id>/<version_loc_id>
+$ terraform import ibm_cm_version.cm_version <catalog_id>/<version_id>
 ```

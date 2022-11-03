@@ -561,15 +561,11 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 ## Import
 
 You can import the `ibm_cm_offering` resource by using `id`.
-The `id` property can be formed from `catalog_id`, and `offering_id` in the following format:
+The `id` property is just the `offering_id`.
 
-```
-<catalog_id>/<offering_id>
-```
-* `catalog_id`: A string. Catalog identifier.
 * `offering_id`: A string. Offering identification.
 
 # Syntax
 ```
-$ terraform import ibm_cm_offering.cm_offering <catalog_id>/<offering_id>
+$ terraform import ibm_cm_offering.cm_offering <offering_id>
 ```
