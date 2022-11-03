@@ -47,6 +47,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/api/usermanagement/usermanagementv2"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 const (
@@ -79,6 +80,14 @@ const (
 	isLBProfile                               = "profile"
 	isLBRouteMode                             = "route_mode"
 	isLBType                                  = "type"
+	crnSeparator                              = ":"
+	scopeSeparator                            = "/"
+	crn                                       = "crn"
+)
+
+var (
+	ErrMalformedCRN   = errors.New("malformed CRN")
+	ErrMalformedScope = errors.New("malformed scope in CRN")
 )
 
 // HashInt ...
@@ -1941,6 +1950,72 @@ func EscapeUrlParm(urlParm string) string {
 func GetLocation(instance models.ServiceInstanceV2) string {
 	region := instance.Crn.Region
 	cName := instance.Crn.CName
+	if cName == "bluemix" || cName == "staging" {
+		return region
+	} else {
+		return cName + "-" + region
+	}
+}
+
+type CRN struct {
+	Scheme          string
+	Version         string
+	CName           string
+	CType           string
+	ServiceName     string
+	Region          string
+	ScopeType       string
+	Scope           string
+	ServiceInstance string
+	ResourceType    string
+	Resource        string
+}
+
+func Parse(s string) (CRN, error) {
+	if s == "" {
+		return CRN{}, nil
+	}
+
+	segments := strings.Split(s, crnSeparator)
+	if len(segments) != 10 || segments[0] != crn {
+		return CRN{}, ErrMalformedCRN
+	}
+
+	crn := CRN{
+		Scheme:          segments[0],
+		Version:         segments[1],
+		CName:           segments[2],
+		CType:           segments[3],
+		ServiceName:     segments[4],
+		Region:          segments[5],
+		ServiceInstance: segments[7],
+		ResourceType:    segments[8],
+		Resource:        segments[9],
+	}
+
+	scopeSegments := segments[6]
+	if scopeSegments != "" {
+		if scopeSegments == "global" {
+			crn.Scope = "global"
+		} else {
+			scopeParts := strings.Split(scopeSegments, scopeSeparator)
+			if len(scopeParts) == 2 {
+				crn.ScopeType, crn.Scope = scopeParts[0], scopeParts[1]
+			} else {
+				return CRN{}, ErrMalformedScope
+			}
+		}
+	}
+
+	return crn, nil
+}
+func GetLocationV2(instance rc.ResourceInstance) string {
+	crn, err := Parse(*instance.CRN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	region := crn.Region
+	cName := crn.CName
 	if cName == "bluemix" || cName == "staging" {
 		return region
 	} else {
