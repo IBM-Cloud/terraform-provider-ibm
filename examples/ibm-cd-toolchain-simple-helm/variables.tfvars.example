@@ -2,9 +2,9 @@
 /* Variables for Module "Main"                       */
 /*****************************************************/
 resource_group                  = "<ibm-cloud-resource-group>"
-ibm_cloud_api_key               = "<ibm-cloud-api-key>"
+ibmcloud_api_key                = "<ibm-cloud-api-key>"
 region                          = "<ibm-cloud-region>"
-ibm_cloud_api                   = "<ibm-cloud-endpoint>"
+ibmcloud_api                    = "<ibm-cloud-endpoint>"
 toolchain_name                  = "some name for toolchain"
 toolchain_description           = "some description for toolchain"
 app_name                        = "some name for the application that will be deployed by the toolchain"
