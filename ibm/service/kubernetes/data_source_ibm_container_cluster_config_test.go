@@ -60,11 +60,6 @@ func TestAccIBMContainer_ClusterConfigCalicoDataSourceBasic(t *testing.T) {
 	})
 }
 
-//Set:
-//IBM_DATACENTER
-//IBM_MACHINE_TYPE
-//IBM_PUBLIC_VLAN_ID
-//IBM_PRIVATE_VLAN_ID
 func testAccCheckIBMContainerClusterDataSourceConfig(clustername string) string {
 	return fmt.Sprintf(`
 resource "ibm_container_cluster" "testacc_cluster" {

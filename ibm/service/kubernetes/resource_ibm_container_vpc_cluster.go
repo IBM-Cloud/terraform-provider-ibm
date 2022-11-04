@@ -482,7 +482,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
 	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
+		timeoutStage = strings.ToLower(v.(string))
 	}
 
 	var zonesList = make([]v2.Zone, 0)
@@ -572,10 +572,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	switch strings.ToLower(timeoutStage) {
+	switch timeoutStage {
 
-	case strings.ToLower(normal):
-		_, err = waitForVpcClusterStateNormal(d, meta)
+	case strings.ToLower(clusterNormal):
+		_, err = waitForVpcClusterState(d, meta, clusterNormal)
 		if err != nil {
 			return err
 		}
@@ -1222,7 +1222,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 	return createStateConf.WaitForState()
 }
 
-func waitForVpcClusterStateNormal(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1242,8 +1242,8 @@ func waitForVpcClusterStateNormal(d *schema.ResourceData, meta interface{}) (int
 				return clusterInfo, deployInProgress, clusterInfoErr
 			}
 
-			if clusterInfo.State == normal {
-				return clusterInfo, normal, nil
+			if clusterInfo.State == strings.ToLower(waitForState) {
+				return clusterInfo, waitForState, nil
 			}
 			return clusterInfo, deployInProgress, nil
 
