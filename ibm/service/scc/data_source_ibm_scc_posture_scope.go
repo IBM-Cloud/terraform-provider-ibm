@@ -425,35 +425,6 @@ func DataSourceIBMSccPostureScope() *schema.Resource {
 							Computed:    true,
 							Description: "Stores the value of credential_gateway_key .",
 						},
-						"credential_group": &schema.Schema{
-							Type:        schema.TypeMap,
-							Computed:    true,
-							Description: "Stores the value of credential_credential_group .",
-						},
-						"enabled_credential_group": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Stores the value of credential_enabled_credential_group .",
-						},
-						"groups": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Stores the value of credential_groups .",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"credential_group_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "credential group id.",
-									},
-									"passphrase": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "passphase of the credential.",
-									},
-								},
-							},
-						},
 						"purpose": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1131,19 +1102,6 @@ func dataSourceScopeTldCredentailToMap(tldCredentailItem posturemanagementv2.Sco
 	if tldCredentailItem.GatewayKey != nil {
 		tldCredentailMap["gateway_key"] = tldCredentailItem.GatewayKey
 	}
-	if tldCredentailItem.CredentialGroup != nil {
-		tldCredentailMap["credential_group"] = tldCredentailItem.CredentialGroup
-	}
-	if tldCredentailItem.EnabledCredentialGroup != nil {
-		tldCredentailMap["enabled_credential_group"] = tldCredentailItem.EnabledCredentialGroup
-	}
-	if tldCredentailItem.Groups != nil {
-		groupsList := []map[string]interface{}{}
-		for _, groupsItem := range tldCredentailItem.Groups {
-			groupsList = append(groupsList, dataSourceScopeTldCredentailGroupsToMap(groupsItem))
-		}
-		tldCredentailMap["groups"] = groupsList
-	}
 	if tldCredentailItem.Purpose != nil {
 		tldCredentailMap["purpose"] = tldCredentailItem.Purpose
 	}
@@ -1222,19 +1180,6 @@ func dataSourceScopeTldCredentailDisplayFieldsToMap(displayFieldsItem postureman
 	}
 
 	return displayFieldsMap
-}
-
-func dataSourceScopeTldCredentailGroupsToMap(groupsItem posturemanagementv2.CredentialGroup) (groupsMap map[string]interface{}) {
-	groupsMap = map[string]interface{}{}
-
-	if groupsItem.ID != nil {
-		groupsMap["credential_group_id"] = groupsItem.ID
-	}
-	if groupsItem.Passphrase != nil {
-		groupsMap["passphrase"] = groupsItem.Passphrase
-	}
-
-	return groupsMap
 }
 
 func dataSourceScopeFlattenCollectors(result []posturemanagementv2.Collector) (collectors []map[string]interface{}) {

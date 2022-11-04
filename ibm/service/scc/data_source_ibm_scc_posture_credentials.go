@@ -252,25 +252,6 @@ func DataSourceIBMSccPostureCredentials() *schema.Resource {
 							Computed:    true,
 							Description: "ID of the user who modified the credentials.",
 						},
-						"group": &schema.Schema{
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Credential group details.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "credential group id.",
-									},
-									"passphrase": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "passphase of the credential.",
-									},
-								},
-							},
-						},
 						"purpose": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,

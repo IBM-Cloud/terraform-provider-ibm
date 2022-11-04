@@ -65,27 +65,6 @@ func ResourceIBMSccPostureCredentials() *schema.Resource {
 					},
 				},
 			},
-			"group": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Required:    true,
-				Description: "Credential group details.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "credential group id.",
-						},
-						"passphrase": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "passphase of the credential.",
-						},
-					},
-				},
-			},
 			"purpose": {
 				Type:         schema.TypeString,
 				Required:     true,
