@@ -247,7 +247,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, normal}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or normal",
+				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or Normal",
 			},
 
 			"entitlement": {
