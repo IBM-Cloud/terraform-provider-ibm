@@ -246,8 +246,8 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:         true,
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
+				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, normal}, true),
+				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or normal",
 			},
 
 			"entitlement": {
@@ -573,6 +573,12 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	switch strings.ToLower(timeoutStage) {
+
+	case strings.ToLower(normal):
+		_, err = waitForVpcClusterStateNormal(d, meta)
+		if err != nil {
+			return err
+		}
 
 	case strings.ToLower(masterNodeReady):
 		_, err = waitForVpcClusterMasterAvailable(d, meta)
@@ -1206,6 +1212,40 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 				}
 			}
 			return workers, deployInProgress, nil
+
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterStateNormal(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{normal},
+		Refresh: func() (interface{}, string, error) {
+			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
+
+			if err != nil || clusterInfoErr != nil {
+				return clusterInfo, deployInProgress, clusterInfoErr
+			}
+
+			if clusterInfo.State == normal {
+				return clusterInfo, normal, nil
+			}
+			return clusterInfo, deployInProgress, nil
 
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
