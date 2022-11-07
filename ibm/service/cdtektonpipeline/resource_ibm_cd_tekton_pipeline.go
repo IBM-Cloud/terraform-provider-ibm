@@ -108,45 +108,61 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Description: "Definition list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"scm_source": &schema.Schema{
+						"source": &schema.Schema{
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
 							Required:    true,
-							Description: "Source code management repository containing the Tekton pipeline definition.",
+							Description: "Source repository containing the Tekton pipeline definition.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": &schema.Schema{
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										ForceNew:    true,
-										Description: "URL of the definition repository.",
+										Description: "The only supported source type is \"git\", indicating that the source is a git repository.",
 									},
-									"branch": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
-									},
-									"tag": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
-									},
-									"path": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The path to the definition's yaml files.",
-									},
-									"tool": &schema.Schema{
+									"properties": &schema.Schema{
 										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+										MinItems:    1,
+										MaxItems:    1,
+										Required:    true,
+										Description: "Properties of the source, which define the URL of the repository and a branch or tag.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
+												"url": &schema.Schema{
 													Type:        schema.TypeString,
+													Required:    true,
+													ForceNew:    true,
+													Description: "URL of the definition repository.",
+												},
+												"branch": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
+												},
+												"tag": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
+												},
+												"path": &schema.Schema{
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The path to the definition's yaml files.",
+												},
+												"tool": &schema.Schema{
+													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "ID of the repository tool instance in the parent toolchain.",
+													Description: "Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "ID of the repository tool instance in the parent toolchain.",
+															},
+														},
+													},
 												},
 											},
 										},
@@ -325,49 +341,65 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Default:     true,
 							Description: "Flag whether the trigger is enabled.",
 						},
-						"scm_source": &schema.Schema{
+						"source": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+							Description: "Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"url": &schema.Schema{
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										ForceNew:    true,
-										Description: "URL of the repository to which the trigger is listening.",
+										Description: "The only supported source type is \"git\", indicating that the source is a git repository.",
 									},
-									"branch": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
-									},
-									"pattern": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
-									},
-									"blind_connection": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
-									},
-									"hook_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
-									},
-									"tool": &schema.Schema{
+									"properties": &schema.Schema{
 										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Reference to the repository tool in the parent toolchain.",
+										MinItems:    1,
+										MaxItems:    1,
+										Required:    true,
+										Description: "Properties of the source, which define the URL of the repository and a branch or pattern.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
+												"url": &schema.Schema{
+													Type:        schema.TypeString,
+													Required:    true,
+													ForceNew:    true,
+													Description: "URL of the repository to which the trigger is listening.",
+												},
+												"branch": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.",
+												},
+												"pattern": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
+												},
+												"blind_connection": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.",
+												},
+												"hook_id": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "ID of the repository tool instance in the parent toolchain.",
+													Description: "ID of the webhook from the repo. Computed upon creation of the trigger.",
+												},
+												"tool": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Reference to the repository tool in the parent toolchain.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "ID of the repository tool instance in the parent toolchain.",
+															},
+														},
+													},
 												},
 											},
 										},
@@ -378,7 +410,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						"events": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.",
+							Description: "Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"cron": &schema.Schema{
@@ -695,18 +727,29 @@ func resourceIBMCdTektonPipelineToolchainReferenceToMap(model *cdtektonpipelinev
 
 func resourceIBMCdTektonPipelineDefinitionToMap(model *cdtektonpipelinev2.Definition) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	scmSourceMap, err := resourceIBMCdTektonPipelineDefinitionScmSourceToMap(model.ScmSource)
+	sourceMap, err := resourceIBMCdTektonPipelineDefinitionSourceToMap(model.Source)
 	if err != nil {
 		return modelMap, err
 	}
-	modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
+	modelMap["source"] = []map[string]interface{}{sourceMap}
 	if model.ID != nil {
 		modelMap["id"] = model.ID
 	}
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipelinev2.DefinitionScmSource) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineDefinitionSourceToMap(model *cdtektonpipelinev2.DefinitionSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	propertiesMap, err := resourceIBMCdTektonPipelineDefinitionSourcePropertiesToMap(model.Properties)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["properties"] = []map[string]interface{}{propertiesMap}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineDefinitionSourcePropertiesToMap(model *cdtektonpipelinev2.DefinitionSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	if model.Branch != nil {
@@ -717,7 +760,7 @@ func resourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipeline
 	}
 	modelMap["path"] = model.Path
 	if model.Tool != nil {
-		toolMap, err := resourceIBMCdTektonPipelineDefinitionScmSourceToolToMap(model.Tool)
+		toolMap, err := resourceIBMCdTektonPipelineDefinitionSourcePropertiesToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -726,7 +769,7 @@ func resourceIBMCdTektonPipelineDefinitionScmSourceToMap(model *cdtektonpipeline
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineDefinitionScmSourceToolToMap(model *cdtektonpipelinev2.DefinitionScmSourceTool) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineDefinitionSourcePropertiesToolToMap(model *cdtektonpipelinev2.DefinitionSourcePropertiesTool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -804,12 +847,12 @@ func resourceIBMCdTektonPipelineTriggerToMap(model cdtektonpipelinev2.TriggerInt
 		if model.Enabled != nil {
 			modelMap["enabled"] = model.Enabled
 		}
-		if model.ScmSource != nil {
-			scmSourceMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
+		if model.Source != nil {
+			sourceMap, err := resourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)
 			if err != nil {
 				return modelMap, err
 			}
-			modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
+			modelMap["source"] = []map[string]interface{}{sourceMap}
 		}
 		if model.Events != nil {
 			modelMap["events"] = model.Events
@@ -867,7 +910,18 @@ func resourceIBMCdTektonPipelineWorkerToMap(model *cdtektonpipelinev2.Worker) (m
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.TriggerScmSource) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerSourceToMap(model *cdtektonpipelinev2.TriggerSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	propertiesMap, err := resourceIBMCdTektonPipelineTriggerSourcePropertiesToMap(model.Properties)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["properties"] = []map[string]interface{}{propertiesMap}
+	return modelMap, nil
+}
+
+func resourceIBMCdTektonPipelineTriggerSourcePropertiesToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	if model.Branch != nil {
@@ -883,7 +937,7 @@ func resourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.
 		modelMap["hook_id"] = model.HookID
 	}
 	if model.Tool != nil {
-		toolMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToolToMap(model.Tool)
+		toolMap, err := resourceIBMCdTektonPipelineTriggerSourcePropertiesToolToMap(model.Tool)
 		if err != nil {
 			return modelMap, err
 		}
@@ -892,7 +946,7 @@ func resourceIBMCdTektonPipelineTriggerScmSourceToMap(model *cdtektonpipelinev2.
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerScmSourceToolToMap(model *cdtektonpipelinev2.TriggerScmSourceTool) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerSourcePropertiesToolToMap(model *cdtektonpipelinev2.TriggerSourcePropertiesTool) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = model.ID
@@ -1010,12 +1064,12 @@ func resourceIBMCdTektonPipelineTriggerScmTriggerToMap(model *cdtektonpipelinev2
 		modelMap["max_concurrent_runs"] = flex.IntValue(model.MaxConcurrentRuns)
 	}
 	modelMap["enabled"] = model.Enabled
-	if model.ScmSource != nil {
-		scmSourceMap, err := resourceIBMCdTektonPipelineTriggerScmSourceToMap(model.ScmSource)
+	if model.Source != nil {
+		sourceMap, err := resourceIBMCdTektonPipelineTriggerSourceToMap(model.Source)
 		if err != nil {
 			return modelMap, err
 		}
-		modelMap["scm_source"] = []map[string]interface{}{scmSourceMap}
+		modelMap["source"] = []map[string]interface{}{sourceMap}
 	}
 	if model.Events != nil {
 		modelMap["events"] = model.Events

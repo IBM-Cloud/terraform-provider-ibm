@@ -48,10 +48,13 @@ resource "ibm_cd_tekton_pipeline" "cd_pipeline_instance" {
 // Provision cd_tekton_pipeline_definition resource instance
 resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  scm_source {
-    url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.parameters[0].repo_url
-    branch = "master"
-    path = ".tekton"
+  source {
+    type = "git"
+    properties {
+      url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.parameters[0].repo_url
+      branch = "master"
+      path = ".tekton"
+    }
   }
 }
 

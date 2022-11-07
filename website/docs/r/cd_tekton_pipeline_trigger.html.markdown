@@ -19,10 +19,13 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
   max_concurrent_runs = 3
   name = "Manual Trigger"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
-  scm_source {
-		url = "url"
-		branch = "branch"
-		pattern = "pattern"
+  source {
+		type = "git"
+		properties {
+			url = "url"
+			branch = "branch"
+			pattern = "pattern"
+		}
   }
   secret {
 		type = "token_matches"
@@ -48,28 +51,13 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The default value is `true`.
 * `event_listener` - (Optional, String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-* `events` - (Optional, List) Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.
+* `events` - (Optional, List) Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
   * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The list items must match regular expression `/^[-0-9a-zA-Z_,]+$/`. The maximum length is `3` items. The minimum length is `0` items.
 * `max_concurrent_runs` - (Optional, Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 * `name` - (Optional, String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][-0-9a-zA-Z_. ]{1,253}[a-zA-Z0-9]$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-* `scm_source` - (Optional, List) Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
-Nested scheme for **scm_source**:
-	* `blind_connection` - (Optional, Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
-	* `branch` - (Optional, String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `hook_id` - (Optional, String) ID of the webhook from the repo. Computed upon creation of the trigger.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `pattern` - (Optional, String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
-	* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
-	Nested scheme for **tool**:
-		* `id` - (Optional, String) ID of the repository tool instance in the parent toolchain.
-		  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `url` - (Required, Forces new resource, String) URL of the repository to which the trigger is listening.
-	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `secret` - (Optional, List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
 Nested scheme for **secret**:
 	* `algorithm` - (Optional, String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
@@ -82,6 +70,25 @@ Nested scheme for **secret**:
 	  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
 	* `value` - (Optional, String) Secret value, not needed if secret type is `internal_validation`.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+* `source` - (Optional, List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
+Nested scheme for **source**:
+	* `properties` - (Required, List) Properties of the source, which define the URL of the repository and a branch or pattern.
+	Nested scheme for **properties**:
+		* `blind_connection` - (Optional, Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
+		* `branch` - (Optional, String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+		* `hook_id` - (Optional, String) ID of the webhook from the repo. Computed upon creation of the trigger.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+		* `pattern` - (Optional, String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
+		* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
+		Nested scheme for **tool**:
+			* `id` - (Optional, String) ID of the repository tool instance in the parent toolchain.
+			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+		* `url` - (Required, Forces new resource, String) URL of the repository to which the trigger is listening.
+		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `type` - (Required, String) The only supported source type is "git", indicating that the source is a git repository.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
 * `tags` - (Optional, List) Trigger tags array.
   * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
 * `timezone` - (Optional, String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.

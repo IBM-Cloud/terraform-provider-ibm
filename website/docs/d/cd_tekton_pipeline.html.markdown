@@ -40,20 +40,24 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **definitions**:
 	* `id` - (String) UUID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-	* `scm_source` - (List) Source code management repository containing the Tekton pipeline definition.
-	Nested scheme for **scm_source**:
-		* `branch` - (String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `path` - (String) The path to the definition's yaml files.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `tag` - (String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
-		* `tool` - (List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
-		Nested scheme for **tool**:
-			* `id` - (String) ID of the repository tool instance in the parent toolchain.
-			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-		* `url` - (Forces new resource, String) URL of the definition repository.
-		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `source` - (List) Source repository containing the Tekton pipeline definition.
+	Nested scheme for **source**:
+		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.
+		Nested scheme for **properties**:
+			* `branch` - (String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+			* `path` - (String) The path to the definition's yaml files.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+			* `tag` - (String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
+			* `tool` - (List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
+			Nested scheme for **tool**:
+				* `id` - (String) ID of the repository tool instance in the parent toolchain.
+				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+			* `url` - (Forces new resource, String) URL of the definition repository.
+			  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+		* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
 
 * `enable_notifications` - (Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain. If omitted, this feature is disabled by default.
 
@@ -106,7 +110,7 @@ Nested scheme for **triggers**:
 	  * Constraints: The default value is `true`.
 	* `event_listener` - (String) Event listener name. The name of the event listener to which the trigger is associated. The event listeners are defined in the definition repositories of the Tekton pipeline.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-	* `events` - (List) Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, they map to the equivalent 'pull request' events.
+	* `events` - (List) Only needed for Git triggers. Events list that defines the events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.
 	  * Constraints: Allowable list items are: `push`, `pull_request`, `pull_request_closed`. The list items must match regular expression `/^[-0-9a-zA-Z_,]+$/`. The maximum length is `3` items. The minimum length is `0` items.
 	* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -130,21 +134,6 @@ Nested scheme for **triggers**:
 		  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 		* `value` - (String) Property value. Any string value is valid.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
-	* `scm_source` - (List) Source code management repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
-	Nested scheme for **scm_source**:
-		* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
-		* `branch` - (String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `pattern` - (String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
-		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
-		* `tool` - (List) Reference to the repository tool in the parent toolchain.
-		Nested scheme for **tool**:
-			* `id` - (String) ID of the repository tool instance in the parent toolchain.
-			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
-		* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
-		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `secret` - (List) Only needed for generic webhook trigger type. Secret used to start generic webhook trigger.
 	Nested scheme for **secret**:
 		* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
@@ -157,6 +146,25 @@ Nested scheme for **triggers**:
 		  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
 		* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+	* `source` - (List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
+	Nested scheme for **source**:
+		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or pattern.
+		Nested scheme for **properties**:
+			* `blind_connection` - (Boolean) True if the repository server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
+			* `branch` - (String) Name of a branch from the repo. One of branch or pattern must be specified, but only one or the other.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+			* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
+			* `pattern` - (String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
+			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
+			* `tool` - (List) Reference to the repository tool in the parent toolchain.
+			Nested scheme for **tool**:
+				* `id` - (String) ID of the repository tool instance in the parent toolchain.
+				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+			* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
+			  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+		* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
+		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^git$/`.
 	* `tags` - (List) Optional trigger tags array.
 	  * Constraints: The list items must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`. The maximum length is `128` items. The minimum length is `0` items.
 	* `timezone` - (String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
