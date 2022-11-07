@@ -43,7 +43,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_token` - (String) The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.
+	* `api_token` - (String) The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `api_user_name` - (String) The user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.
 	* `dashboard_url` - (String) The URL of the Jenkins server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Jenkins integration tile.
 	* `name` - (String) The name for this tool integration.

@@ -33,7 +33,7 @@ Review the argument reference that you can specify for your resource.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
 	* `name` - (Required, String) The name used for this tool integration.
-	* `worker_queue_credentials` - (Required, String) The service ID API key that is used by the private worker to authenticate access to the work queue.
+	* `worker_queue_credentials` - (Required, String) The service ID API key that is used by the private worker to authenticate access to the work queue. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `worker_queue_identifier` - (Computed, String) The service ID which identifies this private workers run request queue.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.

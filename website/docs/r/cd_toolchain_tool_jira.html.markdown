@@ -35,7 +35,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_token` - (Optional, String) The api token for your JIRA account. Optional for public projects.
+	* `api_token` - (Optional, String) The api token for your JIRA account. Optional for public projects. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `api_url` - (Required, String) The base API URL for your JIRA instance.
 	* `enable_traceability` - (Optional, Boolean) Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.

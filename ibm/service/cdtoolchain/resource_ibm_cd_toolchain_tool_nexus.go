@@ -61,7 +61,7 @@ func ResourceIBMCdToolchainToolNexus() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The password or token for authenticating to the Nexus repository.",
+							Description:      "The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,

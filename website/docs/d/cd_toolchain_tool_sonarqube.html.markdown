@@ -48,7 +48,7 @@ Nested scheme for **parameters**:
 	* `name` - (String) The name for this tool integration.
 	* `server_url` - (String) The URL of the SonarQube server.
 	* `user_login` - (String) The user id for authenticating to the SonarQube server.
-	* `user_password` - (String) The password or token for authenticating to the SonarQube server.
+	* `user_password` - (String) The password or token for authenticating to the SonarQube server. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

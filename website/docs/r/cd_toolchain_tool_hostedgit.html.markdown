@@ -61,7 +61,7 @@ Nested scheme for **parameters**:
 	* `owner_id` - (Computed, String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
-	* `project_id` - (Computed, String) The ID of the project.
+	* `repo_id` - (Computed, String) The ID of the Git Repos and Issue Tracking project.
 	* `repo_name` - (Computed, String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (Computed, String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
 	* `source_repo_url` - (Computed, String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.

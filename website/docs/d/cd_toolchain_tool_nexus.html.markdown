@@ -48,7 +48,7 @@ Nested scheme for **parameters**:
 	* `release_url` - (String) The URL of the Nexus release repository.
 	* `server_url` - (String) The URL of the Nexus server.
 	* `snapshot_url` - (String) The URL of the Nexus snapshot repository.
-	* `token` - (String) The password or token for authenticating to the Nexus repository.
+	* `token` - (String) The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `type` - (String) The type of repository for the Nexus integration.
 	  * Constraints: Allowable values are: `npm`, `maven`.
 	* `user_id` - (String) The user id or email for authenticating to the Nexus repository.

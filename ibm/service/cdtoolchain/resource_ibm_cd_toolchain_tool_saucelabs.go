@@ -51,7 +51,7 @@ func ResourceIBMCdToolchainToolSaucelabs() *schema.Resource {
 							Required:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The access key for the Sauce Labs account.",
+							Description:      "The access key for the Sauce Labs account. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

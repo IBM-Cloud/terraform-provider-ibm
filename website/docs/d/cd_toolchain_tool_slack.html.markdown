@@ -55,7 +55,7 @@ Nested scheme for **parameters**:
 	  * Constraints: The default value is `true`.
 	* `toolchain_unbind` - (Boolean) Generate `tool removed from toolchain` notifications.
 	  * Constraints: The default value is `true`.
-	* `webhook` - (String) The incoming webhook used by Slack to receive events.
+	* `webhook` - (String) The incoming webhook used by Slack to receive events. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

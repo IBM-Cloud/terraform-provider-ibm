@@ -135,7 +135,7 @@ func DataSourceIBMCdToolchainToolArtifactory() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The Artifactory API key for your Artifactory repository.",
+							Description: "The Artifactory API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

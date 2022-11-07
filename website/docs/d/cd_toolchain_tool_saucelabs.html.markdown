@@ -43,7 +43,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `access_key` - (String) The access key for the Sauce Labs account.
+	* `access_key` - (String) The access key for the Sauce Labs account. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `username` - (String) The user name for the Sauce Labs account.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.

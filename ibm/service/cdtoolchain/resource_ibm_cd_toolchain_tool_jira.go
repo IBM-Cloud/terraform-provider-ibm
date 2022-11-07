@@ -67,7 +67,7 @@ func ResourceIBMCdToolchainToolJira() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The api token for your JIRA account. Optional for public projects.",
+							Description:      "The api token for your JIRA account. Optional for public projects. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

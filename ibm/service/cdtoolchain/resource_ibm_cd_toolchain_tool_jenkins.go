@@ -54,6 +54,7 @@ func ResourceIBMCdToolchainToolJenkins() *schema.Resource {
 						"webhook_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
+							Sensitive:   true,
 							Description: "The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.",
 						},
 						"api_user_name": &schema.Schema{
@@ -66,7 +67,7 @@ func ResourceIBMCdToolchainToolJenkins() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.",
+							Description:      "The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

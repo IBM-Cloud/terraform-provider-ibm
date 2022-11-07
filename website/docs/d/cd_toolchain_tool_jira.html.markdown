@@ -43,7 +43,7 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_token` - (String) The api token for your JIRA account. Optional for public projects.
+	* `api_token` - (String) The api token for your JIRA account. Optional for public projects. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `api_url` - (String) The base API URL for your JIRA instance.
 	* `enable_traceability` - (Boolean) Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.

@@ -50,7 +50,7 @@ Nested scheme for **parameters**:
 	  * Constraints: The default value is `true`.
 	* `toolchain_unbind` - (Optional, Boolean) Generate `tool removed from toolchain` notifications.
 	  * Constraints: The default value is `true`.
-	* `webhook` - (Required, String) The incoming webhook used by Slack to receive events.
+	* `webhook` - (Required, String) The incoming webhook used by Slack to receive events. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
