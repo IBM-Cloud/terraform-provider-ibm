@@ -718,7 +718,7 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 		params.MasterVersion = v.(string)
 	}
 	if v, ok := d.GetOk("operating_system"); ok {
-		params.MasterVersion = v.(string)
+		params.OperatingSystem = v.(string)
 	}
 	if v, ok := d.GetOkExists("private_service_endpoint"); ok {
 		params.PrivateEndpointEnabled = v.(bool)
