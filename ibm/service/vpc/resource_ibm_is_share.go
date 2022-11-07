@@ -45,7 +45,11 @@ func ResourceIbmIsShare() *schema.Resource {
 					return flex.ResourceTagsCustomizeDiff(diff)
 				},
 			),
-
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				},
+			),
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceSharesValidate(diff)
@@ -449,7 +453,7 @@ func ResourceIbmIsShareValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^([ ]*[A-Za-z0-9:_.-]+[ ]*)+$`,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
 			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
@@ -802,7 +806,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 		log.Printf(
 			"Error getting shares (%s) access tags: %s", d.Id(), err)
 	}
-
+	d.Set(isFileShareAccessTags, accesstags)
 	// d.Set(isFileShareTags, tags)
 	if share.UserTags != nil {
 		if err = d.Set(isFileShareTags, share.UserTags); err != nil {
@@ -810,7 +814,7 @@ func resourceIbmIsShareRead(context context.Context, d *schema.ResourceData, met
 				"Error setting shares (%s) user tags: %s", d.Id(), err)
 		}
 	}
-	d.Set(isFileShareAccessTags, accesstags)
+
 	return nil
 }
 
