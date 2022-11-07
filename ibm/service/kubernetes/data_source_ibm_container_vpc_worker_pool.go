@@ -55,7 +55,7 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 			"operating_system": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The operating system of the hosts in the worker pool",
+				Description: "The operating system of the workers in the worker pool",
 			},
 			"resource_group_id": {
 				Type:     schema.TypeString,

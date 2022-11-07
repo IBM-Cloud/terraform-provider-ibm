@@ -202,7 +202,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Operating system of the default worker pool. Options are REDHAT_7_64 or REDHAT_8_64.",
+				Description: "The operating system of the workers in the default worker pool.",
 			},
 
 			"taints": {

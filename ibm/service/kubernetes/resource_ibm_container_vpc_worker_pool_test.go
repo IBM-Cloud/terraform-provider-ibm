@@ -38,17 +38,17 @@ func TestAccIBMContainerVpcClusterWorkerPoolBasic(t *testing.T) {
 						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "2"),
 				),
 			},
-			// {
-			// 	Config: testAccCheckIBMVpcContainerWorkerPoolUpdate(name),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		resource.TestCheckResourceAttr(
-			// 			"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
-			// 		resource.TestCheckResourceAttr(
-			// 			"ibm_container_vpc_worker_pool.test_pool", "zones.#", "2"),
-			// 		resource.TestCheckResourceAttr(
-			// 			"ibm_container_vpc_worker_pool.test_pool", "labels.%", "3"),
-			// 	),
-			// },
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolUpdate(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "cx2.2x4"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "3"),
+				),
+			},
 			{
 				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
 				ImportState:       true,

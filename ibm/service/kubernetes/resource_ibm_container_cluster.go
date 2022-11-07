@@ -313,7 +313,7 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Operating system of the default worker pool.",
+				Description: "The operating system of the workers in the default worker pool.",
 			},
 
 			"wait_for_worker_update": {

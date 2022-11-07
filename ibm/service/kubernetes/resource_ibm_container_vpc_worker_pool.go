@@ -157,7 +157,7 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				Description: "Operating system of the worker pool. Options are REDHAT_7_64 or REDHAT_8_64.",
+				Description: "The operating system of the workers in the worker pool.",
 			},
 
 			"host_pool_id": {

@@ -335,6 +335,9 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }`, name)
 }
 func testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem string) string {
+	vpcName := "<test-vpc-name>"
+	subnetName := "<test-subnet-name>"
+	cosInstanceName := "<test-cos-name>"
 	return fmt.Sprintf(`
 provider "ibm" {
 	region="us-south"
@@ -343,17 +346,17 @@ data "ibm_resource_group" "resource_group" {
 	is_default=true
 }
 data "ibm_is_vpc" "vpc" {
-	name = "cluster-squad-dallas-test"
+	name = "%s"
 }
 
 data "ibm_is_subnet" "subnet" {
-	name                     = "cluster-squad-dallas-test-01"
+	name                     = "%s"
 }
 data "ibm_resource_instance" "cos_instance" {
-	name     = "cluster-cos"
+	name     = "%s"
 }
 resource "ibm_container_vpc_cluster" "cluster" {
-	name              = "%[1]s"
+	name              = "%s"
 	vpc_id            = data.ibm_is_vpc.vpc.id
 	flavor            = "%s"
 	worker_count      = "%s"
@@ -371,7 +374,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   data "ibm_container_cluster_config" "testacc_ds_cluster" {
 	cluster_name_id = ibm_container_vpc_cluster.cluster.id
   }
-  `, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
+  `, vpcName, subnetName, cosInstanceName, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
 
 }
 

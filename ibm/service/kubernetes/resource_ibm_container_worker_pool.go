@@ -74,7 +74,7 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				Description: "Operating system of the worker pool.",
+				Description: "The operating system of the workers in the worker pool.",
 			},
 
 			"hardware": {
