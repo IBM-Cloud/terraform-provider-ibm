@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_jira. This allows cd_toolchain_tool_jira to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-jira).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-jira) page for more information.
 
 ## Example Usage
 
@@ -55,7 +55,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

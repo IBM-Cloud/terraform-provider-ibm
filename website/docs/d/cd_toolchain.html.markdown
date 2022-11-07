@@ -47,7 +47,7 @@ In addition to all argument references listed, you can access the following attr
 * `name` - (String) Toolchain name.
   * Constraints: The maximum length is `128` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 
-* `resource_group_id` - (String) Resource group where the toolchain can be found.
+* `resource_group_id` - (String) Resource group where the toolchain is located.
 
 * `tags` - (List) Tags associated with the toolchain.
 
