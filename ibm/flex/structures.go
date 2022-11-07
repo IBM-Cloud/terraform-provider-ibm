@@ -2295,6 +2295,42 @@ func FlattenSSLCiphers(ciphers []datatypes.Network_LBaaS_SSLCipher) *schema.Set 
 	return NewStringSet(schema.HashString, c)
 }
 
+func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) error {
+
+	if value, ok := diff.GetOkExists("access_tags"); ok {
+		tagSet := value.(*schema.Set)
+		newTagList := tagSet.List()
+		tagType := "access"
+		gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+		if err != nil {
+			return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		}
+
+		listTagsOptions := &globaltaggingv1.ListTagsOptions{
+			TagType: &tagType,
+		}
+		taggingResult, _, err := gtClient.ListTags(listTagsOptions)
+		if err != nil {
+			return err
+		}
+		var taglist []string
+		for _, item := range taggingResult.Items {
+			taglist = append(taglist, *item.Name)
+		}
+		existingAccessTags := NewStringSet(ResourceIBMVPCHash, taglist)
+		errStatement := ""
+		for _, tag := range newTagList {
+			if !existingAccessTags.Contains(tag) {
+				errStatement = errStatement + " " + tag.(string)
+			}
+		}
+		if errStatement != "" {
+			return fmt.Errorf("[ERROR] Error : Access tag(s) %s does not exist", errStatement)
+		}
+	}
+	return nil
+}
+
 func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 
 	if diff.Id() != "" && diff.HasChange("tags") {
@@ -2420,7 +2456,12 @@ func ResourceSharesValidate(diff *schema.ResourceDiff) error {
 	if sizeIntf, ok := diff.GetOk("size"); ok {
 		size = sizeIntf.(int)
 	}
-
+	if diff.HasChange("size") {
+		oldSize, newSize := diff.GetChange("size")
+		if newSize.(int) < oldSize.(int) {
+			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
+		}
+	}
 	if profileIntf, ok := diff.GetOk("profile"); ok {
 		profile = profileIntf.(string)
 	}
@@ -2504,12 +2545,6 @@ func ResourceSharesValidate(diff *schema.ResourceDiff) error {
 		}
 	}
 
-	if diff.HasChange("size") {
-		oldSize, newSize := diff.GetChange("size")
-		if newSize.(int) < oldSize.(int) {
-			return fmt.Errorf("The new share size '%d' must be greater than the current share size '%d'", newSize.(int), oldSize.(int))
-		}
-	}
 	return nil
 }
 

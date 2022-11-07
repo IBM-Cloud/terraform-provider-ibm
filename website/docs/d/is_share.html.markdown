@@ -45,6 +45,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
+- `access_tags`  - (String) Access management tags associated to the share.
 - `created_at` - The date and time that the file share is created.
 - `crn` - The CRN for this share.
 - `encryption` - The type of encryption used for this file share.
@@ -93,7 +94,6 @@ The following attributes are exported:
   - `id` - The unique identifier for this file share.
   - `name` - The unique user-defined name for this file share.
   - `resource_type` - The resource type.
-- `zone` - The name of the zone this file share will reside in.
-- `access_tags`  - (String) Access management tags associated to the share.
 - `tags`  - (String) User tags associated for to the share.
+- `zone` - The name of the zone this file share will reside in.
 
