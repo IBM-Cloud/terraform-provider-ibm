@@ -191,7 +191,23 @@ var Satellite_Resource_instance_id string
 var HostPoolID string
 
 // Continuous Delivery
-var CdResourceGroupID string
+var CdResourceGroupName string
+var CdAppConfigInstanceName string
+var CdKeyProtectInstanceName string
+var CdSecretsManagerInstanceName string
+var CdSlackChannelName string
+var CdSlackTeamName string
+var CdSlackWebhook string
+var CdJiraProjectKey string
+var CdJiraApiUrl string
+var CdJiraUsername string
+var CdJiraApiToken string
+var CdSaucelabsAccessKey string
+var CdSaucelabsUsername string
+var CdBitbucketRepoUrl string
+var CdGithubConsolidatedRepoUrl string
+var CdGitlabRepoUrl string
+var CdHostedGitRepoUrl string
 
 // VPN Server
 var ISCertificateCrn string
@@ -1047,9 +1063,83 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable IBM_CLUSTER_ID for ibm_container_vpc_worker_pool resource or datasource else tests will fail if this is not set correctly")
 	}
 
-	CdResourceGroupID = os.Getenv("IBM_CD_RESOURCE_GROUP_ID")
-	if CdResourceGroupID == "" {
-		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_ID for testing CD resources, CD tests will fail if this is not set")
+	CdResourceGroupName = os.Getenv("IBM_CD_RESOURCE_GROUP_NAME")
+	if CdResourceGroupName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_RESOURCE_GROUP_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdAppConfigInstanceName = os.Getenv("IBM_CD_APPCONFIG_INSTANCE_NAME")
+	if CdAppConfigInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_APPCONFIG_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdKeyProtectInstanceName = os.Getenv("IBM_CD_KEYPROTECT_INSTANCE_NAME")
+	if CdKeyProtectInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_KEYPROTECT_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdSecretsManagerInstanceName = os.Getenv("IBM_CD_SECRETSMANAGER_INSTANCE_NAME")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SECRETSMANAGER_INSTANCE_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdSlackChannelName = os.Getenv("IBM_CD_SLACK_CHANNEL_NAME")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_CHANNEL_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdSlackTeamName = os.Getenv("IBM_CD_SLACK_TEAM_NAME")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_TEAM_NAME for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdSlackWebhook = os.Getenv("IBM_CD_SLACK_WEBHOOK")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SLACK_WEBHOOK for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdJiraProjectKey = os.Getenv("IBM_CD_JIRA_PROJECT_KEY")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_PROJECT_KEY for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdJiraApiUrl = os.Getenv("IBM_CD_JIRA_API_URL")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdJiraUsername = os.Getenv("IBM_CD_JIRA_USERNAME")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_USERNAME for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdJiraApiToken = os.Getenv("IBM_CD_JIRA_API_TOKEN")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_JIRA_API_TOKEN for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdSaucelabsAccessKey = os.Getenv("IBM_CD_SAUCELABS_ACCESS_KEY")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_ACCESS_KEY for testing CD resources, CD tests will fail if this is not set")
+	}
+	CdSaucelabsUsername = os.Getenv("IBM_CD_SAUCELABS_USERNAME")
+	if CdSecretsManagerInstanceName == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_SAUCELABS_USERNAME for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdBitbucketRepoUrl = os.Getenv("IBM_CD_BITBUCKET_REPO_URL")
+	if CdBitbucketRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_BITBUCKET_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdGithubConsolidatedRepoUrl = os.Getenv("IBM_CD_GITHUB_CONSOLIDATED_REPO_URL")
+	if CdGithubConsolidatedRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_GITHUB_CONSOLIDATED_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdGitlabRepoUrl = os.Getenv("IBM_CD_GITLAB_REPO_URL")
+	if CdGitlabRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_GITLAB_REPO_URL for testing CD resources, CD tests will fail if this is not set")
+	}
+
+	CdHostedGitRepoUrl = os.Getenv("IBM_CD_HOSTED_GIT_URL")
+	if CdHostedGitRepoUrl == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CD_HOSTED_GIT_URL for testing CD resources, CD tests will fail if this is not set")
 	}
 
 	ISCertificateCrn = os.Getenv("IS_CERTIFICATE_CRN")

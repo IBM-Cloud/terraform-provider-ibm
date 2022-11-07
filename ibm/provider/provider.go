@@ -707,7 +707,6 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.DataSourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.DataSourceIBMCdToolchainToolSecretsmanager(),
 			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.DataSourceIBMCdToolchainToolBitbucketgit(),
-			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.DataSourceIBMCdToolchainToolGithubintegrated(),
 			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.DataSourceIBMCdToolchainToolGithubconsolidated(),
 			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.DataSourceIBMCdToolchainToolGitlab(),
 			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.DataSourceIBMCdToolchainToolHostedgit(),
@@ -725,6 +724,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.DataSourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.DataSourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.DataSourceIBMCdToolchainToolSaucelabs(),
+			"ibm_cd_toolchain_tool_jira":               cdtoolchain.DataSourceIBMCdToolchainToolJira(),
 
 			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.DataSourceIBMCdTektonPipelineDefinition(),
@@ -1129,7 +1129,6 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotect(),
 			"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanager(),
 			"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgit(),
-			"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegrated(),
 			"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidated(),
 			"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlab(),
 			"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgit(),
@@ -1147,6 +1146,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexus(),
 			"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerduty(),
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
+			"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJira(),
 
 			// // Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
@@ -1325,7 +1325,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_keyprotect":         cdtoolchain.ResourceIBMCdToolchainToolKeyprotectValidator(),
 				"ibm_cd_toolchain_tool_secretsmanager":     cdtoolchain.ResourceIBMCdToolchainToolSecretsmanagerValidator(),
 				"ibm_cd_toolchain_tool_bitbucketgit":       cdtoolchain.ResourceIBMCdToolchainToolBitbucketgitValidator(),
-				"ibm_cd_toolchain_tool_githubintegrated":   cdtoolchain.ResourceIBMCdToolchainToolGithubintegratedValidator(),
 				"ibm_cd_toolchain_tool_githubconsolidated": cdtoolchain.ResourceIBMCdToolchainToolGithubconsolidatedValidator(),
 				"ibm_cd_toolchain_tool_gitlab":             cdtoolchain.ResourceIBMCdToolchainToolGitlabValidator(),
 				"ibm_cd_toolchain_tool_hostedgit":          cdtoolchain.ResourceIBMCdToolchainToolHostedgitValidator(),
@@ -1343,6 +1342,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_cd_toolchain_tool_nexus":              cdtoolchain.ResourceIBMCdToolchainToolNexusValidator(),
 				"ibm_cd_toolchain_tool_pagerduty":          cdtoolchain.ResourceIBMCdToolchainToolPagerdutyValidator(),
 				"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabsValidator(),
+				"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJiraValidator(),
 
 				// // Added for Tekton Pipeline
 				"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinitionValidator(),

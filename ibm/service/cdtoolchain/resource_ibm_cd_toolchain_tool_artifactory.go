@@ -38,60 +38,60 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 				MinItems:    1,
 				MaxItems:    1,
 				Required:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type a name for this tool integration, for example: my-artifactory. This name displays on your toolchain.",
+							Description: "The name for this tool integration.",
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL that you want to navigate to when you click the Artifactory integration tile.",
+							Description: "The URL of the Artifactory server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Artifactory integration tile.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Choose the type of repository for your Artifactory integration.",
+							Description: "The type of repository for your Artifactory integration.",
 						},
 						"user_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the User ID or email for your Artifactory repository.",
-						},
-						"token": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-							Sensitive:        true,
-							Description:      "Type the API key for your Artifactory repository.",
+							Description: "The User ID or email for your Artifactory repository.",
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Artifactory release repository.",
+							Description: "The URL for your Artifactory release repository.",
 						},
 						"mirror_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+							Description: "The URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
 						},
 						"snapshot_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL for your Artifactory snapshot repository.",
+							Description: "The URL for your Artifactory snapshot repository.",
 						},
 						"repository_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the name of your artifactory repository where your docker images are located.",
+							Description: "The name of your artifactory repository where your docker images are located.",
 						},
 						"repository_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Type the URL of your artifactory repository where your docker images are located.",
+							Description: "The URL of your artifactory repository where your docker images are located.",
+						},
+						"api_key": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The Artifactory API key for your Artifactory repository.",
 						},
 					},
 				},
@@ -100,12 +100,12 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_toolchain_tool_artifactory", "name"),
-				Description:  "Name of tool.",
+				Description:  "Name of the tool.",
 			},
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool can be found.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -131,12 +131,12 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -197,7 +197,10 @@ func resourceIBMCdToolchainToolArtifactoryCreate(context context.Context, d *sch
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("artifactory")
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolArtifactory(), nil)
+	remapFields := map[string]string{
+		"api_key": "token",
+	}
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolArtifactory(), remapFields)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -243,7 +246,10 @@ func resourceIBMCdToolchainToolArtifactoryRead(context context.Context, d *schem
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolArtifactory(), nil)
+	remapFields := map[string]string{
+		"api_key": "token",
+	}
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolArtifactory(), remapFields)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -306,7 +312,10 @@ func resourceIBMCdToolchainToolArtifactoryUpdate(context context.Context, d *sch
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolArtifactory(), nil)
+		remapFields := map[string]string{
+			"api_key": "token",
+		}
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolArtifactory(), remapFields)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}
