@@ -547,29 +547,24 @@ Review the argument reference that you can specify for your resource.
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
+  - Nested scheme for `group`:
+    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`
 
-  Nested scheme for `group`:
-  - `group_id` - (Optional, String) The ID of the scaling group.
+    - `members` (Set, Optional)
+      - Nested scheme for `members`:
+        - `allocation_count` - (Optional, Integer) Allocated number of members.
 
-  - `members` (Set, Optional)
+    - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
+      - Nested scheme for `memory`:
+        - `allocation_mb` - (Optional, Integer) Allocated memory per-member.
 
-    Nested scheme for `members`:
-    - `allocation_count` - (Optional, Integer) Allocated number of members.
+    - `disk` (Set, Optional)
+      - Nested scheme for `disk`:
+        - `allocation_mb` - (Optional, Integer) Allocated disk per-member.
 
-  - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
-
-    Nested scheme for `memory`:
-    - `allocation_mb` - (Optional, Integer) Allocated memory per-member.
-
-  - `disk` (Set, Optional)
-
-    Nested scheme for `disk`:
-    - `allocation_mb` - (Optional, Integer) Allocated disk per-member.
-
-  - `cpu` (Set, Optional)
-
-    Nested scheme for `cpu`:
-    - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
+    - `cpu` (Set, Optional)
+      - Nested scheme for `cpu`:
+        - `allocation_count` - (Optional, Integer) Allocated dedicated CPU per-member.
 
 - `members_memory_allocation_mb` **Deprecated** - (Optional, Integer) The amount of memory in megabytes for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
 - `members_disk_allocation_mb` **Deprecated** - (Optional, Integer) The amount of disk space for the database, split across all members. If not specified, the default setting of the database service is used, which can vary by database type.
