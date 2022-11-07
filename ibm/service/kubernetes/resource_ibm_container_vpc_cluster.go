@@ -198,6 +198,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Labels for default worker pool",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Operating system of the default worker pool. Options are REDHAT_7_64 or REDHAT_8_64.",
+			},
+
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -225,6 +232,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 					},
 				},
 			},
+
 			"disable_public_service_endpoint": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -276,6 +284,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
+
 			"kms_instance_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -283,6 +292,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "Instance ID for boot volume encryption",
 				RequiredWith:     []string{"crk"},
 			},
+
 			"crk": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -321,6 +331,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
 			"albs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -361,6 +372,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 					},
 				},
 			},
+
 			"public_service_endpoint_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -511,6 +523,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 	if hpid, ok := d.GetOk("host_pool_id"); ok {
 		workerpool.HostPoolID = hpid.(string)
+	}
+
+	if os, ok := d.GetOk("operating_system"); ok {
+		workerpool.OperatingSystem = os.(string)
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
@@ -1025,6 +1041,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("host_pool_id", workerPool.HostPoolID)
+	d.Set("operating_system", workerPool.OperatingSystem)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
