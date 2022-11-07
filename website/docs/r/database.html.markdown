@@ -322,7 +322,7 @@ resource "ibm_database" "mongodb" {
 ```
 
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
-* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`.
+* To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`. Read more about Analytics and BI Connector [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics)
 * MongoDB Enterprise provisioning may require more time than the default timeout. A longer timeout value can be set with using the `timeouts` attribute.
 
 ```terraform
@@ -510,35 +510,35 @@ Review the argument reference that you can specify for your resource.
 - `adminpassword` - (Optional, String)  The password for the database administrator. If not specified, an empty string is provided for the password and the user ID cannot be used. In this case, more users must be specified in a `user` block.
 - `auto_scaling` (List , Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
-  Nested scheme for `auto_scaling`:
-  - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
+   - Nested scheme for `auto_scaling`:
+     - `cpu` (List , Optional) Single block of CPU is allowed at once by CPU autoscaling.
+       - Nested scheme for `cpu`:
+         - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+         - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
+         - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
+         - `rate_units` - (Optional, String) Auto scaling rate in units.
+        
+     - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
+        - Nested scheme for `disk`:
+          - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
+          - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
+          - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+          - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
+          - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
+          - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+          - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+          - `rate_units` - (Optional, String) Auto scaling rate in units.
 
-    Nested scheme for `cpu`:
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-    - `rate_limit_count_per_member` - (Optional, Integer) Auto scaling rate limit in count per number.
-    - `rate_period_seconds` - (Optional, Integer) Period seconds of the auto scaling rate.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
-  - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
+     - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
+       - Nested scheme for `memory`:
+         - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
+         - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
+         - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
+         - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
+         - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
+         - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
+         - `rate_units` - (Optional, String) Auto scaling rate in units.
 
-    Nested scheme for `disk`:
-    - `capacity_enabled` - (Optional, Bool) Auto scaling scalar enables or disables the scalar capacity.
-    - `free_space_less_than_percent` - (Optional, Integer) Auto scaling scalar capacity free space less than percent.
-    -  `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-    - `io_enabled` - (Optional, Bool) Auto scaling scalar I/O utilization enabled.`
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate increase percent.
-    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
-  - `memory` (List , Optional) Memory Auto Scaling in single block of memory is allowed at once.
-
-    Nested scheme for `memory`:
-    - `io_above_percent` - (Optional, Integer) Auto scaling scalar I/O utilization above percent.
-    - `io_enabled`-Bool-Optional-Auto scaling scalar I/O utilization enabled.
-    - `io_over_period` - (Optional, String) Auto scaling scalar I/O utilization over period.
-    - `rate_increase_percent` - (Optional, Integer) Auto scaling rate in increase percent.
-    - `rate_limit_mb_per_member` - (Optional, Integer) Auto scaling rate limit in megabytes per member.
-    - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
-    - `rate_units` - (Optional, String) Auto scaling rate in units.
 - `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services `databases-for-postgresql`, `databases-for-redis` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v4#setdatabaseconfiguration-request).
@@ -548,7 +548,8 @@ Review the argument reference that you can specify for your resource.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
   - Nested scheme for `group`:
-    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`
+    - `group_id` - (Optional, String) The ID of the scaling group. Scaling group ID allowed values:  `member`, `analytics`, `bi_connector` or `search`. Read more about `analytics` and `bi_connector` [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics). Read more about `search` [here](https://cloud.ibm.com/docs/databases-for-cassandra?topic=databases-for-cassandra-dse-search)
+      
 
     - `members` (Set, Optional)
       - Nested scheme for `members`:
