@@ -314,8 +314,8 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				Optional:         true,
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
+				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, normal}, true),
+				Description:      "wait_till can be configured for Master Ready, One worker Ready, Ingress Ready or Normal",
 			},
 			"service_subnet": {
 				Type:        schema.TypeString,
@@ -737,12 +737,22 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return err
 	}
-	if d.Get("wait_till").(string) == oneWorkerNodeReady {
+	waitForState := strings.ToLower(d.Get("wait_till").(string))
+
+	if waitForState == strings.ToLower(oneWorkerNodeReady) {
 		_, err = waitForClusterOneWorkerAvailable(d, meta)
 		if err != nil {
 			return err
 		}
 	}
+
+	if waitForState == strings.ToLower(clusterNormal) {
+		_, err = waitForClusterState(d, meta, waitForState)
+		if err != nil {
+			return err
+		}
+	}
+
 	d.Set("force_delete_storage", d.Get("force_delete_storage").(bool))
 
 	return resourceIBMContainerClusterUpdate(d, meta)
@@ -1194,7 +1204,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 				if strings.Compare(newPack["version"].(string), oldPack["version"].(string)) != 0 {
 					cluster, err := clusterAPI.Find(clusterID, targetEnv)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error retrieving cluster %s: %s", clusterID, err)
+						return fmt.Errorf("[ERROR] workers_info Error retrieving cluster %s: %s", clusterID, err)
 					}
 					if newPack["version"].(string) != strings.Split(cluster.MasterKubeVersion, "_")[0] {
 						return fmt.Errorf("[ERROR] Worker version %s should match the master kube version %s", newPack["version"].(string), strings.Split(cluster.MasterKubeVersion, "_")[0])
@@ -1295,7 +1305,7 @@ func resourceIBMContainerClusterUpdate(d *schema.ResourceData, meta interface{})
 		oldList, newList := d.GetChange("tags")
 		cluster, err := clusterAPI.Find(clusterID, targetEnv)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving cluster %s: %s", clusterID, err)
+			return fmt.Errorf("[ERROR] tags Error retrieving cluster %s: %s", clusterID, err)
 		}
 		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, cluster.CRN)
 		if err != nil {
@@ -1435,7 +1445,7 @@ func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.Cl
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
+			return nil, "", fmt.Errorf("[ERROR] clusterStateRefreshFunc Error retrieving cluster: %s", err)
 		}
 		// Check active transactions
 		log.Println("Checking cluster")
@@ -1466,13 +1476,46 @@ func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (in
 		Refresh: func() (interface{}, string, error) {
 			clusterFields, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
 			if err != nil {
-				return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
+				return nil, "", fmt.Errorf("[ERROR] waitForClusterMasterAvailable Error retrieving cluster: %s", err)
 			}
 
 			if clusterFields.MasterStatus == ready {
 				return clusterFields, ready, nil
 			}
 			return clusterFields, deployInProgress, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState string) (interface{}, error) {
+	targetEnv, err := getClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(conns.ClientSession).ContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{deployRequested, deployInProgress},
+		Target:  []string{waitForState},
+		Refresh: func() (interface{}, string, error) {
+			cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
+			if err != nil {
+				return nil, "", fmt.Errorf("[ERROR] waitForClusterState Error retrieving cluster: %s", err)
+			}
+
+			if cls.State == waitForState {
+				return cls, waitForState, nil
+			}
+			return cls, deployInProgress, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -1640,7 +1683,7 @@ func subnetStateRefreshFunc(client v1.Clusters, instanceID string, d *schema.Res
 	return func() (interface{}, string, error) {
 		cluster, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
+			return nil, "", fmt.Errorf("[ERROR]subnetStateRefresh Error retrieving cluster: %s", err)
 		}
 		if cluster.IngressHostname == "" || cluster.IngressSecretName == "" {
 			return cluster, subnetProvisioning, nil
@@ -1675,7 +1718,7 @@ func clusterVersionRefreshFunc(client v1.Clusters, instanceID string, d *schema.
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error retrieving cluster: %s", err)
+			return nil, "", fmt.Errorf("[ERROR] clusterVersionRefresh Error retrieving cluster: %s", err)
 		}
 		// Check active transactions
 		kubeversion := d.Get("kube_version").(string)
