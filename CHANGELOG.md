@@ -1,3 +1,8 @@
+# 1.47.1(Nov 08, 2022)
+BUG FIXES
+* Support to add retry fetch of tags using global search API's when we reach ratelimit ([4125](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4125))
+* Fix len out of range for IBM Satellite Cluster host labels ([4149](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4149))
+
 # 1.47.0(Nov 02, 2022)
 Features
 * Support for Kubernetes Service
