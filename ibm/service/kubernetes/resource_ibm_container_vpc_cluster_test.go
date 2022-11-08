@@ -462,9 +462,9 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 			name      = "us-south-1"
 		}
 		wait_till = "normal"
-		# kms_instance_id = "%[5]s"
-		# crk = "%[6]s"
-		# kms_account_id = "%[7]s"
+		kms_instance_id = "%[5]s"
+		crk = "%[6]s"
+		kms_account_id = "%[7]s"
 	}
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
 	fmt.Println(config)

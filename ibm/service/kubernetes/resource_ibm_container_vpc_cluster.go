@@ -575,7 +575,8 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
-		_, err = waitForVpcClusterState(d, meta, clusterNormal)
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
 		if err != nil {
 			return err
 		}
@@ -1222,7 +1223,7 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 	return createStateConf.WaitForState()
 }
 
-func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string) (interface{}, error) {
+func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
 	targetEnv, err := getVpcClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1233,20 +1234,15 @@ func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForSta
 	}
 	clusterID := d.Id()
 	createStateConf := &resource.StateChangeConf{
-		Pending: []string{deployRequested, deployInProgress},
-		Target:  []string{normal},
+		Pending: pendingState,
+		Target:  []string{waitForState},
 		Refresh: func() (interface{}, string, error) {
-			clusterInfo, clusterInfoErr := csClient.Clusters().GetCluster(clusterID, targetEnv)
-
-			if err != nil || clusterInfoErr != nil {
-				return clusterInfo, deployInProgress, clusterInfoErr
+			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+			if err != nil {
+				return nil, "", err
 			}
 
-			if clusterInfo.State == strings.ToLower(waitForState) {
-				return clusterInfo, waitForState, nil
-			}
-			return clusterInfo, deployInProgress, nil
-
+			return clusterInfo, clusterInfo.State, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,

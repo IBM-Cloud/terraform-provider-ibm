@@ -111,7 +111,7 @@ func testAccCheckIBMContainerClusterDataSourceVpcConfig(clustername string) stri
 			subnet_id = "%[4]s"
 			name      = "us-south-1"
 		}
-		wait_till = "normal"
+		wait_till = "Normal"
 	}
 
 data "ibm_container_cluster_config" "testacc_ds_cluster" {
@@ -126,7 +126,7 @@ resource "ibm_container_cluster" "testacc_cluster" {
   datacenter      = "%s"
   machine_type    = "%s"
   hardware        = "shared"
-  wait_till        = "normal"
+  wait_till       = "Normal"
   public_vlan_id  = "%s"
   private_vlan_id = "%s"
 }

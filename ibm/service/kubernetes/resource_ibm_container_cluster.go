@@ -27,11 +27,16 @@ const (
 	clusterNormal        = "normal"
 	clusterDeletePending = "deleting"
 	clusterDeleted       = "deleted"
-	workerNormal         = "normal"
-	subnetNormal         = "normal"
-	workerReadyState     = "Ready"
-	workerDeleteState    = "deleted"
-	workerDeletePending  = "deleting"
+	clusterDeployed      = "deployed"
+	clusterDeploying     = "deploying"
+	clusterPending       = "pending"
+	clusterRequested     = "requested"
+
+	workerNormal        = "normal"
+	subnetNormal        = "normal"
+	workerReadyState    = "Ready"
+	workerDeleteState   = "deleted"
+	workerDeletePending = "deleting"
 
 	versionUpdating     = "updating"
 	clusterProvisioning = "provisioning"
@@ -739,18 +744,20 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	}
 	waitForState := strings.ToLower(d.Get("wait_till").(string))
 
-	if waitForState == strings.ToLower(oneWorkerNodeReady) {
+	switch waitForState {
+	case strings.ToLower(oneWorkerNodeReady):
 		_, err = waitForClusterOneWorkerAvailable(d, meta)
 		if err != nil {
 			return err
 		}
-	}
 
-	if waitForState == strings.ToLower(clusterNormal) {
-		_, err = waitForClusterState(d, meta, waitForState)
+	case strings.ToLower(clusterNormal):
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		_, err = waitForClusterState(d, meta, waitForState, pendingStates)
 		if err != nil {
 			return err
 		}
+
 	}
 
 	d.Set("force_delete_storage", d.Get("force_delete_storage").(bool))
@@ -1492,7 +1499,7 @@ func waitForClusterMasterAvailable(d *schema.ResourceData, meta interface{}) (in
 	return stateConf.WaitForState()
 }
 
-func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState string) (interface{}, error) {
+func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
 	targetEnv, err := getClusterTargetHeader(d, meta)
 	if err != nil {
 		return nil, err
@@ -1504,7 +1511,7 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 	clusterID := d.Id()
 
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{deployRequested, deployInProgress},
+		Pending: pendingState,
 		Target:  []string{waitForState},
 		Refresh: func() (interface{}, string, error) {
 			cls, err := csClient.Clusters().FindWithOutShowResourcesCompatible(clusterID, targetEnv)
@@ -1512,10 +1519,7 @@ func waitForClusterState(d *schema.ResourceData, meta interface{}, waitForState 
 				return nil, "", fmt.Errorf("[ERROR] waitForClusterState Error retrieving cluster: %s", err)
 			}
 
-			if cls.State == waitForState {
-				return cls, waitForState, nil
-			}
-			return cls, deployInProgress, nil
+			return cls, cls.State, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
