@@ -77,7 +77,6 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 		data "ibm_resource_group" "resource_group" {
 			name = "%s"
 		}
-
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
 			resource_group_id = data.ibm_resource_group.resource_group.id
@@ -86,7 +85,6 @@ func testAccCheckIBMCdTektonPipelineConfigBasic() string {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -108,7 +106,6 @@ func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePar
 		data "ibm_resource_group" "resource_group" {
 			name = "%s"
 		}
-
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
 			resource_group_id = data.ibm_resource_group.resource_group.id
@@ -117,7 +114,6 @@ func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePar
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -131,7 +127,7 @@ func testAccCheckIBMCdTektonPipelineConfig(enableNotifications string, enablePar
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
-	`, rgName, tcName, enableSlackNotifications, enablePartialCloning)
+	`, rgName, tcName, enableNotifications, enablePartialCloning)
 }
 
 func testAccCheckIBMCdTektonPipelineExists(n string, obj cdtektonpipelinev2.TektonPipeline) resource.TestCheckFunc {

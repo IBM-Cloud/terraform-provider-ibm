@@ -44,11 +44,11 @@ Nested scheme for **definitions**:
 	Nested scheme for **source**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.
 		Nested scheme for **properties**:
-			* `branch` - (String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
+			* `branch` - (String) A branch from the repo, specify one of branch or tag only.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `path` - (String) The path to the definition's yaml files.
+			* `path` - (String) The path to the definition's YAML files.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `tag` - (String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
+			* `tag` - (String) A tag from the repo, specify one of branch or tag only.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
 			* `tool` - (List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
 			Nested scheme for **tool**:
@@ -61,7 +61,7 @@ Nested scheme for **definitions**:
 
 * `enable_notifications` - (Boolean) Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain. If omitted, this feature is disabled by default.
 
-* `enable_partial_cloning` - (Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work. If omitted, this feature is disabled by default.
+* `enable_partial_cloning` - (Boolean) Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.
 
 * `enabled` - (Boolean) Flag whether this pipeline is enabled.
   * Constraints: The default value is `true`.
@@ -155,7 +155,7 @@ Nested scheme for **triggers**:
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 			* `hook_id` - (String) ID of the webhook from the repo. Computed upon creation of the trigger.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-			* `pattern` - (String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
+			* `pattern` - (String) Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.
 			  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested scheme for **tool**:
@@ -170,7 +170,7 @@ Nested scheme for **triggers**:
 	* `timezone` - (String) Only used for timer triggers. Specify the timezone used for this timer trigger, which will ensure the cron activates this trigger relative to the specified timezone. If no timezone is specified, the default timezone used is UTC. Valid timezones are those listed in the IANA timezone database, https://www.iana.org/time-zones.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
 	* `type` - (String) Trigger type.
-	  * Constraints: Allowable values are: .
+	  * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 	* `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `worker` - (List) Worker used to run the trigger. If not specified the trigger will use the default pipeline worker.

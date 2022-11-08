@@ -40,11 +40,11 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **source**:
 	* `properties` - (Required, List) Properties of the source, which define the URL of the repository and a branch or tag.
 	Nested scheme for **properties**:
-		* `branch` - (Optional, String) A branch from the repo. One of branch or tag must be specified, but only one or the other.
+		* `branch` - (Optional, String) A branch from the repo, specify one of branch or tag only.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `path` - (Required, String) The path to the definition's yaml files.
+		* `path` - (Required, String) The path to the definition's YAML files.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `tag` - (Optional, String) A tag from the repo. One of branch or tag must be specified, but only one or the other.
+		* `tag` - (Optional, String) A tag from the repo, specify one of branch or tag only.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_]{1,253}$/`.
 		* `tool` - (Optional, List) Reference to the repository tool, in the parent toolchain, that contains the pipeline definition.
 		Nested scheme for **tool**:

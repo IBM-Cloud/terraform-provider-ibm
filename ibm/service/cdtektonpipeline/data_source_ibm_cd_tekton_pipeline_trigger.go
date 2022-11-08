@@ -165,7 +165,7 @@ func DataSourceIBMCdTektonPipelineTrigger() *schema.Resource {
 									"pattern": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
+										Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
 									},
 									"blind_connection": &schema.Schema{
 										Type:        schema.TypeBool,

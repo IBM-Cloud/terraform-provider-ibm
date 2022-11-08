@@ -55,17 +55,17 @@ func DataSourceIBMCdTektonPipelineDefinition() *schema.Resource {
 									"branch": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
+										Description: "A branch from the repo, specify one of branch or tag only.",
 									},
 									"tag": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
+										Description: "A tag from the repo, specify one of branch or tag only.",
 									},
 									"path": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The path to the definition's yaml files.",
+										Description: "The path to the definition's YAML files.",
 									},
 									"tool": &schema.Schema{
 										Type:        schema.TypeList,

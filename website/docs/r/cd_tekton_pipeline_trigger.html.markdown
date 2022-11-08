@@ -79,7 +79,7 @@ Nested scheme for **source**:
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 		* `hook_id` - (Optional, String) ID of the webhook from the repo. Computed upon creation of the trigger.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
-		* `pattern` - (Optional, String) Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.
+		* `pattern` - (Optional, String) Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.
 		  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.!*]*$/`.
 		* `tool` - (Optional, List) Reference to the repository tool in the parent toolchain.
 		Nested scheme for **tool**:

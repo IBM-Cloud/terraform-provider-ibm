@@ -100,17 +100,17 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 												"branch": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
+													Description: "A branch from the repo, specify one of branch or tag only.",
 												},
 												"tag": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
+													Description: "A tag from the repo, specify one of branch or tag only.",
 												},
 												"path": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "The path to the definition's yaml files.",
+													Description: "The path to the definition's YAML files.",
 												},
 												"tool": &schema.Schema{
 													Type:        schema.TypeList,
@@ -332,7 +332,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 												"pattern": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
+													Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
 												},
 												"blind_connection": &schema.Schema{
 													Type:        schema.TypeBool,
@@ -466,7 +466,7 @@ func DataSourceIBMCdTektonPipeline() *schema.Resource {
 			"enable_partial_cloning": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work. If omitted, this feature is disabled by default.",
+				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work. If omitted, this feature is disabled by default.",
 			},
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,

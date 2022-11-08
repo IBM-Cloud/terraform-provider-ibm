@@ -30,13 +30,13 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Flag whether to enable notifications for this pipeline. When enabled, pipeline run events will be published on all slack integration specified channels in the parent toolchain.",
+				Description: "Flag whether to enable notifications for this pipeline. When enabled, pipeline run events are published on all slack integration specified channels in the parent toolchain.",
 			},
 			"enable_partial_cloning": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories will be read and cloned. This means symbolic links may not work.",
+				Description: "Flag whether to enable partial cloning for this pipeline. When partial clone is enabled, only the files contained within the paths specified in definition repositories are read and cloned, this means that symbolic links might not work.",
 			},
 			"worker": &schema.Schema{
 				Type:        schema.TypeList,
@@ -138,17 +138,17 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 												"branch": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "A branch from the repo. One of branch or tag must be specified, but only one or the other.",
+													Description: "A branch from the repo, specify one of branch or tag only.",
 												},
 												"tag": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "A tag from the repo. One of branch or tag must be specified, but only one or the other.",
+													Description: "A tag from the repo, specify one of branch or tag only.",
 												},
 												"path": &schema.Schema{
 													Type:        schema.TypeString,
 													Required:    true,
-													Description: "The path to the definition's yaml files.",
+													Description: "The path to the definition's YAML files.",
 												},
 												"tool": &schema.Schema{
 													Type:        schema.TypeList,
@@ -375,7 +375,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 												"pattern": &schema.Schema{
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Git branch or tag pattern to listen to. One of branch or pattern must be specified, but only one or the other. Use a tag name to listen to, or use a simple glob pattern such as '!test' or '*master' to match against tags or branches in the repository.",
+													Description: "Git branch or tag pattern to listen to, specify one of branch or pattern only. When specifying a tag to listen to, you can also specify a simple glob pattern such as '!test' or '*master' to match against multiple tags/branches in the repository.",
 												},
 												"blind_connection": &schema.Schema{
 													Type:        schema.TypeBool,

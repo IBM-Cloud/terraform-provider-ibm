@@ -94,10 +94,10 @@ variable "ci_pipeline_scm_trigger_type" {
   default     = "scm"
 }
 
-variable "ci_pipeline_scm_trigger_disabled" {
+variable "ci_pipeline_scm_trigger_enabled" {
   type        = bool
   description = "Flag to disable SCM CI Trigger"
-  default     = false
+  default     = true
 }
 
 variable "ci_pipeline_scm_trigger_listener_name" {
