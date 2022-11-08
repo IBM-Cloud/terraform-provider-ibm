@@ -94,6 +94,12 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the instance group.
+  **Note:**
+    - You can attach only those access tags that already exists.
+    - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).
+    - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`
+    - `access_tags` must be in the format `key:value`.
 - `crn` - (String) The CRN for this instance group.
 - `id` - (String) The ID of an instance group.
 - `instances` - (String) The number of instances in the instances group.

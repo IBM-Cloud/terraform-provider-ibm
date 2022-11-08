@@ -41,6 +41,12 @@ The `ibm_is_vpn_server` resource provides the following [Timeouts](https://www.t
 ## Argument Reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the vpn server.
+  **Note:**
+    - You can attach only those access tags that already exists.
+    - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).
+    - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`
+    - `access_tags` must be in the format `key:value`.
 - `certificate_crn` - (Required, String) The certificate CRN instance from Certificate Manager or CRN of secret from Secrets Manager for this VPN server. As the usage of certificate CRN from Certificate Manager is getting deprecated, it is recommended to use CRN of secret from Secrets Manager. 
 - `client_authentication` - (Required, List) The methods used to authenticate VPN clients to this VPN server.
   

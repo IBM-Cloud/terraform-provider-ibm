@@ -371,6 +371,13 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "Tags for the Bare metal server",
 						},
+						isBareMetalServerAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -630,12 +637,20 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 		l[isBareMetalServerKeys] = keyListList
 
-		tags, err := flex.GetTagsUsingCRN(meta, *bms.CRN)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerUserTagType)
 		if err != nil {
 			log.Printf(
 				"[ERROR] Error on get of resource bare metal server (%s) tags: %s", *bms.ID, err)
 		}
 		l[isBareMetalServerTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on get of resource bare metal server (%s) access tags: %s", *bms.ID, err)
+		}
+		l[isBareMetalServerAccessTags] = accesstags
+
 		if bms.ResourceGroup != nil {
 			l[isBareMetalServerResourceGroup] = *bms.ResourceGroup.ID
 		}

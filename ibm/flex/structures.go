@@ -2266,6 +2266,42 @@ func ResourceTagsCustomizeDiff(diff *schema.ResourceDiff) error {
 	return nil
 }
 
+func ResourceValidateAccessTags(diff *schema.ResourceDiff, meta interface{}) error {
+
+	if value, ok := diff.GetOkExists("access_tags"); ok {
+		tagSet := value.(*schema.Set)
+		newTagList := tagSet.List()
+		tagType := "access"
+		gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+		if err != nil {
+			return fmt.Errorf("Error getting global tagging client settings: %s", err)
+		}
+
+		listTagsOptions := &globaltaggingv1.ListTagsOptions{
+			TagType: &tagType,
+		}
+		taggingResult, _, err := gtClient.ListTags(listTagsOptions)
+		if err != nil {
+			return err
+		}
+		var taglist []string
+		for _, item := range taggingResult.Items {
+			taglist = append(taglist, *item.Name)
+		}
+		existingAccessTags := NewStringSet(ResourceIBMVPCHash, taglist)
+		errStatement := ""
+		for _, tag := range newTagList {
+			if !existingAccessTags.Contains(tag) {
+				errStatement = errStatement + " " + tag.(string)
+			}
+		}
+		if errStatement != "" {
+			return fmt.Errorf("[ERROR] Error : Access tag(s) %s does not exist", errStatement)
+		}
+	}
+	return nil
+}
+
 func ResourceLBListenerPolicyCustomizeDiff(diff *schema.ResourceDiff) error {
 	policyActionIntf, _ := diff.GetOk(isLBListenerPolicyAction)
 	policyAction := policyActionIntf.(string)

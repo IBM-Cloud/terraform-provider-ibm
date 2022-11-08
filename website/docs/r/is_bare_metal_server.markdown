@@ -149,6 +149,12 @@ Review the argument references that you can specify for your resource.
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the bare metal server.
+  **Note:**
+    - You can attach only those access tags that already exists.
+    - For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).
+    - You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`
+    - `access_tags` must be in the format `key:value`.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces.
 - `boot_target` - (String) The unique identifier for this bare metal server disk.
 - `crn` - (String) The CRN for this bare metal server

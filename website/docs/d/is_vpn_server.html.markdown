@@ -31,6 +31,7 @@ Review the argument reference that you can specify for your data source.
 
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
+- `access_tags`  - (List) Access management tags associated for the vpn server.
 - `identifier` - The unique identifier of the VPNServer.
 - `certificate` - (List) The certificate instance for this VPN server.
 
