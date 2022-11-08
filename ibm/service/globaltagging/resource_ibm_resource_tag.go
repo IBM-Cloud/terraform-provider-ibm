@@ -209,7 +209,10 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(acccountID, acctID)
 		}
 	}
+<<<<<<< HEAD
 	log.Println(rID, " ", rType, " ", tType)
+=======
+>>>>>>> 7ab0c7d643f70daa027974bd87d63f06fd4c58d3
 	tagList, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
 	if err != nil {
 		if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() == 404 {
