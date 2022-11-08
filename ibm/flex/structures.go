@@ -3274,7 +3274,7 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels)-1)
+	mapped := make([]string, len(hostLabels))
 	idx := 0
 	for k, v := range hostLabels {
 		if strings.HasPrefix(k, "os") {
