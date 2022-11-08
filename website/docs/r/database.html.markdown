@@ -646,19 +646,26 @@ Review the argument reference that you can specify for your resource.
   - `type` - (Optional, String) The type for the user. Examples: `database`, `ops_manager`, `read_only_replica`. The default value is `database`.
   - `role` - (Optional, String) The role for the user. Only available for `ops_manager` user type. Examples: `group_read_only`, `group_data_access_admin`.
 
-- `whitelist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+- `allowlist` - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
+
+  Nested scheme for `allowlist`:
+  - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
+  - `description` - (Optional, String) A description for the allowed IP addresses range.
+
+- `whitelist` **Deprecated** - (Optional, List of Objects) A list of allowed IP addresses for the database. Multiple blocks are allowed.
 
   Nested scheme for `whitelist`:
   - `address` - (Optional, String) The IP address or range of database client addresses to be whitelisted in CIDR format. Example, `172.168.1.2/32`.
   - `description` - (Optional, String) A description for the allowed IP addresses range.
 
+  ~> **Note:** `whitelist` conflicts with `allowlist`. `whitelist` has been deprecated and replaced by `allowlist`
 
 ## Attribute reference
 In addition to all argument references list, you can access the following attribute references after your resource is created.
 
 - `adminuser` - (String) The user ID of the database administrator. Example, `admin` or `root`.
 - `configuration_schema` (String) Database Configuration Schema in JSON format.
-- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `bm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
+- `connectionstrings` - **Deprecated** - (Array) A list of connection strings for the database for each user ID - replaced by `ibm_database_connection`. For more information, about how to use connection strings, see the [documentation](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-connection-strings). The results are returned in pairs of the userid and string: `connectionstrings.1.name = admin connectionstrings.1.string = postgres://admin:$PASSWORD@79226bd4-4076-4873-b5ce-b1dba48ff8c4.b8a5e798d2d04f2e860e54e5d042c915.databases.appdomain.cloud:32554/ibmclouddb?sslmode=verify-full` Individual string parameters can be retrieved by using  Terraform variables and outputs `connectionstrings.x.hosts.x.port` and `connectionstrings.x.hosts.x.host`.
 - `id` - (String) The CRN of the database instance.
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.

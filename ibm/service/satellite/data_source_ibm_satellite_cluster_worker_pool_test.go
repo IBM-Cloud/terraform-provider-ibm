@@ -24,6 +24,7 @@ func TestAccIBMSatelliteClusterWorkerPoolDataSourceBasic(t *testing.T) {
 	region := "us-east"
 	resource_prefix := "tf-satellite"
 	host_provider := "ibm"
+	operatingSystem := "REDHAT_7_64"
 	publicKey := strings.TrimSpace(`
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
 `)
@@ -33,18 +34,19 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, clusterName, locationName, managed_from, resource_group, resource_prefix, region, publicKey, host_provider, zones),
+				Config: testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, clusterName, locationName, managed_from, operatingSystem, resource_group, resource_prefix, region, publicKey, host_provider, zones),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_satellite_cluster_worker_pool.read_wp", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_satellite_cluster_worker_pool.read_wp", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_satellite_cluster_worker_pool.read_wp", "cluster"),
+					resource.TestCheckResourceAttrSet("data.ibm_satellite_cluster_worker_pool.read_wp", "operating_system"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, clusterName, locationName, managed_from, resource_group, resource_prefix, region, publicKey, host_provider string, zones []string) string {
+func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, clusterName, locationName, managed_from, operatingSystem, resource_group, resource_prefix, region, publicKey, host_provider string, zones []string) string {
 	return fmt.Sprintf(`
 
 	provider "ibm" {
@@ -92,7 +94,7 @@ func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, cl
 	}
 
 	data "ibm_is_image" "rhel7" {
-		name = "ibm-redhat-7-9-minimal-amd64-3"
+		name = "ibm-redhat-7-9-minimal-amd64-7"
 	}
 	  
 	resource "ibm_is_instance" "satellite_instance" {
@@ -133,7 +135,7 @@ func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, cl
 		name                   = "%s"  
 		location               = ibm_satellite_host.assign_host.0.location
 		enable_config_admin    = true
-		kube_version           = "4.6_openshift"
+		kube_version           = "4.9_openshift"
 		wait_for_worker_update = true
 		dynamic "zones" {
 			for_each = var.location_zones
@@ -150,6 +152,7 @@ func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, cl
 	resource "ibm_satellite_cluster_worker_pool" "create_wp" {
 		name               = "%s"  
 		cluster            = ibm_satellite_cluster.create_cluster.id
+		operating_system   = "%s"
 		worker_count       = 1   
 		dynamic "zones" {
 			for_each = var.location_zones
@@ -169,5 +172,5 @@ func testAccCheckIBMSatelliteClusterorkerPoolDataSourceConfig(workerPoolName, cl
 		cluster = ibm_satellite_cluster.create_cluster.id
 	}	  
 
-`, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, workerPoolName)
+`, locationName, managed_from, resource_group, resource_prefix, resource_prefix, region, resource_prefix, publicKey, resource_prefix, region, resource_prefix, host_provider, clusterName, workerPoolName, operatingSystem)
 }

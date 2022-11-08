@@ -200,6 +200,27 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "vpc attached to the instance",
 						},
+
+						isInstanceCatalogOffering: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The catalog offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same enterprise, subject to IAM policies.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isInstanceCatalogOfferingOfferingCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Identifies a catalog offering by a unique CRN property",
+									},
+									isInstanceCatalogOfferingVersionCrn: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Identifies a version of a catalog offering by a unique CRN property",
+									},
+								},
+							},
+						},
+
 						"boot_volume": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -793,6 +814,16 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 
 		if instance.TotalVolumeBandwidth != nil {
 			l[isInstanceTotalVolumeBandwidth] = int(*instance.TotalVolumeBandwidth)
+		}
+
+		// catalog
+		if instance.CatalogOffering != nil {
+			versionCrn := *instance.CatalogOffering.Version.CRN
+			catalogList := make([]map[string]interface{}, 0)
+			catalogMap := map[string]interface{}{}
+			catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+			catalogList = append(catalogList, catalogMap)
+			l[isInstanceCatalogOffering] = catalogList
 		}
 
 		if instance.BootVolumeAttachment != nil {

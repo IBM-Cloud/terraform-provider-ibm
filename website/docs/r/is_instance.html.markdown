@@ -225,7 +225,7 @@ resource "ibm_is_dedicated_host" "example" {
   resource_group = ibm_resource_group.example.id
 }
 
-// Example to provision instance in a dedicated host
+// Example to provision an instance in a dedicated host
 resource "ibm_is_instance" "example1" {
   name    = "example-instance-1"
   image   = ibm_is_image.example.id
@@ -249,7 +249,7 @@ resource "ibm_is_instance" "example1" {
   }
 }
 
-// Example to provision instance in a dedicated host that belongs to the provided dedicated host group
+// Example to provision an instance in a dedicated host that belongs to the provided dedicated host group
 resource "ibm_is_instance" "example2" {
   name    = "example-instance-2"
   image   = ibm_is_image.example.id
@@ -273,7 +273,7 @@ resource "ibm_is_instance" "example2" {
   }
 }
 
-// Example to provision instance from a snapshot, restoring boot volume from an existing snapshot
+// Example to provision an instance from a snapshot, restoring boot volume from an existing snapshot
 
 resource "ibm_is_snapshot" "example" {
   name          = "example-snapshot"
@@ -300,6 +300,30 @@ resource "ibm_is_instance" "example" {
   }
 }
 
+
+// Example to provision an instance using an enterprise managed catalog image
+
+data ibm_is_images example {
+  catalog_managed = true
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-vsi-catalog"
+  profile = "cx2-2x4"
+  catalog_offering {
+    version_crn = data.ibm_is_images.example.images.0.catalog_offering.0.version.0.crn
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+  network_interfaces {
+    subnet = ibm_is_subnet.example.id
+    name   = "eth1"
+  }
+}
 ```
 
 ## Timeouts
@@ -332,8 +356,16 @@ Review the argument references that you can specify for your resource.
   - `snapshot` - (Optional, Forces new resource, String) The snapshot id of the volume to be used for creating boot volume attachment
     
     ~> **Note:**
-    `snapshot` conflicts with `image` id and `instance_template`
+    `snapshot` conflicts with `image` id, `instance_template` and `catalog_offering`
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+- `catalog_offering` - (Optional, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
+  Nested scheme for `catalog_offering`:
+  - `offering_crn` - (Optional, String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+  - `version_crn` - (Optional, String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+ 
+    ~> **Note:**
+    `offering_crn` conflicts with `version_crn`, both are mutually exclusive. `catalog_offering` and `image` id are mutually exclusive.
+    `snapshot` conflicts with `image` id and `instance_template`
 - `dedicated_host` - (Optional, String) The placement restrictions to use the virtual server instance. Unique ID of the dedicated host where the instance id placed.
 - `dedicated_host_group` - (Optional, String) The placement restrictions to use for the virtual server instance. Unique ID of the dedicated host group where the instance is placed.
 
@@ -349,7 +381,7 @@ Review the argument references that you can specify for your resource.
 - `image` - (Required, String) The ID of the virtual server image that you want to use. To list supported images, run `ibmcloud is images` or use `ibm_is_images` datasource.
   
   ~> **Note:**
-  `image` conflicts with `boot_volume.0.snapshot`, not required when creating instance using `instance_template`
+  `image` conflicts with `boot_volume.0.snapshot` and `catalog_offering`, not required when creating instance using `instance_template` or `catalog_offering`
 - `keys` - (Required, List) A comma-separated list of SSH keys that you want to add to your instance.
 - `lifecycle_reasons`- (List) The reasons for the current lifecycle_state (if any).
 
@@ -361,6 +393,9 @@ Review the argument references that you can specify for your resource.
 - `metadata_service_enabled` - (Optional, Boolean) Indicates whether the metadata service endpoint is available to the virtual server instance. Default value : **false**
 - `name` - (Optional, String) The instance name.
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
+
+    -> **Allowed vNIC per profile.** 
+    **&#x2022;** 2-16 vCPUs: Up to 5 vNICs </br> **&#x2022;** 17-48 vCPUs: Up to 10 vNICs </br> **&#x2022;** 49+ vCPUs: Up to 15 vNICs
 
   Nested scheme for `network_interfaces`:
   - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on the interface. If **false**, IP spoofing is prevented on the interface. If **true**, IP spoofing is allowed on the interface.
@@ -416,7 +451,7 @@ Review the argument references that you can specify for your resource.
   `instance_template` conflicts with `boot_volume.0.snapshot`. When creating an instance using `instance_template`, [`image `, `primary_network_interface`, `vpc`, `zone`] are not required.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
 - `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
-- `user_data` - (Optional, String) User data to transfer to the instance.
+- `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance.
 - `vpc` - (Required, Forces new resource, String) The ID of the VPC where you want to create the instance. When using `instance_template`, `vpc` is not required.
 - `zone` - (Required, Forces new resource, String) The name of the VPC zone where you want to create the instance. When using `instance_template`, `zone` is not required.

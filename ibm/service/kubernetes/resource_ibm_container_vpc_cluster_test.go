@@ -443,8 +443,11 @@ func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
 // export IBM_CLUSTER_VPC_RESOURCE_GROUP_ID
+// optionally for kms and cross account kms:
 // export IBM_KMS_INSTANCE_ID
 // export IBM_CRK_ID
+// for cross account kms:
+// export IBM_KMS_ACCOUNT_ID
 // for acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID
 func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 	config := fmt.Sprintf(`
@@ -460,8 +463,9 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 		}
 		kms_instance_id = "%[5]s"
 		crk = "%[6]s"
+		kms_account_id = "%[7]s"
 	}
-	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
+	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
 	fmt.Println(config)
 	return config
 }

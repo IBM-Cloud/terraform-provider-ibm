@@ -80,7 +80,7 @@ func DataSourceIBMContainerVpcWorkerVolumeAttachmentValidator() *validate.Resour
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "resource_group_id",

@@ -174,6 +174,13 @@ func ResourceIBMContainerVpcWorkerPool() *schema.Resource {
 				Description:      "Root Key ID for boot volume encryption",
 				RequiredWith:     []string{"kms_instance_id"},
 			},
+			"kms_account_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
+				RequiredWith:     []string{"kms_instance_id", "crk"},
+			},
 		},
 	}
 }
@@ -194,7 +201,7 @@ func ResourceIBMContainerVPCWorkerPoolValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	containerVPCWorkerPoolTaintsValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_worker_pool", Schema: validateSchema}
 	return &containerVPCWorkerPoolTaintsValidator
@@ -226,19 +233,24 @@ func resourceIBMContainerVpcWorkerPoolCreate(d *schema.ResourceData, meta interf
 	}
 
 	params := v2.WorkerPoolRequest{
-		Cluster:     clusterNameorID,
-		Name:        d.Get("worker_pool_name").(string),
-		VpcID:       d.Get("vpc_id").(string),
-		Flavor:      d.Get("flavor").(string),
-		WorkerCount: d.Get("worker_count").(int),
-		Zones:       zone,
+		Cluster: clusterNameorID,
+		CommonWorkerPoolConfig: v2.CommonWorkerPoolConfig{
+			Name:        d.Get("worker_pool_name").(string),
+			VpcID:       d.Get("vpc_id").(string),
+			Flavor:      d.Get("flavor").(string),
+			WorkerCount: d.Get("worker_count").(int),
+			Zones:       zone,
+		},
 	}
 
-	if v, ok := d.GetOk("kms_instance_id"); ok {
+	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
 		crk := d.Get("crk").(string)
 		wve := v2.WorkerVolumeEncryption{
-			KmsInstanceID:     v.(string),
+			KmsInstanceID:     kmsid.(string),
 			WorkerVolumeCRKID: crk,
+		}
+		if kmsaccid, ok := d.GetOk("kms_account_id"); ok {
+			wve.KMSAccountID = kmsaccid.(string)
 		}
 		params.WorkerVolumeEncryption = &wve
 	}
@@ -500,6 +512,9 @@ func resourceIBMContainerVpcWorkerPoolRead(d *schema.ResourceData, meta interfac
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
+		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
+			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		}
 	}
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {

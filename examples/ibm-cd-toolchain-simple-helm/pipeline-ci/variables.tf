@@ -28,7 +28,10 @@ variable "registry_region" {
 variable "region" {
 }
 
-variable "ibm_cloud_api_key" {
+variable "ibmcloud_api_key" {
+}
+
+variable "ibmcloud_api" {
 }
 
 variable "kp_integration_name" {
@@ -37,10 +40,22 @@ variable "kp_integration_name" {
 variable "app_repo" {
 }
 
+variable "app_repo_branch" {
+}
+
 variable "pipeline_repo" {
 }
 
+variable "pipeline_repo_branch" {
+}
+
 variable "tekton_tasks_catalog_repo" {
+}
+
+variable "definitions_branch" {
+}
+
+variable "commons_hosted_region" {
 }
 
 variable "ci_pipeline_manual_trigger_name" {
@@ -70,7 +85,7 @@ variable "ci_pipeline_manual_trigger_listener_name" {
 variable "ci_pipeline_scm_trigger_name" {
   type        = string
   description = "The name of SCM Trigger for CI Pipeline as defined in tekton definition."
-  default     = "SCM Trigger"
+  default     = "commit-push"
 }
 
 variable "ci_pipeline_scm_trigger_type" {

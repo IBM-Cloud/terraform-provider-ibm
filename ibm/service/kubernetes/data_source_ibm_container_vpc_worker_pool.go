@@ -80,6 +80,10 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"kms_account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -92,7 +96,7 @@ func DataSourceIBMContainerVpcClusterWorkerPoolValidator() *validate.ResourceVal
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerVpcClusterWorkerPoolValidator := validate.ResourceValidator{ResourceName: "ibm_container_vpc_cluster_worker_pool", Schema: validateSchema}
 	return &iBMContainerVpcClusterWorkerPoolValidator
@@ -138,6 +142,9 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
+		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
+			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		}
 	}
 	d.SetId(workerPool.ID)
 	return nil
