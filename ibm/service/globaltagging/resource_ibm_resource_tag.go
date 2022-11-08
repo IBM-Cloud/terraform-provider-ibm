@@ -6,7 +6,6 @@ package globaltagging
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -209,7 +208,6 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(acccountID, acctID)
 		}
 	}
-	log.Println(rID, " ", rType, " ", tType)
 	tagList, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
 	if err != nil {
 		if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() == 404 {
