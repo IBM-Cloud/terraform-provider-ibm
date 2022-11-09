@@ -27,13 +27,6 @@ resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pattern = "pattern"
 		}
   }
-  secret {
-		type = "token_matches"
-		value = "value"
-		source = "header"
-		key_name = "key_name"
-		algorithm = "md4"
-  }
   type = "manual"
   worker {
 		id = "public"

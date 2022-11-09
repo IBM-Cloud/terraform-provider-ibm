@@ -109,7 +109,7 @@ Nested scheme for **source**:
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z+_., \/]{1,253}$/`.
 
 * `type` - (String) Trigger type.
-  * Constraints: Allowable values are: .
+  * Constraints: Allowable values are: `manual`, `scm`, `timer`, `generic`.
 
 * `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.

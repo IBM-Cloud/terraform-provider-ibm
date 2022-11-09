@@ -14,11 +14,11 @@ Provides a resource for cd_tekton_pipeline_trigger_property. This allows cd_tekt
 
 ```hcl
 resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property" {
-  name = "key1"
+  name = "prop1"
   pipeline_id = "94619026-912b-4d92-8f51-6c74f0692d90"
   trigger_id = "1bb892a1-2e04-4768-a369-b1159eace147"
   type = "text"
-  value = "https://github.com/IBM/tekton-tutorial.git"
+  value = "https://github.com/open-toolchain/hello-tekton.git"
 }
 ```
 
