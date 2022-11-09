@@ -1671,7 +1671,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		for _, user := range userList.(*schema.Set).List() {
 			userEl := user.(map[string]interface{})
-			userUpdateCreate(userEl, instanceID, meta, d)
+			err := userUpdateCreate(userEl, instanceID, meta, d)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -2401,7 +2404,10 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					continue
 				}
 
-				userUpdateCreate(change.New, instanceID, meta, d)
+				err := userUpdateCreate(change.New, instanceID, meta, d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
@@ -3161,7 +3167,7 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 }
 
 // Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
-func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
+func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) (err error) {
 	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
 	// Attempt to update user password
 	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
@@ -3179,7 +3185,7 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 
 	// user was found but an error occurs while triggering task
 	if response.StatusCode != 404 && err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response))
+		return fmt.Errorf("[ERROR] ChangeUserPassword (%s) failed %s\n%s", *changeUserPasswordOptions.Username, err, response)
 	}
 
 	taskID := *changeUserPasswordResponse.Task.ID
@@ -3210,14 +3216,14 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, meta i
 
 		createDatabaseUserResponse, response, err := cloudDatabasesClient.CreateDatabaseUser(createDatabaseUserOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response))
+			return fmt.Errorf("[ERROR] CreateDatabaseUser (%s) failed %s\n%s", *userEntry.Username, err, response)
 		}
 
 		taskID := *createDatabaseUserResponse.Task.ID
 		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err))
+			return fmt.Errorf(
+				"[ERROR] Error waiting for database (%s) user (%s) create task to complete: %s", instanceID, *userEntry.Username, err)
 		}
 	}
 
