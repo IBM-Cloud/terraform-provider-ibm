@@ -1671,7 +1671,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		for _, user := range userList.(*schema.Set).List() {
 			userEl := user.(map[string]interface{})
-			userUpdateCreate(userEl, instanceID, false, meta, d)
+			userUpdateCreate(userEl, instanceID, meta, d)
 		}
 	}
 
@@ -2401,9 +2401,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 					continue
 				}
 
-				oldUserExists := change.Old != nil
-
-				userUpdateCreate(change.New, instanceID, oldUserExists, meta, d)
+				userUpdateCreate(change.New, instanceID, meta, d)
 			}
 		}
 	}
@@ -2419,34 +2417,28 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
 		}
 
-		oldSlots, newSlots := d.GetChange("logical_replication_slot")
-		slotChanges := make(map[string]*userChange)
-		slotKey := func(raw map[string]interface{}) string {
-			return fmt.Sprintf("%s-%s", raw["name"].(string), raw["database_name"].(string))
-		}
+		oldList, newList := d.GetChange("logical_replication_slot")
 
-		for _, raw := range oldSlots.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := slotKey(user)
-			slotChanges[k] = &userChange{Old: user}
+		if oldList == nil {
+			oldList = new(schema.Set)
 		}
-
-		for _, raw := range newSlots.(*schema.Set).List() {
-			user := raw.(map[string]interface{})
-			k := slotKey(user)
-			if _, ok := slotChanges[k]; !ok {
-				slotChanges[k] = &userChange{}
-			}
-			slotChanges[k].New = user
+		if newList == nil {
+			newList = new(schema.Set)
 		}
+		os := oldList.(*schema.Set)
+		ns := newList.(*schema.Set)
 
-		for _, change := range slotChanges {
-			// Create New Logical Rep Slot
-			if change.New != nil {
+		remove := os.Difference(ns).List()
+		add := ns.Difference(os).List()
+
+		// Create New Logical Rep Slot
+		if len(add) > 0 {
+			for _, entry := range add {
+				newEntry := entry.(map[string]interface{})
 				logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
-					Name:         core.StringPtr(change.New["name"].(string)),
-					DatabaseName: core.StringPtr(change.New["database_name"].(string)),
-					PluginType:   core.StringPtr(change.New["plugin_type"].(string)),
+					Name:         core.StringPtr(newEntry["name"].(string)),
+					DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
+					PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
 				}
 
 				createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
@@ -2466,12 +2458,15 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 						"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
 				}
 			}
+		}
 
-			// Delete Old Logical Rep Slot
-			if change.Old != nil {
+		// Delete Old Logical Rep Slot
+		if len(remove) > 0 {
+			for _, entry := range remove {
+				newEntry := entry.(map[string]interface{})
 				deleteDatabaseUserOptions := &clouddatabasesv5.DeleteLogicalReplicationSlotOptions{
 					ID:   &instanceID,
-					Name: core.StringPtr(change.Old["name"].(string)),
+					Name: core.StringPtr(newEntry["name"].(string)),
 				}
 
 				deleteDatabaseUserResponse, response, err := cloudDatabasesClient.DeleteLogicalReplicationSlot(deleteDatabaseUserOptions)
@@ -3166,8 +3161,8 @@ func checkV5Groups(_ context.Context, diff *schema.ResourceDiff, meta interface{
 }
 
 // Updates and creates users. Because we cannot get users, we first attempt to update the users, then create them
-func userUpdateCreate(userData map[string]interface{}, instanceID string, oldUserExists bool, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+func userUpdateCreate(userData map[string]interface{}, instanceID string, meta interface{}, d *schema.ResourceData) diag.Diagnostics {
+	cloudDatabasesClient, _ := meta.(conns.ClientSession).CloudDatabasesV5()
 	// Attempt to update user password
 	passwordSettingUser := &clouddatabasesv5.APasswordSettingUser{
 		Password: core.StringPtr(userData["password"].(string)),
@@ -3190,13 +3185,11 @@ func userUpdateCreate(userData map[string]interface{}, instanceID string, oldUse
 	taskID := *changeUserPasswordResponse.Task.ID
 	updatePass, err := waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
 
-	// user exists but task failed to complete
-	if oldUserExists && err != nil {
-		return diag.FromErr(fmt.Errorf(
-			"[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err))
+	if err != nil {
+		log.Printf("[ERROR] Error waiting for database (%s) user (%s) password update task to complete: %s", instanceID, *changeUserPasswordOptions.Username, err)
 	}
 
-	// Updating the password has failed but an old user does not exist
+	// Updating the password has failed
 	if !updatePass {
 		//Attempt to create user
 		userEntry := &clouddatabasesv5.User{
