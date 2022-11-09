@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"path/filepath"
 
@@ -709,10 +710,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(instance.ID)
 
-	err = flex.GetTags(d, meta)
+	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error on get of resource instance (%s) tags: %s", d.Id(), err)
+		log.Printf(
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
+	d.Set("tags", tags)
 
 	d.Set("name", instance.Name)
 	d.Set("status", instance.State)

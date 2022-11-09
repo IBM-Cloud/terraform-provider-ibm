@@ -9,7 +9,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_pipeline_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.pipeline_repo
-    branch      = var.pipeline_branch
+    branch      = var.pipeline_repo_branch
     path        = var.pipeline_path
   }
 }
@@ -18,7 +18,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_git_task_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.tekton_tasks_catalog_repo
-    branch      = "master"
+    branch      = var.definitions_branch
     path        = "git"
   }
 }
@@ -27,7 +27,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_toolchain_task_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.tekton_tasks_catalog_repo
-    branch      = "master"
+    branch      = var.definitions_branch
     path        = "toolchain"
   }
 }
@@ -36,7 +36,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_linter_task_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.tekton_tasks_catalog_repo
-    branch      = "master"
+    branch      = var.definitions_branch
     path        = "linter"
   }
 }
@@ -45,7 +45,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_tester_task_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.tekton_tasks_catalog_repo
-    branch      = "master"
+    branch      = var.definitions_branch
     path        = "tester"
   }
 }
@@ -54,7 +54,7 @@ resource "ibm_cd_tekton_pipeline_definition" "pr_utils_task_def" {
   pipeline_id   = ibm_cd_tekton_pipeline.pr_pipeline_instance.pipeline_id
   scm_source {
     url         = var.tekton_tasks_catalog_repo
-    branch      = "master"
+    branch      = var.definitions_branch
     path        = "utils"
   }
 }
@@ -66,11 +66,11 @@ resource "ibm_cd_tekton_pipeline_trigger" "pr_pipeline_scm_trigger" {
   event_listener  = var.pr_pipeline_scm_trigger_listener_name
   scm_source {
     url       = var.app_repo
-    branch    = "master"
+    branch    = var.app_repo_branch
   }
   events {
-    push                = true
-    pull_request_closed = true
+    push                = false
+    pull_request_closed = false
     pull_request        = true
   } 
   max_concurrent_runs = var.pr_pipeline_max_concurrent_runs
