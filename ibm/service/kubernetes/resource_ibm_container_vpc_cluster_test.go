@@ -461,6 +461,7 @@ func testAccCheckIBMContainerVpcClusterEnvvar(name string) string {
 			subnet_id = "%[4]s"
 			name      = "us-south-1"
 		}
+		wait_till = "normal"
 		kms_instance_id = "%[5]s"
 		crk = "%[6]s"
 		kms_account_id = "%[7]s"
