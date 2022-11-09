@@ -30,6 +30,7 @@ import (
 	kp "github.com/IBM/keyprotect-go-client"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -3250,4 +3251,51 @@ func FlattenSatelliteClusterZones(list []string) []map[string]interface{} {
 		zones[i] = l
 	}
 	return zones
+}
+
+func FetchResourceInstanceDetails(d *schema.ResourceData, meta interface{}, instanceID string) error {
+	// Get ResourceController from ClientSession
+	resourceControllerClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
+	}
+
+	getResourceOpts := resourcecontrollerv2.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instance, response, err := resourceControllerClient.GetResourceInstance(&getResourceOpts)
+	if err != nil {
+		log.Printf("[DEBUG] Error retrieving resource instance: %s\n%s", err, response)
+		return fmt.Errorf("Error retrieving resource instance: %s\n%s", err, response)
+	}
+	if strings.Contains(*instance.State, "removed") {
+		log.Printf("[DEBUG] Error retrieving resource instance details: Resource has been removed")
+		return fmt.Errorf("Error retrieving resource instance details: Resource has been removed")
+	}
+
+	extensionsMap := Flatten(instance.Extensions)
+	if extensionsMap == nil {
+		log.Printf("[DEBUG] Error parsing resource instance: Endpoints are missing in instance Extensions map")
+		return fmt.Errorf("Error parsing resource instance: Endpoints are missing in instance Extensions map")
+	}
+	d.Set("extensions", extensionsMap)
+
+	return nil
+}
+
+func GetResourceInstanceURL(d *schema.ResourceData, meta interface{}) (*string, error) {
+
+	var endpoint string
+	extensions := d.Get("extensions").(map[string]interface{})
+
+	if url, ok := extensions["endpoints.public"]; ok {
+		endpoint = "https://" + url.(string)
+	}
+
+	if endpoint == "" {
+		return nil, fmt.Errorf("[ERROR] Missing endpoints.public in extensions")
+	}
+
+	return &endpoint, nil
 }
