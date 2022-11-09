@@ -57,6 +57,10 @@ The following arguments are supported:
 - `iops` - (Optional, int) The maximum input/output operation performance bandwidth per second for the file share.
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `profile` - (Required, string) The globally unique name for this share profile.
+
+  ~> **NOTE** 
+  While updating `profile` from 'custom' to a tiered profile make sure to remove `iops` from the configuration.
+  
 - `replica_share` - (Optional, List) Configuration for a replica file share to create and associate with this file share.
   - `iops` - (Optional, Int)
   - `name` - (Optional, String)

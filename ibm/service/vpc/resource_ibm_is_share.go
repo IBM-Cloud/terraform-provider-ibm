@@ -850,7 +850,15 @@ func resourceIbmIsShareUpdate(context context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("profile") {
-		profile := d.Get("profile").(string)
+		old, new := d.GetChange("profile")
+		if old.(string) == "custom" {
+			if d.Get("iops").(int) != 0 {
+				log.Println("iops there")
+			} else {
+				log.Println("iops not there")
+			}
+		}
+		profile := new.(string)
 		sharePatchModel.Profile = &vpcv1.ShareProfileIdentity{
 			Name: &profile,
 		}
