@@ -56,7 +56,7 @@ func ResourceIBMCdToolchainToolSonarqube() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The password or token for authenticating to the SonarQube server.",
+							Description:      "The password or token for authenticating to the SonarQube server. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"blind_connection": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -81,7 +81,7 @@ func ResourceIBMCdToolchainToolSonarqube() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,

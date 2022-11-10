@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -95,7 +95,7 @@ func DataSourceIBMCdToolchainToolPrivateworker() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The service ID API key that is used by the private worker to authenticate access to the work queue.",
+							Description: "The service ID API key that is used by the private worker to authenticate access to the work queue. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"worker_queue_identifier": &schema.Schema{
 							Type:        schema.TypeString,
