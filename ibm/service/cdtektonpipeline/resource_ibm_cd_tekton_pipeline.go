@@ -409,7 +409,6 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 						},
 						"events": &schema.Schema{
 							Type:        schema.TypeList,
-							MaxItems:    1,
 							Optional:    true,
 							Description: "Only needed for Git triggers. List of events to which a Git trigger listens. Choose one or more from: 'push', 'pull_request' and 'pull_request_closed'. For SCM repositories that use 'merge request' events, such events map to the equivalent 'pull request' events.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
