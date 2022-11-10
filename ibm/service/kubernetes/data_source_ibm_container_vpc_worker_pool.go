@@ -52,6 +52,11 @@ func DataSourceIBMContainerVpcClusterWorkerPool() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The operating system of the workers in the worker pool",
+			},
 			"resource_group_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -133,6 +138,7 @@ func dataSourceIBMContainerVpcClusterWorkerPoolRead(d *schema.ResourceData, meta
 	d.Set("flavor", workerPool.Flavor)
 	d.Set("worker_count", workerPool.WorkerCount)
 	d.Set("labels", workerPool.Labels)
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("zones", zones)
 	d.Set("cluster", clusterName)
 	d.Set("vpc_id", workerPool.VpcID)

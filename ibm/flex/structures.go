@@ -349,14 +349,15 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
-			"id":           workerPool.ID,
-			"name":         workerPool.PoolName,
-			"flavor":       workerPool.Flavor,
-			"worker_count": workerPool.WorkerCount,
-			"isolation":    workerPool.Isolation,
-			"labels":       workerPool.Labels,
-			"state":        workerPool.Lifecycle.ActualState,
-			"host_pool_id": workerPool.HostPoolID,
+			"id":               workerPool.ID,
+			"name":             workerPool.PoolName,
+			"flavor":           workerPool.Flavor,
+			"worker_count":     workerPool.WorkerCount,
+			"isolation":        workerPool.Isolation,
+			"labels":           workerPool.Labels,
+			"operating_system": workerPool.OperatingSystem,
+			"state":            workerPool.Lifecycle.ActualState,
+			"host_pool_id":     workerPool.HostPoolID,
 		}
 		zones := workerPool.Zones
 		zonesConfig := make([]map[string]interface{}, len(zones))

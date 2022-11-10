@@ -301,11 +301,19 @@ func ResourceIBMContainerCluster() *schema.Resource {
 				},
 				Description: "Private VLAN ID",
 			},
+
 			"entitlement": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
+			},
+
+			"operating_system": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The operating system of the workers in the default worker pool.",
 			},
 
 			"wait_for_worker_update": {
@@ -709,6 +717,9 @@ func resourceIBMContainerClusterCreate(d *schema.ResourceData, meta interface{})
 	if v, ok := d.GetOk("kube_version"); ok {
 		params.MasterVersion = v.(string)
 	}
+	if v, ok := d.GetOk("operating_system"); ok {
+		params.OperatingSystem = v.(string)
+	}
 	if v, ok := d.GetOkExists("private_service_endpoint"); ok {
 		params.PrivateEndpointEnabled = v.(bool)
 	}
@@ -865,6 +876,7 @@ func resourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{}) e
 			return err
 		}
 		d.Set("labels", flex.IgnoreSystemLabels(defaultWorkerPool.Labels))
+		d.Set("operating_system", defaultWorkerPool.OperatingSystem)
 		zones := defaultWorkerPool.Zones
 		for _, zone := range zones {
 			if zone.ID == cls.DataCenter {
