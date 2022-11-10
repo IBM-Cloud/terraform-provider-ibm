@@ -100,6 +100,11 @@ func DataSourceIBMKMSkeys() *schema.Resource {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
+												"crn": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
+												},
 												"created_by": {
 													Type:     schema.TypeString,
 													Computed: true,
@@ -120,6 +125,10 @@ func DataSourceIBMKMSkeys() *schema.Resource {
 													Type:     schema.TypeInt,
 													Computed: true,
 												},
+												"enabled": {
+													Type:     schema.TypeBool,
+													Computed: true,
+												},
 											},
 										},
 									},
@@ -131,6 +140,11 @@ func DataSourceIBMKMSkeys() *schema.Resource {
 												"id": {
 													Type:     schema.TypeString,
 													Computed: true,
+												},
+												"crn": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Cloud Resource Name (CRN) that uniquely identifies your cloud resources.",
 												},
 												"created_by": {
 													Type:     schema.TypeString,

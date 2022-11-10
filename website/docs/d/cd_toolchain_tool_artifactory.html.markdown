@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source for cd_toolchain_tool_artifactory. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-artifactory).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-artifactory) page for more information.
 
 ## Example Usage
 
@@ -43,13 +43,13 @@ In addition to all argument references listed, you can access the following attr
 
 * `parameters` - (List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_key` - (String) The Artifactory API key for your Artifactory repository.
+	* `api_key` - (String) The Artifactory API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `dashboard_url` - (String) The URL of the Artifactory server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Artifactory integration tile.
 	* `mirror_url` - (String) The URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
 	* `name` - (String) The name for this tool integration.
 	* `release_url` - (String) The URL for your Artifactory release repository.
-	* `repository_name` - (String) The name of your artifactory repository where your docker images are located.
-	* `repository_url` - (String) The URL of your artifactory repository where your docker images are located.
+	* `repository_name` - (String) The name of your Artifactory repository where your docker images are located.
+	* `repository_url` - (String) The URL of your Artifactory repository where your docker images are located.
 	* `snapshot_url` - (String) The URL for your Artifactory snapshot repository.
 	* `type` - (String) The type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
@@ -60,7 +60,7 @@ Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

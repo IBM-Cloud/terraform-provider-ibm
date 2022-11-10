@@ -123,6 +123,10 @@ func DataSourceIBMKMSkey() *schema.Resource {
 													Type:     schema.TypeInt,
 													Computed: true,
 												},
+												"enabled": {
+													Type:     schema.TypeBool,
+													Computed: true,
+												},
 											},
 										},
 									},

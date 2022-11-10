@@ -14,10 +14,10 @@ Provides a resource for Activity Tracker Target. This allows Activity Tracker Ta
 
 ```terraform
 resource "ibm_atracker_target" "atracker_target" {
-  cos_endpoint { 
-     endpoint = "endpoint" 
-     target_crn = "target_crn" 
-     bucket = "bucket" 
+  cos_endpoint {
+     endpoint = "endpoint"
+     target_crn = "target_crn"
+     bucket = "bucket"
      api_key = "api_key"
   }
   name = "my-cos-target"
@@ -35,6 +35,20 @@ resource "ibm_atracker_target" "atracker_logdna_target" {
   target_type = "logdna"
   region = "us-south"
 }
+
+resource "ibm_atracker_target" "atracker_eventstreams_target" {
+  target_type = "event_streams"
+  eventstreams_endpoint {
+    target_crn = "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+    "brokers": ["xxxxx.cloud.ibm.com:9093","yyyyy.cloud.ibm.com:9093"]
+    "topic": "my-topic"
+    "api_key": "api-key"  // pragma: allowlist secret
+  }
+  name = "my-eventstreams-target"
+  target_type = "event_streams"
+  region = "us-south"
+}
+
 ```
 
 ## Argument reference
@@ -58,12 +72,22 @@ Nested scheme for **logdna_endpoint**:
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 	* `target_crn` - (Required, String) The CRN of the LogDNA instance.
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+* `eventstreams_endpoint` - (List) Property values for Event streams Endpoint.
+Nested scheme for **eventstreams_endpoint**:
+  * `api_key` - (String) The IAM API key that has access to the Event streams instance.
+    * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+  * `topic` - (String) The topic name defined under the Event streams instance.
+    * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+  * `brokers` - (List) The list of brokers defined under the Event streams instance and used in the event streams endpoint.
+    * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
+  * `target_crn` - (String) The CRN of the Event streams instance.
+    * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 * `name` - (Required, String) The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`.
   * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
 * `region` - (Optional, String) Include this optional field if you want to create a target in a different region other than the one you are connected.
   * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:]+$/`.
-* `target_type` - (Required, Forces new resource, String) The type of the target. It can be cloud_object_storage or logdna. Based on this type you must include cos_endpoint or logdna_endpoint.
-  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`.
+* `target_type` - (Required, Forces new resource, String) The type of the target. It can be cloud_object_storage, logdna or event_streams. Based on this type you must include cos_endpoint, logdna_endpoint or eventstreams_endpoint.
+  * Constraints: Allowable values are: `cloud_object_storage`, `logdna`, `event_streams`.
 
 ## Attribute reference
 

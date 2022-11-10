@@ -49,7 +49,7 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the toolchain can be found.",
+				Description: "Resource group where the toolchain is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,

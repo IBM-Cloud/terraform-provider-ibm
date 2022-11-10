@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_nexus. This allows cd_toolchain_tool_nexus to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-nexus).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-nexus) page for more information.
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ Nested scheme for **parameters**:
 	* `release_url` - (Optional, String) The URL of the Nexus release repository.
 	* `server_url` - (Optional, String) The URL of the Nexus server.
 	* `snapshot_url` - (Optional, String) The URL of the Nexus snapshot repository.
-	* `token` - (Optional, String) The password or token for authenticating to the Nexus repository.
+	* `token` - (Optional, String) The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `type` - (Required, String) The type of repository for the Nexus integration.
 	  * Constraints: Allowable values are: `npm`, `maven`.
 	* `user_id` - (Optional, String) The user id or email for authenticating to the Nexus repository.
@@ -58,7 +58,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
