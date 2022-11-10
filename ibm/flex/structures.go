@@ -2760,6 +2760,55 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 	return nil
 }
 
+func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []map[string]interface{} {
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	metricsMap := make([]map[string]interface{}, 0, 1)
+	keyCreateImportAccessMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyInstance := map[string]interface{}{
+			"created_by":    policy.CreatedBy,
+			"creation_date": (*policy.CreatedAt).String(),
+			"updated_by":    policy.UpdatedBy,
+			"last_updated":  (*policy.UpdatedAt).String(),
+		}
+		if policy.PolicyType == "dualAuthDelete" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+		if policy.PolicyType == "rotation" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			if policy.PolicyData.Attributes != nil {
+				policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
+			}
+			rotationMap = append(rotationMap, policyInstance)
+		}
+		if policy.PolicyType == "metrics" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			metricsMap = append(metricsMap, policyInstance)
+		}
+		if policy.PolicyType == "keyCreateImportAccess" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
+			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
+			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
+			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
+			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
+		}
+	}
+	if policyType == "rotation" {
+		return rotationMap
+	} else if policyType == "dual_auth_delete" {
+		return dualAuthMap
+	} else if policyType == "metrics" {
+		return metricsMap
+	} else if policyType == "key_create_import_access" {
+		return keyCreateImportAccessMap
+	}
+	return nil
+}
+
 // IgnoreSystemLabels returns non-IBM tag keys.
 func IgnoreSystemLabels(labels map[string]string) map[string]string {
 	result := make(map[string]string)
