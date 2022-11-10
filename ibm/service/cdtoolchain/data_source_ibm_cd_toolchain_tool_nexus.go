@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,49 +83,49 @@ func DataSourceIBMCdToolchainToolNexus() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this tool integration, for example: my-nexus. This name displays on your toolchain.",
-						},
-						"dashboard_url": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type the URL that you want to navigate to when you click the Nexus integration tile.",
+							Description: "The name for this tool integration.",
 						},
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Choose the type of repository for your Nexus integration.",
+							Description: "The type of repository for the Nexus integration.",
 						},
 						"user_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the User ID or email for your Nexus repository.",
+							Description: "The user id or email for authenticating to the Nexus repository.",
 						},
 						"token": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Type the password or authentication token for your Nexus repository.",
+							Description: "The password or token for authenticating to the Nexus repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus release repository.",
+							Description: "The URL of the Nexus release repository.",
 						},
 						"mirror_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.",
+							Description: "The URL of the Nexus virtual repository, which is a repository that can see your private repositories and is a cache of the public repositories.",
 						},
 						"snapshot_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your Nexus snapshot repository.",
+							Description: "The URL of the Nexus snapshot repository.",
+						},
+						"server_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL of the Nexus server.",
 						},
 					},
 				},
@@ -200,7 +200,10 @@ func dataSourceIBMCdToolchainToolNexusRead(context context.Context, d *schema.Re
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolNexus(), nil)
+		remapFields := map[string]string{
+			"server_url": "dashboard_url",
+		}
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolNexus(), remapFields)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

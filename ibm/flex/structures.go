@@ -23,10 +23,12 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/container-services-go-sdk/kubernetesserviceapiv1"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
@@ -1652,6 +1654,19 @@ func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
 	return
 }
 
+// IBM Cloud Databases
+func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.AllowlistEntry) {
+	for _, iface := range allowList.List() {
+		alItem := iface.(map[string]interface{})
+		alEntry := &clouddatabasesv5.AllowlistEntry{
+			Address:     core.StringPtr(alItem["address"].(string)),
+			Description: core.StringPtr(alItem["description"].(string)),
+		}
+		allowlist = append(allowlist, *alEntry)
+	}
+	return
+}
+
 // Cloud Internet Services
 func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
@@ -1659,6 +1674,19 @@ func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
 		l := map[string]interface{}{
 			"address":     whitelistEntry.Address,
 			"description": whitelistEntry.Description,
+		}
+		entries[i] = l
+	}
+	return entries
+}
+
+// Cloud Internet Services
+func FlattenGetAllowlist(allowlist clouddatabasesv5.GetAllowlistResponse) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(allowlist.IPAddresses), len(allowlist.IPAddresses))
+	for i, allowlistEntry := range allowlist.IPAddresses {
+		l := map[string]interface{}{
+			"address":     allowlistEntry.Address,
+			"description": allowlistEntry.Description,
 		}
 		entries[i] = l
 	}
@@ -1995,17 +2023,13 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 		return nil, err
 	}
 	accountID := userDetails.UserAccount
-
-	var providers []string
-	if strings.Contains(resourceType, "SoftLayer_") {
-		providers = []string{"ims"}
-	}
-
 	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
 	if resourceID != "" {
 		ListTagsOptions.AttachedTo = &resourceID
 	}
-	ListTagsOptions.Providers = providers
+	if strings.HasPrefix(resourceType, "Softlayer_") {
+		ListTagsOptions.Providers = []string{"ims"}
+	}
 	if len(tagType) > 0 {
 		ListTagsOptions.TagType = PtrToString(tagType)
 
@@ -2015,6 +2039,13 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	}
 	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
 	if err != nil {
+		if strings.Contains(err.Error(), "Too Many Requests") {
+			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
+			if err != nil {
+				return nil, err
+			}
+			return temp, nil
+		}
 		return nil, err
 	}
 	var taglist []string
@@ -2022,6 +2053,56 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 		taglist = append(taglist, *item.Name)
 	}
 	log.Println("tagList: ", taglist)
+	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+}
+
+func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+
+	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error getting global search client settings: %s", err)
+	}
+	options := globalsearchv2.SearchOptions{}
+	var query string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		query = fmt.Sprintf("doc.id:%s AND family:ims", resourceID)
+		options.SetQuery(query)
+	} else {
+		query = fmt.Sprintf("crn:\"%s\"", resourceID)
+		options.SetQuery(query)
+	}
+	if tagType == "service" {
+		userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return nil, err
+		}
+		options.SetAccountID(userDetails.UserAccount)
+	}
+	options.SetFields([]string{"access_tags", "tags", "service_tags"})
+	result, resp, err := gsClient.Search(&options)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error to query the tags for the resource: %s %s", err, resp)
+	}
+	var taglist []string
+	var t interface{}
+	if len(result.Items) > 0 {
+		if tagType == "access" {
+			t = result.Items[0].GetProperty("access_tags")
+		} else if tagType == "service" {
+			t = result.Items[0].GetProperty("service_tags")
+		} else {
+			t = result.Items[0].GetProperty("tags")
+		}
+		switch reflect.TypeOf(t).Kind() {
+		case reflect.Slice:
+			s := reflect.ValueOf(t)
+
+			for i := 0; i < s.Len(); i++ {
+				t := fmt.Sprintf("%s", (s.Index(i)))
+				taglist = append(taglist, t)
+			}
+		}
+	}
 	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
@@ -2135,15 +2216,22 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
+	var taglist []string
 	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
 	if err != nil {
+		if strings.Contains(err.Error(), "Too Many Requests") {
+			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
+			if err != nil {
+				return nil, err
+			}
+			return temp, nil
+		}
 		return nil, err
 	}
-	var taglist []string
+
 	for _, item := range taggingResult.Items {
 		taglist = append(taglist, item.Name)
 	}
-	log.Println("tagList: ", taglist)
 	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
@@ -3235,7 +3323,7 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels)-1)
+	mapped := make([]string, len(hostLabels))
 	idx := 0
 	for k, v := range hostLabels {
 		if strings.HasPrefix(k, "os") {

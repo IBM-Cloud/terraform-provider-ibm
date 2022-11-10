@@ -69,6 +69,12 @@ func DataSourceIBMIsBareMetalServerNetworkInterfaces() *schema.Resource {
 									isBareMetalServerNicIpID: {
 										Type:        schema.TypeString,
 										Computed:    true,
+										Deprecated:  "This field is deprecated - replaced by id",
+										Description: "The unique identifier for this floating IP",
+									},
+									isBareMetalServerNicFloatingIPId: {
+										Type:        schema.TypeString,
+										Computed:    true,
 										Description: "The unique identifier for this floating IP",
 									},
 									isBareMetalServerNicIpName: {
@@ -231,8 +237,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 					floatingIPList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.FloatingIps {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpID:      *ip.ID,
-							isBareMetalServerNicIpAddress: *ip.Address,
+							isBareMetalServerNicIpID:         *ip.ID,
+							isBareMetalServerNicFloatingIPId: *ip.ID,
+							isBareMetalServerNicIpAddress:    *ip.Address,
 						}
 						floatingIPList = append(floatingIPList, currentIP)
 					}
@@ -297,8 +304,9 @@ func dataSourceIBMISBareMetalServerNetworkInterfacesRead(context context.Context
 					floatingIPList := make([]map[string]interface{}, 0)
 					for _, ip := range nic.FloatingIps {
 						currentIP := map[string]interface{}{
-							isBareMetalServerNicIpID:      *ip.ID,
-							isBareMetalServerNicIpAddress: *ip.Address,
+							isBareMetalServerNicIpID:         *ip.ID,
+							isBareMetalServerNicFloatingIPId: *ip.ID,
+							isBareMetalServerNicIpAddress:    *ip.Address,
 						}
 						floatingIPList = append(floatingIPList, currentIP)
 					}

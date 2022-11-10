@@ -160,23 +160,29 @@ func dataSourceIBMSatelliteAttachHostScriptRead(d *schema.ResourceData, meta int
 		return fmt.Errorf("[ERROR] Error Generating Satellite Registration Script: %s\n%s", err, resp)
 	}
 
-	lines := strings.Split(string(resp), "\n")
+	scriptContent := string(resp)
 
-	//if this is a RHEL host, continue with custom script
+	//if this is a RHEL host, find insert point for custom code
 	if !coreos_enabled {
+		lines := strings.Split(scriptContent, "\n")
+		var index int
 		for i, line := range lines {
 			if strings.Contains(line, `export OPERATING_SYSTEM`) {
-				i = i + 1
-				if script, ok := d.GetOk("custom_script"); ok {
-					lines[i] = script.(string)
-				} else {
-					if strings.ToLower(hostProvider) == "aws" {
-						lines[i] = `
+				index = i
+				break
+			}
+		}
+
+		var insertionText string
+
+		switch {
+		case strings.ToLower(hostProvider) == "aws":
+			insertionText = `
 yum-config-manager --enable '*'
 yum install container-selinux -y
 `
-					} else if strings.ToLower(hostProvider) == "ibm" {
-						lines[i] = `
+		case strings.ToLower(hostProvider) == "ibm":
+			insertionText = `
 subscription-manager refresh
 if [[ "${OPERATING_SYSTEM}" == "RHEL7" ]]; then
 	subscription-manager repos --enable rhel-server-rhscl-7-rpms
@@ -188,30 +194,34 @@ elif [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 	subscription-manager repos --enable rhel-8-for-x86_64-baseos-rpms 
 	subscription-manager repos --enable rhel-8-for-x86_64-appstream-rpms;
 fi
-yum install container-selinux -y`
-					} else if strings.ToLower(hostProvider) == "azure" {
-						lines[i] = `
+yum install container-selinux -y
+`
+		case strings.ToLower(hostProvider) == "azure":
+			insertionText = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 	update-alternatives --set python3 /usr/bin/python3.8
 fi
 yum install container-selinux -y
 `
-					} else if strings.ToLower(hostProvider) == "google" {
-						lines[i] = `
+		case strings.ToLower(hostProvider) == "google":
+			insertionText = `
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]]; then
 	update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 	update-alternatives --set python3 /usr/bin/python3.8
 fi
 yum install container-selinux -y
 `
-					}
-				}
+		default:
+			if script, ok := d.GetOk("custom_script"); ok {
+				insertionText = script.(string)
 			}
 		}
+
+		lines[index] = lines[index] + "\n" + insertionText
+		scriptContent = strings.Join(lines, "\n")
 	}
 
-	scriptContent := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(scriptPath, []byte(scriptContent), 0644)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error Creating Satellite Attach Host Script: %s", err)

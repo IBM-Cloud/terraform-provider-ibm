@@ -100,3 +100,10 @@ func SuppressGenericWebhookRawSecret(k, old, new string, d *schema.ResourceData)
 	secureHmac := hex.EncodeToString(mac.Sum(nil))
 	return cmp.Equal(strings.Join([]string{"hash", "SHA3-512", secureHmac}, ":"), old)
 }
+
+func SuppressAllowBlank(k, old, new string, d *schema.ResourceData) bool {
+	if new == "" && old != "" {
+		return true
+	}
+	return false
+}

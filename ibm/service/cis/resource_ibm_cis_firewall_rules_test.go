@@ -21,6 +21,7 @@ func TestAccIBMCisFirewallrules_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cis_firewall_rule.firewall_rules_instance", "action", "allow"),
 					resource.TestCheckResourceAttr("ibm_cis_firewall_rule.firewall_rules_instance", "priority", "5"),
+					resource.TestCheckResourceAttr("ibm_cis_firewall_rule.firewall_rules_instance", "paused", "true"),
 				),
 			},
 		},
@@ -42,6 +43,7 @@ func testAccCheckCisFirewallrules_basic() string {
   		filter_id = ibm_cis_filter.test.filter_id
   		action = "allow"
   		priority = 5
+		paused = true
 	  }
 `
 }

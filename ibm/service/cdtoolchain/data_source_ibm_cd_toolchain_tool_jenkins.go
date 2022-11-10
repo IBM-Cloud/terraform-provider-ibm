@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolJenkins() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolJenkins() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,34 +83,35 @@ func DataSourceIBMCdToolchainToolJenkins() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this tool integration, for example: my-jenkins. This name displays on your toolchain.",
+							Description: "The name for this tool integration.",
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the Jenkins server that you want to open when you click the Jenkins card in your toolchain.",
+							Description: "The URL of the Jenkins server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Jenkins integration tile.",
 						},
 						"webhook_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Use this webhook in your Jenkins jobs to send notifications to other tools in your toolchain. For details, see the Configuring Jenkins instructions.",
+							Sensitive:   true,
+							Description: "The webhook to use in your Jenkins jobs to send notifications to other tools in your toolchain.",
 						},
 						"api_user_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.",
+							Description: "The user name to use with the Jenkins server's API token, which is required so that DevOps Insights can collect data from Jenkins. You can find your API user name on the configuration page of your Jenkins instance.",
 						},
 						"api_token": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "Type the API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance.",
+							Description: "The API token to use for Jenkins REST API calls so that DevOps Insights can collect data from Jenkins. You can find the API token on the configuration page of your Jenkins instance. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

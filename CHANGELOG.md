@@ -1,3 +1,45 @@
+# 1.47.0(Nov 02, 2022)
+Features
+* Support for Kubernetes Service
+    - **Resources**
+        - ibm_container_vpc_worker
+* Support for APP Configuration
+    - **DataSources**
+        - ibm_app_config_snapshot
+        - ibm_app_config_snapshots
+    - **Resources**
+        - ibm_app_config_snapshot
+* Support for DirectLink
+    - **DataSources**
+        - ibm_dl_route_reports
+        - ibm_dl_route_report
+    - **Resources**
+        - ibm_dl_route_report
+Enhancements
+* Update schema validation to latest schema methods ([4068](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4068))
+* Support Private end-point for APP Configuration ([4048](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4048))
+* supported CoreOS-enabled clusters (default worker pool) and workerPools in satellite clusters ([3985](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/3985))
+* support cos one rate plan ([4092](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4092))
+* Fix GRE tunnel in cloud connection ([4093](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4093))
+* support floating_bare_metal_server attribute for resource ibm_is_bare_metal_server_network_interface_allow_float ([4115](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4115))
+* added support for catalog images for enterprises ([3994](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3994))
+* Support rhel8 in attach script ([4033](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4033))
+
+BUG FIXES
+* data source: ibm_is_backup_policies, expected 'the empty list', but returned 'no BackupPolicies found' ([4079](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4079))
+* Add fix for storage capacity & system pool output ([4074](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4074))
+* fixes the endpoint; updates go sdk for Atracker ([4073](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4073))
+* fix(vpn_gateway_connection): adding support to null patch ike_policy and ipsec_policy on vpn_gateway_connection ([4058](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4058))
+* fix(bare_metal_server_network_interface_allow_float) : reordered the wait logic in bare metal nics ([4101](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4101))
+* Update VNF Scalability NIC in docs ([4047](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4047))
+* fix(iam-access-groups): added retry logic for access groups read ([4098](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4098))
+* ibm_satellite_attach_host_script shows incorrect syntax for labels ([4099](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4099))
+* fix(bm-nic): added check for 0.0.0.0 reserved ip on nic availability ([4122](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4122))
+
+# 1.47.0-beta3 (Oct 26, 2022)
+BUG FIXES
+* Fix attach script loop for satellite host attach ([4117](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4117))
+* fix(bm-nic): added check for 0.0.0.0 reserved ip on nic availability ([4122](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4122))
 # 1.47.0-beta2 (Oct 18, 2022)
 Features
 * Support for DirectLink
