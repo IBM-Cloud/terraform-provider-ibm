@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 )
 
 func ResourceIbmIsShareTarget() *schema.Resource {
@@ -104,7 +104,7 @@ func ResourceIbmIsShareTargetValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -144,7 +144,7 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -203,7 +203,7 @@ func resourceIbmIsShareTargetRead(context context.Context, d *schema.ResourceDat
 }
 
 func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -246,7 +246,7 @@ func resourceIbmIsShareTargetUpdate(context context.Context, d *schema.ResourceD
 }
 
 func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -83,6 +83,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
+	vpcbeta "github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
 
@@ -237,6 +238,7 @@ type ClientSession interface {
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
 	VpcV1API() (*vpc.VpcV1, error)
+	VpcV1BetaAPI() (*vpcbeta.VpcV1, error)
 	APIGateway() (*apigateway.ApiGatewayControllerApiV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
@@ -401,8 +403,9 @@ type clientSession struct {
 	appConfigurationClient    *appconfigurationv1.AppConfigurationV1
 	appConfigurationClientErr error
 
-	vpcErr error
-	vpcAPI *vpc.VpcV1
+	vpcErr     error
+	vpcAPI     *vpc.VpcV1
+	vpcBetaAPI *vpcbeta.VpcV1
 
 	directlinkAPI *dl.DirectLinkV1
 	directlinkErr error
@@ -817,6 +820,10 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 
 func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 	return sess.vpcAPI, sess.vpcErr
+}
+
+func (sess clientSession) VpcV1BetaAPI() (*vpcbeta.VpcV1, error) {
+	return sess.vpcBetaAPI, sess.vpcErr
 }
 
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
@@ -1736,6 +1743,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 	session.vpcAPI = vpcclient
+
+	vpcbetaoptions := &vpcbeta.VpcV1Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_IS_NG_API_ENDPOINT"}, vpcurl),
+		Authenticator: authenticator,
+	}
+	vpcbetaclient, err := vpcbeta.NewVpcV1(vpcbetaoptions)
+	if err != nil {
+		session.vpcErr = fmt.Errorf("[ERROR] Error occured while configuring vpc service: %q", err)
+	}
+	if vpcbetaclient != nil && vpcbetaclient.Service != nil {
+		vpcbetaclient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		vpcbetaclient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.vpcBetaAPI = vpcbetaclient
 
 	// PUSH NOTIFICATIONS Service
 	pnurl := fmt.Sprintf("https://%s.imfpush.cloud.ibm.com/imfpush/v1", c.Region)

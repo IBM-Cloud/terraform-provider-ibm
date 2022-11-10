@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 )
 
 func TestAccIbmIsShareReplicaOperationsFailover(t *testing.T) {

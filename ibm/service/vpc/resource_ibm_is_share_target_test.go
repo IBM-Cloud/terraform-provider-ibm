@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 )
 
 func TestAccIbmIsShareTargetBasic(t *testing.T) {
@@ -75,7 +75,7 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareTarget) resourc
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
+		vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,7 @@ func testAccCheckIbmIsShareTargetExists(n string, obj vpcv1.ShareTarget) resourc
 }
 
 func testAccCheckIbmIsShareTargetDestroy(s *terraform.State) error {
-	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
+	vpcClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return err
 	}

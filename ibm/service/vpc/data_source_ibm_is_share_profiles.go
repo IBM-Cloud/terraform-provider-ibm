@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 )
 
 func DataSourceIbmIsShareProfiles() *schema.Resource {
@@ -60,7 +60,7 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 }
 
 func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
+	vpcClient, err := meta.(conns.ClientSession).VpcV1BetaAPI()
 	if err != nil {
 		return diag.FromErr(err)
 	}
