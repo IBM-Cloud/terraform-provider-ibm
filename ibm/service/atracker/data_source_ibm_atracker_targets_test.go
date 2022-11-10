@@ -73,7 +73,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
-				api_key = "%s"
+				api_key = "%s" // pragma: allowlist secret
 				service_to_service_enabled = true
 			}
 		}
@@ -94,7 +94,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
 				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				bucket = "my-atracker-bucket"
-				api_key = "%s"
+				api_key = "%s" // pragma: allowlist secret
 				service_to_service_enabled = true
 			}
 			logdna_endpoint {
@@ -105,7 +105,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 				target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 				brokers = [ "kafka-x:9094" ]
 				topic = "my-topic"
-				api_key = "%s"
+				api_key = "%s" // pragma: allowlist secret
 			}
 		}
 		data "ibm_atracker_targets" "atracker_targets" {

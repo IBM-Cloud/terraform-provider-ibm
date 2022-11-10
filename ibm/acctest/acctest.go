@@ -1164,7 +1164,7 @@ func init() {
 
 	COSApiKey = os.Getenv("COS_API_KEY")
 	if COSApiKey == "" {
-		COSApiKey = "xxxxxxxxxxxx"
+		COSApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable COS_API_KEY for testing COS targets, the tests will fail if this is not set")
 	}
 
@@ -1176,7 +1176,7 @@ func init() {
 
 	IesApiKey = os.Getenv("IES_API_KEY")
 	if IesApiKey == "" {
-		IesApiKey = "xxxxxxxxxxxx"
+		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 }

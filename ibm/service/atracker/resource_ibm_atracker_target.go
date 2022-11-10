@@ -125,7 +125,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 							Required:    true,
 							Description: "The messsage hub topic defined in the Event Streams instance.",
 						},
-						"api_key": &schema.Schema{
+						"api_key": &schema.Schema{ // pragma: allowlist secret
 							Type:             schema.TypeString,
 							Required:         true,
 							Sensitive:        true,

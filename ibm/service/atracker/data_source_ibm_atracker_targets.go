@@ -149,7 +149,7 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Computed:    true,
 										Description: "The messsage hub topic defined in the Event Streams instance.",
 									},
-									"api_key": &schema.Schema{
+									"api_key": &schema.Schema{ // pragma: allowlist secret
 										Type:        schema.TypeString,
 										Computed:    true,
 										Sensitive:   true,
@@ -441,7 +441,7 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 		modelMap["topic"] = *model.Topic
 	}
 	if model.APIKey != nil {
-		modelMap["api_key"] = *model.APIKey
+		modelMap["api_key"] = *model.APIKey // pragma: allowlist secret
 	}
 	return modelMap, nil
 }
