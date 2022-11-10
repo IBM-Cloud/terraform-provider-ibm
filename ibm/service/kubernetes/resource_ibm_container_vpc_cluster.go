@@ -246,8 +246,8 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:         true,
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
+				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, clusterNormal}, true),
+				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or Normal",
 			},
 
 			"entitlement": {
@@ -289,6 +289,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "Root Key ID for boot volume encryption",
 				RequiredWith:     []string{"kms_instance_id"},
+			},
+			"kms_account_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Account ID of kms instance holder - if not provided, defaults to the account in use",
+				RequiredWith:     []string{"kms_instance_id", "crk"},
 			},
 
 			//Get Cluster info Request
@@ -475,7 +482,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
 	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
+		timeoutStage = strings.ToLower(v.(string))
 	}
 
 	var zonesList = make([]v2.Zone, 0)
@@ -494,21 +501,26 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	}
 
 	workerpool := v2.WorkerPoolConfig{
-		VpcID:       vpcID,
-		Flavor:      flavor,
-		WorkerCount: workerCount,
-		Zones:       zonesList,
+		CommonWorkerPoolConfig: v2.CommonWorkerPoolConfig{
+			VpcID:       vpcID,
+			Flavor:      flavor,
+			WorkerCount: workerCount,
+			Zones:       zonesList,
+		},
 	}
 
 	if hpid, ok := d.GetOk("host_pool_id"); ok {
 		workerpool.HostPoolID = hpid.(string)
 	}
 
-	if v, ok := d.GetOk("kms_instance_id"); ok {
+	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
 		crk := d.Get("crk").(string)
 		wve := v2.WorkerVolumeEncryption{
-			KmsInstanceID:     v.(string),
+			KmsInstanceID:     kmsid.(string),
 			WorkerVolumeCRKID: crk,
+		}
+		if kmsaccid, ok := d.GetOk("kms_account_id"); ok {
+			wve.KMSAccountID = kmsaccid.(string)
 		}
 		workerpool.WorkerVolumeEncryption = &wve
 	}
@@ -560,7 +572,14 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	switch strings.ToLower(timeoutStage) {
+	switch timeoutStage {
+
+	case strings.ToLower(clusterNormal):
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
+		if err != nil {
+			return err
+		}
 
 	case strings.ToLower(masterNodeReady):
 		_, err = waitForVpcClusterMasterAvailable(d, meta)
@@ -1026,6 +1045,9 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	if workerPool.WorkerVolumeEncryption != nil {
 		d.Set("crk", workerPool.WorkerVolumeEncryption.WorkerVolumeCRKID)
 		d.Set("kms_instance_id", workerPool.WorkerVolumeEncryption.KmsInstanceID)
+		if workerPool.WorkerVolumeEncryption.KMSAccountID != "" {
+			d.Set("kms_account_id", workerPool.WorkerVolumeEncryption.KMSAccountID)
+		}
 	}
 
 	return nil
@@ -1192,6 +1214,35 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 			}
 			return workers, deployInProgress, nil
 
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: pendingState,
+		Target:  []string{waitForState},
+		Refresh: func() (interface{}, string, error) {
+			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+			if err != nil {
+				return nil, "", err
+			}
+
+			return clusterInfo, clusterInfo.State, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,

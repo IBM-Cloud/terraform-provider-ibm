@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolCustom() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,12 +60,12 @@ func DataSourceIBMCdToolchainToolCustom() *schema.Resource {
 						"ui_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through the UI.",
+							Description: "URI representing this resource through the UI.",
 						},
 						"api_href": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "URI representing the this resource through an API.",
+							Description: "URI representing this resource through an API.",
 						},
 					},
 				},
@@ -83,48 +83,48 @@ func DataSourceIBMCdToolchainToolCustom() *schema.Resource {
 			"parameters": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Unique key-value pairs representing parameters to be used to create the tool.",
+				Description: "Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href=\"https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations\">Configuring tool integrations page</a>.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the name of the tool that you are integrating; for example: Delivery Pipeline.",
+							Description: "The type of tool that this custom tool is integrating with.",
 						},
 						"lifecycle_phase": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Select the lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.",
+							Description: "The lifecycle phase of the IBM Cloud Garage Method that is the most closely associated with this tool.",
 						},
 						"image_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL of the icon to show on your tool integration's card.",
+							Description: "The URL of the icon shown on the tool integration card in the graphical UI.",
 						},
 						"documentation_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL for your tool's documentation.",
+							Description: "The URL for this tool's documentation.",
 						},
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a name for this specific tool integration; for example: My Build and Deploy Pipeline.",
+							Description: "The name for this tool integration.",
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type the URL that you want to navigate to when you click the tool integration card.",
+							Description: "The URL of the dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the integration tile.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type a description for the tool instance.",
+							Description: "A description outlining the function of this tool.",
 						},
 						"additional_properties": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "(Advanced) Type any information that is needed to integrate with other tools in your toolchain.",
+							Description: "Any information that is needed to integrate with other tools in the toolchain.",
 						},
 					},
 				},

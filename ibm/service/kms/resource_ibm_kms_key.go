@@ -322,8 +322,11 @@ func populateKPClient(d *schema.ResourceData, meta interface{}, instanceID strin
 	if err != nil {
 		return nil, nil, err
 	}
+	var endpointType string
 
-	endpointType := d.Get("endpoint_type").(string)
+	if v, ok := d.GetOk("endpoint_type"); ok {
+		endpointType = v.(string)
+	}
 
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -409,6 +412,9 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 	endpointURL := fmt.Sprintf("%s/api/v2/keys", exturl.(string))
 
 	url1 := conns.EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, endpointURL)
+	if !strings.HasSuffix(url1, "/api/v2/keys") {
+		url1 = url1 + "/api/v2/keys"
+	}
 	u, err := url.Parse(url1)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
