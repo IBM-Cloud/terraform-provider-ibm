@@ -45,7 +45,7 @@ resource "ibm_cm_offering_instance" "cm_offering_instance_instance" {
 
 // Create cm_catalog data source
 data "ibm_cm_catalog" "cm_catalog_instance" {
-  catalog_id = var.cm_catalog_catalog_id
+  catalog_identifier = var.cm_catalog_catalog_id
 }
 
 // Create cm_offering data source

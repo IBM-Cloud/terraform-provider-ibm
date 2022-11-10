@@ -21,7 +21,7 @@ func DataSourceIBMCmCatalog() *schema.Resource {
 		ReadContext: dataSourceIBMCmCatalogRead,
 
 		Schema: map[string]*schema.Schema{
-			"catalog_id": &schema.Schema{
+			"catalog_identifier": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Catalog identifier.",
@@ -389,7 +389,7 @@ func dataSourceIBMCmCatalogRead(context context.Context, d *schema.ResourceData,
 
 	getCatalogOptions := &catalogmanagementv1.GetCatalogOptions{}
 
-	getCatalogOptions.SetCatalogIdentifier(d.Get("catalog_id").(string))
+	getCatalogOptions.SetCatalogIdentifier(d.Get("catalog_identifier").(string))
 
 	catalog, response, err := catalogManagementClient.GetCatalogWithContext(context, getCatalogOptions)
 	if err != nil {

@@ -80,7 +80,7 @@ ibm_cm_catalog data source:
 
 ```hcl
 data "ibm_cm_catalog" "cm_catalog_instance" {
-  catalog_id = var.cm_catalog_catalog_id
+  catalog_identifier = var.cm_catalog_catalog_id
 }
 ```
 ibm_cm_offering data source:
