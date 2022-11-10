@@ -61,7 +61,6 @@ func ResourceIBMKmskeyPolicies() *schema.Resource {
 			"rotation": {
 				Type:         schema.TypeList,
 				Optional:     true,
-				Computed:     true,
 				AtLeastOneOf: []string{"rotation", "dual_auth_delete"},
 				Description:  "Specifies the key rotation time interval in months, with a minimum of 1, and a maximum of 12",
 				Elem: &schema.Resource{
@@ -96,9 +95,15 @@ func ResourceIBMKmskeyPolicies() *schema.Resource {
 							Computed:    true,
 							Description: "Updates when the policy is replaced or modified. The date format follows RFC 3339.",
 						},
+						"enabled": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If set to true, Key Protect enables a rotation policy on a single key.",
+							Default:     true,
+						},
 						"interval_month": {
 							Type:         schema.TypeInt,
-							Required:     true,
+							Optional:     true,
 							ValidateFunc: validate.ValidateAllowedRangeInt(1, 12),
 							Description:  "Specifies the key rotation time interval in months",
 						},
@@ -266,9 +271,9 @@ func resourceIBMKmsKeyPolicyUpdate(context context.Context, d *schema.ResourceDa
 		}
 		_, _, key_id := getInstanceAndKeyDataFromCRN(d.Id())
 
-		err = resourceHandlePolicies(context, d, kpAPI, meta, key_id)
+		err = resourceUpdatePolicies(context, d, kpAPI, meta, key_id)
 		if err != nil {
-			return diag.Errorf("Could not create policies: %s", err)
+			return diag.Errorf("Could not update policies: %s", err)
 		}
 	}
 	return resourceIBMKmsKeyPolicyRead(context, d, meta)
@@ -283,8 +288,49 @@ func resourceIBMKmsKeyPolicyDelete(context context.Context, d *schema.ResourceDa
 
 }
 
+func resourceUpdatePolicies(context context.Context, d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, key_id string) error {
+	var dualAuthEnable, rotationEnable bool
+	var rotationInterval int
+
+	policy := getPolicyFromSchema(d)
+
+	if policy.Rotation != nil {
+		rotationInterval = policy.Rotation.Interval
+		rotationEnable = *policy.Rotation.Enabled
+		/* While updating a rotation policy, if the user does not set interval_month, it will be zero and the policy update
+		will intend to only enable or disbale a policy. In case, the user inputs both values `enabled` and
+		`interval_month`, policy update will update both with respective functions called from the SDK. */
+		if rotationInterval == 0 {
+			if rotationEnable {
+				_, err := kpAPI.EnableRotationPolicy(context, key_id)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while enabling key rotation policies: %s", err)
+				}
+			} else if !rotationEnable {
+				_, err := kpAPI.DisableRotationPolicy(context, key_id)
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error while disabling key rotation policies: %s", err)
+				}
+			}
+		} else {
+			_, err := kpAPI.SetRotationPolicy(context, key_id, rotationInterval, rotationEnable)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error while disabling key rotation policies: %s", err)
+			}
+		}
+	}
+	if policy.DualAuth != nil {
+		dualAuthEnable = *policy.DualAuth.Enabled
+		_, err := kpAPI.SetDualAuthDeletePolicy(context, key_id, dualAuthEnable)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error while setting dual_auth_delete policies: %s", err)
+		}
+	}
+	return nil
+}
+
 func resourceHandlePolicies(context context.Context, d *schema.ResourceData, kpAPI *kp.Client, meta interface{}, key_id string) error {
-	var setRotation, setDualAuthDelete, dualAuthEnable bool
+	var setRotation, setDualAuthDelete, dualAuthEnable, rotationEnable bool
 	var rotationInterval int
 
 	policy := getPolicyFromSchema(d)
@@ -292,12 +338,13 @@ func resourceHandlePolicies(context context.Context, d *schema.ResourceData, kpA
 	if policy.Rotation != nil {
 		setRotation = true
 		rotationInterval = policy.Rotation.Interval
+		rotationEnable = *policy.Rotation.Enabled
 	}
 	if policy.DualAuth != nil {
 		setDualAuthDelete = true
 		dualAuthEnable = *policy.DualAuth.Enabled
 	}
-	_, err := kpAPI.SetPolicies(context, key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable)
+	_, err := kpAPI.SetPolicies(context, key_id, setRotation, rotationInterval, setDualAuthDelete, dualAuthEnable, rotationEnable)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error while creating policies: %s", err)
 	}
@@ -312,6 +359,10 @@ func getPolicyFromSchema(d *schema.ResourceData) kp.Policy {
 			rotationPolicyMap := rotationPolicyList[0].(map[string]interface{})
 			policy.Rotation = &kp.Rotation{
 				Interval: rotationPolicyMap["interval_month"].(int),
+			}
+			if _, ok := rotationPolicyMap["enabled"]; ok {
+				enabled := rotationPolicyMap["enabled"].(bool)
+				policy.Rotation.Enabled = &enabled
 			}
 		}
 	}

@@ -2716,6 +2716,7 @@ func FlattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
@@ -2734,7 +2735,6 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
-		log.Println("Policy CRN Data =============>", policy.CRN)
 		policyCRNData := strings.Split(policy.CRN, ":")
 		policyInstance := map[string]interface{}{
 			"id":               policyCRNData[9],
@@ -2746,6 +2746,7 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
