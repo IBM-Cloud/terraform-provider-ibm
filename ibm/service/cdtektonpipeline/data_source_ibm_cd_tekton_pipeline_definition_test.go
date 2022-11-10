@@ -25,7 +25,7 @@ func TestAccIBMCdTektonPipelineDefinitionDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "pipeline_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "definition_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "scm_source.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition", "source.#"),
 				),
 			},
 		},
@@ -33,18 +33,20 @@ func TestAccIBMCdTektonPipelineDefinitionDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMCdTektonPipelineDefinitionDataSourceConfigBasic(definitionPipelineID string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -66,11 +68,14 @@ func testAccCheckIBMCdTektonPipelineDefinitionDataSourceConfigBasic(definitionPi
 			parameters {}
 		}
 		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			scm_source {
-				url = "https://github.com/open-toolchain/hello-tekton.git"
-				branch = "master"
-				path = ".tekton"
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			source {
+				type = "git"
+				properties {
+					url = "https://github.com/open-toolchain/hello-tekton.git"
+					branch = "master"
+					path = ".tekton"
+				}
 			}
 			depends_on = [
 				ibm_cd_tekton_pipeline.cd_tekton_pipeline
@@ -80,5 +85,5 @@ func testAccCheckIBMCdTektonPipelineDefinitionDataSourceConfigBasic(definitionPi
 			pipeline_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition.pipeline_id
 			definition_id = ibm_cd_tekton_pipeline_definition.cd_tekton_pipeline_definition.definition_id
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }

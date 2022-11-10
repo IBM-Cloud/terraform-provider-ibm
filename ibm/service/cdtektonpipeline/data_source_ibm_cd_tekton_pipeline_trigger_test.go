@@ -38,7 +38,7 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 	triggerName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	triggerEventListener := fmt.Sprintf("tf_event_listener_%d", acctest.RandIntRange(10, 100))
 	triggerMaxConcurrentRuns := fmt.Sprintf("%d", acctest.RandIntRange(10, 100))
-	triggerDisabled := "true"
+	triggerEnabled := "false"
 	triggerCron := fmt.Sprintf("tf_cron_%d", acctest.RandIntRange(10, 100))
 	triggerTimezone := fmt.Sprintf("tf_timezone_%d", acctest.RandIntRange(10, 100))
 
@@ -47,7 +47,7 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerDisabled, triggerCron, triggerTimezone),
+				Config: testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID, triggerType, triggerName, triggerEventListener, triggerMaxConcurrentRuns, triggerEnabled, triggerCron, triggerTimezone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "pipeline_id"),
@@ -59,9 +59,8 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "properties.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "worker.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "max_concurrent_runs"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "disabled"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "scm_source.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "events.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "source.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger", "secret.#"),
 				),
 			},
@@ -70,12 +69,30 @@ func TestAccIBMCdTektonPipelineTriggerDataSourceAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfigBasic(triggerPipelineID string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
+		}
+		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			parameters {
+				name = "pipeline-name"
+			}
+		}
+		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
+			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
+			worker {
+				id = "public"
+			}
+			depends_on = [
+				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
+			]
 		}
 		resource "ibm_cd_toolchain_tool_githubconsolidated" "definition-repo" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
@@ -87,30 +104,17 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfigBasic(triggerPipeline
 			parameters {}
 		}
 		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			scm_source {
-				url = "https://github.com/open-toolchain/hello-tekton.git"
-				branch = "master"
-				path = ".tekton"
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			source {
+				type = "git"
+				properties {
+					url = "https://github.com/open-toolchain/hello-tekton.git"
+					branch = "master"
+					path = ".tekton"
+				}
 			}
 			depends_on = [
 				ibm_cd_tekton_pipeline.cd_tekton_pipeline
-			]
-		}
-		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
-			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
-			parameters {
-				name = "pipeline-name"
-				type = "tekton"
-			}
-		}
-		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			worker {
-				id = "public"
-			}
-			depends_on = [
-				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
@@ -127,42 +131,24 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfigBasic(triggerPipeline
 			pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.trigger_id
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID string, triggerType string, triggerName string, triggerEventListener string, triggerMaxConcurrentRuns string, triggerDisabled string, triggerCron string, triggerTimezone string) string {
-	rgID := acc.CdResourceGroupID
+func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID string, triggerType string, triggerName string, triggerEventListener string, triggerMaxConcurrentRuns string, triggerEnabled string, triggerCron string, triggerTimezone string) string {
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
-		}
-		resource "ibm_cd_toolchain_tool_githubconsolidated" "definition-repo" {
-			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
-			name = "definition-repo"
-			initialization {
-				type = "link"
-				repo_url = "https://github.com/open-toolchain/hello-tekton.git"
-			}
-			parameters {}
-		}
-		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			scm_source {
-				url = "https://github.com/open-toolchain/hello-tekton.git"
-				branch = "master"
-				path = ".tekton"
-			}
-			depends_on = [
-				ibm_cd_tekton_pipeline.cd_tekton_pipeline
-			]
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -174,6 +160,29 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID st
 				ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline
 			]
 		}
+		resource "ibm_cd_toolchain_tool_githubconsolidated" "definition-repo" {
+			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
+			name = "definition-repo"
+			initialization {
+				type = "link"
+				repo_url = "https://github.com/open-toolchain/hello-tekton.git"
+			}
+			parameters {}
+		}
+		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			source {
+				type = "git"
+				properties {
+					url = "https://github.com/open-toolchain/hello-tekton.git"
+					branch = "master"
+					path = ".tekton"
+				}
+			}
+			depends_on = [
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+			]
+		}
 		resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
 			type = "manual"
@@ -183,12 +192,12 @@ func testAccCheckIBMCdTektonPipelineTriggerDataSourceConfig(triggerPipelineID st
 			]
 			name = "%s"
 			max_concurrent_runs = %s
-			disabled = %s
+			enabled = %s
 		}
 
 		data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 			pipeline_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.pipeline_id
 			trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger.trigger_id
 		}
-	`, tcName, rgID, triggerName, triggerMaxConcurrentRuns, triggerDisabled)
+	`, rgName, tcName, triggerName, triggerMaxConcurrentRuns, triggerEnabled)
 }

@@ -57,18 +57,20 @@ func TestAccIBMCdTektonPipelineTriggerPropertyDataSourceAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(triggerPropertyPipelineID string, triggerPropertyTriggerID string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -90,11 +92,14 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 			parameters {}
 		}
 		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			scm_source {
-				url = "https://github.com/open-toolchain/hello-tekton.git"
-				branch = "master"
-				path = ".tekton"
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			source {
+				type = "git"
+				properties {
+					url = "https://github.com/open-toolchain/hello-tekton.git"
+					branch = "master"
+					path = ".tekton"
+				}
 			}
 			depends_on = [
 				ibm_cd_tekton_pipeline.cd_tekton_pipeline
@@ -121,22 +126,24 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfigBasic(trigger
 			trigger_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.trigger_id
 			property_name = "trig-prop-1"
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }
 
 func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPropertyPipelineID string, triggerPropertyTriggerID string, triggerPropertyName string, triggerPropertyValue string, triggerPropertyType string, triggerPropertyPath string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -158,11 +165,14 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPrope
 			parameters {}
 		}
 		resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
-			pipeline_id = ibm_cd_toolchain_tool_pipeline.ibm_cd_toolchain_tool_pipeline.tool_id
-			scm_source {
-				url = "https://github.com/open-toolchain/hello-tekton.git"
-				branch = "master"
-				path = ".tekton"
+			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
+			source {
+				type = "git"
+				properties {
+					url = "https://github.com/open-toolchain/hello-tekton.git"
+					branch = "master"
+					path = ".tekton"
+				}
 			}
 			depends_on = [
 				ibm_cd_tekton_pipeline.cd_tekton_pipeline
@@ -189,5 +199,5 @@ func testAccCheckIBMCdTektonPipelineTriggerPropertyDataSourceConfig(triggerPrope
 			trigger_id = ibm_cd_tekton_pipeline_trigger_property.cd_tekton_pipeline_trigger_property.trigger_id
 			property_name = "%s"
 		}
-	`, tcName, rgID, triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyName)
+	`, rgName, tcName, triggerPropertyName, triggerPropertyValue, triggerPropertyType, triggerPropertyName)
 }

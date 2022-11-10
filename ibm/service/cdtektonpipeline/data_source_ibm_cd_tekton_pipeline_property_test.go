@@ -59,18 +59,20 @@ func TestAccIBMCdTektonPipelinePropertyDataSourceAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipelineID string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -87,27 +89,32 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipeli
 			name = "property1"
 			type="text"
 			value="prop1"
+			depends_on = [
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+			]
 		}
 		data "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 			property_name = ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property.name
 		}
-	`, tcName, rgID)
+	`, rgName, tcName)
 }
 
 func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig(propertyPipelineID string, propertyName string, propertyValue string, propertyType string, propertyPath string) string {
-	rgID := acc.CdResourceGroupID
+	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
+		data "ibm_resource_group" "resource_group" {
+			name = "%s"
+		}
 		resource "ibm_cd_toolchain" "cd_toolchain" {
 			name = "%s"
-			resource_group_id = "%s"
+			resource_group_id = data.ibm_resource_group.resource_group.id
 		}
 		resource "ibm_cd_toolchain_tool_pipeline" "ibm_cd_toolchain_tool_pipeline" {
 			toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 			parameters {
 				name = "pipeline-name"
-				type = "tekton"
 			}
 		}
 		resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline" {
@@ -124,10 +131,13 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfig(propertyPipelineID 
 			name = "%s"
 			type = "text"
 			value = "%s"
+			depends_on = [
+				ibm_cd_tekton_pipeline.cd_tekton_pipeline
+			]
 		}
 		data "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 			property_name = ibm_cd_tekton_pipeline_property.cd_tekton_pipeline_property.name
 		}
-	`, tcName, rgID, propertyName, propertyValue)
+	`, rgName, tcName, propertyName, propertyValue)
 }

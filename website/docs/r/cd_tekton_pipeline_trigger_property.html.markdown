@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_tekton_pipeline_trigger_property"
 description: |-
   Manages cd_tekton_pipeline_trigger_property.
-subcategory: "Continuous Delivery"
+subcategory: "CD Tekton Pipeline"
 ---
 
 # ibm_cd_tekton_pipeline_trigger_property
