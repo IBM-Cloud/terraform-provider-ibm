@@ -87,8 +87,8 @@ func testAccCheckIBMCdTektonPipelinePropertyDataSourceConfigBasic(propertyPipeli
 		resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
 			pipeline_id = ibm_cd_tekton_pipeline.cd_tekton_pipeline.pipeline_id
 			name = "property1"
-			type="text"
-			value="prop1"
+			type = "text"
+			value = "prop1"
 			depends_on = [
 				ibm_cd_tekton_pipeline.cd_tekton_pipeline
 			]
