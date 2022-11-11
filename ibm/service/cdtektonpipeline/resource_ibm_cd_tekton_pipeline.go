@@ -345,7 +345,7 @@ func ResourceIBMCdTektonPipeline() *schema.Resource {
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
-							Description: "Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.",
+							Description: "Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain API https://cloud.ibm.com/apidocs/toolchain#list-tools.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": &schema.Schema{

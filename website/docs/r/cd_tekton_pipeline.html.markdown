@@ -143,7 +143,7 @@ Nested scheme for **triggers**:
 		  * Constraints: Allowable values are: `token_matches`, `digest_matches`, `internal_validation`.
 		* `value` - (String) Secret value, not needed if secret type is `internal_validation`.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
-	* `source` - (List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain endpoint /toolchains/{toolchain_id}/tools.
+	* `source` - (List) Source repository for a Git trigger. Only required for Git triggers. The referenced repository URL must match the URL of a repository tool integration in the parent toolchain. Obtain the list of integrations from the toolchain API https://cloud.ibm.com/apidocs/toolchain#list-tools.
 	Nested scheme for **source**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or pattern.
 		Nested scheme for **properties**:
