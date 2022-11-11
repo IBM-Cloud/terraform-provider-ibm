@@ -1255,7 +1255,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
-	_, logicalReplicationSet := diff.GetOkExists("logical_replication_slot")
+	_, logicalReplicationSet := diff.GetOk("logical_replication_slot")
 
 	if service != "databases-for-postgresql" && logicalReplicationSet {
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
