@@ -75,16 +75,16 @@ In addition to all argument references list, you can access the following attrib
     - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
     - `rate_units` - (String) Auto scaling rate in units.
 	
-- `memory` (List) Memory Auto Scaling.
+  - `memory` (List) Memory Auto Scaling.
 
-  Nested scheme for `memory`:
-  - `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
-  - `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
-  - `io_over_period` - (String) Auto scaling scalar I/O utilization over period.
-  - `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
-  - `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
-  - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
-  - `rate_units` - (String) Auto scaling rate in units.
+    Nested scheme for `memory`:
+    - `io_above_percent`- (Integer) Auto scaling scalar I/O utilization above percent.
+    - `io_enabled`- (Boolean) Auto scaling scalar I/O utilization enabled.
+    - `io_over_period` - (String) Auto scaling scalar I/O utilization over period.
+    - `rate_increase_percent`- (Integer) Auto scaling rate in increase percent.
+    - `rate_limit_mb_per_member`- (Integer) Auto scaling rate limit in megabytes per member.
+    - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
+    - `rate_units` - (String) Auto scaling rate in units.
 - `allowlist`  - (List) A list of allowed IP addresses or ranges.
 - `whitelist`  - **Deprecated** - (List) A list of allowed IP addresses or ranges.  - replaced by `allowlist`
 

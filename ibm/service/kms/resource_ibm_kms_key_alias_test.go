@@ -32,7 +32,7 @@ func TestAccIBMKMSResource_Key_Alias_Name(t *testing.T) {
 		},
 	})
 }
-func TestAccIBMKMSResource_Key_Alias_Key(t *testing.T) {
+func TestAccIBMKMSResource_Key_Alias_Duplicate(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_kms_%d", acctest.RandIntRange(10, 100))
 	// cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
 	// bucketName := fmt.Sprintf("bucket-test77")
@@ -45,11 +45,8 @@ func TestAccIBMKMSResource_Key_Alias_Key(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, keyName, aliasName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
-					resource.TestCheckResourceAttr("ibm_kms_key_alias.testAlias", "alias", aliasName),
-				),
+				Config:      testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, keyName, aliasName),
+				ExpectError: regexp.MustCompile("(KEY_ALIAS_NOT_UNIQUE_ERR)"),
 			},
 		},
 	})
@@ -192,14 +189,20 @@ func testAccCheckIBMKmsResourceAliasDuplicateConfig(instanceName, KeyName, alias
 		force_delete = true
 	}
 	resource "ibm_kms_key_alias" "testAlias" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key.test.instance_id}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
-	resource "ibm_kms_key_alias" "testAlias2" {
+	resource "ibm_kms_key" "test2" {
 		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		key_name = "New"
+		standard_key =  true
+		force_delete = true
+	}
+	resource "ibm_kms_key_alias" "testAlias2" {
+		instance_id = "${ibm_kms_key.test2.instance_id}"
 		alias = ibm_kms_key_alias.testAlias.alias
-		key_id = "${ibm_kms_key.test.key_id}"
+		key_id = "${ibm_kms_key.test2.key_id}"
 	}
 
 `, instanceName, KeyName, aliasName)
@@ -220,12 +223,12 @@ func testAccCheckIBMKmsResourceAliasTwo(instanceName, KeyName, aliasName, aliasN
 		force_delete = true
 	}
 	resource "ibm_kms_key_alias" "testAlias" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key.test.instance_id}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
 	resource "ibm_kms_key_alias" "testAlias2" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key_alias.testAlias.instance_id}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
@@ -248,12 +251,12 @@ func testAccCheckIBMKmsResourceAliasWithExistingAlias(instanceName, KeyName, ali
 		force_delete = true
 	}
 	resource "ibm_kms_key_alias" "testAlias" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key.test.instance_id}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}
 	resource "ibm_kms_key_alias" "testAlias2" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key_alias.testAlias.instance_id}"
 		alias = "%s"
 		existing_alias = "${ibm_kms_key_alias.testAlias.alias}"
 	}
@@ -276,7 +279,7 @@ func testAccCheckIBMKmsResourceAliasOne(instanceName, KeyName, aliasName string)
 		force_delete = true
 	}
 	resource "ibm_kms_key_alias" "testAlias" {
-		instance_id = "${ibm_resource_instance.kms_instance.guid}"
+		instance_id = "${ibm_kms_key.test.instance_id}"
 		alias = "%s"
 		key_id = "${ibm_kms_key.test.key_id}"
 	}

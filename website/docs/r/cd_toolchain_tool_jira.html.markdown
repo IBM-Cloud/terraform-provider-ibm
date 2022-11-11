@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_jira. This allows cd_toolchain_tool_jira to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-jira).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-jira) page for more information.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_token` - (Optional, String) The api token for your JIRA account. Optional for public projects.
+	* `api_token` - (Optional, String) The api token for your JIRA account. Optional for public projects. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `api_url` - (Required, String) The base API URL for your JIRA instance.
 	* `enable_traceability` - (Optional, Boolean) Track the deployment of code changes by creating tags, labels and comments on commits, pull requests and referenced issues.
 	  * Constraints: The default value is `false`.
@@ -55,7 +55,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

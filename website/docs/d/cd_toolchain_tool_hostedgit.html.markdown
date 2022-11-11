@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source for cd_toolchain_tool_hostedgit. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-grit).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-grit) page for more information.
 
 ## Example Usage
 
@@ -52,7 +52,7 @@ Nested scheme for **parameters**:
 	* `owner_id` - (String) The GitLab user or group that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `true`.
-	* `project_id` - (String) The ID of the project.
+	* `repo_id` - (String) The ID of the Git Repos and Issue Tracking project.
 	* `repo_name` - (String) The name of the new GitLab repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (String) The URL of the GitLab repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
 	* `source_repo_url` - (String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
@@ -67,7 +67,7 @@ Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.

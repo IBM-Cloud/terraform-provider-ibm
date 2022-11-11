@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolHashicorpvault() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -105,19 +105,19 @@ func DataSourceIBMCdToolchainToolHashicorpvault() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The authentication token for your HashiCorp Vault instance when using the 'github' and 'token' authentication methods. This parameter is ignored for other authentication methods.",
+							Description: "The authentication token for your HashiCorp Vault instance when using the 'github' and 'token' authentication methods. This parameter is ignored for other authentication methods. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"role_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The authentication role ID for your HashiCorp Vault instance when using the 'approle' authentication method. This parameter is ignored for other authentication methods. Note, 'role_id' should be treated as a secret and should not be shared in plaintext.",
+							Description: "The authentication role ID for your HashiCorp Vault instance when using the 'approle' authentication method. This parameter is ignored for other authentication methods. Note, 'role_id' should be treated as a secret and should not be shared in plaintext. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"secret_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The authentication secret ID for your HashiCorp Vault instance when using the 'approle' authentication method. This parameter is ignored for other authentication methods.",
+							Description: "The authentication secret ID for your HashiCorp Vault instance when using the 'approle' authentication method. This parameter is ignored for other authentication methods. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
@@ -148,7 +148,7 @@ func DataSourceIBMCdToolchainToolHashicorpvault() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "The authentication password for your HashiCorp Vault instance when using the 'userpass' authentication method. This parameter is ignored for other authentication methods.",
+							Description: "The authentication password for your HashiCorp Vault instance when using the 'userpass' authentication method. This parameter is ignored for other authentication methods. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 					},
 				},

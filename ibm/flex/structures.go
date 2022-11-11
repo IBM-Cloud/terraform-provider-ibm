@@ -31,6 +31,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -349,14 +350,15 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
-			"id":           workerPool.ID,
-			"name":         workerPool.PoolName,
-			"flavor":       workerPool.Flavor,
-			"worker_count": workerPool.WorkerCount,
-			"isolation":    workerPool.Isolation,
-			"labels":       workerPool.Labels,
-			"state":        workerPool.Lifecycle.ActualState,
-			"host_pool_id": workerPool.HostPoolID,
+			"id":               workerPool.ID,
+			"name":             workerPool.PoolName,
+			"flavor":           workerPool.Flavor,
+			"worker_count":     workerPool.WorkerCount,
+			"isolation":        workerPool.Isolation,
+			"labels":           workerPool.Labels,
+			"operating_system": workerPool.OperatingSystem,
+			"state":            workerPool.Lifecycle.ActualState,
+			"host_pool_id":     workerPool.HostPoolID,
 		}
 		zones := workerPool.Zones
 		zonesConfig := make([]map[string]interface{}, len(zones))
@@ -2716,6 +2718,7 @@ func FlattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
@@ -2734,7 +2737,6 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
-		log.Println("Policy CRN Data =============>", policy.CRN)
 		policyCRNData := strings.Split(policy.CRN, ":")
 		policyInstance := map[string]interface{}{
 			"id":               policyCRNData[9],
@@ -2746,6 +2748,7 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
@@ -2756,6 +2759,55 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 		return rotationMap
 	} else if policy == "dual_auth_delete" {
 		return dualAuthMap
+	}
+	return nil
+}
+
+func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []map[string]interface{} {
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	metricsMap := make([]map[string]interface{}, 0, 1)
+	keyCreateImportAccessMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyInstance := map[string]interface{}{
+			"created_by":    policy.CreatedBy,
+			"creation_date": (*policy.CreatedAt).String(),
+			"updated_by":    policy.UpdatedBy,
+			"last_updated":  (*policy.UpdatedAt).String(),
+		}
+		if policy.PolicyType == "dualAuthDelete" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+		if policy.PolicyType == "rotation" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			if policy.PolicyData.Attributes != nil {
+				policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
+			}
+			rotationMap = append(rotationMap, policyInstance)
+		}
+		if policy.PolicyType == "metrics" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			metricsMap = append(metricsMap, policyInstance)
+		}
+		if policy.PolicyType == "keyCreateImportAccess" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
+			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
+			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
+			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
+			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
+		}
+	}
+	if policyType == "rotation" {
+		return rotationMap
+	} else if policyType == "dual_auth_delete" {
+		return dualAuthMap
+	} else if policyType == "metrics" {
+		return metricsMap
+	} else if policyType == "key_create_import_access" {
+		return keyCreateImportAccessMap
 	}
 	return nil
 }
@@ -3311,4 +3363,51 @@ func FlattenSatelliteClusterZones(list []string) []map[string]interface{} {
 		zones[i] = l
 	}
 	return zones
+}
+
+func FetchResourceInstanceDetails(d *schema.ResourceData, meta interface{}, instanceID string) error {
+	// Get ResourceController from ClientSession
+	resourceControllerClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
+	}
+
+	getResourceOpts := resourcecontrollerv2.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instance, response, err := resourceControllerClient.GetResourceInstance(&getResourceOpts)
+	if err != nil {
+		log.Printf("[DEBUG] Error retrieving resource instance: %s\n%s", err, response)
+		return fmt.Errorf("Error retrieving resource instance: %s\n%s", err, response)
+	}
+	if strings.Contains(*instance.State, "removed") {
+		log.Printf("[DEBUG] Error retrieving resource instance details: Resource has been removed")
+		return fmt.Errorf("Error retrieving resource instance details: Resource has been removed")
+	}
+
+	extensionsMap := Flatten(instance.Extensions)
+	if extensionsMap == nil {
+		log.Printf("[DEBUG] Error parsing resource instance: Endpoints are missing in instance Extensions map")
+		return fmt.Errorf("Error parsing resource instance: Endpoints are missing in instance Extensions map")
+	}
+	d.Set("extensions", extensionsMap)
+
+	return nil
+}
+
+func GetResourceInstanceURL(d *schema.ResourceData, meta interface{}) (*string, error) {
+
+	var endpoint string
+	extensions := d.Get("extensions").(map[string]interface{})
+
+	if url, ok := extensions["endpoints.public"]; ok {
+		endpoint = "https://" + url.(string)
+	}
+
+	if endpoint == "" {
+		return nil, fmt.Errorf("[ERROR] Missing endpoints.public in extensions")
+	}
+
+	return &endpoint, nil
 }

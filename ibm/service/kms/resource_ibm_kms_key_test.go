@@ -17,6 +17,7 @@ import (
 )
 
 func TestAccIBMKMSResource_basic(t *testing.T) {
+	t.Skip()
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("bucket_%d", acctest.RandIntRange(10, 100))

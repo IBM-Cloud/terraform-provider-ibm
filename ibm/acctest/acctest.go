@@ -216,6 +216,11 @@ var ISClientCaCrn string
 // COS Replication Bucket
 var IBM_AccountID_REPL string
 
+// Atracker
+var IesApiKey string
+var IngestionKey string
+var COSApiKey string
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1155,6 +1160,24 @@ func init() {
 	IBM_AccountID_REPL = os.Getenv("IBM_AccountID_REPL")
 	if IBM_AccountID_REPL == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_AccountID_REPL for setting up authorization policy to enable replication feature resource or datasource else tests will fail if this is not set correctly")
+	}
+
+	COSApiKey = os.Getenv("COS_API_KEY")
+	if COSApiKey == "" {
+		COSApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
+		fmt.Println("[WARN] Set the environment variable COS_API_KEY for testing COS targets, the tests will fail if this is not set")
+	}
+
+	IngestionKey = os.Getenv("INGESTION_KEY")
+	if IngestionKey == "" {
+		IngestionKey = "xxxxxxxxxxxx"
+		fmt.Println("[WARN] Set the environment variable INGESTION_KEY for testing Logdna targets, the tests will fail if this is not set")
+	}
+
+	IesApiKey = os.Getenv("IES_API_KEY")
+	if IesApiKey == "" {
+		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
+		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 }
 

@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_githubconsolidated. This allows cd_toolchain_tool_githubconsolidated to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-github).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-github) page for more information.
 
 ## Example Usage
 
@@ -66,7 +66,7 @@ Nested scheme for **parameters**:
 	* `owner_id` - (Computed, String) The GitHub user or organization that owns the repository.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `private_repo` - (Computed, Boolean) Set this value to 'true' to make the repository private when creating a new repository or when cloning or forking a repository.  This parameter is not used when linking to an existing repository.
 	  * Constraints: The default value is `false`.
-	* `project_id` - (Computed, String) The ID of the project.
+	* `repo_id` - (Computed, String) The ID of the GitHub repository.
 	* `repo_name` - (Computed, String) The name of the new GitHub repository to create.  This parameter is required when creating a new repository, cloning, or forking a repository.  The value will be computed when linking to an existing repository.
 	* `repo_url` - (Computed, String) The URL of the GitHub repository for this tool integration.  This parameter is required when linking to an existing repository.  The value will be computed when creating a new repository, cloning, or forking a repository.
 	* `source_repo_url` - (Computed, String) The URL of the repository that you are forking or cloning.  This parameter is required when forking or cloning a repository.  It is not used when creating a new repository or linking to an existing repository.
@@ -89,7 +89,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
