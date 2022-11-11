@@ -1,50 +1,105 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2022 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package catalogmanagement_test
 
 import (
+	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMCmOfferingDataSource(t *testing.T) {
-
+func TestAccIBMCmOfferingDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMCmOfferingDataSourceConfig(),
+			resource.TestStep{
+				Config: testAccCheckIBMCmOfferingDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering_data", "crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering_data", "label"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMCmOfferingDataSourceConfig() string {
-	return `
+func TestAccIBMCmOfferingDataSourceSimpleArgs(t *testing.T) {
+	offeringLabel := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
+	offeringName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	offeringOfferingIconURL := fmt.Sprintf("tf_offering_icon_url_%d", acctest.RandIntRange(10, 100))
+	offeringShortDescription := fmt.Sprintf("tf_offering_icon_url_%d", acctest.RandIntRange(10, 100))
 
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel, offeringName, offeringOfferingIconURL, offeringShortDescription),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "rev"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "url"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "label"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "offering_icon_url"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "created"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "updated"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "short_description"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "catalog_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_cm_offering.cm_offering", "support.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMCmOfferingDataSourceConfigBasic() string {
+	return fmt.Sprintf(`
 		resource "ibm_cm_catalog" "cm_catalog" {
-			label = "tf_test_data_offering_catalog"
-			short_description = "testing terraform provider with catalog"
+			label = "test_basic_catalog_label_for_offering_data_source"
+			kind = "offering"
 		}
 
 		resource "ibm_cm_offering" "cm_offering" {
 			catalog_id = ibm_cm_catalog.cm_catalog.id
-			label = "tf_test_offering"
-			tags = ["dev_ops", "target_roks", "operator"]
 		}
-		
-		data "ibm_cm_offering" "cm_offering_data" {
-			catalog_identifier = ibm_cm_catalog.cm_catalog.id
+
+		data "ibm_cm_offering" "cm_offering" {
+			catalog_id = ibm_cm_offering.cm_offering.catalog_id
 			offering_id = ibm_cm_offering.cm_offering.id
 		}
-		`
+	`)
+}
+
+func testAccCheckIBMCmOfferingDataSourceConfig(offeringLabel string, offeringName string, offeringOfferingIconURL string, offeringShortDescription string) string {
+	return fmt.Sprintf(`
+		resource "ibm_cm_catalog" "cm_catalog" {
+			label = "catalog_%s"
+			kind = "offering"
+		}
+
+		resource "ibm_cm_offering" "cm_offering" {
+			catalog_id = ibm_cm_catalog.cm_catalog.id
+			label = "%s"
+			name = "%s"
+			offering_icon_url = "%s"
+			short_description = "%s"
+		}
+
+		data "ibm_cm_offering" "cm_offering" {
+			catalog_id = ibm_cm_offering.cm_offering.catalog_id
+			offering_id = ibm_cm_offering.cm_offering.id
+		}
+	`, offeringLabel, offeringLabel, offeringName, offeringOfferingIconURL, offeringShortDescription)
 }

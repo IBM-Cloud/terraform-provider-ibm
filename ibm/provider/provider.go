@@ -1054,6 +1054,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_catalog":           catalogmanagement.ResourceIBMCmCatalog(),
 			"ibm_cm_offering":          catalogmanagement.ResourceIBMCmOffering(),
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
+			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 
 			// //Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),
