@@ -17,7 +17,6 @@ import (
 )
 
 func TestAccIBMKMSResource_basic(t *testing.T) {
-	t.Skip()
 	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
 	cosInstanceName := fmt.Sprintf("cos_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("bucket_%d", acctest.RandIntRange(10, 100))
@@ -43,7 +42,6 @@ func TestAccIBMKMSResource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key.test", "key_name", keyName),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				// Test Root Key
@@ -186,9 +184,6 @@ func testAccCheckIBMKmsResourceImportConfig(instanceName, resource, KeyName stri
 
 func testAccCheckIBMKmsResourceRootkeyWithCOSConfig(instanceName, resource, KeyName, cosInstanceName, bucketName string) string {
 	return fmt.Sprintf(`
-	provider "ibm" {
-		region = "us-south"
-	}
 	resource "ibm_resource_instance" "kms_instance1" {
 		name              = "%s"
 		service           = "kms"

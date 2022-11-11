@@ -283,7 +283,7 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	d.Set("instance_crn", instanceCRN)
 	d.Set("key_id", key.ID)
 	d.Set("standard_key", key.Extractable)
-	d.Set("payload", key.Payload)
+	d.Set("payload", d.Get("payload"))
 	d.Set("encrypted_nonce", key.EncryptedNonce)
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)

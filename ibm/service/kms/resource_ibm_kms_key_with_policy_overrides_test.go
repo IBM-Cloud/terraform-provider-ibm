@@ -47,7 +47,6 @@ func TestAccIBMKMSKeyWithPolicyOverridesResource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_kms_key_with_policy_overrides.test", "key_name", keyName),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				// Test Imported Standard Key
