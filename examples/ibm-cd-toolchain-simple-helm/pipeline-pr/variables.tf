@@ -65,7 +65,7 @@ variable "pr_pipeline_scm_trigger_listener_name" {
 
 variable "pr_pipeline_scm_trigger_enabled" {
   type        = bool
-  description = "Flag to disable SCM CI Trigger"
+  description = "Flag to enable or disable SCM CI Trigger"
   default     = true
 }
 

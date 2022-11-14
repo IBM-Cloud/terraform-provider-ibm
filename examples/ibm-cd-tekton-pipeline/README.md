@@ -39,10 +39,13 @@ cd_tekton_pipeline_definition resource:
 ```terraform
 resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
-  scm_source {
-    url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.repo_url
-    branch = "master"
-    path = ".tekton"
+  source {
+    type = "git"
+    properties {
+      url = ibm_cd_toolchain_tool_hostedgit.tekton_repo.repo_url
+      branch = "master"
+      path = ".tekton"
+    }
   }
 }
 ```
@@ -153,7 +156,7 @@ data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_
 
 | Name | Version |
 |------|---------|
-| ibm | >=1.46.0 |
+| ibm | >=1.48.0 |
 
 ## Inputs
 

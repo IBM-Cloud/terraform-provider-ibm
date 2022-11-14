@@ -70,9 +70,9 @@ variable "ci_pipeline_manual_trigger_type" {
   default     = "manual"
 }
 
-variable "ci_pipeline_manual_trigger_disabled" {
+variable "ci_pipeline_manual_trigger_enabled" {
   type        = bool
-  description = "Flag to disable manual CI Trigger"
+  description = "Flag to enable or disable manual CI Trigger"
   default     = false
 }
 
@@ -96,7 +96,7 @@ variable "ci_pipeline_scm_trigger_type" {
 
 variable "ci_pipeline_scm_trigger_enabled" {
   type        = bool
-  description = "Flag to disable SCM CI Trigger"
+  description = "Flag to enable or disable SCM CI Trigger"
   default     = true
 }
 
