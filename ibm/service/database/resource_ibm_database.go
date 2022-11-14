@@ -1232,6 +1232,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
+	_, configurationSet := diff.GetOk("configuration")
+
+	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
+		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	}
+
 	return nil
 }
 
