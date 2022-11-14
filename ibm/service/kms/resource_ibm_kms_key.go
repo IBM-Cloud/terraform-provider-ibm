@@ -166,7 +166,10 @@ func ResourceIBMKmskey() *schema.Resource {
 }
 
 func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	instanceID := getInstanceIDFromCRN(d.Get("instance_id").(string))
+	keyData, instanceID, err := ExtractAndValidateKeyDataFromSchema(d, meta)
+	if err != nil {
+		return err
+	}
 	kpAPI, _, err := populateKPClient(d, meta, instanceID)
 	if err != nil {
 		return err
@@ -174,95 +177,19 @@ func resourceIBMKmsKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	kpAPI.Config.KeyRing = d.Get("key_ring_id").(string)
 
-	name := d.Get("key_name").(string)
-	standardKey := d.Get("standard_key").(bool)
-
-	var expiration *time.Time
-	if es, ok := d.GetOk("expiration_date"); ok {
-		expiration_string := es.(string)
-		// parse string to required time format
-		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
-		}
-		expiration = &expiration_time
-	} else {
-		expiration = nil
+	key, err := kpAPI.CreateImportedKey(context.Background(), keyData.Name, keyData.Expiration, keyData.Payload, keyData.EncryptedNonce, keyData.IV, keyData.Extractable)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error while creating key: %s", err)
 	}
 
-	var keyCRN string
-	if standardKey {
-		if v, ok := d.GetOk("payload"); ok {
-			//import standard key
-			payload := v.(string)
-			stkey, err := kpAPI.CreateImportedStandardKey(context.Background(), name, expiration, payload)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating standard key with payload: %s", err)
-			}
-			keyCRN = stkey.CRN
-			d.SetId(keyCRN)
-
-		} else {
-			//create standard key
-			stkey, err := kpAPI.CreateStandardKey(context.Background(), name, expiration)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating standard key: %s", err)
-			}
-			keyCRN = stkey.CRN
-			d.SetId(keyCRN)
-
-		}
-	} else {
-		if v, ok := d.GetOk("payload"); ok {
-			payload := v.(string)
-			encryptedNonce := d.Get("encrypted_nonce").(string)
-			iv := d.Get("iv_value").(string)
-			stkey, err := kpAPI.CreateImportedRootKey(context.Background(), name, expiration, payload, encryptedNonce, iv)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating Root key with payload: %s", err)
-			}
-			keyCRN = stkey.CRN
-			d.SetId(keyCRN)
-
-		} else {
-			stkey, err := kpAPI.CreateRootKey(context.Background(), name, expiration)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error while creating Root key: %s", err)
-			}
-			keyCRN = stkey.CRN
-			d.SetId(keyCRN)
-		}
-	}
+	d.SetId(key.CRN)
 	return resourceIBMKmsKeyUpdate(d, meta)
 }
 
 func resourceIBMKmsKeyRead(d *schema.ResourceData, meta interface{}) error {
-	instanceCRN, instanceID, keyid := getInstanceAndKeyDataFromCRN(d.Id())
 
-	kpAPI, _, err := populateKPClient(d, meta, instanceID)
-	if err != nil {
-		return err
-	}
-	// keyid := d.Id()
-	key, err := kpAPI.GetKey(context.Background(), keyid)
-	if err != nil {
-		kpError := err.(*kp.Error)
-		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
-	} else if key.State == 5 { //Refers to Deleted state of the Key
-		d.SetId("")
-		return nil
-	}
-
-	err = setKeyDetails(d, meta, instanceID, instanceCRN, key, kpAPI)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := populateSchemaData(d, meta)
+	return err
 
 }
 
@@ -356,7 +283,7 @@ func setKeyDetails(d *schema.ResourceData, meta interface{}, instanceID string, 
 	d.Set("instance_crn", instanceCRN)
 	d.Set("key_id", key.ID)
 	d.Set("standard_key", key.Extractable)
-	d.Set("payload", key.Payload)
+	d.Set("payload", d.Get("payload"))
 	d.Set("encrypted_nonce", key.EncryptedNonce)
 	d.Set("iv_value", key.IV)
 	d.Set("key_name", key.Name)
@@ -420,4 +347,60 @@ func KmsEndpointURL(kpAPI *kp.Client, endpointType string, extensions map[string
 		return nil, fmt.Errorf("[ERROR] Error Parsing KMS EndpointURL")
 	}
 	return u, nil
+}
+
+// Extract and Validate data from schema related to a key
+func ExtractAndValidateKeyDataFromSchema(d *schema.ResourceData, meta interface{}) (key kp.Key, instanceID string, err error) {
+	instanceID = getInstanceIDFromCRN(d.Get("instance_id").(string))
+	var expiration *time.Time
+	if es, ok := d.GetOk("expiration_date"); ok {
+		expiration_string := es.(string)
+		// parse string to required time format
+		expiration_time, err := time.Parse(time.RFC3339, expiration_string)
+		if err != nil {
+			return kp.Key{}, "", fmt.Errorf("[ERROR] Invalid time format (the date format follows RFC 3339): %s", err)
+		}
+		expiration = &expiration_time
+	} else {
+		expiration = nil
+	}
+
+	key = kp.Key{
+		Name:           d.Get("key_name").(string),
+		Extractable:    d.Get("standard_key").(bool),
+		Expiration:     expiration,
+		Payload:        d.Get("payload").(string),
+		EncryptedNonce: d.Get("encrypted_nonce").(string),
+		IV:             d.Get("iv_value").(string),
+	}
+	return key, instanceID, nil
+}
+
+// KMS Key Read helper
+func populateSchemaData(d *schema.ResourceData, meta interface{}) (*kp.Client, error) {
+	instanceCRN, instanceID, keyid := getInstanceAndKeyDataFromCRN(d.Id())
+
+	kpAPI, _, err := populateKPClient(d, meta, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	// keyid := d.Id()
+	key, err := kpAPI.GetKey(context.Background(), keyid)
+	if err != nil {
+		kpError := err.(*kp.Error)
+		if kpError.StatusCode == 404 || kpError.StatusCode == 409 {
+			d.SetId("")
+			return nil, nil
+		}
+		return nil, fmt.Errorf("[ERROR] Get Key failed with error while reading Key: %s", err)
+	} else if key.State == 5 { //Refers to Deleted state of the Key
+		d.SetId("")
+		return nil, nil
+	}
+
+	err = setKeyDetails(d, meta, instanceID, instanceCRN, key, kpAPI)
+	if err != nil {
+		return nil, err
+	}
+	return kpAPI, nil
 }
