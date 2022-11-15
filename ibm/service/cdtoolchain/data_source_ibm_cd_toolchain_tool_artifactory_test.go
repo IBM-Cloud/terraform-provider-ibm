@@ -94,7 +94,7 @@ func testAccCheckIBMCdToolchainToolArtifactoryDataSourceConfigBasic(tcName strin
 				snapshot_url = "snapshot_url"
 				repository_name = "default-docker-local"
 				repository_url = "https://mycompany.example.jfrog.io/artifactory/default-docker-local"
-				api_key = "<api_key>"
+				token = "<token>"
 			}
 		}
 
@@ -128,7 +128,7 @@ func testAccCheckIBMCdToolchainToolArtifactoryDataSourceConfig(tcName string, rg
 				snapshot_url = "snapshot_url"
 				repository_name = "default-docker-local"
 				repository_url = "https://mycompany.example.jfrog.io/artifactory/default-docker-local"
-				api_key = "<api_key>"
+				token = "<token>"
 			}
 			name = "%s"
 		}
