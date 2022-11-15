@@ -28,9 +28,9 @@ In the following example, you can create a IKE policy:
 ```terraform
 resource "ibm_is_ike_policy" "example" {
   name                     = "example-ike-policy"
-  authentication_algorithm = "md5"
-  encryption_algorithm     = "triple_des"
-  dh_group                 = 2
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  dh_group                 = 14
   ike_version              = 1
 }
 
