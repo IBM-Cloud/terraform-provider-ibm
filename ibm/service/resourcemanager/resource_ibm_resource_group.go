@@ -26,6 +26,7 @@ func ResourceIBMResourceGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the resource group",
+				Computed:    true,
 			},
 			"default": {
 				Description: "Specifies whether its default resource group or not",
