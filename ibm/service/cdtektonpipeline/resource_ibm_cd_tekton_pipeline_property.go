@@ -45,7 +45,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.SuppressPipelinePropertyRawSecret,
 				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "value"),
-				Description:      "Property value.",
+				Description:      "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -63,7 +63,7 @@ func ResourceIBMCdTektonPipelineProperty() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_property", "path"),
-				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration.",
+				Description:  "A dot notation path for `integration` type properties only, to select a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 		},
 	}
@@ -86,7 +86,7 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,234}$`,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -95,8 +95,8 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `.`,
-			MinValueLength:             1,
+			Regexp:                     `^.*$`,
+			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},
 		validate.ValidateSchema{
@@ -111,8 +111,8 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `.`,
-			MinValueLength:             1,
+			Regexp:                     `^[-0-9a-zA-Z_.]*$`,
+			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},
 	)
