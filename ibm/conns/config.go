@@ -84,7 +84,6 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
-	dlscoped "github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
@@ -240,7 +239,6 @@ type ClientSession interface {
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
 	CosConfigV1API() (*cosconfig.ResourceConfigurationV1, error)
 	DirectlinkV1API() (*dl.DirectLinkV1, error)
-	DirectlinkV1APIScoped() (*dlscoped.DirectLinkV1, error)
 	DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error)
 	TransitGatewayV1API() (*tg.TransitGatewayApisV1, error)
 	HpcsEndpointAPI() (hpcs.HPCSV2, error)
@@ -401,12 +399,10 @@ type clientSession struct {
 	vpcErr error
 	vpcAPI *vpc.VpcV1
 
-	directlinkAPI       *dl.DirectLinkV1
-	directlinkErr       error
-	directlinkScopedErr error
-	directlinkScopedAPI *dlscoped.DirectLinkV1
-	dlProviderAPI       *dlProviderV2.DirectLinkProviderV2
-	dlProviderErr       error
+	directlinkAPI *dl.DirectLinkV1
+	directlinkErr error
+	dlProviderAPI *dlProviderV2.DirectLinkProviderV2
+	dlProviderErr error
 
 	cosConfigErr error
 	cosConfigAPI *cosconfig.ResourceConfigurationV1
@@ -816,9 +812,6 @@ func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
 func (sess clientSession) DirectlinkV1API() (*dl.DirectLinkV1, error) {
 	return sess.directlinkAPI, sess.directlinkErr
 }
-func (sess clientSession) DirectlinkV1APIScoped() (*dlscoped.DirectLinkV1, error) {
-	return sess.directlinkScopedAPI, sess.directlinkErr
-}
 func (sess clientSession) DirectlinkProviderV2API() (*dlProviderV2.DirectLinkProviderV2, error) {
 	return sess.dlProviderAPI, sess.dlProviderErr
 }
@@ -1218,7 +1211,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.pDNSErr = errEmptyBluemixCredentials
 		session.bmxUserFetchErr = errEmptyBluemixCredentials
 		session.directlinkErr = errEmptyBluemixCredentials
-		session.directlinkScopedErr = errEmptyBluemixCredentials
 		session.dlProviderErr = errEmptyBluemixCredentials
 		session.cosConfigErr = errEmptyBluemixCredentials
 		session.transitgatewayErr = errEmptyBluemixCredentials
@@ -2051,23 +2043,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.directlinkAPI != nil && session.directlinkAPI.Service != nil {
 		session.directlinkAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.directlinkAPI.SetDefaultHeaders(gohttp.Header{
-			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-		})
-	}
-
-	directlinkScopedOptions := &dlscoped.DirectLinkV1Options{
-		URL:           EnvFallBack([]string{"IBMCLOUD_DL_API_ENDPOINT"}, dlURL),
-		Authenticator: authenticator,
-		Version:       &ver,
-	}
-
-	session.directlinkScopedAPI, session.directlinkScopedErr = dlscoped.NewDirectLinkV1(directlinkScopedOptions)
-	if session.directlinkScopedErr != nil {
-		session.directlinkScopedErr = fmt.Errorf("Error occured while configuring Direct Link Service: %s", session.directlinkScopedErr)
-	}
-	if session.directlinkScopedAPI != nil && session.directlinkScopedAPI.Service != nil {
-		session.directlinkScopedAPI.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-		session.directlinkScopedAPI.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

@@ -9,8 +9,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
@@ -340,7 +340,7 @@ func DataSourceIBMDLGateway() *schema.Resource {
 }
 
 func dataSourceIBMDLGatewayVirtualConnectionsRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := meta.(conns.ClientSession).DirectlinkV1APIScoped()
+	directLink, err := meta.(conns.ClientSession).DirectlinkV1API()
 
 	if err != nil {
 		return err
@@ -387,7 +387,7 @@ func dataSourceIBMDLGatewayVirtualConnectionsRead(d *schema.ResourceData, meta i
 	return nil
 }
 func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	dlGatewayName := d.Get(dlName).(string)
 
 	if err != nil {
@@ -499,7 +499,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 					asPrependItem[dlResourceId] = asPrepend.ID
 					asPrependItem[dlLength] = asPrepend.Length
 					asPrependItem[dlPrefix] = asPrepend.Prefix
-					asPrependItem[dlSpecificPrefixes] = asPrepend.SpecifiedPrefixes
+					asPrependItem[dlSpecificPrefixes] = asPrepend.SpecificPrefixes
 					asPrependItem[dlPolicy] = asPrepend.Policy
 					asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 					asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()

@@ -14,10 +14,11 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v3/core"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 func ResourceIBMDLGateway() *schema.Resource {
@@ -497,7 +498,7 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 }
 
 func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -538,13 +539,18 @@ func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error 
 			asPrependTemplateModel := new(directlinkv1.AsPrependTemplate)
 			asPrependTemplateModel.Length = NewInt64Pointer(int64(i[dlLength].(int)))
 			asPrependTemplateModel.Policy = NewStrPointer(i[dlPolicy].(string))
-			_, ok := i[dlPrefix]
-			if ok {
+			asPrependTemplateModel.Prefix = nil
+			asPrependTemplateModel.SpecificPrefixes = nil
+			_, prefix_ok := i[dlPrefix]
+			if prefix_ok && (len(i[dlPrefix].(string)) > 0) {
 				asPrependTemplateModel.Prefix = NewStrPointer(i[dlPrefix].(string))
+				asPrependTemplateModel.SpecificPrefixes = nil
 			}
+
 			sp_prefixOk, ok := i[dlSpecificPrefixes]
 			if ok && len(sp_prefixOk.([]interface{})) > 0 {
-				asPrependTemplateModel.SpecifiedPrefixes = flex.ExpandStringList(sp_prefixOk.([]interface{}))
+				asPrependTemplateModel.Prefix = nil
+				asPrependTemplateModel.SpecificPrefixes = flex.ExpandStringList(sp_prefixOk.([]interface{}))
 			}
 			asPrependsCreateItems = append(asPrependsCreateItems, *asPrependTemplateModel)
 		}
@@ -745,7 +751,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	dtype := d.Get(dlType).(string)
 	log.Printf("[INFO] Inside resourceIBMdlGatewayRead: %s", dtype)
 
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -845,7 +851,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 			asPrependItem[dlResourceId] = asPrepend.ID
 			asPrependItem[dlLength] = asPrepend.Length
 			asPrependItem[dlPrefix] = asPrepend.Prefix
-			asPrependItem[dlSpecificPrefixes] = asPrepend.SpecifiedPrefixes
+			asPrependItem[dlSpecificPrefixes] = asPrepend.SpecificPrefixes
 			asPrependItem[dlPolicy] = asPrepend.Policy
 			asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 			asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()
@@ -982,7 +988,7 @@ func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resou
 
 func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -1030,6 +1036,53 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 	if d.HasChange(dlBgpIbmCidr) {
 		bgpIbmCidr := d.Get(dlBgpIbmCidr).(string)
 		updateGatewayOptionsModel.BgpIbmCidr = &bgpIbmCidr
+	}
+	if d.HasChange(dlAsPrepends) {
+		listGatewayAsPrependsOptions := directLink.NewListGatewayAsPrependsOptions(ID)
+		_, response, operationErr := directLink.ListGatewayAsPrepends(listGatewayAsPrependsOptions)
+		if operationErr != nil {
+			log.Printf("[DEBUG] Error listing Direct Link Gateway AS Prepends err %s\n%s", err, response)
+			return fmt.Errorf("[ERROR] Error listing Direct Link Gateway AS Prepends err %s\n%s", err, response)
+		}
+		etag := response.GetHeaders().Get("etag")
+		asPrependsCreateItems := make([]directlinkv1.AsPrependPrefixArrayTemplate, 0)
+		if asPrependsInput, ok := d.GetOk(dlAsPrepends); ok {
+			asPrependsItems := asPrependsInput.([]interface{})
+
+			for _, asPrependItem := range asPrependsItems {
+				i := asPrependItem.(map[string]interface{})
+
+				// Construct an instance of the AsPrependTemplate model
+				asPrependTemplateModel := new(directlinkv1.AsPrependPrefixArrayTemplate)
+				asPrependTemplateModel.Length = NewInt64Pointer(int64(i[dlLength].(int)))
+				asPrependTemplateModel.Policy = NewStrPointer(i[dlPolicy].(string))
+				asPrependTemplateModel.SpecificPrefixes = nil
+				_, prefix_ok := i[dlPrefix]
+
+				sp_prefixOk, ok := i[dlSpecificPrefixes]
+				if ok && len(sp_prefixOk.([]interface{})) > 0 {
+					asPrependTemplateModel.SpecificPrefixes = flex.ExpandStringList(sp_prefixOk.([]interface{}))
+				} else if prefix_ok && (len(i[dlPrefix].(string)) > 0) {
+					asPrependTemplateModel.SpecificPrefixes = strings.Split(i[dlPrefix].(string), ",")
+				}
+
+				asPrependsCreateItems = append(asPrependsCreateItems, *asPrependTemplateModel)
+			}
+		}
+
+		// Construct an instance of the AsPrependPrefixArrayTemplate model
+
+		replaceGatewayAsPrependsOptionsModel := new(directlinkv1.ReplaceGatewayAsPrependsOptions)
+		replaceGatewayAsPrependsOptionsModel.GatewayID = &ID
+		replaceGatewayAsPrependsOptionsModel.IfMatch = core.StringPtr(etag)
+		replaceGatewayAsPrependsOptionsModel.AsPrepends = asPrependsCreateItems
+		replaceGatewayAsPrependsOptionsModel.Headers = map[string]string{"If-Match": etag}
+
+		_, responseRep, operationErr := directLink.ReplaceGatewayAsPrepends(replaceGatewayAsPrependsOptionsModel)
+		if operationErr != nil {
+			log.Printf("[DEBUG] Error while replacing AS Prepends to a gateway id %s %s\n%s", ID, operationErr, responseRep)
+			return fmt.Errorf("[ERROR] Error while replacing AS Prepends to a gateway id %s %s\n%s", ID, operationErr, responseRep)
+		}
 	}
 	/*
 		NOTE: Operational Status cannot be maintained in terraform. The status keeps changing automatically in server side.
@@ -1122,6 +1175,8 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 			updateGatewayOptionsModel.MacsecConfig = nil
 		}
 	}
+	name := d.Get(dlName).(string)
+	updateGatewayOptionsModel.Name = &name
 	_, response, err := directLink.UpdateGateway(updateGatewayOptionsModel)
 	if err != nil {
 		log.Printf("[DEBUG] Update Direct Link Gateway err %s\n%s", err, response)
@@ -1133,7 +1188,7 @@ func resourceIBMdlGatewayUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -1154,7 +1209,7 @@ func resourceIBMdlGatewayDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceIBMdlGatewayExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return false, err
 	}

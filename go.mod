@@ -173,4 +173,4 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 
 replace github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt v3.2.1+incompatible
 
-replace github.ibm.com/ibmcloud/networking-go-sdk => /Users/malark/work/src/github.ibm.com/NetworkTribe/networking-go-sdk
+replace github.com/IBM/networking-go-sdk => /Users/malark/github.com/networking-go-sdk

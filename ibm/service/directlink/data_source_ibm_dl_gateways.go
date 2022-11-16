@@ -7,9 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.ibm.com/ibmcloud/networking-go-sdk/directlinkv1"
 )
 
 const (
@@ -304,13 +303,8 @@ func DataSourceIBMDLGateways() *schema.Resource {
 	}
 }
 
-func mydlClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
-	sess, err := meta.(conns.ClientSession).DirectlinkV1APIScoped()
-	return sess, err
-}
-
 func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	directLink, err := mydlClient(meta)
+	directLink, err := directlinkClient(meta)
 	if err != nil {
 		return err
 	}
@@ -421,7 +415,7 @@ func dataSourceIBMDLGatewaysRead(d *schema.ResourceData, meta interface{}) error
 				asPrependItem[dlResourceId] = asPrepend.ID
 				asPrependItem[dlLength] = asPrepend.Length
 				asPrependItem[dlPrefix] = asPrepend.Prefix
-				asPrependItem[dlSpecificPrefixes] = asPrepend.SpecifiedPrefixes
+				asPrependItem[dlSpecificPrefixes] = asPrepend.SpecificPrefixes
 				asPrependItem[dlPolicy] = asPrepend.Policy
 				asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 				asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()

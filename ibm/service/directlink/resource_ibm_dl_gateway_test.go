@@ -67,6 +67,7 @@ func TestAccIBMDLGatewayConnect_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMDLGatewayExists("ibm_dl_gateway.test_dl_connect", instance),
 					resource.TestCheckResourceAttr("ibm_dl_gateway.test_dl_connect", "name", connectgatewayname),
+					// resource.TestCheckResourceAttrSet("ibm_dl_gateway.test_dl_connect", "as_prepends.#"),
 				),
 			},
 		},
