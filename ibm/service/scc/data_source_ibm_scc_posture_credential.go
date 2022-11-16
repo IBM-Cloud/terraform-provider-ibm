@@ -351,16 +351,3 @@ func dataSourceCredentialDisplayFieldsToMap(displayFieldsItem posturemanagementv
 
 	return displayFieldsMap
 }
-
-func dataSourceCredentialGroupToMap(groupItem posturemanagementv2.CredentialGroup) (groupMap map[string]interface{}) {
-	groupMap = map[string]interface{}{}
-
-	if groupItem.ID != nil {
-		groupMap["id"] = groupItem.ID
-	}
-	if groupItem.Passphrase != nil {
-		groupMap["passphrase"] = groupItem.Passphrase
-	}
-
-	return groupMap
-}

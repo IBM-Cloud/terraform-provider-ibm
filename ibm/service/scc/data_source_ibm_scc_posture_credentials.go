@@ -425,12 +425,6 @@ func dataSourceCredentialListCredentialsToMap(credentialsItem posturemanagementv
 	if credentialsItem.UpdatedBy != nil {
 		credentialsMap["updated_by"] = credentialsItem.UpdatedBy
 	}
-	if credentialsItem.Group != nil {
-		groupList := []map[string]interface{}{}
-		groupMap := dataSourceCredentialListCredentialsGroupToMap(*credentialsItem.Group)
-		groupList = append(groupList, groupMap)
-		credentialsMap["group"] = groupList
-	}
 	if credentialsItem.Purpose != nil {
 		credentialsMap["purpose"] = credentialsItem.Purpose
 	}
@@ -515,19 +509,6 @@ func dataSourceCredentialListCredentialsDisplayFieldsToMap(displayFieldsItem pos
 	}
 
 	return displayFieldsMap
-}
-
-func dataSourceCredentialListCredentialsGroupToMap(groupItem posturemanagementv2.CredentialGroup) (groupMap map[string]interface{}) {
-	groupMap = map[string]interface{}{}
-
-	if groupItem.ID != nil {
-		groupMap["id"] = groupItem.ID
-	}
-	if groupItem.Passphrase != nil {
-		groupMap["passphrase"] = groupItem.Passphrase
-	}
-
-	return groupMap
 }
 
 func dataSourceCredentialListGetNext(next interface{}) int64 {
