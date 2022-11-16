@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v3/core"
@@ -495,6 +496,11 @@ func ResourceIBMDLGatewayValidator() *validate.ResourceValidator {
 
 	ibmISDLGatewayResourceValidator := validate.ResourceValidator{ResourceName: "ibm_dl_gateway", Schema: validateSchema}
 	return &ibmISDLGatewayResourceValidator
+}
+
+func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
+	sess, err := meta.(conns.ClientSession).DirectlinkV1API()
+	return sess, err
 }
 
 func resourceIBMdlGatewayCreate(d *schema.ResourceData, meta interface{}) error {

@@ -40,10 +40,11 @@ func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriern
 		offering_type = "dedicated"
 		location_name = "dal10"
 	}
-
+	/*
 	data "ibm_resource_group" "rg" {
 		is_default	= true
 	}
+	*/
 	
 	resource "ibm_dl_gateway" "test_dl_gateway" {
 		bgp_asn =  64999
@@ -56,7 +57,7 @@ func testAccCheckIBMDLGatewayVCsDataSourceConfig(gatewayname, custname, carriern
         location_name = data.ibm_dl_routers.test1.location_name
         customer_name = "%s"
         carrier_name = "%s"
-		resource_group=data.ibm_resource_group.rg.id
+		//resource_group=data.ibm_resource_group.rg.id
 	  }
 	   data "ibm_dl_gateway" "test_dl_gateway" {
 			name = ibm_dl_gateway.test_dl_gateway.name

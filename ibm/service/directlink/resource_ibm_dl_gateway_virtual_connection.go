@@ -8,17 +8,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-func directlinkClient(meta interface{}) (*directlinkv1.DirectLinkV1, error) {
-	ses, err := meta.(conns.ClientSession).DirectlinkV1API()
-	return ses, err
-}
 
 func ResourceIBMDLGatewayVC() *schema.Resource {
 	return &schema.Resource{
