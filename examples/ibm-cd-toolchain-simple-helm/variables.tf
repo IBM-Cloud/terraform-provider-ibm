@@ -4,12 +4,12 @@ variable "resource_group" {
   default     = "Default"
 }
 
-variable "ibm_cloud_api_key" {
+variable "ibmcloud_api_key" {
   type        = string
   description = "IBM Cloud API KEY to fetch cloud resources"
 }
 
-variable "ibm_cloud_api" {
+variable "ibmcloud_api" {
   type        = string
   description = "IBM Cloud API Endpoint"
   default     = "https://cloud.ibm.com"
@@ -84,7 +84,14 @@ variable "kp_name" {
 variable "kp_region" {
   type        = string
   description = "IBM Cloud Region where the Key Protect Instance is created."
-  default     = "ibm:yp:us-south"
+  default     = "us-south"
+}
+
+variable "commons_hosted_region" {
+  type        = string
+  description = "URL used as the root folder prefix for loading raw files from the open-toolchain/commons utility."
+  default     = "https://us-south.git.cloud.ibm.com/open-toolchain/commons/-/raw/main"
+  # or: https://raw.githubusercontent.com/open-toolchain/commons/master
 }
 
 variable "app_repo" {
@@ -93,14 +100,32 @@ variable "app_repo" {
   default     = "https://us-south.git.cloud.ibm.com/open-toolchain/hello-helm.git"
 }
 
+variable "app_repo_branch" {
+  type        = string
+  description = "The name of the default branch in the `app_repo` repository."
+  default     = "main"
+}
+
 variable "pipeline_repo" {
   type        = string
   description = "Repository url for the repository containing pipeline source code."
   default     = "https://us-south.git.cloud.ibm.com/open-toolchain/simple-helm-toolchain.git"
 }
 
+variable "pipeline_repo_branch" {
+  type        = string
+  description = "The name of the default branch in the `pipeline_repo` repository."
+  default     = "main"
+}
+
 variable "tekton_tasks_catalog_repo" {
   type        = string
   description = "Repository url for the repository containing commonly used tekton tasks."
   default     = "https://us-south.git.cloud.ibm.com/open-toolchain/tekton-catalog.git"
+}
+
+variable "definitions_branch" {
+  type        = string
+  description = "The name of the default branch in the `tekton_tasks_catalog_repo` repository."
+  default     = "main"
 }

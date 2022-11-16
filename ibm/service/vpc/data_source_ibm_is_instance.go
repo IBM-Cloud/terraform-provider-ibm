@@ -215,6 +215,26 @@ func DataSourceIBMISInstance() *schema.Resource {
 				},
 			},
 
+			isInstanceCatalogOffering: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The catalog offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same enterprise, subject to IAM policies.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isInstanceCatalogOfferingOfferingCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a catalog offering by a unique CRN property",
+						},
+						isInstanceCatalogOfferingVersionCrn: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies a version of a catalog offering by a unique CRN property",
+						},
+					},
+				},
+			},
+
 			isInstanceVolumeAttachments: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -669,6 +689,17 @@ func instanceGetByName(d *schema.ResourceData, meta interface{}, name string) er
 	instance := allrecs[0]
 	d.SetId(*instance.ID)
 	id := *instance.ID
+
+	// catalog
+	if instance.CatalogOffering != nil {
+		versionCrn := *instance.CatalogOffering.Version.CRN
+		catalogList := make([]map[string]interface{}, 0)
+		catalogMap := map[string]interface{}{}
+		catalogMap[isInstanceCatalogOfferingVersionCrn] = versionCrn
+		catalogList = append(catalogList, catalogMap)
+		d.Set(isInstanceCatalogOffering, catalogList)
+	}
+
 	d.Set(isInstanceName, *instance.Name)
 	if instance.Profile != nil {
 		d.Set(isInstanceProfile, *instance.Profile.Name)

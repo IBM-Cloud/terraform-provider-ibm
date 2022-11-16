@@ -9,6 +9,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 
@@ -75,6 +76,8 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"subject_attributes"},
 				Description:   "The source resource group Id",
+				ValidateFunc: validate.InvokeValidator("ibm_iam_authorization_policy",
+					"source_resource_group_id"),
 			},
 
 			"target_resource_group_id": {
@@ -84,6 +87,8 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"resource_attributes"},
 				Description:   "The target resource group Id",
+				ValidateFunc: validate.InvokeValidator("ibm_iam_authorization_policy",
+					"target_resource_group_id"),
 			},
 
 			"source_resource_type": {
@@ -186,6 +191,28 @@ func ResourceIBMIAMAuthorizationPolicy() *schema.Resource {
 	}
 }
 
+func ResourceIBMIAMAuthorizationPolicyValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "source_resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "target_resource_group_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
+
+	iBMIAMAuthorizationPolicyValidator := validate.ResourceValidator{ResourceName: "ibm_iam_authorization_policy", Schema: validateSchema}
+	return &iBMIAMAuthorizationPolicyValidator
+}
 func resourceIBMIAMAuthorizationPolicyCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var sourceServiceName, targetServiceName string

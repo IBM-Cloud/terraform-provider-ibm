@@ -160,3 +160,60 @@ func testAccCheckIBMPIVolumePoolConfig(name string) string {
 	  }
 	`, name, acc.Pi_cloud_instance_id)
 }
+
+// TestAccIBMPIVolumeGRS test the volume replication feature which is part of global replication service(GRS)
+func TestAccIBMPIVolumeGRS(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-volume-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIVolumeGRSConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_replication_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "replication_type", "global"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIVolumeGRSUpdateConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeExists("ibm_pi_volume.power_volume"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_volume_name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "pi_replication_enabled", "false"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume.power_volume", "replication_type", ""),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIVolumeGRSConfig(name string) string {
+	return testAccCheckIBMPIVolumeGRSBasicConfig(name, acc.Pi_cloud_instance_id, acc.PiStoragePool, true)
+}
+
+func testAccCheckIBMPIVolumeGRSUpdateConfig(name string) string {
+	return testAccCheckIBMPIVolumeGRSBasicConfig(name, acc.Pi_cloud_instance_id, acc.PiStoragePool, false)
+}
+
+func testAccCheckIBMPIVolumeGRSBasicConfig(name, piCloudInstanceId, piStoragePool string, replicationEnabled bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_pi_volume" "power_volume"{
+		pi_volume_size         = 20
+		pi_volume_name         = "%[1]s"
+		pi_volume_pool         = "%[3]s"
+		pi_volume_shareable    = true
+		pi_cloud_instance_id   = "%[2]s"
+		pi_replication_enabled = %[4]v
+	  }
+	`, name, piCloudInstanceId, piStoragePool, replicationEnabled)
+}

@@ -70,6 +70,13 @@ func ResourceIBMContainerWorkerPool() *schema.Resource {
 				Description:      "Entitlement option reduces additional OCP Licence cost in Openshift Clusters",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "The operating system of the workers in the worker pool.",
+			},
+
 			"hardware": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -202,7 +209,7 @@ func ResourceIBMContainerWorkerPoolValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	containerWorkerPoolTaintsValidator := validate.ResourceValidator{ResourceName: "ibm_container_worker_pool", Schema: validateSchema}
 	return &containerWorkerPoolTaintsValidator
@@ -243,6 +250,10 @@ func resourceIBMContainerWorkerPoolCreate(d *schema.ResourceData, meta interface
 	// Update workerpoolConfig with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		workerPoolConfig.Entitlement = v.(string)
+	}
+
+	if v, ok := d.GetOk("operating_system"); ok {
+		workerPoolConfig.OperatingSystem = v.(string)
 	}
 
 	params := v1.WorkerPoolRequest{
@@ -306,6 +317,7 @@ func resourceIBMContainerWorkerPoolRead(d *schema.ResourceData, meta interface{}
 	d.Set("hardware", hardware)
 	d.Set("state", workerPool.State)
 	d.Set("labels", flex.IgnoreSystemLabels(workerPool.Labels))
+	d.Set("operating_system", workerPool.OperatingSystem)
 	d.Set("zones", flex.FlattenZones(workerPool.Zones))
 	d.Set("cluster", cluster)
 	if strings.Contains(machineType, "encrypted") {

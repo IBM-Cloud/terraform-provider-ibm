@@ -108,7 +108,7 @@ func ResourceIBMContainerVpcWorkerVolumeAttachmentValidator() *validate.Resource
 			Type:                       validate.TypeString,
 			Required:                   true,
 			CloudDataType:              "cluster",
-			CloudDataRange:             []string{"resolved_to:name"}})
+			CloudDataRange:             []string{"resolved_to:id"}})
 
 	iBMContainerVpcWorkerVolumeAttachmentValidator := validate.ResourceValidator{ResourceName: "ibm_container_storage_attachment", Schema: validateSchema}
 	return &iBMContainerVpcWorkerVolumeAttachmentValidator

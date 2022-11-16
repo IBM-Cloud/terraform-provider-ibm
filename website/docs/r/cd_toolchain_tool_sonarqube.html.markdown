@@ -3,27 +3,27 @@ layout: "ibm"
 page_title: "IBM : ibm_cd_toolchain_tool_sonarqube"
 description: |-
   Manages cd_toolchain_tool_sonarqube.
-subcategory: "CD Toolchain"
+subcategory: "Continuous Delivery"
 ---
 
 # ibm_cd_toolchain_tool_sonarqube
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 Provides a resource for cd_toolchain_tool_sonarqube. This allows cd_toolchain_tool_sonarqube to be created, updated and deleted.
+
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-sonarqube) page for more information.
 
 ## Example Usage
 
 ```hcl
-resource "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube" {
+resource "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube_instance" {
   parameters {
-		name = "name"
-		dashboard_url = "dashboard_url"
-		user_login = "user_login"
-		user_password = "user_password"
+		name = "my-sonarqube"
+		user_login = "<user_login>"
+		user_password = "<user_password>"
 		blind_connection = true
+		server_url = "https://my.sonarqube.server.com/"
   }
-  toolchain_id = "toolchain_id"
+  toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
 ```
 
@@ -31,16 +31,16 @@ resource "ibm_cd_toolchain_tool_sonarqube" "cd_toolchain_tool_sonarqube" {
 
 Review the argument reference that you can specify for your resource.
 
-* `name` - (Optional, String) Name of tool.
+* `name` - (Optional, String) Name of the tool.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool.
+* `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `blind_connection` - (Optional, Boolean) Select this checkbox only if the server is not addressable on the public internet. IBM Cloud will not be able to validate the connection details you provide.
+	* `blind_connection` - (Optional, Boolean) When set to true, instructs IBM Cloud Continuous Delivery to not validate the configuration of this integration. Set this to true if the SonarQube server is not addressable on the public internet.
 	  * Constraints: The default value is `false`.
-	* `dashboard_url` - (Required, String) Type the URL of the SonarQube instance that you want to open when you click the SonarQube card in your toolchain.
-	* `name` - (Required, String) Type a name for this tool integration, for example: my-sonarqube. This name displays on your toolchain.
-	* `user_login` - (Optional, String) If you are using an authentication token, leave this field empty.
-	* `user_password` - (Optional, String)
+	* `name` - (Required, String) The name for this tool integration.
+	* `server_url` - (Required, String) The URL of the SonarQube server.
+	* `user_login` - (Optional, String) The user id for authenticating to the SonarQube server.
+	* `user_password` - (Optional, String) The password or token for authenticating to the SonarQube server. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -53,9 +53,9 @@ In addition to all argument references listed, you can access the following attr
 * `href` - (String) URI representing the tool.
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
-	* `api_href` - (String) URI representing the this resource through an API.
-	* `ui_href` - (String) URI representing the this resource through the UI.
-* `resource_group_id` - (String) Resource group where tool can be found.
+	* `api_href` - (String) URI representing this resource through an API.
+	* `ui_href` - (String) URI representing this resource through the UI.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

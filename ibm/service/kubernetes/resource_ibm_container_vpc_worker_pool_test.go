@@ -125,51 +125,45 @@ func testAccCheckIBMVpcContainerWorkerPoolDestroy(s *terraform.State) error {
 func testAccCheckIBMVpcContainerWorkerPoolBasic(name string) string {
 	return fmt.Sprintf(`
 	provider "ibm" {
-		region="eu-de"
+		region="us-south"
 	}
 	data "ibm_resource_group" "resource_group" {
 		is_default=true
 	}
-	resource "ibm_is_vpc" "vpc" {
-	  name = "%[1]s"
+	data "ibm_is_vpc" "vpc" {
+	  name = "cluster-squad-dallas-test"
 	}
 	
-	resource "ibm_is_subnet" "subnet1" {
-	  name                     = "%[1]s-1"
-	  vpc                      = ibm_is_vpc.vpc.id
-	  zone                     = "eu-de-1"
-	  total_ipv4_address_count = 256
+	data "ibm_is_subnet" "subnet1" {
+	  name                     = "cluster-squad-dallas-test-01"
 	}
 	
-	resource "ibm_is_subnet" "subnet2" {
-	  name                     = "%[1]s-2"
-	  vpc                      = ibm_is_vpc.vpc.id
-	  zone                     = "eu-de-2"
-	  total_ipv4_address_count = 256
+	data "ibm_is_subnet" "subnet2" {
+	  name                     = "cluster-squad-dallas-test-02"
 	}
 	
 	resource "ibm_container_vpc_cluster" "cluster" {
 	  name              = "%[1]s"
-	  vpc_id            = ibm_is_vpc.vpc.id
+	  vpc_id            = data.ibm_is_vpc.vpc.id
 	  flavor            = "cx2.2x4"
 	  worker_count      = 1
 	  resource_group_id = data.ibm_resource_group.resource_group.id
 	  wait_till         = "MasterNodeReady"
 	  zones {
-		subnet_id = ibm_is_subnet.subnet1.id
-		name      = "eu-de-1"
+		subnet_id = data.ibm_is_subnet.subnet1.id
+		name      = "us-south-1"
 	  }
 	}
 	resource "ibm_container_vpc_worker_pool" "test_pool" {
 	  cluster           = ibm_container_vpc_cluster.cluster.id
 	  worker_pool_name  = "%[1]s"
 	  flavor            = "cx2.2x4"
-	  vpc_id            = ibm_is_vpc.vpc.id
+	  vpc_id            = data.ibm_is_vpc.vpc.id
 	  worker_count      = 1
 	  resource_group_id = data.ibm_resource_group.resource_group.id
 	  zones {
-		name      = "eu-de-2"
-		subnet_id = ibm_is_subnet.subnet2.id
+		name      = "us-south-2"
+		subnet_id = data.ibm_is_subnet.subnet2.id
 	  }
 	  labels = {
 		"test"  = "test-pool"
@@ -270,6 +264,38 @@ func TestAccIBMContainerVpcClusterWorkerPoolEnvvar(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterWorkerPoolKmsAccountEnvvar(t *testing.T) {
+
+	name := fmt.Sprintf("tf-vpc-worker-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMVpcContainerWorkerPoolKmsAccountEnvvar(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", "bx2.4x16"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "kms_instance_id", acc.KmsInstanceID),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "kms_account_id", acc.KmsAccountID),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "crk", acc.CrkID),
+				),
+			},
+			{
+				ResourceName:      "ibm_container_vpc_worker_pool.test_pool",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIBMVpcContainerWorkerPoolDedicatedHostCreate(clusterName, name, flavor, subnetID, vpcID, rgroupID, hostpoolID string) string {
 	return fmt.Sprintf(`
 	resource "ibm_container_vpc_worker_pool" "vpc_worker_pool" {
@@ -304,4 +330,82 @@ func testAccCheckIBMVpcContainerWorkerPoolEnvvar(name string) string {
 	  crk = "%[6]s"
 	}
 		`, name, acc.IksClusterID, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
+}
+
+func testAccCheckIBMVpcContainerWorkerPoolKmsAccountEnvvar(name string) string {
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = "%[2]s"
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "bx2.4x16"
+	  vpc_id            = "%[3]s"
+	  worker_count      = 1
+	  zones {
+		subnet_id = "%[4]s"
+		name      = "us-south-1"
+	  }
+	  kms_instance_id = "%[5]s"
+	  crk = "%[6]s"
+	  kms_account_id = "%[7]s"
+	}
+		`, name, acc.IksClusterID, acc.IksClusterVpcID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID, acc.KmsAccountID)
+}
+
+func TestAccIBMContainerVpcOpenshiftClusterWorkerPoolBasic(t *testing.T) {
+
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	openshiftFlavour := "bx2.16x64"
+	openShiftworkerCount := "2"
+	operatingSystem := "REDHAT_8_64"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMVpcContainerWorkerPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "flavor", openshiftFlavour),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "zones.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "labels.%", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_worker_pool.test_pool", "operating_system", operatingSystem),
+				),
+			},
+			{
+				ResourceName:            "ibm_container_vpc_worker_pool.test_pool",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"entitlement"},
+			},
+		},
+	})
+}
+
+func testAccCheckIBMOpcContainerWorkerPoolBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem string) string {
+	return testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem) +
+		fmt.Sprintf(`
+
+	resource "ibm_container_vpc_worker_pool" "test_pool" {
+	  cluster           = ibm_container_vpc_cluster.cluster.id
+	  worker_pool_name  = "%[1]s"
+	  flavor            = "%s"
+	  worker_count      = "%s"
+	  vpc_id            = data.ibm_is_vpc.vpc.id
+	  resource_group_id = data.ibm_resource_group.resource_group.id
+ 	  operating_system  = "%s"
+	  entitlement       = "cloud_pak"
+	  zones {
+		subnet_id = data.ibm_is_subnet.subnet.id
+		name      = "us-south-1"
+	  }
+	  labels = {
+		"test"  = "test-pool"
+		"test1" = "test-pool1"
+	  }
+	}
+		`, name, openshiftFlavour, openShiftworkerCount, operatingSystem)
 }
