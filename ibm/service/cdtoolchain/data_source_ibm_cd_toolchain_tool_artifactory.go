@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolArtifactory() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -106,6 +106,12 @@ func DataSourceIBMCdToolchainToolArtifactory() *schema.Resource {
 							Computed:    true,
 							Description: "The User ID or email for your Artifactory repository.",
 						},
+						"token": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "The Identity Token or API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -124,18 +130,12 @@ func DataSourceIBMCdToolchainToolArtifactory() *schema.Resource {
 						"repository_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of your artifactory repository where your docker images are located.",
+							Description: "The name of your Artifactory repository where your docker images are located.",
 						},
 						"repository_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The URL of your artifactory repository where your docker images are located.",
-						},
-						"api_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "The Artifactory API key for your Artifactory repository.",
+							Description: "The URL of your Artifactory repository where your docker images are located.",
 						},
 					},
 				},
@@ -210,10 +210,7 @@ func dataSourceIBMCdToolchainToolArtifactoryRead(context context.Context, d *sch
 
 	parameters := []map[string]interface{}{}
 	if toolchainTool.Parameters != nil {
-		remapFields := map[string]string{
-			"api_key": "token",
-		}
-		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolArtifactory(), remapFields)
+		modelMap := GetParametersFromRead(toolchainTool.Parameters, DataSourceIBMCdToolchainToolArtifactory(), nil)
 		parameters = append(parameters, modelMap)
 	}
 	if err = d.Set("parameters", parameters); err != nil {

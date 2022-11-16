@@ -62,7 +62,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 							Optional:         true,
 							DiffSuppressFunc: flex.SuppressHashedRawSecret,
 							Sensitive:        true,
-							Description:      "The IBM Cloud API key used to access the Security and Compliance Center API. This parameter is only relevant when the `trigger_scan` parameter is `enabled`.",
+							Description:      "The IBM Cloud API key used to access the Security and Compliance Center API. This parameter is only relevant when the `trigger_scan` parameter is `enabled`. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
 						},
 						"scope": &schema.Schema{
 							Type:        schema.TypeString,
@@ -91,7 +91,7 @@ func ResourceIBMCdToolchainToolSecuritycompliance() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,

@@ -61,6 +61,13 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 							Optional:    true,
 							Description: "The User ID or email for your Artifactory repository.",
 						},
+						"token": &schema.Schema{
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: flex.SuppressHashedRawSecret,
+							Sensitive:        true,
+							Description:      "The Identity Token or API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).",
+						},
 						"release_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -79,19 +86,12 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 						"repository_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The name of your artifactory repository where your docker images are located.",
+							Description: "The name of your Artifactory repository where your docker images are located.",
 						},
 						"repository_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The URL of your artifactory repository where your docker images are located.",
-						},
-						"api_key": &schema.Schema{
-							Type:             schema.TypeString,
-							Optional:         true,
-							DiffSuppressFunc: flex.SuppressHashedRawSecret,
-							Sensitive:        true,
-							Description:      "The Artifactory API key for your Artifactory repository.",
+							Description: "The URL of your Artifactory repository where your docker images are located.",
 						},
 					},
 				},
@@ -105,7 +105,7 @@ func ResourceIBMCdToolchainToolArtifactory() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -197,10 +197,7 @@ func resourceIBMCdToolchainToolArtifactoryCreate(context context.Context, d *sch
 
 	createToolOptions.SetToolchainID(d.Get("toolchain_id").(string))
 	createToolOptions.SetToolTypeID("artifactory")
-	remapFields := map[string]string{
-		"api_key": "token",
-	}
-	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolArtifactory(), remapFields)
+	parametersModel := GetParametersForCreate(d, ResourceIBMCdToolchainToolArtifactory(), nil)
 	createToolOptions.SetParameters(parametersModel)
 	if _, ok := d.GetOk("name"); ok {
 		createToolOptions.SetName(d.Get("name").(string))
@@ -246,10 +243,7 @@ func resourceIBMCdToolchainToolArtifactoryRead(context context.Context, d *schem
 	if err = d.Set("toolchain_id", toolchainTool.ToolchainID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting toolchain_id: %s", err))
 	}
-	remapFields := map[string]string{
-		"api_key": "token",
-	}
-	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolArtifactory(), remapFields)
+	parametersMap := GetParametersFromRead(toolchainTool.Parameters, ResourceIBMCdToolchainToolArtifactory(), nil)
 	if err = d.Set("parameters", []map[string]interface{}{parametersMap}); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting parameters: %s", err))
 	}
@@ -312,10 +306,7 @@ func resourceIBMCdToolchainToolArtifactoryUpdate(context context.Context, d *sch
 			" The resource must be re-created to update this property.", "toolchain_id"))
 	}
 	if d.HasChange("parameters") {
-		remapFields := map[string]string{
-			"api_key": "token",
-		}
-		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolArtifactory(), remapFields)
+		parameters := GetParametersForUpdate(d, ResourceIBMCdToolchainToolArtifactory(), nil)
 		patchVals.Parameters = parameters
 		hasChange = true
 	}

@@ -28,8 +28,10 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go-config/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	kp "github.com/IBM/keyprotect-go-client"
+	"github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
@@ -348,14 +350,15 @@ func FlattenVpcWorkerPools(list []containerv2.GetWorkerPoolResponse) []map[strin
 	workerPools := make([]map[string]interface{}, len(list))
 	for i, workerPool := range list {
 		l := map[string]interface{}{
-			"id":           workerPool.ID,
-			"name":         workerPool.PoolName,
-			"flavor":       workerPool.Flavor,
-			"worker_count": workerPool.WorkerCount,
-			"isolation":    workerPool.Isolation,
-			"labels":       workerPool.Labels,
-			"state":        workerPool.Lifecycle.ActualState,
-			"host_pool_id": workerPool.HostPoolID,
+			"id":               workerPool.ID,
+			"name":             workerPool.PoolName,
+			"flavor":           workerPool.Flavor,
+			"worker_count":     workerPool.WorkerCount,
+			"isolation":        workerPool.Isolation,
+			"labels":           workerPool.Labels,
+			"operating_system": workerPool.OperatingSystem,
+			"state":            workerPool.Lifecycle.ActualState,
+			"host_pool_id":     workerPool.HostPoolID,
 		}
 		zones := workerPool.Zones
 		zonesConfig := make([]map[string]interface{}, len(zones))
@@ -2022,17 +2025,13 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 		return nil, err
 	}
 	accountID := userDetails.UserAccount
-
-	var providers []string
-	if strings.Contains(resourceType, "SoftLayer_") {
-		providers = []string{"ims"}
-	}
-
 	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
 	if resourceID != "" {
 		ListTagsOptions.AttachedTo = &resourceID
 	}
-	ListTagsOptions.Providers = providers
+	if strings.HasPrefix(resourceType, "Softlayer_") {
+		ListTagsOptions.Providers = []string{"ims"}
+	}
 	if len(tagType) > 0 {
 		ListTagsOptions.TagType = PtrToString(tagType)
 
@@ -2042,6 +2041,13 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 	}
 	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
 	if err != nil {
+		if strings.Contains(err.Error(), "Too Many Requests") {
+			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
+			if err != nil {
+				return nil, err
+			}
+			return temp, nil
+		}
 		return nil, err
 	}
 	var taglist []string
@@ -2049,6 +2055,56 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 		taglist = append(taglist, *item.Name)
 	}
 	log.Println("tagList: ", taglist)
+	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+}
+
+func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
+
+	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error getting global search client settings: %s", err)
+	}
+	options := globalsearchv2.SearchOptions{}
+	var query string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		query = fmt.Sprintf("doc.id:%s AND family:ims", resourceID)
+		options.SetQuery(query)
+	} else {
+		query = fmt.Sprintf("crn:\"%s\"", resourceID)
+		options.SetQuery(query)
+	}
+	if tagType == "service" {
+		userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return nil, err
+		}
+		options.SetAccountID(userDetails.UserAccount)
+	}
+	options.SetFields([]string{"access_tags", "tags", "service_tags"})
+	result, resp, err := gsClient.Search(&options)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error to query the tags for the resource: %s %s", err, resp)
+	}
+	var taglist []string
+	var t interface{}
+	if len(result.Items) > 0 {
+		if tagType == "access" {
+			t = result.Items[0].GetProperty("access_tags")
+		} else if tagType == "service" {
+			t = result.Items[0].GetProperty("service_tags")
+		} else {
+			t = result.Items[0].GetProperty("tags")
+		}
+		switch reflect.TypeOf(t).Kind() {
+		case reflect.Slice:
+			s := reflect.ValueOf(t)
+
+			for i := 0; i < s.Len(); i++ {
+				t := fmt.Sprintf("%s", (s.Index(i)))
+				taglist = append(taglist, t)
+			}
+		}
+	}
 	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
@@ -2162,15 +2218,22 @@ func GetTagsUsingCRN(meta interface{}, resourceCRN string) (*schema.Set, error) 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
 	}
+	var taglist []string
 	taggingResult, err := gtClient.Tags().GetTags(resourceCRN)
 	if err != nil {
+		if strings.Contains(err.Error(), "Too Many Requests") {
+			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceCRN, "", "user")
+			if err != nil {
+				return nil, err
+			}
+			return temp, nil
+		}
 		return nil, err
 	}
-	var taglist []string
+
 	for _, item := range taggingResult.Items {
 		taglist = append(taglist, item.Name)
 	}
-	log.Println("tagList: ", taglist)
 	return NewStringSet(ResourceIBMVPCHash, taglist), nil
 }
 
@@ -2655,6 +2718,7 @@ func FlattenKeyPolicies(policies []kp.Policy) []map[string]interface{} {
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
@@ -2673,7 +2737,6 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 	rotationMap := make([]map[string]interface{}, 0, 1)
 	dualAuthMap := make([]map[string]interface{}, 0, 1)
 	for _, policy := range policies {
-		log.Println("Policy CRN Data =============>", policy.CRN)
 		policyCRNData := strings.Split(policy.CRN, ":")
 		policyInstance := map[string]interface{}{
 			"id":               policyCRNData[9],
@@ -2685,6 +2748,7 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 		}
 		if policy.Rotation != nil {
 			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *policy.Rotation.Enabled
 			rotationMap = append(rotationMap, policyInstance)
 		} else if policy.DualAuth != nil {
 			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
@@ -2697,6 +2761,77 @@ func FlattenKeyIndividualPolicy(policy string, policies []kp.Policy) []map[strin
 		return dualAuthMap
 	}
 	return nil
+}
+
+func FlattenInstancePolicy(policyType string, policies []kp.InstancePolicy) []map[string]interface{} {
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	metricsMap := make([]map[string]interface{}, 0, 1)
+	keyCreateImportAccessMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyInstance := map[string]interface{}{
+			"created_by":    policy.CreatedBy,
+			"creation_date": (*policy.CreatedAt).String(),
+			"updated_by":    policy.UpdatedBy,
+			"last_updated":  (*policy.UpdatedAt).String(),
+		}
+		if policy.PolicyType == "dualAuthDelete" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+		if policy.PolicyType == "rotation" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			if policy.PolicyData.Attributes != nil {
+				policyInstance["interval_month"] = policy.PolicyData.Attributes.IntervalMonth
+			}
+			rotationMap = append(rotationMap, policyInstance)
+		}
+		if policy.PolicyType == "metrics" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			metricsMap = append(metricsMap, policyInstance)
+		}
+		if policy.PolicyType == "keyCreateImportAccess" {
+			policyInstance["enabled"] = policy.PolicyData.Enabled
+			policyInstance["create_root_key"] = policy.PolicyData.Attributes.CreateRootKey
+			policyInstance["create_standard_key"] = policy.PolicyData.Attributes.CreateStandardKey
+			policyInstance["import_root_key"] = policy.PolicyData.Attributes.ImportRootKey
+			policyInstance["import_standard_key"] = policy.PolicyData.Attributes.ImportStandardKey
+			policyInstance["enforce_token"] = policy.PolicyData.Attributes.EnforceToken
+			keyCreateImportAccessMap = append(keyCreateImportAccessMap, policyInstance)
+		}
+	}
+	if policyType == "rotation" {
+		return rotationMap
+	} else if policyType == "dual_auth_delete" {
+		return dualAuthMap
+	} else if policyType == "metrics" {
+		return metricsMap
+	} else if policyType == "key_create_import_access" {
+		return keyCreateImportAccessMap
+	}
+	return nil
+}
+func FlattenKeyPoliciesKey(policies []kp.Policy) []map[string]interface{} {
+	policyMap := make([]map[string]interface{}, 0, 1)
+	rotationMap := make([]map[string]interface{}, 0, 1)
+	dualAuthMap := make([]map[string]interface{}, 0, 1)
+	for _, policy := range policies {
+		policyInstance := map[string]interface{}{}
+		if policy.Rotation != nil {
+			policyInstance["interval_month"] = policy.Rotation.Interval
+			policyInstance["enabled"] = *(policy.Rotation.Enabled)
+			rotationMap = append(rotationMap, policyInstance)
+		} else if policy.DualAuth != nil {
+			policyInstance["enabled"] = *(policy.DualAuth.Enabled)
+			dualAuthMap = append(dualAuthMap, policyInstance)
+		}
+	}
+	tempMap := map[string]interface{}{
+		"rotation":         rotationMap,
+		"dual_auth_delete": dualAuthMap,
+	}
+	policyMap = append(policyMap, tempMap)
+	return policyMap
 }
 
 // IgnoreSystemLabels returns non-IBM tag keys.
@@ -3213,7 +3348,7 @@ func FlattenSatelliteHosts(hostList []kubernetesserviceapiv1.MultishiftQueueNode
 }
 
 func FlattenWorkerPoolHostLabels(hostLabels map[string]string) *schema.Set {
-	mapped := make([]string, len(hostLabels)-1)
+	mapped := make([]string, len(hostLabels))
 	idx := 0
 	for k, v := range hostLabels {
 		if strings.HasPrefix(k, "os") {
@@ -3250,4 +3385,51 @@ func FlattenSatelliteClusterZones(list []string) []map[string]interface{} {
 		zones[i] = l
 	}
 	return zones
+}
+
+func FetchResourceInstanceDetails(d *schema.ResourceData, meta interface{}, instanceID string) error {
+	// Get ResourceController from ClientSession
+	resourceControllerClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return err
+	}
+
+	getResourceOpts := resourcecontrollerv2.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	instance, response, err := resourceControllerClient.GetResourceInstance(&getResourceOpts)
+	if err != nil {
+		log.Printf("[DEBUG] Error retrieving resource instance: %s\n%s", err, response)
+		return fmt.Errorf("Error retrieving resource instance: %s\n%s", err, response)
+	}
+	if strings.Contains(*instance.State, "removed") {
+		log.Printf("[DEBUG] Error retrieving resource instance details: Resource has been removed")
+		return fmt.Errorf("Error retrieving resource instance details: Resource has been removed")
+	}
+
+	extensionsMap := Flatten(instance.Extensions)
+	if extensionsMap == nil {
+		log.Printf("[DEBUG] Error parsing resource instance: Endpoints are missing in instance Extensions map")
+		return fmt.Errorf("Error parsing resource instance: Endpoints are missing in instance Extensions map")
+	}
+	d.Set("extensions", extensionsMap)
+
+	return nil
+}
+
+func GetResourceInstanceURL(d *schema.ResourceData, meta interface{}) (*string, error) {
+
+	var endpoint string
+	extensions := d.Get("extensions").(map[string]interface{})
+
+	if url, ok := extensions["endpoints.public"]; ok {
+		endpoint = "https://" + url.(string)
+	}
+
+	if endpoint == "" {
+		return nil, fmt.Errorf("[ERROR] Missing endpoints.public in extensions")
+	}
+
+	return &endpoint, nil
 }

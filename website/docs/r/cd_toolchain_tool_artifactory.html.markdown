@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_artifactory. This allows cd_toolchain_tool_artifactory to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-artifactory).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-artifactory) page for more information.
 
 ## Example Usage
 
@@ -21,9 +21,9 @@ resource "ibm_cd_toolchain_tool_artifactory" "cd_toolchain_tool_artifactory_inst
 		dashboard_url = "https://mycompany.example.jfrog.io"
 		type = "docker"
 		user_id = "<user_id>"
+		token = "<token>"
 		repository_name = "default-docker-local"
 		repository_url = "https://mycompany.example.jfrog.io/artifactory/default-docker-local"
-		api_key = "<api_key>"
   }
   toolchain_id = ibm_cd_toolchain.cd_toolchain.id
 }
@@ -37,14 +37,14 @@ Review the argument reference that you can specify for your resource.
   * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
 * `parameters` - (Required, List) Unique key-value pairs representing parameters to be used to create the tool. A list of parameters for each tool integration can be found in the <a href="https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-integrations">Configuring tool integrations page</a>.
 Nested scheme for **parameters**:
-	* `api_key` - (Optional, String) The Artifactory API key for your Artifactory repository.
 	* `dashboard_url` - (Optional, String) The URL of the Artifactory server dashboard for this integration. In the graphical UI, this is the dashboard that the browser will navigate to when you click the Artifactory integration tile.
 	* `mirror_url` - (Optional, String) The URL for your Artifactory virtual repository, which is a repository that can see your private repositories and a cache of the public repositories.
 	* `name` - (Required, String) The name for this tool integration.
 	* `release_url` - (Optional, String) The URL for your Artifactory release repository.
-	* `repository_name` - (Optional, String) The name of your artifactory repository where your docker images are located.
-	* `repository_url` - (Optional, String) The URL of your artifactory repository where your docker images are located.
+	* `repository_name` - (Optional, String) The name of your Artifactory repository where your docker images are located.
+	* `repository_url` - (Optional, String) The URL of your Artifactory repository where your docker images are located.
 	* `snapshot_url` - (Optional, String) The URL for your Artifactory snapshot repository.
+	* `token` - (Optional, String) The Identity Token or API key for your Artifactory repository. You can use a toolchain secret reference for this parameter. For more information, see [Protecting your sensitive data in Continuous Delivery](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd_data_security#cd_secure_credentials).
 	* `type` - (Required, String) The type of repository for your Artifactory integration.
 	  * Constraints: Allowable values are: `npm`, `maven`, `docker`.
 	* `user_id` - (Optional, String) The User ID or email for your Artifactory repository.
@@ -62,7 +62,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

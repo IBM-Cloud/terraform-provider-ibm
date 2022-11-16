@@ -34,7 +34,7 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group where the tool can be found.",
+				Description: "Resource group where the tool is located.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -99,12 +99,12 @@ func DataSourceIBMCdToolchainToolSecretsmanager() *schema.Resource {
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The IBM Cloud location where the Secrets Manager service instance resides.",
+							Description: "The IBM Cloud location where the Secrets Manager service instance is located.",
 						},
 						"resource_group_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the resource group where the Secrets Manager service instance resides.",
+							Description: "The name of the resource group where the Secrets Manager service instance is located.",
 						},
 					},
 				},

@@ -34,6 +34,7 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the worker pool resource, as <cluster_name_id>/<worker_pool_id>.
 - `isolation` - (String) Isolation for the worker node.
 - `labels` - (String) Labels on all the workers in the worker pool. 
+- `operating_system` (String) The operating system of the workers in the worker pool.
 - `provider` - (String) Provider Details of the worker Pool.
 - `resource_group_id` - (String) The ID of the resource group.
 - `vpc_id` - (String) The ID of the VPC.

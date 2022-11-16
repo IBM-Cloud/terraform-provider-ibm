@@ -198,6 +198,13 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description: "Labels for default worker pool",
 			},
 
+			"operating_system": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The operating system of the workers in the default worker pool.",
+			},
+
 			"taints": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -225,6 +232,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 					},
 				},
 			},
+
 			"disable_public_service_endpoint": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -246,8 +254,8 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Optional:         true,
 				Default:          ingressReady,
 				DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady}, true),
-				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready",
+				ValidateFunc:     validation.StringInSlice([]string{masterNodeReady, oneWorkerNodeReady, ingressReady, clusterNormal}, true),
+				Description:      "wait_till can be configured for Master Ready, One worker Ready or Ingress Ready or Normal",
 			},
 
 			"entitlement": {
@@ -276,6 +284,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The URL of the IBM Cloud dashboard that can be used to explore and view details about this cluster",
 			},
+
 			"kms_instance_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -283,6 +292,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "Instance ID for boot volume encryption",
 				RequiredWith:     []string{"crk"},
 			},
+
 			"crk": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -321,6 +331,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
 			"albs": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -361,6 +372,7 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 					},
 				},
 			},
+
 			"public_service_endpoint_url": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -482,7 +494,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// timeoutStage will define the timeout stage
 	var timeoutStage string
 	if v, ok := d.GetOk("wait_till"); ok {
-		timeoutStage = v.(string)
+		timeoutStage = strings.ToLower(v.(string))
 	}
 
 	var zonesList = make([]v2.Zone, 0)
@@ -511,6 +523,10 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 	if hpid, ok := d.GetOk("host_pool_id"); ok {
 		workerpool.HostPoolID = hpid.(string)
+	}
+
+	if os, ok := d.GetOk("operating_system"); ok {
+		workerpool.OperatingSystem = os.(string)
 	}
 
 	if kmsid, ok := d.GetOk("kms_instance_id"); ok {
@@ -572,7 +588,14 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	switch strings.ToLower(timeoutStage) {
+	switch timeoutStage {
+
+	case strings.ToLower(clusterNormal):
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
+		if err != nil {
+			return err
+		}
 
 	case strings.ToLower(masterNodeReady):
 		_, err = waitForVpcClusterMasterAvailable(d, meta)
@@ -1018,6 +1041,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("host_pool_id", workerPool.HostPoolID)
+	d.Set("operating_system", workerPool.OperatingSystem)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
@@ -1207,6 +1231,35 @@ func waitForVpcClusterOneWorkerAvailable(d *schema.ResourceData, meta interface{
 			}
 			return workers, deployInProgress, nil
 
+		},
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
+		Delay:                     10 * time.Second,
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 5,
+	}
+	return createStateConf.WaitForState()
+}
+
+func waitForVpcClusterState(d *schema.ResourceData, meta interface{}, waitForState string, pendingState []string) (interface{}, error) {
+	targetEnv, err := getVpcClusterTargetHeader(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
+	if err != nil {
+		return nil, err
+	}
+	clusterID := d.Id()
+	createStateConf := &resource.StateChangeConf{
+		Pending: pendingState,
+		Target:  []string{waitForState},
+		Refresh: func() (interface{}, string, error) {
+			clusterInfo, err := csClient.Clusters().GetCluster(clusterID, targetEnv)
+			if err != nil {
+				return nil, "", err
+			}
+
+			return clusterInfo, clusterInfo.State, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		Delay:                     10 * time.Second,

@@ -496,6 +496,7 @@ func Provider() *schema.Provider {
 			"ibm_network_vlan":                       classicinfrastructure.DataSourceIBMNetworkVlan(),
 			"ibm_org":                                cloudfoundry.DataSourceIBMOrg(),
 			"ibm_org_quota":                          cloudfoundry.DataSourceIBMOrgQuota(),
+			"ibm_kms_instance_policies":              kms.DataSourceIBMKmsInstancePolicies(),
 			"ibm_kp_key":                             kms.DataSourceIBMkey(),
 			"ibm_kms_key_rings":                      kms.DataSourceIBMKMSkeyRings(),
 			"ibm_kms_key_policies":                   kms.DataSourceIBMKMSkeyPolicies(),
@@ -973,10 +974,12 @@ func Provider() *schema.Provider {
 			"ibm_app_config_segment":                             appconfiguration.ResourceIBMIbmAppConfigSegment(),
 			"ibm_app_config_snapshot":                            appconfiguration.ResourceIBMIbmAppConfigSnapshot(),
 			"ibm_kms_key":                                        kms.ResourceIBMKmskey(),
+			"ibm_kms_key_with_policy_overrides":                  kms.ResourceIBMKmsKeyWithPolicyOverrides(),
 			"ibm_kms_key_alias":                                  kms.ResourceIBMKmskeyAlias(),
 			"ibm_kms_key_rings":                                  kms.ResourceIBMKmskeyRings(),
 			"ibm_kms_key_policies":                               kms.ResourceIBMKmskeyPolicies(),
 			"ibm_kp_key":                                         kms.ResourceIBMkey(),
+			"ibm_kms_instance_policies":                          kms.ResourceIBMKmsInstancePolicy(),
 			"ibm_resource_group":                                 resourcemanager.ResourceIBMResourceGroup(),
 			"ibm_resource_instance":                              resourcecontroller.ResourceIBMResourceInstance(),
 			"ibm_resource_key":                                   resourcecontroller.ResourceIBMResourceKey(),
@@ -1052,6 +1055,7 @@ func Provider() *schema.Provider {
 			"ibm_cm_catalog":           catalogmanagement.ResourceIBMCmCatalog(),
 			"ibm_cm_offering":          catalogmanagement.ResourceIBMCmOffering(),
 			"ibm_cm_version":           catalogmanagement.ResourceIBMCmVersion(),
+			"ibm_cm_validation":        catalogmanagement.ResourceIBMCmValidation(),
 
 			// //Added for enterprise
 			"ibm_enterprise":               enterprise.ResourceIBMEnterprise(),

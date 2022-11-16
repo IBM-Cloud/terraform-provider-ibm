@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a resource for cd_toolchain_tool_appconfig. This allows cd_toolchain_tool_appconfig to be created, updated and deleted.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration) page for more information.
 
 ## Example Usage
 
@@ -42,9 +42,9 @@ Nested scheme for **parameters**:
 	  * Constraints: The value must match regular expression `/\\S/`.
 	* `instance_id` - (Required, String) The guid of the App Configuration service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (Required, String) The IBM Cloud location where the App Configuration service instance resides.
+	* `location` - (Required, String) The IBM Cloud location where the App Configuration service instance is located.
 	* `name` - (Required, String) The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.
-	* `resource_group_name` - (Required, String) The name of the resource group where the App Configuration service instance resides.
+	* `resource_group_name` - (Required, String) The name of the resource group where the App Configuration service instance is located.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
@@ -59,7 +59,7 @@ In addition to all argument references listed, you can access the following attr
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
 * `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.

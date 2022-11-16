@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source for cd_toolchain_tool_appconfig. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
-More information on this Continuous Delivery tool integration can be found [here](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration).
+See the [tool integration](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-app-configuration) page for more information.
 
 ## Example Usage
 
@@ -49,16 +49,16 @@ Nested scheme for **parameters**:
 	  * Constraints: The value must match regular expression `/\\S/`.
 	* `instance_id` - (String) The guid of the App Configuration service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (String) The IBM Cloud location where the App Configuration service instance resides.
+	* `location` - (String) The IBM Cloud location where the App Configuration service instance is located.
 	* `name` - (String) The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.
-	* `resource_group_name` - (String) The name of the resource group where the App Configuration service instance resides.
+	* `resource_group_name` - (String) The name of the resource group where the App Configuration service instance is located.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:
 	* `api_href` - (String) URI representing this resource through an API.
 	* `ui_href` - (String) URI representing this resource through the UI.
 
-* `resource_group_id` - (String) Resource group where the tool can be found.
+* `resource_group_id` - (String) Resource group where the tool is located.
 
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
