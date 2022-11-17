@@ -54,6 +54,13 @@ The `ibm_is_lb` resource provides the following [Timeouts](https://www.terraform
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `dns` - (Optional, List) The DNS configuration for this load balancer.
+
+  Nested scheme for `dns`:
+  - `instance` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
+  - `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
+  - `zone` - (Optional, String) The unique identifier of the DNS zone.
+
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
 - `profile` - (Optional, Forces new resource, String) For a Network Load Balancer, this attribute is required and should be set to `network-fixed`. For Application Load Balancer, profile is not a required attribute.

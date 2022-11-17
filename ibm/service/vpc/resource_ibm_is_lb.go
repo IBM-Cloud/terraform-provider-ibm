@@ -93,13 +93,13 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "The private IP addresses assigned to this load balancer.",
+				Description: "The DNS configuration for this load balancer.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instance": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The CRN for this DNS instancer",
+							Description: "The CRN for this DNS instance",
 						},
 						"name": {
 							Type:        schema.TypeString,

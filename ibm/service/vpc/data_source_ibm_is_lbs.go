@@ -46,6 +46,30 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "The date and time that this pool was created.",
 						},
+						"dns": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The DNS configuration for this load balancer.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"instance": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The CRN for this DNS instancer",
+									},
+									"name": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
+									},
+									"zone": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unique identifier of the DNS zone.",
+									},
+								},
+							},
+						},
 						ProvisioningStatus: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -295,6 +319,15 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		//	log.Printf("******* lb ******** : (%+v)", lb)
 		lbInfo[ID] = *lb.ID
 		lbInfo[isLBName] = *lb.Name
+		dnsList := make([]map[string]interface{}, 0)
+		if lb.Dns != nil {
+			dns := map[string]interface{}{}
+			dns["instance"] = lb.Dns.Instance.CRN
+			dns["zone"] = lb.Dns.Zone.ID
+			dns["name"] = lb.Dns.Name
+			dnsList = append(dnsList, dns)
+			lbInfo["dns"] = dnsList
+		}
 		if lb.RouteMode != nil {
 			lbInfo[isLBRouteMode] = *lb.RouteMode
 		}
