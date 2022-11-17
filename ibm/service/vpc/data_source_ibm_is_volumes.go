@@ -487,6 +487,13 @@ func DataSourceIBMIsVolumes() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Description: "User Tags for the Volume",
 						},
+						isVolumeAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "Access management tags for the volume instance",
+						},
 					},
 				},
 			},
@@ -536,7 +543,7 @@ func dataSourceIBMIsVolumesRead(context context.Context, d *schema.ResourceData,
 
 	d.SetId(dataSourceIBMIsVolumesID(d))
 
-	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs))
+	err = d.Set(isVolumes, dataSourceVolumeCollectionFlattenVolumes(allrecs, meta))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting volumes %s", err))
 	}
@@ -549,15 +556,15 @@ func dataSourceIBMIsVolumesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume) (volumes []map[string]interface{}) {
+func dataSourceVolumeCollectionFlattenVolumes(result []vpcv1.Volume, meta interface{}) (volumes []map[string]interface{}) {
 	for _, volumesItem := range result {
-		volumes = append(volumes, dataSourceVolumeCollectionVolumesToMap(volumesItem))
+		volumes = append(volumes, dataSourceVolumeCollectionVolumesToMap(volumesItem, meta))
 	}
 
 	return volumes
 }
 
-func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMap map[string]interface{}) {
+func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume, meta interface{}) (volumesMap map[string]interface{}) {
 	volumesMap = map[string]interface{}{}
 
 	if volumesItem.Active != nil {
@@ -655,6 +662,12 @@ func dataSourceVolumeCollectionVolumesToMap(volumesItem vpcv1.Volume) (volumesMa
 	if volumesItem.UserTags != nil {
 		volumesMap[isVolumeTags] = volumesItem.UserTags
 	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *volumesItem.CRN, "", isVolumeAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource vpc volume (%s) access tags: %s", *volumesItem.ID, err)
+	}
+	volumesMap[isVolumeAccessTags] = accesstags
 	return volumesMap
 }
 

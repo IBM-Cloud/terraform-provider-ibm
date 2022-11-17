@@ -42,6 +42,9 @@ const (
 	isVolumeSourceSnapshot        = "source_snapshot"
 	isVolumeDeleteAllSnapshots    = "delete_all_snapshots"
 	isVolumeBandwidth             = "bandwidth"
+	isVolumeAccessTags            = "access_tags"
+	isVolumeUserTagType           = "user"
+	isVolumeAccessTagType         = "access"
 )
 
 func ResourceIBMISVolume() *schema.Resource {
@@ -67,6 +70,10 @@ func ResourceIBMISVolume() *schema.Resource {
 			customdiff.Sequence(
 				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 					return flex.ResourceVolumeValidate(diff)
+				}),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
 				}),
 		),
 
@@ -183,6 +190,14 @@ func ResourceIBMISVolume() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "UserTags for the volume instance",
 			},
+			isVolumeAccessTags: {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_volume", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "Access management tags for the volume instance",
+			},
 
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
@@ -267,6 +282,15 @@ func ResourceIBMISVolumeValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeInt,
 			MinValue:                   "100",
 			MaxValue:                   "48000"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128})
 
 	ibmISVolumeResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_volume", Schema: validateSchema}
 	return &ibmISVolumeResourceValidator
@@ -359,6 +383,15 @@ func volCreate(d *schema.ResourceData, meta interface{}, volName, profile, zone 
 	if err != nil {
 		return err
 	}
+
+	if _, ok := d.GetOk(isVolumeAccessTags); ok {
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on create of resource vpc volume (%s) access tags: %s", d.Id(), err)
+		}
+	}
 	return nil
 }
 
@@ -427,6 +460,12 @@ func volGet(d *schema.ResourceData, meta interface{}, id string) error {
 			return fmt.Errorf("Error setting user tags: %s", err)
 		}
 	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vol.CRN, "", isVolumeAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource volume (%s) access tags: %s", d.Id(), err)
+	}
+	d.Set(isVolumeAccessTags, accesstags)
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
 		return err
@@ -473,6 +512,23 @@ func volUpdate(d *schema.ResourceData, meta interface{}, id, name string, hasNam
 	var capacity int64
 	if delete {
 		deleteAllSnapshots(sess, id)
+	}
+
+	if d.HasChange(isVolumeAccessTags) {
+		options := &vpcv1.GetVolumeOptions{
+			ID: &id,
+		}
+		vol, response, err := sess.GetVolume(options)
+		if err != nil {
+			return fmt.Errorf("Error getting Volume : %s\n%s", err, response)
+		}
+		oldList, newList := d.GetChange(isVolumeAccessTags)
+
+		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *vol.CRN, "", isVolumeAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on update of resource vpc volume (%s) access tags: %s", id, err)
+		}
 	}
 
 	optionsget := &vpcv1.GetVolumeOptions{
