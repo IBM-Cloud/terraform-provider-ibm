@@ -49,12 +49,12 @@ func ResourceIBMCdToolchainToolAppconfig() *schema.Resource {
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The IBM Cloud location where the App Configuration service instance resides.",
+							Description: "The IBM Cloud location where the App Configuration service instance is located.",
 						},
 						"resource_group_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The name of the resource group where the App Configuration service instance resides.",
+							Description: "The name of the resource group where the App Configuration service instance is located.",
 						},
 						"instance_id": &schema.Schema{
 							Type:        schema.TypeString,

@@ -55,6 +55,7 @@ In addition to the argument reference list, you can access the following attribu
 	- `resource_type` - (String) The type of resource referenced.
 	- `route_table` - (String) The unique ID for the routing table.
 	- `route_direct_link_ingress` - (String) Indicates if the routing table is used to route traffic that originates from Direct Link to the VPC.
+	- `route_internet_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from the internet.
 	- `route_transit_gateway_ingress` - (String) Indicates if the routing table is used to route traffic that originates from Transit Gateway to the VPC.
 	- `route_vpc_zone_ingress` - (String)  Indicates if the routing table is used to route traffic that originates from subnets in other zones of the VPC.
 	- `routes` - (List) The routes for the routing table.	
