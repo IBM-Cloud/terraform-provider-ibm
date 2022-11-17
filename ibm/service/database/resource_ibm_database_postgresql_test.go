@@ -68,6 +68,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certname", regexp.MustCompile("[-a-z0-9]*")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.1.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+					resource.TestCheckResourceAttr(name, "logical_replication_slot.#", "1"),
 				),
 			},
 			{
@@ -91,7 +92,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.certbase64", regexp.MustCompile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")),
 					resource.TestMatchResourceAttr(name, "connectionstrings.0.database", regexp.MustCompile("[-a-z0-9]+")),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
-					resource.TestCheckResourceAttr(name, "logical_replication_slot.#", "1"),
+					resource.TestCheckResourceAttr(name, "logical_replication_slot.#", "2"),
 				),
 			},
 			// {
@@ -590,6 +591,18 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 			address     = "172.168.1.2/32"
 			description = "desc1"
 		}
+		configuration                   = <<CONFIGURATION
+		{
+		  "wal_level": "logical",
+		  "max_replication_slots": 21,
+		  "max_wal_senders": 21
+		}
+		CONFIGURATION
+		logical_replication_slot {
+			name = "wj123"
+			database_name = "ibmclouddb"
+			plugin_type = "wal2json"
+		}
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
@@ -641,6 +654,11 @@ func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup
 		}
 		logical_replication_slot {
 			name = "wj123"
+			database_name = "ibmclouddb"
+			plugin_type = "wal2json"
+		}
+		logical_replication_slot {
+			name = "wj321"
 			database_name = "ibmclouddb"
 			plugin_type = "wal2json"
 		}
