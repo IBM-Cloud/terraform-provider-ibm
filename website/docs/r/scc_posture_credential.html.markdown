@@ -17,7 +17,6 @@ resource "ibm_scc_posture_credential" "credentials" {
   description = "This credential is used for testing."
   display_fields {"password":"testpassword","username":"test"}
   enabled = true
-  group = {"id":"1","passphrase":"passphrase"}
   name = "test_create"
   purpose = "discovery_fact_collection_remediation"
   type = "username_password"
