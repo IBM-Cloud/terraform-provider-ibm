@@ -587,8 +587,6 @@ Review the argument reference that you can specify for your resource.
   - Make sure the replication user's (`repl`) password has been changed.
   - Make sure that your database is configured such that logical replication can be enabled. This means thats the `wal_level` needs to be set to `logical`. Also, `max_replication_slots` and `max_wal_senders` must be greater than 20.
   - For more information on enabling logical replication slots please see [Configuring Wal2json](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-wal2json)
-
-  Please note, logical replication slots can only be created after database creation.
 - `guid` - (Optional, String) The unique identifier of the database instance.
 - `key_protect_key` - (Optional, Forces new resource, String) The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS)  that you want to use for disk encryption. A key CRN is in the format `crn:v1:<…>:key:`. You can specify the root key during the database creation only. After the database is created, you cannot update the root key. For more information, refer [Disk encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect#using-the-key-protect-key) documentation.
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
