@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.57.0-b6d48d21-20220921-194423
+ * IBM OpenAPI SDK Code Generator Version: 3.59.0-da92a51d-20221012-180509
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -41,7 +41,7 @@ import (
 type VpcV1 struct {
 	Service *core.BaseService
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-11-02`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and today's date (UTC).
 	Version *string
 
@@ -62,7 +62,7 @@ type VpcV1Options struct {
 	URL           string
 	Authenticator core.Authenticator
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-11-02`
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2022-09-13`
 	// and today's date (UTC).
 	Version *string
 }
@@ -1052,12 +1052,15 @@ func (vpc *VpcV1) UpdateVPCAddressPrefixWithContext(ctx context.Context, updateV
 // This request lists all routes in the VPC's default routing table. Each route is zone-specific and directs any packets
 // matching its destination CIDR block to a `next_hop` IP address. The most specific route matching a packet's
 // destination will be used. If multiple equally-specific routes exist, traffic will be distributed across them.
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) ListVPCRoutes(listVPCRoutesOptions *ListVPCRoutesOptions) (result *RouteCollection, response *core.DetailedResponse, err error) {
 	return vpc.ListVPCRoutesWithContext(context.Background(), listVPCRoutesOptions)
 }
 
 // ListVPCRoutesWithContext is an alternate form of the ListVPCRoutes method which supports a Context parameter
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) ListVPCRoutesWithContext(ctx context.Context, listVPCRoutesOptions *ListVPCRoutesOptions) (result *RouteCollection, response *core.DetailedResponse, err error) {
+	core.GetLogger().Warn("A deprecated operation has been invoked: ListVPCRoutes")
 	err = core.ValidateNotNil(listVPCRoutesOptions, "listVPCRoutesOptions cannot be nil")
 	if err != nil {
 		return
@@ -1126,12 +1129,15 @@ func (vpc *VpcV1) ListVPCRoutesWithContext(ctx context.Context, listVPCRoutesOpt
 // This request creates a new route in the VPC's default routing table. The route prototype object is structured in the
 // same way as a retrieved route, and contains the information necessary to create the new route. The request will fail
 // if the new route will cause a loop.
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) CreateVPCRoute(createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.CreateVPCRouteWithContext(context.Background(), createVPCRouteOptions)
 }
 
 // CreateVPCRouteWithContext is an alternate form of the CreateVPCRoute method which supports a Context parameter
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteOptions *CreateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	core.GetLogger().Warn("A deprecated operation has been invoked: CreateVPCRoute")
 	err = core.ValidateNotNil(createVPCRouteOptions, "createVPCRouteOptions cannot be nil")
 	if err != nil {
 		return
@@ -1211,12 +1217,15 @@ func (vpc *VpcV1) CreateVPCRouteWithContext(ctx context.Context, createVPCRouteO
 
 // DeleteVPCRoute : Delete a VPC route
 // This request deletes a route. This operation cannot be reversed.
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) DeleteVPCRoute(deleteVPCRouteOptions *DeleteVPCRouteOptions) (response *core.DetailedResponse, err error) {
 	return vpc.DeleteVPCRouteWithContext(context.Background(), deleteVPCRouteOptions)
 }
 
 // DeleteVPCRouteWithContext is an alternate form of the DeleteVPCRoute method which supports a Context parameter
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) DeleteVPCRouteWithContext(ctx context.Context, deleteVPCRouteOptions *DeleteVPCRouteOptions) (response *core.DetailedResponse, err error) {
+	core.GetLogger().Warn("A deprecated operation has been invoked: DeleteVPCRoute")
 	err = core.ValidateNotNil(deleteVPCRouteOptions, "deleteVPCRouteOptions cannot be nil")
 	if err != nil {
 		return
@@ -1263,12 +1272,15 @@ func (vpc *VpcV1) DeleteVPCRouteWithContext(ctx context.Context, deleteVPCRouteO
 
 // GetVPCRoute : Retrieve a VPC route
 // This request retrieves a single route specified by the identifier in the URL.
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) GetVPCRoute(getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.GetVPCRouteWithContext(context.Background(), getVPCRouteOptions)
 }
 
 // GetVPCRouteWithContext is an alternate form of the GetVPCRoute method which supports a Context parameter
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions *GetVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	core.GetLogger().Warn("A deprecated operation has been invoked: GetVPCRoute")
 	err = core.ValidateNotNil(getVPCRouteOptions, "getVPCRouteOptions cannot be nil")
 	if err != nil {
 		return
@@ -1328,12 +1340,15 @@ func (vpc *VpcV1) GetVPCRouteWithContext(ctx context.Context, getVPCRouteOptions
 // UpdateVPCRoute : Update a VPC route
 // This request updates a route with the information in a provided route patch. The route patch object is structured in
 // the same way as a retrieved route and contains only the information to be updated.
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) UpdateVPCRoute(updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
 	return vpc.UpdateVPCRouteWithContext(context.Background(), updateVPCRouteOptions)
 }
 
 // UpdateVPCRouteWithContext is an alternate form of the UpdateVPCRoute method which supports a Context parameter
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (vpc *VpcV1) UpdateVPCRouteWithContext(ctx context.Context, updateVPCRouteOptions *UpdateVPCRouteOptions) (result *Route, response *core.DetailedResponse, err error) {
+	core.GetLogger().Warn("A deprecated operation has been invoked: UpdateVPCRoute")
 	err = core.ValidateNotNil(updateVPCRouteOptions, "updateVPCRouteOptions cannot be nil")
 	if err != nil {
 		return
@@ -26143,7 +26158,7 @@ type CreateInstanceVolumeAttachmentOptions struct {
 	// An existing volume to attach to the instance, or a prototype object for a new volume.
 	Volume VolumeAttachmentPrototypeVolumeIntf `json:"volume" validate:"required"`
 
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The name for this volume attachment. The name must not be used by another volume attachment on the instance. If
@@ -26820,6 +26835,8 @@ type CreateLoadBalancerOptions struct {
 	Subnets []SubnetIdentityIntf `json:"subnets" validate:"required"`
 
 	// The DNS configuration for this load balancer.
+	//
+	// If unspecified, DNS will not be configured for this load balancer.
 	Dns *LoadBalancerDnsPrototype `json:"dns,omitempty"`
 
 	// The listeners of this load balancer.
@@ -28446,6 +28463,31 @@ func (*VpcV1) NewDnsInstanceReference(crn string) (_model *DnsInstanceReference,
 func UnmarshalDnsInstanceReference(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(DnsInstanceReference)
 	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// DnsZoneReference : DnsZoneReference struct
+type DnsZoneReference struct {
+	ID *string `json:"id" validate:"required"`
+}
+
+// NewDnsZoneReference : Instantiate DnsZoneReference (Generic Model Constructor)
+func (*VpcV1) NewDnsZoneReference(id string) (_model *DnsZoneReference, err error) {
+	_model = &DnsZoneReference{
+		ID: core.StringPtr(id),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalDnsZoneReference unmarshals an instance of DnsZoneReference from the specified map of raw messages.
+func UnmarshalDnsZoneReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(DnsZoneReference)
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		return
 	}
@@ -32429,6 +32471,7 @@ type EndpointGateway struct {
 	SecurityGroups []SecurityGroupReference `json:"security_groups" validate:"required"`
 
 	// The fully qualified domain name for the target service.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	ServiceEndpoint *string `json:"service_endpoint,omitempty"`
 
 	// The fully qualified domain names for the target service.
@@ -38123,6 +38166,7 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 // InstanceAction : InstanceAction struct
 type InstanceAction struct {
 	// The date and time that the action was completed.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
 
 	// The date and time that the action was created.
@@ -38132,15 +38176,19 @@ type InstanceAction struct {
 	Force *bool `json:"force,omitempty"`
 
 	// The URL for this instance action.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	Href *string `json:"href" validate:"required"`
 
 	// The identifier for this instance action.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	ID *string `json:"id" validate:"required"`
 
 	// The date and time that the action was started.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	StartedAt *strfmt.DateTime `json:"started_at,omitempty"`
 
 	// The current status of this action.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	Status *string `json:"status" validate:"required"`
 
 	// The type of action.
@@ -42324,7 +42372,7 @@ type InstancePrototype struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.
 	//
@@ -42413,7 +42461,7 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -42634,7 +42682,7 @@ type InstanceTemplate struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.
 	//
@@ -42736,7 +42784,7 @@ func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -42984,7 +43032,7 @@ type InstanceTemplatePrototype struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.
 	//
@@ -43074,7 +43122,7 @@ func UnmarshalInstanceTemplatePrototype(m map[string]json.RawMessage, result int
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -46987,6 +47035,8 @@ type LoadBalancer struct {
 	CRN *string `json:"crn" validate:"required"`
 
 	// The DNS configuration for this load balancer.
+	//
+	// If absent, DNS will not be configured for this load balancer.
 	Dns *LoadBalancerDns `json:"dns,omitempty"`
 
 	// Fully qualified domain name assigned to this load balancer.
@@ -47306,23 +47356,23 @@ func UnmarshalLoadBalancerCollectionNext(m map[string]json.RawMessage, result in
 }
 
 // LoadBalancerDns : The DNS configuration for this load balancer.
+//
+// If absent, DNS will not be configured for this load balancer.
 type LoadBalancerDns struct {
-	// The DNS instance to use.
-	//
-	// Specify `null` to remove any existing DNS records.
-	DnsInstance *DnsInstanceReference `json:"dns_instance" validate:"required"`
+	// The DNS instance associated with the DNS zone.
+	Instance *DnsInstanceReference `json:"instance" validate:"required"`
 
-	// The name to use for the DNS 'A' records for this load balancer's private IP addresses.
+	// The name used for DNS 'A' records for this load balancer's private IP addresses.
 	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier of the DNS zone.
-	Zone *LoadBalancerDnsZone `json:"zone" validate:"required"`
+	Zone *DnsZoneReference `json:"zone" validate:"required"`
 }
 
 // UnmarshalLoadBalancerDns unmarshals an instance of LoadBalancerDns from the specified map of raw messages.
 func UnmarshalLoadBalancerDns(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerDns)
-	err = core.UnmarshalModel(m, "dns_instance", &obj.DnsInstance, UnmarshalDnsInstanceReference)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceReference)
 	if err != nil {
 		return
 	}
@@ -47330,7 +47380,7 @@ func UnmarshalLoadBalancerDns(m map[string]json.RawMessage, result interface{}) 
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalLoadBalancerDnsZone)
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneReference)
 	if err != nil {
 		return
 	}
@@ -47339,35 +47389,25 @@ func UnmarshalLoadBalancerDns(m map[string]json.RawMessage, result interface{}) 
 }
 
 // LoadBalancerDnsPatch : The DNS configuration for this load balancer.
+//
+// Specify `null` to remove any existing DNS records.
 type LoadBalancerDnsPatch struct {
-	// The DNS instance to use.
-	//
-	// Specify `null` to remove any existing DNS records.
-	DnsInstance *DnsInstanceReference `json:"dns_instance" validate:"required"`
+	// The DNS instance associated with the DNS zone.
+	Instance *DnsInstanceReference `json:"instance,omitempty"`
 
-	// The name to use for the DNS 'A' records for this load balancer's private IP addresses. The name in mixed-case is
-	// converted to lowercase in the response. Existing DNS records will be re-created with the specified name.
-	Name *string `json:"name" validate:"required"`
+	// The name to use for DNS 'A' records for this load balancer's private IP addresses, replacing any existing records.
+	//
+	// Any uppercase letters will be converted to lowercase.
+	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the DNS zone.
-	Zone *LoadBalancerDnsPatchZone `json:"zone" validate:"required"`
-}
-
-// NewLoadBalancerDnsPatch : Instantiate LoadBalancerDnsPatch (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerDnsPatch(dnsInstance *DnsInstanceReference, name string, zone *LoadBalancerDnsPatchZone) (_model *LoadBalancerDnsPatch, err error) {
-	_model = &LoadBalancerDnsPatch{
-		DnsInstance: dnsInstance,
-		Name:        core.StringPtr(name),
-		Zone:        zone,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
+	Zone *DnsZoneReference `json:"zone,omitempty"`
 }
 
 // UnmarshalLoadBalancerDnsPatch unmarshals an instance of LoadBalancerDnsPatch from the specified map of raw messages.
 func UnmarshalLoadBalancerDnsPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerDnsPatch)
-	err = core.UnmarshalModel(m, "dns_instance", &obj.DnsInstance, UnmarshalDnsInstanceReference)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceReference)
 	if err != nil {
 		return
 	}
@@ -47375,7 +47415,7 @@ func UnmarshalLoadBalancerDnsPatch(m map[string]json.RawMessage, result interfac
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalLoadBalancerDnsPatchZone)
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneReference)
 	if err != nil {
 		return
 	}
@@ -47384,26 +47424,27 @@ func UnmarshalLoadBalancerDnsPatch(m map[string]json.RawMessage, result interfac
 }
 
 // LoadBalancerDnsPrototype : The DNS configuration for this load balancer.
+//
+// If unspecified, DNS will not be configured for this load balancer.
 type LoadBalancerDnsPrototype struct {
-	// The DNS instance to use.
-	//
-	// Specify `null` to remove any existing DNS records.
-	DnsInstance *DnsInstanceReference `json:"dns_instance" validate:"required"`
+	// The DNS instance associated with the DNS zone.
+	Instance *DnsInstanceReference `json:"instance" validate:"required"`
 
-	// The name to use for the DNS 'A' records for this load balancer's private IP addresses. The name in mixed-case is
-	// converted to lowercase in the response.
+	// The name to use for DNS 'A' records for this load balancer's private IP addresses.
+	//
+	// Any uppercase letters will be converted to lowercase.
 	Name *string `json:"name" validate:"required"`
 
 	// The unique identifier of the DNS zone.
-	Zone *LoadBalancerDnsPrototypeZone `json:"zone" validate:"required"`
+	Zone *DnsZoneReference `json:"zone" validate:"required"`
 }
 
 // NewLoadBalancerDnsPrototype : Instantiate LoadBalancerDnsPrototype (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerDnsPrototype(dnsInstance *DnsInstanceReference, name string, zone *LoadBalancerDnsPrototypeZone) (_model *LoadBalancerDnsPrototype, err error) {
+func (*VpcV1) NewLoadBalancerDnsPrototype(instance *DnsInstanceReference, name string, zone *DnsZoneReference) (_model *LoadBalancerDnsPrototype, err error) {
 	_model = &LoadBalancerDnsPrototype{
-		DnsInstance: dnsInstance,
-		Name:        core.StringPtr(name),
-		Zone:        zone,
+		Instance: instance,
+		Name:     core.StringPtr(name),
+		Zone:     zone,
 	}
 	err = core.ValidateStruct(_model, "required parameters")
 	return
@@ -47412,7 +47453,7 @@ func (*VpcV1) NewLoadBalancerDnsPrototype(dnsInstance *DnsInstanceReference, nam
 // UnmarshalLoadBalancerDnsPrototype unmarshals an instance of LoadBalancerDnsPrototype from the specified map of raw messages.
 func UnmarshalLoadBalancerDnsPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerDnsPrototype)
-	err = core.UnmarshalModel(m, "dns_instance", &obj.DnsInstance, UnmarshalDnsInstanceReference)
+	err = core.UnmarshalModel(m, "instance", &obj.Instance, UnmarshalDnsInstanceReference)
 	if err != nil {
 		return
 	}
@@ -47420,73 +47461,7 @@ func UnmarshalLoadBalancerDnsPrototype(m map[string]json.RawMessage, result inte
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalLoadBalancerDnsPrototypeZone)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// LoadBalancerDnsZone : The unique identifier of the DNS zone.
-type LoadBalancerDnsZone struct {
-	ID *string `json:"id" validate:"required"`
-}
-
-// UnmarshalLoadBalancerDnsZone unmarshals an instance of LoadBalancerDnsZone from the specified map of raw messages.
-func UnmarshalLoadBalancerDnsZone(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerDnsZone)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// LoadBalancerDnsPatchZone : The unique identifier of the DNS zone.
-type LoadBalancerDnsPatchZone struct {
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewLoadBalancerDnsPatchZone : Instantiate LoadBalancerDnsPatchZone (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerDnsPatchZone(id string) (_model *LoadBalancerDnsPatchZone, err error) {
-	_model = &LoadBalancerDnsPatchZone{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-// UnmarshalLoadBalancerDnsPatchZone unmarshals an instance of LoadBalancerDnsPatchZone from the specified map of raw messages.
-func UnmarshalLoadBalancerDnsPatchZone(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerDnsPatchZone)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// LoadBalancerDnsPrototypeZone : The unique identifier of the DNS zone.
-type LoadBalancerDnsPrototypeZone struct {
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewLoadBalancerDnsPrototypeZone : Instantiate LoadBalancerDnsPrototypeZone (Generic Model Constructor)
-func (*VpcV1) NewLoadBalancerDnsPrototypeZone(id string) (_model *LoadBalancerDnsPrototypeZone, err error) {
-	_model = &LoadBalancerDnsPrototypeZone{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-// UnmarshalLoadBalancerDnsPrototypeZone unmarshals an instance of LoadBalancerDnsPrototypeZone from the specified map of raw messages.
-func UnmarshalLoadBalancerDnsPrototypeZone(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(LoadBalancerDnsPrototypeZone)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalDnsZoneReference)
 	if err != nil {
 		return
 	}
@@ -49087,6 +49062,8 @@ func UnmarshalLoadBalancerLoggingDatapath(m map[string]json.RawMessage, result i
 // LoadBalancerPatch : LoadBalancerPatch struct
 type LoadBalancerPatch struct {
 	// The DNS configuration for this load balancer.
+	//
+	// Specify `null` to remove any existing DNS records.
 	Dns *LoadBalancerDnsPatch `json:"dns,omitempty"`
 
 	// The logging configuration to use for this load balancer.
@@ -56782,6 +56759,7 @@ type Snapshot struct {
 	CRN *string `json:"crn" validate:"required"`
 
 	// Indicates whether this snapshot can be deleted. This value will always be `true`.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	Deletable *bool `json:"deletable" validate:"required"`
 
 	// The type of encryption used on the source volume.
@@ -63115,7 +63093,7 @@ type VolumeAttachment struct {
 	// The date and time that the volume was attached.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete" validate:"required"`
 
 	// Information about how the volume is exposed to the instance operating system.
@@ -63243,7 +63221,7 @@ func UnmarshalVolumeAttachmentDevice(m map[string]json.RawMessage, result interf
 
 // VolumeAttachmentPatch : VolumeAttachmentPatch struct
 type VolumeAttachmentPatch struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The name for this volume attachment. The name must not be used by another volume attachment on the instance.
@@ -63275,9 +63253,50 @@ func (volumeAttachmentPatch *VolumeAttachmentPatch) AsPatch() (_patch map[string
 	return
 }
 
+// VolumeAttachmentPrototype : VolumeAttachmentPrototype struct
+type VolumeAttachmentPrototype struct {
+	// Indicates whether deleting the instance will also delete the attached volume.
+	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
+
+	// The name for this volume attachment. The name must not be used by another volume attachment on the instance. If
+	// unspecified, the name will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// An existing volume to attach to the instance, or a prototype object for a new volume.
+	Volume VolumeAttachmentPrototypeVolumeIntf `json:"volume" validate:"required"`
+}
+
+// NewVolumeAttachmentPrototype : Instantiate VolumeAttachmentPrototype (Generic Model Constructor)
+func (*VpcV1) NewVolumeAttachmentPrototype(volume VolumeAttachmentPrototypeVolumeIntf) (_model *VolumeAttachmentPrototype, err error) {
+	_model = &VolumeAttachmentPrototype{
+		Volume: volume,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	return
+}
+
+// UnmarshalVolumeAttachmentPrototype unmarshals an instance of VolumeAttachmentPrototype from the specified map of raw messages.
+func UnmarshalVolumeAttachmentPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeAttachmentPrototype)
+	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		return
+	}
+	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeAttachmentPrototypeVolume)
+	if err != nil {
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // VolumeAttachmentPrototypeInstanceByImageContext : VolumeAttachmentPrototypeInstanceByImageContext struct
 type VolumeAttachmentPrototypeInstanceByImageContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The name for this volume attachment. The name must not be used by another volume attachment on the instance. If
@@ -63318,7 +63337,7 @@ func UnmarshalVolumeAttachmentPrototypeInstanceByImageContext(m map[string]json.
 
 // VolumeAttachmentPrototypeInstanceBySourceSnapshotContext : VolumeAttachmentPrototypeInstanceBySourceSnapshotContext struct
 type VolumeAttachmentPrototypeInstanceBySourceSnapshotContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
 
 	// The name for this volume attachment. The name must not be used by another volume attachment on the instance. If
@@ -63350,47 +63369,6 @@ func UnmarshalVolumeAttachmentPrototypeInstanceBySourceSnapshotContext(m map[str
 		return
 	}
 	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumePrototypeInstanceBySourceSnapshotContext)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentPrototypeInstanceContext : VolumeAttachmentPrototypeInstanceContext struct
-type VolumeAttachmentPrototypeInstanceContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
-	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete,omitempty"`
-
-	// The name for this volume attachment. The name must not be used by another volume attachment on the instance. If
-	// unspecified, the name will be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// An existing volume to attach to the instance, or a prototype object for a new volume.
-	Volume VolumeAttachmentVolumePrototypeInstanceContextIntf `json:"volume" validate:"required"`
-}
-
-// NewVolumeAttachmentPrototypeInstanceContext : Instantiate VolumeAttachmentPrototypeInstanceContext (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentPrototypeInstanceContext(volume VolumeAttachmentVolumePrototypeInstanceContextIntf) (_model *VolumeAttachmentPrototypeInstanceContext, err error) {
-	_model = &VolumeAttachmentPrototypeInstanceContext{
-		Volume: volume,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-// UnmarshalVolumeAttachmentPrototypeInstanceContext unmarshals an instance of VolumeAttachmentPrototypeInstanceContext from the specified map of raw messages.
-func UnmarshalVolumeAttachmentPrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentPrototypeInstanceContext)
-	err = core.UnmarshalPrimitive(m, "delete_volume_on_instance_delete", &obj.DeleteVolumeOnInstanceDelete)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "volume", &obj.Volume, UnmarshalVolumeAttachmentVolumePrototypeInstanceContext)
 	if err != nil {
 		return
 	}
@@ -63572,7 +63550,7 @@ func UnmarshalVolumeAttachmentReferenceInstanceContextDeleted(m map[string]json.
 
 // VolumeAttachmentReferenceVolumeContext : VolumeAttachmentReferenceVolumeContext struct
 type VolumeAttachmentReferenceVolumeContext struct {
-	// If set to true, when deleting the instance the volume will also be deleted.
+	// Indicates whether deleting the instance will also delete the attached volume.
 	DeleteVolumeOnInstanceDelete *bool `json:"delete_volume_on_instance_delete" validate:"required"`
 
 	// If present, this property indicates the referenced resource has been deleted, and provides
@@ -63657,103 +63635,6 @@ type VolumeAttachmentReferenceVolumeContextDeleted struct {
 func UnmarshalVolumeAttachmentReferenceVolumeContextDeleted(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentReferenceVolumeContextDeleted)
 	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContext : An existing volume to attach to the instance, or a prototype object for a new volume.
-// Models which "extend" this model:
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext
-type VolumeAttachmentVolumePrototypeInstanceContext struct {
-	// The unique identifier for this volume.
-	ID *string `json:"id,omitempty"`
-
-	// The CRN for this volume.
-	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this volume.
-	Href *string `json:"href,omitempty"`
-
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
-	Iops *int64 `json:"iops,omitempty"`
-
-	// The name for this volume. The name must not be used by another volume in the region. If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) to
-	// use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile,omitempty"`
-
-	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
-	UserTags []string `json:"user_tags,omitempty"`
-
-	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity,omitempty"`
-
-	// The root key to use to wrap the data encryption key for the volume.
-	//
-	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
-	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
-
-	// The snapshot from which to clone the volume.
-	SourceSnapshot SnapshotIdentityIntf `json:"source_snapshot,omitempty"`
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-type VolumeAttachmentVolumePrototypeInstanceContextIntf interface {
-	isaVolumeAttachmentVolumePrototypeInstanceContext() bool
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContext from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContext)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "source_snapshot", &obj.SourceSnapshot, UnmarshalSnapshotIdentity)
 	if err != nil {
 		return
 	}
@@ -71635,7 +71516,7 @@ type InstancePrototypeInstanceByCatalogOffering struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -71723,7 +71604,7 @@ func UnmarshalInstancePrototypeInstanceByCatalogOffering(m map[string]json.RawMe
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -71806,7 +71687,7 @@ type InstancePrototypeInstanceByImage struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -71887,7 +71768,7 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -71970,7 +71851,7 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72048,7 +71929,7 @@ func UnmarshalInstancePrototypeInstanceBySourceSnapshot(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -72127,7 +72008,7 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72220,7 +72101,7 @@ func UnmarshalInstancePrototypeInstanceBySourceTemplate(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -72402,7 +72283,7 @@ type InstanceTemplatePrototypeInstanceByCatalogOffering struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72490,7 +72371,7 @@ func UnmarshalInstanceTemplatePrototypeInstanceByCatalogOffering(m map[string]js
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -72571,7 +72452,7 @@ type InstanceTemplatePrototypeInstanceByImage struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72652,7 +72533,7 @@ func UnmarshalInstanceTemplatePrototypeInstanceByImage(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -72733,7 +72614,7 @@ type InstanceTemplatePrototypeInstanceBySourceSnapshot struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72811,7 +72692,7 @@ func UnmarshalInstanceTemplatePrototypeInstanceBySourceSnapshot(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -72888,7 +72769,7 @@ type InstanceTemplatePrototypeInstanceBySourceTemplate struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -72981,7 +72862,7 @@ func UnmarshalInstanceTemplatePrototypeInstanceBySourceTemplate(m map[string]jso
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -73082,7 +72963,7 @@ type InstanceTemplateInstanceByCatalogOffering struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -73175,7 +73056,7 @@ func UnmarshalInstanceTemplateInstanceByCatalogOffering(m map[string]json.RawMes
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -73268,7 +73149,7 @@ type InstanceTemplateInstanceByImage struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -73354,7 +73235,7 @@ func UnmarshalInstanceTemplateInstanceByImage(m map[string]json.RawMessage, resu
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -73447,7 +73328,7 @@ type InstanceTemplateInstanceBySourceSnapshot struct {
 	UserData *string `json:"user_data,omitempty"`
 
 	// The additional volume attachments to create for the virtual server instance.
-	VolumeAttachments []VolumeAttachmentPrototypeInstanceContext `json:"volume_attachments,omitempty"`
+	VolumeAttachments []VolumeAttachmentPrototype `json:"volume_attachments,omitempty"`
 
 	// The VPC this virtual server instance will reside in.  If specified, it must match the VPC for the subnets of the
 	// instance's network interfaces.
@@ -73530,7 +73411,7 @@ func UnmarshalInstanceTemplateInstanceBySourceSnapshot(m map[string]json.RawMess
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototypeInstanceContext)
+	err = core.UnmarshalModel(m, "volume_attachments", &obj.VolumeAttachments, UnmarshalVolumeAttachmentPrototype)
 	if err != nil {
 		return
 	}
@@ -81035,137 +80916,6 @@ func UnmarshalVolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext(m ma
 	return
 }
 
-// VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity : Identifies a volume by a unique property.
-// Models which "extend" this model:
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContext
-type VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity struct {
-	// The unique identifier for this volume.
-	ID *string `json:"id,omitempty"`
-
-	// The CRN for this volume.
-	CRN *string `json:"crn,omitempty"`
-
-	// The URL for this volume.
-	Href *string `json:"href,omitempty"`
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity) isaVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity() bool {
-	return true
-}
-
-type VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityIntf interface {
-	VolumeAttachmentVolumePrototypeInstanceContextIntf
-	isaVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity() bool
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext : VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext struct
-// Models which "extend" this model:
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity
-// - VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContext
-type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
-	Iops *int64 `json:"iops,omitempty"`
-
-	// The name for this volume. The name must not be used by another volume in the region. If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) to
-	// use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
-	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
-	UserTags []string `json:"user_tags,omitempty"`
-
-	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity,omitempty"`
-
-	// The root key to use to wrap the data encryption key for the volume.
-	//
-	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
-	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
-
-	// The snapshot from which to clone the volume.
-	SourceSnapshot SnapshotIdentityIntf `json:"source_snapshot,omitempty"`
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextIntf interface {
-	VolumeAttachmentVolumePrototypeInstanceContextIntf
-	isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext)
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "source_snapshot", &obj.SourceSnapshot, UnmarshalSnapshotIdentity)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
 // VolumeIdentityByCRN : VolumeIdentityByCRN struct
 // This model "extends" VolumeIdentity
 type VolumeIdentityByCRN struct {
@@ -84244,272 +83994,6 @@ func (*VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumeProtot
 // UnmarshalVolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot unmarshals an instance of VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot from the specified map of raw messages.
 func UnmarshalVolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot)
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "source_snapshot", &obj.SourceSnapshot, UnmarshalSnapshotIdentity)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN : VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN struct
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity
-type VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN struct {
-	// The CRN for this volume.
-	CRN *string `json:"crn" validate:"required"`
-}
-
-// NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN(crn string) (_model *VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN, err error) {
-	_model = &VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN{
-		CRN: core.StringPtr(crn),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN) isaVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity() bool {
-	return true
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByCRN)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref : VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref struct
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity
-type VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref struct {
-	// The URL for this volume.
-	Href *string `json:"href" validate:"required"`
-}
-
-// NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref(href string) (_model *VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref, err error) {
-	_model = &VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref{
-		Href: core.StringPtr(href),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref) isaVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity() bool {
-	return true
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByHref)
-	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID : VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID struct
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity
-type VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID struct {
-	// The unique identifier for this volume.
-	ID *string `json:"id" validate:"required"`
-}
-
-// NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID(id string) (_model *VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID, err error) {
-	_model = &VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID{
-		ID: core.StringPtr(id),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID) isaVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentity() bool {
-	return true
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumeIdentityVolumeIdentityByID)
-	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext
-type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
-	Iops *int64 `json:"iops,omitempty"`
-
-	// The name for this volume. The name must not be used by another volume in the region. If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
-	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
-	UserTags []string `json:"user_tags,omitempty"`
-
-	// The capacity to use for the volume (in gigabytes). The specified minimum and maximum capacity values for creating or
-	// updating volumes may expand in the future.
-	Capacity *int64 `json:"capacity" validate:"required"`
-
-	// The root key to use to wrap the data encryption key for the volume.
-	//
-	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
-	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
-}
-
-// NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(profile VolumeProfileIdentityIntf, capacity int64) (_model *VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity, err error) {
-	_model = &VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity{
-		Profile:  profile,
-		Capacity: core.Int64Ptr(capacity),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeByCapacity)
-	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "user_tags", &obj.UserTags)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "capacity", &obj.Capacity)
-	if err != nil {
-		return
-	}
-	err = core.UnmarshalModel(m, "encryption_key", &obj.EncryptionKey, UnmarshalEncryptionKeyIdentity)
-	if err != nil {
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot : VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct
-// This model "extends" VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext
-type VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot struct {
-	// The maximum I/O operations per second (IOPS) to use for the volume. Applicable only to volumes using a profile
-	// `family` of `custom`.
-	Iops *int64 `json:"iops,omitempty"`
-
-	// The name for this volume. The name must not be used by another volume in the region. If unspecified, the name will
-	// be a hyphenated list of randomly-selected words.
-	Name *string `json:"name,omitempty"`
-
-	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) to use for this volume.
-	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
-
-	// The [user tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags) associated with this volume.
-	UserTags []string `json:"user_tags,omitempty"`
-
-	// The capacity to use for the volume (in gigabytes). Must be at least the snapshot's
-	// `minimum_capacity`. The maximum value may increase in the future.
-	//
-	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
-	Capacity *int64 `json:"capacity,omitempty"`
-
-	// The root key to use to wrap the data encryption key for the volume.
-	//
-	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
-	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
-
-	// The snapshot from which to clone the volume.
-	SourceSnapshot SnapshotIdentityIntf `json:"source_snapshot" validate:"required"`
-}
-
-// NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot : Instantiate VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot (Generic Model Constructor)
-func (*VpcV1) NewVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot(profile VolumeProfileIdentityIntf, sourceSnapshot SnapshotIdentityIntf) (_model *VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot, err error) {
-	_model = &VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot{
-		Profile:        profile,
-		SourceSnapshot: sourceSnapshot,
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	return
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot) isaVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-func (*VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot) isaVolumeAttachmentVolumePrototypeInstanceContext() bool {
-	return true
-}
-
-// UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot unmarshals an instance of VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot from the specified map of raw messages.
-func UnmarshalVolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VolumeAttachmentVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumePrototypeInstanceContextVolumeBySourceSnapshot)
 	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
 	if err != nil {
 		return

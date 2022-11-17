@@ -378,11 +378,11 @@ func lbCreate(d *schema.ResourceData, meta interface{}, name, lbType, rg string,
 		name, _ := dnsMap["name"].(string)
 		zone, _ := dnsMap["zone"].(string)
 		dns := &vpcv1.LoadBalancerDnsPrototype{
-			DnsInstance: &vpcv1.DnsInstanceReference{
+			Instance: &vpcv1.DnsInstanceReference{
 				CRN: &dnsInstance,
 			},
 			Name: &name,
-			Zone: &vpcv1.LoadBalancerDnsPrototypeZone{
+			Zone: &vpcv1.DnsZoneReference{
 				ID: &zone,
 			},
 		}
