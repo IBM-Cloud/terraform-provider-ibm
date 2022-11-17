@@ -88,6 +88,7 @@ func ResourceIBMDLGateway() *schema.Resource {
 							Optional:    true,
 							ForceNew:    false,
 							Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes",
+							Deprecated:  "prefix is deprecated and support will be removed. Use specific_prefixes instead",
 						},
 						dlSpecificPrefixes: {
 							Type:        schema.TypeList,
