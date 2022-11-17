@@ -41,6 +41,13 @@ The `ibm_is_vpn_server` resource provides the following [Timeouts](https://www.t
 ## Argument Reference
 Review the argument references that you can specify for your resource. 
 
+- `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the vpn server.
+
+  ~> **Note:** 
+  **&#x2022;** You can attach only those access tags that already exists.</br>
+  **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
+  **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
+  **&#x2022;** `access_tags` must be in the format `key:value`.
 - `certificate_crn` - (Required, String) The certificate CRN instance from Certificate Manager or CRN of secret from Secrets Manager for this VPN server. As the usage of certificate CRN from Certificate Manager is getting deprecated, it is recommended to use CRN of secret from Secrets Manager. 
 - `client_authentication` - (Required, List) The methods used to authenticate VPN clients to this VPN server.
   
@@ -98,36 +105,25 @@ In addition to all argument references listed, you can access the following attr
 - `vpn_server` - The unique identifier of the VPNServer.
 - `client_auto_delete` - (Boolean) If set to `true`, disconnected VPN clients will be automatically deleted after the `client_auto_delete_timeout` time has passed.
 - `client_auto_delete_timeout` - (Integer) Hours after which disconnected VPN clients will be automatically deleted. If `0`, disconnected VPN clients will be deleted immediately.
-  - Constraints: The maximum value is `24`. The minimum value is `0`.
 - `created_at` - (String) The date and time that the VPN server was created.
 - `crn` - (String) The CRN for this VPN server.
 - `health_state` - (String) The health of this resource.- `ok`: Healthy- `degraded`: Suffering from compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.
-  - Constraints: Allowable values are: ok, degraded, faulted, inapplicable
 - `hostname` - (String) Fully qualified domain name assigned to this VPN server.
 - `href` - (String) The URL for this VPN server.
-  - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`
 - `lifecycle_state` - (String) The lifecycle state of the VPN server.
-  - Constraints: Allowable values are: deleting, failed, pending, stable, updating, waiting, suspended
 - `private_ips` - (List) The reserved IPs bound to this VPN server.
 
   Nested scheme for **private_ips**:
     - `address` - (String) The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-      - Constraints: The value must match regular expression `/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/`
     - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
     Nested scheme for **deleted**:
       - `more_info` - (String) Link to documentation about deleted resources.
-          - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`
     - `href` - (String) The URL for this reserved IP.
-      - Constraints: The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`
     - `id` - (String) The unique identifier for this reserved IP.
-      - Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`
     - `name` - (String) The user-defined or system-provided name for this reserved IP.
-      - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`
     - `resource_type` - (String) The resource type.
-      - Constraints: Allowable values are: subnet_reserved_ip
 
 - `resource_type` - (String) The type of resource referenced.
-  - Constraints: Allowable values are: vpn_server
 - `version` - Version of the VPNServer.
 
 
