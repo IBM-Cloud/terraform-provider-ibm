@@ -342,6 +342,13 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 							Computed:    true,
 							Description: "The globally unique name of the zone this dedicated host resides in.",
 						},
+						isDedicatedHostAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access tags",
+						},
 					},
 				},
 			},
@@ -387,7 +394,7 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 
 		d.SetId(dataSourceIbmIsDedicatedHostsID(d))
 
-		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(allrecs))
+		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(allrecs, meta))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
 		}
@@ -404,15 +411,15 @@ func dataSourceIbmIsDedicatedHostsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceDedicatedHostCollectionFlattenDedicatedHosts(result []vpcv1.DedicatedHost) (dedicatedHosts []map[string]interface{}) {
+func dataSourceDedicatedHostCollectionFlattenDedicatedHosts(result []vpcv1.DedicatedHost, meta interface{}) (dedicatedHosts []map[string]interface{}) {
 	for _, dedicatedHostsItem := range result {
-		dedicatedHosts = append(dedicatedHosts, dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem))
+		dedicatedHosts = append(dedicatedHosts, dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem, meta))
 	}
 
 	return dedicatedHosts
 }
 
-func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpcv1.DedicatedHost) (dedicatedHostsMap map[string]interface{}) {
+func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpcv1.DedicatedHost, meta interface{}) (dedicatedHostsMap map[string]interface{}) {
 	dedicatedHostsMap = map[string]interface{}{}
 
 	if dedicatedHostsItem.AvailableMemory != nil {
@@ -502,6 +509,12 @@ func dataSourceDedicatedHostCollectionDedicatedHostsToMap(dedicatedHostsItem vpc
 	if dedicatedHostsItem.Zone != nil {
 		dedicatedHostsMap["zone"] = *dedicatedHostsItem.Zone.Name
 	}
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHostsItem.CRN, "", isDedicatedHostAccessTagType)
+	if err != nil {
+		log.Printf(
+			"Error on get of resource dedicated host (%s) access tags: %s", *dedicatedHostsItem.ID, err)
+	}
+	dedicatedHostsMap[isDedicatedHostAccessTags] = accesstags
 
 	return dedicatedHostsMap
 }
