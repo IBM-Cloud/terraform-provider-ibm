@@ -100,6 +100,14 @@ func DataSourceIBMISVPC() *schema.Resource {
 				Set:      flex.ResourceIBMVPCHash,
 			},
 
+			isVPCAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
+
 			isVPCCRN: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -385,12 +393,18 @@ func setVpcDetails(d *schema.ResourceData, vpc *vpcv1.VPC, meta interface{}, ses
 		} else {
 			d.Set(isVPCDefaultSecurityGroup, nil)
 		}
-		tags, err := flex.GetTagsUsingCRN(meta, *vpc.CRN)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCUserTagType)
 		if err != nil {
 			log.Printf(
 				"An error occured during reading of vpc (%s) tags : %s", d.Id(), err)
 		}
 		d.Set(isVPCTags, tags)
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *vpc.CRN, "", isVPCAccessTagType)
+		if err != nil {
+			log.Printf(
+				"An error occured during reading of vpc (%s) access tags: %s", d.Id(), err)
+		}
+		d.Set(isVPCAccessTags, accesstags)
 		d.Set(isVPCCRN, *vpc.CRN)
 
 		controller, err := flex.GetBaseController(meta)
