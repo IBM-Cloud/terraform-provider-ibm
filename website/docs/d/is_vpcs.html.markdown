@@ -36,6 +36,7 @@ data "ibm_is_vpcs" "example" {
 You can access the following attribute references after your data source is created. 
 - `vpcs` (List) List of all the VPCs.
   Nested scheme for `vpcs`:
+    - `access_tags`  - (List) Access management tags associated for the volume.
     - `available_ipv4_address_count`- (Integer) The number of IPv4 addresses in the subnet that are available for you to be used.
     - `classic_access`- (Bool) Indicates whether this VPC is connected to the Classic Infrastructure.
     - `crn` - (String) The CRN of the VPC.
