@@ -1261,6 +1261,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
 	}
 
+	_, configurationSet := diff.GetOk("configuration")
+
+	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
+		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	}
+
 	return nil
 }
 
@@ -1674,6 +1680,71 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			err := userUpdateCreate(userEl, instanceID, meta, d)
 			if err != nil {
 				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if config, ok := d.GetOk("configuration"); ok {
+		service := d.Get("service").(string)
+		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
+			var configuration interface{}
+			json.Unmarshal([]byte(config.(string)), &configuration)
+			configPayload := icdv4.ConfigurationReq{Configuration: configuration}
+			task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
+			}
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
+		}
+	}
+
+	if _, ok := d.GetOk("logical_replication_slot"); ok {
+		service := d.Get("service").(string)
+		if service != "databases-for-postgresql" {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
+		}
+
+		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+		}
+
+		_, logicalReplicationList := d.GetChange("logical_replication_slot")
+
+		if logicalReplicationList == nil {
+			logicalReplicationList = new(schema.Set)
+		}
+		add := logicalReplicationList.(*schema.Set).List()
+
+		for _, entry := range add {
+			newEntry := entry.(map[string]interface{})
+			logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
+				Name:         core.StringPtr(newEntry["name"].(string)),
+				DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
+				PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
+			}
+
+			createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+				ID:                     &instanceID,
+				LogicalReplicationSlot: logicalReplicationSlot,
+			}
+
+			createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response))
+			}
+
+			taskID := *createLogicalRepSlotResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
 			}
 		}
 	}
