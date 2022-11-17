@@ -488,6 +488,15 @@ func lbGet(d *schema.ResourceData, meta interface{}, id string) error {
 		}
 		return fmt.Errorf("[ERROR] Error getting Load Balancer : %s\n%s", err, response)
 	}
+	dnsList := make([]map[string]interface{}, 0)
+	if lb.Dns != nil {
+		dns := map[string]interface{}{}
+		dns["instance"] = lb.Dns.Instance.CRN
+		dns["zone"] = lb.Dns.Zone.ID
+		dns["name"] = lb.Dns.Name
+		dnsList = append(dnsList, dns)
+		d.Set("dns", dnsList)
+	}
 	d.Set(isLBName, *lb.Name)
 	if *lb.IsPublic {
 		d.Set(isLBType, "public")
