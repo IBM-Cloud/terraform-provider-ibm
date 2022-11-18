@@ -1232,6 +1232,12 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] node_count, node_memory_allocation_mb, node_disk_allocation_mb, node_cpu_allocation_count only supported for postgresql, elasticsearch and cassandra")
 	}
 
+	_, configurationSet := diff.GetOk("configuration")
+
+	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
+		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	}
+
 	return nil
 }
 
@@ -1673,6 +1679,26 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 				return diag.FromErr(fmt.Errorf(
 					"[ERROR] Error waiting for update of database (%s) user (%s) create task to complete: %s", d.Id(), userEl["name"], err))
 			}
+		}
+	}
+
+	if config, ok := d.GetOk("configuration"); ok {
+		service := d.Get("service").(string)
+		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
+			var configuration interface{}
+			json.Unmarshal([]byte(config.(string)), &configuration)
+			configPayload := icdv4.ConfigurationReq{Configuration: configuration}
+			task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
+			}
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
 		}
 	}
 
