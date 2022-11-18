@@ -88,6 +88,8 @@ github.com/IBM/keyprotect-go-client v0.9.0 h1:UwbyEHcaGlmLNK7PW0qo9VlxneN+0/2zoG
 github.com/IBM/keyprotect-go-client v0.9.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
 github.com/IBM/networking-go-sdk v0.34.0 h1:E8H+v8ipie3vk9w+jvNm8TBeVNrUhqUAKWQOYw9POEc=
 github.com/IBM/networking-go-sdk v0.34.0/go.mod h1:tDJtlySQC/txyejU9KeQ27Amc6xKH0MwHFE/B2+Sn5w=
+github.com/IBM/networking-go-sdk v0.35.0 h1:K7LCXKVF+GhmF2EUaL3vfOvrR2FADb6tv3affXrlPbU=
+github.com/IBM/networking-go-sdk v0.35.0/go.mod h1:tDJtlySQC/txyejU9KeQ27Amc6xKH0MwHFE/B2+Sn5w=
 github.com/IBM/platform-services-go-sdk v0.29.2 h1:eZ5hFVQrVDUxiGztsX7Cz2DmiF3tFSqTe1Ew/lkCSOM=
 github.com/IBM/platform-services-go-sdk v0.29.2/go.mod h1:jy0Ahvj5Gkkua3Gd7t22bo0GfmHRQaPZcaqwfVgEY7k=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
