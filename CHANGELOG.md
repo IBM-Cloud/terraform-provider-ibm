@@ -1,3 +1,54 @@
+# 1.48.0-beta0(Nov 16, 2022)
+Features
+* Support for Powervs
+    - **DataSources**
+        - ibm_pi_disaster_recovery_location
+        - ibm_pi_disaster_recovery_locations
+        - ibm_pi_volume_group
+        - ibm_pi_volume_groups
+        - ibm_pi_volume_group_details
+        - ibm_pi_volume_groups_details
+        - ibm_pi_volume_group_storage_details
+        - ibm_pi_volume_group_remote_copy_relationships
+        - ibm_pi_volume_flash_copy_mappings
+        - ibm_pi_volume_remote_copy_relationship
+        - ibm_pi_volume_onboardings
+        - ibm_pi_volume_onboarding
+    - **Resources**
+        - ibm_pi_volume_onboarding
+        - ibm_pi_volume_group
+        - ibm_pi_volume_group_action
+* Support for KMS
+    - **DataSources**
+        - ibm_kms_instance_policies
+    - **Resources**
+        - ibm_kms_instance_policies
+        - ibm_kms_key_with_policy_overrides
+
+Enhancements
+* Enable cross account KMS boot volume encryption for VPC Cluster ([4128](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4128))
+* Deprecate Whitelist for IBM-cloud-databases and Introduce allowlisting ([3852](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/3852)) 
+* Support wait_till for cluster provisioning with normal state ([4139](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4139)) 
+* Disable/Enable Rotation Policy support for kms key ([4110](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4110)) 
+* Support operating_system argument for cluster workerpool creation ([4133](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4133)) 
+* Update Catalog Management resources and datasoruces with latest API changes ([4126](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4126))
+* Added support for Event streams targets ([4161](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4161))
+* Support Public Ingress Routing for VPC routing table routes ([4157](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4157))
+* Support VPC network acl before rule patch ([4136](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4136))
+* Improvements to the Continuous Delivery resources and datasources for the ga release ([4145](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4145))
+
+Bugfixes
+* Fix endpoint URL via the env variable for KMS resources/datasources ([4120](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4120))
+* Fix docs typo for cloud databases ([4143](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4143))
+* Firewall rules Paused is not reflected only at the first execution ([4142](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4142))
+* set subscription manager release and disable eus for Satellite host script ([4175](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/4175)) 
+
+
+
+# 1.47.1(Nov 08, 2022)
+BUG FIXES
+* Support to add retry fetch of tags using global search API's when we reach ratelimit ([4125](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4125))
+* Fix len out of range for IBM Satellite Cluster host labels ([4149](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4149))
 # 1.47.0(Nov 02, 2022)
 Features
 * Support for Kubernetes Service

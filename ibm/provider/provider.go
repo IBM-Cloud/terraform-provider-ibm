@@ -974,6 +974,7 @@ func Provider() *schema.Provider {
 			"ibm_app_config_segment":                             appconfiguration.ResourceIBMIbmAppConfigSegment(),
 			"ibm_app_config_snapshot":                            appconfiguration.ResourceIBMIbmAppConfigSnapshot(),
 			"ibm_kms_key":                                        kms.ResourceIBMKmskey(),
+			"ibm_kms_key_with_policy_overrides":                  kms.ResourceIBMKmsKeyWithPolicyOverrides(),
 			"ibm_kms_key_alias":                                  kms.ResourceIBMKmskeyAlias(),
 			"ibm_kms_key_rings":                                  kms.ResourceIBMKmskeyRings(),
 			"ibm_kms_key_policies":                               kms.ResourceIBMKmskeyPolicies(),

@@ -36,9 +36,9 @@ Review the argument reference that you can specify for your resource.
 Nested scheme for **parameters**:
 	* `instance_name` - (Required, String) The name of the Key Protect service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (Required, String) The IBM Cloud location where the Key Protect service instance resides.
+	* `location` - (Required, String) The IBM Cloud location where the Key Protect service instance is located.
 	* `name` - (Required, String) The name used to identify this tool integration. Secret references include this name to identify the secrets store where the secrets reside. All secrets store tools integrated into a toolchain should have a unique name to allow secret resolution to function properly.
-	* `resource_group_name` - (Required, String) The name of the resource group where the Key Protect service instance resides.
+	* `resource_group_name` - (Required, String) The name of the resource group where the Key Protect service instance is located.
 * `toolchain_id` - (Required, Forces new resource, String) ID of the toolchain to bind the tool to.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
 
