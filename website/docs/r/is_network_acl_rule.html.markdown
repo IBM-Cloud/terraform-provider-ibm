@@ -118,7 +118,7 @@ resource "ibm_is_network_acl_rule" "example1" {
 Review the argument references that you can specify for your resource.
 
 - `action` - (Required, String) Whether to **allow** or **deny** matching traffic.
-- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If **absent**, this is the last rule. If **omitted**, this rule will be inserted after all existing rules.
+- `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If unspecified, this rule will be inserted after all existing rules. While modifying the resource, specify **"null"** (within double quotes) to move this rule after all existing rules.
 - `destination` - (Required, String) The destination IP address or CIDR block.
 - `direction` - (Required, String) Whether the traffic to be matched is **inbound** or **outbound**.
 - `icmp` - (Optional, List) The protocol ICMP.

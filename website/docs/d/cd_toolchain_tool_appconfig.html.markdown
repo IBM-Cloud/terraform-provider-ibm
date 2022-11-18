@@ -49,9 +49,9 @@ Nested scheme for **parameters**:
 	  * Constraints: The value must match regular expression `/\\S/`.
 	* `instance_id` - (String) The guid of the App Configuration service instance.
 	  * Constraints: The value must match regular expression `/\\S/`.
-	* `location` - (String) The IBM Cloud location where the App Configuration service instance resides.
+	* `location` - (String) The IBM Cloud location where the App Configuration service instance is located.
 	* `name` - (String) The name used to identify this tool integration. App Configuration references include this name to identify the App Configuration instance where the configuration values reside. All App Configuration tools integrated into a toolchain should have a unique name to allow resolution to function properly.
-	* `resource_group_name` - (String) The name of the resource group where the App Configuration service instance resides.
+	* `resource_group_name` - (String) The name of the resource group where the App Configuration service instance is located.
 
 * `referent` - (List) Information on URIs to access this resource through the UI or API.
 Nested scheme for **referent**:

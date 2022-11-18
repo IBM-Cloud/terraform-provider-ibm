@@ -52,7 +52,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: flex.SuppressTriggerPropertyRawSecret,
 				ValidateFunc:     validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "value"),
-				Description:      "Property value.",
+				Description:      "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -70,7 +70,7 @@ func ResourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_cd_tekton_pipeline_trigger_property", "path"),
-				Description:  "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
+				Description:  "A dot notation path for `integration` type properties only, to select a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 		},
 	}
@@ -102,7 +102,7 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[-0-9a-zA-Z_.]{1,234}$`,
+			Regexp:                     `^[-0-9a-zA-Z_.]{1,253}$`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
 		},
@@ -111,8 +111,8 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `.`,
-			MinValueLength:             1,
+			Regexp:                     `^.*$`,
+			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},
 		validate.ValidateSchema{
@@ -127,8 +127,8 @@ func ResourceIBMCdTektonPipelineTriggerPropertyValidator() *validate.ResourceVal
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `.`,
-			MinValueLength:             1,
+			Regexp:                     `^[-0-9a-zA-Z_.]*$`,
+			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},
 	)
