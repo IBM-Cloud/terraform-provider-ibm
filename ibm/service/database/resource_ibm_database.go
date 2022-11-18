@@ -2101,7 +2101,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				}
 
 				// API may return HTTP 204 No Content if no change made
-				if response.StatusCode == 200 {
+				if response.StatusCode == 202 {
 					taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
 
 					_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
