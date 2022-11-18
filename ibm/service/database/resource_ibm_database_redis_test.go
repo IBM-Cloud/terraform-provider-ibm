@@ -176,6 +176,11 @@ func testAccCheckIBMDatabaseInstanceRedisBasic(databaseResourceGroup string, nam
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+		configuration                = <<CONFIGURATION
+		{
+		  "maxmemory-policy": "allkeys-lru"
+		}
+		CONFIGURATION
 	  }
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }

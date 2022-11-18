@@ -1749,6 +1749,26 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
+	if config, ok := d.GetOk("configuration"); ok {
+		service := d.Get("service").(string)
+		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
+			var configuration interface{}
+			json.Unmarshal([]byte(config.(string)), &configuration)
+			configPayload := icdv4.ConfigurationReq{Configuration: configuration}
+			task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
+			}
+			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
+		}
+	}
+
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
 }
 
@@ -2148,7 +2168,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 				}
 
 				// API may return HTTP 204 No Content if no change made
-				if response.StatusCode == 200 {
+				if response.StatusCode == 202 {
 					taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
 
 					_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
