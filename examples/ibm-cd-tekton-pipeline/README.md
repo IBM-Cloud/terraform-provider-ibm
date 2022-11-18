@@ -28,9 +28,12 @@ cd_tekton_pipeline resource:
 
 ```terraform
 resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+  pipeline_id = ibm_cd_toolchain_tool_pipeline.cd_pipeline.tool_id
   enable_notifications = false
   enable_partial_cloning = false
-  worker = var.cd_tekton_pipeline_worker
+  worker {
+    id = "public"
+  }
 }
 ```
 
@@ -169,9 +172,6 @@ data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_
 | toolchain\_description | Description for the Toolchain | `string` | true |
 | clone\_repo | URL of the tekton repo to clone, e.g. `https://github.com/open-toolchain/hello-tekton` | `string` | true |
 | repo\_name | Name of the new repo that will be created in the toolchain | `string` | true |
-| cluster | Name of the cluster where the app will be deployed | `string` | true |
-| cluster_namespace | Namespace in the cluster where the app will be deployed. Default = `prod` | `string` | false |
-| registry_namespace | IBM Cloud Container Registry namespace where the app image will be built and stored | `string` | true |
 
 ## Outputs
 

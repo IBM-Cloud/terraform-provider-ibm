@@ -1,6 +1,7 @@
 // Base resources
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
+  region = var.region
 }
 data "ibm_resource_group" "resource_group" {
   name = var.resource_group
@@ -18,7 +19,7 @@ resource "ibm_cd_toolchain_tool_hostedgit" "tekton_repo" {
   toolchain_id = ibm_cd_toolchain.toolchain_instance.id
   name         = "tekton-repo"
   initialization {
-    type = "clone"
+    type = "clone_if_not_exists"
     source_repo_url = var.clone_repo
     private_repo = false
     repo_name = var.repo_name
