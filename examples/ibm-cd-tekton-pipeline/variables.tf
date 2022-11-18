@@ -30,27 +30,11 @@ variable "region" {
 variable "toolchain_name" {
   type        = string
   description = "Name of the Toolchain"
-  default     = "Simple Helm Toolchain"
+  default     = "Simple Terraform Toolchain"
 }
 
 variable "toolchain_description" {
   type        = string
   description = "Description for the Toolchain"
   default     = "Toolchain created using IBM Cloud Continuous Delivery Service"
-}
-
-variable "cluster" {
-  type        = string
-  description = "The name of your IKS cluster where you will be deploying the sample app"
-}
-
-variable "cluster_namespace" {
-  type        = string
-  description = "The namespace in your cluster where the app will be deployed"
-  default     = "prod"
-}
-
-variable "registry_namespace" {
-  type        = string
-  description = "The IBM Cloud Container Registry namespace where the app image will be built and stored."
 }
