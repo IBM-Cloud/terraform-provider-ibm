@@ -23,9 +23,9 @@ func TestAccSatelliteCluster_Basic(t *testing.T) {
 	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
 	operatingSystem := "REDHAT_7_64"
-	zones := []string{"us-east-1", "us-east-2", "us-east-3"}
+	zones := []string{"us-south-1", "us-south-2", "us-south-3"}
 	resource_group := "default"
-	region := "us-east"
+	region := "us-south"
 	resource_prefix := "tf-satellite"
 	host_provider := "ibm"
 	publicKey := strings.TrimSpace(`
@@ -55,9 +55,9 @@ func TestAccSatelliteCluster_Import(t *testing.T) {
 	locationName := fmt.Sprintf("tf-satellitelocation-%d", acctest.RandIntRange(10, 100))
 	managed_from := "wdc04"
 	operatingSystem := "REDHAT_7_64"
-	zones := []string{"us-east-1", "us-east-2", "us-east-3"}
+	zones := []string{"us-south-1", "us-south-2", "us-south-3"}
 	resource_group := "default"
-	region := "us-east"
+	region := "us-south"
 	resource_prefix := "tf-satellite"
 	host_provider := "ibm"
 	publicKey := strings.TrimSpace(`
@@ -147,14 +147,10 @@ func testAccCheckSatelliteClusterDestroy(s *terraform.State) error {
 func testAccCheckSatelliteClusterCreate(clusterName, locationName, managed_from, operatingSystem, resource_group, resource_prefix, region, publicKey, host_provider string, zones []string) string {
 	return fmt.Sprintf(`
 
-	provider "ibm" {
-		region = "us-east"
-	}
-
 	variable "location_zones" {
 		description = "Allocate your hosts across these three zones"
 		type        = list(string)
-		default     = ["us-east-1", "us-east-2", "us-east-3"]
+		default     = ["us-south-1", "us-south-2", "us-south-3"]
 	}
 
 	data "ibm_is_image" "rhel7" {
