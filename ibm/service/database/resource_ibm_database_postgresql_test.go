@@ -589,6 +589,13 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 			address     = "172.168.1.2/32"
 			description = "desc1"
 		}
+		configuration                = <<CONFIGURATION
+		{
+		  "wal_level": "logical",
+		  "max_replication_slots": 21,
+		  "max_wal_senders": 21
+		}
+		CONFIGURATION
 	}
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
