@@ -41,6 +41,14 @@ func TestAccIBMPIVolumeGroupUpdate(t *testing.T) {
 						"ibm_pi_volume_group.power_volume_group", "pi_volume_group_name", name),
 				),
 			},
+			{
+				Config: testAccCheckIBMPIVolumeGroupEmptyVolumeConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIVolumeGroupExists("ibm_pi_volume_group.power_volume_group"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_volume_group.power_volume_group", "pi_volume_group_name", name),
+				),
+			},
 		},
 	})
 }
@@ -117,6 +125,16 @@ func testAccCheckIBMPIVolumeGroupUpdateConfig(name string) string {
 		pi_volume_group_name       = "%[1]s"
 		pi_cloud_instance_id 	   = "%[2]s"
 		pi_volume_ids              = [ibm_pi_volume.power_volume[2].volume_id]
+	  }
+	`, name, acc.Pi_cloud_instance_id)
+}
+
+func testAccCheckIBMPIVolumeGroupEmptyVolumeConfig(name string) string {
+	return volumeConfig(name, acc.Pi_cloud_instance_id) + fmt.Sprintf(`
+	resource "ibm_pi_volume_group" "power_volume_group"{
+		pi_volume_group_name       = "%[1]s"
+		pi_cloud_instance_id 	   = "%[2]s"
+		pi_volume_ids              = []
 	  }
 	`, name, acc.Pi_cloud_instance_id)
 }
