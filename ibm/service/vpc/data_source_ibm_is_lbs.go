@@ -62,7 +62,7 @@ func DataSourceIBMISLBS() *schema.Resource {
 										Optional:    true,
 										Description: "The name to use for the DNS 'A' records for this load balancer's private IP addresses.",
 									},
-									"zone": {
+									"zone_id": {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "The unique identifier of the DNS zone.",
@@ -323,7 +323,7 @@ func getLbs(d *schema.ResourceData, meta interface{}) error {
 		if lb.Dns != nil {
 			dns := map[string]interface{}{}
 			dns["instance_crn"] = lb.Dns.Instance.CRN
-			dns["zone"] = lb.Dns.Zone.ID
+			dns["zone_id"] = lb.Dns.Zone.ID
 			dns["name"] = lb.Dns.Name
 			dnsList = append(dnsList, dns)
 			lbInfo["dns"] = dnsList

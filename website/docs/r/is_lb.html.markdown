@@ -59,7 +59,7 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `dns`:
   - `instance_crn` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
   - `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
-  - `zone` - (Optional, String) The unique identifier of the DNS zone.
+  - `zone_id` - (Optional, String) The unique identifier of the DNS zone.
 
 - `logging`- (Optional, Bool) Enable or disable datapath logging for the load balancer. This is applicable only for application load balancer. Supported values are **true** or **false**. Default value is **false**.
 - `name` - (Required, String) The name of the VPC load balancer.
