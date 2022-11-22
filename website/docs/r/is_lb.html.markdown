@@ -57,7 +57,7 @@ Review the argument references that you can specify for your resource.
 - `dns` - (Optional, List) The DNS configuration for this load balancer.
 
   Nested scheme for `dns`:
-  - `instance` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
+  - `instance_crn` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
   - `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
   - `zone` - (Optional, String) The unique identifier of the DNS zone.
 

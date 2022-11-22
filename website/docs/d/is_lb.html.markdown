@@ -53,6 +53,13 @@ Review the argument references that you can specify for your data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
 - `crn` - (String) The CRN for this load balancer.
+- `dns` - (Optional, List) The DNS configuration for this load balancer.
+
+  Nested scheme for `dns`:
+  - `instance_crn` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
+  - `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
+  - `zone` - (Optional, String) The unique identifier of the DNS zone.
+
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.
 - `id` - (String) The ID of the load balancer.
 - `listeners` - (String) The ID of the listeners attached to this load balancer.

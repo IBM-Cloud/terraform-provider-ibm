@@ -37,6 +37,12 @@ Review the attribute references that you can access after you retrieve your data
 	- `id` - (String) The unique identifier of the load balancer.
 	- `created_at` - (String) The date and time this load balancer was created.
 	- `crn` - (String) The load balancer's CRN.
+	- `dns` - (Optional, List) The DNS configuration for this load balancer.
+
+		Nested scheme for `dns`:
+		- `instance_crn` - (Optional, String) The CRN of the DNS instance associated with the DNS zone
+		- `name` - (Optional, String) The name to use for DNS 'A' records for this load balancer's private IP addresses.
+		- `zone` - (Optional, String) The unique identifier of the DNS zone.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 

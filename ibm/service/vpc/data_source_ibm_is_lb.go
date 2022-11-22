@@ -56,7 +56,7 @@ func DataSourceIBMISLB() *schema.Resource {
 				Description: "The DNS configuration for this load balancer.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"instance": {
+						"instance_crn": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The CRN for this DNS instance",
@@ -354,7 +354,7 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 			dnsList := make([]map[string]interface{}, 0)
 			if lb.Dns != nil {
 				dns := map[string]interface{}{}
-				dns["instance"] = lb.Dns.Instance.CRN
+				dns["instance_crn"] = lb.Dns.Instance.CRN
 				dns["zone"] = lb.Dns.Zone.ID
 				dns["name"] = lb.Dns.Name
 				dnsList = append(dnsList, dns)
