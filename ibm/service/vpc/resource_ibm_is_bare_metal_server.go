@@ -238,9 +238,10 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Description: "The URL for this network interface",
 						},
 						isBareMetalServerNicEnableInfraNAT: {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
+							Type:     schema.TypeBool,
+							Default:  true,
+							Optional: true,
+							// Computed:    true,
 							Description: "If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations.",
 						},
 						isBareMetalServerNicInterfaceType: {
@@ -370,9 +371,10 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Description: "The URL for this network interface",
 						},
 						isBareMetalServerNicEnableInfraNAT: {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
+							Type:     schema.TypeBool,
+							Default:  true,
+							Optional: true,
+							// Computed:    true,
 							Description: "If true, the VPC infrastructure performs any needed NAT operations. If false, the packet is passed unmodified to/from the network interface, allowing the workload to perform any needed NAT operations.",
 						},
 						isBareMetalServerNicInterfaceType: {
