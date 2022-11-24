@@ -45,6 +45,18 @@ data "ibm_dl_ports" "test_ds_dl_ports" {
  
  }
 resource "ibm_dl_gateway" "test_dl_connect" {
+  as_prepends {
+    length            = 3
+    policy            = "import"
+    specific_prefixes = ["10.10.9.0/24"]
+  }
+
+  as_prepends {
+    length            = 3
+    policy            = "export"
+    specific_prefixes = ["10.10.9.0/24","10.10.10.0/24"]
+  }
+
   bgp_asn =  64999
   global = true
   metered = false
@@ -63,7 +75,8 @@ Review the argument reference that you can specify for your resource.
   Nested scheme for `as_prepend`:
   - `length` - (Required, Integer ) Number of times the ASN to appended to the AS Path.
   - `policy` - (Required, String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
-  - `prefix` - (Optional, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
+  - `prefix` - (Optional, Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes. prefix will be deprecated and support will be removed. Use specific_prefixes instead
+  - `specific_prefixes` - (Optional, Array of Strings) Array of prefixes this AS Prepend applies to. If this property is absent, the AS Prepend applies to all prefixes.
   
 - `authentication_key` - (Optional, String) BGP MD5 authentication key.
 - `bfd_interval` - (String) Minimum interval in milliseconds at which the local routing device transmits hello packets and then expects to receive a reply from a neighbor with which it has established a BFD session.

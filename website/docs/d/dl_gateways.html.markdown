@@ -36,7 +36,8 @@ You can access the following attribute references after your data source is crea
     - `id` - (String) The unique identifier for this AS Prepend.
     - `length` - (Integer) Number of times the ASN to appended to the AS Path.
     - `policy` - (String) Route type this AS Prepend applies to. Possible values are `import` and `export`.
-    - `prefix` - (String, Optional) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
+    - `prefix` - (Deprecated, String) Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.
+    - `specific_prefixes` - (Array of Strings) Array of prefixes this AS Prepend applies to. 
     - `updated_at`- (String) The date and time AS Prepend was updated
 
   - `authentication_key` - (String) BGP MD5 authentication key.
