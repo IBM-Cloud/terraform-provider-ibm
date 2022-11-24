@@ -62,7 +62,7 @@ resource "ibm_is_security_group_rule" "example2" {
 
 resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
-  direction = "inbound"
+  direction = "outbound"
   remote    = "127.0.0.1"
   tcp {
     port_min = 8080
