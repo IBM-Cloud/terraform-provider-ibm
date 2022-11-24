@@ -29,7 +29,7 @@ resource "ibm_is_vpc" "example" {
   name = "example-vpc"
 }
 
-resource "ibm_is_security_group" "example_security_group" {
+resource "ibm_is_security_group" "example" {
   name = "example-security-group"
   vpc  = ibm_is_vpc.example.id
 }
@@ -71,7 +71,7 @@ resource "ibm_is_security_group_rule" "example3" {
 }
 
 resource "ibm_is_security_group_rule" "example_security_group_rule_icmp_any" {
-  group      = ibm_is_security_group.example_security_group.id
+  group      = ibm_is_security_group.example.id
   direction  = "inbound"
   remote     = "127.0.0.1"
   icmp {
@@ -79,7 +79,7 @@ resource "ibm_is_security_group_rule" "example_security_group_rule_icmp_any" {
 }
 
 resource "ibm_is_security_group_rule" "example_security_group_rule_udp_any" {
-  group      = ibm_is_security_group.example_security_group.id
+  group      = ibm_is_security_group.example.id
   direction  = "inbound"
   remote     = "127.0.0.1"
   udp {
@@ -87,7 +87,7 @@ resource "ibm_is_security_group_rule" "example_security_group_rule_udp_any" {
 }
 
 resource "ibm_is_security_group_rule" "example_security_group_rule_tcp_any" {
-  group      = ibm_is_security_group.example_security_group.id
+  group      = ibm_is_security_group.example.id
   direction  = "inbound"
   remote     = "127.0.0.1"
   tcp {
