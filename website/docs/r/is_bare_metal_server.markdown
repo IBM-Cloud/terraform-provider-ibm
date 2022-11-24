@@ -97,12 +97,12 @@ Review the argument references that you can specify for your resource.
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**
-    a bare metal server can take up to 30 mins to clean up on delete, replacement/re-creation using the same name may return error
+    A bare metal server can take up to 30 mins to clean up on delete, replacement/re-creation using the same name may return error
 
-- `network_interfaces` - (Optional, List) The additional network interfaces to create for the bare metal server to this bare metal server. Use `ibm_is_bare_metal_server_network_interface` &  `ibm_is_bare_metal_server_network_interface_allow_float` resource for network interfaces.
+- `network_interfaces` - (Optional, List) The additional network interfaces to create for the bare metal server to this bare metal server. Use `ibm_is_bare_metal_server_network_interface` & `ibm_is_bare_metal_server_network_interface_allow_float` resource for network interfaces.
 
   ~> **NOTE:**
-    creating network interfaces both inline with `ibm_is_bare_metal_server` & as a separate `ibm_is_bare_metal_server_network_interface` resource, will show change alternatively on both resources, to avoid this use `ibm_is_bare_metal_server_network_interface` for creating network interfaces.
+    Creating network interfaces both inline with `ibm_is_bare_metal_server` & as a separate `ibm_is_bare_metal_server_network_interface` resource, will show change alternatively on both resources, to avoid this; Use `ibm_is_bare_metal_server_network_interface` as recommended resource for creating network interfaces.
   
   Nested scheme for `network_interfaces`:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface. [default : `false`]
