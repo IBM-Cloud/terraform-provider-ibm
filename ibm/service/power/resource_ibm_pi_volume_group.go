@@ -220,6 +220,7 @@ func resourceIBMPIVolumeGroupDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	d.SetId("")
 	return nil
 }
 func isWaitForIBMPIVolumeGroupAvailable(ctx context.Context, client *st.IBMPIVolumeGroupClient, id string, timeout time.Duration) (interface{}, error) {
