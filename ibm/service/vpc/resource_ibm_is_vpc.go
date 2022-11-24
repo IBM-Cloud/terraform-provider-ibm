@@ -379,6 +379,13 @@ func ResourceIBMISVPCValidator() *validate.ResourceValidator {
 			AllowedValues:              address_prefix_management})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "is",
+			CloudDataRange:             []string{"service:vpc", "resolved_to:id"}})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
 			Identifier:                 isVPCName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,

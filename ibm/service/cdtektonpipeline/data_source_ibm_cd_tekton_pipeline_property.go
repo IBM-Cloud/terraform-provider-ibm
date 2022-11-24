@@ -38,7 +38,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Property value.",
+				Description: "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -56,7 +56,7 @@ func DataSourceIBMCdTektonPipelineProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A dot notation path for `integration` type properties to select a value from the tool integration.",
+				Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 		},
 	}

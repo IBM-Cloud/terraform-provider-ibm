@@ -66,6 +66,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
+	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	iamaccessgroups "github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
@@ -216,6 +217,7 @@ type ClientSession interface {
 	GlobalSearchAPI() (globalsearchv2.GlobalSearchServiceAPI, error)
 	GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServiceAPI, error)
 	GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error)
+	GlobalSearchAPIV2() (searchv2.GlobalSearchV2, error)
 	ICDAPI() (icdv4.ICDServiceAPI, error)
 	CloudDatabasesV5() (*clouddatabasesv5.CloudDatabasesV5, error)
 	IAMPolicyManagementV1API() (*iampolicymanagement.IamPolicyManagementV1, error)
@@ -342,6 +344,9 @@ type clientSession struct {
 
 	globalTaggingConfigErrV1  error
 	globalTaggingServiceAPIV1 globaltaggingv1.GlobalTaggingV1
+
+	globalSearchConfigErrV2  error
+	globalSearchServiceAPIV2 searchv2.GlobalSearchV2
 
 	ibmCloudShellClient    *ibmcloudshellv1.IBMCloudShellV1
 	ibmCloudShellClientErr error
@@ -679,6 +684,11 @@ func (sess clientSession) GlobalTaggingAPI() (globaltaggingv3.GlobalTaggingServi
 // GlobalTaggingAPIV1 provides Platform-go Global Tagging  APIs ...
 func (sess clientSession) GlobalTaggingAPIv1() (globaltaggingv1.GlobalTaggingV1, error) {
 	return sess.globalTaggingServiceAPIV1, sess.globalTaggingConfigErrV1
+}
+
+// GlobalSearchAPIV2 provides Platform-go Global Search  APIs ...
+func (sess clientSession) GlobalSearchAPIV2() (searchv2.GlobalSearchV2, error) {
+	return sess.globalSearchServiceAPIV2, sess.globalSearchConfigErrV2
 }
 
 // HpcsEndpointAPI provides Hpcs Endpoint generator APIs ...
@@ -1886,6 +1896,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.globalTaggingServiceAPIV1 = *globalTaggingAPIV1
 		session.globalTaggingServiceAPIV1.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.globalTaggingServiceAPIV1.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	// GLOBAL TAGGING Service
+	globalSearchEndpoint := "https://api.global-search-tagging.cloud.ibm.com"
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		globalSearchEndpoint = ContructEndpoint("api.private", fmt.Sprintf("global-search-tagging.%s", cloudEndpoint))
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		globalSearchEndpoint = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_GS_API_ENDPOINT", c.Region, searchv2.DefaultServiceURL)
+	}
+	globalSearchV2Options := &searchv2.GlobalSearchV2Options{
+		URL:           EnvFallBack([]string{"IBMCLOUD_GS_API_ENDPOINT"}, globalSearchEndpoint),
+		Authenticator: authenticator,
+	}
+	globalSearchAPIV2, err := searchv2.NewGlobalSearchV2(globalSearchV2Options)
+	if err != nil {
+		session.globalTaggingConfigErrV1 = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
+	}
+	if globalSearchAPIV2 != nil && globalSearchAPIV2.Service != nil {
+		session.globalSearchServiceAPIV2 = *globalSearchAPIV2
+		session.globalSearchServiceAPIV2.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.globalSearchServiceAPIV2.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}

@@ -43,7 +43,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"value": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Property value. Can be empty and should be omitted for `single_select` property type.",
+				Description: "Property value. Any string value is valid.",
 			},
 			"enum": &schema.Schema{
 				Type:        schema.TypeList,
@@ -61,7 +61,7 @@ func DataSourceIBMCdTektonPipelineTriggerProperty() *schema.Resource {
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A dot notation path for `integration` type properties to select a value from the tool integration. If left blank the full tool integration data will be used.",
+				Description: "A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.",
 			},
 		},
 	}

@@ -288,6 +288,13 @@ func DataSourceIBMISVpcValidator() *validate.ResourceValidator {
 			Identifier:                 isVPCName,
 			ValidateFunctionIdentifier: validate.ValidateNoZeroValues,
 			Type:                       validate.TypeString})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "is",
+			CloudDataRange:             []string{"service:vpc", "resolved_to:id"}})
 
 	ibmISVpcDataSourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_vpc", Schema: validateSchema}
 	return &ibmISVpcDataSourceValidator
