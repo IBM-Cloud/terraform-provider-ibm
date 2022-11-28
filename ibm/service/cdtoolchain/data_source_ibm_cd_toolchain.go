@@ -81,14 +81,6 @@ func DataSourceIBMCdToolchain() *schema.Resource {
 				Computed:    true,
 				Description: "Identity that created the toolchain.",
 			},
-			"tags": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Tags associated with the toolchain.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 		},
 	}
 }
