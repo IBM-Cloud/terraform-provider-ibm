@@ -1717,9 +1717,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 		_, logicalReplicationList := d.GetChange("logical_replication_slot")
 
-		if logicalReplicationList == nil {
-			logicalReplicationList = new(schema.Set)
-		}
 		add := logicalReplicationList.(*schema.Set).List()
 
 		for _, entry := range add {
