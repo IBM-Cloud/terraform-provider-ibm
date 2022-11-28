@@ -241,53 +241,6 @@ func FlattenUsersSet(userList *schema.Set) []string {
 	return users
 }
 
-func ExpandProtocols(configured []interface{}) ([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, error) {
-	protocols := make([]datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration, 0, len(configured))
-	var lbMethodToId = make(map[string]string)
-	for _, lRaw := range configured {
-		data := lRaw.(map[string]interface{})
-		p := &datatypes.Network_LBaaS_LoadBalancerProtocolConfiguration{
-			FrontendProtocol: sl.String(data["frontend_protocol"].(string)),
-			BackendProtocol:  sl.String(data["backend_protocol"].(string)),
-			FrontendPort:     sl.Int(data["frontend_port"].(int)),
-			BackendPort:      sl.Int(data["backend_port"].(int)),
-		}
-		if v, ok := data["session_stickiness"]; ok && v.(string) != "" {
-			p.SessionType = sl.String(v.(string))
-		}
-		if v, ok := data["max_conn"]; ok && v.(int) != 0 {
-			p.MaxConn = sl.Int(v.(int))
-		}
-		if v, ok := data["tls_certificate_id"]; ok && v.(int) != 0 {
-			p.TlsCertificateId = sl.Int(v.(int))
-		}
-		if v, ok := data["load_balancing_method"]; ok {
-			p.LoadBalancingMethod = sl.String(lbMethodToId[v.(string)])
-		}
-		if v, ok := data["protocol_id"]; ok && v.(string) != "" {
-			p.ListenerUuid = sl.String(v.(string))
-		}
-
-		var isValid bool
-		if p.TlsCertificateId != nil && *p.TlsCertificateId != 0 {
-			// validate the protocol is correct
-			if *p.FrontendProtocol == "HTTPS" {
-				isValid = true
-			}
-		} else {
-			isValid = true
-		}
-
-		if isValid {
-			protocols = append(protocols, *p)
-		} else {
-			return protocols, fmt.Errorf("tls_certificate_id may be set only when frontend protocol is 'HTTPS'")
-		}
-
-	}
-	return protocols, nil
-}
-
 func ExpandMembers(configured []interface{}) []datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo {
 	members := make([]datatypes.Network_LBaaS_LoadBalancerServerInstanceInfo, 0, len(configured))
 	for _, lRaw := range configured {
