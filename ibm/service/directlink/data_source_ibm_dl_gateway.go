@@ -106,6 +106,12 @@ func DataSourceIBMDLGateway() *schema.Resource {
 							Computed:    true,
 							Description: "Comma separated list of prefixes this AS Prepend applies to. Maximum of 10 prefixes. If not specified, this AS Prepend applies to all prefixes.",
 						},
+						dlSpecificPrefixes: {
+							Type:        schema.TypeList,
+							Description: "Array of prefixes this AS Prepend applies to",
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 						dlUpdatedAt: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -493,6 +499,7 @@ func dataSourceIBMDLGatewayRead(d *schema.ResourceData, meta interface{}) error 
 					asPrependItem[dlResourceId] = asPrepend.ID
 					asPrependItem[dlLength] = asPrepend.Length
 					asPrependItem[dlPrefix] = asPrepend.Prefix
+					asPrependItem[dlSpecificPrefixes] = asPrepend.SpecificPrefixes
 					asPrependItem[dlPolicy] = asPrepend.Policy
 					asPrependItem[dlCreatedAt] = asPrepend.CreatedAt.String()
 					asPrependItem[dlUpdatedAt] = asPrepend.UpdatedAt.String()

@@ -25,6 +25,7 @@ In addition to all argument references listed, you can access the following attr
 - `id` - The unique identifier of the VolumeCollection.
 - `volumes` - (List) Collection of volumes.
 	Nested scheme for **volumes**:
+	- `access_tags`  - (List) Access management tags associated for the volume.
 	- `active` - (Boolean) Indicates whether a running virtual server instance has an attachment to this volume.
 	- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume.
 	- `busy` - (Boolean) Indicates whether this volume is performing an operation that must be serialized. If an operation specifies that it requires serialization, the operation will fail unless this property is `false`.
