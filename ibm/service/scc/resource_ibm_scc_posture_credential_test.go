@@ -77,10 +77,6 @@ func testAccCheckIBMSccPostureCredentialsConfigBasic(enabled string, typeVar str
 				ibm_api_key = "sample_api_key"
 				
 			}
-			group {
-				id = "1"
-				passphrase = "passphrase"
-			}
 			purpose = "%s"
 		}
 	`, enabled, typeVar, name, description, purpose)

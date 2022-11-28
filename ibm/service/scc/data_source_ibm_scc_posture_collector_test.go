@@ -23,7 +23,6 @@ func TestAccIBMSccPostureCollectorDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "display_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "status"),
-					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "enabled"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "registration_code"),
 					resource.TestCheckResourceAttrSet("data.ibm_scc_posture_collector.collector", "type"),
