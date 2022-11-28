@@ -83,6 +83,7 @@ func ResourceIBMCdTektonPipelineDefinition() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"id": &schema.Schema{
 													Type:        schema.TypeString,
+													Optional:    true,
 													Computed:    true,
 													Description: "ID of the repository tool instance in the parent toolchain.",
 												},
