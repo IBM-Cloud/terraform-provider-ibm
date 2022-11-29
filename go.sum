@@ -90,12 +90,8 @@ github.com/IBM/ibm-hpcs-uko-sdk v0.0.4 h1:B3FEq830k/B7HjQqvQubxmz8PxOUvKYD2ZypDq
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.4/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.9.0 h1:UwbyEHcaGlmLNK7PW0qo9VlxneN+0/2zoGBubHzbtro=
 github.com/IBM/keyprotect-go-client v0.9.0/go.mod h1:yr8h2noNgU8vcbs+vhqoXp3Lmv73PI0zAc6VMgFvWwM=
-github.com/IBM/networking-go-sdk v0.35.0 h1:K7LCXKVF+GhmF2EUaL3vfOvrR2FADb6tv3affXrlPbU=
-github.com/IBM/networking-go-sdk v0.35.0/go.mod h1:tDJtlySQC/txyejU9KeQ27Amc6xKH0MwHFE/B2+Sn5w=
 github.com/IBM/networking-go-sdk v0.36.0 h1:ADntTsRM8DMZOxS9TYGTAL6i0zw9V2L7OeLFd9Czntk=
 github.com/IBM/networking-go-sdk v0.36.0/go.mod h1:tDJtlySQC/txyejU9KeQ27Amc6xKH0MwHFE/B2+Sn5w=
-github.com/IBM/platform-services-go-sdk v0.29.2 h1:eZ5hFVQrVDUxiGztsX7Cz2DmiF3tFSqTe1Ew/lkCSOM=
-github.com/IBM/platform-services-go-sdk v0.29.2/go.mod h1:jy0Ahvj5Gkkua3Gd7t22bo0GfmHRQaPZcaqwfVgEY7k=
 github.com/IBM/platform-services-go-sdk v0.31.0 h1:XRSGejb/uMqNi2C5F28Q8x4jmVyXlRRE8cJCSwXBsPU=
 github.com/IBM/platform-services-go-sdk v0.31.0/go.mod h1:jy0Ahvj5Gkkua3Gd7t22bo0GfmHRQaPZcaqwfVgEY7k=
 github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5 h1:NPUhkoOCRuv3OFWt19PmwjXGGTKlvmbuPg9fUrBUNe4=
