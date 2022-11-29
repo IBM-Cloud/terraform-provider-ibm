@@ -42,7 +42,6 @@ In addition to all argument references listed, you can access the following attr
 * `crn` - (String) Toolchain CRN.
 * `href` - (String) URI that can be used to retrieve toolchain.
 * `location` - (String) Toolchain region.
-* `tags` - (List) Tags associated with the toolchain.
 * `ui_href` - (String) URL of a user-facing user interface for this toolchain.
 * `updated_at` - (String) Latest toolchain update timestamp.
 
