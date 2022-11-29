@@ -43,6 +43,7 @@ In addition to all argument references listed, you can access the following attr
 - `floating_ips` - (List) Collection of floating IPs.
   
     Nested scheme for **floating_ips**:
+	- `access_tags`  - (String) Access management tags associated for the floating ip.
     - `address` - (String) The globally unique IP address.
     - `created_at` - (String) The date and time that the floating IP was created.
     - `crn` - (String) The CRN for this floating IP.

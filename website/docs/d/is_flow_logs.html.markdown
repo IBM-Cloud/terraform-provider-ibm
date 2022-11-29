@@ -36,6 +36,7 @@ Review the attribute references that you can access after you retrieve your data
 - `flow_log_collectors` - (List) Lists all the flow logs in the IBM Cloud.
 
   Nested scheme for `flow_log_collectors`:
+    - `access_tags` - (String) Access management tags associated for flow log.
 	- `active` - (String) Indicates whether the collector is active.
 	- `created_at` - (Timestamp) The date and time the flow log created.
 	- `crn` - (String) The CRN of the flow log collector.

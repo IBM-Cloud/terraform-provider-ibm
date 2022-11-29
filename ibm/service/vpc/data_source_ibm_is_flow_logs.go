@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -83,6 +84,21 @@ func DataSourceIBMISFlowLogs() *schema.Resource {
 							Computed:    true,
 							Description: "The VPC this flow log collector is associated with",
 						},
+						isFlowLogTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "Tags for the VPC Flow logs",
+						},
+
+						isFlowLogAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access management tags",
+						},
 					},
 				},
 			},
@@ -119,18 +135,32 @@ func dataSourceIBMISFlowLogsRead(d *schema.ResourceData, meta interface{}) error
 		targetIntf := flowlogCollector.Target
 		target := targetIntf.(*vpcv1.FlowLogCollectorTarget)
 
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc flow log (%s) tags: %s", d.Id(), err)
+		}
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *flowlogCollector.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource VPC Flow Log (%s) access tags: %s", d.Id(), err)
+		}
+
 		l := map[string]interface{}{
-			"id":              *flowlogCollector.ID,
-			"crn":             *flowlogCollector.CRN,
-			"href":            *flowlogCollector.Href,
-			"name":            *flowlogCollector.Name,
-			"resource_group":  *flowlogCollector.ResourceGroup.ID,
-			"created_at":      flowlogCollector.CreatedAt.String(),
-			"lifecycle_state": *flowlogCollector.LifecycleState,
-			"storage_bucket":  *flowlogCollector.StorageBucket.Name,
-			"active":          *flowlogCollector.Active,
-			"vpc":             *flowlogCollector.VPC.ID,
-			"target":          *target.ID,
+			"id":                *flowlogCollector.ID,
+			"crn":               *flowlogCollector.CRN,
+			"href":              *flowlogCollector.Href,
+			"name":              *flowlogCollector.Name,
+			"resource_group":    *flowlogCollector.ResourceGroup.ID,
+			"created_at":        flowlogCollector.CreatedAt.String(),
+			"lifecycle_state":   *flowlogCollector.LifecycleState,
+			"storage_bucket":    *flowlogCollector.StorageBucket.Name,
+			"active":            *flowlogCollector.Active,
+			"vpc":               *flowlogCollector.VPC.ID,
+			"target":            *target.ID,
+			isFlowLogTags:       tags,
+			isFlowLogAccessTags: accesstags,
 		}
 		flowlogsInfo = append(flowlogsInfo, l)
 	}

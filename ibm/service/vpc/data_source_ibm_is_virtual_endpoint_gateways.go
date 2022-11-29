@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -127,6 +128,20 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 							Computed:    true,
 							Description: "The VPC id",
 						},
+						isVirtualEndpointGatewayTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of tags for VPE",
+						},
+						isVirtualEndpointGatewayAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "List of access management tags",
+						},
 					},
 				},
 			},
@@ -171,12 +186,24 @@ func dataSourceIBMISEndpointGatewaysRead(d *schema.ResourceData, meta interface{
 		endpointGatewayOutput[isVirtualEndpointGatewayVpcID] = *endpointGateway.VPC.ID
 		endpointGatewayOutput[isVirtualEndpointGatewayTarget] =
 			flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget))
-		endpointGatewayOutput[isVirtualEndpointGatewayIPs] =
-			flattenDataSourceIPs(endpointGateway.Ips)
 		if endpointGateway.SecurityGroups != nil {
 			endpointGatewayOutput[isVirtualEndpointGatewaySecurityGroups] =
 				flattenDataSourceSecurityGroups(endpointGateway.SecurityGroups)
 		}
+		endpointGatewayOutput[isVirtualEndpointGatewayIPs] =
+			flattenDataSourceIPs(endpointGateway.Ips)
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of VPE (%s) tags: %s", d.Id(), err)
+		}
+		endpointGatewayOutput[isVirtualEndpointGatewayTags] = tags
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *endpointGateway.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of VPE (%s) access tags: %s", d.Id(), err)
+		}
+		endpointGatewayOutput[isVirtualEndpointGatewayAccessTags] = accesstags
 		endpointGateways = append(endpointGateways, endpointGatewayOutput)
 	}
 	d.SetId(dataSourceIBMISEndpointGatewaysCheckID(d))
