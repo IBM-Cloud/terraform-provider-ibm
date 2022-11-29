@@ -33,15 +33,8 @@ In addition to all argument references listed, you can access the following attr
 	- `client_authentication` - (List) The methods used to authenticate VPN clients to this VPN server. VPN clients must authenticate against all provided methods.		
 		Nested scheme for `client_authentication`:
 		- `method` - (String) The type of authentication.
-		- `identity_provider` - (List) The type of identity provider to be used by VPN client.
-			
-			Nested scheme for `identity_provider`:
-			- `provider_type` - (String) The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+		- `identity_provider` - (List) The type of identity provider to be used by VPN client. The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
 		- `client_ca` - (List) The certificate instance used for the VPN client certificate authority (CA).
-			
-			Nested scheme for `client_ca`:
-			- `crn` - (String) The CRN for this certificate instance.
-		- `crl` - (String) The certificate revocation list contents, encoded in PEM format.
 	- `client_auto_delete` - (Boolean) If set to `true`, disconnected VPN clients will be automatically deleted after the `client_auto_delete_timeout` time has passed.
 	- `client_auto_delete_timeout` - (Integer) Hours after which disconnected VPN clients will be automatically deleted. If `0`, disconnected VPN clients will be deleted immediately.
 	- `client_dns_server_ips` - (List) The DNS server addresses that will be provided to VPN clients that are connected to this VPN server.
@@ -103,3 +96,15 @@ In addition to all argument references listed, you can access the following attr
 		- `id` - (String) The unique identifier for this subnet.
 		- `name` - (String) The user-defined name for this subnet.
 		- `resource_type` - (Required, String) The resource type.
+
+- `vpc` - (List) The VPC this VPN server resides in.
+
+	Nested scheme for `vpc`:
+	- `crn` - (String) The CRN for this VPC.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+		
+		Nested scheme for `deleted`:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this VPC.
+	- `id` - (String) The unique identifier for this vpc.
+	- `name` - (String) The name for this VPC. The name is unique across all VPCs in the region.
