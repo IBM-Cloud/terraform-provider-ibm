@@ -39,6 +39,11 @@ func ResourceIBMCmObject() *schema.Resource {
 				Required:    true,
 				Description: "The programmatic name of this object.",
 			},
+			"kind": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Kind of object. Options are \"vpe\", \"preset_configuration\", or \"proxy_source\".",
+			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -91,11 +96,6 @@ func ResourceIBMCmObject() *schema.Resource {
 				Optional:    true,
 				Description: "A map of translated strings, by language code.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"kind": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Kind of object.",
 			},
 			"publish": &schema.Schema{
 				Type:        schema.TypeList,
