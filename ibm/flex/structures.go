@@ -2042,12 +2042,6 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 // }
 
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
-
-	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
-	}
-
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return nil, err
