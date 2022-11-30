@@ -2067,23 +2067,11 @@ func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType s
 			ListTagsOptions.AccountID = PtrToString(accountID)
 		}
 	}
-	taggingResult, _, err := gtClient.ListTags(ListTagsOptions)
+	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
 	if err != nil {
-		if strings.Contains(err.Error(), "Too Many Requests") {
-			temp, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
-			if err != nil {
-				return nil, err
-			}
-			return temp, nil
-		}
 		return nil, err
 	}
-	var taglist []string
-	for _, item := range taggingResult.Items {
-		taglist = append(taglist, *item.Name)
-	}
-	log.Println("tagList: ", taglist)
-	return NewStringSet(ResourceIBMVPCHash, taglist), nil
+	return taggingResult, nil
 }
 
 func GetGlobalTagsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
