@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -208,8 +207,8 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(acccountID, acctID)
 		}
 	}
-	
-	tagList, err = flex.GetGlobalTagsUsingSearchAPI(meta, rID, rType, tType)
+
+	tagList, err := flex.GetGlobalTagsUsingSearchAPI(meta, rID, rType, tType)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
 	}
