@@ -208,21 +208,10 @@ func resourceIBMResourceTagRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set(acccountID, acctID)
 		}
 	}
-	tagList, err := flex.GetGlobalTagsUsingCRN(meta, rID, rType, tType)
+	
+	tagList, err = flex.GetGlobalTagsUsingSearchAPI(meta, rID, rType, tType)
 	if err != nil {
-		if apierr, ok := err.(bmxerror.RequestFailure); ok && apierr.StatusCode() == 404 {
-			d.SetId("")
-			return nil
-		} else if strings.Contains(err.Error(), "Too Many Requests") {
-
-			tagList, err = flex.GetGlobalTagsUsingSearchAPI(meta, rID, rType, tType)
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
-			}
-		} else {
-			return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
-		}
-
+		return fmt.Errorf("[ERROR] Error getting resource tags for: %s with error : %s", rID, err)
 	}
 
 	d.Set(resourceID, rID)
