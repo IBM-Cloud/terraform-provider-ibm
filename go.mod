@@ -54,8 +54,9 @@ require (
 	k8s.io/client-go v0.25.0
 )
 
+require github.com/IBM/go-sdk-core/v3 v3.2.4
+
 require (
-	github.com/IBM/go-sdk-core/v3 v3.2.4 // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
