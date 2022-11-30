@@ -7,25 +7,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMCmObjectDataSourceSimpleArgs(t *testing.T) {
-	catalogObjectName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	catalogObjectParentID := fmt.Sprintf("tf_parent_id_%d", acctest.RandIntRange(10, 100))
-	catalogObjectLabel := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
-	catalogObjectShortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
-	catalogObjectKind := "preset_configuration"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCmObjectDataSourceConfig(catalogObjectName, catalogObjectParentID, catalogObjectLabel, catalogObjectShortDescription, catalogObjectKind),
+				Config: testAccCheckIBMCmObjectDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_cm_object.cm_object", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_object.cm_object", "catalog_id"),
@@ -48,25 +41,11 @@ func TestAccIBMCmObjectDataSourceSimpleArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMCmObjectDataSourceConfig(catalogObjectName string, catalogObjectParentID string, catalogObjectLabel string, catalogObjectShortDescription string, catalogObjectKind string) string {
+func testAccCheckIBMCmObjectDataSourceConfig() string {
 	return fmt.Sprintf(`
-		resource "ibm_cm_catalog" "cm_catalog" {
-			label = "tf_provider_obj_test"
-			kind = "preset_configuration"
-		}
-
-		resource "ibm_cm_object" "cm_object" {
-			catalog_id = ibm_cm_catalog.cm_catalog.id
-			name = "%s"
-			parent_id = "%s"
-			label = "%s"
-			short_description = "%s"
-			kind = "%s"
-		}
-
 		data "ibm_cm_object" "cm_object" {
-			catalog_id = ibm_cm_object.cm_object.catalog_id
-			object_id = ibm_cm_object.cm_object.id
+			catalog_id = "28bece25-9615-448d-b449-204552f47ff6"
+			object_id = "28bece25-9615-448d-b449-204552f47ff6-provider_test_obj"
 		}
-	`, catalogObjectName, catalogObjectParentID, catalogObjectLabel, catalogObjectShortDescription, catalogObjectKind)
+	`)
 }
