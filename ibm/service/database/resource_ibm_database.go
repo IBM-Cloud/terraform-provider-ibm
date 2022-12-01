@@ -501,12 +501,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Required:    true,
 						},
 						"database_name": {
-							Description: "Logical Replication Slot name",
+							Description: "Database Name",
 							Type:        schema.TypeString,
 							Required:    true,
 						},
 						"plugin_type": {
-							Description: "Logical Replication Slot name",
+							Description: "Plugin Type",
 							Type:        schema.TypeString,
 							Required:    true,
 						},
