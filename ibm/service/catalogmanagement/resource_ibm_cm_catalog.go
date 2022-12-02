@@ -98,6 +98,8 @@ func ResourceIBMCmCatalog() *schema.Resource {
 			"resource_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
+				ForceNew:    true,
 				Description: "Resource group id the catalog is owned by.",
 			},
 			"owning_account": &schema.Schema{
