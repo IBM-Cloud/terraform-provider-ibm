@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/bluemix-go/api/icd/icdv4"
@@ -747,6 +748,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(instance.Crn.String()))
 
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
 	icdClient, err := meta.(conns.ClientSession).ICDAPI()
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
@@ -774,11 +780,16 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	d.Set("members_memory_allocation_mb", groupList.Groups[0].Memory.AllocationMb)
 	d.Set("members_disk_allocation_mb", groupList.Groups[0].Disk.AllocationMb)
 
-	autoSclaingGroup, err := icdClient.AutoScaling().GetAutoScaling(icdId, "member")
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      &instance.ID,
+		GroupID: core.StringPtr("member"),
 	}
-	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
+
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s", err)
+	}
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
 
 	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
 	if err != nil {
@@ -786,7 +797,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instance.ID,
 	}
