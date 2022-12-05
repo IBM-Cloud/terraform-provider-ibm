@@ -103,8 +103,8 @@ Review the argument references that you can specify for your resource.
 
   ~> **NOTE:**
     IBM Cloud terraform provider currently provides both a standalone `ibm_is_bare_metal_server_network_interface` resource and a `network_interfaces` defined in `ibm_is_bare_metal_server` resource to provision a network interface for bare metal. </br>
-    Creating network interfaces both inline with `ibm_is_bare_metal_server` & as a separate `ibm_is_bare_metal_server_network_interface` resource, will show change alternatively on both resources, to avoid this; Use `ibm_is_bare_metal_server_network_interface` as recommended resource for creating network interfaces.
-  
+    Creating `network_interface` inline with `ibm_is_bare_metal_server` in conjunction with the standalone resource `ibm_is_bare_metal_server_network_interface` resource, will create conflicting states in terraform, to avoid this; Use `ibm_is_bare_metal_server_network_interface` as recommended resource for creating network interfaces.
+
   Nested scheme for `network_interfaces`:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface. [default : `false`]
     - `allowed_vlans` - (Optional, Array) Comma separated VLANs, Indicates what VLAN IDs (for VLAN type only) can use this physical (`PCI` type) interface. A given VLAN can only be in the `allowed_vlans` array for one PCI type adapter per bare metal server.  [ conflicts with `vlan`]
@@ -163,7 +163,7 @@ In addition to all argument reference list, you can access the following attribu
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
-- `network_interfaces` - (List) The additional network interfaces to create for the bare metal server to this bare metal server. 
+- `network_interfaces` - (List) The additional network interfaces for this bare metal server. 
   
   Nested scheme for `network_interfaces`:
     - `allow_ip_spoofing` - (Boolean) Indicates whether IP spoofing is allowed on this interface. If false, IP spoofing is prevented on this interface. If true, IP spoofing is allowed on this interface.
