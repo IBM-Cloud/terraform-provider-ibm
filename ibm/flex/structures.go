@@ -1606,14 +1606,15 @@ func FlattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[str
 }
 
 // IBM Cloud Databases
-func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.AllowlistEntry) {
+func ExpandAllowlist(allowList *schema.Set) (entries []clouddatabasesv5.AllowlistEntry) {
+	entries = make([]clouddatabasesv5.AllowlistEntry, 0, len(allowList.List()))
 	for _, iface := range allowList.List() {
 		alItem := iface.(map[string]interface{})
 		alEntry := &clouddatabasesv5.AllowlistEntry{
 			Address:     core.StringPtr(alItem["address"].(string)),
 			Description: core.StringPtr(alItem["description"].(string)),
 		}
-		allowlist = append(allowlist, *alEntry)
+		entries = append(entries, *alEntry)
 	}
 	return
 }
@@ -1621,12 +1622,12 @@ func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.Allowl
 // IBM Cloud Databases
 func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]interface{} {
 	entries := make([]map[string]interface{}, 0, len(allowlist))
-	for _, allowlistEntry := range allowlist {
-		ip := map[string]interface{}{
-			"address":     allowlistEntry.Address,
-			"description": allowlistEntry.Description,
+	for _, ip := range allowlist {
+		entry := map[string]interface{}{
+			"address":     ip.Address,
+			"description": ip.Description,
 		}
-		entries = append(entries, ip)
+		entries = append(entries, entry)
 	}
 	return entries
 }

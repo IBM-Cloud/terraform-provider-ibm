@@ -1570,10 +1570,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if hasWhitelist || hasAllowlist {
 		var ipAddresses *schema.Set
-		if hasAllowlist {
-			ipAddresses = d.Get("allowlist").(*schema.Set)
-		} else {
+		if hasWhitelist {
 			ipAddresses = d.Get("whitelist").(*schema.Set)
+		} else {
+			ipAddresses = d.Get("allowlist").(*schema.Set)
 		}
 
 		entries := flex.ExpandAllowlist(ipAddresses)
@@ -1870,22 +1870,21 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
 	_, hasWhitelist := d.GetOk("whitelist")
-	_, hasAllowlist := d.GetOk("allowlist")
 
-	if hasAllowlist || hasWhitelist {
-		alEntry := &clouddatabasesv5.GetAllowlistOptions{
-			ID: &instanceID,
-		}
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: &instanceID,
+	}
 
-		allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
-		}
-		if hasWhitelist {
-			d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
-		} else if hasAllowlist {
-			d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
-		}
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
+	}
+
+	if hasWhitelist {
+		d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	} else {
+		d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	}
 
 	var connectionStrings []flex.CsEntry
@@ -2240,6 +2239,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 
 		allowlistEntries := flex.ExpandAllowlist(entries.(*schema.Set))
+
 		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
 			ID:          &instanceID,
 			IPAddresses: allowlistEntries,
