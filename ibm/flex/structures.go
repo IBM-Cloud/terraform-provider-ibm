@@ -1606,53 +1606,28 @@ func FlattenremoteSubnet(vpn *datatypes.Network_Tunnel_Module_Context) []map[str
 }
 
 // IBM Cloud Databases
-func ExpandWhitelist(whiteList *schema.Set) (whitelist []icdv4.WhitelistEntry) {
-	for _, iface := range whiteList.List() {
-		wlItem := iface.(map[string]interface{})
-		wlEntry := icdv4.WhitelistEntry{
-			Address:     wlItem["address"].(string),
-			Description: wlItem["description"].(string),
-		}
-		whitelist = append(whitelist, wlEntry)
-	}
-	return
-}
-
-// IBM Cloud Databases
-func ExpandAllowlist(allowList *schema.Set) (allowlist []clouddatabasesv5.AllowlistEntry) {
+func ExpandAllowlist(allowList *schema.Set) (entries []clouddatabasesv5.AllowlistEntry) {
+	entries = make([]clouddatabasesv5.AllowlistEntry, 0, len(allowList.List()))
 	for _, iface := range allowList.List() {
 		alItem := iface.(map[string]interface{})
 		alEntry := &clouddatabasesv5.AllowlistEntry{
 			Address:     core.StringPtr(alItem["address"].(string)),
 			Description: core.StringPtr(alItem["description"].(string)),
 		}
-		allowlist = append(allowlist, *alEntry)
+		entries = append(entries, *alEntry)
 	}
 	return
 }
 
-// Cloud Internet Services
-func FlattenWhitelist(whitelist icdv4.Whitelist) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(whitelist.WhitelistEntrys), len(whitelist.WhitelistEntrys))
-	for i, whitelistEntry := range whitelist.WhitelistEntrys {
-		l := map[string]interface{}{
-			"address":     whitelistEntry.Address,
-			"description": whitelistEntry.Description,
+// IBM Cloud Databases
+func FlattenAllowlist(allowlist []clouddatabasesv5.AllowlistEntry) []map[string]interface{} {
+	entries := make([]map[string]interface{}, 0, len(allowlist))
+	for _, ip := range allowlist {
+		entry := map[string]interface{}{
+			"address":     ip.Address,
+			"description": ip.Description,
 		}
-		entries[i] = l
-	}
-	return entries
-}
-
-// Cloud Internet Services
-func FlattenGetAllowlist(allowlist clouddatabasesv5.GetAllowlistResponse) []map[string]interface{} {
-	entries := make([]map[string]interface{}, len(allowlist.IPAddresses), len(allowlist.IPAddresses))
-	for i, allowlistEntry := range allowlist.IPAddresses {
-		l := map[string]interface{}{
-			"address":     allowlistEntry.Address,
-			"description": allowlistEntry.Description,
-		}
-		entries[i] = l
+		entries = append(entries, entry)
 	}
 	return entries
 }
