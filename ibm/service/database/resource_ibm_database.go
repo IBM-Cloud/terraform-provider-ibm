@@ -1565,57 +1565,38 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-	if wl, ok := d.GetOk("whitelist"); ok {
-		whitelist := flex.ExpandWhitelist(wl.(*schema.Set))
-		for _, wlEntry := range whitelist {
-			whitelistReq := icdv4.WhitelistReq{
-				WhitelistEntry: icdv4.WhitelistEntry{
-					Address:     wlEntry.Address,
-					Description: wlEntry.Description,
-				},
-			}
-			task, err := icdClient.Whitelists().CreateWhitelist(icdId, whitelistReq)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database whitelist entry: %s", err))
-			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", icdId, err))
-			}
-		}
-	} else if al, ok := d.GetOk("allowlist"); ok {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	_, hasWhitelist := d.GetOk("whitelist")
+	_, hasAllowlist := d.GetOk("allowlist")
 
+	if hasWhitelist || hasAllowlist {
+		var ipAddresses *schema.Set
+		if hasAllowlist {
+			ipAddresses = d.Get("allowlist").(*schema.Set)
+		} else {
+			ipAddresses = d.Get("whitelist").(*schema.Set)
+		}
+
+		entries := flex.ExpandAllowlist(ipAddresses)
+
+		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
+			ID:          &instanceID,
+			IPAddresses: entries,
+		}
+
+		setAllowlistResponse, _, err := cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database allowlists: %s", err))
 		}
 
-		add := flex.ExpandAllowlist(al.(*schema.Set))
-		for _, entry := range add {
-			holdEntry := &clouddatabasesv5.AllowlistEntry{
-				Address:     core.StringPtr(*entry.Address),
-				Description: core.StringPtr(*entry.Description),
-			}
-			alEntry := &clouddatabasesv5.AddAllowlistEntryOptions{
-				ID:        &instanceID,
-				IPAddress: holdEntry,
-			}
-			addAllowListResponse, _, err := cloudDatabasesClient.AddAllowlistEntry(alEntry)
+		taskId := *setAllowlistResponse.Task.ID
 
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error updating database allowlist entry: (%s)", err))
-			}
-
-			taskID := *addAllowListResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
-			}
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
 		}
 	}
+
 	if cpuRecord, ok := d.GetOk("auto_scaling.0.cpu"); ok {
 		params := icdv4.AutoscalingSetGroup{}
 		cpuBody, err := expandICDAutoScalingGroup(d, cpuRecord, "cpu")
@@ -1632,8 +1613,8 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 			return diag.FromErr(fmt.Errorf(
 				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", icdId, err))
 		}
-
 	}
+
 	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
 		params := icdv4.AutoscalingSetGroup{}
 		diskBody, err := expandICDAutoScalingGroup(d, diskRecord, "disk")
@@ -1888,14 +1869,10 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	if _, ok := d.GetOk("whitelist"); ok {
-		whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database whitelist: %s", err))
-		}
-		d.Set("whitelist", flex.FlattenWhitelist(whitelist))
-	} else {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	_, hasWhitelist := d.GetOk("whitelist")
+	_, hasAllowlist := d.GetOk("allowlist")
+
+	if hasAllowlist || hasWhitelist {
 		alEntry := &clouddatabasesv5.GetAllowlistOptions{
 			ID: &instanceID,
 		}
@@ -1904,7 +1881,11 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database allowlist: %s", err))
 		}
-		d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
+		if hasWhitelist {
+			d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
+		} else if hasAllowlist {
+			d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+		}
 	}
 
 	var connectionStrings []flex.CsEntry
@@ -2242,177 +2223,43 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		}
 	}
 
-	_, whitelistExists := d.GetOk("whitelist")
+	if d.HasChange("whitelist") || d.HasChange("allowlist") {
+		_, hasAllowlist := d.GetOk("allowlist")
+		_, hasWhitelist := d.GetOk("whitelist")
 
-	if whitelistExists && d.HasChange("whitelist") {
-		oldList, newList := d.GetChange("whitelist")
-		oldAllowList, newAllowList := d.GetChange("allowlist")
+		var entries interface{}
 
-		if oldList == nil {
-			oldList = new(schema.Set)
-		}
-		if newList == nil {
-			newList = new(schema.Set)
-		}
-
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		osw := oldAllowList.(*schema.Set)
-		nsw := newAllowList.(*schema.Set)
-
-		// If the whitelist is empty but allowlist is not, that means
-		// we are migrating from whitelist to allowlist
-		if os.Len() == 0 && osw.Len() > 0 {
-			os = osw
-		}
-		if ns.Len() == 0 && nsw.Len() > 0 {
-			ns = nsw
+		if hasWhitelist {
+			_, entries = d.GetChange("whitelist")
+		} else if hasAllowlist {
+			_, entries = d.GetChange("allowlist")
 		}
 
-		remove := os.Difference(ns).List()
-		add := ns.Difference(os).List()
-
-		if len(add) > 0 {
-			for _, entry := range add {
-				newEntry := entry.(map[string]interface{})
-				wlEntry := icdv4.WhitelistEntry{
-					Address:     newEntry["address"].(string),
-					Description: newEntry["description"].(string),
-				}
-				whitelistReq := icdv4.WhitelistReq{
-					WhitelistEntry: wlEntry,
-				}
-				task, err := icdClient.Whitelists().CreateWhitelist(icdId, whitelistReq)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error updating database whitelist entry %v : %s", wlEntry.Address, err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) whitelist create task to complete for entry %s : %s", icdId, wlEntry.Address, err))
-				}
-
-			}
-
+		if entries == nil {
+			entries = new(schema.Set)
 		}
 
-		if len(remove) > 0 {
-			for _, entry := range remove {
-				newEntry := entry.(map[string]interface{})
-				wlEntry := icdv4.WhitelistEntry{
-					Address:     newEntry["address"].(string),
-					Description: newEntry["description"].(string),
-				}
-				ipAddress := wlEntry.Address
-				task, err := icdClient.Whitelists().DeleteWhitelist(icdId, ipAddress)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error deleting database whitelist entry: %s", err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) whitelist delete task to complete for ipAddress %s : %s", icdId, ipAddress, err))
-				}
-
-			}
+		allowlistEntries := flex.ExpandAllowlist(entries.(*schema.Set))
+		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
+			ID:          &instanceID,
+			IPAddresses: allowlistEntries,
 		}
-	} else if d.HasChange("allowlist") {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 
+		setAllowlistResponse, _, err := cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database allowlist entry: %s", err))
 		}
 
-		oldList, newList := d.GetChange("allowlist")
-		oldWhiteList, newWhiteList := d.GetChange("whitelist")
+		taskId := *setAllowlistResponse.Task.ID
 
-		if oldList == nil {
-			oldList = new(schema.Set)
-		}
-		if newList == nil {
-			newList = new(schema.Set)
-		}
-
-		// If the allowlist is empty but whitelist is not, that means
-		// we are migrating from allowlist to whitelist
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		osw := oldWhiteList.(*schema.Set)
-		nsw := newWhiteList.(*schema.Set)
-
-		if os.Len() == 0 && osw.Len() > 0 {
-			os = osw
-		}
-		if ns.Len() == 0 && nsw.Len() > 0 {
-			ns = nsw
-		}
-		remove := os.Difference(ns).List()
-		add := ns.Difference(os).List()
-
-		if len(add) > 0 {
-			for _, entry := range add {
-				newEntry := entry.(map[string]interface{})
-				holdEntry := &clouddatabasesv5.AllowlistEntry{
-					Address:     core.StringPtr(newEntry["address"].(string)),
-					Description: core.StringPtr(newEntry["description"].(string)),
-				}
-				alEntry := &clouddatabasesv5.AddAllowlistEntryOptions{
-					ID:        &instanceID,
-					IPAddress: holdEntry,
-				}
-				addAllowListResponse, response, err := cloudDatabasesClient.AddAllowlistEntry(alEntry)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error updating database allowlist entry (%s) failed %s\n%s", *addAllowListResponse.Task.Description, err, response))
-				}
-
-				taskID := *addAllowListResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) allowlist add task to complete for ipAddress %s : %s", instanceID, *addAllowListResponse.Task.Description, err))
-				}
-
-			}
-
-		}
-
-		if len(remove) > 0 {
-			for _, entry := range remove {
-				newEntry := entry.(map[string]interface{})
-				holdEntry := &clouddatabasesv5.AllowlistEntry{
-					Address:     core.StringPtr(newEntry["address"].(string)),
-					Description: core.StringPtr(newEntry["description"].(string)),
-				}
-				alEntry := &clouddatabasesv5.DeleteAllowlistEntryOptions{
-					ID:        &instanceID,
-					Ipaddress: holdEntry.Address,
-				}
-
-				deleteAllowListResponse, response, err := cloudDatabasesClient.DeleteAllowlistEntry(alEntry)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] DeleteAllowlistEntry (%s) failed %s\n%s", *deleteAllowListResponse.Task.Description, err, response))
-				}
-
-				taskID := *deleteAllowListResponse.Task.ID
-				_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) allowlist delete task to complete for ipAddress %s : %s", instanceID, *deleteAllowListResponse.Task.Description, err))
-				}
-
-			}
+		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for update of database (%s) whitelist task to complete: %s", instanceID, err))
 		}
 	}
 
 	if d.HasChange("users") {
-		cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-		}
-
 		oldUsers, newUsers := d.GetChange("users")
 		userChanges := make(map[string]*userChange)
 		userKey := func(raw map[string]interface{}) string {

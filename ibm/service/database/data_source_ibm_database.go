@@ -752,6 +752,11 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
 	icdId := flex.EscapeUrlParm(instance.ID)
 	cdb, err := icdClient.Cdbs().GetCdb(icdId)
 	if err != nil {
@@ -780,13 +785,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 	}
 	d.Set("auto_scaling", flattenICDAutoScalingGroup(autoSclaingGroup))
 
-	whitelist, err := icdClient.Whitelists().GetWhitelist(icdId)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database whitelist: %s", err)
-	}
-	d.Set("whitelist", flex.FlattenWhitelist(whitelist))
-
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	alEntry := &clouddatabasesv5.GetAllowlistOptions{
 		ID: &instance.ID,
 	}
@@ -797,7 +795,8 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
 	}
 
-	d.Set("allowlist", flex.FlattenGetAllowlist(*allowlist))
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	d.Set("whitelist", flex.FlattenAllowlist(allowlist.IPAddresses))
 
 	connectionEndpoint := "public"
 	if instance.Parameters != nil {
