@@ -105,27 +105,27 @@ func ResourceIBMCmObject() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"permit_ibm_public_publish": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
+							Computed:    true,
 							Description: "Is it permitted to request publishing to IBM or Public.",
 						},
 						"ibm_approved": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
+							Computed:    true,
 							Description: "Indicates if this offering has been approved for use by all IBMers.",
 						},
 						"public_approved": &schema.Schema{
 							Type:        schema.TypeBool,
-							Optional:    true,
+							Computed:    true,
 							Description: "Indicates if this offering has been approved for use by all IBM Cloud users.",
 						},
 						"portal_approval_record": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The portal's approval record ID.",
 						},
 						"portal_url": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "The portal UI URL.",
 						},
 					},
@@ -139,27 +139,27 @@ func ResourceIBMCmObject() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"current": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 						"current_entered": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date and time of current request.",
 						},
 						"pending": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 						"pending_requested": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "Date and time of pending request.",
 						},
 						"previous": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true,
 							Description: "one of: new, validated, account-published, ibm-published, public-published.",
 						},
 					},
