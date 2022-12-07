@@ -591,7 +591,7 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	switch timeoutStage {
 
 	case strings.ToLower(clusterNormal):
-		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed}
+		pendingStates := []string{clusterDeploying, clusterRequested, clusterPending, clusterDeployed, clusterCritical}
 		_, err = waitForVpcClusterState(d, meta, clusterNormal, pendingStates)
 		if err != nil {
 			return err
