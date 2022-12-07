@@ -84,7 +84,7 @@ func ResourceIbmVault() *schema.Resource {
 				Computed:    true,
 				Description: "A URL that uniquely identifies your cloud resource.",
 			},
-			"version": &schema.Schema{
+			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -100,7 +100,7 @@ func ResourceIbmVaultValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			Regexp:                     `^[A-Za-z][A-Za-z0-9#@!$% '_-]*$`,
+			Regexp:                     `^[A-Za-z0-9#@!$%'_-][A-Za-z0-9#@!$% '_-]*$`,
 			MinValueLength:             1,
 			MaxValueLength:             100,
 		},
@@ -116,9 +116,11 @@ func ResourceIbmVaultValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `(.|\\n)*`,
-			MinValueLength:             0,
-			MaxValueLength:             200,
+			Regexp:                     `(.|\n)*`,
+			// TODO: Old regex, in case there are problems
+			// Regexp:                     `(.|\\n)*`,
+			MinValueLength: 0,
+			MaxValueLength: 200,
 		},
 	)
 
@@ -213,8 +215,8 @@ func ResourceIbmVaultRead(context context.Context, d *schema.ResourceData, meta 
 	if err = d.Set("href", vault.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
 	}
-	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting etag: %s", err))
 	}
 
 	return nil
@@ -252,7 +254,7 @@ func ResourceIbmVaultUpdate(context context.Context, d *schema.ResourceData, met
 	}
 
 	// Etag support
-	updateVaultOptions.SetIfMatch(d.Get("version").(string))
+	updateVaultOptions.SetIfMatch(d.Get("etag").(string))
 
 	if hasChange {
 		_, response, err := ukoClient.UpdateVaultWithContext(context, updateVaultOptions)
@@ -274,7 +276,7 @@ func ResourceIbmVaultDelete(context context.Context, d *schema.ResourceData, met
 	deleteVaultOptions := &ukov4.DeleteVaultOptions{}
 
 	// Etag support
-	deleteVaultOptions.SetIfMatch(d.Get("version").(string))
+	deleteVaultOptions.SetIfMatch(d.Get("etag").(string))
 
 	id := strings.Split(d.Id(), "/")
 	region := id[0]

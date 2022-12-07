@@ -46,6 +46,37 @@ func ResourceIbmKeystore() *schema.Resource {
 				ForceNew:    true,
 				Description: "The UUID of the Vault in which the update is to take place.",
 			},
+			"dry_run": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Do not create a keystore, only verify if keystore created with given parameters can be communciated with successfully.",
+			},
+			"google_credentials": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The value of the JSON key represented in the Base64 format.",
+			},
+			"google_location": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Location represents the geographical region where a Cloud KMS resource is stored and can be accessed. A key's location impacts the performance of applications using the key.",
+			},
+			"google_project_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The project id associated with this keystore.",
+			},
+			"google_private_key_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The private key id associated with this keystore.",
+			},
+			"google_key_ring": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A key ring organizes keys in a specific Google Cloud location and allows you to manage access control on groups of keys.",
+			},
 			"aws_region": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -164,6 +195,11 @@ func ResourceIbmKeystore() *schema.Resource {
 				Optional:    true,
 				Description: "Name of the target keystore. It can be changed in the future.",
 			},
+			"location": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Geographic location of the keystore, if available.",
+			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -205,7 +241,9 @@ func ResourceIbmKeystore() *schema.Resource {
 				Computed:    true,
 				Description: "A URL that uniquely identifies your cloud resource.",
 			},
-			"version": &schema.Schema{
+			// TODO: double check this
+			//"version": &schema.Schema{
+			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -254,6 +292,9 @@ func ResourceIbmKeystoreCreate(context context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	createKeystoreOptions.SetKeystoreBody(keystoreBodyModel)
+	if _, ok := d.GetOk("dry_run"); ok {
+		createKeystoreOptions.SetDryRun(d.Get("dry_run").(bool))
+	}
 
 	keystoreIntf, response, err := ukoClient.CreateKeystoreWithContext(context, createKeystoreOptions)
 	if err != nil {
@@ -316,6 +357,9 @@ func ResourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, me
 	if err = d.Set("name", keystore.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
 	}
+	if err = d.Set("location", keystore.Location); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting location: %s", err))
+	}
 	if err = d.Set("description", keystore.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
@@ -341,6 +385,21 @@ func ResourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, me
 	}
 	if err = d.Set("href", keystore.Href); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+	}
+	if err = d.Set("google_credentials", keystore.GoogleCredentials); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting google_credentials: %s", err))
+	}
+	if err = d.Set("google_location", keystore.GoogleLocation); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting google_location: %s", err))
+	}
+	if err = d.Set("google_project_id", keystore.GoogleProjectID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting google_project_id: %s", err))
+	}
+	if err = d.Set("google_private_key_id", keystore.GooglePrivateKeyID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting google_private_key_id: %s", err))
+	}
+	if err = d.Set("google_key_ring", keystore.GoogleKeyRing); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting google_key_ring: %s", err))
 	}
 	if err = d.Set("aws_region", keystore.AwsRegion); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting aws_region: %s", err))
@@ -393,8 +452,8 @@ func ResourceIbmKeystoreRead(context context.Context, d *schema.ResourceData, me
 	if err = d.Set("ibm_key_ring", keystore.IbmKeyRing); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting ibm_key_ring: %s", err))
 	}
-	if err = d.Set("version", response.Headers.Get("Etag")); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting etag: %s", err))
 	}
 
 	return nil
@@ -429,11 +488,19 @@ func ResourceIbmKeystoreUpdate(context context.Context, d *schema.ResourceData, 
 	if d.HasChange("uko_vault") || DHasChanges(d) {
 		updateKeystoreOptions.SetUKOVault(d.Get("uko_vault").(string))
 		keystoreBody := ukov4.KeystoreUpdateRequestIntf(DKeystoreToKeystoreBodyUpdate(d))
-		updateKeystoreOptions.SetKeystoreBody(keystoreBody)
+		// TODO: Not sure about this one
+		// updateKeystoreOptions.SetKeystoreBody(keystoreBody)
+		updateKeystoreOptions.SetKeystoreBodyPatch(keystoreBody)
 		hasChange = true
 	}
 
-	updateKeystoreOptions.SetIfMatch(d.Get("version").(string))
+	if d.HasChange("dry_run") {
+		updateKeystoreOptions.SetDryRun(d.Get("dry_run").(bool))
+		hasChange = true
+	}
+	updateKeystoreOptions.SetIfMatch(d.Get("etag").(string))
+	// TODO: in case you switch back to version
+	// updateKeystoreOptions.SetIfMatch(d.Get("version").(string))
 
 	if hasChange {
 		_, response, err := ukoClient.UpdateKeystoreWithContext(context, updateKeystoreOptions)
@@ -486,7 +553,9 @@ func ResourceIbmKeystoreDelete(context context.Context, d *schema.ResourceData, 
 func ResourceIbmKeystoreMapToKeystoreCreationRequest(modelMap map[string]interface{}) (ukov4.KeystoreCreationRequestIntf, error) {
 	discValue, ok := modelMap["type"]
 	if ok {
-		if discValue == "aws_kms" {
+		if discValue == "google_kms" {
+			return resourceIbmHpcsKeystoreMapToKeystoreCreationRequestKeystoreTypeGoogleKmsCreate(modelMap)
+		} else if discValue == "aws_kms" {
 			return ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAwsKmsCreate(modelMap)
 		} else if discValue == "azure_key_vault" {
 			return ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAzureCreate(modelMap)
@@ -515,7 +584,7 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAwsKmsCreate(mod
 	}
 	model.Vault = VaultModel
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["description"] != nil {
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["groups"] != nil {
@@ -531,19 +600,16 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAwsKmsCreate(mod
 	return model, nil
 }
 
-func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreate(modelMap map[string]interface{}) (ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateIntf, error) {
-	model := &ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreate{}
+func resourceIbmHpcsKeystoreMapToKeystoreCreationRequestKeystoreTypeGoogleKmsCreate(modelMap map[string]interface{}) (*ukov4.KeystoreCreationRequestKeystoreTypeGoogleKmsCreate, error) {
+	model := &ukov4.KeystoreCreationRequestKeystoreTypeGoogleKmsCreate{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	VaultModel, err := ResourceIbmKeystoreMapToVaultReferenceInCreationRequest(modelMap["vault"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
 		return model, err
 	}
 	model.Vault = VaultModel
-	model.IbmVariant = core.StringPtr(modelMap["ibm_variant"].(string))
-	if modelMap["name"] != nil {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	if modelMap["description"] != nil {
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["groups"] != nil {
@@ -553,19 +619,57 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInter
 		}
 		model.Groups = groups
 	}
-	if modelMap["ibm_api_endpoint"] != nil {
+	model.GoogleCredentials = core.StringPtr(modelMap["google_credentials"].(string))
+	if modelMap["google_location"] != nil && modelMap["google_location"].(string) != "" {
+		model.GoogleLocation = core.StringPtr(modelMap["google_location"].(string))
+	}
+	if modelMap["google_project_id"] != nil && modelMap["google_project_id"].(string) != "" {
+		model.GoogleProjectID = core.StringPtr(modelMap["google_project_id"].(string))
+	}
+	if modelMap["google_private_key_id"] != nil && modelMap["google_private_key_id"].(string) != "" {
+		model.GooglePrivateKeyID = core.StringPtr(modelMap["google_private_key_id"].(string))
+	}
+	if modelMap["google_key_ring"] != nil && modelMap["google_key_ring"].(string) != "" {
+		model.GoogleKeyRing = core.StringPtr(modelMap["google_key_ring"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreate(modelMap map[string]interface{}) (ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateIntf, error) {
+	model := &ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreate{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	VaultModel, err := ResourceIbmKeystoreMapToVaultReferenceInCreationRequest(modelMap["vault"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
+	}
+	model.Vault = VaultModel
+	model.IbmVariant = core.StringPtr(modelMap["ibm_variant"].(string))
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["groups"] != nil {
+		groups := []string{}
+		for _, groupsItem := range modelMap["groups"].([]interface{}) {
+			groups = append(groups, groupsItem.(string))
+		}
+		model.Groups = groups
+	}
+	if modelMap["ibm_api_endpoint"] != nil && modelMap["ibm_api_endpoint"].(string) != "" {
 		model.IbmApiEndpoint = core.StringPtr(modelMap["ibm_api_endpoint"].(string))
 	}
-	if modelMap["ibm_iam_endpoint"] != nil {
+	if modelMap["ibm_iam_endpoint"] != nil && modelMap["ibm_iam_endpoint"].(string) != "" {
 		model.IbmIamEndpoint = core.StringPtr(modelMap["ibm_iam_endpoint"].(string))
 	}
-	if modelMap["ibm_api_key"] != nil {
+	if modelMap["ibm_api_key"] != nil && modelMap["ibm_api_key"].(string) != "" {
 		model.IbmApiKey = core.StringPtr(modelMap["ibm_api_key"].(string))
 	}
-	if modelMap["ibm_instance_id"] != nil {
+	if modelMap["ibm_instance_id"] != nil && modelMap["ibm_instance_id"].(string) != "" {
 		model.IbmInstanceID = core.StringPtr(modelMap["ibm_instance_id"].(string))
 	}
-	if modelMap["ibm_key_ring"] != nil {
+	if modelMap["ibm_key_ring"] != nil && modelMap["ibm_key_ring"].(string) != "" {
 		model.IbmKeyRing = core.StringPtr(modelMap["ibm_key_ring"].(string))
 	}
 	return model, nil
@@ -580,7 +684,7 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInter
 	}
 	model.Vault = VaultModel
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["description"] != nil {
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["groups"] != nil {
@@ -595,14 +699,15 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInter
 	model.IbmApiKey = core.StringPtr(modelMap["ibm_api_key"].(string))
 	model.IbmInstanceID = core.StringPtr(modelMap["ibm_instance_id"].(string))
 	model.IbmVariant = core.StringPtr(modelMap["ibm_variant"].(string))
-	if modelMap["ibm_key_ring"] != nil {
+	if modelMap["ibm_key_ring"] != nil && modelMap["ibm_key_ring"].(string) != "" {
 		model.IbmKeyRing = core.StringPtr(modelMap["ibm_key_ring"].(string))
 	}
 	return model, nil
 }
 
-func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreate(modelMap map[string]interface{}) (ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateIntf, error) {
-	model := &ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreate{}
+// TODO: Worried about this
+func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreate(modelMap map[string]interface{}) (ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateIntf, error) {
+	model := &ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdate{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
 	VaultModel, err := ResourceIbmKeystoreMapToVaultReferenceInCreationRequest(modelMap["vault"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
@@ -611,7 +716,7 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInter
 	model.Vault = VaultModel
 	model.IbmVariant = core.StringPtr(modelMap["ibm_variant"].(string))
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["description"] != nil {
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["groups"] != nil {
@@ -649,6 +754,31 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInter
 	return model, nil
 }
 
+func resourceIbmHpcsKeystoreMapToKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate(modelMap map[string]interface{}) (*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate, error) {
+	model := &ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate{}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	VaultModel, err := ResourceIbmKeystoreMapToVaultReferenceInCreationRequest(modelMap["vault"].([]interface{})[0].(map[string]interface{}))
+	if err != nil {
+		return model, err
+	}
+	model.Vault = VaultModel
+	model.IbmVariant = core.StringPtr(modelMap["ibm_variant"].(string))
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	if modelMap["groups"] != nil {
+		groups := []string{}
+		for _, groupsItem := range modelMap["groups"].([]interface{}) {
+			groups = append(groups, groupsItem.(string))
+		}
+		model.Groups = groups
+	}
+	return model, nil
+}
+
 func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAzureCreate(modelMap map[string]interface{}) (*ukov4.KeystoreCreationRequestKeystoreTypeAzureCreate, error) {
 	model := &ukov4.KeystoreCreationRequestKeystoreTypeAzureCreate{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
@@ -657,10 +787,10 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAzureCreate(mode
 		return model, err
 	}
 	model.Vault = VaultModel
-	if modelMap["name"] != nil {
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
-	if modelMap["description"] != nil {
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
 	if modelMap["groups"] != nil {
@@ -684,6 +814,8 @@ func ResourceIbmKeystoreMapToKeystoreCreationRequestKeystoreTypeAzureCreate(mode
 func ResourceIbmKeystoreKeystoreCreationRequestToMap(model ukov4.KeystoreCreationRequestIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeAwsKmsCreate); ok {
 		return ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeAwsKmsCreateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeAwsKmsCreate))
+	} else if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeGoogleKmsCreate); ok {
+		return resourceIbmHpcsKeystoreKeystoreCreationRequestKeystoreTypeGoogleKmsCreateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeGoogleKmsCreate))
 	} else if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeAzureCreate); ok {
 		return ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeAzureCreateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeAzureCreate))
 	} else if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreate); ok {
@@ -714,6 +846,21 @@ func ResourceIbmKeystoreKeystoreCreationRequestToMap(model ukov4.KeystoreCreatio
 		}
 		if model.AwsSecretAccessKey != nil {
 			modelMap["aws_secret_access_key"] = model.AwsSecretAccessKey
+		}
+		if model.GoogleCredentials != nil {
+			modelMap["google_credentials"] = model.GoogleCredentials
+		}
+		if model.GoogleLocation != nil {
+			modelMap["google_location"] = model.GoogleLocation
+		}
+		if model.GoogleProjectID != nil {
+			modelMap["google_project_id"] = model.GoogleProjectID
+		}
+		if model.GooglePrivateKeyID != nil {
+			modelMap["google_private_key_id"] = model.GooglePrivateKeyID
+		}
+		if model.GoogleKeyRing != nil {
+			modelMap["google_key_ring"] = model.GoogleKeyRing
 		}
 		if model.AzureServiceName != nil {
 			modelMap["azure_service_name"] = model.AzureServiceName
@@ -790,6 +937,37 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeAwsKmsCreateToMap(mod
 	return modelMap, nil
 }
 
+func resourceIbmHpcsKeystoreKeystoreCreationRequestKeystoreTypeGoogleKmsCreateToMap(model *ukov4.KeystoreCreationRequestKeystoreTypeGoogleKmsCreate) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = model.Type
+	vaultMap, err := ResourceIbmKeystoreVaultReferenceInCreationRequestToMap(model.Vault)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["vault"] = []map[string]interface{}{vaultMap}
+	modelMap["name"] = model.Name
+	if model.Description != nil {
+		modelMap["description"] = model.Description
+	}
+	if model.Groups != nil {
+		modelMap["groups"] = model.Groups
+	}
+	modelMap["google_credentials"] = model.GoogleCredentials
+	if model.GoogleLocation != nil {
+		modelMap["google_location"] = model.GoogleLocation
+	}
+	if model.GoogleProjectID != nil {
+		modelMap["google_project_id"] = model.GoogleProjectID
+	}
+	if model.GooglePrivateKeyID != nil {
+		modelMap["google_private_key_id"] = model.GooglePrivateKeyID
+	}
+	if model.GoogleKeyRing != nil {
+		modelMap["google_key_ring"] = model.GoogleKeyRing
+	}
+	return modelMap, nil
+}
+
 func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateToMap(model ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsCreate); ok {
 		return ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsCreateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsCreate))
@@ -861,6 +1039,8 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalEx
 	return modelMap, nil
 }
 
+// TODO: These types are different. But it seems the only place they change?
+// May need to change them to generated types, but don't want to do that prematurely.
 func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateToMap(model ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate); ok {
 		return ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate))
@@ -884,6 +1064,34 @@ func ResourceIbmKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalEx
 		return modelMap, nil
 	} else {
 		return nil, fmt.Errorf("Unrecognized ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateIntf subtype encountered")
+	}
+}
+
+func resourceIbmHpcsKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateToMap(model ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate); ok {
+		return resourceIbmHpcsKeystoreKeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdateToMap(model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeIbmCloudKmsInternalUpdateKeystoreTypeBaseUpdate))
+	} else if _, ok := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdate); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdate)
+		modelMap["type"] = model.Type
+		vaultMap, err := resourceIbmHpcsKeystoreVaultReferenceInCreationRequestToMap(model.Vault)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vault"] = []map[string]interface{}{vaultMap}
+		modelMap["ibm_variant"] = model.IbmVariant
+		if model.Name != nil {
+			modelMap["name"] = model.Name
+		}
+		if model.Description != nil {
+			modelMap["description"] = model.Description
+		}
+		if model.Groups != nil {
+			modelMap["groups"] = model.Groups
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized ukov4.KeystoreCreationRequestKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalExternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalCreateKeystoreTypeIbmCloudKmsInternalUpdateIntf subtype encountered")
 	}
 }
 
