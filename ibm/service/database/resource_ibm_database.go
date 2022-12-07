@@ -1578,7 +1578,6 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		}
 	}
 
-
 	if _, ok := d.GetOk("auto_scaling.0"); ok {
 		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
 

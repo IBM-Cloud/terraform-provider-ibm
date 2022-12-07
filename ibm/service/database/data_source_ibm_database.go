@@ -758,11 +758,6 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
 	icdId := flex.EscapeUrlParm(instance.ID)
 	cdb, err := icdClient.Cdbs().GetCdb(icdId)
 	if err != nil {
