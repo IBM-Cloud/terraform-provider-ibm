@@ -133,7 +133,7 @@ func resourceIbmIsShareTargetCreate(context context.Context, d *schema.ResourceD
 		log.Printf("[DEBUG] CreateShareTargetWithContext failed %s\n%s", err, response)
 		return diag.FromErr(err)
 	}
-	_, err = isWaitForTargetAvailable(context, vpcClient, *createShareTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
+	_, err = WaitForTargetAvailable(context, vpcClient, *createShareTargetOptions.ShareID, *shareTarget.ID, d, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,13 +276,13 @@ func resourceIbmIsShareTargetDelete(context context.Context, d *schema.ResourceD
 	return nil
 }
 
-func isWaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
+func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
-		Refresh:    isTargetRefreshFunc(context, vpcClient, shareid, targetid, d),
+		Refresh:    mountTargetRefreshFunc(context, vpcClient, shareid, targetid, d),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -291,7 +291,7 @@ func isWaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, s
 	return stateConf.WaitForState()
 }
 
-func isTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareTargetOptions := &vpcv1.GetShareTargetOptions{}
 
