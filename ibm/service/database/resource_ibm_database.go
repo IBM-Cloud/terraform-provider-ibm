@@ -2151,7 +2151,7 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) cpu auto_scaling group update task to complete: %s", instanceID, err))
+				"[ERROR] Error waiting for database (%s) auto scaling group update task to complete: %s", instanceID, err))
 		}
 	}
 
