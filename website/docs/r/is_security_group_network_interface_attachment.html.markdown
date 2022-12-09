@@ -9,7 +9,7 @@ description: |-
 
 # ibm_is_security_group_network_interface_attachment
 
-~> **Removal Notification** Resource `ibm_is_security_group_network_interface_attachment` will not be supported by terraform provider from `v1.50.0`; [releases](https://github.com/IBM-Cloud/terraform-provider-ibm/releases/), recommendation is to use `ibm_is_security_group_target` to create security group for your network interface. </br>
+!> **Removal Notification** Resource `ibm_is_security_group_network_interface_attachment` will not be supported by terraform provider from `v1.50.0`; [releases](https://github.com/IBM-Cloud/terraform-provider-ibm/releases/), recommendation is to use `ibm_is_security_group_target` to create security group for your network interface. </br>
 **Documentation** on `ibm_is_security_group_target` can be found [here](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_security_group_target). 
 
 
