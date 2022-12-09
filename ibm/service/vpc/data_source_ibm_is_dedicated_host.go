@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -326,6 +327,13 @@ func DataSourceIbmIsDedicatedHost() *schema.Resource {
 				Computed:    true,
 				Description: "The globally unique name of the zone this dedicated host resides in.",
 			},
+			isDedicatedHostAccessTags: {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access tags",
+			},
 		},
 	}
 }
@@ -371,6 +379,12 @@ func dataSourceIbmIsDedicatedHostRead(context context.Context, d *schema.Resourc
 				if err = d.Set("crn", dedicatedHost.CRN); err != nil {
 					return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
 				}
+				accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *dedicatedHost.CRN, "", isDedicatedHostAccessTagType)
+				if err != nil {
+					log.Printf(
+						"Error on get of resource dedicated host (%s) access tags: %s", d.Id(), err)
+				}
+				d.Set(isDedicatedHostAccessTags, accesstags)
 				if dedicatedHost.Disks != nil {
 					err = d.Set("disks", dataSourceDedicatedHostFlattenDisks(dedicatedHost.Disks))
 					if err != nil {

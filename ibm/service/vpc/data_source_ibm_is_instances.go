@@ -5,6 +5,7 @@ package vpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -220,7 +221,21 @@ func DataSourceIBMISInstances() *schema.Resource {
 								},
 							},
 						},
+						isInstanceTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "list of tags for the instance",
+						},
 
+						isInstanceAccessTags: {
+							Type:        schema.TypeSet,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         flex.ResourceIBMVPCHash,
+							Description: "list of access tags for the instance",
+						},
 						"boot_volume": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -841,6 +856,19 @@ func instancesList(d *schema.ResourceData, meta interface{}) error {
 			bootVolList = append(bootVolList, bootVol)
 			l["boot_volume"] = bootVolList
 		}
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceUserTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc Instance (%s) tags: %s", d.Id(), err)
+		}
+		l[isInstanceTags] = tags
+
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *instance.CRN, "", isInstanceAccessTagType)
+		if err != nil {
+			log.Printf(
+				"Error on get of resource vpc Instance (%s) access tags: %s", d.Id(), err)
+		}
+		l[isInstanceAccessTags] = accesstags
 		//set the status reasons
 		statusReasonsList := make([]map[string]interface{}, 0)
 		if instance.StatusReasons != nil {
