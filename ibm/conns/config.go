@@ -83,9 +83,9 @@ import (
 	"github.com/IBM/vpc-go-sdk/common"
 	vpc "github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/apache/openwhisk-client-go/whisk"
-	vpcbeta "github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
 	jwt "github.com/golang-jwt/jwt"
 	slsession "github.com/softlayer/softlayer-go/session"
+	vpcbeta "github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv1"
