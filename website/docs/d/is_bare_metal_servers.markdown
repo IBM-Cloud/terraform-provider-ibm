@@ -33,6 +33,7 @@ data "ibm_is_bare_metal_servers" "example" {
 Review the attribute references that you can access after you retrieve your data source. 
 
 - `servers` - List of all all bare metal servers in the region.
+  - `access_tags`  - (List) Access management tags associated for the bare metal server.
   - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces.
   - `boot_target` - (String) The unique identifier for this bare metal server disk.
   - `cpu` - (List) A nested block describing the CPU configuration of this bare metal server.
