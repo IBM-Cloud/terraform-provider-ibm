@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 func TestAccIbmIsShareBasic(t *testing.T) {

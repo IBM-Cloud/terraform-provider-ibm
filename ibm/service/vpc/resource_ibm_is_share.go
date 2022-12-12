@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/deepaksibm/vpc-go-sdk-beta/vpcv1"
+	"github.ibm.com/ibmcloud/vpc-beta-go-sdk/vpcv1"
 )
 
 const (
