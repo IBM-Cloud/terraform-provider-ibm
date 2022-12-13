@@ -1261,10 +1261,53 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 		return fmt.Errorf("[ERROR] logical_replication_slot is only supported for databases-for-postgresql")
 	}
 
-	_, configurationSet := diff.GetOk("configuration")
+	config, configOk := diff.GetOk("configuration")
 
-	if (service != "databases-for-postgresql" && service != "databases-for-redis" && service != "databases-for-enterprisedb") && configurationSet {
-		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	if configOk {
+		var rawConfig map[string]json.RawMessage
+		err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+		if err != nil {
+			return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
+		}
+
+		var unmarshalFn func(m map[string]json.RawMessage, result interface{}) (err error)
+
+		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+
+		switch service {
+		case "databases-for-postgresql":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+		case "databases-for-enterprisedb":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+		case "databases-for-redis":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
+		case "databases-for-mysql":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationMySQLConfiguration
+		case "messages-for-rabbitmq":
+			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRabbitMqConfiguration
+		default:
+			return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+		}
+
+		err = core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn)
+		if err != nil {
+			return fmt.Errorf("[ERROR] configuration is invalid\n%s", err)
+		}
+
+		b, _ := json.Marshal(configuration)
+		var result map[string]json.RawMessage
+		json.Unmarshal(b, &result)
+
+		invalidFields := []string{}
+		for k, _ := range rawConfig {
+			if _, ok := result[k]; !ok {
+				invalidFields = append(invalidFields, k)
+			}
+		}
+
+		if len(invalidFields) != 0 {
+			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
+		}
 	}
 
 	return nil
@@ -1666,22 +1709,36 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 	}
 
 	if config, ok := d.GetOk("configuration"); ok {
-		service := d.Get("service").(string)
-		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
-			var configuration interface{}
-			json.Unmarshal([]byte(config.(string)), &configuration)
-			configPayload := icdv4.ConfigurationReq{Configuration: configuration}
-			task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
-			}
-			_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-			}
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
+		var rawConfig map[string]json.RawMessage
+		err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
+		}
+
+		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+		err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] database configuration is invalid"))
+		}
+
+		updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+			ID:            &instanceID,
+			Configuration: configuration,
+		}
+
+		updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
+
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error updating database configuration failed %s\n%s", err, response))
+		}
+
+		taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
 		}
 	}
 
@@ -1987,28 +2044,41 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 	}
+
 	if d.HasChange("configuration") {
-		service := d.Get("service").(string)
-		if service == "databases-for-postgresql" || service == "databases-for-redis" || service == "databases-for-enterprisedb" {
-			if s, ok := d.GetOk("configuration"); ok {
-				var configuration interface{}
-				json.Unmarshal([]byte(s.(string)), &configuration)
-				configPayload := icdv4.ConfigurationReq{Configuration: configuration}
-				task, err := icdClient.Configurations().UpdateConfiguration(icdId, configPayload)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] Error updating database (%s) configuration: %s", icdId, err))
-				}
-				_, err = waitForDatabaseTaskComplete(task.Id, d, meta, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf(
-						"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-				}
+		if config, ok := d.GetOk("configuration"); ok {
+			var rawConfig map[string]json.RawMessage
+			err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
 			}
 
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] given database type %s is not configurable", service))
-		}
+			var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+			err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
+			updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+				ID:            &instanceID,
+				Configuration: configuration,
+			}
+
+			updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error updating database configuration failed %s\n%s", err, response))
+			}
+
+			taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
+		}
 	}
 
 	if d.HasChange("members_memory_allocation_mb") || d.HasChange("members_disk_allocation_mb") || d.HasChange("members_cpu_allocation_count") || d.HasChange("node_memory_allocation_mb") || d.HasChange("node_disk_allocation_mb") || d.HasChange("node_cpu_allocation_count") {

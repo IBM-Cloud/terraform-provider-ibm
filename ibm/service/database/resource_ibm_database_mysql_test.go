@@ -17,7 +17,7 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-mysql-%d", acctest.RandIntRange(10, 100))
+	rnd := fmt.Sprintf("tf-mysql-%s", acctest.RandString(6))
 	testName := rnd
 	name := "ibm_database." + testName
 
@@ -70,13 +70,13 @@ func TestAccIBMMysqlDatabaseInstanceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
-			{
-				ResourceName:      name,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"wait_time_minutes", "plan_validation", "adminpassword"},
-			},
+			// {
+			// 	ResourceName:      name,
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// 	ImportStateVerifyIgnore: []string{
+			// 		"wait_time_minutes", "plan_validation", "adminpassword"},
+			// },
 		},
 	})
 }
@@ -148,6 +148,12 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 		  address     = "172.168.1.1/32"
 		  description = "desc"
 		}
+		configuration = <<CONFIGURATION
+		{
+      "mysql_max_binlog_age_sec": 2000,
+      "innodb_buffer_pool_size_percentage": 60
+		}
+		CONFIGURATION
 		timeouts {
 			create = "120m"
 			update = "120m"

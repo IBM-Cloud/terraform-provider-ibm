@@ -147,6 +147,11 @@ func testAccCheckIBMDatabaseInstanceRabbitmqBasic(databaseResourceGroup string, 
 		  address     = "172.168.1.2/32"
 		  description = "desc1"
 		}
+		configuration = <<CONFIGURATION
+  		{
+	  	  "delete_undefined_queues": true
+	    }
+		CONFIGURATION
 	  }
 				`, databaseResourceGroup, name, acc.IcdDbRegion)
 }
