@@ -668,7 +668,7 @@ func resourceIBMCdTektonPipelineTriggerMapToGenericSecret(modelMap map[string]in
 func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourcePrototype, error) {
 	model := &cdtektonpipelinev2.TriggerSourcePrototype{}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	PropertiesModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototypeProperties(modelMap["properties"].([]interface{})[0].(map[string]interface{}))
+	PropertiesModel, err := resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePropertiesPrototype(modelMap["properties"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
 		return model, err
 	}
@@ -676,8 +676,8 @@ func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototype(modelMap map[
 	return model, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePrototypeProperties(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourcePrototypeProperties, error) {
-	model := &cdtektonpipelinev2.TriggerSourcePrototypeProperties{}
+func resourceIBMCdTektonPipelineTriggerMapToTriggerSourcePropertiesPrototype(modelMap map[string]interface{}) (*cdtektonpipelinev2.TriggerSourcePropertiesPrototype, error) {
+	model := &cdtektonpipelinev2.TriggerSourcePropertiesPrototype{}
 	model.URL = core.StringPtr(modelMap["url"].(string))
 	if modelMap["branch"] != nil && modelMap["branch"].(string) != "" {
 		model.Branch = core.StringPtr(modelMap["branch"].(string))
@@ -723,7 +723,7 @@ func resourceIBMCdTektonPipelineTriggerGenericSecretToMap(model *cdtektonpipelin
 func resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypeToMap(model *cdtektonpipelinev2.TriggerSource) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
-	propertiesMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypePropertiesToMap(model.Properties)
+	propertiesMap, err := resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesPrototypeToMap(model.Properties)
 	if err != nil {
 		return modelMap, err
 	}
@@ -731,7 +731,7 @@ func resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypeToMap(model *cdtekt
 	return modelMap, nil
 }
 
-func resourceIBMCdTektonPipelineTriggerTriggerSourcePrototypePropertiesToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
+func resourceIBMCdTektonPipelineTriggerTriggerSourcePropertiesPrototypeToMap(model *cdtektonpipelinev2.TriggerSourceProperties) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["url"] = model.URL
 	if model.Branch != nil {
